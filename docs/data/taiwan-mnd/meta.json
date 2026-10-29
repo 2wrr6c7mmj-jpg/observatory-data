@@ -1,0 +1,34 @@
+{
+ "dataset": "taiwan-mnd",
+ "title": "台湾国防部 日報：中共解放軍の台湾周辺海空域の動態",
+ "source": {
+  "name": "中華民國國防部（政治作戰局）",
+  "urls": ["https://www.mnd.gov.tw/en/news/plaact/", "https://www.mnd.gov.tw/news/plaact/"],
+  "position": "紛争当事者（台湾）の公式発表",
+  "reliability": "B",
+  "credibility": "2",
+  "rating_note": "暫定評価（アドミラルティ・コード）。当事者の発表であり、探知範囲・計上基準・公表方針は国防部に依存する。中国側は数値を公表していないため、独立した突き合わせは衛星観測等による。"
+ },
+ "window": "報告日の前日 06:00 から報告日 06:00 まで（UTC+8）。window_start_utc / window_end_utc は UTC で表記。",
+ "fields": {
+  "report_date": "報告日（台湾時間）",
+  "aircraft": "中国軍機の延べ機数（架次）",
+  "median_line_or_adiz": "そのうち中間線を越えた、または北部・西南・東部の空域に入った延べ機数",
+  "plan_vessels": "中国海軍艦艇の数",
+  "official_ships": "中国の公務船（海警等）の数",
+  "balloons": "気球の数",
+  "source_url": "原文の URL",
+  "retrieved_utc": "取得時刻（UTC）。公表時刻ではない",
+  "parser_version": "数値を抜き出した処理の版"
+ },
+ "missing_values": "原文に記載のない数値は null（不明）とし、0 とはみなさない。原文に「中間線越えなし」等の明記がある場合のみ 0。",
+ "definition_changes": [
+  {"date": "2024-08", "change": "公務船の活動を日報に記載し始める（報道による。原文で要確認）"},
+  {"date": "2024-09-02", "change": "空域活動示意図を改版（国防部新聞稿）"}
+ ],
+ "limitations": [
+  "数値は日報本文から自動で抜き出している。本文が画像のみの日は unparsed として status.json に記録し、推測で埋めない。",
+  "同じ報告日に複数の発表がある場合、番号の大きい（後の）発表を採用する。",
+  "大規模演習の期間中は、日報とは別の臨時発表に異なる集計が出ることがある（日報とは計上範囲が異なる）。"
+ ]
+}

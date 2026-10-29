@@ -1,0 +1,44 @@
+name: Collect public data
+on:
+  schedule:
+    # Taiwan MND publishes around 09:00 (UTC+8); collect at 10:23 JST.
+    - cron: '23 1 * * *'
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: 'List pages to walk (10 reports each). 3 = daily; larger = backfill (resumable)'
+        default: '3'
+      probe:
+        description: 'Only print what the parser sees (no data change)'
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: collect
+  cancel-in-progress: false
+jobs:
+  taiwan-mnd:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Probe
+        if: inputs.probe
+        run: python -m collectors.taiwan_mnd --probe
+      - name: Collect Taiwan MND daily reports
+        if: ${{ !inputs.probe }}
+        run: python -m collectors.taiwan_mnd --pages "${{ inputs.pages || '3' }}"
+      - name: Publish changed data
+        if: ${{ !inputs.probe }}
+        run: |
+          git add docs/data
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "データ更新: 台湾国防部 日報 ($(date -u +%Y-%m-%d))"
+          git push
