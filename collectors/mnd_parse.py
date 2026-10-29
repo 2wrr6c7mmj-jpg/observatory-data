@@ -19,7 +19,7 @@ import html
 import re
 from datetime import date, datetime, timedelta, timezone
 
-PARSER_VERSION = 1
+PARSER_VERSION = 2
 TAIPEI = timezone(timedelta(hours=8))
 
 WORDS = {w: i for i, w in enumerate(
@@ -61,6 +61,38 @@ def report_date(text: str) -> date | None:
     if m and m[1].lower() in MONTHS:
         return date(int(m[3]), MONTHS[m[1].lower()], int(m[2]))
     return None
+
+
+def window_end(text: str, header: date | None) -> tuple[date | None, str]:
+    """Report date from the stated 06:00-06:00 window, checked against the page date.
+
+    Returns (date, how): "window" when the window text gives the end day,
+    "header" when only the page date is available.
+    """
+    t = re.sub(r"\s+", " ", text)
+    month = day = None
+    m = re.search(r"to 6 ?a\.?m\.? ([A-Z][a-z]{2})[a-z]*\.? (\d{1,2})\b", t)
+    if m and m[1].lower() in MONTHS:
+        month, day = MONTHS[m[1].lower()], int(m[2])
+    if month is None:  # "Sunday to Monday, Dec. 24-25" / "Dec. 31-Jan. 1"
+        m = re.search(r"\b([A-Z][a-z]{2})\.? \d{1,2}\s*-\s*(?:([A-Z][a-z]{2})\.? )?(\d{1,2})\b", t)
+        if m and m[1].lower() in MONTHS:
+            month, day = MONTHS[(m[2] or m[1]).lower()], int(m[3])
+    if month is None:
+        m = re.search(r"至\s*(\d{1,2})月(\d{1,2})日", t)
+        if m:
+            month, day = int(m[1]), int(m[2])
+    if month is None or header is None:
+        return header, "header"
+    year = header.year
+    if month == 12 and header.month == 1:
+        year -= 1
+    elif month == 1 and header.month == 12:
+        year += 1
+    try:
+        return date(year, month, day), "window"
+    except ValueError:
+        return header, "header"
 
 
 def _first(patterns: list[str], text: str, group: int = 1) -> int | None:
@@ -109,7 +141,7 @@ def counts(text: str) -> dict:
 
 def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
     text = page_text(raw_html)
-    d = report_date(text)
+    d, how = window_end(text, report_date(text))
     c = counts(text)
     ok = d is not None and (c["aircraft"] is not None or c["plan_vessels"] is not None)
     record = {
@@ -117,6 +149,7 @@ def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
         "retrieved_utc": retrieved.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "parser_version": PARSER_VERSION,
         "parsed": ok,
+        "date_from": how,
     }
     if d is not None:
         end = datetime(d.year, d.month, d.day, 6, tzinfo=TAIPEI)

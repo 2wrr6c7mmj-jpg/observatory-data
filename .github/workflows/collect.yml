@@ -20,7 +20,7 @@ concurrency:
 jobs:
   taiwan-mnd:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,9 +33,14 @@ jobs:
         run: python -m collectors.taiwan_mnd --probe
       - name: Collect Taiwan MND daily reports
         if: ${{ !inputs.probe }}
+        # A long backfill may stop at this limit; progress is saved per page and
+        # published below, and the next run continues where this one stopped.
+        timeout-minutes: 100
+        env:
+          MND_PAUSE_SECONDS: '1.5'
         run: python -m collectors.taiwan_mnd --pages "${{ inputs.pages || '3' }}"
       - name: Publish changed data
-        if: ${{ !inputs.probe }}
+        if: ${{ always() && !inputs.probe }}
         run: |
           git add docs/data
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi

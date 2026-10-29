@@ -37,6 +37,18 @@ class Parse(unittest.TestCase):
         self.assertEqual(r["window_start_utc"], "2025-06-26T22:00Z")
         self.assertEqual(r["window_end_utc"], "2025-06-27T22:00Z")
 
+    def test_window_overrides_unrelated_page_date(self):
+        page = ("<nav>2026.10.01 Latest news</nav><p>2026.10.29</p><p>1.Date: 6 a.m. Oct. 28 (Tue.) to 6 a.m. Oct. 29 (Wed.) (UTC+8)</p>"
+                "<p>6 sorties of PLA aircraft and 7 PLAN vessels</p>")
+        r = parse_report(page, "u", NOW)
+        self.assertEqual((r["report_date"], r["date_from"]), ("2026-10-29", "window"))
+
+    def test_window_across_new_year(self):
+        page = "<p>2026.01.01</p><p>6 a.m. Dec. 31 (Wed.) to 6 a.m. Jan. 1 (Thu.)</p><p>3 PLA aircraft</p>"
+        self.assertEqual(parse_report(page, "u", NOW)["report_date"], "2026-01-01")
+        page = "<p>2025.12.31</p><p>Date: 6 to 6 a.m. Tuesday to Wednesday, Dec. 30-31</p><p>3 PLA aircraft</p>"
+        self.assertEqual(parse_report(page, "u", NOW)["report_date"], "2025-12-31")
+
     def test_scripts_are_ignored(self):
         self.assertEqual(parse_report(EN_2025, "u", NOW)["aircraft"], 8)
 
