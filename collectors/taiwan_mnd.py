@@ -174,11 +174,26 @@ def probe() -> int:
     return 1
 
 
+def probe_ids(ids: list[str]) -> int:
+    """Print the main text of specific reports (for adapting the parser)."""
+    for rid in ids:
+        url = f"{BASE}/en/News/PLAAct/{rid}"
+        raw = fetch(url)
+        body = re.sub(r"\s+", " ", page_text(raw))
+        i = body.find("PLA Activities 20")
+        imgs = sorted(set(re.findall(r"""(?:src|href)\s*=\s*["']([^"']+\.(?:jpe?g|png|pdf))["']""", raw, re.I)))[:10]
+        notice(f"report {rid}: images {imgs}\n" + body[max(0, i):i + 1800])
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", type=int, default=3, help="list pages to walk (10 reports each)")
     ap.add_argument("--probe", action="store_true")
+    ap.add_argument("--probe-ids", default="", help="comma-separated report ids to print")
     a = ap.parse_args()
+    if a.probe_ids:
+        return probe_ids([x for x in a.probe_ids.split(",") if x.strip()])
     if a.probe:
         return probe()
     # The daily run stops at the first page with nothing new; a backfill walks all pages.

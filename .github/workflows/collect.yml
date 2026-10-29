@@ -12,6 +12,9 @@ on:
         description: 'Only print what the parser sees (no data change)'
         type: boolean
         default: false
+      probe_ids:
+        description: 'With probe: comma-separated report ids to print'
+        default: ''
 permissions:
   contents: write
 concurrency:
@@ -30,7 +33,7 @@ jobs:
         run: python -m unittest discover -s tests -t .
       - name: Probe
         if: inputs.probe
-        run: python -m collectors.taiwan_mnd --probe
+        run: python -m collectors.taiwan_mnd --probe --probe-ids "${{ inputs.probe_ids }}"
       - name: Collect Taiwan MND daily reports
         if: ${{ !inputs.probe }}
         # A long backfill may stop at this limit; progress is saved per page and
