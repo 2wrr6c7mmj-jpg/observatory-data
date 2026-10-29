@@ -13,6 +13,7 @@ User-Agent, and reports already stored are never fetched again.
 from __future__ import annotations
 
 import argparse
+import re
 import csv
 import json
 import os
@@ -142,8 +143,14 @@ def probe() -> int:
             notice(f"probe {url}: {e}")
             continue
         links = report_links(raw)
-        notice(f"probe {url}: {len(raw)} bytes, {len(links)} report links, first {links[:3]}\n"
-               + page_text(raw)[:1500])
+        hrefs = sorted(set(re.findall(r"""(?:href|data-href|data-url|action|src)\s*=\s*["']([^"']+)["']""", raw, re.I)))
+        hints = sorted(set(re.findall(r"""["']([^"'\s]*(?:api|ajax|json|plaact|Publication|news)[^"'\s]*)["']""", raw, re.I)))
+        notice(f"probe {url}: {len(raw)} bytes, {len(links)} report links, first {links[:3]}")
+        notice("probe hrefs:\n" + "\n".join(hrefs[:150]))
+        notice("probe hints:\n" + "\n".join(hints[:80]))
+        body = re.sub(r"\s+", " ", page_text(raw))
+        i = body.find("PLA")
+        notice("probe text around first 'PLA':\n" + body[max(0, i - 200):i + 1500])
         if links:
             href, rid = links[0]
             report = fetch(href if href.startswith("http") else BASE + href)
