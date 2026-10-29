@@ -19,7 +19,7 @@ import html
 import re
 from datetime import date, datetime, timedelta, timezone
 
-PARSER_VERSION = 3
+PARSER_VERSION = 4
 TAIPEI = timezone(timedelta(hours=8))
 
 WORDS = {w: i for i, w in enumerate(
