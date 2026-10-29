@@ -35,8 +35,49 @@ LIST_URLS = [  # tried in order until one yields report links
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "taiwan-mnd"
 UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
 PAUSE = float(os.environ.get("MND_PAUSE_SECONDS", "2.5"))
-FIELDS = ["report_date", "aircraft", "median_line_or_adiz", "plan_vessels", "official_ships",
-          "balloons", "window_start_utc", "window_end_utc", "source_url", "retrieved_utc", "parser_version"]
+FIELDS = ["report_date", "format", "aircraft", "median_line_or_adiz", "plan_vessels", "official_ships",
+          "balloons", "adiz_aircraft", "adiz_types", "window_start_utc", "window_end_utc",
+          "source_url", "retrieved_utc", "parser_version"]
+
+
+def daily_rows(reports: dict) -> list[dict]:
+    """One row per report date.
+
+    around-taiwan: the parsed report with the highest id wins (a later
+    correction on the same day replaces the earlier figures).
+    sw-adiz (until late 2022): daytime and nighttime reports of the same day are
+    added together; for the same day and period the highest id wins.
+    """
+    latest: dict[tuple, dict] = {}
+    for rid in sorted(reports, key=int):
+        r = reports[rid]
+        if r.get("parsed") and r.get("report_date"):
+            key = (r["report_date"], r.get("format", "around-taiwan"),
+                   r.get("period") if r.get("format") == "sw-adiz" else None)
+            latest[key] = r
+    days: dict[str, dict] = {}
+    for (day, fmt, _), r in sorted(latest.items(), key=lambda kv: (kv[0][0], kv[0][1], kv[0][2] or "")):
+        if fmt != "sw-adiz":
+            days[day] = {**r, "format": fmt}
+            continue
+        row = days.get(day)
+        if row is None or row.get("format") != "sw-adiz":
+            if row is not None:  # an around-taiwan report for the same day takes precedence
+                continue
+            row = days[day] = {**r, "adiz_types": dict(r.get("adiz_types") or {}), "sources": [r["source_url"]]}
+            continue
+        row["adiz_aircraft"] = (row.get("adiz_aircraft") or 0) + (r.get("adiz_aircraft") or 0)
+        for k, v in (r.get("adiz_types") or {}).items():
+            row["adiz_types"][k] = row["adiz_types"].get(k, 0) + v
+        row["sources"].append(r["source_url"])
+        row["source_url"] = " ".join(row["sources"])
+    out = []
+    for day in sorted(days):
+        row = dict(days[day])
+        if isinstance(row.get("adiz_types"), dict):
+            row["adiz_types"] = ";".join(f"{k}:{v}" for k, v in sorted(row["adiz_types"].items())) or None
+        out.append(row)
+    return out
 
 
 def fetch(url: str) -> str:
@@ -64,14 +105,7 @@ def save(store: dict) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     reports = store["reports"]
     (OUT / "reports.json").write_text(json.dumps(store, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    # One row per report date: the parsed report with the highest id wins
-    # (a later correction on the same day replaces the earlier figures).
-    daily: dict[str, dict] = {}
-    for rid in sorted(reports, key=int):
-        r = reports[rid]
-        if r.get("parsed") and r.get("report_date"):
-            daily[r["report_date"]] = r
-    rows = [daily[d] for d in sorted(daily)]
+    rows = daily_rows(reports)
     with open(OUT / "daily.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS, extrasaction="ignore")
         w.writeheader()

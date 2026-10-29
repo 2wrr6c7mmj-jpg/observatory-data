@@ -27,7 +27,36 @@ ZH_2026 = """<div>2026.07.31</div><p>共偵獲中共軍機27架次、共艦9艘�
 統計至今日上午6時止,共機27架次,其中22架次逾越海峽中線,進入北部、中部、西南及東部空域</p>"""
 
 
+OLD_DAY = """<p>PLA Activities 2021.10.04 Issuing Authority：Political Warfare Bureau</p><p>Air activities in the southwestern ADIZ of R.O.C.</p>
+<p>一、Date: October 4,2021（Monday daytime）</p><p>二、Aircraft Type: Thirty four J-16 Two SU-30 Two Y-8 ASW Two KJ-500 AEW&amp;C Twelve H-6</p>
+<p>三、Activity Area: Flight paths as illustrated</p>"""
+OLD_2020 = """<p>PLA Activities 2020.11.15 Issuing Authority：Administration Office</p><p>1、Date: Nov. 15, 2020（Sunday）</p>
+<p>2、Aircraft Type: One Y-8 ASW One Y-8 RECCE</p><p>3、Activity Area: Flight path as illustrated</p>"""
+EN_2024 = """<p>PLA Activities 2024.05.24</p><p>1.Date： 6 to 6 a.m. (UTC+8) Thursday to Friday, May 23-24</p>
+<p>2.PLA activities： 49 PLA aircraft, 19 PLAN vessels, and 7 CCG vessels operating around Taiwan were detected up until 6 a.m. (UTC+8) today.
+35 of the aircraft crossed the median line of the Taiwan Strait and entered Taiwan’s southwestern ADIZ.</p>"""
+EN_2023_CROSS = """<p>PLA Activities 2023.09.18</p><p>1.Date： 6 to 6 a.m. (UTC+8) Sunday to Monday, Sep. 17-18</p><p>2.PLA activities： 103 PLA aircraft and 9 PLAN vessels
+around Taiwan were detected by 6 a.m.(UTC+8) today. 40 of the detected aircraft had crossed the median line</p>"""
+
+
 class Parse(unittest.TestCase):
+    def test_2024_crossing_and_coast_guard(self):
+        r = parse_report(EN_2024, "u", NOW)
+        self.assertEqual((r["report_date"], r["aircraft"], r["median_line_or_adiz"], r["plan_vessels"], r["official_ships"]),
+                         ("2024-05-24", 49, 35, 19, 7))
+        self.assertEqual(counts(EN_2023_CROSS)["median_line_or_adiz"], 40)
+
+    def test_old_southwestern_adiz_format(self):
+        r = parse_report(OLD_DAY, "u", NOW)
+        self.assertTrue(r["parsed"])
+        self.assertEqual((r["format"], r["report_date"], r["period"]), ("sw-adiz", "2021-10-04", "daytime"))
+        self.assertEqual(r["adiz_types"], {"J-16": 34, "SU-30": 2, "Y-8 ASW": 2, "KJ-500 AEW&C": 2, "H-6": 12})
+        self.assertEqual(r["adiz_aircraft"], 52)
+        self.assertIsNone(r["aircraft"])  # a different measure: not merged into the around-Taiwan total
+        self.assertEqual(r["window_start_utc"], "2021-10-03T16:00Z")
+        r = parse_report(OLD_2020, "u", NOW)
+        self.assertEqual((r["report_date"], r["adiz_aircraft"], r["period"]), ("2020-11-15", 2, None))
+
     def test_english_current_format(self):
         r = parse_report(EN_2025, "https://www.mnd.gov.tw/en/news/plaact/84583", NOW)
         self.assertTrue(r["parsed"])

@@ -30,10 +30,27 @@ class Collect(unittest.TestCase):
             self.assertEqual((row["report_date"], row["aircraft"], row["plan_vessels"]), ("2026-10-28", 4, 7))
             status = json.loads((Path(d) / "status.json").read_text())
             self.assertEqual(status["unparsed_ids"], ["2"])
-            self.assertIn("report_date,aircraft", (Path(d) / "daily.csv").read_text())
+            self.assertIn("report_date,format,aircraft", (Path(d) / "daily.csv").read_text())
             calls = f.call_count
             taiwan_mnd.collect(pages=3, stop_when_known=True)
             self.assertEqual(f.call_count - calls, 1)  # only the list page; known reports are not refetched
+
+
+class Daily(unittest.TestCase):
+    def test_daytime_and_nighttime_are_added_and_corrections_replace(self):
+        base = {"parsed": True, "format": "sw-adiz", "report_date": "2021-10-04"}
+        reports = {
+            "10": {**base, "period": "daytime", "adiz_aircraft": 52, "adiz_types": {"J-16": 34, "H-6": 18}, "source_url": "a"},
+            "11": {**base, "period": "nighttime", "adiz_aircraft": 4, "adiz_types": {"J-16": 4}, "source_url": "b"},
+            "12": {**base, "period": "nighttime", "adiz_aircraft": 4, "adiz_types": {"J-16": 4}, "source_url": "b2"},
+            "20": {"parsed": True, "format": "around-taiwan", "report_date": "2023-01-01", "aircraft": 5, "source_url": "c"},
+            "21": {"parsed": True, "format": "around-taiwan", "report_date": "2023-01-01", "aircraft": 6, "source_url": "d"},
+        }
+        rows = {r["report_date"]: r for r in taiwan_mnd.daily_rows(reports)}
+        self.assertEqual(rows["2021-10-04"]["adiz_aircraft"], 56)
+        self.assertEqual(rows["2021-10-04"]["adiz_types"], "H-6:18;J-16:38")
+        self.assertEqual(rows["2021-10-04"]["source_url"], "a b2")
+        self.assertEqual(rows["2023-01-01"]["aircraft"], 6)
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ import html
 import re
 from datetime import date, datetime, timedelta, timezone
 
-PARSER_VERSION = 2
+PARSER_VERSION = 3
 TAIPEI = timezone(timedelta(hours=8))
 
 WORDS = {w: i for i, w in enumerate(
@@ -119,6 +119,7 @@ def counts(text: str) -> dict:
     ], t)
     official = _first([
         NUM + r" (?:PRC |Chinese )?official (?:ships?|vessels?)",
+        NUM + r" (?:CCG|China Coast Guard|coast guard) (?:ships?|vessels?)",
         r"公務船\s*(\d+)\s*艘",
     ], t)
     balloons = _first([
@@ -126,7 +127,8 @@ def counts(text: str) -> dict:
         r"(?:空飄)?氣球\s*(\d+)\s*(?:顆|個|枚)",
     ], t)
     crossed = _first([
-        NUM + r" (?:out )?of (?:the )?(?:\d+ )?sorties? (?:crossed|entered)",
+        NUM + r" (?:out )?of (?:the )?(?:\d+ )?sorties? (?:had )?(?:crossed|entered)",
+        NUM + r" of (?:the |them )?(?:detected )?(?:PLA )?aircraft (?:had )?(?:crossed|entered)",
         r"\ball " + NUM + r" sorties? (?:crossed|entered)",
         NUM + r" sorties? (?:crossed|entered)",
         r"其中\s*(\d+)\s*架次(?:逾越|進入)",
@@ -139,19 +141,66 @@ def counts(text: str) -> dict:
             "plan_vessels": vessels, "official_ships": official, "balloons": balloons}
 
 
+TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90}
+UNITS = [w for w in WORDS if 0 < WORDS[w] < 20]
+COUNT = re.compile(
+    r"(?<![\w-])(?:(" + "|".join(TENS) + r")(?:[\s-]+(" + "|".join(w for w in UNITS if WORDS[w] < 10) + r"))?"
+    r"|(" + "|".join(sorted(UNITS, key=len, reverse=True)) + r")|(\d{1,3}))(?![\w-])", re.I)
+
+
+def adiz_types(text: str) -> dict | None:
+    """Older reports (until late 2022): aircraft entering the southwestern ADIZ, by type.
+
+    "二、Aircraft Type: Thirty four J-16 Two SU-30 Two Y-8 ASW ..." → {"J-16": 34, ...}
+    These count ADIZ entries only and are not comparable with the later
+    "around Taiwan" totals, so they are kept in separate fields.
+    """
+    m = re.search(r"Aircraft Types?\s*[:：]\s*(.*?)(?:[三3][、.]|Activity Area|$)", re.sub(r"\s+", " ", text), re.I)
+    if not m:
+        return None
+    section, out = m[1], {}
+    hits = list(COUNT.finditer(section))
+    for i, h in enumerate(hits):
+        n = TENS[h[1].lower()] + (WORDS[h[2].lower()] if h[2] else 0) if h[1] else WORDS[h[3].lower()] if h[3] else int(h[4])
+        name = section[h.end():hits[i + 1].start() if i + 1 < len(hits) else len(section)].strip(" ,;、.")
+        if name:
+            out[name] = out.get(name, 0) + n
+    return out or None
+
+
 def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
     text = page_text(raw_html)
     d, how = window_end(text, report_date(text))
     c = counts(text)
-    ok = d is not None and (c["aircraft"] is not None or c["plan_vessels"] is not None)
+    types = adiz_types(text)
+    fmt = "around-taiwan"
+    if types is not None and c["aircraft"] is None:
+        fmt = "sw-adiz"
+        c["adiz_aircraft"] = sum(types.values())
+        c["adiz_types"] = types
+        p = re.search(r"\((?:[A-Za-z]+ )?(daytime|nighttime|night)\)|（[A-Za-z]+ (daytime|nighttime|night)）", text, re.I)
+        c["period"] = (p[1] or p[2]).lower().replace("night", "nighttime").replace("nighttimetime", "nighttime") if p else None
+        if d is None or how == "header":
+            dm = re.search(r"Date\s*[:：]\s*([A-Z][a-z]+)\.? (\d{1,2}),\s*(20\d\d)", re.sub(r"\s+", " ", text))
+            if dm and dm[1][:3].lower() in MONTHS:
+                d, how = date(int(dm[3]), MONTHS[dm[1][:3].lower()], int(dm[2])), "date-line"
+    ok = d is not None and (c["aircraft"] is not None or c["plan_vessels"] is not None or c.get("adiz_aircraft") is not None)
     record = {
         "source_url": url,
         "retrieved_utc": retrieved.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "parser_version": PARSER_VERSION,
         "parsed": ok,
         "date_from": how,
+        "format": fmt,
     }
-    if d is not None:
+    if d is not None and fmt == "sw-adiz":  # one local calendar day (daytime / nighttime reports)
+        start = datetime(d.year, d.month, d.day, tzinfo=TAIPEI)
+        record.update({
+            "report_date": d.isoformat(),
+            "window_start_utc": start.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+            "window_end_utc": (start + timedelta(days=1)).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+        })
+    elif d is not None:
         end = datetime(d.year, d.month, d.day, 6, tzinfo=TAIPEI)
         record.update({
             "report_date": d.isoformat(),
@@ -160,7 +209,9 @@ def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
         })
     record.update(c)
     if not ok:
-        record["text_excerpt"] = text.strip()[:600]
+        body = re.sub(r"\s+", " ", text)
+        i = body.find("PLA Activities 20")
+        record["text_excerpt"] = body[max(i, 0):max(i, 0) + 600].strip()
     return record
 
 

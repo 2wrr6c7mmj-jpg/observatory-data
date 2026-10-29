@@ -3,7 +3,10 @@
  "title": "台湾国防部 日報：中共解放軍の台湾周辺海空域の動態",
  "source": {
   "name": "中華民國國防部（政治作戰局）",
-  "urls": ["https://www.mnd.gov.tw/en/news/plaact/", "https://www.mnd.gov.tw/news/plaact/"],
+  "urls": [
+   "https://www.mnd.gov.tw/en/news/plaact/",
+   "https://www.mnd.gov.tw/news/plaact/"
+  ],
   "position": "紛争当事者（台湾）の公式発表",
   "reliability": "B",
   "credibility": "2",
@@ -15,16 +18,33 @@
   "aircraft": "中国軍機の延べ機数（架次）",
   "median_line_or_adiz": "そのうち中間線を越えた、または北部・西南・東部の空域に入った延べ機数",
   "plan_vessels": "中国海軍艦艇の数",
-  "official_ships": "中国の公務船（海警等）の数",
+  "official_ships": "中国の公務船の数。2024年頃の日報では「CCG vessels（中国海警）」と表記",
   "balloons": "気球の数",
   "source_url": "原文の URL",
   "retrieved_utc": "取得時刻（UTC）。公表時刻ではない",
-  "parser_version": "数値を抜き出した処理の版"
+  "parser_version": "数値を抜き出した処理の版",
+  "format": "日報の書式。around-taiwan＝台湾周辺全体（2022年11月頃以降）、sw-adiz＝南西 ADIZ への進入のみ（それ以前）",
+  "adiz_aircraft": "sw-adiz 書式の日のみ：南西 ADIZ に入った機数（昼・夜の発表を合算）。around-taiwan の aircraft とは定義が異なるため比較しない",
+  "adiz_types": "sw-adiz 書式の日のみ：機種別の内訳（機種:機数;…）"
  },
  "missing_values": "原文に記載のない数値は null（不明）とし、0 とはみなさない。原文に「中間線越えなし」等の明記がある場合のみ 0。",
  "definition_changes": [
-  {"date": "2024-08", "change": "公務船の活動を日報に記載し始める（報道による。原文で要確認）"},
-  {"date": "2024-09-02", "change": "空域活動示意図を改版（国防部新聞稿）"}
+  {
+   "date": "2022-11頃",
+   "change": "日報が「南西 ADIZ への進入機（機種別、昼・夜別）」から「台湾周辺全体の機数・艦艇数・中間線越え」に変わる。前後の機数は定義が異なり、そのまま比較できない"
+  },
+  {
+   "date": "2024-08",
+   "change": "公務船の活動を日報に記載し始める（報道による。原文で要確認）"
+  },
+  {
+   "date": "2024-09-02",
+   "change": "空域活動示意図を改版（国防部新聞稿）"
+  },
+  {
+   "date": "2025-01",
+   "change": "一部の日（約20日分）は本文がなく画像のみで発表。数値は空白とし、推測で埋めない"
+  }
  ],
  "limitations": [
   "数値は日報本文から自動で抜き出している。本文が画像のみの日は unparsed として status.json に記録し、推測で埋めない。",
