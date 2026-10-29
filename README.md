@@ -19,6 +19,7 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 | --- | --- | --- |
 | `taiwan-mnd` | 台湾国防部の日報（中国軍機・中間線越え・艦艇・公務船・気球） | [daily.csv](docs/data/taiwan-mnd/daily.csv)・[daily.json](docs/data/taiwan-mnd/daily.json)・[meta.json](docs/data/taiwan-mnd/meta.json)・[status.json](docs/data/taiwan-mnd/status.json) |
 | `jso` | 統合幕僚監部の公表資料（中国・ロシア艦艇の海峡通過、往復、演習・政治イベントとの対応） | [passages.csv](docs/data/jso/passages.csv)・[round_trips.csv](docs/data/jso/round_trips.csv)・[context.csv](docs/data/jso/context.csv)・[summary.json](docs/data/jso/summary.json)・[meta.json](docs/data/jso/meta.json) |
+| `launches` | ロケット・ミサイル発射に関わる NOTAM・航行警報（NOTAM Watch のデータから）と、発射場・方位の推定 | [events.json](docs/data/launches/events.json)・[notices.json](docs/data/launches/notices.json)・[meta.json](docs/data/launches/meta.json) |
 
 各データの定義、情報源の評価、定義変更の履歴、限界は `meta.json` に書いています。
 
