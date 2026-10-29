@@ -70,9 +70,11 @@ class Parse(unittest.TestCase):
 
     def test_list_links(self):
         html = ('<a href="/en/news/plaact/84583">a</a><a href="/en/news/plaact/84583">dup</a>'
-                '<a href="https://www.mnd.gov.tw/en/news/plaact/84560">b</a><a href="/en/Publication/1">x</a>')
+                '<a href="https://www.mnd.gov.tw/en/news/plaact/84560">b</a><a href="/en/Publication/1">x</a>'
+                "<a class='x' href='news/plaact/84500'>c</a><a href=\"news/plaactlist/2\">next</a>")
         self.assertEqual(report_links(html), [("/en/news/plaact/84583", 84583),
-                                              ("https://www.mnd.gov.tw/en/news/plaact/84560", 84560)])
+                                              ("https://www.mnd.gov.tw/en/news/plaact/84560", 84560),
+                                              ("news/plaact/84500", 84500)])
 
 
 if __name__ == "__main__":

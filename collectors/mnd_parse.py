@@ -134,7 +134,7 @@ def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
 def report_links(list_html: str) -> list[tuple[str, int]]:
     """Report links on a list or tag page, newest first, without duplicates."""
     seen, out = set(), []
-    for m in re.finditer(r'href="([^"]*/news/plaact/(\d+))"', list_html, flags=re.I):
+    for m in re.finditer(r"""href\s*=\s*["']((?:https?://[^"']*?/|/)?(?:en/)?news/plaact/(\d+))["']""", list_html, flags=re.I):
         rid = int(m[2])
         if rid not in seen:
             seen.add(rid)

@@ -21,6 +21,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import urljoin
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -28,8 +29,8 @@ from collectors.mnd_parse import PARSER_VERSION, page_text, parse_report, report
 
 BASE = "https://www.mnd.gov.tw"
 LIST_URLS = [  # tried in order until one yields report links
-    BASE + "/en/tag/pla%20activities/{page}",
-    BASE + "/tag/pla%20activities/{page}",
+    BASE + "/en/news/plaactlist/{page}",
+    BASE + "/news/plaactlist/{page}",
 ]
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "taiwan-mnd"
 UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
@@ -90,14 +91,24 @@ def save(store: dict) -> None:
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
+def page_base(raw_html: str, page_url: str) -> str:
+    """URL that relative links on the page resolve against (honours <base href>)."""
+    m = re.search(r"""<base[^>]*href\s*=\s*["']([^"']+)["']""", raw_html, re.I)
+    return urljoin(page_url, m[1]) if m else page_url
+
+
 def list_page(page: int) -> list[tuple[str, int]]:
+    """Absolute report URLs and ids on one list page."""
     for template in LIST_URLS:
+        url = template.format(page=page)
         try:
-            links = report_links(fetch(template.format(page=page)))
+            raw = fetch(url)
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 continue
             raise
+        base = page_base(raw, url)
+        links = [(urljoin(base, href), rid) for href, rid in report_links(raw)]
         if links:
             return links
     return []
@@ -115,7 +126,7 @@ def collect(pages: int, stop_when_known: bool) -> int:
         fresh = [(href, rid) for href, rid in links if str(rid) not in reports
                  or reports[str(rid)].get("parser_version", 0) < PARSER_VERSION]
         for href, rid in fresh:
-            url = href if href.startswith("http") else BASE + href
+            url = href
             try:
                 raw = fetch(url)
             except urllib.error.URLError as e:
@@ -145,7 +156,9 @@ def probe() -> int:
         links = report_links(raw)
         hrefs = sorted(set(re.findall(r"""(?:href|data-href|data-url|action|src)\s*=\s*["']([^"']+)["']""", raw, re.I)))
         hints = sorted(set(re.findall(r"""["']([^"'\s]*(?:api|ajax|json|plaact|Publication|news)[^"'\s]*)["']""", raw, re.I)))
-        notice(f"probe {url}: {len(raw)} bytes, {len(links)} report links, first {links[:3]}")
+        base = re.findall(r"<base[^>]*>", raw, re.I)
+        pages = [h for h in hrefs if re.search(r"plaactlist|page", h, re.I)]
+        notice(f"probe {url}: {len(raw)} bytes, {len(links)} report links, first {links[:3]}, base {base}, pagination {pages[:40]}")
         notice("probe hrefs:\n" + "\n".join(hrefs[:150]))
         notice("probe hints:\n" + "\n".join(hints[:80]))
         body = re.sub(r"\s+", " ", page_text(raw))
@@ -153,7 +166,8 @@ def probe() -> int:
         notice("probe text around first 'PLA':\n" + body[max(0, i - 200):i + 1500])
         if links:
             href, rid = links[0]
-            report = fetch(href if href.startswith("http") else BASE + href)
+            href = urljoin(page_base(raw, url), href)
+            report = fetch(href)
             notice(f"probe report {rid}:\n" + page_text(report)[:2500])
             notice("probe parsed: " + json.dumps(parse_report(report, href, datetime.now(timezone.utc)), ensure_ascii=False))
             return 0

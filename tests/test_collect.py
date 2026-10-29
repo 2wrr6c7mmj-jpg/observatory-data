@@ -6,7 +6,7 @@ from unittest import mock
 
 from collectors import taiwan_mnd
 
-LIST = '<a href="/en/news/plaact/2">b</a><a href="/en/news/plaact/1">a</a>'
+LIST = '<base href="/en/"><a href="news/plaact/2">b</a><a href="/en/news/plaact/1">a</a>'
 REPORTS = {
     "/en/news/plaact/1": "<p>2026.10.28</p><p>4 sorties of PLA aircraft and 7 PLAN vessels were detected.</p>",
     "/en/news/plaact/2": "<p>2026.10.29</p><p>Download area</p>",
@@ -14,7 +14,7 @@ REPORTS = {
 
 
 def fake_fetch(url):
-    if "/tag/" in url:
+    if "plaactlist" in url:
         return LIST if url.endswith("/1") else ""
     return REPORTS[url.replace(taiwan_mnd.BASE, "")]
 
