@@ -42,11 +42,15 @@ jobs:
         env:
           MND_PAUSE_SECONDS: '1.5'
         run: python -m collectors.taiwan_mnd --pages "${{ inputs.pages || '3' }}"
+      - name: Rebuild JSO transit datasets (joins the Taiwan MND counts)
+        if: ${{ always() && !inputs.probe }}
+        run: python -m jso.build
       - name: Publish changed data
         if: ${{ always() && !inputs.probe }}
         run: |
           git add docs/data
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "データ更新: 台湾国防部 日報 ($(date -u +%Y-%m-%d))"
+            commit -q -m "データ更新: 台湾国防部 日報・統幕 ($(date -u +%Y-%m-%d))"
+          git pull -q --rebase origin main
           git push
