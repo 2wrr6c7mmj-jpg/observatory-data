@@ -1,7 +1,7 @@
 import unittest
 from datetime import date, datetime, timezone
 
-from collectors.mnd_parse import counts, parse_report, report_date, report_links
+from collectors.mnd_parse import counts, parse_report, reparse, report_date, report_links
 
 NOW = datetime(2026, 10, 30, 2, 0, tzinfo=timezone.utc)
 
@@ -78,6 +78,15 @@ class Parse(unittest.TestCase):
         page = "<p>2025.12.31</p><p>Date: 6 to 6 a.m. Tuesday to Wednesday, Dec. 30-31</p><p>3 PLA aircraft</p>"
         self.assertEqual(parse_report(page, "u", NOW)["report_date"], "2025-12-31")
 
+    def test_kept_text_reparses_offline(self):
+        page = "<nav>Menu About MND</nav>" + EN_2024 + "<p>Keywords： Regional dynamics</p><footer>Privacy</footer>"
+        r = parse_report(page, "u", NOW)
+        self.assertTrue(r["main_text"].startswith("PLA Activities 2024.05.24"))
+        self.assertNotIn("Privacy", r["main_text"])
+        again = reparse({**r, "parser_version": 0})
+        self.assertEqual({k: again[k] for k in ("report_date", "aircraft", "median_line_or_adiz", "official_ships")},
+                         {k: r[k] for k in ("report_date", "aircraft", "median_line_or_adiz", "official_ships")})
+
     def test_scripts_are_ignored(self):
         self.assertEqual(parse_report(EN_2025, "u", NOW)["aircraft"], 8)
 
@@ -106,7 +115,7 @@ class Parse(unittest.TestCase):
     def test_unreadable_page_is_kept_for_review(self):
         r = parse_report("<p>2025.01.08</p><p>Download area</p>", "u", NOW)
         self.assertFalse(r["parsed"])
-        self.assertIn("Download area", r["text_excerpt"])
+        self.assertIn("Download area", r["main_text"])
         self.assertIsNone(r["aircraft"])
 
     def test_list_links(self):

@@ -25,7 +25,7 @@ from urllib.parse import urljoin
 from datetime import datetime, timezone
 from pathlib import Path
 
-from collectors.mnd_parse import PARSER_VERSION, page_text, parse_report, report_links
+from collectors.mnd_parse import PARSER_VERSION, page_text, parse_report, reparse, report_links
 
 BASE = "https://www.mnd.gov.tw"
 LIST_URLS = [  # tried in order until one yields report links
@@ -157,6 +157,10 @@ def collect(pages: int, stop_when_known: bool) -> int:
         if not links:
             notice(f"list page {page}: no report links; stopping")
             break
+        for _, rid in links:  # a newer parser re-reads kept text without fetching again
+            r = reports.get(str(rid))
+            if r and r.get("parser_version", 0) < PARSER_VERSION and r.get("main_text"):
+                reports[str(rid)] = reparse(r)
         fresh = [(href, rid) for href, rid in links if str(rid) not in reports
                  or reports[str(rid)].get("parser_version", 0) < PARSER_VERSION]
         for href, rid in fresh:

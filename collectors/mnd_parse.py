@@ -208,11 +208,21 @@ def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
             "window_end_utc": end.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         })
     record.update(c)
-    if not ok:
-        body = re.sub(r"\s+", " ", text)
-        i = body.find("PLA Activities 20")
-        record["text_excerpt"] = body[max(i, 0):max(i, 0) + 600].strip()
+    # Keep the report's own text (without site menus) so that a later parser
+    # version can re-read every report offline instead of crawling the site again.
+    body = re.sub(r"\s+", " ", text)
+    i = body.find("PLA Activities 20")
+    j = body.find("Keywords", i if i >= 0 else 0)
+    record["main_text"] = body[max(i, 0):j if j > i >= 0 else max(i, 0) + 2000][:3000].strip()
     return record
+
+
+def reparse(record: dict) -> dict:
+    """Re-read a stored report from its kept text (no network)."""
+    if not record.get("main_text"):
+        return record
+    retrieved = datetime.strptime(record["retrieved_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    return parse_report("<p>" + html.escape(record["main_text"]) + "</p>", record["source_url"], retrieved)
 
 
 def report_links(list_html: str) -> list[tuple[str, int]]:
