@@ -1,0 +1,60 @@
+{
+ "dataset": "jcg-senkaku",
+ "title": "海上保安庁：尖閣諸島周辺海域における中国海警局に所属する船舶等の接続水域入域・領海侵入（日ごと）",
+ "source": {
+  "name": "海上保安庁",
+  "urls": [
+   "https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html"
+  ],
+  "position": "当事者（日本）の公式発表",
+  "reliability": "B",
+  "credibility": "2",
+  "rating_note": "暫定評価（アドミラルティ・コード）。日本は当事者であり、確認・計上の基準と公表方針は海上保安庁に依存する。中国側（中国海警局）は別に「巡航」として発表することがあり、日付・隻数の数え方は一致しない。独立した突き合わせは AIS・衛星観測等による。"
+ },
+ "attribution": {
+  "credit": "出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）",
+  "license": "公共データ利用規約 第1.0版（PDL1.0） https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+  "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が月ごとの PDF から数値を自動で抜き出し、日ごとの表に加工した。加工したデータは海上保安庁が作成したものではなく、誤りがあれば加工者の責任による。",
+  "note": "海上保安庁のロゴ等は使用しない。"
+ },
+ "window": "日本時間の暦日（00:00〜24:00、UTC+9）。window_start_utc / window_end_utc は UTC で表記。",
+ "times": {
+  "date": "対象日（日本時間）",
+  "as_of": "PDF に書かれた「○/○ 現在」の日付（日本時間）。この日より後の日は行を作らない",
+  "source_last_modified_utc": "PDF の HTTP Last-Modified（UTC）。公表時刻の目安であり、公表時刻そのものではない",
+  "retrieved_utc": "取得時刻（UTC）"
+ },
+ "fields": {
+  "date": "対象日（日本時間）",
+  "contiguous_zone": "接続水域内で確認された中国海警局に所属する船舶等の隻数（原文「接続水域入域」）",
+  "territorial_sea": "そのうち領海に侵入した隻数（原文「領海侵入」、接続水域入域の内数）",
+  "check": "月の合計との突き合わせ。match＝原文の月合計（日数・のべ隻数）と日ごとの値が一致、no_totals＝月合計を読み取れなかった",
+  "window_start_utc": "対象日の開始（UTC）",
+  "window_end_utc": "対象日の終了（UTC）",
+  "as_of": "PDF の「現在」の日付",
+  "source_url": "原文 PDF の URL（ページのリンクから取得し、組み立てていない）",
+  "source_last_modified_utc": "PDF の HTTP Last-Modified（UTC）",
+  "retrieved_utc": "取得時刻（UTC）",
+  "parser_version": "数値を抜き出した処理の版"
+ },
+ "missing_values": "原文の表で空欄の日は、その月の合計（日数・のべ隻数）と日ごとの値が一致した月（check=match）に限り 0（確認されず）とする。月合計を読み取れない月（no_totals）の空欄は null（不明）。「－」等の記号が書かれた欄は 0。領海侵入は内数のため、接続水域が 0 の日は 0。月合計と一致しない月は公開せず、status.json の not_published に理由を残す。",
+ "files": {
+  "daily.csv / daily.json": "日ごとの値",
+  "pdfs.json": "取得した PDF ごとの記録（URL、SHA-256、ETag、Last-Modified、取得時刻、抜き出した語と位置、解析結果）。解析を直すときは PDF を取り直さず、ここから読み直す",
+  "status.json": "最後の実行の結果（robots.txt の判定を含む）と、公開していない月とその理由"
+ },
+ "definition_changes": [
+  {
+   "date": "2012-09",
+   "change": "公表の開始（尖閣三島の取得・保有の直後）。初期の対象は中国海監・漁政等の公船（原文で要確認）"
+  },
+  {
+   "date": "2013-07",
+   "change": "中国の海上法執行機関が中国海警局に統合される。統合前後で対象の名称が変わる（原文で要確認）"
+  }
+ ],
+ "limitations": [
+  "数値は PDF の表から語の位置で自動に抜き出している。読み取れない月、月合計と合わない月は推測で埋めず status.json に残す。",
+  "当月の PDF は日々更新されるため、当月と前月（完結するまで）は毎日、変更の有無を確かめて取り直す（If-None-Match / If-Modified-Since）。過去の値が後から訂正された場合、完結した月には反映されない。"
+ ]
+}

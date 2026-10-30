@@ -18,8 +18,17 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 | データ | 内容 | ファイル |
 | --- | --- | --- |
 | `taiwan-mnd` | 台湾国防部の日報（中国軍機・中間線越え・艦艇・公務船・気球） | [daily.csv](docs/data/taiwan-mnd/daily.csv)・[daily.json](docs/data/taiwan-mnd/daily.json)・[meta.json](docs/data/taiwan-mnd/meta.json)・[status.json](docs/data/taiwan-mnd/status.json) |
+| `jcg-senkaku` | 海上保安庁：尖閣諸島周辺の中国海警局に所属する船舶等（接続水域入域・領海侵入の隻数、日ごと、2012年9月から） | [daily.csv](docs/data/jcg-senkaku/daily.csv)・[daily.json](docs/data/jcg-senkaku/daily.json)・[meta.json](docs/data/jcg-senkaku/meta.json)・[status.json](docs/data/jcg-senkaku/status.json) |
 
 各データの定義、情報源の評価、定義変更の履歴、限界は `meta.json` に書いています。
+
+`jcg-senkaku` の出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）。公共データ利用規約 第1.0版（PDL1.0）に基づき、このリポジトリが PDF から数値を抜き出して日ごとの表に加工しています。加工したデータは海上保安庁が作成したものではありません。
+
+## 取得の作法
+
+- 取得の前に robots.txt を確かめる（`collectors/polite.py`）。拒否されている、または確かめられない場合は、その回はその源を飛ばして警告を出す
+- ボット対策のチャレンジページが返ったら、回り込まずにその回を止める
+- 1件ずつ間隔をあけて取得し、User-Agent にこのリポジトリの URL を入れる。取得済みのものは取り直さない
 
 ## 記録の原則
 
@@ -36,6 +45,9 @@ python -m unittest discover -s tests -t .
 python -m collectors.taiwan_mnd            # 毎日の取得（新しいものだけ）
 python -m collectors.taiwan_mnd --pages 300  # 過去分の遡り（途中から再開できる）
 python -m collectors.taiwan_mnd --probe    # 取得先のページ構造の確認だけ
+pip install pdfplumber==0.11.10            # jcg-senkaku の PDF の読み取りに使う
+python -m collectors.jcg_senkaku           # 海上保安庁 尖閣周辺（新しい PDF と当月分だけ）
+python -m collectors.jcg_senkaku --probe /tmp/jcg  # ページと見本の PDF を取得して表示するだけ
 ```
 
-GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に動きます。過去分の遡りは、手動実行で `pages` を大きくします。
+GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に、「Collect JCG Senkaku」は毎日 12:43（日本時間）に動きます（別々の concurrency group で、互いに止め合わない）。過去分の遡りは、手動実行で `pages` を大きくします。
