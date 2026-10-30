@@ -32,7 +32,7 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 from collectors import polite
-from collectors.jcg_parse import PARSER_VERSION, check, lines, line_text, page_links, parse_words
+from collectors.jcg_parse import PARSER_VERSION, check, decode_html, lines, page_links, parse_words
 
 PAGE_URL = "https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html"
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "jcg-senkaku"
@@ -291,7 +291,7 @@ def _collect(store: dict, run: dict, today: date, max_fetch: int) -> int:
         if page.status != 200:
             raise Stop(f"{PAGE_URL}: HTTP {page.status}")
         retrieved = now_utc()
-        links = page_links(page.body.decode("utf-8", errors="replace"), PAGE_URL)
+        links = page_links(decode_html(page.body, page.headers.get("content-type", "")), PAGE_URL)
         if not links:
             raise Stop(f"{PAGE_URL}: no PDF links found (page layout changed?)")
         store["page"] = {"url": PAGE_URL, "sha256": hashlib.sha256(page.body).hexdigest(),
@@ -358,7 +358,7 @@ def probe(sample_dir: str) -> int:
     except polite.SourceBlocked as e:
         warning(f"probe page: {e}")
         return 75
-    links = page_links(page.body.decode("utf-8", errors="replace"), PAGE_URL)
+    links = page_links(decode_html(page.body, page.headers.get("content-type", "")), PAGE_URL)
     unknown = [l for l in links if not (l["year"] and l["month"])]
     keys = [f"{l['year']}-{l['month']}" for l in links]
     dup = sorted({k for k in keys if keys.count(k) > 1})
@@ -406,7 +406,10 @@ def dump(sample_dir: str, start: int, end: int) -> int:
         if not path.exists():
             continue
         words = pdf_words(path.read_bytes())
-        notice(f"layout #{i} {rec['url'].rsplit('/', 1)[-1]} ({len(words)} words)\n" + layout(words))
+        text = layout(words, limit=7600)
+        name = rec["url"].rsplit("/", 1)[-1]
+        for part in range(0, len(text), 3800):
+            notice(f"layout #{i} {name} ({len(words)} words) part {part // 3800 + 1}\n" + text[part:part + 3800])
     return 0
 
 

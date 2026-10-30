@@ -76,6 +76,24 @@ def page_links(raw_html: str, page_url: str) -> list[dict]:
     return out
 
 
+def decode_html(body: bytes, content_type: str = "") -> str:
+    """Bytes of the page as text: HTTP charset, then <meta charset>, then UTF-8, then CP932."""
+    cands = []
+    m = re.search(r"charset=([\w.-]+)", content_type or "", re.I)
+    if m:
+        cands.append(m[1])
+    m = re.search(rb"""<meta[^>]+charset\s*=\s*["']?([\w.-]+)""", body[:4096], re.I)
+    if m:
+        cands.append(m[1].decode("ascii", "replace"))
+    for enc in cands + ["utf-8", "cp932"]:
+        enc = {"shift_jis": "cp932", "sjis": "cp932", "x-sjis": "cp932"}.get(enc.lower(), enc)
+        try:
+            return body.decode(enc)
+        except (LookupError, UnicodeDecodeError):
+            continue
+    return body.decode("utf-8", errors="replace")
+
+
 def nfkc_keep(s: str) -> str:
     """NFKC without stripping (positions in the document do not matter here)."""
     return unicodedata.normalize("NFKC", s)

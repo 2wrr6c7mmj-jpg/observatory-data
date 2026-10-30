@@ -3,6 +3,9 @@ name: Collect JCG Senkaku
 # Separate from collect.yml (own concurrency group) so the two never cancel or
 # block each other; they write to different directories under docs/data.
 on:
+  # A push to this branch runs the probe only (workflow_dispatch needs the file on main).
+  push:
+    branches: ['probe/jcg-senkaku']
   schedule:
     - cron: '43 3 * * *'  # 12:43 JST, once a day
   workflow_dispatch:
@@ -30,26 +33,29 @@ jobs:
       - name: Tests
         run: python -m unittest discover -s tests -t .
       - name: Probe (page and sample PDFs)
-        if: inputs.probe
+        if: inputs.probe || github.event_name == 'push'
         run: python -m collectors.jcg_senkaku --probe "$RUNNER_TEMP/jcg"
       - name: Probe layouts 1
-        if: inputs.probe
-        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 0 --end 7
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 0 --end 5
       - name: Probe layouts 2
-        if: inputs.probe
-        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 7 --end 14
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 5 --end 10
       - name: Probe layouts 3
-        if: inputs.probe
-        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 14 --end 21
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 10 --end 15
+      - name: Probe layouts 4
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 15 --end 20
       - name: Collect
         # Data is only collected and published from main (scheduled runs).
-        if: ${{ !inputs.probe && github.ref == 'refs/heads/main' }}
+        if: ${{ !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
         timeout-minutes: 45
         env:
           JCG_PAUSE_SECONDS: '5'
         run: python -m collectors.jcg_senkaku
       - name: Publish changed data
-        if: ${{ always() && !inputs.probe && github.ref == 'refs/heads/main' }}
+        if: ${{ always() && !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
         run: |
           git add docs/data/jcg-senkaku
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi

@@ -1,6 +1,6 @@
 import unittest
 
-from collectors.jcg_parse import check, page_links, parse_words
+from collectors.jcg_parse import check, decode_html, page_links, parse_words
 from tests.jcg_fixtures import PAGE, table, word
 
 URL = "https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html"
@@ -14,6 +14,13 @@ class Page(unittest.TestCase):
                                ("data_h30_06.pdf", 2018, 6), ("data_h31_04.pdf", 2019, 4),
                                ("data_R_05.pdf", 2019, 5), ("data_R8_10.pdf", 2026, 10), ("odd.pdf", 2026, None)])
         self.assertTrue(all(l["url"].startswith("https://www.kaiho.mlit.go.jp/mission/senkaku/") for l in links))
+
+
+    def test_shift_jis_page(self):
+        body = ('<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">' + PAGE).encode("cp932")
+        links = page_links(decode_html(body, "text/html"), URL)
+        self.assertEqual((links[0]["year"], links[0]["month"]), (2012, 9))
+        self.assertEqual(decode_html("令和".encode(), "text/html; charset=UTF-8"), "令和")
 
 
 class Pdf(unittest.TestCase):
