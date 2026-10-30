@@ -193,8 +193,8 @@ fetch(base+'quay_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(
   [r.acquired_utc,r.platform,r.relative_orbit,`${r.occupied_min}〜${r.occupied_max}`,E(`${r.est_mode}（${r.est_p10}〜${r.est_p90}）`),E(`${r.est_warship_mode}（${r.est_warship_p10}〜${r.est_warship_p90}）`),`${r.sector_a_min}〜${r.sector_a_max}`+E(`／推定 ${r.est_a_mode}（${r.est_a_p10}〜${r.est_a_p90}）`),`${r.sector_b_min}〜${r.sector_b_max}`+E(`／推定 ${r.est_b_mode}（${r.est_b_p10}〜${r.est_b_p90}）`),r.segments,r.rafted,`${r.baseline_version}（${r.baseline_scenes}）`,r.credibility,SAMPLE[r.in_sample]||'',E(r.est_conflicts+(+r.est_capped?`（上限 ${r.est_capped}）`:''))].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tr.onclick=()=>qshow(r,tr);tb.appendChild(tr);if(i===0)qshow(r,tr);});
 }).catch(()=>{document.getElementById('qempty').textContent='読み込めませんでした。';});
-// Sentinel-2 natural colour (s2nc-1, display only): clear days, each next to the nearest Sentinel-1 colour / change image (within 3 days).
-const S2_PAIR_DAYS=3;
+// Sentinel-2 natural colour (s2nc-1, display only): clear days, each next to the nearest Sentinel-1 colour / change image (within 4 days).
+const S2_PAIR_DAYS=4;
 const txt=u=>fetch(base+u,{cache:'no-cache'}).then(r=>r.ok?r.text():'').catch(()=>'');
 const pct=x=>x===''||x===undefined?'—':(100*+x).toFixed(1)+'%';
 Promise.all([txt('s2_scenes.csv'),txt('ship_counts.csv'),txt('quay_counts.csv')]).then(([a,b,c])=>{
@@ -205,7 +205,7 @@ Promise.all([txt('s2_scenes.csv'),txt('ship_counts.csv'),txt('quay_counts.csv')]
  const dh=(x,y)=>{const h=(Date.parse(x)-Date.parse(y))/36e5;return (h>=0?'+':'−')+Math.abs(h).toFixed(0)+' 時間';};
  document.getElementById('s2empty').hidden=true;document.getElementById('s2tbl').hidden=false;const tb=document.querySelector('#s2tbl tbody');
  s2rows.forEach((r,i)=>{const p=near(s1,r.acquired_utc,r.mask_version),q=near(qc,r.acquired_utc,r.mask_version);const tr=document.createElement('tr');
-  [r.acquired_utc,r.platform,pct(r.cloud),pct(r.cloud_a),p?`${p.acquired_utc}（RO ${p.relative_orbit}）`:'3 日以内になし',p?dh(p.acquired_utc,r.acquired_utc):''].forEach(v=>{const td=document.createElement('td');td.textContent=v===''?'—':v;tr.appendChild(td);});
+  [r.acquired_utc,r.platform,pct(r.cloud),pct(r.cloud_a),p?`${p.acquired_utc}（RO ${p.relative_orbit}）`:`${S2_PAIR_DAYS} 日以内になし`,p?dh(p.acquired_utc,r.acquired_utc):''].forEach(v=>{const td=document.createElement('td');td.textContent=v===''?'—':v;tr.appendChild(td);});
   tr.onclick=()=>{document.querySelectorAll('#s2tbl tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');
    const im=document.getElementById('s2img');im.src=base+r.image;im.hidden=false;
    document.getElementById('s2caption').textContent=`Sentinel-2 ${r.acquired_utc}（${r.platform}、雲 ${pct(r.cloud)}、区画 A ${pct(r.cloud_a)}）`;

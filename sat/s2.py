@@ -178,11 +178,11 @@ def render(rgb: np.ndarray, label: str, credit_text: str) -> tuple[bytes, bytes]
     w, h = chip.size
     font = _font(10)
     lh = 14
-    strip = Image.new("RGB", (max(w, LEGEND_MIN_WIDTH), 6 + lh * 3 + 4), BG)
+    lines = label.split("\n") + [f"R B4  G B3  B B2  reflectance 0-{REFL_MAX:g}, gamma 1/{GAMMA:g}  ({S2_VERSION})", credit_text]
+    strip = Image.new("RGB", (max(w, LEGEND_MIN_WIDTH), 6 + lh * len(lines) + 4), BG)
     d = ImageDraw.Draw(strip)
-    d.text((4, 6), label, fill=FG, font=font)
-    d.text((4, 6 + lh), f"R B4  G B3  B B2  reflectance 0-{REFL_MAX:g}, gamma 1/{GAMMA:g}  ({S2_VERSION})", fill=FG, font=font)
-    d.text((4, 6 + 2 * lh), credit_text, fill=FG, font=font)
+    for i, t in enumerate(lines):
+        d.text((4, 6 + i * lh), t, fill=FG, font=font)
     full = Image.new("RGB", (strip.width, h + strip.height), BG)
     full.paste(chip, (0, 0))
     full.paste(strip, (0, h))
@@ -303,7 +303,8 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
                         row["result"] = "clear"
                         ip, tp = image_paths(site, d["acquired_utc"])
                         plat = (d["platform"] or "S2").replace("sentinel-", "S").upper()
-                        label = f"{site['id']} {tag}  {d['acquired_utc']}  {plat} L2A  cloud {_pct(c['cloud'])} (A {_pct(c['cloud_a'])})"
+                        label = (f"{site['id']} v{int(site.get('mask_version', 1))}  {d['acquired_utc']}  {plat} L2A\n"
+                                 f"cloud+shadow {_pct(c['cloud'])} (sector A {_pct(c['cloud_a'])})")
                         full, thumb = render(natural_color(refl, scl), label, credit(d["acquired_utc"][:4]))
                         for rel, data in ((ip, full), (tp, thumb)):
                             (out / rel).parent.mkdir(parents=True, exist_ok=True)
