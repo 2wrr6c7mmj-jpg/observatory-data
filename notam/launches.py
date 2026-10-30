@@ -145,6 +145,49 @@ def events(notices: list[dict]) -> list[dict]:
     return out
 
 
+def parse_ll2_time(s: str | None) -> datetime | None:
+    if not s:
+        return None
+    return datetime.fromisoformat(s.replace("Z", "+00:00")).astimezone(timezone.utc)
+
+
+def match_launches(ev: list[dict], ll2: list[dict], slack_hours: float = 6) -> list[dict]:
+    """Pair NOTAM-based events with launches recorded in Launch Library 2.
+
+    A recorded launch matches an event when its time (NET) falls inside the
+    event's window (+-slack) and its pad lies within 300 km of the inferred
+    site, or, for events without an aligned site, within 2,500 km of the first
+    hazard area. Returns the East Asian recorded launches, each with the
+    matched event index (or None: no hazard notice was seen for it).
+    """
+    out = []
+    for r in ll2:
+        t = parse_ll2_time(r.get("net_utc"))
+        if t is None or r.get("lat") is None or not in_east_asia((r["lat"], r["lon"])):
+            continue
+        pad = (r["lat"], r["lon"])
+        hit = None
+        for i, e in enumerate(ev):
+            start = datetime.strptime(e["window_start_utc"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc)
+            end = datetime.strptime(e["window_end_utc"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc)
+            if not (start - timedelta(hours=slack_hours) <= t <= end + timedelta(hours=slack_hours)):
+                continue
+            if e.get("method") == "aligned":
+                near = distance_km(pad, SITES[e["site"]][:2]) <= 300
+            else:
+                near = bool(e["areas"]) and distance_km(pad, tuple(e["areas"][0])) <= 2500
+            if near:
+                hit = i
+                break
+        out.append({**{k: r.get(k) for k in ("ll2_id", "name", "status", "net_utc", "rocket", "provider", "orbit",
+                                             "mission_type", "pad", "location", "country", "lat", "lon", "url")},
+                    "event_index": hit})
+        if hit is not None:
+            ev[hit].setdefault("recorded_launches", []).append(
+                {k: r.get(k) for k in ("ll2_id", "name", "status", "net_utc", "rocket", "orbit", "pad")})
+    return sorted(out, key=lambda x: x["net_utc"] or "")
+
+
 def merge(history: dict, extract: dict) -> dict:
     seen = history.setdefault("notices", {})
     now = extract["retrieved_utc"]
@@ -164,9 +207,12 @@ def main(path: str) -> int:
     history = merge(history, extract)
     hist_path.write_text(json.dumps(history, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
     ev = events(list(history["notices"].values()))
+    ll2_path = OUT / "ll2.json"
+    ll2 = list(json.loads(ll2_path.read_text(encoding="utf-8")).get("launches", {}).values()) if ll2_path.exists() else []
+    recorded = match_launches(ev, ll2)
     (OUT / "events.json").write_text(json.dumps({
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "sites": {k: list(v) for k, v in SITES.items()}, "events": ev,
+        "sites": {k: list(v) for k, v in SITES.items()}, "events": ev, "recorded_launches": recorded,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"::notice::launch notices stored {len(history['notices'])}, events {len(ev)} "
           f"({sum(1 for e in ev if e['method'] == 'aligned')} aligned)")

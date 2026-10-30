@@ -47,6 +47,7 @@ jobs:
       - name: Launch-related notices from NOTAM Watch (static files; no Worker requests)
         if: ${{ always() && !inputs.probe }}
         run: |
+          python -m collectors.ll2
           node notam/extract.mjs /tmp/launch-extract.json
           python -m notam.launches /tmp/launch-extract.json
       - name: Rebuild JSO transit datasets (joins the Taiwan MND counts)

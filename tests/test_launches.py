@@ -46,6 +46,17 @@ class Inference(unittest.TestCase):
         ev = L.events([notice("aviation:1", p), notice("maritime:1", (p[0] + 0.05, p[1]))])
         self.assertEqual((len(ev[0]["areas"]), len(ev[0]["notices"])), (1, 2))
 
+    def test_recorded_launch_matches_event_by_time_and_site(self):
+        lat, lon = L.SITES["酒泉"][:2]
+        ev = L.events([notice(f"a{i}", dest(lat, lon, 150, km)) for i, km in enumerate((500, 1300))])
+        ll2 = [{"ll2_id": "x", "name": "Long March 2D | Yaogan", "status": "Success", "net_utc": "2026-11-01T02:10:00Z",
+                "lat": 40.96, "lon": 100.30, "rocket": "Long March 2D", "orbit": "SSO", "pad": "LC-43/94"},
+               {"ll2_id": "y", "name": "elsewhere", "net_utc": "2026-11-01T02:10:00Z", "lat": 28.25, "lon": 102.03},
+               {"ll2_id": "z", "name": "Falcon 9", "net_utc": "2026-11-01T02:10:00Z", "lat": 28.5, "lon": -80.6}]
+        rec = L.match_launches(ev, ll2)
+        self.assertEqual([(r["ll2_id"], r["event_index"]) for r in rec], [("x", 0), ("y", None)])  # z is outside East Asia
+        self.assertEqual(ev[0]["recorded_launches"][0]["name"], "Long March 2D | Yaogan")
+
     def test_history_keeps_first_seen(self):
         h = L.merge({}, {"retrieved_utc": "2026-11-01T00:00:00Z", "notices": [{"key": "k"}]})
         h = L.merge(h, {"retrieved_utc": "2026-11-02T00:00:00Z", "notices": [{"key": "k"}]})
