@@ -1,0 +1,25 @@
+name: Robots probe
+# 収集源の候補の robots.txt を 1 回ずつ読み、収集器と同じ User-Agent で主要なパスを取得してよいかを注釈に出す（probe のみ）。
+# 本文は取らない（例外：data.gov.tw のデータセットのページ 1 件だけ、robots で許可されたときに 1 回）。データは commit しない。
+on:
+  push:
+    branches: ['probe/robots-check']
+permissions:
+  contents: read
+concurrency:
+  # 本番のワークフロー（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とは別の group
+  group: probe-robots-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests (standard library only)
+        run: python -m unittest tests.test_robots_probe tests.test_polite -v
+      - name: Probe robots.txt (annotations)
+        run: python -m collectors.robots_probe
