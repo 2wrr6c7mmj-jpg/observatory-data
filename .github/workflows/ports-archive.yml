@@ -4,11 +4,11 @@ name: PLAN ports archive probe
 # 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別の concurrency group。
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
 # PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読み、
-# まだ usage に出ていない外洋の再取得の予定 約 1,800 PU を --reserve で差し引く）。
+# 外洋の 10 月上限 4,600 PU から、外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
-    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*']
+    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*', 'probe/ports-extra-*']
 permissions:
   contents: write
 concurrency:
@@ -16,8 +16,9 @@ concurrency:
   cancel-in-progress: false
 env:
   # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
-  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 1400 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || '' }}
-  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || '' }}
+  # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、司令部の優先順、別枠 300 PU
+  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 300 --only SWS MIS SUB FCR WDY' || '' }}
+  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
     # probe/ports-locate-*: OSM の軍・造船所の地物と S2 の広域の概観（1 地域 1〜4 PU）だけ。範囲を置くため
@@ -63,7 +64,7 @@ jobs:
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
   plan:
-    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
+    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-') || startsWith(github.ref_name, 'probe/ports-extra-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -115,7 +116,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --cap 4000 \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --reserve 1800 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json

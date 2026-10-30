@@ -634,6 +634,8 @@ def main(argv=None) -> int:
     p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
     p.add_argument("--ports-usage", type=Path, nargs="*", default=[],
                    help="usage CSVs of earlier runs of this archive (docs/data/sat/ports/*/usage.csv)")
+    p.add_argument("--ocean-cap", type=float,
+                   help="ocean's monthly cap: reserve = cap - the ocean usage already in --usage files named other-*")
     p.add_argument("--reserve", type=float, default=0.0,
                    help="PU announced by other jobs but not in their usage CSV yet (counted in the 9,000 PU guard)")
     p.add_argument("--out-root", type=Path, default=OUT_DIR, help="earlier results (only new work is planned)")
@@ -693,6 +695,9 @@ def main(argv=None) -> int:
     if args.cmd == "plan":
         month = now.strftime("%Y-%m")
         other_pu, other_req = month_usage(args.usage, month)
+        if args.ocean_cap is not None:
+            ocean_pu, _r = month_usage([u for u in args.usage if u.name.startswith("other-")], month)
+            args.reserve = max(args.reserve, round(args.ocean_cap - ocean_pu, 1))
         done_pu, done_req = month_usage(args.ports_usage, month)
         cap = min(args.cap - done_pu, GLOBAL_CAP - GLOBAL_MARGIN - other_pu - args.reserve - done_pu)
         if args.max_pu is not None:
