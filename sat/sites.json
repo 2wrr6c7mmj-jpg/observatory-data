@@ -208,13 +208,13 @@
     109.665,
     18.185,
     109.715,
-    18.23
+    18.242
    ],
-   "center_lat": 18.21,
+   "center_lat": 18.2135,
    "center_lon": 109.688,
    "pixel_m": 10,
-   "mask_version": 1,
-   "quay_lines_version": 1,
+   "mask_version": 2,
+   "quay_lines_version": 2,
    "sectors": [
     {
      "id": "A1",
