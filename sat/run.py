@@ -1,0 +1,399 @@
+"""Daily run: find new Sentinel-1 scenes per site, count ship candidates, publish.
+
+    python -m sat.run                      # normal run, writes docs/data/sat/
+    python -m sat.run --probe DIR          # writes only under DIR (no repo data change)
+
+Each acquisition (one pass over a site) is processed once; processed
+acquisitions are skipped on later runs. Processing units (PU) and requests
+are recorded in usage.csv and a monthly cap stops the run before the free
+tier is at risk.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import io
+import json
+import math
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+import numpy as np
+
+from . import cdse, png, render
+from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
+from .grid import Grid
+from .osm_mask import MASK_DIR, build_mask, fetch_osm, load_mask, save_mask
+
+ROOT = Path(__file__).resolve().parent.parent
+SITES_FILE = Path(__file__).resolve().parent / "sites.json"
+OUT_DIR = ROOT / "docs" / "data" / "sat"
+PROCESSING_VERSION = "sat-1"
+MASK_VERSION = 1
+FIRST_LOOKBACK_DAYS = 30   # first run for a site (free tier: keep the backfill short)
+LOOKBACK_DAYS = 6          # later runs: the last few days
+MAX_LOOKBACK_DAYS = 30
+MAX_SCENES_PER_RUN = 12
+MONTHLY_PU_CAP = 1000.0    # own cap for this workflow, well inside the CDSE free tier
+MONTHLY_REQUEST_CAP = 2000
+MIN_COVERAGE = 0.5         # share of the site's water that must have data
+SOURCE_RELIABILITY = "A"
+CANDIDATE_CREDIBILITY = "3"
+
+CSV_FIELDS = [
+    "site_id", "acquired_utc", "retrieved_utc", "platform", "orbit_direction", "relative_orbit",
+    "incidence_deg", "harbour_candidates", "quay_candidates", "confirmed",
+    "mask_version", "detector_version", "processing_version",
+    "coverage", "len_lt50", "len_50_100", "len_100_200", "len_ge200", "processing_units", "image",
+]
+USAGE_FIELDS = ["run_utc", "requests", "processing_units", "pu_source", "scenes"]
+
+
+def load_sites(path: Path = SITES_FILE) -> list[dict]:
+    return json.loads(path.read_text(encoding="utf-8"))["sites"]
+
+
+def read_csv(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=fields, lineterminator="\n", extrasaction="ignore")
+    w.writeheader()
+    for r in rows:
+        w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in fields})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(buf.getvalue(), encoding="utf-8")
+
+
+def month_usage(usage: list[dict], month: str) -> tuple[float, int]:
+    pu = sum(float(u["processing_units"] or 0) for u in usage if u["run_utc"].startswith(month))
+    req = sum(int(u["requests"] or 0) for u in usage if u["run_utc"].startswith(month))
+    return pu, req
+
+
+def decode_chip(data: bytes):
+    arr = png.decode(data).astype(np.float64)
+    if arr.ndim != 3 or arr.shape[2] not in (3, 4):
+        raise cdse.CDSEError(f"想定外の画像（形 {arr.shape}）")
+    dm = arr[..., -1] > 0
+    def db(ch):
+        return np.where(dm & (ch > 0), ch / cdse.DB_SCALE - cdse.DB_OFFSET, np.nan)
+    vv, vh = db(arr[..., 0]), db(arr[..., 1])
+    lia = np.where(dm, arr[..., 2] / cdse.LIA_SCALE, np.nan) if arr.shape[2] == 4 else None
+    return vv, vh, lia
+
+
+def stamp(acquired_utc: str) -> str:
+    return acquired_utc.replace(":", "-")
+
+
+class Store:
+    """The published files under ``out``."""
+
+    def __init__(self, out: Path):
+        self.out = out
+        self.rows = read_csv(out / "ship_counts.csv")
+        self.usage = read_csv(out / "usage.csv")
+        st = out / "status.json"
+        self.status = json.loads(st.read_text(encoding="utf-8")) if st.exists() else {"scenes": []}
+        self.new_features: dict[str, list[dict]] = {}
+
+    def done(self, site_id: str) -> set[str]:
+        keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id}
+        keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
+                 if s["site_id"] == site_id and s.get("result") != "error"}
+        return keys
+
+    def has_rows(self, site_id: str) -> bool:
+        return any(r["site_id"] == site_id for r in self.rows)
+
+    def note_scene(self, entry: dict) -> None:
+        sc = [s for s in self.status.get("scenes", [])
+              if not (s["site_id"] == entry["site_id"] and s["acquired_utc"] == entry["acquired_utc"])]
+        sc.append(entry)
+        sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"]))
+        self.status["scenes"] = sc
+
+    def add(self, row: dict, features: list[dict], image: bytes) -> None:
+        self.rows = [r for r in self.rows if not (r["site_id"] == row["site_id"] and r["acquired_utc"] == row["acquired_utc"])]
+        self.rows.append(row)
+        self.rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"]))
+        p = self.out / row["image"]
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(image)
+        self.new_features.setdefault(row["acquired_utc"][:7], []).append((row, features))
+
+    def save(self, run: dict) -> None:
+        self.out.mkdir(parents=True, exist_ok=True)
+        write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
+        for month, items in self.new_features.items():
+            p = self.out / "detections" / f"{month}.geojson"
+            fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
+            keys = {(r["site_id"], r["acquired_utc"]) for r, _ in items}
+            feats = [f for f in fc["features"] if (f["properties"]["site_id"], f["properties"]["acquired_utc"]) not in keys]
+            for _r, fs in items:
+                feats.extend(fs)
+            feats.sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"]["site_id"], f["properties"]["n"]))
+            fc["features"] = feats
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        if run.get("requests"):
+            self.usage.append({k: run.get(k) for k in USAGE_FIELDS})
+        write_csv(self.out / "usage.csv", self.usage, USAGE_FIELDS)
+        self.status["last_run"] = run
+        self.status["updated_utc"] = run["run_utc"]
+        (self.out / "status.json").write_text(json.dumps(self.status, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+def attribution(rows: list[dict]) -> str:
+    years = sorted({r["acquired_utc"][:4] for r in rows})
+    if not years:
+        years = [str(datetime.now(timezone.utc).year)]
+    span = years[0] if len(years) == 1 else f"{years[0]}-{years[-1]}"
+    return f"Contains modified Copernicus Sentinel data {span}"
+
+
+def build_meta(rows: list[dict]) -> dict:
+    return {
+        "dataset": "sat",
+        "title": "Sentinel-1 による港内の艦船候補数（試行：湛江 1 地点）",
+        "status": "試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）",
+        "source": {
+            "name": "Copernicus Sentinel-1 IW GRD（Copernicus Data Space Ecosystem, Sentinel Hub Process API）",
+            "position": "欧州連合 Copernicus 計画の公式データ",
+            "reliability": SOURCE_RELIABILITY,
+            "credibility_of_candidates": CANDIDATE_CREDIBILITY,
+            "rating_note": "情報源は A（Copernicus 公式）。自動検出はすべて「候補」で、確度は 3（未確認）とする。",
+        },
+        "attribution": {
+            "credit": attribution(rows),
+            "land_mask": "陸マスク：(c) OpenStreetMap contributors, ODbL 1.0",
+            "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。",
+        },
+        "files": {
+            "ship_counts.csv": "1 行＝1 撮影×1 地点",
+            "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
+            "images/<地点>/<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物",
+            "status.json": "処理したシーンと結果、最後の実行",
+            "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）",
+            "CHANGES.md": "定義変更の記録",
+        },
+        "columns": {
+            "site_id": "地点 ID",
+            "acquired_utc": "撮影時刻（UTC、同じ通過の最初のスライス）",
+            "retrieved_utc": "取得時刻（UTC）",
+            "platform": "衛星",
+            "orbit_direction": "軌道の向き（ascending / descending）",
+            "relative_orbit": "相対軌道（不明は空）",
+            "incidence_deg": "入射角（地点の水域の中央値、度）",
+            "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数",
+            "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数",
+            "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
+            "mask_version": "陸マスクの版",
+            "detector_version": "検出設定の版",
+            "processing_version": "処理の版",
+            "coverage": "地点の水域のうちデータがあった割合",
+            "len_lt50 / len_50_100 / len_100_200 / len_ge200": "候補（両区域）の長さの区分ごとの数（〜50 / 50〜100 / 100〜200 / 200 m〜）",
+            "processing_units": "その撮影の取得に使った処理単位（PU）",
+            "image": "切り出し画像",
+        },
+        "detector": {"version": DETECTOR_VERSION, **DETECT_DEFAULTS,
+                     "length_classes_m": [[n, lo, None if hi == math.inf else hi] for n, lo, hi in LENGTH_CLASSES]},
+        "can_say": "目標の有無・数・位置・長さの目安（±20〜30 m）",
+        "cannot_say": "艦種・国籍・所属。民間船・作業船・ブイ・養殖施設なども候補に入る",
+        "limits": [
+            "「候補数」「確認数」であり在泊艦数ではない",
+            "岸壁に横付けされた艦は陸と区別しにくく数え落とす前提（岸壁帯は別に数える）",
+            "画素 10 m・実分解能約 20 m。接して並ぶ艦は 1 つにまとまり、大型艦は分かれることがある",
+            "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
+            "固定物（ブイ・係留施設等）のマスクはまだ無く、固定物も候補に数える",
+            "撮影は地点ごとに数日おき。軌道の向き・入射角で見え方が変わるため、比較は同じ相対軌道どうしで行う",
+            "地点の範囲は概略（数 km ずれの可能性）。確定するまで公開画面の地図には出さない",
+        ],
+    }
+
+
+def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: str) -> list[dict]:
+    feats = []
+    for i, d in enumerate(sorted(dets, key=lambda d: (d["row"], d["col"]))):
+        lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
+        feats.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [round(float(lon), 6), round(float(lat), 6)]},
+            "properties": {
+                "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "n": i + 1,
+                "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
+                "relative_orbit": acq["relative_orbit"],
+                "zone": d["zone"], "length_m": d["length_m"], "width_m": d["width_m"],
+                "length_class": d["length_class"], "pixels": d["pixels"],
+                "peak_vv_db": d["peak_vv_db"], "contrast_vv_db": d["contrast_vv_db"], "vh_ratio_db": d["vh_ratio_db"],
+                "status": "candidate", "reliability": SOURCE_RELIABILITY, "credibility": CANDIDATE_CREDIBILITY,
+                "mask_version": f"{site['id']}-land-v{MASK_VERSION}", "detector_version": DETECTOR_VERSION,
+                "image": image,
+            },
+        })
+    return feats
+
+
+def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
+                 budget_left: float, max_scenes: int, log=print, probe: dict | None = None) -> dict:
+    grid = Grid.for_site(site)
+    if days is None:
+        days = LOOKBACK_DAYS if store.has_rows(site["id"]) else FIRST_LOOKBACK_DAYS
+    days = min(days, MAX_LOOKBACK_DAYS)
+    feats = client.catalog(grid.bbox, now - timedelta(days=days), now)
+    if probe is not None and feats:
+        probe["catalog_property_keys"] = sorted(feats[0].get("properties", {}).keys())
+    acqs = cdse.acquisitions(feats)
+    done = store.done(site["id"])
+    new = [a for a in acqs if a["acquired_utc"] not in done]
+    log(f"{site['id']}: カタログ {len(feats)} 件 → 撮影 {len(acqs)} 回（過去 {days} 日）、新着 {len(new)}")
+    summary = {"site_id": site["id"], "lookback_days": days, "catalog_items": len(feats),
+               "acquisitions": len(acqs), "new": len(new), "counted": 0, "skipped": 0, "errors": 0}
+    land = mask > 0
+    water_px = int((~land).sum())
+    with_lia = True
+    for acq in new[:max_scenes]:
+        est = cdse.estimate_pu(grid.width, grid.height, 3)
+        if budget_left < est:
+            log(f"{site['id']}: 今月の処理単位の上限に近いため残りを次回に回す")
+            summary["deferred_budget"] = True
+            break
+        entry = {"site_id": site["id"], "acquired_utc": acq["acquired_utc"], "platform": acq["platform"],
+                 "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
+                 "catalog_ids": acq["ids"]}
+        retrieved = cdse.iso(datetime.now(timezone.utc))
+        try:
+            try:
+                data, pu = client.process(grid.bbox, grid.width, grid.height, acq["t_from"], acq["t_to"], with_lia)
+            except cdse.CredentialError:
+                raise
+            except cdse.CDSEError as e:
+                if with_lia and "localIncidenceAngle" in str(e):
+                    log("localIncidenceAngle が使えないため入射角なしで取り直す")
+                    with_lia = False
+                    data, pu = client.process(grid.bbox, grid.width, grid.height, acq["t_from"], acq["t_to"], False)
+                else:
+                    raise
+            budget_left -= pu
+            vv, vh, lia = decode_chip(data)
+        except cdse.CredentialError:
+            raise
+        except Exception as e:  # one bad scene does not stop the run; it is retried next time
+            entry.update(result="error", error=str(e)[:300], retrieved_utc=retrieved)
+            store.note_scene(entry)
+            summary["errors"] += 1
+            log(f"{site['id']} {acq['acquired_utc']}: 失敗 {str(e)[:200]}")
+            continue
+        valid_water = np.isfinite(vv) & ~land
+        coverage = valid_water.sum() / water_px if water_px else 0.0
+        entry.update(retrieved_utc=retrieved, processing_units=pu, coverage=round(float(coverage), 3))
+        if coverage < MIN_COVERAGE:
+            entry["result"] = "skipped_low_coverage"
+            store.note_scene(entry)
+            summary["skipped"] += 1
+            log(f"{site['id']} {acq['acquired_utc']}: 水域の {coverage:.0%} しか写っていないため数えない")
+            continue
+        dets, info = detect(vv, vh, land, grid.pixel_m)
+        image = f"images/{site['id']}/{stamp(acq['acquired_utc'])}.png"
+        inc = None
+        if lia is not None and np.isfinite(lia[valid_water]).any():
+            inc = round(float(np.nanmedian(lia[valid_water])), 2)
+        nh = sum(d["zone"] == "harbour" for d in dets)
+        nq = sum(d["zone"] == "quay" for d in dets)
+        row = {
+            "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
+            "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
+            "relative_orbit": acq["relative_orbit"], "incidence_deg": inc,
+            "harbour_candidates": nh, "quay_candidates": nq, "confirmed": "",
+            "mask_version": f"{site['id']}-land-v{MASK_VERSION}", "detector_version": DETECTOR_VERSION,
+            "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
+            "processing_units": pu, "image": image,
+        }
+        for name, _lo, _hi in LENGTH_CLASSES:
+            row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
+        store.add(row, chip_features(site, grid, acq, dets, image), render.quicklook(vv, mask, dets))
+        entry.update(result="counted", detector_info=info)
+        store.note_scene(entry)
+        summary["counted"] += 1
+        log(f"{site['id']} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
+            f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}（{pu} PU、水域の {coverage:.0%}）")
+    if len(new) > max_scenes:
+        summary["deferred"] = len(new) - max_scenes
+    summary["budget_left_pu"] = round(budget_left, 2)
+    return summary
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description="Sentinel-1 harbour ship-candidate counts (trial)")
+    ap.add_argument("--out", type=Path, default=OUT_DIR)
+    ap.add_argument("--mask-dir", type=Path, default=MASK_DIR)
+    ap.add_argument("--probe", type=Path, help="write everything under this directory only; build missing masks from OSM")
+    ap.add_argument("--days", type=int, help=f"look back this many days (max {MAX_LOOKBACK_DAYS})")
+    ap.add_argument("--max-scenes", type=int, default=MAX_SCENES_PER_RUN)
+    args = ap.parse_args(argv)
+    now = datetime.now(timezone.utc)
+    probe = None
+    if args.probe:
+        args.out = args.probe / "out"
+        mask_dir = args.probe / "masks"
+        probe = {}
+    else:
+        mask_dir = args.mask_dir
+    store = Store(args.out)
+    month = now.strftime("%Y-%m")
+    used_pu, used_req = month_usage(store.usage, month)
+    budget = MONTHLY_PU_CAP - used_pu
+    run = {"run_utc": cdse.iso(now), "sites": []}
+    if used_req >= MONTHLY_REQUEST_CAP:
+        print(f"今月のリクエスト数が上限（{MONTHLY_REQUEST_CAP}）に達したため取得しない", file=sys.stderr)
+        budget = 0
+    client = cdse.Client()
+    rc = 0
+    try:
+        for site in load_sites():
+            if not site.get("enabled"):
+                continue
+            try:
+                mask, mmeta = load_mask(site["id"], MASK_VERSION, mask_dir)
+            except FileNotFoundError:
+                if probe is None:
+                    raise
+                grid = Grid.for_site(site)
+                osm = fetch_osm(grid)
+                mask, info = build_mask(grid, osm)
+                mmeta = save_mask(site, grid, mask, info, osm, MASK_VERSION, mask_dir)
+                print("陸マスクを OSM から作成:", json.dumps({k: mmeta[k] for k in mmeta if k != "query"}, ensure_ascii=False))
+            if budget <= 0:
+                run["sites"].append({"site_id": site["id"], "deferred_budget": True})
+                continue
+            s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe)
+            budget = s["budget_left_pu"]
+            run["sites"].append(s)
+    except cdse.CredentialError as e:
+        print(f"エラー: {e}", file=sys.stderr)
+        run["error"] = str(e)
+        rc = 2
+    run.update(requests=client.requests, processing_units=round(client.processing_units, 3),
+               pu_source="header" if client.pu_reported else "estimate",
+               scenes=sum(s.get("counted", 0) + s.get("skipped", 0) for s in run["sites"]),
+               month_pu_before=round(used_pu, 3), month_pu_cap=MONTHLY_PU_CAP)
+    store.save(run)
+    if probe is not None:
+        probe.update(run)
+        probe["last_process_header_names"] = sorted(getattr(client, "last_headers", []))
+        print(json.dumps(probe, ensure_ascii=False, indent=1))
+    else:
+        print(json.dumps(run, ensure_ascii=False))
+    return rc
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

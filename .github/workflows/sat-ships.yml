@@ -1,0 +1,74 @@
+name: Sentinel-1 ship candidates
+# Sentinel-1 港内の艦船候補数（試行：湛江）。CDSE Sentinel Hub Process API.
+# Own concurrency group; writes only docs/data/sat. Cron avoids 01:23 (collect)
+# and 03:43 (jcg-senkaku).
+on:
+  # A push to this branch runs the probe only (workflow_dispatch needs the file on main).
+  push:
+    branches: ['probe/sat-ships']
+  schedule:
+    - cron: '17 5 * * *'  # 14:17 JST, once a day
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: 'Probe only: fetch and count into a temporary directory (no data change), upload as artifact'
+        type: boolean
+        default: true
+      days:
+        description: 'Look back this many days (empty = automatic, max 30)'
+        type: string
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: collect-sat-ships
+  cancel-in-progress: false
+jobs:
+  sat:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Probe (temporary directory only)
+        if: inputs.probe || github.event_name == 'push'
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+          DAYS: ${{ inputs.days || '30' }}
+        run: python -m sat.run --probe "$RUNNER_TEMP/sat" --days "$DAYS"
+      - name: Upload probe output
+        if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sat-probe
+          path: ${{ runner.temp }}/sat
+          retention-days: 5
+          if-no-files-found: warn
+      - name: Count
+        # Data is only collected and published from main (scheduled or manual non-probe runs).
+        if: ${{ !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+          DAYS: ${{ inputs.days }}
+        run: python -m sat.run ${DAYS:+--days "$DAYS"}
+      - name: Publish changed data
+        if: ${{ always() && !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          git add docs/data/sat
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: Sentinel-1 港内候補 ($(date -u +%Y-%m-%d))"
+          for i in 1 2 3 4; do
+            git pull -q --rebase && git push && exit 0
+            sleep 20
+          done
+          exit 1

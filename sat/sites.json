@@ -1,0 +1,15 @@
+{
+ "sites": [
+  {
+   "id": "ZJG",
+   "name": "湛江",
+   "center_lat": 21.20,
+   "center_lon": 110.41,
+   "size_m": 8000,
+   "pixel_m": 10,
+   "enabled": true,
+   "provisional": true,
+   "note": "概略の中心（数 km ずれの可能性）。最初の画像で港の形を確かめるまで、公開画面の地図には出さない（試行ページのみ）。"
+  }
+ ]
+}
