@@ -196,10 +196,38 @@ def kappa(dt_h: float | None) -> float:
     return KAPPA_FAR
 
 
-def place_of(sector, kind) -> str:
-    if sector == "A":
+def place_of(sector, kind, role: str | None = None) -> str:
+    """Place of a stretch = (role of its sector, kind of its line). The keys keep their old names so that
+    Zhanjiang's files stay the same: A_pier = a pier of a naval sector, A_shore = the coastline of a naval
+    sector, B = a sector of any other role. Without ``role`` (Zhanjiang): sector A is naval, the rest other."""
+    if role is None:
+        role = "naval" if sector == "A" else "other"
+    if role == "naval":
         return "A_pier" if kind == "pier" else "A_shore"
     return "B"
+
+
+CALIB_DIR = Path(__file__).with_name("calib")
+
+
+def calib_source(site_id: str) -> str:
+    """Which est-2 calibration a site uses: "self" (its own), "ZJG" (Zhanjiang's, borrowed: the site is
+    not calibrated) or "placeholder". Read order (design §1.4): sat/calib/<site>-est2.json -> Zhanjiang
+    (sat/quay_est2_calib.json) -> placeholders. A site's own file is used from PR-2 on; in PR-1 no site
+    other than Zhanjiang has one, and every other site uses Zhanjiang's values."""
+    if site_id == "ZJG":
+        return "self" if _P else "placeholder"
+    if (CALIB_DIR / f"{site_id}-est2.json").exists():
+        return "self_pending"   # a file exists but per-site parameters are PR-2: still Zhanjiang's values
+    return "ZJG" if _P else "placeholder"
+
+
+CALIB_SOURCE_NOTE = {
+    "self": "この地点の較正",
+    "ZJG": "湛江の較正を流用（この港では未較正）",
+    "self_pending": "この地点の較正ファイルはあるが、地点ごとの値の読み込みは PR-2。湛江の較正を流用（この港では未較正）",
+    "placeholder": "仮置き・較正前",
+}
 
 
 def toward_mu(incidence: float | None) -> tuple:
@@ -324,14 +352,14 @@ def colour_lr(cls: str) -> float:
     return float(S2_LR.get(cls, 1.0))
 
 
-def load_colours(out: Path, site_id: str) -> dict[str, list[tuple[str, str]]]:
+def load_colours(out: Path, site_id: str, freeze_utc: str | None = None) -> dict[str, list[tuple[str, str]]]:
     """{section_id: [(S2 time, colour class)]} from the S2 labels: the hull colour only (status ok).
     A row checked by eye (verified 1) uses the owner's colour when the calibration is loaded
     (blank: the owner saw no colour to judge, LR 1); a row the owner could not judge (verified 0)
     keeps the automatic class."""
     out_: dict = {}
     for r in read_csv(out / "labels" / f"{site_id}-s2-labels.csv"):
-        if r.get("status") != "ok" or r.get("date", "") >= FREEZE_UTC:
+        if r.get("status") != "ok" or r.get("date", "") >= (freeze_utc or FREEZE_UTC):
             continue
         if S2_LR_OWNER and r.get("verified") == "1":
             if r.get("verified_occupied") != "1":
@@ -346,8 +374,10 @@ def load_colours(out: Path, site_id: str) -> dict[str, list[tuple[str, str]]]:
 
 
 def load_features(out: Path) -> list[dict]:
+    """Quay features of every site: quay/YYYY-MM.geojson (shared, Zhanjiang) and quay/<site>/YYYY-MM.geojson."""
     feats = []
-    for p in sorted((out / "quay").glob("[0-9][0-9][0-9][0-9]-[0-9][0-9].geojson")):
+    month = "[0-9][0-9][0-9][0-9]-[0-9][0-9].geojson"
+    for p in sorted((out / "quay").glob(month)) + sorted((out / "quay").glob("*/" + month)):
         for f in json.loads(p.read_text(encoding="utf-8"))["features"]:
             feats.append({**f["properties"], "coords": f["geometry"]["coordinates"]})
     return feats
@@ -362,8 +392,14 @@ def _side(f: dict) -> int:
 class Site:
     """Per-site lookups (sections and their normals, S2 colours)."""
 
-    def __init__(self, site_id: str, sections: list[dict], colours: dict, lat0: float = 21.2):
+    def __init__(self, site_id: str, sections: list[dict], colours: dict, lat0: float = 21.2,
+                 sectors: list[dict] | None = None):
         self.site_id, self.lat0 = site_id, lat0
+        # sectors of the site ([{id, role}], the rest last); None: Zhanjiang's A (naval) and B (the rest)
+        secs = sectors or [{"id": "A", "role": None}, {"id": "B", "role": None}]
+        self.sector_ids = [x["id"] for x in secs]
+        self.roles = {x["id"]: x.get("role") for x in secs}
+        self.rest_id = self.sector_ids[-1]
         self.sections = sections
         for s in sections:
             s["xy"] = _xy(s["coords"], lat0)
@@ -416,6 +452,8 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
     look = float(look) if look not in (None, "") else look_azimuth(row.get("orbit_direction") or "ascending", lat0)
     orbit = str(row.get("relative_orbit"))
     inc = incidence if incidence is not None else INCIDENCE_BY_ORBIT.get(row["site_id"], {}).get(orbit)
+    if inc is None:  # other sites: the measured angle of the scene (incidence_deg), else the interpolation's middle
+        inc = _float(row.get("incidence_deg"))
 
     def prep(fs, lk):
         out = []
@@ -434,14 +472,16 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         pl = float(pl) if pl not in (None, "") else look_azimuth(prow.get("orbit_direction") or "ascending", lat0)
         pitems = prep(pfs, pl)
         p_inc = INCIDENCE_BY_ORBIT.get(prow["site_id"], {}).get(str(prow.get("relative_orbit")))
-    sectors: dict = {"A": [np.ones(1), np.ones(1), np.ones(1)], "B": [np.ones(1), np.ones(1), np.ones(1)]}
+        if p_inc is None and prow["site_id"] not in INCIDENCE_BY_ORBIT:
+            p_inc = _float(prow.get("incidence_deg"))
+    sectors: dict = {sid: [np.ones(1), np.ones(1), np.ones(1)] for sid in site.sector_ids}
     tot_s, tot_w, tot_wa = np.ones(1), np.ones(1), np.ones(1)
     hard_n, hard_mean = 0, 0.0
     details = []
     clues_count: dict = {}
     for it in items:
         f, face = it["f"], it["face"]
-        place = place_of(f.get("sector"), f.get("line_kind"))
+        place = place_of(f.get("sector"), f.get("line_kind"), site.roles.get(f.get("sector")))
         limit = DEPTH_LIMIT_M if f.get("features_version") else DEPTH_LIMIT_OLD_M
         clues = ["place", "length"]
         if it["how"]:
@@ -501,7 +541,7 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         ps, pwar = stretch_dists(pc, k, pw, p_real)
         _ps, pwall = stretch_dists(pc, k, pwa, p_real)
         tot_s, tot_w, tot_wa = np.convolve(tot_s, ps), np.convolve(tot_w, pwar), np.convolve(tot_wa, pwall)
-        sec = f.get("sector") if f.get("sector") in sectors else "B"
+        sec = f.get("sector") if f.get("sector") in sectors else site.rest_id
         sectors[sec][0] = np.convolve(sectors[sec][0], ps)
         sectors[sec][1] = np.convolve(sectors[sec][1], pwar)
         sectors[sec][2] = np.convolve(sectors[sec][2], pwall)
@@ -536,6 +576,13 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
     }
 
 
+def _float(x):
+    try:
+        return float(x) if x not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
 def _mask_tag(r: dict) -> str:
     return r.get("mask_version") or ""
 
@@ -548,9 +595,30 @@ def pairs_of(rows: list[dict]) -> dict:
     return orbit_pairs(rows)
 
 
+def site_context(out: Path, sid: str, cfg: dict | None) -> "Site":
+    """Site lookups from sites.json: latitude for the metric projection (quay.est2_lat0, else the centre;
+    Zhanjiang keeps 21.2), the sectors and their roles. No entry: Zhanjiang's defaults (A / B, 21.2)."""
+    if cfg is None:
+        return Site(sid, load_sections(out, sid), load_colours(out, sid))
+    from .sectors import site_sectors
+    q = cfg.get("quay") or {}
+    lat0 = q.get("est2_lat0", cfg.get("center_lat"))
+    if lat0 is None and cfg.get("bbox"):
+        lat0 = (float(cfg["bbox"][1]) + float(cfg["bbox"][3])) / 2
+    secs = site_sectors(cfg)
+    explicit = any(sc.get("role") for sc in (cfg.get("sectors") or [])) or (cfg.get("sector_rest") or {}).get("role")
+    # Zhanjiang (no explicit role): None = the old rule (A naval, the rest other)
+    sectors = [{"id": x["id"], "role": x["role"] if explicit else None} for x in secs] or None
+    return Site(sid, load_sections(out, sid), load_colours(out, sid, q.get("label_freeze_utc")),
+                float(lat0) if lat0 is not None else 21.2, sectors)
+
+
 def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] | None = None,
-          pairs: dict | None = None) -> dict:
-    """Recompute est-2 for every quay scene from stored files; write quay_est2.csv and quay_est2.json."""
+          pairs: dict | None = None, sites: list[dict] | None = None) -> dict:
+    """Recompute est-2 for every quay scene from stored files. Sites with the shared layout (Zhanjiang)
+    go to quay_est2.csv and quay_est2.json as before; sites with ``layout: per_site`` to
+    quay_est2/<site>.csv and quay_est2/<site>.json."""
+    cfg = {s["id"]: s for s in (sites or [])}
     rows = quay_rows if quay_rows is not None else read_csv(out / "quay_counts.csv")
     ship_rows = ship_rows if ship_rows is not None else read_csv(out / "ship_counts.csv")
     inc_of = {(r["site_id"], r["acquired_utc"]): r.get("incidence_deg") for r in ship_rows}
@@ -570,7 +638,7 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
     for r in rows:
         sid = r["site_id"]
         if sid not in sites:
-            sites[sid] = Site(sid, load_sections(out, sid), load_colours(out, sid))
+            sites[sid] = site_context(out, sid, cfg.get(sid))
         key = (sid, r["acquired_utc"], _mask_tag(r))
         segs = by_scene.get(key, [])
         pid = pairs.get(key) or ""
@@ -586,22 +654,25 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
         e = estimate_scene(r, segs, sites[sid], partner, inc)
         cl = e["clues"]
         st = [d for d in e["stretches"]]
+        ab = sites[sid].sector_ids if len(sites[sid].sector_ids) == 2 else []   # the old A / B columns
+        sa = e["by_sector"][ab[0]] if ab else {"warship": {}, "warship_all": {}}
+        sb = e["by_sector"][ab[1]] if ab else {"warship": {}, "warship_all": {}}
         out_rows.append({
             "site_id": sid, "acquired_utc": r["acquired_utc"], "relative_orbit": r.get("relative_orbit"),
             "mask_version": r.get("mask_version"), "est2_version": EST2_VERSION, "in_sample": r.get("in_sample", ""),
             "pair_id": pid, "segments": len(segs),
             "warship_median": e["warship"]["median"], "warship_p10": e["warship"]["p10"], "warship_p90": e["warship"]["p90"],
             "warship_mean": e["warship"]["mean"],
-            "a_median": e["by_sector"]["A"]["warship"]["median"], "a_p10": e["by_sector"]["A"]["warship"]["p10"],
-            "a_p90": e["by_sector"]["A"]["warship"]["p90"],
-            "b_median": e["by_sector"]["B"]["warship"]["median"], "b_p10": e["by_sector"]["B"]["warship"]["p10"],
-            "b_p90": e["by_sector"]["B"]["warship"]["p90"],
+            "a_median": sa["warship"].get("median"), "a_p10": sa["warship"].get("p10"),
+            "a_p90": sa["warship"].get("p90"),
+            "b_median": sb["warship"].get("median"), "b_p10": sb["warship"].get("p10"),
+            "b_p90": sb["warship"].get("p90"),
             "warship_all_median": e["warship_all"]["median"], "warship_all_p10": e["warship_all"]["p10"],
             "warship_all_p90": e["warship_all"]["p90"],
-            "a_all_median": e["by_sector"]["A"]["warship_all"]["median"], "a_all_p10": e["by_sector"]["A"]["warship_all"]["p10"],
-            "a_all_p90": e["by_sector"]["A"]["warship_all"]["p90"],
-            "b_all_median": e["by_sector"]["B"]["warship_all"]["median"], "b_all_p10": e["by_sector"]["B"]["warship_all"]["p10"],
-            "b_all_p90": e["by_sector"]["B"]["warship_all"]["p90"],
+            "a_all_median": sa["warship_all"].get("median"), "a_all_p10": sa["warship_all"].get("p10"),
+            "a_all_p90": sa["warship_all"].get("p90"),
+            "b_all_median": sb["warship_all"].get("median"), "b_all_p10": sb["warship_all"].get("p10"),
+            "b_all_p90": sb["warship_all"].get("p90"),
             "ships_median": e["ships"]["median"], "ships_p10": e["ships"]["p10"], "ships_p90": e["ships"]["p90"],
             "c_mean": e["c_mean"] if e["c_mean"] is not None else "",
             "used_depth": cl.get("depth", 0) + cl.get("depth_censored", 0), "used_db_line": cl.get("db_line", 0),
@@ -620,9 +691,27 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
                                 "warship_p10": r.get("est_warship_p10"), "warship_p90": r.get("est_warship_p90"),
                                 "a_mode": r.get("est_a_mode"), "b_mode": r.get("est_b_mode")},
                        "stretches": e["stretches"]})
-    write_csv(out / "quay_est2.csv", out_rows, CSV_FIELDS)
-    doc = {"version": EST2_VERSION, "status": STATUS, "settings": settings(), "scenes": scenes}
-    (out / "quay_est2.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    per_site = {sid for sid, c in cfg.items() if c.get("layout") == "per_site"}
+    shared_rows = [x for x in out_rows if x["site_id"] not in per_site]
+    shared_scenes = [x for x in scenes if x["site_id"] not in per_site]
+    if shared_rows or not per_site:
+        write_csv(out / "quay_est2.csv", shared_rows, CSV_FIELDS)
+        doc = {"version": EST2_VERSION, "status": STATUS, "settings": settings(), "scenes": shared_scenes}
+        (out / "quay_est2.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    for sid in sorted(per_site):
+        rows_s = [x for x in out_rows if x["site_id"] == sid]
+        if not rows_s:
+            continue
+        src = calib_source(sid)
+        write_csv(out / "quay_est2" / f"{sid}.csv", rows_s, CSV_FIELDS)
+        doc = {"version": EST2_VERSION, "site_id": sid, "calib_source": src, "calib_note": CALIB_SOURCE_NOTE[src],
+               "status": f"{CALIB_SOURCE_NOTE[src]}。{STATUS}", "settings_file": "quay_est2.json（settings）",
+               "sectors": [{"id": k, "role": v} for k, v in sites[sid].roles.items()],
+               "scenes": [x for x in scenes if x["site_id"] == sid]}
+        (out / "quay_est2" / f"{sid}.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n",
+                                                       encoding="utf-8")
+    for x in scenes:
+        x["calib_source"] = calib_source(x["site_id"])  # after writing: Zhanjiang's file keeps its keys
     return {"rows": out_rows, "scenes": scenes}
 
 
