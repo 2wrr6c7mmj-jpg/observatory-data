@@ -382,9 +382,39 @@ class SanyaSitesTest(unittest.TestCase):
             self.assertEqual(mask.shape, (g.height, g.width))
             self.assertEqual(info["bbox"], x["bbox"])
             meta = run.site_meta(x)
-            self.assertFalse(meta["quay"]["ready"])
+            # PR-1b: the OSM quay lines (probe/quaylines-syl-slp) and the orbit-157 baseline are in
+            self.assertTrue(meta["quay"]["ready"], meta["quay"]["lacks"])
+            self.assertEqual(meta["quay"]["baselines_present"], [157])
+            lines = quay_lines.load(sid, 1)
+            self.assertEqual(lines["bbox"], x["bbox"])
+            self.assertIn("ODbL", lines["license"])
+            bl = baseline.load(x, 157)
+            self.assertIsNotNone(bl)
+            self.assertEqual((bl[1]["mask_version"], bl[1]["width"], bl[1]["height"]), (run.mask_tag(x), g.width, g.height))
+            self.assertGreaterEqual(int(bl[1]["scenes"]), 24)
+            self.assertEqual(bl[1]["credibility"], "3")
             self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
         self.assertNotIn("SYL", [y["id"] for y in run.load_sites() if run.runs_daily(y)])
+
+    def test_blind_stretches_in_own_folder(self):
+        """quay/blind.geojson keeps the shared-layout site (Zhanjiang) only; the new ports get their own file."""
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            # SYL as when the HQ turns daily on (SLP stays settings only: its geometry takes ~35 s)
+            sites = [{**x, "daily": True} if x["id"] == "SYL" else x for x in run.load_sites()]
+            self.assertEqual(run.blind_summary([x for x in run.load_sites() if x["id"] != "ZJG"]), [])  # daily false: none
+            store = run.Store(out, sites)
+            with contextlib.redirect_stderr(io.StringIO()):
+                store.save({"run_utc": "2026-10-31T00:00:00Z"})
+            shared = json.loads((out / "quay" / "blind.geojson").read_text())
+            self.assertEqual({f["properties"]["site_id"] for f in shared["features"]}, {"ZJG"})
+            own = json.loads((out / "quay" / "SYL" / "blind.geojson").read_text())
+            self.assertEqual({f["properties"]["site_id"] for f in own["features"]}, {"SYL"})
+            self.assertFalse((out / "quay" / "SLP" / "blind.geojson").exists())
+            meta = json.loads((out / "meta.json").read_text())
+            share = {b["site_id"]: b["share"] for b in meta["quay"]["blind_stretches"]}
+            self.assertEqual(set(share), {"ZJG", "SYL"})
+            self.assertLess(share["SYL"], 0.1)
 
     def test_weights_are_placeholders(self):
         t = quay_est.load_classes()

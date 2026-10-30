@@ -135,7 +135,8 @@
     ],
     "lookback_days": 365,
     "max_scenes": 30,
-    "min_scenes": 24
+    "min_scenes": 24,
+    "note": "ro157-bl-1 は probe で lookback 730 日・最大 26 で作成（12 か月より古い撮影は 0 枚）。毎日の実行は基準を作らない"
    },
    "quay": {
     "tuning_scenes": [],
@@ -183,7 +184,7 @@
      "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SYL-land-v2 は港のアーカイブ（PR #29、probe/ports-archive-ops3、2026-10-30）のまま（v1 は東端 109.555E で第 32 潜水艦支隊の桟橋が切れていたため東へ 109.585E まで広げ、南の naval_base も入れた。約 6.3×6.6 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 SYL-quay-v1（OSM、probe）と軌道 157 の 365 日の基準がそろうまで quay-v1・est-1・est-2 は動かない。区画・桟橋の型・艦種の重みは設計 §2.2-4 の初期の仮説による仮置き・要出典（2部が直す）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SYL-land-v2 は港のアーカイブ（PR #29、probe/ports-archive-ops3、2026-10-30）のまま（v1 は東端 109.555E で第 32 潜水艦支隊の桟橋が切れていたため東へ 109.585E まで広げ、南の naval_base も入れた。約 6.3×6.6 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 SYL-quay-v1（OSM、probe/quaylines-syl-slp、osm_base 2026-10-30T21:19:47Z）と軌道 157 の基準 ro157-bl-1（24 撮影、2026-02-09〜10-26、確度 3。probe/ports-baseline-fill-ops3）が入り、daily を true にすれば quay-v1・est-1・est-2 が動く（PR-1b）。基準は 24 撮影に届かせるため lookback を 730 日にして作られたが、実際に使った撮影はすべて直近 12 か月以内。区画・桟橋の型・艦種の重みは設計 §2.2-4 の初期の仮説による仮置き・要出典（2部が直す）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
    "archive_history": [
     {
      "mask_version": 1,
@@ -270,7 +271,7 @@
      "note": "亜龍湾の隣。原子力潜水艦と空母の基地（旧称 Yulin-East）（PR #29 の sat/ports.json から）"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SLP-land-v1 は港のアーカイブ（PR #29、2026-10-30）のまま（亜龍湾の西側の基地の桟橋と潜水艦トンネルの入口の周り、約 5.3×5.0 km）。陸マスクは 2部の確認がまだ。岸壁線 SLP-quay-v1 と軌道 157 の 365 日の基準がそろうまで quay-v1・est-1・est-2 は動かない。区画 A1 は座標だけからの仮の矩形、空母の桟橋（型 carrier）は位置を確かめていないので置いていない。潜水艦トンネルに入った艦は見えない（設計 §7-2）。est-2 は湛江の較正を流用（calib_source＝ZJG）"
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SLP-land-v1 は港のアーカイブ（PR #29、2026-10-30）のまま（亜龍湾の西側の基地の桟橋と潜水艦トンネルの入口の周り、約 5.3×5.0 km）。陸マスクは 2部の確認がまだ。岸壁線 SLP-quay-v1（OSM、probe/quaylines-syl-slp、osm_base 2026-10-30T21:21:51Z）と軌道 157 の基準 ro157-bl-1（24 撮影、2026-03-05〜10-26、確度 3。probe/ports-baseline-ops3）が入り、daily を true にすれば quay-v1・est-1・est-2 が動く（PR-1b）。区画 A1 は座標だけからの仮の矩形、空母の桟橋（型 carrier）は位置を確かめていないので置いていない。潜水艦トンネルに入った艦は見えない（設計 §7-2）。est-2 は湛江の較正を流用（calib_source＝ZJG）"
   }
  ]
 }
