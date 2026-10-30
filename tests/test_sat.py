@@ -452,6 +452,11 @@ class RunTest(unittest.TestCase):
         self.assertEqual(run.sector_of(sec, 110.437, 21.22), "A")   # Mazhang piers
         self.assertEqual(run.sector_of(sec, 110.427, 21.22), "B")   # channel
         self.assertEqual(run.sector_of(sec, 110.440, 21.197), "B")  # south of sector A
+        # The committed land mask of the current version covers exactly this extent.
+        mask, meta = run.load_mask("ZJG", run.mask_version(zjg))
+        self.assertEqual(mask.shape, (g.height, g.width))
+        self.assertEqual(meta["bbox"], g.bbox)
+        self.assertEqual(meta["version"], "ZJG-land-v2")
 
     def test_month_usage(self):
         u = [{"run_utc": "2026-10-01T05:17:00Z", "requests": "3", "processing_units": "9.7"},
