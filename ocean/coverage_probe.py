@@ -339,11 +339,27 @@ def analyse(products: list[dict], start: datetime, end: datetime, areas: dict = 
         "method": ("Sentinel-1 の GRD・OCN の製品を和の矩形で問い合わせ、IW GRD のスライスを (衛星, 絶対軌道) で 1 通過にまとめ、"
                    "0.25° の格子の中心が足跡に入る通過を数える（COG の写しは同じスライスなので重ねて数えない）。"
                    "公開の遅れ＝PublicationDate − ContentDate/Start（製品の種類ごと）"),
+        "attribution": attribution(start, end),
+        "notes": NOTES,
         "products": len(infos),
         "product_types": dict(sorted(types.items())),
         "publication_lag": {t: lag_stats(v) for t, v in sorted(lags.items())},
         "areas": out_areas,
     }
+
+
+NOTES = [
+    "counts は 0.25° 格子の中心が IW GRD の足跡に入った通過の数（行 0＝北端、列 0＝西端）。陸の格子も含む",
+    "1 通過＝同じ衛星・同じ絶対軌道のスライスの集まり。COG の写し（-COG）は同じスライスなので数えない",
+    "revisit_gap_h は海域のどこかを撮った通過どうしの間隔（格子ごとの再訪ではない。格子ごとは counts を 60 日で割る）",
+    "other_modes は GRD・OCN の製品がある IW 以外のモード（RAW・SLC は問い合わせていない）",
+    "公開の遅れはカタログへの公開（PublicationDate）まで。Sentinel Hub で処理できるまでの遅れは別",
+]
+
+
+def attribution(start: datetime, end: datetime) -> str:
+    y0, y1 = start.year, end.year
+    return f"Contains modified Copernicus Sentinel data {y0 if y0 == y1 else f'{y0}-{y1}'}（カタログの情報）"
 
 
 SYMBOLS = "0123456789abcdefghijklmnopqrstuvwxyz"
