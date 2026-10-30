@@ -479,6 +479,7 @@ class FollowupTest(unittest.TestCase):
         self.assertIn("12.750 PU", text)
         self.assertIn("リクエスト 5", text)
 
+    @unittest.skipUnless(np is not None, "numpy not installed")  # sat.run imports numpy
     def test_meta_describes_one_row_per_mask_version(self):
         from sat import run
         self.assertEqual(run.build_meta([])["files"]["ship_counts.csv"], "1 行＝1 撮影×1 地点×1 範囲版（mask_version）")
