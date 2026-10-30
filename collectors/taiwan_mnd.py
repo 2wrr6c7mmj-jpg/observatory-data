@@ -6,9 +6,16 @@ result is served by GitHub Pages and read by the Observatory site.
   python -m collectors.taiwan_mnd                 # daily: newest list pages
   python -m collectors.taiwan_mnd --pages 300     # backfill, resumable
   python -m collectors.taiwan_mnd --probe         # print page structure only
+  python -m collectors.taiwan_mnd --check-robots  # read robots.txt once and report
+  python -m collectors.taiwan_mnd --reparse       # offline: re-read stored text
 
-Politeness: one request at a time, a pause between requests, an identifying
-User-Agent, and reports already stored are never fetched again.
+Politeness: robots.txt is checked (collectors/polite.py) before any list or
+report page is fetched; a disallowed or unverifiable answer means nothing is
+fetched and the stored data is kept. One request at a time, a pause between
+requests, an identifying User-Agent, and reports already stored are never
+fetched again.
+
+SUSPENDED: collection is stopped while this is set (see the note there).
 """
 from __future__ import annotations
 
@@ -26,6 +33,7 @@ from urllib.parse import urljoin
 from datetime import datetime, timezone
 from pathlib import Path
 
+from collectors import polite
 from collectors.mnd_parse import PARSER_VERSION, TYPE_FORMATS, page_text, parse_report, reparse, report_links
 
 BASE = "https://www.mnd.gov.tw"
@@ -37,6 +45,15 @@ OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "taiwan-mnd"
 UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
 PAUSE = float(os.environ.get("MND_PAUSE_SECONDS", "2.5"))
 FETCH_TIMEOUT = 30  # seconds per connect / read
+# Collection is stopped: on 2026-10-30 https://www.mnd.gov.tw/robots.txt (Last-Modified
+# 2026-10-13) allowed only Googlebot (a few paths disallowed) and had
+# "User-agent: *" / "Disallow: /", which covers our User-Agent and every page we read.
+# While this is set, collect / probe make no request at all (--reparse still works
+# offline, --check-robots reads robots.txt once). Clear it only after robots.txt allows
+# /en/news/plaactlist/ and /en/News/PLAAct/ for our User-Agent; the robots check
+# below stays in force either way.
+SUSPENDED = ("robots.txt（2026-10-30 確認）が User-agent: * に Disallow: / を指定しているため、"
+             "台湾国防部の取得を停止中（保存済みのデータはそのまま）")
 FIELDS = ["report_date", "format", "aircraft", "median_line_or_adiz", "plan_vessels", "official_ships",
           "balloons", "adiz_aircraft", "adiz_types", "window_start_utc", "window_end_utc",
           "source_url", "retrieved_utc", "parser_version", "reports", "merge_note"]
@@ -101,7 +118,13 @@ def daily_rows(reports: dict) -> list[dict]:
     return out
 
 
+def require_robots(url: str) -> polite.RobotsResult:
+    """Raise polite.SourceBlocked unless robots.txt allows ``url`` for our User-Agent."""
+    return polite.require_allowed(url, UA)
+
+
 def fetch(url: str) -> str:
+    require_robots(url)  # robots.txt is read once per run (cached), before any page
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en,zh-TW;q=0.8"})
     try:
         with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as r:
@@ -151,6 +174,7 @@ def save(store: dict) -> None:
         "last_day": rows[-1]["report_date"] if rows else None,
         "unparsed_ids": unparsed, "parser_version": PARSER_VERSION,
         "parse_errors": {rid: reports[rid]["parse_error"] for rid in unparsed if reports[rid].get("parse_error")},
+        "collection": SUSPENDED or "active",
         "days_by_format": {f: sum(1 for r in rows if r.get("format") == f) for f in sorted({r.get("format") for r in rows})},
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
@@ -241,6 +265,10 @@ def list_page(page: int) -> list[tuple[str, int]]:
 
 
 def collect(pages: int, stop_when_known: bool) -> int:
+    robots = polite.check_robots(LIST_URLS[0].format(page=1), UA)
+    if not robots.allowed:  # nothing fetched, nothing rewritten
+        warning(f"taiwan-mnd: not collecting ({robots.reason})")
+        return 0 if robots.verified else 75
     store = load()
     reports = store["reports"]
     aborted = False
@@ -263,6 +291,9 @@ def _walk(store: dict, pages: int, stop_when_known: bool, count: dict) -> bool:
     for page in range(1, pages + 1):
         try:
             links = list_page(page)
+        except polite.SourceBlocked as e:
+            warning(f"list page {page}: not fetched ({e}); ending this run")
+            return True
         except ListPageUnavailable as e:
             warning(f"list page {page}: still failing after retries ({e}); ending this run, next run resumes")
             return True
@@ -279,6 +310,9 @@ def _walk(store: dict, pages: int, stop_when_known: bool, count: dict) -> bool:
             url = href
             try:
                 raw = fetch_report(url)
+            except polite.SourceBlocked as e:
+                warning(f"report {rid}: not fetched ({e}); ending this run")
+                return True
             except urllib.error.HTTPError as e:
                 if transient(e):
                     failures += 1
@@ -345,6 +379,27 @@ def probe_ids(ids: list[str]) -> int:
     return 0
 
 
+def check_robots() -> int:
+    """Read robots.txt once and report whether the pages we read are allowed (no page fetched)."""
+    lines = []
+    for url in (LIST_URLS[0].format(page=1), LIST_URLS[1].format(page=1), BASE + "/en/News/PLAAct/1"):
+        r = polite.check_robots(url, UA)
+        lines.append(f"{url}: {'allowed' if r.allowed else 'not allowed'} ({r.reason})")
+    (warning if any("not allowed" in x for x in lines) else notice)("taiwan-mnd robots.txt:\n" + "\n".join(lines))
+    return 0
+
+
+def mark_suspended() -> None:
+    """Record the suspension in status.json once (no rewrite while it is unchanged)."""
+    path = OUT / "status.json"
+    if not path.exists():
+        return
+    status = json.loads(path.read_text(encoding="utf-8"))
+    if status.get("collection") != SUSPENDED:
+        status["collection"] = SUSPENDED
+        path.write_text(json.dumps(status, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
 def reparse_all() -> int:
     """Re-read every stored report from its kept text (no network) and rewrite the outputs."""
     store = load()
@@ -362,13 +417,20 @@ def main() -> int:
     ap.add_argument("--probe", action="store_true")
     ap.add_argument("--reparse", action="store_true", help="re-read stored reports offline and rewrite the outputs")
     ap.add_argument("--probe-ids", default="", help="comma-separated report ids to print")
+    ap.add_argument("--check-robots", action="store_true", help="read robots.txt once and report")
     a = ap.parse_args()
+    if a.check_robots:
+        return check_robots()
+    if a.reparse:
+        return reparse_all()
+    if SUSPENDED:
+        warning("taiwan-mnd: " + SUSPENDED)
+        mark_suspended()
+        return 0
     if a.probe_ids:
         return probe_ids([x for x in a.probe_ids.split(",") if x.strip()])
     if a.probe:
         return probe()
-    if a.reparse:
-        return reparse_all()
     # The daily run stops at the first page with nothing new; a backfill walks all pages.
     return collect(a.pages, stop_when_known=a.pages <= 3)
 
