@@ -1,0 +1,14 @@
+ocean-raw-cut-1 2026-10-30T19:13:15Z
+使える 600.0 PU、計画 0 件 0.0 PU、実績 12 リクエスト・0.0 PU
+エラー: {"target": {"area": "HK", "acquired_utc": "2026-09-04T10:32:46Z", "why": "香港・低風（VV 中央値 -26.5 dB、nomodel 351）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "HK", "acquired_utc": "2026-09-16T10:32:47Z", "why": "香港・やや強風（VV -19.0 dB、nomodel 39）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TS", "acquired_utc": "2026-10-16T21:51:39Z", "why": "台湾海峡（洋上風力を含む）・低風（VV -26.3 dB、nomodel 375）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TS", "acquired_utc": "2026-08-23T21:51:23Z", "why": "台湾海峡（洋上風力を含む）・正常（VV -15.3 dB、nomodel 0、被覆 1.0）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TS", "acquired_utc": "2026-10-26T10:00:29Z", "why": "台湾海峡・強風（VV -11.1 dB、nomodel 61）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "ECS", "acquired_utc": "2026-10-09T09:53:33Z", "why": "東シナ海・全 400 タイル未当てはめ（VV -23.3 dB）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "ECS", "acquired_utc": "2026-08-10T09:53:32Z", "why": "東シナ海・強風（VV -13.5 dB、nomodel 53）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TE", "acquired_utc": "2026-08-27T10:00:28Z", "why": "台湾東方・低風・全 400 タイル未当てはめ（VV -26.8 dB）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TE", "acquired_utc": "2026-10-22T21:51:23Z", "why": "台湾東方・強風（VV -8.6 dB、nomodel 64）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TE", "acquired_utc": "2026-10-14T10:00:29Z", "why": "台湾東方・正常（VV -17.0 dB、nomodel 0、被覆 1.0）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TE", "acquired_utc": "2026-10-03T09:52:09Z", "why": "台湾東方・中程度の風なのに全 400 タイル未当てはめ（VV -13.6 dB、IW1 側 31.8°）"}, "stage": "plan", "error": "上限のため見送り"}
+エラー: {"target": {"area": "TE", "acquired_utc": "2026-08-16T09:52:07Z", "why": "台湾東方・全 400 タイル未当てはめ（VV -16.4 dB、IW1 側）"}, "stage": "plan", "error": "上限のため見送り"}
