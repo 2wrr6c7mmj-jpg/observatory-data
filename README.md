@@ -21,6 +21,7 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 | `jcg-senkaku` | 海上保安庁：尖閣諸島周辺の中国海警局に所属する船舶等（接続水域入域・領海侵入の隻数、日ごと、2012年9月から） | [daily.csv](docs/data/jcg-senkaku/daily.csv)・[daily.json](docs/data/jcg-senkaku/daily.json)・[meta.json](docs/data/jcg-senkaku/meta.json)・[status.json](docs/data/jcg-senkaku/status.json) |
 | `jso` | 統合幕僚監部の公表資料（中国・ロシア艦艇の海峡通過、往復、演習・政治イベントとの対応） | [passages.csv](docs/data/jso/passages.csv)・[round_trips.csv](docs/data/jso/round_trips.csv)・[context.csv](docs/data/jso/context.csv)・[summary.json](docs/data/jso/summary.json)・[meta.json](docs/data/jso/meta.json) |
 | `launches` | ロケット・ミサイル発射に関わる NOTAM・航行警報（NOTAM Watch のデータから）、発射場・方位の推定、Launch Library 2 の打上げ記録との照合 | [events.json](docs/data/launches/events.json)・[notices.json](docs/data/launches/notices.json)・[ll2.json](docs/data/launches/ll2.json)・[meta.json](docs/data/launches/meta.json) |
+| `pla-tracker` | PLA Activity Tracker（個人による集約、CC BY 4.0）：台湾国防部の日報を写した日ごとの中国軍機・中間線越え・艦艇の数（2026-01 から）。国防部の日報の自動取得を止めたため、2026-10-31 以降はこれで補う。国防部の日報との突き合わせつき | [daily.csv](docs/data/pla-tracker/daily.csv)・[daily.json](docs/data/pla-tracker/daily.json)・[compare.json](docs/data/pla-tracker/compare.json)・[meta.json](docs/data/pla-tracker/meta.json)・[status.json](docs/data/pla-tracker/status.json) |
 | `sat`（試行） | Sentinel-1 による港内の艦船候補数（湛江 ZJG の 1 地点）。撮影ごとの港内水域・岸壁帯の候補数、候補の位置と長さの目安、切り出し画像（VV の灰 PNG と、疑似カラーの WebP `color/`） | [ship_counts.csv](docs/data/sat/ship_counts.csv)・`detections/YYYY-MM.geojson`・[meta.json](docs/data/sat/meta.json)・[status.json](docs/data/sat/status.json)・[usage.csv](docs/data/sat/usage.csv)・[CHANGES.md](docs/data/sat/CHANGES.md) |
 | `ocean`（実測のみ） | 外洋（台湾周辺 T・東シナ海 E・南西諸島 R）の Sentinel-1 の撮影頻度（0.25° 格子ごとの IW 通過数、相対軌道・向き・時刻、IW 以外のモード）と公開の遅れ。CDSE の OData カタログを probe（`probe/ocean-coverage` への push、ワークフロー ocean-probe.yml）で 1 回読んだ結果で、定期更新はしない | [coverage_probe.json](docs/data/ocean/coverage_probe.json) |
 
@@ -29,6 +30,8 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 `ocean` の公開の遅れは、窓の終わり近くに撮影されてまだ公開されていない製品が数に入らない（右側の打ち切り）ため、実際より短めに出ている可能性があります。
 
 `jcg-senkaku` の出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）。公共データ利用規約 第1.0版（PDL1.0）に基づき、このリポジトリが PDF から数値を抜き出して日ごとの表に加工しています。加工したデータは海上保安庁が作成したものではありません。
+
+`pla-tracker` の出典：Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)（CC BY 4.0）。records.csv を 1 日 1 回取り込み、数値の列を整数にして取得時刻を付けています（値は変えていない）。同じ日に国防部の日報（`taiwan-mnd`）があればそちらを優先します。艦艇（ships_total）は 2026-03 下旬から公務船を含み、中間線越え（median_line_cross）は国防部の median_line_or_adiz より狭い量なので、`taiwan-mnd` の列にそのままつなげません（meta.json の precedence・fields）。ファイルは main での最初の実行で作られます。
 
 `sat` の出典：Contains modified Copernicus Sentinel data 2026（年は撮影年。meta.json の credit は自動で年が入るが、この README と docs/index.html・docs/sat/index.html の表記は手書きなので、撮影年が変わったら（2027 年の撮影が入ったら「2026-2027」に）直す）。Copernicus Data Space Ecosystem の Sentinel Hub Process API で σ0 の切り出しを取得し、このリポジトリが自動で数えています。陸マスクは © OpenStreetMap contributors（ODbL）。数は「候補数」で在泊艦数ではなく、艦種・国籍は分かりません。試行ページは [docs/sat/](docs/sat/index.html)（Pages では `sat/`）。
 
@@ -71,10 +74,11 @@ pip install pdfplumber==0.11.10            # jcg-senkaku の PDF の読み取り
 python -m collectors.jcg_senkaku           # 海上保安庁 尖閣周辺（新しい PDF と当月分だけ）
 python -m collectors.jcg_senkaku --probe /tmp/jcg  # ページと見本の PDF を取得して表示するだけ
 python -m jso.build                        # 統幕データの公開用ファイルを作る
+python -m collectors.pla_tracker           # PLA Activity Tracker の records.csv（1 本だけ）
 pip install numpy==2.2.6 pillow==12.3.0    # sat に使う（Pillow はカラー画像の WebP と凡例）
 python -m sat.run                          # Sentinel-1 の新しい撮影を数える（CDSE_SH_CLIENT_ID / CDSE_SH_CLIENT_SECRET が要る）
 python -m sat.run --probe /tmp/sat         # /tmp/sat の下にだけ書く確認用
 python -m sat.osm_mask ZJG --version 2     # 陸マスクを OSM から作り直す（版を上げ、CHANGES.md に書く）
 ```
 
-GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に、「Collect JCG Senkaku」は毎日 12:43（日本時間）に、「Sentinel-1 ship candidates」は毎日 14:17（日本時間）に動きます（別々の concurrency group で、互いに止め合わない）。Sentinel-1 は無料枠を守るため、1 回の実行で最大 12 撮影、月 1000 処理単位（PU）までに自分で制限し、使った PU を usage.csv に残します。確認用の probe（`--probe`、`probe/sat-ships` への push）は同じ CDSE アカウントを使いますが、結果は一時ディレクトリにしか書かないため、その PU は公開の usage.csv に残らず、毎日の実行の月上限にも数えられません（probe 側は公開の usage.csv の今月分を自分の上限に数えます）。probe の使った PU とリクエスト数は、その実行の注釈（`probe-pu`）に出ます。probe の結果はどこにも保存されないため、毎日の実行の月上限に probe 分を含める手段はありません。probe を多く回した月は、注釈の合計か CDSE の利用状況画面で使用量を確かめてください。台湾国防部の過去分の遡りは、手動実行で `pages` を大きくします。
+GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に、「Collect JCG Senkaku」は毎日 12:43（日本時間）に、「Sentinel-1 ship candidates」は毎日 14:17（日本時間）に、「Collect PLA Activity Tracker」は毎日 15:37（日本時間）に動きます（別々の concurrency group で、互いに止め合わない）。Sentinel-1 は無料枠を守るため、1 回の実行で最大 12 撮影、月 1000 処理単位（PU）までに自分で制限し、使った PU を usage.csv に残します。確認用の probe（`--probe`、`probe/sat-ships` への push）は同じ CDSE アカウントを使いますが、結果は一時ディレクトリにしか書かないため、その PU は公開の usage.csv に残らず、毎日の実行の月上限にも数えられません（probe 側は公開の usage.csv の今月分を自分の上限に数えます）。probe の使った PU とリクエスト数は、その実行の注釈（`probe-pu`）に出ます。probe の結果はどこにも保存されないため、毎日の実行の月上限に probe 分を含める手段はありません。probe を多く回した月は、注釈の合計か CDSE の利用状況画面で使用量を確かめてください。台湾国防部の過去分の遡りは、手動実行で `pages` を大きくします。
