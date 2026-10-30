@@ -282,6 +282,36 @@ class RunPortTest(unittest.TestCase):
             self.assertEqual((p["ports"][0]["s1_scenes"], p["ports"][0]["s2_days"]), (0, 0))
             self.assertEqual(p["matrix"], [])
 
+    def test_backfill_window_s1_only_and_order(self):
+        g = Grid.for_site(SITE)
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, : g.width // 4] = 1
+        now = datetime(2027, 3, 1, tzinfo=timezone.utc)  # the fake scenes (2026-01..07) are 8-14 months back
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            from sat.osm_mask import save_mask
+            save_mask(SITE, g, mask, {}, {}, 1, d / "masks")
+            c = pa.cdse.Client("i", "s", opener=Fake(g))
+            p = pa.plan(c, [SITE], now, 100, 1000, log=lambda s: None, out_root=d / "out", mask_dir=d / "masks",
+                        days_from=730, days_to=365, s2_on=False, ordered=True)
+            self.assertEqual(p["ports"][0]["s2_days"], 0)
+            self.assertEqual(p["matrix"][0]["port"], "TPA")
+            clock = Clock()
+            lc = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i",
+                                  client_secret="s", opener=Fake(g))
+            res = pa.run_port(lc, SITE, d / "out", d / "raw", d / "tmp", d / "masks", now, log=lambda s: None,
+                              days_from=730, days_to=365, s2_on=False)
+            self.assertEqual(res["s1"]["counted"], 4)
+            self.assertEqual(res["s2"]["stopped"], "S2 なし（S1 だけの取得）")
+            self.assertFalse((d / "out" / "TPA" / "s2_scenes.csv").exists())
+
+    def test_allocate_ordered(self):
+        est = [{"site_id": k, "pu": pu, "priority": 1, "s1_requests": 10, "s2_requests": 0}
+               for k, pu in (("A", 400), ("B", 400), ("C", 400))]
+        out = pa.allocate_ordered(est, 1000, 10000)
+        self.assertEqual([(e["site_id"], e["cap_pu"]) for e in out], [("A", 500), ("B", 500)])
+        self.assertIn("skipped", est[2])
+
     def test_footprint_share(self):
         g = Grid.for_site(SITE)
         water = np.ones((g.height, g.width), bool)

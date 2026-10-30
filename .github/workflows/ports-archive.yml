@@ -8,12 +8,16 @@ name: PLAN ports archive probe
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
-    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*']
+    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*']
 permissions:
   contents: write
 concurrency:
   group: probe-ports-archive-${{ github.ref_name }}
   cancel-in-progress: false
+env:
+  # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
+  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 1400 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || '' }}
+  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || '' }}
 jobs:
   locate:
     # probe/ports-locate-*: OSM の軍・造船所の地物と S2 の広域の概観（1 地域 1〜4 PU）だけ。範囲を置くため
@@ -59,7 +63,7 @@ jobs:
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
   plan:
-    if: ${{ startsWith(github.ref_name, 'probe/ports-archive-') && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
+    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -111,7 +115,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --cap 4000 \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --reserve 1800 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --reserve 1800 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json
@@ -172,7 +176,7 @@ jobs:
           rc=0
           python -m sat.port_archive run --port "${{ matrix.port }}" --cap "${{ matrix.cap }}" --req "${{ matrix.req }}" \
             --out docs/data/sat/ports --raw-dir probe-raw --tmp "$RUNNER_TEMP/raw" --mask-dir docs/data/sat/ports/masks \
-            --pu-per-min 80 --req-per-min 80 --max-minutes 290 --summary "$RUNNER_TEMP/summary.json" \
+            --pu-per-min 80 --req-per-min 80 --max-minutes 290 --summary "$RUNNER_TEMP/summary.json" $RUN_ARGS \
             > /dev/null 2> "$RUNNER_TEMP/run.log" || rc=$?
           tail -n 40 "$RUNNER_TEMP/run.log"
           exit $rc
