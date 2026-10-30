@@ -1,0 +1,7 @@
+site_id,acquired_utc,relative_orbit,mask_version,est2_version,in_sample,pair_id,segments,warship_median,warship_p10,warship_p90,warship_mean,a_median,a_p10,a_p90,b_median,b_p10,b_p90,warship_all_median,warship_all_p10,warship_all_p90,a_all_median,a_all_p10,a_all_p90,b_all_median,b_all_p10,b_all_p90,ships_median,ships_p10,ships_p90,c_mean,used_depth,used_db_line,used_pair,used_s2_colour,smear_discounted,face_from_sections,no_face,est1_warship_mode,est1_warship_p10,est1_warship_p90
+ZJG,2026-10-02T10:48:45Z,157,ZJG-land-v2,est-2,tuning,ZJG-2026-10-02T10-48-45Z-ro157+ro84,28,17,14,19,16.9,16,14,19,0,0,1,24,20,28,22,19,26,2,0,3,50,47,53,1.42,25,0,22,0,3,26,2,20,16,24
+ZJG,2026-10-03T10:41:00Z,84,ZJG-land-v2,est-2,tuning,ZJG-2026-10-02T10-48-45Z-ro157+ro84,25,15,13,18,15.5,15,12,18,0,0,1,21,17,25,20,16,23,1,0,3,43,41,45,1.55,22,0,22,0,2,23,2,17,14,21
+ZJG,2026-10-08T10:49:01Z,157,ZJG-land-v2,est-2,tuning,,35,19,16,23,19.3,19,16,22,0,0,2,25,21,29,23,19,26,2,0,4,52,48,56,1.32,30,0,0,0,4,32,3,20,17,25
+ZJG,2026-10-14T10:48:45Z,157,ZJG-land-v2,est-2,tuning,ZJG-2026-10-14T10-48-45Z-ro157+ro84,24,15,12,17,14.5,14,12,17,0,0,1,19,15,22,18,15,20,1,0,2,36,34,39,1.23,21,0,18,0,2,22,2,17,14,20
+ZJG,2026-10-15T10:41:00Z,84,ZJG-land-v2,est-2,tuning,ZJG-2026-10-14T10-48-45Z-ro157+ro84,25,10,8,13,10.1,10,7,13,0,0,0,17,13,20,16,12,19,1,0,2,37,35,40,1.19,23,0,20,0,2,24,1,14,11,17
+ZJG,2026-10-26T10:48:45Z,157,ZJG-land-v2,est-2,tuning,,23,19,16,22,19.0,19,16,22,0,0,0,24,20,28,23,19,27,1,0,2,40,38,44,1.23,21,0,0,7,3,21,2,22,18,25

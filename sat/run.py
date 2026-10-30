@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import cdse, png, quay, quay_est, quay_lines, render, s2
+from . import cdse, png, quay, quay_est, quay_est2, quay_lines, render, s2
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
@@ -316,6 +316,11 @@ class Store:
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         for sid, zp in self.zone_priors.items():
             zp.save(self.zone_prior_path(sid))
+        if self.quay_rows:
+            try:  # est-2 (trial): recomputed from the stored files only (no fetch); never stops the run
+                quay_est2.build(self.out, self.quay_rows, self.rows, pairs)
+            except Exception as e:  # noqa: BLE001
+                print(f"est-2: {type(e).__name__}: {e}", file=sys.stderr)
         blind_feats = [f for b in blind_summary(self.sites) for f in b["features"]]
         if blind_feats:
             p = self.out / "quay" / "blind.geojson"
@@ -482,6 +487,9 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "quay_counts.csv": "岸壁の占有数（quay-v1、試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ",
             "quay/YYYY-MM.geojson": "撮影月ごとの岸壁の占有区間（線、水際から 15 m 沖に描く。長さ・数の幅・横抱きの可能性つき）。線は OSM 由来（attribution・license）",
             "quay/<地点>-zone-prior.json": "推定 est-1 の区画ごとの長さ 6 階級のディリクレ（初期値 alpha0 と更新後の alpha、更新に使った撮影）",
+            "quay_est2.csv": ("推定 est-2（仮置き・較正前）：1 行＝1 撮影。軍艦の可能性が高い船の隻数の中央値とモデル内の 80% 区間（地点・区画 A・B）、"
+                              "全船の隻数、使えた手がかりの区間数（used_*）、並べて見るための est-1 の 60 m 以上の値。取得済みのデータだけから毎回計算し直す"),
+            "quay_est2.json": "est-2 の設定（仮置き値）と撮影ごと・区間ごとの詳細（列数の事後確率 p_c、軍艦の確率、使った手がかり）",
             "quay/blind.geojson": "数えられない可能性が高い区間（軌道ごと。内側の帯で基準の VV p10 が −8 dB を超える所。1 点だけの区間は Point）",
             "change/<地点>/v<版>/<撮影時刻>.webp": "変化カラー（R＝今回の VV、G・B＝同じ相対軌道の基準の VV）の WebP と縮小版 .thumb.webp。基準がある撮影だけ",
         },
@@ -514,6 +522,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
             "method": quay.settings(),
             "estimate": quay_est.settings(),
+            "estimate2": quay_est2.settings(),
             "baselines": baseline_meta(sites),
             "change_image": fcolor.change_settings(),
             "credibility": "基準が 24 シーン以上なら 3、未満なら 4（一段下げる）",
@@ -563,7 +572,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                 "横抱きは外側の帯も占有された「可能性」で、確かめていない。長さの目安（区間長−20 m）も未検証",
                 "OSM の線の位置は 10〜20 m ずれることがあり、水際は陸マスクで探す。OSM に無い岸壁は数えない",
                 "相対軌道 84 の基準は 15 シーン（24 未満）で確度 4",
-            ] + ["推定 est-1：" + x for x in quay_est.LIMITS],
+            ] + ["推定 est-1：" + x for x in quay_est.LIMITS] + ["推定 est-2：" + x for x in quay_est2.LIMITS],
         },
         "detector": {"version": DETECTOR_VERSION, **DETECT_DEFAULTS,
                      "length_classes_m": [[n, lo, None if hi == math.inf else hi] for n, lo, hi in LENGTH_CLASSES]},
