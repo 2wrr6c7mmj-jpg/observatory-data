@@ -54,9 +54,50 @@ DEFAULTS = {
     "raft_min_m": 30.0,
     "length_trim_m": 20.0,
     "cluster_m": 60.0,                  # stretches this close (other side of a pier, a corner) may be one ship
-    "depth_step_m": 5.0,                # est-1: occupied depth off the water's edge, 5-90 m every 5 m
-    "depth_max_m": 90.0,
+    "depth_step_m": 5.0,                # est-1: occupied depth off the water's edge, 5-120 m every 5 m
+    "depth_max_m": 120.0,               # 90 m until 2026-10-30 (feat-1: three ships abreast reach ~100 m)
+    "face_cos": 0.5,                    # feat-1: |cos phi| above this is a face toward / away from the radar
+    "db_rel_db": 6.0,                   # feat-1: peaks of the cross-section within this of the strongest
 }
+
+# feat-1 (record only, never used in the count or the estimate): face orientation against the radar,
+# depth without the mean across the line, the outer double-bounce line, orbit pairs.
+FEATURES_VERSION = "feat-1"
+S1_INCLINATION_DEG = 98.18     # Sentinel-1 orbit (sun-synchronous, 693 km)
+S1_PERIOD_S = 98.6 * 60.0
+EARTH_OMEGA = 7.2921159e-5     # rad/s
+
+
+def look_azimuth(orbit_direction: str | None, lat_deg: float, right_looking: bool = True) -> float | None:
+    """Azimuth (deg from north, clockwise) the radar looks along, on the ground, from the orbit:
+    the ground-track heading (inclination and Earth rotation at ``lat_deg``) plus 90 deg for a
+    right-looking sensor. Sentinel-1 ascending at 21.2N: heading ~-12 deg, look ~78 deg (ENE)."""
+    od = (orbit_direction or "").lower()
+    if od not in ("ascending", "descending"):
+        return None
+    i, p = math.radians(S1_INCLINATION_DEG), math.radians(lat_deg)
+    s = max(-1.0, min(1.0, math.cos(i) / math.cos(p)))
+    a = math.asin(s)                       # inertial azimuth of the ascending track (negative: west of north)
+    if od == "descending":
+        a = math.pi - a
+    ws = 2 * math.pi / S1_PERIOD_S
+    vn = ws * math.cos(a)
+    ve = ws * math.sin(a) - EARTH_OMEGA * math.cos(p)
+    heading = math.degrees(math.atan2(ve, vn))
+    return round((heading + (90.0 if right_looking else -90.0)) % 360.0, 1)
+
+
+def face_class(cos_phi: float, thr: float = DEFAULTS["face_cos"]) -> str:
+    """"toward" (the water side faces the radar), "away" or "along"."""
+    if not np.isfinite(cos_phi):
+        return ""
+    return "toward" if cos_phi > thr else "away" if cos_phi < -thr else "along"
+
+
+def cos_to_radar(normal_az_deg, look_az_deg: float):
+    """cos of the angle between the water-side normal and the direction to the radar
+    (look azimuth + 180 deg): +1 when the face looks straight at the sensor."""
+    return np.cos(np.radians(np.asarray(normal_az_deg, float) - (look_az_deg + 180.0)))
 
 
 def _resample(x: np.ndarray, y: np.ndarray, step: float):
@@ -172,6 +213,12 @@ class Geometry:
                 dothers = ddist[:, self.seg_way != k]
                 dother = dothers.min(1) if dothers.shape[1] else np.full(len(down), np.inf)
                 dvalid = dinside & (down <= dother + cfg["own_tolerance_m"]).reshape(dq.shape[:2]) & allowed[drr, dcc]
+                # feat-1: the same depth pixels without the mean across the line: 3 pixels along it (-10, 0, +10 m)
+                tq = dq[:, :, None, :] + np.array([-1.0, 0.0, 1.0])[None, None, :, None] * cfg["step_m"] * tan[:, None, None, :]
+                trr = np.clip(np.floor(tq[..., 1] / ry).astype(int), 0, h - 1)
+                tcc = np.clip(np.floor(tq[..., 0] / rx).astype(int), 0, w - 1)
+                # water-side normal as an azimuth (x east, y south)
+                naz = np.degrees(np.arctan2(side * nrm[:, 0], -side * nrm[:, 1])) % 360.0
                 # display line: the middle of the inner band (15 m off the water's edge)
                 mid = pts + side * (edge + 15.0)[:, None] * nrm
                 lon, lat = grid.to_lonlat(mid[:, 1] / ry, mid[:, 0] / rx)
@@ -180,7 +227,7 @@ class Geometry:
                     "rr": rr_c, "cc": cc_c, "valid": valid,
                     "n_inner": len(inner), "ok": ok_side, "edge_m": edge,
                     "raft_cols": np.flatnonzero(offs >= cfg["raft_from_m"]),
-                    "drr": drr, "dcc": dcc, "dvalid": dvalid,
+                    "drr": drr, "dcc": dcc, "dvalid": dvalid, "trr": trr, "tcc": tcc, "naz": naz,
                     "lon": np.asarray(lon), "lat": np.asarray(lat),
                 })
 
@@ -230,6 +277,64 @@ def _depth(pr: dict, dvv, dvh, svv, cfg: dict, offs: np.ndarray) -> np.ndarray:
     return out.astype(float)
 
 
+def _lin_mean3(db: np.ndarray, rr: np.ndarray, cc: np.ndarray) -> np.ndarray:
+    """Mean in linear power of the pixels on the last axis (NaN ignored), in dB."""
+    v = db[rr, cc]
+    ok = np.isfinite(v)
+    lin = np.where(ok, 10.0 ** (np.where(ok, v, 0.0) / 10.0), 0.0)
+    n = ok.sum(-1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        out = 10.0 * np.log10(lin.sum(-1) / n)
+    return np.where(n > 0, out, np.nan)
+
+
+def _depth_1x3(pr: dict, vv_db, vh_db, base: dict, cfg: dict, offs: np.ndarray):
+    """feat-1: per sample, the occupied depth as ``_depth`` but with the scene's 1x3 mean (3 pixels along
+    the line, none across it) against the baseline p10 (3x3), and the scene's 1x3 VV cross-section (dB)."""
+    if "trr" not in pr or vv_db is None:
+        n = len(pr["ok"])
+        return np.full(n, np.nan), np.full((n, len(offs)), np.nan)
+    rr, cc, v = pr["trr"], pr["tcc"], pr["dvalid"]
+    vv3 = _lin_mean3(vv_db, rr, cc)
+    vh3 = _lin_mean3(vh_db, rr, cc)
+    with np.errstate(invalid="ignore"):
+        hit = (v & (vv3 - base["vv_p10"][pr["drr"], pr["dcc"]] >= cfg["dvv_db"])
+               & (vh3 - base["vh_p10"][pr["drr"], pr["dcc"]] >= cfg["dvh_db"]) & (vv3 >= cfg["vv_min_db"]))
+    n_run = np.where(hit.all(1), hit.shape[1], np.argmin(hit, 1))
+    depth = np.where(n_run > 0, offs[np.maximum(n_run - 1, 0)] + cfg["depth_step_m"] / 2, np.nan).astype(float)
+    return depth, np.where(v, vv3, np.nan)
+
+
+def outer_line(section_db: np.ndarray, offs: np.ndarray, reach_m: float | None, rel_db: float = 6.0) -> dict:
+    """feat-1: the outer double-bounce line of a stretch from its mean cross-section (scene VV, dB per
+    offset off the water's edge, mean over the samples in linear power). Local maxima within ``rel_db``
+    of the strongest, out to ``reach_m`` (the occupied depth + 15 m; 60 m when unknown); the outermost
+    one's lobe (down to -3 dB of it) gives the centroid (power-weighted distance from the water's edge).
+    Returns {"m", "db", "peaks"} (None where there is no data)."""
+    p_db = np.asarray(section_db, float)
+    lim = (reach_m if reach_m is not None and np.isfinite(reach_m) else 45.0) + 15.0
+    keep = (offs <= lim) & np.isfinite(p_db)
+    if keep.sum() < 2:
+        return {"m": None, "db": None, "peaks": 0}
+    idx = np.flatnonzero(keep)
+    d, p = offs[idx], 10.0 ** (p_db[idx] / 10.0)
+    n = len(p)
+    loc = [i for i in range(n) if (i == 0 or p[i] >= p[i - 1]) and (i == n - 1 or p[i] >= p[i + 1])]
+    top = max(p[i] for i in loc)
+    cand = [i for i in loc if p[i] >= top / 10 ** (rel_db / 10)]
+    # neighbouring maxima of a flat top (the same pixel sampled twice every 5 m) count once
+    peaks = [i for k, i in enumerate(cand) if k == 0 or i - cand[k - 1] > 2]
+    o = cand[-1]
+    a = b = o
+    while a > 0 and p[a - 1] >= p[o] / 2 and p[a - 1] <= p[a]:
+        a -= 1
+    while b < n - 1 and p[b + 1] >= p[o] / 2 and p[b + 1] <= p[b]:
+        b += 1
+    w = p[a:b + 1]
+    return {"m": int(round(float((d[a:b + 1] * w).sum() / w.sum()))), "db": round(float(10 * np.log10(p[o])), 1),
+            "peaks": len(peaks)}
+
+
 def pieces(profile: np.ndarray, valley_db: float, min_piece_n: int) -> int:
     """1 + number of valleys at least ``valley_db`` below the peaks on both sides,
     each piece at least ``min_piece_n`` samples long."""
@@ -256,10 +361,11 @@ def pieces(profile: np.ndarray, valley_db: float, min_piece_n: int) -> int:
 
 
 def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sector_of=None,
-          presmoothed: bool = False) -> dict:
+          presmoothed: bool = False, look_az_deg: float | None = None) -> dict:
     """Occupied stretches of one scene against the baseline of its orbit.
 
     ``base``: {"vv_p10", "vh_p10"} in dB (NaN = no data). ``sector_of(lon, lat)`` -> sector id.
+    ``look_az_deg``: the radar's look azimuth (``look_azimuth``) for the face features (feat-1; record only).
     Returns {"min", "max", "segments": [...], "rafted", "coverage", "by_sector": {id: [min, max]}}.
     """
     cfg = geom.cfg
@@ -282,6 +388,8 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
                 prof_vh = np.nanmax(a_vh[:, :ni], 1)
         inner_hit = hit[:, :ni].any(1)
         depth = _depth(pr, dvv, dvh, svv, cfg, geom.depth_offs)
+        depth13, section = _depth_1x3(pr, None if presmoothed else vv_db, vh_db, base, cfg, geom.depth_offs)
+        cphi = cos_to_radar(pr["naz"], look_az_deg) if look_az_deg is not None and "naz" in pr else None
         # outboard ship: the outer band (beyond the spread of the inner ship) also reaches the seed level,
         # so that side lobes and the spread of a bright inner ship do not count as a second ship
         rc = pr["raft_cols"]
@@ -305,10 +413,30 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 dmed = np.nanmedian(depth[idx]) if np.isfinite(depth[idx]).any() else np.nan
+                d13 = np.nanmedian(depth13[idx]) if np.isfinite(depth13[idx]).any() else np.nan
+                sec = section[idx]
+                ok_sec = np.isfinite(sec)
+                lin = np.where(ok_sec, 10.0 ** (np.where(ok_sec, sec, 0.0) / 10.0), 0.0).sum(0)
+                nsec = ok_sec.sum(0)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    sec_db = np.where(nsec > 0, 10.0 * np.log10(lin / np.maximum(nsec, 1)), np.nan)
                 pvh = np.nanmax(prof_vh[idx]) if np.isfinite(prof_vh[idx]).any() else np.nan
             mid = idx[len(idx) // 2]
             lon, lat = float(pr["lon"][mid]), float(pr["lat"][mid])
-            segs.append({
+            ol = outer_line(sec_db, geom.depth_offs, d13 if np.isfinite(d13) else (dmed if np.isfinite(dmed) else None),
+                            cfg["db_rel_db"])
+            feat = {
+                "depth_1x3_m": int(round(float(d13) / 5.0) * 5) if np.isfinite(d13) else None,
+                "db_line_m": ol["m"], "db_line_db": ol["db"], "db_peaks": ol["peaks"],
+                "look_az_deg": look_az_deg, "cos_phi": None, "face_look": None, "face_shares": None,
+            }
+            if cphi is not None:
+                cs = cphi[idx]
+                cls = [face_class(float(c), cfg["face_cos"]) for c in cs]
+                shares = {k: round(cls.count(k) / len(cls), 2) for k in ("toward", "along", "away")}
+                feat.update(cos_phi=round(float(np.median(cs)), 2), face_look=max(shares, key=lambda k: (shares[k], k == "along")),
+                            face_shares=shares)
+            segs.append({**feat,
                 "way_id": pr["way_id"], "kind": pr["kind"], "side": pr["side"],
                 "length_m": int(length), "est_length_m": int(max(length - cfg["length_trim_m"], step)),
                 "min": k, "max": mx + (1 if rafted else 0), "rafted": rafted,
@@ -427,4 +555,18 @@ def settings() -> dict:
         "length": f"区間長 − {c['length_trim_m']:g} m（目安・未検証）",
         "ownership": f"帯の画素は最も近い線のもの（差 {c['own_tolerance_m']:g} m まで）。桟橋の間の船を二重に数えない",
         "orbits": "基準は撮影と同じ相対軌道のものだけを使う（軌道を混ぜない）",
+        "features": {
+            "version": FEATURES_VERSION,
+            "status": "記録だけ（数・推定には使わない）。2部の設計 est-2 の準備",
+            "look_az_deg": ("レーダーが地上で見る方位（北から時計回り）。撮影の軌道の向きと地点の緯度から、Sentinel-1 の軌道（傾斜角 98.18°、周期 98.6 分）と地球の自転で"
+                            "地上の進行方向を求め、右向き観測として +90°（湛江の上昇軌道で約 77.6°＝東北東、下降で約 282°）"),
+            "cos_phi": (f"水側の法線と、レーダーのある方向（look_az_deg＋180°）のなす角 φ の cos（区間の点の中央値）。+1＝水側の面がレーダーを正面に向く。"
+                        f"face_look＝区間の点の多数決で toward（cosφ＞{c['face_cos']:g}、レーダー向き）／away（cosφ＜−{c['face_cos']:g}、反対向き）／along（沿う）、face_shares＝その割合"),
+            "depth": (f"depth_m＝ΔVV・ΔVH（今回の 3×3 平均−基準）で水際から 5〜{c['depth_max_m']:g} m に占有が続く奥行き（2026-10-30 の feat-1 で 90→{c['depth_max_m']:g} m）。"
+                      "depth_1x3_m＝今回を線に沿う 3 画素（−10・0・+10 m）だけで平均し法線方向には平均しない版（基準は 3×3 の p10 のまま）。どちらも区間の点の中央値、5 m 単位"),
+            "db_line": (f"外側の二回反射の線：区間の点の今回の VV（1×3）の断面を線形で平均し、奥行き（depth_1x3_m、無ければ depth_m、どちらも無ければ 45 m）＋15 m までの極大のうち"
+                        f"最も強いものから {c['db_rel_db']:g} dB 以内で最も外側のものを取り、その山（−3 dB まで）のパワー重心の水際からの距離を db_line_m、山の値を db_line_db、"
+                        "そうした山の数（10 m 以内の重なりは 1 つ）を db_peaks とする（未検証。10 m 画素なので距離の分解能は約 10 m）"),
+            "pair_id": "同じ船を2つの軌道で見る組：時刻順に、別の相対軌道の撮影で 36 時間以内のものと組にする（湛江では 157 と翌日の 84 など）。新しい撮影で既存の組は変わらない",
+        },
     }

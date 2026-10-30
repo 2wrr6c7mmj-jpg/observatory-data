@@ -65,7 +65,10 @@ QUAY_FIELDS = [
     "est_version", "est_mode", "est_p10", "est_p90", "est_mean",
     "est_warship_mode", "est_warship_p10", "est_warship_p90",
     "est_a_mode", "est_a_p10", "est_a_p90", "est_b_mode", "est_b_p10", "est_b_p90", "est_conflicts", "est_capped", "est_prior_hash",
+    # feat-1 (record only): the radar's look azimuth and the orbit pair (same ships seen from two orbits)
+    "features_version", "look_az_deg", "pair_id",
 ]
+PAIR_MAX_H = 36.0  # feat-1: scenes of two relative orbits within this many hours form a pair
 
 # Scenes the quay-v1 thresholds were tuned on (CHANGES.md, 2026-10-30): their counts are
 # in-sample values, and they are also in the baselines. Accuracy is judged on later scenes.
@@ -281,10 +284,20 @@ class Store:
             fc["features"] = feats
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        pairs = orbit_pairs(self.quay_rows)
+        qkey = lambda r: (r["site_id"], r["acquired_utc"], row_mask_tag(r))
+        months = dict(self.new_quay)
+        for r in self.quay_rows:
+            pid = pairs.get(qkey(r), "")
+            if (r.get("pair_id") or "") != pid:
+                r["pair_id"] = pid
+                months.setdefault(r["acquired_utc"][:7], [])  # rewrite the partner's month with its pair id
         if self.quay_rows or self.new_quay:
             write_csv(self.out / "quay_counts.csv", self.quay_rows, QUAY_FIELDS)
-        for month, items in self.new_quay.items():
+        for month, items in months.items():
             p = self.out / "quay" / f"{month}.geojson"
+            if not items and not p.exists():
+                continue
             fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
             fkey = lambda p: (p["site_id"], p["acquired_utc"], row_mask_tag(p))
             keys = {fkey(r) for r, _ in items}
@@ -293,6 +306,10 @@ class Store:
                 feats.extend(fs)
             feats.sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"]["site_id"],
                                       row_mask_tag(f["properties"]), f["properties"]["n"]))
+            for f in feats:
+                fp = f["properties"]
+                if "pair_id" in fp or pairs.get(qkey(fp)):
+                    fp["pair_id"] = pairs.get(qkey(fp)) or None
             fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4]), "features": feats}
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -505,6 +522,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
                 "est_a_* / est_b_*": "区画 A・B ごとの推定（区間の中央の位置で判定）",
                 "est_conflicts": "前提と合わない印（prior_conflict：valleys・length・cap）が付いた区間の数",
                 "est_capped": "モデル内の 80% 区間の上端が上限 16 隻に達した区間の数（1 以上なら合計はもっと多い可能性）",
+                "features_version / look_az_deg / pair_id": "feat-1（記録だけ）：レーダーが地上で見る方位と、軌道の組の ID（quay.method.features）",
                 "est_prior_hash": "推定に使った区画の事前分布（quay/<地点>-zone-prior.json の alpha）のハッシュ。history に撮影ごとの alpha が残る",
             },
             "can_say": "岸壁・桟橋に横付けされた物の有無・おおよその数の幅・占有の長さの目安（未検証）。同じ相対軌道どうしの撮影の比較",
@@ -587,6 +605,36 @@ class QuayContext:
         return self._geom
 
 
+def orbit_pairs(rows: list[dict], max_h: float = PAIR_MAX_H) -> dict:
+    """feat-1: pair ids of quay rows. In time order, an unpaired scene is paired with the next unpaired
+    scene of another relative orbit (same site and mask version) within ``max_h`` hours: the same ships
+    seen from two geometries (e.g. 157 and the next day's 84 at Zhanjiang). A new scene never breaks a pair.
+    Returns {(site_id, acquired_utc, mask tag): "<site>-<first scene's time>-ro<a>+ro<b>"}."""
+    def t(r):
+        return datetime.strptime(r["acquired_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    out: dict = {}
+    groups: dict = {}
+    for r in rows:
+        groups.setdefault((r["site_id"], row_mask_tag(r)), []).append(r)
+    for (sid, tag), rs in groups.items():
+        rs = sorted(rs, key=lambda r: r["acquired_utc"])
+        used = set()
+        for i, r in enumerate(rs):
+            if i in used:
+                continue
+            for j in range(i + 1, len(rs)):
+                s = rs[j]
+                if (t(s) - t(r)).total_seconds() > max_h * 3600:
+                    break
+                if j in used or str(s.get("relative_orbit")) == str(r.get("relative_orbit")):
+                    continue
+                pid = f"{sid}-{stamp(r['acquired_utc'])}-ro{r.get('relative_orbit')}+ro{s.get('relative_orbit')}"
+                out[(sid, r["acquired_utc"], tag)] = out[(sid, s["acquired_utc"], tag)] = pid
+                used.update((i, j))
+                break
+    return out
+
+
 def in_sample(site: dict, acquired_utc: str, bmeta: dict) -> str:
     """"tuning" (the thresholds were tuned on it), "baseline" (in the baseline period) or ""."""
     if acquired_utc in QUAY_TUNING_SCENES.get(site["id"], set()):
@@ -612,6 +660,10 @@ def quay_features(site: dict, acq: dict, q: dict, credibility: str, bver: str, s
                 "cluster": sg.get("cluster"), "cluster_lead": sg.get("cluster_lead"),
                 "peak_dvh_db": sg.get("peak_dvh_db"), "outer_len_m": sg.get("outer_len_m"),
                 "depth_m": sg.get("depth_m"), "cols_hint": quay_est.cols_hint(sg.get("depth_m")),
+                "features_version": quay.FEATURES_VERSION, "depth_1x3_m": sg.get("depth_1x3_m"),
+                "db_line_m": sg.get("db_line_m"), "db_line_db": sg.get("db_line_db"), "db_peaks": sg.get("db_peaks"),
+                "look_az_deg": sg.get("look_az_deg"), "cos_phi": sg.get("cos_phi"), "face_look": sg.get("face_look"),
+                "face_shares": sg.get("face_shares"), "pair_id": None,
                 "zone": sg.get("zone"), "face": sg.get("face"),
                 "est_version": quay_est.EST_VERSION if "n_mode" in sg else None,
                 "n_mode": sg.get("n_mode"), "n_p10": sg.get("n_p10"), "n_p90": sg.get("n_p90"), "n_mean": sg.get("n_mean"),
@@ -661,7 +713,8 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         return f"、岸壁の数：軌道 {acq['relative_orbit']} の基準なし"
     layers, bmeta = bl
     try:
-        q = quay.count(qctx.geometry(), vv, vh, layers, lambda lo, la: sector_of(sectors, lo, la))
+        look = quay.look_azimuth(acq.get("orbit_direction"), float(site.get("center_lat") or 0.0))
+        q = quay.count(qctx.geometry(), vv, vh, layers, lambda lo, la: sector_of(sectors, lo, la), look_az_deg=look)
         bver = f"ro{bmeta['relative_orbit']}-{bmeta['version']}"
         cred = fbase.credibility(int(bmeta["scenes"]), int(fbase.site_config(site)["min_scenes"]))
         row = {
@@ -673,6 +726,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
             "occupied_min": q["min"], "occupied_max": q["max"],
             "segments": len(q["segments"]), "rafted": q["rafted"], "quay_coverage": q["coverage"],
             "in_sample": in_sample(site, acq["acquired_utc"], bmeta),
+            "features_version": quay.FEATURES_VERSION, "look_az_deg": look,
         }
         for col, sc in zip(SECTOR_COLUMNS, sectors):
             mn, mx = q["by_sector"].get(sc["id"], [0, 0])
