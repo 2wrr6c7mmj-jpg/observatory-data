@@ -45,7 +45,7 @@ import numpy as np
 
 from . import quay_est2 as e2
 
-CALIB_VERSION = "est-2-cal1"
+CALIB_VERSION = "est-2-cal2"
 N0_MU = 5.0
 N0_OFFSET = 5.0
 NU0_SD = 5.0
@@ -56,6 +56,15 @@ LR_ACHROMATIC = 1.5
 LR_STRONG = 0.3
 HARD_MIN_N = 5
 HARD_SHARE = 0.5
+# #8: the outer double-bounce line (db_line_m) of the toward faces, c-wise log-normal
+DB_FACE = "toward"
+N0_DB = 2.0             # pseudo-count of the log mean toward the placeholder (22 / 42 / 62 m)
+PH_DB_SD_LOG = 0.5      # placeholder sd of ln(db_line); the common sd is shrunk toward it
+NU0_DB = 5.0
+MIN_GAP_DB_LOG = 0.1
+DB_WEIGHTS = (0.0, 0.25, 0.5, 0.75, 1.0)   # the likelihood is raised to the weight (cap 1)
+DB_CORR_R = 0.3         # within-c correlation of ln(db_line) and the depth at or above this:
+DB_CORR_CAP = 0.5       # the weight is capped here (the two clues partly count the same ships twice)
 GROUPS = ("away", "along", "toward_157", "toward_84")
 GROUP_NAMES = {"away": "反対向き（両軌道）", "along": "沿う（両軌道）",
                "toward_157": "レーダー向き・軌道 157（入射約 45°）", "toward_84": "レーダー向き・軌道 84（入射約 32°）"}
@@ -105,6 +114,7 @@ def load_rows(out: Path, site_id: str = "ZJG") -> tuple[list[dict], list[dict]]:
             "orbit": str(m.get("relative_orbit") or ""), "group": group_of(m.get("face_look") or "", str(m.get("relative_orbit") or "")),
             "s1_occ": m.get("s1_occupied") if m.get("s1_occupied") in ("0", "1") else None,
             "s1_depth": float(m["s1_depth_m"]) if m.get("s1_depth_m") not in (None, "") else None,
+            "s1_db": float(m["s1_db_line_m"]) if m.get("s1_db_line_m") not in (None, "") else None,
             "smear": smear,
             "v_occ": lab.get("verified_occupied"), "v_c": lab.get("verified_c"), "v_color": lab.get("verified_color") or "",
             "auto_occ": lab.get("occupied"), "auto_c": lab.get("c"), "auto_color": lab.get("color_class") or "",
@@ -189,17 +199,110 @@ def hard_ways(answered: list[dict]) -> dict:
             for w, (n, k) in sorted(by.items()) if n >= HARD_MIN_N and k / n >= HARD_SHARE}
 
 
-def fit(rows: list[dict]) -> dict:
+def db_rows(rows: list[dict]) -> list[dict]:
+    """Column rows on a face toward the radar with a double-bounce line (the only face est-2 uses it on)."""
+    return [r for r in column_rows(rows) if r["face"] == DB_FACE and r["s1_db"] is not None and r["s1_db"] > 0]
+
+
+def fit_db(rows: list[dict]) -> dict:
+    """c-wise log-normal of db_line_m (both orbits pooled: orbit 84 has 1 row), one common sd of the log."""
+    cells = {c: [math.log(r["s1_db"]) for r in db_rows(rows) if int(r["v_c"]) == c] for c in e2.C_VALUES}
+    table, m = [], []
+    for c in e2.C_VALUES:
+        v, t = cells[c], math.log(e2.PH_DB_MU[c - 1])
+        x = (len(v) * float(np.mean(v)) + N0_DB * t) / (len(v) + N0_DB) if v else t
+        m.append(x)
+        raw = [r["s1_db"] for r in db_rows(rows) if int(r["v_c"]) == c]
+        table.append({"c": c, "n": len(v), "min_m": min(raw) if raw else None, "median_m": float(np.median(raw)) if raw else None,
+                      "max_m": max(raw) if raw else None, "mean_m": round(float(np.mean(raw)), 1) if raw else None,
+                      "geo_mean_m": round(math.exp(float(np.mean(v))), 1) if v else None,
+                      "sd_log_obs": round(float(np.std(v, ddof=1)), 2) if len(v) > 1 else None,
+                      "placeholder_m": e2.PH_DB_MU[c - 1]})
+    for i in (1, 2):
+        m[i] = max(m[i], m[i - 1] + MIN_GAP_DB_LOG)
+    for row, x in zip(table, m):
+        row["calibrated_m"] = round(math.exp(x), 1)
+    n = sum(len(v) for v in cells.values())
+    ss = sum(float(((np.array(v) - np.mean(v)) ** 2).sum()) for v in cells.values() if v)
+    df = n - sum(1 for v in cells.values() if v)
+    sd = math.sqrt((ss + NU0_DB * PH_DB_SD_LOG ** 2) / (df + NU0_DB)) if df > 0 else PH_DB_SD_LOG
+    # within-c correlation with the occupied depth (does the line count the same thing as the depth?)
+    dr = db_rows(rows)
+    r_in = r_all = None
+    if len(dr) > 3:
+        lx = np.array([math.log(r["s1_db"]) for r in dr])
+        dp = np.array([r["s1_depth"] for r in dr])
+        cc = np.array([int(r["v_c"]) for r in dr])
+        mx = np.array([lx[cc == k].mean() for k in cc])
+        md = np.array([dp[cc == k].mean() for k in cc])
+        if np.std(lx - mx) > 0 and np.std(dp - md) > 0:
+            r_in = float(np.corrcoef(lx - mx, dp - md)[0, 1])
+        r_all = float(np.corrcoef(lx, dp)[0, 1])
+    return {"form": "lognormal", "mean_m": [round(math.exp(x), 1) for x in m], "sd_log": round(sd, 2), "n": n,
+            "pooled_sd_log_obs": round(math.sqrt(ss / df), 2) if df > 0 else None, "table": table,
+            "corr_depth_all": round(r_all, 2) if r_all is not None else None,
+            "corr_depth_within_c": round(r_in, 2) if r_in is not None else None,
+            "max_weight": DB_CORR_CAP if (r_in is not None and r_in >= DB_CORR_R) else 1.0}
+
+
+def db_by_face(rows: list[dict]) -> dict:
+    """db_line_m by face and c (the record; est-2 uses the toward faces only)."""
+    out: dict = {}
+    for r in column_rows(rows):
+        if r["s1_db"] is None:
+            continue
+        out.setdefault(r["face"], {}).setdefault(r["v_c"], []).append(r["s1_db"])
+    return {f: {c: {"n": len(v), "min_m": min(v), "median_m": float(np.median(v)), "max_m": max(v)}
+                for c, v in sorted(cs.items())} for f, cs in sorted(out.items())}
+
+
+def _fit_params(rows: list[dict]) -> dict:
     d = fit_depth(rows)
     s = fit_smear(rows)
-    return {"depth_mu": d["depth_mu"], "depth_sd": d["depth_sd"], "smear_p_real": s["smear_p_real"]}
+    db = fit_db(rows)
+    return {"depth_mu": d["depth_mu"], "depth_sd": d["depth_sd"], "smear_p_real": s["smear_p_real"],
+            "db_line": {"form": db["form"], "mean_m": db["mean_m"], "sd_log": db["sd_log"], "weight": 0.0,
+                        "max_weight": db["max_weight"]}}
+
+
+def _with_weight(p: dict, w: float) -> dict:
+    return {**p, "db_line": {**p["db_line"], "weight": float(w)}}
+
+
+def choose_db_weight(rows: list[dict]) -> tuple[float, dict]:
+    """The weight with the best date-wise leave-one-out log score of the columns on ``rows`` (ties: the
+    smaller weight), from DB_WEIGHTS up to the cap set by the within-c correlation with the depth."""
+    days = sorted({r["date"] for r in rows})
+    folds = {d: _fit_params([r for r in rows if r["date"] != d]) for d in days}
+    cap = fit_db(rows)["max_weight"]
+    ls = {}
+    for w in DB_WEIGHTS:
+        if w > cap + 1e-9:
+            continue
+        sc = score(rows, lambda r, _w=w: _with_weight(folds[r["date"]], _w))["columns"]
+        ls[w] = sc["log_score"] if sc["log_score"] is not None else -math.inf
+    best = max(ls, key=lambda w: (round(ls[w], 6), -w))
+    return best, ls
+
+
+def fit(rows: list[dict], db_weight: float | None = 0.0) -> dict:
+    """Parameters fitted on ``rows``. ``db_weight``: a fixed weight of the double-bounce line, or None to
+    choose it by an inner date-wise leave-one-out on ``rows``."""
+    p = _fit_params(rows)
+    w = choose_db_weight(rows)[0] if db_weight is None else db_weight
+    return _with_weight(p, w)
 
 
 # --- evaluate --------------------------------------------------------------------------------------
 def posterior_c(r: dict, params: dict) -> np.ndarray:
     mu = params["depth_mu"][r["group"]]
     lk, _ = e2.depth_like(r["s1_depth"], "x", None, e2.DEPTH_LIMIT_M, mu=tuple(mu), sd=params["depth_sd"])
-    return e2.c_posterior(r["place"], [lk])
+    likes = [lk]
+    db = params.get("db_line")
+    if db and db.get("weight", 0) > 0 and r.get("s1_db") is not None:
+        l2, _ = e2.db_like(r["s1_db"], r["face"], db)
+        likes.append(l2)
+    return e2.c_posterior(r["place"], likes)
 
 
 def predict_c(r: dict, params: dict) -> int:
@@ -222,6 +325,7 @@ def score(rows: list[dict], params_of) -> dict:
     ca = sum(v for k, v in conf.items() if k[0] == k[-1])
     pt = [float(posterior_c(r, params_of(r))[int(r["v_c"]) - 1]) for r in cr]
     ec = sum(float((posterior_c(r, params_of(r)) * np.array(e2.C_VALUES)).sum()) for r in cr)
+    bc = [float(((posterior_c(r, params_of(r)) - np.eye(3)[int(r["v_c"]) - 1]) ** 2).sum()) for r in cr]
     orows = occupancy_rows(rows)
     ps = [(p_occ(r, params_of(r)), r["v_occ"] == "1") for r in orows]
     oa = sum(1 for p, y in ps if (p >= 0.5) == y)
@@ -230,7 +334,8 @@ def score(rows: list[dict], params_of) -> dict:
     return {"columns": {"n": len(cr), "agree": ca, "share": round(ca / len(cr), 3) if cr else None, "confusion": dict(sorted(conf.items())),
                         "mean_p_true": round(float(np.mean(pt)), 3) if pt else None,
                         "sum_c_owner": sum(int(r["v_c"]) for r in cr), "sum_c_expected": round(ec, 1),
-                        "log_score": round(float(np.mean(np.log(np.maximum(pt, 1e-9)))), 3) if pt else None},
+                        "log_score": round(float(np.mean(np.log(np.maximum(pt, 1e-9)))), 3) if pt else None,
+                        "brier": round(float(np.mean(bc)), 3) if bc else None},
             "occupied": {"n": len(ps), "agree": oa, "share": round(oa / len(ps), 3) if ps else None,
                          "brier": round(brier, 3) if brier is not None else None},
             "smear_rows": {"n": len(sm), "brier": round(sum((p - y) ** 2 for p, y in sm) / len(sm), 3) if sm else None}}
@@ -248,9 +353,32 @@ def cross_validate(rows: list[dict]) -> dict:
             "after_in_sample": score(rows, lambda r, _p=fit(rows): _p),
             "always_c1": {k: v for k, v in score(column_rows(rows), lambda r: always_one)["columns"].items()
                           if k in ("n", "agree", "share", "confusion")},
+            "db_line": cross_validate_db(rows),
             "note": ("列数は人の c（S2 の時刻）と S1 の奥行き（−40.5〜+79.4 時間ずれる）の組で 45 件と少ない。"
                      "占有は S1 の占有×本当に船である確率（にじみ）が 0.5 以上を「いる」として人と比べた。mean_p_true＝人の c に付けた事後確率の平均、"
                      "log_score＝その対数の平均（0 に近いほどよい）。sum_c_owner／sum_c_expected＝人の列数の合計と、事後の列数の期待値の合計（隻数の偏りの目安）")}
+
+
+def cross_validate_db(rows: list[dict]) -> dict:
+    """#8: the double-bounce line against weight 0 (the current est-2), all in the date-wise leave-one-out.
+    Every fold re-fits the depth, the smear and the line (means, sd) on the other days; ``nested`` also
+    chooses the weight inside the fold (an inner leave-one-out on the other days) and is the comparison
+    that decides; ``fixed`` gives each weight for the record."""
+    days = sorted({r["date"] for r in rows})
+    folds = {d: _fit_params([r for r in rows if r["date"] != d]) for d in days}
+    chosen = {d: choose_db_weight([r for r in rows if r["date"] != d])[0] for d in days}
+    fixed = {f"{w:g}": score(rows, lambda r, _w=w: _with_weight(folds[r["date"]], _w))["columns"] for w in DB_WEIGHTS}
+    w0 = fixed["0"]
+    nested = score(rows, lambda r: _with_weight(folds[r["date"]], chosen[r["date"]]))["columns"]
+    full_w, full_ls = choose_db_weight(rows)
+    better = (nested["log_score"] > w0["log_score"] and nested["brier"] < w0["brier"] and nested["agree"] >= w0["agree"])
+    return {"method": ("日付ごとの leave-one-out。各回、外した日以外で奥行き・にじみ・二回反射の線（平均・σ）を較正し直し、"
+                       "nested は重みも外した日以外の中の leave-one-out（対数スコア最大、同点は小さい方）で選んで外した日を評価"),
+            "rows": len(db_rows(rows)), "weight_0": w0, "nested": nested,
+            "nested_weights": {d: chosen[d] for d in days}, "fixed": fixed,
+            "all_days_choice": {"weight": full_w, "log_score_by_weight": {f"{w:g}": v for w, v in full_ls.items()}},
+            "rule": "nested が重み 0 より対数スコア・ブライア（列数）ともによく、一致件数が下がらないときだけ重みを採る（上限 1、奥行きとの列内相関 ≥ 0.3 なら 0.5）",
+            "improved": bool(better), "adopted_weight": (full_w if better else 0.0)}
 
 
 def auto_agreement(rows: list[dict]) -> dict:
@@ -273,6 +401,9 @@ def auto_agreement(rows: list[dict]) -> dict:
 def calibrate(out: Path, site_id: str = "ZJG") -> dict:
     rows, answered = load_rows(out, site_id)
     d, s, c = fit_depth(rows), fit_smear(rows), fit_colour(rows)
+    db = fit_db(rows)
+    ev = cross_validate(rows)
+    db_w = min(1.0, ev["db_line"]["adopted_weight"])
     return {
         "version": CALIB_VERSION, "site_id": site_id,
         "labels": {"answered": len(answered), "verified": len(rows), "cannot_judge": len(answered) - len(rows),
@@ -280,14 +411,22 @@ def calibrate(out: Path, site_id: str = "ZJG") -> dict:
                    "used": "status＝ok かつ verified＝1、2026-10-27 より前の日だけ",
                    "column_rows": d["n"], "occupancy_rows": len(occupancy_rows(rows)), "days": len({r['date'] for r in rows})},
         "params": {"depth_mu": d["depth_mu"], "depth_sd": d["depth_sd"], "smear_p_real": s["smear_p_real"],
+                   "db_line": {"form": db["form"], "mean_m": db["mean_m"], "sd_log": db["sd_log"], "weight": db_w},
                    "s2_lr_auto": c["s2_lr_auto"], "s2_lr_owner": c["s2_lr_owner"], "hard_ways": sorted(hard_ways(answered))},
         "fit": {"depth": {k: d[k] for k in ("offset", "n", "pooled_sd_obs", "table")}, "smear": s, "colour": c["table"],
+                "db_line": {**{k: db[k] for k in ("form", "n", "sd_log", "pooled_sd_log_obs", "table", "corr_depth_all",
+                                                  "corr_depth_within_c", "max_weight")},
+                            "used": "レーダー向きの面（両軌道。軌道 84 は 1 件）で、人の列数 1〜3・S1 占有・db_line_m のある行",
+                            "by_face": db_by_face(rows)},
                 "hard_ways": hard_ways(answered)},
         "shrinkage": {"depth_mean_pseudo_n": N0_MU, "offset_pseudo_n": N0_OFFSET, "sd_pseudo_df": NU0_SD,
                       "min_gap_m": MIN_GAP_M, "smear_pseudo_n": A0_SMEAR, "colour_pseudo_n": N0_COLOUR,
                       "lr_caps": {"achromatic": LR_ACHROMATIC, "strong": LR_STRONG},
-                      "hard": {"min_answers": HARD_MIN_N, "cannot_share": HARD_SHARE}},
-        "evaluation": cross_validate(rows),
+                      "hard": {"min_answers": HARD_MIN_N, "cannot_share": HARD_SHARE},
+                      "db_line": {"mean_log_pseudo_n": N0_DB, "sd_log_placeholder": PH_DB_SD_LOG, "sd_log_pseudo_df": NU0_DB,
+                                  "min_gap_log": MIN_GAP_DB_LOG, "weights": list(DB_WEIGHTS),
+                                  "corr_cap": {"within_c_r": DB_CORR_R, "max_weight": DB_CORR_CAP}}},
+        "evaluation": ev,
         "auto_vs_owner": auto_agreement(rows),
     }
 

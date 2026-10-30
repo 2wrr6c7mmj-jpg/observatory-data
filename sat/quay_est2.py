@@ -10,8 +10,9 @@ For every occupied stretch of quay-v1 in a scene:
    coastline and sector B 0.85/0.13/0.02.
 2. The occupied depth (depth_m) is N(mu[face, orbit][c], 12 m); a depth at the depth limit of the
    profile (120 m, 90 m before feat-1) is censored (P(D >= limit)). The outer double-bounce line
-   (db_line_m) is recorded only (weight 0 until the calibration of #7: the S1 values of #5, mostly
-   5-14 m, do not fit the placeholder means 22 / 42 / 62 m). The face
+   (db_line_m, toward faces) is a c-wise log-normal raised to a weight; #8 fitted it on the owner's
+   labels (geometric means about 10 / 26 / 51 m) but the date-wise cross-validation did not improve
+   on weight 0, so the weight stays 0 (recorded only). The face
    (toward / along / away) is the stretch's face_look (feat-1), or else it is worked out from the
    normal of the Sentinel-2 sections (labels/<site>-s2-sections.geojson, the same OSM lines) and the
    look azimuth of the orbit. The toward means depend on the incidence angle (45 deg: orbit 157,
@@ -34,7 +35,7 @@ The numbers above are HQ's placeholders (1-D simulation and settings, 2026-10-30
 sat/quay_est2_calib.py -> sat/quay_est2_calib.json) re-fits on the owner's checked S2 labels: the depth
 means and sd, the smear P(real) and the S2 colour LR (grey and white merged as achromatic, capped);
 OSM ways mostly not judgeable by eye are noted (hard_to_judge), not down-weighted. pi, kappa, the
-column prior and the double-bounce line stay placeholders. Without the calibration file the
+column prior stay placeholders; the double-bounce line is fitted (#8) but kept at weight 0. Without the calibration file the
 placeholders are used.
 The Sentinel-2 labels (#5, automatic, unverified) are not an input for the counts (occupied, c) and
 not a truth either; only their hull colour class is used as the colour clue.
@@ -85,15 +86,20 @@ S2_LR = dict(_P.get("s2_lr_auto") or PH_S2_LR)            # the automatic colour
 S2_LR_OWNER = dict(_P.get("s2_lr_owner") or {})           # a row checked by eye: achromatic / strong / blank
 HARD_WAYS = {str(w) for w in _P.get("hard_ways", [])}     # OSM ways mostly not judgeable by eye at 10 m
 STATUS = ("較正 1 回目（人の目で確かめた S2 ラベル 81 区間×日、目視は所有者 1 人。列数の較正に使えたのは 45 件で少ない）。"
-          "較正していない値（π・κ・列数の事前分布・二回反射の線）は仮置きのまま" if _P else
+          "較正していない値（π・κ・列数の事前分布）は仮置きのまま。二回反射の線は #8 で較正したが交差検証で改善せず重み 0" if _P else
           "仮置き・較正前（司令部の 1 次元模擬と仮置き値。正解データでの較正は #7）")
 if _P and CALIB.get("labels", {}).get("verified") is not None:
     STATUS = STATUS.replace("81 区間×日", f"{CALIB['labels']['verified']} 区間×日").replace("45 件", f"{CALIB['labels']['column_rows']} 件")
 
 INCIDENCE_BY_ORBIT = {"ZJG": {"157": 45.0, "84": 32.0}}
-DB_MU = (22.0, 42.0, 62.0)  # outer double-bounce line off the water's edge (toward faces only)
-DB_SD_M = 10.0
-DB_WEIGHT = 0.0             # recorded only (the likelihood is raised to this power); not calibrated in #7
+PH_DB_MU = (22.0, 42.0, 62.0)  # outer double-bounce line off the water's edge (toward faces only), placeholder
+PH_DB_SD_M = 10.0
+_DB = _P.get("db_line") or {}   # #8 (sat/quay_est2_calib.py): c-wise log-normal, weight chosen by cross-validation
+DB_FORM = _DB.get("form", "normal")
+DB_MU = tuple(_DB["mean_m"]) if _DB else PH_DB_MU
+DB_SD_M = PH_DB_SD_M            # the normal form (placeholder) only
+DB_SD_LOG = float(_DB.get("sd_log", 0.5))
+DB_WEIGHT = min(1.0, float(_DB.get("weight", 0.0)))   # the likelihood is raised to this power (0: recorded only)
 DEPTH_LIMIT_M = 120.0       # feat-1 profile (0-120 m)
 DEPTH_LIMIT_OLD_M = 90.0    # before feat-1
 FACE_COS = 0.5
@@ -118,7 +124,7 @@ FACE_NAMES = {"toward": "レーダー向き", "along": "沿う", "away": "反対
 CLUE_NAMES = {
     "depth": "占有の奥行き（S1）",
     "depth_censored": "奥行きが上限に達した（以上として扱う）",
-    "db_line": "外側の二回反射の線（S1、レーダー向きの面。記録だけ・重み 0）",
+    "db_line": "外側の二回反射の線（S1、レーダー向きの面。#8 で較正したが交差検証で改善せず重み 0・記録だけ）",
     "pair": "軌道の組のもう一方の撮影",
     "face_feature": "面の向き（feat-1 の記録）",
     "face_sections": "面の向き（S2 区間の法線から計算）",
@@ -234,15 +240,24 @@ def depth_like(depth, face: str, incidence, limit: float, mu: tuple | None = Non
     return np.array([_npdf(d, m, sd) for m in mu]) + 1e-300, "depth"
 
 
-def db_like(db_line, face: str) -> tuple[np.ndarray, str]:
-    """The outer double-bounce line: recorded only (weight DB_WEIGHT = 0, a flat likelihood) until the
-    calibration of #7; the clue is still returned so that its use can be counted."""
+def db_like(db_line, face: str, params: dict | None = None) -> tuple[np.ndarray, str]:
+    """The outer double-bounce line (toward faces only), raised to the weight; weight 0 is a flat
+    likelihood (recorded only). The clue is returned either way so that its use can be counted.
+    ``params`` ({form, mean_m, sd_log, weight}) overrides the loaded values (used by the calibration)."""
     if face != "toward" or db_line in (None, ""):
         return np.ones(3), ""
-    if DB_WEIGHT == 0:
+    form = params.get("form", "normal") if params else DB_FORM
+    mu = tuple(params["mean_m"]) if params else DB_MU
+    w = min(1.0, float(params.get("weight", 0.0))) if params else DB_WEIGHT
+    if w == 0:
         return np.ones(3), "db_line"
     x = float(db_line)
-    return (np.array([_npdf(x, m, DB_SD_M) for m in DB_MU]) + 1e-300) ** DB_WEIGHT, "db_line"
+    if form == "lognormal":
+        sd = float(params.get("sd_log", DB_SD_LOG)) if params else DB_SD_LOG
+        lk = np.array([_npdf(math.log(max(x, 1.0)), math.log(m), sd) for m in mu])
+    else:
+        lk = np.array([_npdf(x, m, DB_SD_M) for m in mu])
+    return (lk + 1e-300) ** w, "db_line"
 
 
 def warship_p(place: str, length_m: float, ln_lr: float, kap: float, min_bin: int = 0) -> float:
@@ -693,7 +708,7 @@ def _limits_calib(c: dict) -> list[str]:
         (f"較正 1 回目（#7）：所有者 1 人が Sentinel-2 の 10 m 自然色で目で確かめたラベル（判断できた {lab.get('verified')} 区間×日、"
          f"判断できない {lab.get('cannot_judge')}）で、列数の奥行きの平均・σ、にじみの割り引き、S2 の色の LR を見直した。"
          "目視の正しさ自体は確かめておらず、10 m 画素では 1 列か 2 列か・灰か白かを誤り得る"),
-        ("較正したのは奥行きの平均・σ・にじみ・色の LR だけ。π（区画・長さごとの軍艦の割合）・κ・列数の事前分布・二回反射の線（重み 0）・長さの分け方は仮置きのまま。"
+        ("較正したのは奥行きの平均・σ・にじみ・色の LR だけ。π（区画・長さごとの軍艦の割合）・κ・列数の事前分布・長さの分け方は仮置きのまま（二回反射の線は #8 で較正したが重み 0）。"
          "軍艦かどうかの正解は無く、π と色の LR は確かめられていない"),
         (f"列数の較正に使えたのは {lab.get('column_rows')} 件（人の列数と S1 の奥行きの組、大半が軌道 157 のレーダー向きの面）と少ない。"
          "反対向き・沿う面の 2・3 列と軌道 84 は 0〜1 件で、全体のずれ"
@@ -714,6 +729,26 @@ def _limits_calib(c: dict) -> list[str]:
     ]
 
 
+def _db_limit(c: dict) -> str:
+    f = (c.get("fit") or {}).get("db_line")
+    e = (c.get("evaluation") or {}).get("db_line")
+    if not f or not e:
+        return "外側の二回反射の線は重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わない"
+    t = {x["c"]: x for x in f["table"]}
+    w0, ne = e["weight_0"], e["nested"]
+    rng = "、".join(f"{c} 列 {t[c]['n']} 件 {t[c]['min_m']:.0f}〜{t[c]['max_m']:.0f} m（中央値 {t[c]['median_m']:.0f}）" for c in (1, 2, 3))
+    head = (f"外側の二回反射の線（#8）：レーダー向きの面の {f['n']} 件（{rng}）で列ごとの対数正規（幾何平均 "
+            f"{'／'.join(f'{m:g}' for m in c['params']['db_line']['mean_m'])} m、σ(ln) {f['sd_log']}）を当てた。"
+            f"1 列は狭くまとまるが、2 列の下の方（最小 {t[2]['min_m']:.0f} m）は 1 列（最大 {t[1]['max_m']:.0f} m）と重なる。奥行きとの相関は全体 {f['corr_depth_all']}、列の中でも {f['corr_depth_within_c']} で、"
+            f"同じ船を二重に数える分があるため重みの上限を {f['max_weight']:g} とした。日付ごとの交差検証（重みも内側で選ぶ）で、重み 0 に対し"
+            f"列数の一致 {w0['agree']}→{ne['agree']}／{w0['n']} 件、期待値の合計 {w0['sum_c_expected']}→{ne['sum_c_expected']}（人 {w0['sum_c_owner']}）、"
+            f"ブライア {w0['brier']}→{ne['brier']}、対数スコア {w0['log_score']}→{ne['log_score']}。")
+    if e.get("improved"):
+        return head + f"改善したため重み {c['params']['db_line']['weight']:g} を採った。件数が少なく、10-26 の S1 は較正データに入っている（標本内）"
+    return head + ("改善しないため重み 0（記録だけ）のまま据え置いた。件数が少なく（同じ日の隣り合う区間が同じ値を持つ組もある）、"
+                   "10-26 の S1 は較正データに入っている（標本内）")
+
+
 LIMITS_PH = [
     "値はすべて仮置き・較正前（司令部の 1 次元模擬と仮置きの値）。正解データ（人の目で確認したラベル）での較正は #7 で行う",
 ]
@@ -725,8 +760,7 @@ LIMITS = (_limits_calib(CALIB) if _P else LIMITS_PH) + [
     ("S2 の色は船体の色だけを使い（所有者が確かめた行は人の色、それ以外は自動判定）、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影の色は 0（使わない）"
      if _P else "S2 の色は自動判定（#5、未確認）の船体の色だけを使い、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影の色は 0（使わない）"),
     "2026-10-27 以降の S2 の日の色・ラベルは入力にも較正にも使わない（標本外として凍結）",
-    ("外側の二回反射の線は重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わない。#7 でも較正していない"
-     if _P else "外側の二回反射の線は #7 の較正まで重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わないため"),
+    (_db_limit(CALIB) if _P else "外側の二回反射の線は #7 の較正まで重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わないため"),
     ("S2 の自動ラベルの占有・列数（#5）は推定の入力に使っていない。所有者が確かめたラベルは較正（奥行き・にじみ・色）に使い、同じラベルでの評価は日付ごとの交差検証で出した"
      if _P else "S2 ラベルの占有・列数（#5、自動・未確認）は推定の入力にも正解にも使っていない（列数の一致表は確認のためだけ）"),
     "SAR の明るさ（ΔVV・ΔVH）は記録だけで判定に使っていない",
@@ -752,14 +786,21 @@ def settings() -> dict:
                               "レーダー向き・軌道 84（入射約 32°）": list(TOWARD_MU[32.0])},
             "depth_sd_m": DEPTH_SD_M,
             "depth_limit_m": f"{DEPTH_LIMIT_M:g}（feat-1 の前の記録は {DEPTH_LIMIT_OLD_M:g}）。上限に達した奥行きは「以上」として扱う",
-            "db_line_mean_m": list(DB_MU), "db_line_sd_m": DB_SD_M,
+            "db_line_form": DB_FORM,
+            "db_line_mean_m": list(DB_MU),
+            **({"db_line_sd_log": DB_SD_LOG} if DB_FORM == "lognormal" else {"db_line_sd_m": DB_SD_M}),
             "db_line_weight": DB_WEIGHT,
+            "placeholder_db_line_mean_m": list(PH_DB_MU), "placeholder_db_line_sd_m": PH_DB_SD_M,
             "placeholder_depth_mean_m": {"反対向き": list(PH_DEPTH_MU["away"]), "沿う": list(PH_DEPTH_MU["along"]),
                                          "レーダー向き・軌道 157（入射約 45°）": list(PH_TOWARD_MU[45.0]),
                                          "レーダー向き・軌道 84（入射約 32°）": list(PH_TOWARD_MU[32.0])},
             "placeholder_depth_sd_m": PH_DEPTH_SD_M,
-            "db_line_note": ("重み 0・記録だけ（#7 でも較正していない。区間ごとの値は quay_est2.json の db_line_m、使えた区間の数は used_db_line）。"
-                             "#5 の S1 の実測は大半が 5〜14 m で、仮置きの平均 22／42／62 m と合わない。平均・σ は将来の較正用の仮置き"),
+            "db_line_note": (("#8 で人の列数に合わせて較正（列ごとの対数正規、平均は幾何平均、重みは尤度のべき）。"
+                              + ("日付ごとの交差検証で重み 0 より改善しなかったため重み 0・記録だけ。" if DB_WEIGHT == 0 else f"交差検証で改善したため重み {DB_WEIGHT:g}。")
+                              + "詳細は calibration.evaluation.db_line と calibration.db_line。区間ごとの値は quay_est2.json の db_line_m、使えた区間の数は used_db_line"
+                              "（2026-10 の保存済みの撮影は feat-1 の前で db_line_m が無く、used_db_line は 0）") if _DB else
+                             ("重み 0・記録だけ（区間ごとの値は quay_est2.json の db_line_m、使えた区間の数は used_db_line）。"
+                              "#5 の S1 の実測は大半が 5〜14 m で、仮置きの平均 22／42／62 m と合わない。平均・σ は将来の較正用の仮置き")),
             "pair": "軌道の組（pair_id）があれば、同じ面のもう一方の撮影の尤度も掛ける",
             "smear": (f"反対向きの面の占有で、同じ桟橋（同じ OSM の線）のレーダー向きの面が {SMEAR_MAX_M:g} m 以内で同じ撮影で占有のとき、"
                       f"本当に船である確率を {SMEAR_P_REAL:g} とする（それ以外は 0 隻）"),
@@ -787,6 +828,7 @@ def settings() -> dict:
         "calibration": ({"version": CALIB.get("version"), "file": "sat/quay_est2_calib.json", "labels": CALIB.get("labels"),
                          "params": CALIB.get("params"), "depth_table": CALIB.get("fit", {}).get("depth", {}).get("table"),
                          "smear": CALIB.get("fit", {}).get("smear"), "colour": CALIB.get("fit", {}).get("colour"),
+                         "db_line": CALIB.get("fit", {}).get("db_line"),
                          "hard_ways": CALIB.get("fit", {}).get("hard_ways"), "shrinkage": CALIB.get("shrinkage"),
                          "evaluation": CALIB.get("evaluation"), "auto_vs_owner": CALIB.get("auto_vs_owner")} if _P else None),
     }
