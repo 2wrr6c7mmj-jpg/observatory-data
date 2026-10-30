@@ -13,6 +13,7 @@ User-Agent, and reports already stored are never fetched again.
 from __future__ import annotations
 
 import argparse
+import http.client
 import re
 import csv
 import json
@@ -35,6 +36,7 @@ LIST_URLS = [  # tried in order until one yields report links
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "taiwan-mnd"
 UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
 PAUSE = float(os.environ.get("MND_PAUSE_SECONDS", "2.5"))
+FETCH_TIMEOUT = 30  # seconds per connect / read
 FIELDS = ["report_date", "format", "aircraft", "median_line_or_adiz", "plan_vessels", "official_ships",
           "balloons", "adiz_aircraft", "adiz_types", "window_start_utc", "window_end_utc",
           "source_url", "retrieved_utc", "parser_version"]
@@ -82,10 +84,12 @@ def daily_rows(reports: dict) -> list[dict]:
 
 def fetch(url: str) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en,zh-TW;q=0.8"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        body = r.read(3_000_000)
-        charset = r.headers.get_content_charset() or "utf-8"
-    time.sleep(PAUSE)
+    try:
+        with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as r:
+            body = r.read(3_000_000)
+            charset = r.headers.get_content_charset() or "utf-8"
+    finally:
+        time.sleep(PAUSE)  # keep the pace after a failed request too
     return body.decode(charset, errors="replace")
 
 
@@ -145,9 +149,15 @@ class ListPageUnavailable(Exception):
 
 
 def transient(e: Exception) -> bool:
+    """Temporary failure worth retrying later.
+
+    A read timeout or a dropped connection while waiting for the response is
+    raised by urllib as a bare TimeoutError / ConnectionError / HTTPException
+    (only errors while sending are wrapped in URLError), so all are listed.
+    """
     if isinstance(e, urllib.error.HTTPError):
         return e.code == 429 or e.code >= 500
-    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError))
+    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException))
 
 
 def retry_wait(e: Exception, default: float) -> float:
@@ -176,6 +186,21 @@ def fetch_list(url: str) -> str:
 
 _sleep = time.sleep
 
+REPORT_RETRY_WAIT = 30  # seconds before the one retry of a report page
+REPORT_FAILURE_LIMIT = 3  # consecutive reports given up on before the run ends
+
+
+def fetch_report(url: str) -> str:
+    """fetch() with one slow retry on a temporary error (raised again if it persists)."""
+    try:
+        return fetch(url)
+    except Exception as e:  # noqa: BLE001 - classified below
+        if not transient(e):
+            raise
+        notice(f"{url}: {e}; retrying in {REPORT_RETRY_WAIT}s")
+        _sleep(retry_wait(e, REPORT_RETRY_WAIT))
+    return fetch(url)
+
 
 def list_page(page: int) -> list[tuple[str, int]]:
     """Absolute report URLs and ids on one list page."""
@@ -197,15 +222,29 @@ def list_page(page: int) -> list[tuple[str, int]]:
 def collect(pages: int, stop_when_known: bool) -> int:
     store = load()
     reports = store["reports"]
-    added = 0
     aborted = False
+    count = {"added": 0}
+    try:
+        aborted = _walk(store, pages, stop_when_known, count)
+    finally:
+        save(store)  # whatever was fetched is kept, even on an unexpected error
+    bad = [rid for rid, r in reports.items() if not r.get("parsed")]
+    notice(f"taiwan-mnd: {count['added']} fetched, {len(reports)} stored, {len(bad)} unparsed")
+    # Non-zero marks the run as cut short; the publish step (always()) still
+    # commits what was saved. 75 = EX_TEMPFAIL.
+    return 75 if aborted else 0
+
+
+def _walk(store: dict, pages: int, stop_when_known: bool, count: dict) -> bool:
+    """Walk the list pages and fetch new reports; True if the run was cut short."""
+    reports = store["reports"]
+    failures = 0  # consecutive report pages given up on
     for page in range(1, pages + 1):
         try:
             links = list_page(page)
         except ListPageUnavailable as e:
             warning(f"list page {page}: still failing after retries ({e}); ending this run, next run resumes")
-            aborted = True
-            break
+            return True
         if not links:
             notice(f"list page {page}: no report links; stopping")
             break
@@ -218,22 +257,29 @@ def collect(pages: int, stop_when_known: bool) -> int:
         for href, rid in fresh:
             url = href
             try:
-                raw = fetch(url)
-            except urllib.error.URLError as e:
+                raw = fetch_report(url)
+            except urllib.error.HTTPError as e:
+                if transient(e):
+                    failures += 1
                 notice(f"report {rid}: fetch failed ({e}); will retry next run")
+            except Exception as e:  # noqa: BLE001 - classified below
+                if not transient(e):
+                    raise
+                failures += 1
+                notice(f"report {rid}: fetch failed ({e}); will retry next run")
+            else:
+                failures = 0
+                reports[str(rid)] = parse_report(raw, url, datetime.now(timezone.utc))
+                count["added"] += 1
                 continue
-            reports[str(rid)] = parse_report(raw, url, datetime.now(timezone.utc))
-            added += 1
+            if failures >= REPORT_FAILURE_LIMIT:
+                warning(f"report pages: {failures} in a row failed; ending this run, next run resumes")
+                return True
         if fresh:
             save(store)  # resumable: progress survives a timeout
         if stop_when_known and not fresh:
             break
-    save(store)
-    bad = [rid for rid, r in reports.items() if not r.get("parsed")]
-    notice(f"taiwan-mnd: {added} fetched, {len(reports)} stored, {len(bad)} unparsed")
-    # Non-zero marks the run as cut short; the publish step (always()) still
-    # commits what was saved. 75 = EX_TEMPFAIL.
-    return 75 if aborted else 0
+    return False
 
 
 def probe() -> int:
