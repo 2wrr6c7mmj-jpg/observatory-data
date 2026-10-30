@@ -1,24 +1,23 @@
 {
- "version": "est-1",
- "title": "南部戦区（南海艦隊）の艦種表：全長・隻数・湛江への重み（岸壁の数の推定 est-1 の事前分布）",
- "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は南部戦区（南海艦隊）の在籍の推定、w は湛江（麻斜）を母港・寄港地とする重みの推定（2部の設計、2026-10-30）。隻数と w はすべて推定で、公式の配備表ではない。各艦の長さには N(0, 3 m) の揺らぎを足す",
+ "version": "est-1b",
+ "title": "艦種表（全長）・戦区ごとの在籍（隻数）・港ごとの重み（岸壁の数の推定 est-1 の事前分布）",
+ "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は仮置き・要出典（multi-site PR-1、2026-10-31。2部が直す）。各艦の長さには N(0, 3 m) の揺らぎを足す",
  "length_sd_m": 3.0,
  "groups": {
-  "X": "210 m 以上（揚陸艦・補給艦）",
+  "X": "210 m 以上（揚陸艦・補給艦・空母）",
   "L": "150〜180 m（駆逐艦・054B・903）",
-  "M": "120〜150 m（フリゲート・戦車揚陸艦・情報収集艦）",
+  "M": "100〜150 m（フリゲート・戦車揚陸艦・情報収集艦・原子力潜水艦。est-1 では 120〜150 m、093 型を入れるため下限を 100 m に）",
   "S": "55〜90 m（コルベット・潜水艦・掃海艇）",
   "T": "50 m 未満（ミサイル艇・タグ・作業船）"
  },
+ "kinds": {
+  "submarine": "潜水艦（桟橋の型 submarine の倍率の対象）",
+  "carrier": "空母（型 carrier の対象）"
+ },
  "columns": {
-  "length_m": "全長（m）",
-  "length_conf": "全長の確度（確認＝Wikipedia に記載、推定＝概数、未確認＝出典で確かめていない）",
-  "count": "南部戦区の隻数（推定）",
-  "w": "湛江への重み（0〜1、推定）",
-  "group": "長さの群",
-  "source": "出典",
-  "count_conf": "隻数の確度（すべて推定）",
-  "w_conf": "w の確度（すべて推定）"
+  "classes": "id・名前・全長 length_m・全長の確度 length_conf（確認＝Wikipedia に記載、推定＝概数、未確認＝出典で確かめていない）・長さの群 group・種類 kind・出典",
+  "fleets.<戦区>.<艦種>": "count＝その戦区の隻数、conf＝確度、source・as_of＝出典と時点",
+  "sites.<地点>": "fleet＝使う戦区、w＝艦種ごとの重み（0〜1）、w_conf＝重みの確度、basis＝根拠、status＝placeholder（仮置き）なら出典なし"
  },
  "classes": [
   {
@@ -26,219 +25,391 @@
    "name": "055 型駆逐艦",
    "length_m": 180.0,
    "length_conf": "確認",
-   "count": 4,
-   "w": 1.0,
    "group": "L",
-   "source": "https://en.wikipedia.org/wiki/Type_055_destroyer",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_055_destroyer"
   },
   {
    "id": "052D",
    "name": "052D 型駆逐艦",
    "length_m": 157.0,
    "length_conf": "確認",
-   "count": 5,
-   "w": 1.0,
    "group": "L",
-   "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
   },
   {
    "id": "052DL",
    "name": "052DL 型駆逐艦（延長型）",
    "length_m": 162.0,
    "length_conf": "推定",
-   "count": 5,
-   "w": 1.0,
    "group": "L",
-   "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
   },
   {
    "id": "052C",
    "name": "052C 型駆逐艦",
    "length_m": 155.0,
    "length_conf": "確認",
-   "count": 2,
-   "w": 1.0,
    "group": "L",
-   "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer"
   },
   {
    "id": "054A",
    "name": "054A 型フリゲート",
    "length_m": 134.0,
    "length_conf": "確認",
-   "count": 8,
-   "w": 1.0,
    "group": "M",
-   "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
   },
   {
    "id": "054A+",
    "name": "054A 型フリゲート（改良型）",
    "length_m": 134.0,
    "length_conf": "未確認",
-   "count": 7,
-   "w": 1.0,
    "group": "M",
    "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
-   "note": "全長は未確認（054A と同じと仮定）",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "note": "全長は未確認（054A と同じと仮定）"
   },
   {
    "id": "054B",
    "name": "054B 型フリゲート",
    "length_m": 150.0,
    "length_conf": "推定",
-   "count": 1,
-   "w": 1.0,
    "group": "L",
-   "source": "https://en.wikipedia.org/wiki/Type_054B_frigate",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_054B_frigate"
   },
   {
    "id": "072A",
    "name": "072A 型戦車揚陸艦",
    "length_m": 120.0,
    "length_conf": "確認",
-   "count": 5,
-   "w": 0.8,
    "group": "M",
-   "source": "https://en.wikipedia.org/wiki/Type_072A_landing_ship",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_072A_landing_ship"
   },
   {
    "id": "815A",
    "name": "815A 型情報収集艦",
    "length_m": 130.0,
    "length_conf": "推定",
-   "count": 1,
-   "w": 1.0,
    "group": "M",
-   "source": "https://en.wikipedia.org/wiki/Type_815_electronic_surveillance_ship",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_815_electronic_surveillance_ship"
   },
   {
    "id": "056A",
    "name": "056A 型コルベット",
    "length_m": 90.0,
    "length_conf": "確認",
-   "count": 20,
-   "w": 0.6,
    "group": "S",
-   "source": "https://en.wikipedia.org/wiki/Type_056_corvette",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
   },
   {
    "id": "039AB",
    "name": "039A/B 型潜水艦",
    "length_m": 78.0,
    "length_conf": "推定",
-   "count": 5,
-   "w": 0.2,
    "group": "S",
    "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "kind": "submarine"
   },
   {
    "id": "MCM",
    "name": "掃海艇",
    "length_m": 60.0,
    "length_conf": "未確認",
-   "count": 6,
-   "w": 0.6,
    "group": "S",
    "source": "https://en.wikipedia.org/wiki/Type_081_minesweeper",
-   "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）"
   },
   {
    "id": "071",
    "name": "071 型ドック型揚陸艦",
    "length_m": 210.0,
    "length_conf": "確認",
-   "count": 5,
-   "w": 1.0,
    "group": "X",
-   "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock"
   },
   {
    "id": "075",
    "name": "075 型強襲揚陸艦",
    "length_m": 232.0,
    "length_conf": "確認",
-   "count": 2,
-   "w": 0.4,
    "group": "X",
-   "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock"
   },
   {
    "id": "901",
    "name": "901 型総合補給艦",
    "length_m": 240.0,
    "length_conf": "確認",
-   "count": 1,
-   "w": 0.3,
    "group": "X",
-   "source": "https://en.wikipedia.org/wiki/Type_901_replenishment_ship",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_901_replenishment_ship"
   },
   {
    "id": "903",
    "name": "903/903A 型補給艦",
    "length_m": 178.5,
    "length_conf": "確認",
-   "count": 2,
-   "w": 1.0,
    "group": "L",
-   "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship"
   },
   {
    "id": "022",
    "name": "022 型ミサイル艇",
    "length_m": 42.6,
    "length_conf": "確認",
-   "count": 20,
-   "w": 0.1,
    "group": "T",
-   "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat"
   },
   {
    "id": "TUG",
    "name": "タグ・作業船",
    "length_m": 40.0,
    "length_conf": "推定",
-   "count": 15,
-   "w": 0.6,
    "group": "T",
    "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
-   "note": "出典なし（全長・隻数・重みとも推定）",
-   "count_conf": "推定",
-   "w_conf": "推定"
+   "note": "出典なし（全長・隻数・重みとも推定）"
+  },
+  {
+   "id": "002",
+   "name": "002 型空母（山東）",
+   "length_m": 305.0,
+   "length_conf": "確認",
+   "group": "X",
+   "kind": "carrier",
+   "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Shandong",
+   "note": "全長は Wikipedia 英語版の infobox（305 m、2026-10-31 に確認）"
+  },
+  {
+   "id": "094",
+   "name": "094 型弾道ミサイル原子力潜水艦",
+   "length_m": 137.0,
+   "length_conf": "確認",
+   "group": "M",
+   "kind": "submarine",
+   "source": "https://en.wikipedia.org/wiki/Type_094_submarine",
+   "note": "全長は Wikipedia 英語版の infobox（137 m、2026-10-31 に確認）。長さでは M 群（120〜150 m）"
+  },
+  {
+   "id": "093",
+   "name": "093/093A/093B 型攻撃型原子力潜水艦",
+   "length_m": 110.0,
+   "length_conf": "推定",
+   "group": "M",
+   "kind": "submarine",
+   "source": "https://en.wikipedia.org/wiki/Type_093_submarine",
+   "note": "Wikipedia 英語版の infobox：093/A 108.5 m、093B 110 m（2026-10-31 に確認）。型の混ざりが分からないので 110 m で代表（推定）。S 群（55〜90 m）と M 群の間で、桟橋の倍率は M 群として扱う（仮置き）"
   }
- ]
+ ],
+ "fleets": {
+  "south": {
+   "055": {
+    "count": 4,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "052D": {
+    "count": 5,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "052DL": {
+    "count": 5,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "052C": {
+    "count": 2,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "054A": {
+    "count": 8,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "054A+": {
+    "count": 7,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "054B": {
+    "count": 1,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "072A": {
+    "count": 5,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "815A": {
+    "count": 1,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "056A": {
+    "count": 20,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "039AB": {
+    "count": 5,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "MCM": {
+    "count": 6,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "071": {
+    "count": 5,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "075": {
+    "count": 2,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "901": {
+    "count": 1,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "903": {
+    "count": 2,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "022": {
+    "count": 20,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "TUG": {
+    "count": 15,
+    "conf": "推定",
+    "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
+    "as_of": "2026-10"
+   },
+   "002": {
+    "count": 1,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Shandong",
+    "as_of": "2026-10",
+    "note": "Wikipedia は 2024 年の演習の後に楡林海軍基地へ向かったと書くが、母港とは明記していない（南部戦区への所属は推定）"
+   },
+   "094": {
+    "count": 6,
+    "conf": "未確認（要出典）",
+    "source": "https://en.wikipedia.org/wiki/Type_094_submarine",
+    "as_of": "2026-10",
+    "note": "Wikipedia の現役 6 隻（2026-10-31 に確認）を全部南部戦区とみなした仮置き。ORF（sites.json の SLP の出典）は龍坡を第 2 潜水艦基地とするが、隻数の割り振りは出典なし"
+   },
+   "093": {
+    "count": 6,
+    "conf": "未確認（要出典）",
+    "source": "https://en.wikipedia.org/wiki/Type_093_submarine",
+    "as_of": "2026-10",
+    "note": "Wikipedia の現役 12〜14 隻のうち南部戦区の数は出典なし。半数の 6 隻を仮置き"
+   }
+  }
+ },
+ "sites": {
+  "ZJG": {
+   "fleet": "south",
+   "w": {
+    "055": 1.0,
+    "052D": 1.0,
+    "052DL": 1.0,
+    "052C": 1.0,
+    "054A": 1.0,
+    "054A+": 1.0,
+    "054B": 1.0,
+    "072A": 0.8,
+    "815A": 1.0,
+    "056A": 0.6,
+    "039AB": 0.2,
+    "MCM": 0.6,
+    "071": 1.0,
+    "075": 0.4,
+    "901": 0.3,
+    "903": 1.0,
+    "022": 0.1,
+    "TUG": 0.6
+   },
+   "w_conf": "推定",
+   "basis": "湛江（麻斜）を母港・寄港地とする重みの推定（2部の設計、2026-10-30）。est-1 の値は変えていない（count×w を再現）"
+  },
+  "SYL": {
+   "fleet": "south",
+   "w": {
+    "055": 1.0,
+    "052D": 1.0,
+    "052DL": 1.0,
+    "052C": 1.0,
+    "054A": 1.0,
+    "054A+": 1.0,
+    "054B": 1.0,
+    "039AB": 1.0,
+    "056A": 0.6,
+    "815A": 0.5,
+    "901": 0.5,
+    "903": 0.5,
+    "072A": 0.3,
+    "071": 0.3,
+    "075": 0.3,
+    "MCM": 0.3,
+    "022": 0.3,
+    "TUG": 0.6,
+    "002": 0.3,
+    "093": 0.2,
+    "094": 0.1
+   },
+   "w_conf": "未確認（仮置き・要出典）",
+   "basis": "設計 §2.2-4 の初期の仮説「SYL＝南部戦区の駆逐艦・フリゲートと通常動力潜水艦」をそのまま重みにしたもの（OSM の way/299398880 が「南部战区海军第32潜艇支队」）。数字に出典は無い",
+   "sources": [],
+   "status": "placeholder",
+   "note": "出典の無い仮置き。2部が設計 §2.2 の手順（在籍表・母港の手がかり・S2 の桟橋ごとの長さ）で直す。艦種がここに無いものは重み 0（この港の事前分布に入らない）"
+  },
+  "SLP": {
+   "fleet": "south",
+   "w": {
+    "094": 1.0,
+    "093": 1.0,
+    "002": 1.0,
+    "901": 0.5,
+    "039AB": 0.3,
+    "055": 0.3,
+    "052D": 0.3,
+    "052DL": 0.3,
+    "903": 0.3,
+    "054A": 0.2,
+    "056A": 0.2,
+    "TUG": 0.6
+   },
+   "w_conf": "未確認（仮置き・要出典）",
+   "basis": "設計 §2.2-4 の初期の仮説「SLP＝原子力潜水艦と空母」をそのまま重みにしたもの（ORF・Wikipedia が龍坡を原子力潜水艦と空母の基地とする：sites.json の出典）。数字に出典は無い",
+   "sources": [],
+   "status": "placeholder",
+   "note": "出典の無い仮置き。2部が設計 §2.2 の手順（在籍表・母港の手がかり・S2 の桟橋ごとの長さ）で直す。艦種がここに無いものは重み 0（この港の事前分布に入らない）"
+  }
+ }
 }

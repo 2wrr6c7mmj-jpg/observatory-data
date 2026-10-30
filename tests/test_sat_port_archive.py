@@ -1,3 +1,4 @@
+import contextlib
 import io
 import json
 import tarfile
@@ -6,6 +7,7 @@ import unittest
 import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest import mock
 
 try:
     import numpy as np
@@ -123,14 +125,41 @@ class PortsFileTest(unittest.TestCase):
         ids = [p["id"] for p in ports]
         self.assertEqual(len(ids), len(set(ids)))
         self.assertNotIn("ZJG", ids)
-        sites = json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]
-        self.assertFalse(set(ids) & {s["id"] for s in sites})
+        sites = {s["id"]: s for s in json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
+        # sites.json が唯一の設定（PR #30）。アーカイブ用に ports.json に残る港（SYL・SLP）は、日次の地点
+        # （daily が false でないもの）であってはならず、範囲・中心・陸マスクの版は sites.json と同じであること。
+        for i in set(ids) & set(sites):
+            p, s = next(p for p in ports if p["id"] == i), sites[i]
+            self.assertIs(s.get("daily", True), False, i)
+            for k in ("bbox", "center_lat", "center_lon", "mask_version"):
+                self.assertEqual(p.get(k), s.get(k), (i, k))
         for p in ports:
             g = Grid.for_site(p)
             self.assertTrue(2 <= g.width * 10 / 1000 <= 10 and 2 <= g.height * 10 / 1000 <= 10, p["id"])
             self.assertTrue(p["sources"] and all(s.get("url", "").startswith("https://") for s in p["sources"]), p["id"])
             w, s, e, n = p["bbox"]
             self.assertTrue(w <= p["center_lon"] <= e and s <= p["center_lat"] <= n, p["id"])
+
+
+class BudgetArgsTest(unittest.TestCase):
+    """plan has no default caps, and stops before any request outside the month the caps were set for."""
+
+    def test_caps_are_required(self):
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()):
+            for drop in ("--cap", "--global-cap", "--ocean-cap", "--budget-month"):
+                args = {"--cap": "1", "--global-cap": "1", "--ocean-cap": "1", "--budget-month": "2026-10"}
+                del args[drop]
+                with self.assertRaises(SystemExit, msg=drop):
+                    pa.main(["plan", "--out", str(Path(d) / "p.json")] + [x for kv in args.items() for x in kv])
+
+    def test_other_month_stops(self):
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()) as err, \
+                mock.patch.object(pa.cdse, "Client", side_effect=AssertionError("no request")):
+            rc = pa.main(["plan", "--out", str(Path(d) / "p.json"), "--cap", "4750", "--global-cap", "9995",
+                          "--ocean-cap", "4600", "--budget-month", "1999-01"])
+            self.assertEqual(rc, 2)
+            self.assertFalse((Path(d) / "p.json").exists())
+            self.assertIn("1999-01", err.getvalue())
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

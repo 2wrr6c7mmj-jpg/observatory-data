@@ -1,27 +1,276 @@
 {
+ "note": "唯一の地点の設定（multi-site PR-1）。kind＝naval|yard|island、priority＝処理の順（1 が先）、daily＝毎日の実行で取るか、publish＝trial（試行ページのみ）|public、layout＝shared（湛江：detections/・quay/ の月ごとのファイルを共用）|per_site（地点ごとの下位フォルダ）、png＝PNG の切り出し画像を作るか、sectors＝区画（bbox か polygon、role）、sector_rest＝残り、quay＝岸壁の数の地点ごとの設定、pu_month_cap＝地点ごとの月の PU の上限（全体の 1,000 PU の内側）。湛江は区画の role を書かない（A＝naval、B＝other とみなす）",
  "sites": [
   {
    "id": "ZJG",
    "name": "湛江",
-   "bbox": [110.425, 21.195, 110.455, 21.265],
-   "center_lat": 21.230,
-   "center_lon": 110.440,
+   "group": "湛江",
+   "kind": "naval",
+   "bbox": [
+    110.425,
+    21.195,
+    110.455,
+    21.265
+   ],
+   "center_lat": 21.23,
+   "center_lon": 110.44,
    "pixel_m": 10,
    "mask_version": 2,
    "sectors": [
-    {"id": "A", "name": "軍港区画", "bbox": [110.430, 21.200, 110.455, 21.265]}
+    {
+     "id": "A",
+     "name": "軍港区画",
+     "bbox": [
+      110.43,
+      21.2,
+      110.455,
+      21.265
+     ]
+    }
    ],
-   "sector_rest": {"id": "B", "name": "水道"},
-   "baseline": {"orbits": [157, 84], "lookback_days": 200, "max_scenes": 30, "min_scenes": 24},
-   "s2": {"enabled": true},
+   "sector_rest": {
+    "id": "B",
+    "name": "水道"
+   },
+   "baseline": {
+    "orbits": [
+     157,
+     84
+    ],
+    "lookback_days": 200,
+    "max_scenes": 30,
+    "min_scenes": 24
+   },
+   "quay": {
+    "tuning_scenes": [
+     "2026-10-02T10:48:45Z",
+     "2026-10-03T10:41:00Z",
+     "2026-10-08T10:49:01Z",
+     "2026-10-14T10:48:45Z",
+     "2026-10-15T10:41:00Z",
+     "2026-10-26T10:48:45Z"
+    ],
+    "label_freeze_utc": "2026-10-27",
+    "est2_lat0": 21.2,
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
    "enabled": true,
+   "priority": 1,
+   "daily": true,
+   "publish": "trial",
+   "layout": "shared",
+   "png": true,
    "provisional": true,
    "note": "v2（2026-10-30、2部の確定案）：湾の東岸（麻斜）の櫛形・T字の桟橋群（約 110.433〜110.441E、21.210〜21.236N 以北）を含め、西岸の霞山の市街地・商港と南の特呈島の漁船係留を外した矩形（約 3.1×7.75 km、約 24 km²）。A＝軍港区画、B＝それ以外（水道）。北端 21.265N で桟橋群が切れていないかは次の撮影の画像で確かめる。確かめるまで公開画面の地図には出さない（試行ページのみ）。",
    "history": [
-    {"mask_version": 1, "until_utc": "2026-10-30", "center_lat": 21.20, "center_lon": 110.41, "size_m": 8000,
-     "bbox": [110.371476, 21.163873, 110.448524, 21.236127],
-     "note": "概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた"}
+    {
+     "mask_version": 1,
+     "until_utc": "2026-10-30",
+     "center_lat": 21.2,
+     "center_lon": 110.41,
+     "size_m": 8000,
+     "bbox": [
+      110.371476,
+      21.163873,
+      110.448524,
+      21.236127
+     ],
+     "note": "概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた"
+    }
    ]
+  },
+  {
+   "id": "SYL",
+   "name": "三亜・楡林（楡林海軍基地）",
+   "group": "三亜",
+   "kind": "naval",
+   "bbox": [
+    109.525,
+    18.185,
+    109.585,
+    18.245
+   ],
+   "center_lat": 18.215,
+   "center_lon": 109.555,
+   "pixel_m": 10,
+   "mask_version": 2,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "第 32 潜水艦支隊（OSM way/299398880 の外接矩形を水側へ 150 m 広げた仮の区画）",
+     "role": "naval",
+     "bbox": [
+      109.54086,
+      18.21274,
+      109.56079,
+      18.23156
+     ],
+     "source": "OSM way/299398880「南部战区海军第32潜艇支队」の bbox [109.54228, 18.2141, 109.55937, 18.2302]（sat/port_locate.py、2026-10-30）を四方に 150 m 広げた。外形の多角形ではなく外接矩形（仮置き、2部が多角形と S2 で直す）"
+    },
+    {
+     "id": "A2",
+     "name": "南の海軍区画（OSM way/894654960、用途未確認の仮の区画）",
+     "role": "naval",
+     "bbox": [
+      109.56193,
+      18.18969,
+      109.56745,
+      18.19532
+     ],
+     "source": "OSM way/894654960（military=naval_base、名前なし）の bbox [109.56335, 18.19105, 109.56603, 18.19396] を 150 m 広げた（仮置き）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外（楡林港・三亜の湾内）",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     157
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "SYL"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 40,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "Wikipedia: Yulin Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Yulin_Naval_Base",
+     "coord": "18°13′31″N 109°31′45″E",
+     "note": "三亜の東の郊外、楡林港の隣（PR #29 の sat/ports.json から）"
+    },
+    {
+     "title": "OpenStreetMap way/299398880「南部战区海军第32潜艇支队」",
+     "url": "https://www.openstreetmap.org/way/299398880",
+     "bbox": [
+      109.54228,
+      18.2141,
+      109.55937,
+      18.2302
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/894654960「military=naval_base」",
+     "url": "https://www.openstreetmap.org/way/894654960",
+     "bbox": [
+      109.56335,
+      18.19105,
+      109.56603,
+      18.19396
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SYL-land-v2 は港のアーカイブ（PR #29、probe/ports-archive-ops3、2026-10-30）のまま（v1 は東端 109.555E で第 32 潜水艦支隊の桟橋が切れていたため東へ 109.585E まで広げ、南の naval_base も入れた。約 6.3×6.6 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 SYL-quay-v1（OSM、probe）と軌道 157 の 365 日の基準がそろうまで quay-v1・est-1・est-2 は動かない。区画・桟橋の型・艦種の重みは設計 §2.2-4 の初期の仮説による仮置き・要出典（2部が直す）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
+   "archive_history": [
+    {
+     "mask_version": 1,
+     "until_utc": "2026-10-30",
+     "bbox": [
+      109.505,
+      18.205,
+      109.555,
+      18.245
+     ],
+     "note": "港のアーカイブ（probe）だけで使った範囲 v1（楡林港の湾内、約 5.3×4.4 km）。毎日の実行では使っていないので series_breaks には入れない"
+    }
+   ]
+  },
+  {
+   "id": "SLP",
+   "name": "三亜・亜龍湾（龍坡、潜水艦基地）",
+   "group": "三亜",
+   "kind": "naval",
+   "bbox": [
+    109.665,
+    18.185,
+    109.715,
+    18.23
+   ],
+   "center_lat": 18.21,
+   "center_lon": 109.688,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "基地の桟橋（ORF の座標の周りの仮の矩形、約 1.8×1.6 km）",
+     "role": "naval",
+     "bbox": [
+      109.68,
+      18.203,
+      109.697,
+      18.217
+     ],
+     "source": "ORF「China's Nuclear Submarine Bases: A Stocktaking」の座標 18°12.6′N 109°41.3′E（18.210N 109.688E）を中心に東西 ±0.0085°・南北 ±0.007° とした仮置き。OSM に軍の地物の外形が無い（locate の R-SLP は未実行）。2部が S2 で桟橋を特定して直す"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外（亜龍湾）",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     157
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "SLP"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 30,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "ORF: China's Nuclear Submarine Bases: A Stocktaking",
+     "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+     "coord": "18°12.6′N 109°41.3′E",
+     "note": "Longpo（第 2 潜水艦基地、南部戦区海軍）、三亜の東約 18 km（PR #29 の sat/ports.json から）"
+    },
+    {
+     "title": "Wikipedia: Longpo Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Longpo_Naval_Base",
+     "note": "亜龍湾の隣。原子力潜水艦と空母の基地（旧称 Yulin-East）（PR #29 の sat/ports.json から）"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SLP-land-v1 は港のアーカイブ（PR #29、2026-10-30）のまま（亜龍湾の西側の基地の桟橋と潜水艦トンネルの入口の周り、約 5.3×5.0 km）。陸マスクは 2部の確認がまだ。岸壁線 SLP-quay-v1 と軌道 157 の 365 日の基準がそろうまで quay-v1・est-1・est-2 は動かない。区画 A1 は座標だけからの仮の矩形、空母の桟橋（型 carrier）は位置を確かめていないので置いていない。潜水艦トンネルに入った艦は見えない（設計 §7-2）。est-2 は湛江の較正を流用（calib_source＝ZJG）"
   }
  ]
 }

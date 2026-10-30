@@ -3,8 +3,10 @@ name: PLAN ports archive probe
 # probe 用ブランチへの push でだけ動く（workflow_dispatch なし、定期実行なし）。main は読むだけで変えない。
 # 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別の concurrency group。
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
-# PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読み、
-# 外洋の 10 月上限 4,600 PU から、外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。
+# PU：上限はすべて BUDGET_MONTH の月の値（港 --cap・全体の自主上限 --global-cap・外洋 OCEAN_CAP）。plan が他の usage を読み、
+# 外洋の上限から外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。
+# 月が BUDGET_MONTH と違えば plan（と locate の前）で止まり、PU は 0。翌月に動かすには、その月の自主上限と BUDGET_MONTH を
+# このファイルに明示して書き直す（sat/port_archive.py の plan にも上限の既定値はない）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
@@ -24,8 +26,11 @@ env:
   BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
   BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
   # 合計ガード：10 月の上限 9,995（ユーザー指示）、湛江の 10-31 の毎日の実行の分として最低 50 PU を残す。港の上限 4,350
-  # 2026-10-30 21:20 以降（港の上限 4,750、合計 9,995、湛江の分 50 PU）：すべての実行に
-  GUARD_ARGS: '--cap 4750 --global-cap 9995 --global-margin 50'
+  # 2026-10-30 21:20 以降（港の上限 4,750、合計 9,995、湛江の分 50 PU、外洋 4,600）：すべての実行に。10 月だけ有効
+  # （11 月以降は外洋 月 400 PU・全体は自主上限。値を決めて BUDGET_MONTH とともに書き直すまで取得しない）
+  BUDGET_MONTH: '2026-10'
+  OCEAN_CAP: '4600'
+  GUARD_ARGS: '--budget-month 2026-10 --cap 4750 --global-cap 9995 --global-margin 50'
   RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-s2ext-') && '--s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
@@ -40,6 +45,10 @@ jobs:
           python-version: '3.12'
       - name: Install numpy and Pillow
         run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
       - name: Locate
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
@@ -101,14 +110,15 @@ jobs:
           # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
           while read ref f t; do k=$(echo "$f" | tr '/' '_'); git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$k--$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
           rm "$RUNNER_TEMP/usage/list.txt"
-      - name: Cap (guard 9,000 with the ocean's 4,600, the ports' 4,000, this run 800)
+      - name: Cap (the month's own caps in GUARD_ARGS and OCEAN_CAP, this run BASELINE_MAX)
         id: cap
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
+          set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" $GUARD_ARGS --usage "$RUNNER_TEMP"/usage/*.csv \
-            --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
+            --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
           echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
       - name: OSM land masks (missing only)
         run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || true
@@ -212,7 +222,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" $GUARD_ARGS \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json

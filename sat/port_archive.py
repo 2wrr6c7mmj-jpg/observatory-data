@@ -4,7 +4,7 @@ The sites are in sat/ports.json (same format as sat/sites.json). The daily run (
 read them, and nothing here writes to docs/data/sat outside docs/data/sat/ports/ and
 docs/data/sat/ports_usage.csv (the PU of this archive; not counted in the 1,000 PU cap of the daily run).
 
-    python -m sat.port_archive plan  --out plan.json [--cap 4000] [--usage CSV ...]  # catalog only (no PU)
+    python -m sat.port_archive plan  --out plan.json --cap PU --global-cap PU --ocean-cap PU --budget-month YYYY-MM [--usage CSV ...]  # catalog only (no PU)
     python -m sat.port_archive mask  --mask-dir DIR [--port ID ...]                 # OSM land masks
     python -m sat.port_archive run   --port ID --cap PU --out DIR --raw-dir DIR --mask-dir DIR
 
@@ -46,8 +46,8 @@ PORTS_FILE = Path(__file__).resolve().parent / "ports.json"
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "docs" / "data" / "sat" / "ports"
 LOOKBACK_DAYS = 365
-PORTS_CAP = 4000.0          # the whole port archive (October 2026)
-GLOBAL_CAP = 9000.0         # sat + ocean + ports in the month (safety guard)
+# The monthly caps (ports, sat + ocean + ports, ocean) have no defaults: ``plan`` takes them only as explicit
+# arguments, with --budget-month (the month they were set for), and refuses to plan in any other month.
 GLOBAL_MARGIN = 300.0       # kept free for the daily runs to the end of the month
 REQUEST_CAP = 10000         # CDSE requests per month
 REQUEST_MARGIN = 1500
@@ -732,13 +732,16 @@ def main(argv=None) -> int:
     p = sub.add_parser("plan")
     p.add_argument("--ports", type=Path, default=PORTS_FILE)
     p.add_argument("--out", type=Path, required=True)
-    p.add_argument("--cap", type=float, default=PORTS_CAP)
+    p.add_argument("--cap", type=float, required=True, help="the port archive's cap of this month (PU)")
+    p.add_argument("--budget-month", required=True,
+                   help="YYYY-MM the caps were set for; in any other month (UTC) plan stops before any request")
     p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
     p.add_argument("--ports-usage", type=Path, nargs="*", default=[],
                    help="usage CSVs of earlier runs of this archive (docs/data/sat/ports/*/usage.csv)")
-    p.add_argument("--ocean-cap", type=float,
+    p.add_argument("--ocean-cap", type=float, required=True,
                    help="ocean's monthly cap: reserve = cap - the ocean usage already in --usage files named other-*")
-    p.add_argument("--global-cap", type=float, default=GLOBAL_CAP)
+    p.add_argument("--global-cap", type=float, required=True,
+                   help="the month's own cap of all CDSE use (sat + ocean + ports + others, PU)")
     p.add_argument("--global-margin", type=float, default=GLOBAL_MARGIN)
     p.add_argument("--reserve", type=float, default=0.0,
                    help="PU announced by other jobs but not in their usage CSV yet (counted in the 9,000 PU guard)")
@@ -861,6 +864,10 @@ def main(argv=None) -> int:
 
     if args.cmd == "plan":
         month = now.strftime("%Y-%m")
+        if args.budget_month != month:
+            print(f"plan: 上限は {args.budget_month} の値（今は {month}）。その月の自主上限（--cap・--global-cap・"
+                  f"--ocean-cap・--budget-month）を書き直すまで取得しない", file=sys.stderr)
+            return 2
         # copies of one usage file on several branches (other-<key>--<n>.csv): count the largest copy only
         groups: dict = {}
         for u in args.usage:

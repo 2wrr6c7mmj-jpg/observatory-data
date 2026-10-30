@@ -78,6 +78,48 @@ def load_zones(path: Path = ZONES_PATH) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+DEFAULT_SITE = "ZJG"   # the table of a site without its own weights (as before: every site used Zhanjiang's)
+ROLE_ZONE = {          # a site not in quay_zones.json: the zone type from the sector's role (never silently shore)
+    "naval": ("NV", "medium"),
+    "other": ("SH", "shore"),
+}
+
+
+def resolve_classes(table: dict, site_id: str | None = None) -> tuple[list[dict], str]:
+    """The class rows of a site: [{..., count, w}] in the order of the table, and the site key used.
+
+    est-1b (classes + fleets + sites): count from the site's fleet, w from the site; a class without a
+    weight for the site is left out. The old flat form (count and w in every class) is used as it is."""
+    if "sites" not in table:
+        return [dict(c) for c in table["classes"]], DEFAULT_SITE
+    key = site_id if site_id in table["sites"] else DEFAULT_SITE
+    st = table["sites"][key]
+    fleet = table["fleets"][st["fleet"]]
+    out = []
+    for c in table["classes"]:
+        w = st["w"].get(c["id"])
+        f = fleet.get(c["id"])
+        if w is None or f is None or not (float(w) > 0 and float(f["count"]) > 0):
+            continue
+        out.append({**c, "count": f["count"], "count_conf": f.get("conf", "推定"), "w": w,
+                    "w_conf": st.get("w_conf", "推定")})
+    return out, key
+
+
+def classes_version(path: Path = CLASSES_PATH) -> str:
+    return load_classes(path).get("version", "")
+
+
+def site_weights_info(site_id: str, path: Path = CLASSES_PATH) -> dict:
+    """Where a site's est-1 weights come from (meta.json sites[].quay.class_weights)."""
+    t = load_classes(path)
+    rows, key = resolve_classes(t, site_id)
+    st = (t.get("sites") or {}).get(key, {})
+    return {"site_key": key, "own": key == site_id, "fleet": st.get("fleet"), "w_conf": st.get("w_conf"),
+            "status": st.get("status", "estimate"), "basis": st.get("basis"),
+            "classes": [c["id"] for c in rows]}
+
+
 def length_bin(length_m: float) -> int:
     for b in range(len(LENGTH_BINS_M) - 1):
         if LENGTH_BINS_M[b] <= length_m < LENGTH_BINS_M[b + 1]:
@@ -88,13 +130,18 @@ def length_bin(length_m: float) -> int:
 class Model:
     """Class table + zone multipliers; class weights per zone; cached simulation tables."""
 
-    def __init__(self, classes: dict | None = None, zones: dict | None = None, use_zones: bool = True):
+    def __init__(self, classes: dict | None = None, zones: dict | None = None, use_zones: bool = True,
+                 site_id: str | None = None, sector_roles: dict | None = None):
         self.table = classes or load_classes()
         self.zcfg = zones or load_zones()
         self.use_zones = use_zones
-        cl = self.table["classes"]
+        self.classes, self.class_site = resolve_classes(self.table, site_id)
+        self.sector_roles = dict(sector_roles or {})
+        self.warnings: list[str] = []
+        cl = self.classes
         self.lengths = np.array([c["length_m"] for c in cl], float)
         self.groups = [c["group"] for c in cl]
+        self.kinds = [c.get("kind") for c in cl]
         self.sd = float(self.table.get("length_sd_m", 3.0))
         w = np.array([c["count"] * c["w"] for c in cl], float)
         self.global_w = w / w.sum()
@@ -106,7 +153,13 @@ class Model:
         """(zone id, zone type) of a stretch."""
         s = self.zcfg["sites"].get(site_id)
         if s is None:
-            return "SH", "shore"
+            role = self.sector_roles.get(sector)
+            if role is None:
+                return "SH", "shore"
+            if role not in ROLE_ZONE:
+                self._warn(f"{site_id}: 区画 {sector} の role {role} に桟橋の型が無いため shore とした")
+                return "SH", "shore"
+            return ROLE_ZONE[role]
         ov = (s.get("sector_override") or {}).get(sector)
         if ov:
             return ov["id"], ov["type"]
@@ -115,10 +168,19 @@ class Model:
                 return z["id"], z["type"]
         return s["default"]["id"], s["default"]["type"]
 
+    def _warn(self, msg: str) -> None:
+        if msg not in self.warnings:
+            self.warnings.append(msg)
+
     def zone_ids(self, site_id: str) -> dict[str, str]:
         s = self.zcfg["sites"].get(site_id)
         if s is None:
-            return {"SH": "shore"}
+            out = {"SH": "shore"}
+            for role in set(self.sector_roles.values()):
+                if role in ROLE_ZONE:
+                    zid, zt = ROLE_ZONE[role]
+                    out[zid] = zt
+            return out
         out = {z["id"]: z["type"] for z in s["zones"]}
         out[s["default"]["id"]] = s["default"]["type"]
         for ov in (s.get("sector_override") or {}).values():
@@ -129,8 +191,15 @@ class Model:
         """pi_z' = 0.7 pi_z + 0.3 pi_g, pi_z proportional to pi_g x the group multiplier."""
         if not self.use_zones:
             return self.global_w.copy()
-        mult = self.zcfg["types"][ztype]["mult"]
-        pz = self.global_w * np.array([mult[g] for g in self.groups])
+        t = self.zcfg["types"][ztype]
+        mult = t["mult"]
+        by_kind = t.get("mult_kind") or {}  # e.g. submarine: the submarines x3, every other class mult_other
+        if by_kind:
+            m = np.array([by_kind[k] if k in by_kind else float(t.get("mult_other", mult[g]))
+                          for g, k in zip(self.groups, self.kinds)], float)
+        else:
+            m = np.array([mult[g] for g in self.groups])
+        pz = self.global_w * m
         pz = pz / pz.sum()
         return (1 - MIX_GLOBAL) * pz + MIX_GLOBAL * self.global_w
 
@@ -434,11 +503,20 @@ LIMITS = [
 ]
 
 
-def class_table() -> list[dict]:
-    t = load_classes()
+def class_table(site_id: str | None = None) -> list[dict]:
+    """The class rows of a site (default: Zhanjiang, as in est-1)."""
+    rows, _key = resolve_classes(load_classes(), site_id)
     return [{"id": c["id"], "name": c["name"], "length_m": c["length_m"], "length_conf": c["length_conf"],
-             "count": c["count"], "count_conf": "推定", "w": c["w"], "w_conf": "推定", "group": c["group"],
-             "source": c["source"], **({"note": c["note"]} if c.get("note") else {})} for c in t["classes"]]
+             "count": c["count"], "count_conf": c.get("count_conf", "推定"), "w": c["w"], "w_conf": c.get("w_conf", "推定"),
+             "group": c["group"], "source": c["source"], **({"kind": c["kind"]} if c.get("kind") else {}),
+             **({"note": c["note"]} if c.get("note") else {})} for c in rows]
+
+
+def site_class_tables() -> dict:
+    """Every site with its own weights: {site: {status, basis, classes}} (meta.json)."""
+    t = load_classes()
+    return {sid: {"fleet": st.get("fleet"), "w_conf": st.get("w_conf"), "status": st.get("status", "estimate"),
+                  "basis": st.get("basis"), "classes": class_table(sid)} for sid, st in (t.get("sites") or {}).items()}
 
 
 def zone_table() -> dict:
@@ -449,7 +527,7 @@ def zone_table() -> dict:
 
 def settings() -> dict:
     m = Model()
-    gw = {c["id"]: round(float(x), 4) for c, x in zip(m.table["classes"], m.global_w)}
+    gw = {c["id"]: round(float(x), 4) for c, x in zip(m.classes, m.global_w)}
     return {
         "version": EST_VERSION,
         "status": "試行（精度未測定）。艦種表・重み・桟橋の倍率はすべて推定を含む。湛江 v2 の調整に使った撮影（標本内）で確かめただけ",
@@ -481,6 +559,8 @@ def settings() -> dict:
         "prior_conflict": (f"valleys＝谷の数 k が n の 80% 区間の上端を超えた、length＝単艦として区画の事前分布の 95% 区間の外、"
                            f"cap＝区間の（または外側の帯の）80% 区間の上端が上限 {N_MAX} 隻に達した（実数はもっと多い可能性）"),
         "class_table": class_table(),
+        "site_class_tables": site_class_tables(),
+        "class_table_version": classes_version(),
         "zone_multipliers": zone_table(),
         "depth": "depth_m＝内側の帯で占有のある点で、水際から法線方向 0〜120 m（5 m おき。feat-1 の前は 0〜90 m）に占有が続く奥行きの中央値。cols_hint＝round((depth−20)/18)（1〜3）は横に並ぶ列数の手がかりとして出すだけで推定には使わない（3×3 平均のにじみと艦幅の不確かさが大きく未検証）",
     }
