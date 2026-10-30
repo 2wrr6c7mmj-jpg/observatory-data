@@ -2,8 +2,8 @@
 
     python -m sat.preview OUT_DIR DEST_DIR [FACTOR]
 
-Writes DEST_DIR/preview.png (block-averaged grey, overlays kept) and
-DEST_DIR/candidates.txt. Used to read probe results through annotations.
+Writes DEST_DIR/preview.png (block-averaged grey, overlays kept), DEST_DIR/color_thumb.webp
+(the false-colour thumbnail, if the scene has one) and DEST_DIR/candidates.txt. Used to read probe results through annotations.
 """
 from __future__ import annotations
 
@@ -45,6 +45,8 @@ def main(argv=None) -> int:
     row = sorted(rows, key=lambda r: r["acquired_utc"])[-1]
     img = png.decode((out / row["image"]).read_bytes())
     (dest / "preview.png").write_bytes(png.encode(shrink(img, factor), palette=render.PALETTE))
+    if row.get("color_thumb") and (out / row["color_thumb"]).exists():
+        (dest / "color_thumb.webp").write_bytes((out / row["color_thumb"]).read_bytes())
     lines = ["scene " + ",".join(f"{k}={row[k]}" for k in ("acquired_utc", "platform", "orbit_direction", "relative_orbit",
                                                          "incidence_deg", "harbour_candidates", "quay_candidates", "coverage"))]
     lines += ["all " + r["acquired_utc"] + f" {r['platform']} {r['orbit_direction']} ro={r['relative_orbit']} inc={r['incidence_deg']}"

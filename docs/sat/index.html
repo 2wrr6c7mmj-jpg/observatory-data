@@ -13,7 +13,9 @@ th:first-child,td:first-child{text-align:left}
 tr.sel{background:#eef5ff}
 tr{cursor:pointer}
 tr.brk td{background:#f3f3f3;color:#444;text-align:left;white-space:normal;cursor:default}
-#chip{max-width:100%;image-rendering:pixelated;border:1px solid #999}
+#chipbox{position:relative;display:inline-block;max-width:100%}
+#chip{display:block;max-width:100%;image-rendering:pixelated;border:1px solid #999}
+#boxes{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .legend span{display:inline-block;margin-right:1rem}
 .sw{display:inline-block;width:.9em;height:.9em;vertical-align:-.1em;margin-right:.3em;border:1px solid #555}
 small,.note{color:#555}
@@ -48,9 +50,13 @@ small,.note{color:#555}
 </table>
 
 <h2>切り出し画像</h2>
+<p><label><input type="radio" name="mode" value="color" checked> カラー（WebP。枠は候補の GeoJSON から重ねる）</label>
+<label><input type="radio" name="mode" value="png"> VV の灰（PNG。枠を焼き込み）</label>
+<label><input type="checkbox" id="showbox" checked> 候補の枠</label></p>
+<p class="note" id="colornote">カラー：R＝VV（−22〜0 dB）、G＝VH（−28〜−6 dB）、B＝VV−VH（15〜3 dB を逆向き、γ 0.5）。範囲は全地点・全日で固定で、撮影どうしの色を比べられます。表示用だけ 3×3 の Lee フィルタをかけています（数えるのは生の σ0）。凡例は画像の下。水面は暗い紺、強い反射（船・岸壁・建物）は橙〜白に見えます。枠は候補の位置に長さの目安の大きさで描いた正方形（向きは表さない）。カラー画像は表示の版 s1fc-1 を入れてから処理した撮影だけにあり、それより前の撮影は灰の PNG を出します。</p>
 <p class="legend"><span><i class="sw" style="background:#ff2828"></i>港内水域の候補</span><span><i class="sw" style="background:#ffdc00"></i>岸壁帯の候補</span><span><i class="sw" style="background:#00c8ff"></i>陸マスクの縁</span><span><i class="sw" style="background:#ff8c00"></i>桟橋・橋など</span><span><i class="sw" style="background:#e63ce6"></i>区画 A/B の境界（v2）</span></p>
 <p id="caption" class="note"></p>
-<img id="chip" alt="選んだ撮影の VV 画像と候補の位置" hidden>
+<div id="chipbox"><img id="chip" alt="選んだ撮影の切り出し画像と候補の位置" hidden><svg id="boxes" xmlns="http://www.w3.org/2000/svg" hidden></svg></div>
 
 <h2>データ</h2>
 <p><a href="../data/sat/ship_counts.csv">ship_counts.csv</a> ・ <a href="../data/sat/meta.json">定義と限界</a> ・ <a href="../data/sat/status.json">処理状況</a> ・ <a href="../data/sat/usage.csv">処理単位の記録</a> ・ <a href="../data/sat/CHANGES.md">定義変更の記録</a> ・ 候補の位置：<code>../data/sat/detections/YYYY-MM.geojson</code></p>
@@ -61,9 +67,33 @@ small,.note{color:#555}
 <script>
 const base = '../data/sat/';
 function parseCSV(t){const L=t.trim().split('\n');const h=L.shift().split(',');return L.map(l=>{const v=l.split(',');const o={};h.forEach((k,i)=>o[k]=v[i]??'');return o;});}
-function show(r,tr){document.querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');
- const img=document.getElementById('chip');img.src=base+r.image;img.hidden=false;
- document.getElementById('caption').textContent=`${r.acquired_utc} ${r.platform} ${r.orbit_direction} 相対軌道 ${r.relative_orbit||'不明'}（範囲 ${ver(r)}）：港内候補 ${r.harbour_candidates}、岸壁帯候補 ${r.quay_candidates}`+(r.sector_a_harbour!==''&&r.sector_a_harbour!==undefined?`（A ${r.sector_a_harbour}+${r.sector_a_quay}、B ${r.sector_b_harbour}+${r.sector_b_quay}）`:'');}
+let meta=null,cur=null;const gjCache={};
+const metaP=fetch(base+'meta.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{meta=m;if(m&&m.attribution)document.getElementById('credit').textContent=m.attribution.credit+'.';return m;});
+function mode(){return document.querySelector('input[name=mode]:checked').value;}
+function gj(month){if(!gjCache[month])gjCache[month]=fetch(base+'detections/'+month+'.geojson',{cache:'no-cache'}).then(r=>r.ok?r.json():{features:[]}).catch(()=>({features:[]}));return gjCache[month];}
+function draw(r){
+ // Candidate boxes over the colour image, from the GeoJSON (not burned in). Grid = the site's bbox for this mask version.
+ const svg=document.getElementById('boxes'),img=document.getElementById('chip');svg.innerHTML='';
+ const useColor=mode()==='color'&&r.color_image;svg.hidden=!(useColor&&document.getElementById('showbox').checked);
+ if(svg.hidden)return;
+ Promise.all([metaP,gj(r.acquired_utc.slice(0,7))]).then(([m,fc])=>{
+  if(cur!==r)return;const site=m&&m.sites.find(s=>s.id===r.site_id&&s.mask_version===ver(r));if(!site)return;
+  const W=img.naturalWidth||site.width_px,H=img.naturalHeight||site.height_px;svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const [w,s,e,n]=site.bbox,pw=site.width_px,ph=site.height_px;const mpp=(e-w)*111320*Math.cos((s+n)/2*Math.PI/180)/pw;
+  fc.features.filter(f=>f.properties.acquired_utc===r.acquired_utc&&f.properties.site_id===r.site_id&&(f.properties.mask_version||'')===ver(r)).forEach(f=>{
+   const [lon,lat]=f.geometry.coordinates,p=f.properties;const x=(lon-w)/(e-w)*pw,y=(n-lat)/(n-s)*ph;
+   const half=Math.max(p.length_m||0,p.width_m||0,30)/mpp/2+2;const q=document.createElementNS('http://www.w3.org/2000/svg','rect');
+   q.setAttribute('x',x-half);q.setAttribute('y',y-half);q.setAttribute('width',2*half);q.setAttribute('height',2*half);
+   q.setAttribute('fill','none');q.setAttribute('stroke',p.zone==='quay'?'#ffdc00':'#ff2828');q.setAttribute('stroke-width','1.5');q.setAttribute('vector-effect','non-scaling-stroke');
+   const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=`#${p.n} ${p.zone==='quay'?'岸壁帯':'港内'}／区画 ${p.sector||'—'}：長さの目安 ${p.length_m} m`;q.appendChild(t);svg.appendChild(q);});
+ });}
+function show(r,tr){document.querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');cur=r;
+ const img=document.getElementById('chip');const useColor=mode()==='color'&&r.color_image;
+ img.onload=()=>draw(r);img.src=base+(useColor?r.color_image:r.image);img.hidden=false;
+ img.alt=useColor?'選んだ撮影の疑似カラー画像（凡例つき）':'選んだ撮影の VV 画像と候補の位置';
+ document.getElementById('caption').textContent=`${r.acquired_utc} ${r.platform} ${r.orbit_direction} 相対軌道 ${r.relative_orbit||'不明'}（範囲 ${ver(r)}）：港内候補 ${r.harbour_candidates}、岸壁帯候補 ${r.quay_candidates}`+(r.sector_a_harbour!==''&&r.sector_a_harbour!==undefined?`（A ${r.sector_a_harbour}+${r.sector_a_quay}、B ${r.sector_b_harbour}+${r.sector_b_quay}）`:'')+(mode()==='color'&&!r.color_image?'。この撮影はカラー画像がないため灰の PNG':'');}
+document.querySelectorAll('input[name=mode]').forEach(x=>x.onchange=()=>{const tr=document.querySelector('tr.sel');if(cur&&tr)show(cur,tr);});
+document.getElementById('showbox').onchange=()=>{if(cur)draw(cur);};
 function ver(r){return r.mask_version||'ZJG-land-v1';}
 const AB=(h,q)=>h===''||h===undefined?'—':`${h}+${q}`;
 fetch(base+'ship_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -78,7 +108,6 @@ fetch(base+'ship_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(
   [r.acquired_utc,r.platform,r.orbit_direction,r.relative_orbit,r.incidence_deg,r.harbour_candidates,r.quay_candidates,AB(r.sector_a_harbour,r.sector_a_quay),AB(r.sector_b_harbour,r.sector_b_quay),r.confirmed,r.len_lt50,r.len_50_100,r.len_100_200,r.len_ge200].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tr.onclick=()=>show(r,tr);tb.appendChild(tr);if(i===0)show(r,tr);});
 }).catch(()=>{document.getElementById('empty').textContent='読み込めませんでした。';});
-fetch(base+'meta.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(m=>{if(m&&m.attribution)document.getElementById('credit').textContent=m.attribution.credit+'.';}).catch(()=>{});
 </script>
 </body>
 </html>

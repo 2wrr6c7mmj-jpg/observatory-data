@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import cdse, png, render
+from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
 from .osm_mask import MASK_DIR, build_mask, fetch_osm, load_mask, save_mask
@@ -46,6 +47,7 @@ CSV_FIELDS = [
     "mask_version", "detector_version", "processing_version",
     "coverage", "len_lt50", "len_50_100", "len_100_200", "len_ge200", "processing_units", "image",
     "sector_a_harbour", "sector_a_quay", "sector_b_harbour", "sector_b_quay",
+    "color_image", "color_thumb",
 ]
 SECTOR_COLUMNS = ("a", "b")  # the first sector of a site is "a"; the rest of the chip is "b"
 
@@ -107,6 +109,18 @@ def image_path(site: dict, acquired_utc: str) -> str:
     v = mask_version(site)
     sub = "" if v == 1 else f"v{v}/"
     return f"images/{site['id']}/{sub}{stamp(acquired_utc)}.png"
+
+
+def color_paths(site: dict, acquired_utc: str) -> tuple[str, str]:
+    """False-colour WebP and its thumbnail (a directory of their own; the PNG stays)."""
+    base = f"color/{site['id']}/v{mask_version(site)}/{stamp(acquired_utc)}"
+    return base + ".webp", base + ".thumb.webp"
+
+
+def color_label(site: dict, acq: dict) -> str:
+    plat = (acq.get("platform") or "").replace("sentinel-", "S").upper()
+    od = {"ascending": "asc", "descending": "desc"}.get(acq.get("orbit_direction"), acq.get("orbit_direction") or "?")
+    return f"{site['id']} {mask_tag(site)}  {acq['acquired_utc']}  {plat} {od} RO {acq.get('relative_orbit') or '?'}"
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -178,7 +192,7 @@ class Store:
         sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"], row_mask_tag(s)))
         self.status["scenes"] = sc
 
-    def add(self, row: dict, features: list[dict], image: bytes) -> None:
+    def add(self, row: dict, features: list[dict], image: bytes, extra: dict[str, bytes] | None = None) -> None:
         key = (row["site_id"], row["acquired_utc"], row_mask_tag(row))
         self.rows = [r for r in self.rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key]
         self.rows.append(row)
@@ -186,6 +200,10 @@ class Store:
         p = self.out / row["image"]
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(image)
+        for rel, data in (extra or {}).items():
+            q = self.out / rel
+            q.parent.mkdir(parents=True, exist_ok=True)
+            q.write_bytes(data)
         self.new_features.setdefault(row["acquired_utc"][:7], []).append((row, features))
 
     def save(self, run: dict) -> None:
@@ -274,6 +292,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
         "files": {
             "ship_counts.csv": "1 行＝1 撮影×1 地点×1 範囲版（mask_version）",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
+            "color/<地点>/v<版>/<撮影時刻>.webp": "疑似カラー（R＝VV、G＝VH、B＝VV−VH を逆向き）の WebP。範囲は全地点・全日で固定、表示用だけ 3×3 Lee フィルタ、凡例と出典は画像の下。候補の枠は焼き込まない（detections の GeoJSON から重ねる）。表示の版 s1fc-1 を入れてから処理した撮影のみ（それより前の撮影は VV の PNG のみ。再取得はしない）",
+            "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）",
             "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",
             "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）",
@@ -296,10 +316,13 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "coverage": "地点の水域のうちデータがあった割合",
             "len_lt50 / len_50_100 / len_100_200 / len_ge200": "候補（両区域）の長さの区分ごとの数（〜50 / 50〜100 / 100〜200 / 200 m〜）",
             "processing_units": "その撮影の取得に使った処理単位（PU）",
-            "image": "切り出し画像",
+            "image": "切り出し画像（VV の灰、枠つきの PNG）",
+            "color_image": "疑似カラーの WebP（凡例つき、枠なし）。作っていない行は空",
+            "color_thumb": "その縮小版の WebP。作っていない行は空",
             "sector_a_harbour / sector_a_quay": "区画 A（地点の sectors の1つ目。湛江は軍港区画）の港内水域・岸壁帯の候補数（重心で判定）。区画のない版の行は空",
             "sector_b_harbour / sector_b_quay": "区画 B（切り出しの残り。湛江は水道）の港内水域・岸壁帯の候補数。A と B の合計は harbour_candidates / quay_candidates と同じ",
         },
+        "display": fcolor.settings(),
         "detector": {"version": DETECTOR_VERSION, **DETECT_DEFAULTS,
                      "length_classes_m": [[n, lo, None if hi == math.inf else hi] for n, lo, hi in LENGTH_CLASSES]},
         "can_say": "目標の有無・数・位置・長さの目安（±20〜30 m）",
@@ -342,7 +365,8 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
 
 
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
-                 budget_left: float, max_scenes: int, log=print, probe: dict | None = None) -> dict:
+                 budget_left: float, max_scenes: int, log=print, probe: dict | None = None,
+                 raw_dir: Path | None = None) -> dict:
     grid = Grid.for_site(site)
     tag = mask_tag(site)
     sectors = site_sectors(site)
@@ -386,6 +410,9 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 else:
                     raise
             budget_left -= pu
+            if raw_dir is not None:  # probe only: keep the chip to re-render without fetching again
+                raw_dir.mkdir(parents=True, exist_ok=True)
+                (raw_dir / f"{site['id']}-v{mask_version(site)}-{stamp(acq['acquired_utc'])}.png").write_bytes(data)
             vv, vh, lia = decode_chip(data)
         except cdse.CredentialError:
             raise
@@ -438,7 +465,16 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             summary["errors"] += 1
             log(f"{site['id']} {acq['acquired_utc']}: 検出・描画で失敗 {str(e)[:200]}")
             continue
-        store.add(row, features, quick)
+        extra = {}
+        try:  # the display image never stops the count (the PNG quick-look is the record)
+            cpath, tpath = color_paths(site, acq["acquired_utc"])
+            full, thumb = fcolor.render(vv, vh, color_label(site, acq),
+                                        f"Contains modified Copernicus Sentinel data {acq['acquired_utc'][:4]}")
+            extra = {cpath: full, tpath: thumb}
+            row.update(color_image=cpath, color_thumb=tpath)
+        except Exception as e:
+            log(f"{site['id']} {acq['acquired_utc']}: カラー画像を作れなかった {str(e)[:200]}")
+        store.add(row, features, quick, extra)
         entry.update(result="counted", detector_info=info)
         store.note_scene(entry)
         summary["counted"] += 1
@@ -502,7 +538,8 @@ def main(argv=None, client=None, sites=None) -> int:
                 run["sites"].append({"site_id": site["id"], "deferred_budget": True})
                 continue
             try:
-                s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe)
+                s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe,
+                                 raw_dir=args.probe / "raw" if probe is not None else None)
             except cdse.CredentialError:
                 raise
             except cdse.CDSEError as e:  # e.g. catalog 429/5xx: record it, go on to the next site
