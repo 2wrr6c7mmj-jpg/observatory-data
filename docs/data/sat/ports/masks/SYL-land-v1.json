@@ -1,0 +1,29 @@
+{
+ "version": "SYL-land-v1",
+ "site": "SYL",
+ "built_utc": "2026-10-30T17:42:10Z",
+ "bbox": [
+  109.505,
+  18.205,
+  109.555,
+  18.245
+ ],
+ "width": 529,
+ "height": 443,
+ "values": {
+  "0": "water",
+  "1": "land",
+  "2": "structure (pier/breakwater/groyne/quay/bridge)"
+ },
+ "source": "OpenStreetMap via Overpass API",
+ "osm_base": "2026-10-30T17:41:00Z",
+ "query": "[out:json][timeout:90];(way[\"natural\"=\"coastline\"](18.205,109.505,18.245,109.555);way[\"man_made\"~\"^(pier|breakwater|groyne|quay)$\"](18.205,109.505,18.245,109.555);way[\"bridge\"][\"highway\"](18.205,109.505,18.245,109.555);way[\"bridge\"][\"railway\"](18.205,109.505,18.245,109.555););out geom;",
+ "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
+ "coastline_ways": 5,
+ "structure_ways": 97,
+ "regions": 14,
+ "regions_without_votes": 9,
+ "water_fraction": 0.3816,
+ "land_fraction": 0.6134,
+ "structure_fraction": 0.0049
+}

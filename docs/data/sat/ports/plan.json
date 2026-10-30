@@ -1,0 +1,237 @@
+{
+ "plan_utc": "2026-10-30T17:50:19Z",
+ "cap_pu": 4000.0,
+ "cap_req": 8119,
+ "estimate_pu": 1479.4,
+ "chosen_estimate_pu": 1479.4,
+ "catalog_requests": 36,
+ "ports": [
+  {
+   "site_id": "SYL",
+   "width": 529,
+   "height": 443,
+   "area_km2": 23.4,
+   "s1_scenes": 62,
+   "s1_pu_per_scene": 1.788,
+   "s1_pu": 110.9,
+   "s2_days": 88,
+   "s2_pu": 48.5,
+   "pu": 159.4,
+   "s1_requests": 62,
+   "s2_requests": 131,
+   "priority": 1,
+   "cap_pu": 199.2,
+   "cap_req": 261
+  },
+  {
+   "site_id": "SLP",
+   "width": 529,
+   "height": 498,
+   "area_km2": 26.3,
+   "s1_scenes": 33,
+   "s1_pu_per_scene": 2.01,
+   "s1_pu": 66.3,
+   "s2_days": 88,
+   "s2_pu": 54.2,
+   "pu": 120.6,
+   "s1_requests": 33,
+   "s2_requests": 131,
+   "priority": 1,
+   "cap_pu": 150.8,
+   "cap_req": 225
+  },
+  {
+   "site_id": "QGZ",
+   "width": 498,
+   "height": 499,
+   "area_km2": 24.8,
+   "s1_scenes": 68,
+   "s1_pu_per_scene": 1.896,
+   "s1_pu": 128.9,
+   "s2_days": 86,
+   "s2_pu": 50.1,
+   "pu": 179.1,
+   "s1_requests": 68,
+   "s2_requests": 129,
+   "priority": 1,
+   "cap_pu": 223.9,
+   "cap_req": 266
+  },
+  {
+   "site_id": "QDH",
+   "width": 495,
+   "height": 555,
+   "area_km2": 27.5,
+   "s1_scenes": 46,
+   "s1_pu_per_scene": 2.096,
+   "s1_pu": 96.4,
+   "s2_days": 158,
+   "s2_pu": 101.3,
+   "pu": 197.8,
+   "s1_requests": 46,
+   "s2_requests": 226,
+   "priority": 1,
+   "cap_pu": 247.2,
+   "cap_req": 360
+  },
+  {
+   "site_id": "QJG",
+   "width": 288,
+   "height": 300,
+   "area_km2": 8.6,
+   "s1_scenes": 46,
+   "s1_pu_per_scene": 0.659,
+   "s1_pu": 30.3,
+   "s2_days": 158,
+   "s2_pu": 35.1,
+   "pu": 65.4,
+   "s1_requests": 46,
+   "s2_requests": 226,
+   "priority": 2,
+   "cap_pu": 81.8,
+   "cap_req": 360
+  },
+  {
+   "site_id": "ZDH",
+   "width": 627,
+   "height": 554,
+   "area_km2": 34.8,
+   "s1_scenes": 28,
+   "s1_pu_per_scene": 2.65,
+   "s1_pu": 74.2,
+   "s2_days": 85,
+   "s2_pu": 68.2,
+   "pu": 142.4,
+   "s1_requests": 28,
+   "s2_requests": 127,
+   "priority": 1,
+   "cap_pu": 178.0,
+   "cap_req": 213
+  },
+  {
+   "site_id": "DLS",
+   "width": 607,
+   "height": 444,
+   "area_km2": 27.0,
+   "s1_scenes": 40,
+   "s1_pu_per_scene": 2.056,
+   "s1_pu": 82.2,
+   "s2_days": 155,
+   "s2_pu": 97.6,
+   "pu": 179.8,
+   "s1_requests": 40,
+   "s2_requests": 222,
+   "priority": 1,
+   "cap_pu": 224.8,
+   "cap_req": 347
+  },
+  {
+   "site_id": "LSN",
+   "width": 478,
+   "height": 444,
+   "area_km2": 21.2,
+   "s1_scenes": 71,
+   "s1_pu_per_scene": 1.619,
+   "s1_pu": 114.9,
+   "s2_days": 155,
+   "s2_pu": 77.8,
+   "pu": 192.8,
+   "s1_requests": 71,
+   "s2_requests": 222,
+   "priority": 2,
+   "cap_pu": 241.0,
+   "cap_req": 386
+  },
+  {
+   "site_id": "SJN",
+   "width": 476,
+   "height": 388,
+   "area_km2": 18.5,
+   "s1_scenes": 26,
+   "s1_pu_per_scene": 1.409,
+   "s1_pu": 36.6,
+   "s2_days": 158,
+   "s2_pu": 69.7,
+   "pu": 106.3,
+   "s1_requests": 26,
+   "s2_requests": 226,
+   "priority": 1,
+   "cap_pu": 132.9,
+   "cap_req": 335
+  },
+  {
+   "site_id": "HLD",
+   "width": 422,
+   "height": 444,
+   "area_km2": 18.8,
+   "s1_scenes": 69,
+   "s1_pu_per_scene": 1.43,
+   "s1_pu": 98.7,
+   "s2_days": 83,
+   "s2_pu": 37.1,
+   "pu": 135.8,
+   "s1_requests": 69,
+   "s2_requests": 125,
+   "priority": 1,
+   "cap_pu": 169.8,
+   "cap_req": 262
+  }
+ ],
+ "matrix": [
+  {
+   "port": "DLS",
+   "cap": 224.8,
+   "req": 347
+  },
+  {
+   "port": "HLD",
+   "cap": 169.8,
+   "req": 262
+  },
+  {
+   "port": "QDH",
+   "cap": 247.2,
+   "req": 360
+  },
+  {
+   "port": "QGZ",
+   "cap": 223.9,
+   "req": 266
+  },
+  {
+   "port": "SJN",
+   "cap": 132.9,
+   "req": 335
+  },
+  {
+   "port": "SLP",
+   "cap": 150.8,
+   "req": 225
+  },
+  {
+   "port": "SYL",
+   "cap": 199.2,
+   "req": 261
+  },
+  {
+   "port": "ZDH",
+   "cap": 178.0,
+   "req": 213
+  },
+  {
+   "port": "LSN",
+   "cap": 241.0,
+   "req": 386
+  },
+  {
+   "port": "QJG",
+   "cap": 81.8,
+   "req": 360
+  }
+ ],
+ "other_usage_pu": 166.5,
+ "other_usage_requests": 181,
+ "ports_done_pu": 0.0,
+ "global_cap": 9000.0,
+ "ports_cap": 4000.0
+}

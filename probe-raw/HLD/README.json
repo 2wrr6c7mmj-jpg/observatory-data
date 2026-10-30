@@ -1,0 +1,20 @@
+{
+ "site": "HLD",
+ "bbox": [
+  120.985,
+  40.695,
+  121.035,
+  40.735
+ ],
+ "width": 422,
+ "height": 444,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "HLD/2026-03-19T09-49-24Z.png",
+  "HLD/2026-05-22T22-03-18Z.png",
+  "HLD/2026-05-11T09-57-22Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}

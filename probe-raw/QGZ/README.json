@@ -1,0 +1,20 @@
+{
+ "site": "QGZ",
+ "bbox": [
+  119.955,
+  35.7,
+  120.01,
+  35.745
+ ],
+ "width": 498,
+ "height": 499,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "QGZ/2026-04-10T10-04-35Z.png",
+  "QGZ/2026-04-17T09-56-08Z.png",
+  "QGZ/2026-06-11T21-56-53Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}
