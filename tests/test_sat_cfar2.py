@@ -55,7 +55,7 @@ class ThresholdTest(unittest.TestCase):
                 vals = [c2.z_threshold(model, p, 1e-4, cz) for p in prms]
                 self.assertLess(max(vals) - min(vals), 1e-4, (model, cz, vals))
 
-    def test_censored_threshold_is_lower(self):
+    def test_censored_threshold_is_higher(self):
         # pass 2 drops the ring's own upper tail, so s is smaller and z_t (in that z) is larger
         for model, p in (("lognormal", (0, 1)), ("loggamma", (4.4, 0.0)), ("weibull", (1.0, 0.0))):
             self.assertGreater(c2.z_threshold(model, p, 1e-4, 2.5), c2.z_threshold(model, p, 1e-4))

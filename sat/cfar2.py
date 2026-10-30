@@ -32,13 +32,30 @@ Pipeline (design ``cfar-v2`` sections 3.2-3.4):
    AIC picks the model; an upper partial Q-Q (90-99.9th percentile, RMSE in z units) checks the
    tail: if the AIC choice has ``tail_rmse > 0.25`` and a model with a heavier tail (larger z_t)
    is within 0.25, that one is used; if none is within 0.25 the largest z_t is used. The choice is
-   smoothed by a 3x3 tile majority. Tiles with < 30% usable water borrow from neighbours.
+   smoothed by a 3x3 tile majority, counting only models the tile itself has parameters for (a
+   model whose fit failed in that tile is never chosen for it). Tiles with < 30% usable water borrow
+   from the nearest fitted tiles, at most ``borrow_max_tiles`` (3) tiles away (Chebyshev); farther
+   tiles get no model and are not tested.
 4. Thresholds ``z_t(PFA)`` per tile. ``z_threshold(..., censor_z=None)`` is the textbook value
    (``(t - mean) / sd`` of the model: lognormal 4.265 and Weibull 2.355 at 1e-5 for any
    parameters, log-gamma L=4.4 3.179). Because pass 2 drops the ring's own upper tail
    (``z1 > 2.5``), ``m`` and ``s`` are the model's moments *below* ``mean + 2.5 sd``; the applied
    threshold (``z_t`` in the tile table) uses those censored moments so the false-alarm rate stays
    at the nominal PFA.
+
+Notes and known limits (1部 PR1 review):
+
+* The tile fit leaves out pixels with ``z1 >= fit_exclude_z`` (5.0, the "first-pass detections",
+  dilated by 2 px). This also cuts the clutter's own extreme upper tail out of the fit: the fitted
+  tail is the tail of the clutter *below* that cut, which is what the upper partial Q-Q (90-99.9th
+  percentile) checks. Effect is small for gamma / lognormal / Weibull / K(shape >= 3) clutter
+  (synthetic test: 0.8-1.2x nominal), larger for very spiky clutter.
+* Spiky K clutter (texture shape nu = 1) is outside the 1/2..2 goal: measured 1.56x nominal at 1e-3
+  and 2.13x at 1e-4 (synthetic, 1024x1024 at 20 m). It stays within the design's acceptance range
+  (1/3..3x) and is tested at that range only.
+* The gamma (``loggamma``) model is fitted by maximum likelihood (ln L - psi(L) = ln mean(x) -
+  mean(ln x), Newton), not by the design's moment equation psi1(L) = var(y); MLE is the more
+  efficient estimate and the same in expectation.
 """
 from __future__ import annotations
 
@@ -67,6 +84,7 @@ DEFAULTS_V2 = {
     "thin_below_m": 15.0,        # pixels finer than this are thinned 2x2 for the fit
     "min_tile_water": 0.3,       # usable fraction of the tile needed to fit it
     "min_fit_samples": 1000,
+    "borrow_max_tiles": 3,       # an unfitted tile borrows only from fitted tiles this close (Chebyshev, tiles)
     "tail_probs": (0.10, 0.001), # upper partial Q-Q: exceedance 10% .. 0.1% (90th..99.9th percentile)
     "tail_points": 16,
     "tail_rmse_max": 0.25,
@@ -607,6 +625,8 @@ def cfar2(db: np.ndarray, land: np.ndarray | None, pixel_m, cfg: dict | None = N
         nb = own[max(0, ty - 1):ty + 2, max(0, tx - 1):tx + 2].ravel()
         nb = nb[nb >= 0]
         cnt = np.bincount(nb, minlength=len(MODELS))
+        # only models this tile has parameters for (a failed fit, e.g. logweibull3, has params None)
+        cnt = np.where([t["fits"][m]["params"] is not None for m in MODELS], cnt, -1)
         top = np.flatnonzero(cnt == cnt.max())
         if own[ty, tx] in top:
             final[ty, tx] = own[ty, tx]
@@ -626,10 +646,16 @@ def cfar2(db: np.ndarray, land: np.ndarray | None, pixel_m, cfg: dict | None = N
             continue
         dist = np.maximum(np.abs(fitted[:, 0] - ty), np.abs(fitted[:, 1] - tx))
         rad = dist.min()
+        if rad > cfg["borrow_max_tiles"]:          # too far from any fitted tile: not tested
+            t["model"] = None
+            t["src"] = None
+            continue
         near = fitted[dist == rad]
         labs = final[near[:, 0], near[:, 1]]
         cnt = np.bincount(labs, minlength=len(MODELS))
         top = np.flatnonzero(cnt == cnt.max())
+        # final[src] always has params in src (smoothing above keeps to fitted models), so any
+        # source picked here can supply the parameters.
         # tie: the safer (larger z_t) model, judged on the first neighbour that has it
         def zt_of(k):
             src = near[labs == k][0]
