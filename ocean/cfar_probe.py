@@ -75,6 +75,9 @@ OCEAN_DEFAULT_PU_CAP = 400.0
 TOTAL_MONTHLY_PU_GUARD = {"2026-10": 9000.0}
 TOTAL_DEFAULT_PU_GUARD = 1400.0  # = the daily run's own 1,000 + the ocean 400
 MONTHLY_REQUEST_CAP = 2000       # same number as sat/run.py, counted on sat + ocean together
+# 2026-10: the ports probe's requests (ports_usage.csv, passed with --sat-usage) are counted too, so the cap is
+# the account's 10,000 requests a month less a margin of 1,500 (the same numbers as sat/port_archive.py).
+MONTHLY_REQUEST_CAP_BY_MONTH = {"2026-10": 8500}
 PU_PER_MIN = 200.0               # CDSE limit 300 PU/min
 REQ_PER_MIN = 200                # CDSE limit 300 requests/min
 DEFAULT_MAX_PU = 3900.0
@@ -197,7 +200,7 @@ def month_totals(rows: list[dict], month: str) -> tuple[float, int]:
 def caps_for(month: str) -> dict:
     return {"ocean_pu": OCEAN_MONTHLY_PU_CAP.get(month, OCEAN_DEFAULT_PU_CAP),
             "total_pu": TOTAL_MONTHLY_PU_GUARD.get(month, TOTAL_DEFAULT_PU_GUARD),
-            "requests": MONTHLY_REQUEST_CAP}
+            "requests": MONTHLY_REQUEST_CAP_BY_MONTH.get(month, MONTHLY_REQUEST_CAP)}
 
 
 def budget(month: str, sat_rows: list[dict], ocean_rows: list[dict], max_pu: float) -> dict:
