@@ -43,3 +43,33 @@ class HullPairs(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def row(sid, rid, date, strait, inferred=0, hulls="101", to="太平洋", dir="SE", pub="2025-03-01", nation="CN"):
+    return dict(sighting_id=sid, release_id=rid, pub_date=pub, date=date, strait=strait, inferred=inferred, hulls=hulls,
+                waters_to=to, dir=dir, nation=nation)
+
+
+class Dedupe(unittest.TestCase):
+    def test_inferred_row_near_a_stated_passage_in_the_same_release_is_dropped(self):
+        rows = [row(1, "r1", "2025-03-01", "yonaguni_taiwan", inferred=1), row(2, "r1", "2025-03-02", "yonaguni_iriomote"),
+                row(3, "r2", "2025-06-01", "miyako", inferred=1, hulls="999")]
+        kept, alias, n = build.dedupe(rows)
+        self.assertEqual([r["sighting_id"] for r in kept], [2, 3])
+        self.assertEqual(n["inferred_near_stated"], 1)
+
+    def test_repeat_in_a_later_release_keeps_the_earliest(self):
+        rows = [row(5, "r9", "2025-03-02", "miyako", dir="E", pub="2025-03-20"),   # return release re-reports it
+                row(4, "r8", "2025-03-01", "miyako", dir="SE", pub="2025-03-02"),
+                row(6, "r9", "2025-03-01", "miyako", to="東シナ海", pub="2025-03-20")]  # other direction: kept
+        kept, alias, n = build.dedupe(rows)
+        self.assertEqual(sorted(r["sighting_id"] for r in kept), [4, 6])
+        self.assertEqual(alias, {5: 4})
+
+
+class Direction(unittest.TestCase):
+    def test_outbound_leg_heading_home_is_a_return_first(self):
+        self.assertEqual(build.direction("CN", "太平洋(西)"), "進出→帰投")
+        self.assertEqual(build.direction("CN", "東シナ海"), "帰投→再進出")
+        self.assertEqual(build.direction("RU", "日本海"), "帰投→再進出")
+        self.assertEqual(build.direction("RU", "オホーツク海"), "進出→帰投")
