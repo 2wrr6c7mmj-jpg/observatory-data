@@ -69,18 +69,19 @@ small,.note{color:#555}
 <li>閾値は湛江 v2 の 6 撮影（2026-10-02・10-08・10-14・10-26 の軌道 157、10-03・10-15 の軌道 84）で調整しました。<b>これらの撮影の数は調整に使った標本内の値で、基準の期間にも含まれます</b>（表の「標本」欄に「調整」）。精度の評価は 2026-10-27 以降の撮影（基準・調整のどちらにも使っていないもの）と光学画像で行います</li>
 <li>艦種・国籍は分からず、民間船・作業船・荷役機械も入ります。横抱きは「可能性」で確かめていません。軌道 84 の基準は 15 シーン（24 未満）で確度を一段下げています（4）</li>
 </ul>
-<p class="trial"><b>推定（est-1、試行・精度未測定）</b>：上の幅（最小〜最大）を、中国海軍の艦の長さの分布と桟橋ごとの艦種の傾向で狭めた「最も確からしい隻数」と 80% 区間です。旧来の幅と並べて出します。</p>
+<p class="trial"><b>推定（est-1、試行・精度未測定）</b>：上の幅（最小〜最大）を、中国海軍の艦の長さの分布と桟橋ごとの艦種の傾向で狭めた<b>モデル上の最頻値</b>と<b>モデル内の 80% 区間</b>です。旧来の幅と並べて出します。モデル内の区間は「このモデルと前提が正しければ」の区間で、実数がこの区間に入る確率ではありません。</p>
 <ul>
-<li>区間ごとに、観測した長さ（区間長−20 m）に合う隻数を、艦種表（055・052D・054A・056A・071 など 18 種の全長と南部戦区の隻数・湛江への重み）から艦を引いて縦に並べた全長（艦の間隔 10〜40 m）との照合で求めます（2 万本の模擬、乱数の種は固定）。断面の谷の数、横抱き（外側の帯の長さ）、桟橋の両側の同じ艦のにじみ、50 m 未満の作業船・小型艇も入れます</li>
+<li>区間ごとに、観測した長さ（区間長−20 m）に合う隻数を、艦種表（055・052D・054A・056A・071 など 18 種の全長と南部戦区の隻数・湛江への重み）から艦を引いて縦に並べた全長（艦の間隔 10〜40 m）との照合で求めます（2 万本の模擬、乱数の種は固定）。断面の谷の数、横抱き（外側の帯の長さ）、桟橋の両側の同じ艦のにじみ、50 m 未満の作業船・小型艇、誤検出（0 隻、n＝1 に対するオッズ 0.05 の仮置き）も入れます</li>
 <li>桟橋ごとの傾向：北の T 字桟橋と P2 は大型艦向き、P3〜P5 は中型艦向き、海岸線と区画 B は作業船・小型艇向きとし、全体の構成を常に 3 割混ぜます。単艦とみられるきれいな区間で桟橋ごとの長さの分布を少しずつ更新します（quay/ZJG-zone-prior.json）</li>
-<li>艦の間隔・長さの削り幅・にじみの確率の不確かさは 27 通りの混合で幅に入れています。「艦艇」は全長 60 m 以上だけの数です</li>
+<li><b>区間に入れているもの</b>：区間長と艦の長さの照合のずれ（20 m）、艦種の混ざり方、谷の数の数え違い、艦の間隔（3 通り）・長さの削り幅（3 通り）・にじみの確率（3 通り）・横抱きが本当に船である確率（0.5／0.8／1.0）の 81 通りの等重みの混合。「60 m 以上の船」は艦種表の長さで分けた数で、艦艇以外の船を含み得ます</li>
+<li><b>区間に入っていないもの</b>（実数は区間の外にもあり得ます）：横抱きの確率の値そのものの誤り（未検証）、仮置きを超える誤検出（150 m を超える誤検出、船と荷役機械が並ぶ区間など）、数えられない区間（常時占有）の船、OSM に無い岸壁の船、艦種表・重み・桟橋の倍率の誤り、区間どうしの独立の仮定（同じ桟橋の区間の相関を入れていないので合計の区間は狭く出やすい）、1 区間 16 隻の上限（達した区間は印 cap）</li>
 <li><b>前提はすべて推定を含みます</b>：艦種表の隻数と湛江への重み、桟橋の倍率は公開情報からの推定で、配備表ではありません（出典は sat/ship_classes.json、全長は各艦種の Wikipedia 英語版）。<b>精度は測っていません</b>。区間どうしは独立と仮定しています。2026-10-26 以前の撮影は閾値の調整に使った標本内の値です</li>
-<li>前提と合わない区間（谷の数が多すぎる、単艦として長さが事前分布の 95% の外）は印（prior_conflict）を付け、表の「印」に数を出します</li>
+<li>前提と合わない区間（谷の数が多すぎる、単艦として長さが事前分布の 95% の外、80% 区間の上端が上限 16 隻に達した）は印（prior_conflict）を付け、表の「印」に数を出します（上限に達した区間は「上限」と別に数えます）。閾値の調整に使った撮影は事前分布の更新に使いません</li>
 </ul>
 <p id="qblind" class="note">数えられない区間：読み込み中…（meta.json の quay.blind_stretches）</p>
 <p id="qempty" class="note">読み込み中…</p>
 <table id="qtbl" hidden>
-<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>相対軌道</th><th>占有数（最小〜最大）</th><th>推定 est-1（80% 区間）</th><th>うち艦艇（60 m〜）</th><th>A 軍港区画</th><th>B 水道</th><th>区間</th><th>横抱きの可能性</th><th>基準（シーン数）</th><th>確度</th><th>標本</th><th>印</th></tr></thead>
+<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>相対軌道</th><th>占有数（最小〜最大）</th><th>推定 est-1：モデル上の最頻値（モデル内の 80% 区間）</th><th>うち 60 m 以上の船（艦艇以外を含み得る）</th><th>A 軍港区画</th><th>B 水道</th><th>区間</th><th>横抱きの可能性</th><th>基準（シーン数）</th><th>確度</th><th>標本</th><th>印</th></tr></thead>
 <tbody></tbody>
 </table>
 <p class="note">変化カラー：R＝今回の VV、G・B＝同じ相対軌道の基準の VV（どちらも 3×3 平均、−22〜0 dB）。<b>赤＝今回の方が明るい（入港・新しい物）</b>、水色＝今回の方が暗い（出港）、灰＝変化なし。基準が「船のいない状態」なので水色はほとんど出ず、全体がわずかに赤みを帯びます。黄の線＝占有区間（水際から 15 m 沖に描画）、桃の線＝横抱きの可能性がある区間、灰の点線＝その軌道で数えられない可能性が高い区間（quay/blind.geojson）。</p>
@@ -158,10 +159,10 @@ function qdraw(r){const svg=document.getElementById('qsvg'),img=document.getElem
    const p=f.properties;const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
    pl.setAttribute('points',f.geometry.coordinates.map(([lon,lat])=>`${(lon-w)/(e-w)*pw},${(n-lat)/(n-s)*ph}`).join(' '));
    pl.setAttribute('fill','none');pl.setAttribute('stroke',p.rafted?'#ff4fd8':'#ffdc00');pl.setAttribute('stroke-width','2');pl.setAttribute('vector-effect','non-scaling-stroke');
-   const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=`区間 ${p.n}（区画 ${p.sector||'—'}）：${p.min}〜${p.max} 隻、区間長 ${p.length_m} m（長さの目安 ${p.est_length_m} m、未検証）${p.rafted?'、横抱きの可能性':''}、ΔVV 最大 ${p.peak_dvv_db} dB`+(p.n_mode!==undefined&&p.n_mode!==null?`。推定 ${p.n_mode} 隻（80% ${p.n_p10}〜${p.n_p90}）、区画 ${p.zone}${p.outer_len_m?`、外側 ${p.outer_len_m} m`:''}${p.depth_m?`、奥行き ${p.depth_m} m`:''}${p.prior_conflict?`、印 ${p.prior_conflict}`:''}`:'');pl.appendChild(t);svg.appendChild(pl);});
+   const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=`区間 ${p.n}（区画 ${p.sector||'—'}）：${p.min}〜${p.max} 隻、区間長 ${p.length_m} m（長さの目安 ${p.est_length_m} m、未検証）${p.rafted?'、横抱きの可能性':''}、ΔVV 最大 ${p.peak_dvv_db} dB`+(p.n_mode!==undefined&&p.n_mode!==null?`。推定：モデル上の最頻値 ${p.n_mode} 隻（モデル内の 80% 区間 ${p.n_p10}〜${p.n_p90}）、区画 ${p.zone}${p.outer_len_m?`、外側 ${p.outer_len_m} m`:''}${p.depth_m?`、奥行き ${p.depth_m} m`:''}${p.prior_conflict?`、印 ${p.prior_conflict}`:''}`:'');pl.appendChild(t);svg.appendChild(pl);});
  });}
 function qshow(r,tr){document.querySelectorAll('#qtbl tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');qcur=r;
- const img=document.getElementById('qimg');document.getElementById('qcaption').textContent=`${r.acquired_utc} ${r.platform} 相対軌道 ${r.relative_orbit}：岸壁の占有 ${r.occupied_min}〜${r.occupied_max}（A ${r.sector_a_min}〜${r.sector_a_max}、B ${r.sector_b_min}〜${r.sector_b_max}）、基準 ${r.baseline_version}（${r.baseline_scenes} シーン）、確度 ${r.credibility}`+(r.est_version?`。推定（${r.est_version}、試行・精度未測定）：最も確からしい ${r.est_mode} 隻、80% 区間 ${r.est_p10}〜${r.est_p90}（平均 ${r.est_mean}、うち艦艇 ${r.est_warship_mode}）。前提（艦種表・重み・桟橋の倍率）は推定を含む`:'');
+ const img=document.getElementById('qimg');document.getElementById('qcaption').textContent=`${r.acquired_utc} ${r.platform} 相対軌道 ${r.relative_orbit}：岸壁の占有 ${r.occupied_min}〜${r.occupied_max}（A ${r.sector_a_min}〜${r.sector_a_max}、B ${r.sector_b_min}〜${r.sector_b_max}）、基準 ${r.baseline_version}（${r.baseline_scenes} シーン）、確度 ${r.credibility}`+(r.est_version?`。推定（${r.est_version}、試行・精度未測定）：モデル上の最頻値 ${r.est_mode} 隻、モデル内の 80% 区間 ${r.est_p10}〜${r.est_p90}（平均 ${r.est_mean}、うち 60 m 以上の船 ${r.est_warship_mode}）${+r.est_capped?`、上限に達した区間 ${r.est_capped}（実数はもっと多い可能性）`:''}。前提（艦種表・重み・桟橋の倍率）は推定を含み、区間に入っていない不確かさがある`:'');
  if(!r.change_image){img.hidden=true;document.getElementById('qsvg').hidden=true;return;}
  img.onload=()=>qdraw(r);img.src=base+r.change_image;img.hidden=false;}
 fetch(base+'quay_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -170,7 +171,7 @@ fetch(base+'quay_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(
  document.getElementById('qempty').hidden=true;document.getElementById('qtbl').hidden=false;const tb=document.querySelector('#qtbl tbody');
  rows.forEach((r,i)=>{const tr=document.createElement('tr');
   const E=x=>r.est_version?x:'';
-  [r.acquired_utc,r.platform,r.relative_orbit,`${r.occupied_min}〜${r.occupied_max}`,E(`${r.est_mode}（${r.est_p10}〜${r.est_p90}）`),E(`${r.est_warship_mode}（${r.est_warship_p10}〜${r.est_warship_p90}）`),`${r.sector_a_min}〜${r.sector_a_max}`+E(`／推定 ${r.est_a_mode}（${r.est_a_p10}〜${r.est_a_p90}）`),`${r.sector_b_min}〜${r.sector_b_max}`+E(`／推定 ${r.est_b_mode}（${r.est_b_p10}〜${r.est_b_p90}）`),r.segments,r.rafted,`${r.baseline_version}（${r.baseline_scenes}）`,r.credibility,SAMPLE[r.in_sample]||'',E(r.est_conflicts)].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
+  [r.acquired_utc,r.platform,r.relative_orbit,`${r.occupied_min}〜${r.occupied_max}`,E(`${r.est_mode}（${r.est_p10}〜${r.est_p90}）`),E(`${r.est_warship_mode}（${r.est_warship_p10}〜${r.est_warship_p90}）`),`${r.sector_a_min}〜${r.sector_a_max}`+E(`／推定 ${r.est_a_mode}（${r.est_a_p10}〜${r.est_a_p90}）`),`${r.sector_b_min}〜${r.sector_b_max}`+E(`／推定 ${r.est_b_mode}（${r.est_b_p10}〜${r.est_b_p90}）`),r.segments,r.rafted,`${r.baseline_version}（${r.baseline_scenes}）`,r.credibility,SAMPLE[r.in_sample]||'',E(r.est_conflicts+(+r.est_capped?`（上限 ${r.est_capped}）`:''))].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tr.onclick=()=>qshow(r,tr);tb.appendChild(tr);if(i===0)qshow(r,tr);});
 }).catch(()=>{document.getElementById('qempty').textContent='読み込めませんでした。';});
 </script>

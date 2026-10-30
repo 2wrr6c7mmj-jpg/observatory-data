@@ -49,7 +49,7 @@ class EstimateTest(unittest.TestCase):
         self.assertGreaterEqual(segs[1]["n_mode"], 4)
         self.assertLessEqual(segs[1]["n_p10"], segs[1]["n_mode"])
         self.assertLessEqual(segs[1]["n_mode"], segs[1]["n_p90"])
-        self.assertEqual(r["scenarios"], 27)
+        self.assertEqual(r["scenarios"], 81)
         self.assertLessEqual(r["all"]["p10"], r["all"]["mode"])
         self.assertLessEqual(r["all"]["mode"], r["all"]["p90"])
         self.assertTrue(segs[0]["clean"])
@@ -97,6 +97,25 @@ class EstimateTest(unittest.TestCase):
         self.assertEqual(r["by_sector"]["A"]["mode"], 1)
         self.assertEqual(r["by_sector"]["B"]["mode"], 1)
         self.assertEqual(r["all"]["mode"], 2)
+
+    def test_false_alarm_and_raft_allow_zero(self):
+        s = seg(60, way=13977070)
+        e.estimate([s], "ZJG", self.m)
+        self.assertEqual(s["n_mode"], 1)
+        pn, _ = self.m.posterior(40.0, 1, self.m.zone_weights("shore"), "base")
+        self.assertGreater(pn[0], 0.0)
+        self.assertLess(pn[0], 0.2)
+        pn, _ = self.m.posterior(400.0, 1, self.m.zone_weights("shore"), "base")
+        self.assertEqual(pn[0], 0.0)  # longer than any false alarm
+        b = seg(180, outer=170)
+        e.estimate([b], "ZJG", self.m)
+        self.assertEqual(b["n_p10"], 1)  # the outboard ship may be absent (p_raft 0.5-1.0)
+
+    def test_cap_flag(self):
+        s = seg(3800, k=1)
+        r = e.estimate([s], "ZJG", self.m)
+        self.assertIn("cap", s["prior_conflict"])
+        self.assertEqual(r["capped"], 1)
 
     def test_empty(self):
         r = e.estimate([], "ZJG", self.m)

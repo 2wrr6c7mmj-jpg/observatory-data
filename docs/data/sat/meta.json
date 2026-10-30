@@ -161,8 +161,19 @@
   "estimate": {
    "version": "est-1",
    "status": "試行（精度未測定）。艦種表・重み・桟橋の倍率はすべて推定を含む。湛江 v2 の調整に使った撮影（標本内）で確かめただけ",
-   "class_table": "sat/ship_classes.json（全長は各艦種の Wikipedia 英語版、隻数・湛江への重み w は推定）",
-   "zones": "sat/quay_zones.json（区画＝OSM の way_id、面＝way_id＋側。桟橋の型ごとの群の倍率は推定）",
+   "limits": [
+    "80% 区間はモデル内の区間で、次のものは入っていない（実数は区間の外にもあり得る）",
+    "横抱き：外側の帯の占有が本当に船である確率 p_raft を 0.5／0.8／1 の混合で入れたが、この値自体は未検証（光学画像で確かめていない）",
+    "誤検出：n＝0 は n＝1 に対するオッズ 0.05 の仮置きで、150 m を超える区間は誤検出と見ない。長い区間の一部だけが誤検出（荷役機械と船が並ぶ等）の場合は入っていない",
+    "数えられない区間：基準期間の約 9 割以上同じ場所に居た船・常に埋まっていた岸壁（blind_stretches）の船は区間そのものが無く、推定に入らない",
+    "OSM に無い岸壁・桟橋に横付けされた船は数えない",
+    "艦種表（隻数・湛江への重み）と桟橋の倍率の誤り：すべて推定で、誤っていれば最頻値も区間もずれる。054A＋と掃海艇の全長は未確認、タグ・作業船は出典なし",
+    "区間どうしの独立の仮定：同じ桟橋の区間・両側の区間の相関（例：同じ艦隊がまとまって在泊）は入れていない。合計の区間は狭く出やすい",
+    "上限：1 区間 16 隻まで（外側の帯も同じ）。80% 区間の上端が上限に達した区間は prior_conflict＝cap",
+    "精度は測っていない。2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値（事前分布の更新にも使わない）"
+   ],
+   "class_table_file": "sat/ship_classes.json（全長は各艦種の Wikipedia 英語版、隻数・湛江への重み w は推定）",
+   "zones_file": "sat/quay_zones.json（区画＝OSM の way_id、面＝way_id＋側。桟橋の型ごとの群の倍率は推定）",
    "global_mix": {
     "055": 0.055,
     "052D": 0.0688,
@@ -190,9 +201,331 @@
    "cluster": "60 m 以内のまとまりの代表以外は確率 q（区間長 150 m 未満 0.5、以上 0.2）で同じ艦のにじみ（0 隻）",
    "small_craft": "区間長 60 m 未満で ΔVH の最大が 6 dB 未満なら T 群（50 m 未満）の重みを 3 倍。全船と艦艇（60 m 以上）を別に出す",
    "total": "区間の分布を畳み込む（区間どうしは独立と仮定）。A・B は区間の中央の区画",
-   "scenarios": "構造の不確かさは等重みの混合：隻の間隔 U(5,15)／U(10,40)／U(20,60) m × トリム 10／20／30 m × q（0.3/0.1、0.5/0.2、0.7/0.4）の 27 通り",
-   "output": "最頻値 mode、80% 区間 p10〜p90（累積 10%・90% に達する最小の数）、平均 mean",
-   "prior_conflict": "valleys＝谷の数 k が n の 80% 区間の上端を超えた、length＝単艦として区画の事前分布の 95% 区間の外",
+   "scenarios": "区間に入れている不確かさ：区間長と艦の長さの照合（σ 20 m）、艦種の混ざり方（区画の事前分布）、谷の数の数え違い（P(k|n)）、そして等重みの 81 通りの混合＝隻の間隔 U(5,15)／U(10,40)／U(20,60) m × 長さの削り幅 10／20／30 m × にじみの確率 q（0.3/0.1、0.5/0.2、0.7/0.4） × 横抱きが本当に船である確率 p_raft（0.5／0.8／1）。入れていないものは limits",
+   "false_alarm": "n＝0（誤検出：荷役機械・構造物・にじみ）を、n＝1 に対する事前のオッズ 0.05：0.95 で入れる。誤検出の区間の長さは 0〜150 m の一様、谷は 1 つの物として扱う。値は仮置き：正解データが無く、quay-v1 は ΔVV 12 dB の種と今回の VV −10 dB で風・にじみを抑えているため、残る誤検出を区間の 1 割未満と見た（未検証）。全体の事前の 5% とすると、一様事前（1〜16）が船の側の事前を薄めるため短い区間の大半が 0 隻になってしまうので、n＝1 との比にした",
+   "interval": "80% 区間はモデル内の区間（このモデルと前提が正しいとしたときの p10〜p90）で、実数がこの区間に入る確率ではない",
+   "output": "最頻値 mode（モデル上の最頻値）、モデル内の 80% 区間 p10〜p90（累積 10%・90% に達する最小の数）、平均 mean",
+   "warship": "全長 60 m 以上の船の数（艦種表の長さによる区別で、艦艇以外の船を含み得る）",
+   "prior_conflict": "valleys＝谷の数 k が n の 80% 区間の上端を超えた、length＝単艦として区画の事前分布の 95% 区間の外、cap＝区間の（または外側の帯の）80% 区間の上端が上限 16 隻に達した（実数はもっと多い可能性）",
+   "class_table": [
+    {
+     "id": "055",
+     "name": "055 型駆逐艦",
+     "length_m": 180.0,
+     "length_conf": "確認",
+     "count": 4,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "L",
+     "source": "https://en.wikipedia.org/wiki/Type_055_destroyer"
+    },
+    {
+     "id": "052D",
+     "name": "052D 型駆逐艦",
+     "length_m": 157.0,
+     "length_conf": "確認",
+     "count": 5,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "L",
+     "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
+    },
+    {
+     "id": "052DL",
+     "name": "052DL 型駆逐艦（延長型）",
+     "length_m": 162.0,
+     "length_conf": "推定",
+     "count": 5,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "L",
+     "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
+    },
+    {
+     "id": "052C",
+     "name": "052C 型駆逐艦",
+     "length_m": 155.0,
+     "length_conf": "確認",
+     "count": 2,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "L",
+     "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer"
+    },
+    {
+     "id": "054A",
+     "name": "054A 型フリゲート",
+     "length_m": 134.0,
+     "length_conf": "確認",
+     "count": 8,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "M",
+     "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
+    },
+    {
+     "id": "054A+",
+     "name": "054A 型フリゲート（改良型）",
+     "length_m": 134.0,
+     "length_conf": "未確認",
+     "count": 7,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "M",
+     "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+     "note": "全長は未確認（054A と同じと仮定）"
+    },
+    {
+     "id": "054B",
+     "name": "054B 型フリゲート",
+     "length_m": 150.0,
+     "length_conf": "推定",
+     "count": 1,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "L",
+     "source": "https://en.wikipedia.org/wiki/Type_054B_frigate"
+    },
+    {
+     "id": "072A",
+     "name": "072A 型戦車揚陸艦",
+     "length_m": 120.0,
+     "length_conf": "確認",
+     "count": 5,
+     "count_conf": "推定",
+     "w": 0.8,
+     "w_conf": "推定",
+     "group": "M",
+     "source": "https://en.wikipedia.org/wiki/Type_072A_landing_ship"
+    },
+    {
+     "id": "815A",
+     "name": "815A 型情報収集艦",
+     "length_m": 130.0,
+     "length_conf": "推定",
+     "count": 1,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "M",
+     "source": "https://en.wikipedia.org/wiki/Type_815_electronic_surveillance_ship"
+    },
+    {
+     "id": "056A",
+     "name": "056A 型コルベット",
+     "length_m": 90.0,
+     "length_conf": "確認",
+     "count": 20,
+     "count_conf": "推定",
+     "w": 0.6,
+     "w_conf": "推定",
+     "group": "S",
+     "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+    },
+    {
+     "id": "039AB",
+     "name": "039A/B 型潜水艦",
+     "length_m": 78.0,
+     "length_conf": "推定",
+     "count": 5,
+     "count_conf": "推定",
+     "w": 0.2,
+     "w_conf": "推定",
+     "group": "S",
+     "source": "https://en.wikipedia.org/wiki/Type_039A_submarine"
+    },
+    {
+     "id": "MCM",
+     "name": "掃海艇",
+     "length_m": 60.0,
+     "length_conf": "未確認",
+     "count": 6,
+     "count_conf": "推定",
+     "w": 0.6,
+     "w_conf": "推定",
+     "group": "S",
+     "source": "https://en.wikipedia.org/wiki/Type_081_minesweeper",
+     "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）"
+    },
+    {
+     "id": "071",
+     "name": "071 型ドック型揚陸艦",
+     "length_m": 210.0,
+     "length_conf": "確認",
+     "count": 5,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "X",
+     "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock"
+    },
+    {
+     "id": "075",
+     "name": "075 型強襲揚陸艦",
+     "length_m": 232.0,
+     "length_conf": "確認",
+     "count": 2,
+     "count_conf": "推定",
+     "w": 0.4,
+     "w_conf": "推定",
+     "group": "X",
+     "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock"
+    },
+    {
+     "id": "901",
+     "name": "901 型総合補給艦",
+     "length_m": 240.0,
+     "length_conf": "確認",
+     "count": 1,
+     "count_conf": "推定",
+     "w": 0.3,
+     "w_conf": "推定",
+     "group": "X",
+     "source": "https://en.wikipedia.org/wiki/Type_901_replenishment_ship"
+    },
+    {
+     "id": "903",
+     "name": "903/903A 型補給艦",
+     "length_m": 178.5,
+     "length_conf": "確認",
+     "count": 2,
+     "count_conf": "推定",
+     "w": 1.0,
+     "w_conf": "推定",
+     "group": "L",
+     "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship"
+    },
+    {
+     "id": "022",
+     "name": "022 型ミサイル艇",
+     "length_m": 42.6,
+     "length_conf": "確認",
+     "count": 20,
+     "count_conf": "推定",
+     "w": 0.1,
+     "w_conf": "推定",
+     "group": "T",
+     "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat"
+    },
+    {
+     "id": "TUG",
+     "name": "タグ・作業船",
+     "length_m": 40.0,
+     "length_conf": "推定",
+     "count": 15,
+     "count_conf": "推定",
+     "w": 0.6,
+     "w_conf": "推定",
+     "group": "T",
+     "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+     "note": "出典なし（全長・隻数・重みとも推定）"
+    }
+   ],
+   "zone_multipliers": {
+    "types": {
+     "large": {
+      "name": "大型艦向き",
+      "mult": {
+       "X": 2.0,
+       "L": 2.0,
+       "M": 1.0,
+       "S": 0.4,
+       "T": 0.2
+      },
+      "basis": "北の T 字桟橋（P1）と P2 は長く幅のある桟橋で、駆逐艦・揚陸艦の係留に向くという2部の判断（画像・報道による推定、未検証）",
+      "conf": "推定"
+     },
+     "medium": {
+      "name": "中型艦向き",
+      "mult": {
+       "X": 0.3,
+       "L": 0.8,
+       "M": 1.5,
+       "S": 1.5,
+       "T": 0.5
+      },
+      "basis": "P3〜P5 は短い櫛形の桟橋で、フリゲート・コルベット級に向くという2部の判断（推定、未検証）",
+      "conf": "推定"
+     },
+     "shore": {
+      "name": "作業船・小型艇向き",
+      "mult": {
+       "X": 0.3,
+       "L": 0.5,
+       "M": 0.7,
+       "S": 1.5,
+       "T": 3.0
+      },
+      "basis": "海岸線と区画 B（水道）は作業船・小型艇・民間船が多いという2部の判断（推定、未検証）",
+      "conf": "推定"
+     }
+    },
+    "sites": {
+     "ZJG": {
+      "lines_version": "ZJG-quay-v1",
+      "zones": [
+       {
+        "id": "P1",
+        "name": "北の T 字桟橋",
+        "ways": [
+         218405149
+        ],
+        "type": "large"
+       },
+       {
+        "id": "P2",
+        "name": "桟橋 P2",
+        "ways": [
+         218404500
+        ],
+        "type": "large"
+       },
+       {
+        "id": "P3",
+        "name": "桟橋 P3",
+        "ways": [
+         218401620
+        ],
+        "type": "medium"
+       },
+       {
+        "id": "P4",
+        "name": "桟橋 P4",
+        "ways": [
+         218404499
+        ],
+        "type": "medium"
+       },
+       {
+        "id": "P5",
+        "name": "桟橋 P5",
+        "ways": [
+         218404502
+        ],
+        "type": "medium"
+       }
+      ],
+      "default": {
+       "id": "SH",
+       "name": "海岸線・その他の桟橋",
+       "type": "shore"
+      },
+      "sector_override": {
+       "B": {
+        "id": "SH",
+        "type": "shore"
+       }
+      }
+     }
+    }
+   },
    "depth": "depth_m＝内側の帯で占有のある点で、水際から法線方向 0〜90 m（5 m おき）に占有が続く奥行きの中央値。cols_hint＝round((depth−20)/18)（1〜3）は横に並ぶ列数の手がかりとして出すだけで推定には使わない（3×3 平均のにじみと艦幅の不確かさが大きく未検証）"
   },
   "baselines": [
@@ -246,10 +579,12 @@
    "quay_version / lines_version": "数え方の版・OSM の線の版",
    "change_image / change_thumb": "変化カラー画像と縮小版",
    "in_sample": "tuning＝閾値の調整に使った撮影（標本内の値。基準の期間にも含まれる）、baseline＝基準の期間に含まれる撮影、空＝どちらでもない（精度の評価に使える）",
-   "est_version / est_mode / est_p10 / est_p90 / est_mean": "推定 est-1（試行・精度未測定）：艦種の長さの分布と桟橋別の事前分布から求めた隻数（全船）の最頻値・80% 区間（p10〜p90）・平均。旧来の occupied_min / occupied_max（幅）はそのまま残す。前提（艦種表・重み・桟橋の倍率）はすべて推定を含む",
-   "est_warship_mode / est_warship_p10 / est_warship_p90": "同じく、艦艇（全長 60 m 以上）だけの隻数",
+   "est_version / est_mode / est_p10 / est_p90 / est_mean": "推定 est-1（試行・精度未測定）：艦種の長さの分布と桟橋別の事前分布から求めた隻数（全船）のモデル上の最頻値・モデル内の 80% 区間（p10〜p90）・平均。モデル内の区間は実数が入る確率ではなく、入っていない不確かさは quay.estimate.limits。旧来の occupied_min / occupied_max（幅）はそのまま残す。前提（艦種表・重み・桟橋の倍率）はすべて推定を含む",
+   "est_warship_mode / est_warship_p10 / est_warship_p90": "同じく、全長 60 m 以上の船だけの隻数（艦種表の長さによる区別で、艦艇以外の船を含み得る）",
    "est_a_* / est_b_*": "区画 A・B ごとの推定（区間の中央の位置で判定）",
-   "est_conflicts": "前提と合わない印（prior_conflict）が付いた区間の数"
+   "est_conflicts": "前提と合わない印（prior_conflict：valleys・length・cap）が付いた区間の数",
+   "est_capped": "モデル内の 80% 区間の上端が上限 16 隻に達した区間の数（1 以上なら合計はもっと多い可能性）",
+   "est_prior_hash": "推定に使った区画の事前分布（quay/<地点>-zone-prior.json の alpha）のハッシュ。history に撮影ごとの alpha が残る"
   },
   "can_say": "岸壁・桟橋に横付けされた物の有無・おおよその数の幅・占有の長さの目安（未検証）。同じ相対軌道どうしの撮影の比較",
   "cannot_say": "艦種・国籍・所属。民間船・作業船・荷役機械・建設中の構造物も数に入る。基準期間の約 9 割以上同じ場所に居た船（または入れ替わりで常に埋まっていた岸壁）は数えられない（blind_stretches）",
@@ -303,7 +638,16 @@
    "明るい船の横の反対側や桟橋の角に同じ船が出ることがある（60 m 以内のまとまりは最小では 1 つに数える）",
    "横抱きは外側の帯も占有された「可能性」で、確かめていない。長さの目安（区間長−20 m）も未検証",
    "OSM の線の位置は 10〜20 m ずれることがあり、水際は陸マスクで探す。OSM に無い岸壁は数えない",
-   "相対軌道 84 の基準は 15 シーン（24 未満）で確度 4"
+   "相対軌道 84 の基準は 15 シーン（24 未満）で確度 4",
+   "推定 est-1：80% 区間はモデル内の区間で、次のものは入っていない（実数は区間の外にもあり得る）",
+   "推定 est-1：横抱き：外側の帯の占有が本当に船である確率 p_raft を 0.5／0.8／1 の混合で入れたが、この値自体は未検証（光学画像で確かめていない）",
+   "推定 est-1：誤検出：n＝0 は n＝1 に対するオッズ 0.05 の仮置きで、150 m を超える区間は誤検出と見ない。長い区間の一部だけが誤検出（荷役機械と船が並ぶ等）の場合は入っていない",
+   "推定 est-1：数えられない区間：基準期間の約 9 割以上同じ場所に居た船・常に埋まっていた岸壁（blind_stretches）の船は区間そのものが無く、推定に入らない",
+   "推定 est-1：OSM に無い岸壁・桟橋に横付けされた船は数えない",
+   "推定 est-1：艦種表（隻数・湛江への重み）と桟橋の倍率の誤り：すべて推定で、誤っていれば最頻値も区間もずれる。054A＋と掃海艇の全長は未確認、タグ・作業船は出典なし",
+   "推定 est-1：区間どうしの独立の仮定：同じ桟橋の区間・両側の区間の相関（例：同じ艦隊がまとまって在泊）は入れていない。合計の区間は狭く出やすい",
+   "推定 est-1：上限：1 区間 16 隻まで（外側の帯も同じ）。80% 区間の上端が上限に達した区間は prior_conflict＝cap",
+   "推定 est-1：精度は測っていない。2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値（事前分布の更新にも使わない）"
   ]
  },
  "detector": {

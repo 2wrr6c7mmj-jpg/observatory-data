@@ -62,7 +62,12 @@ GAPS_M = {"short": (5.0, 15.0), "base": (10.0, 40.0), "long": (20.0, 60.0)}
 TRIMS_M = (10.0, 20.0, 30.0)
 Q_SETS = {"low": (0.3, 0.1), "base": (0.5, 0.2), "high": (0.7, 0.4)}  # (q under 150 m, q from 150 m)
 Q_SPLIT_M = 150.0
+P_RAFT = (0.5, 0.8, 1.0)  # probability that an outer-band occupation is really a ship moored outboard
 BASE_GAP, BASE_TRIM, BASE_Q = "base", 20.0, "base"
+# n = 0 (a false alarm: cargo-handling gear, a structure, a smear) has prior P0, with a stretch length
+# uniform on 0..FALSE_MAX_M and k as for one object. A placeholder (no ground truth yet), see settings().
+P0 = 0.05
+FALSE_MAX_M = 150.0
 
 
 def load_classes(path: Path = CLASSES_PATH) -> dict:
@@ -176,24 +181,30 @@ class Model:
         self._cache[key] = sm
         return sm
 
-    def posterior(self, l_obs: float, k: int, w: np.ndarray, gap: str):
-        """(P(n), P(n_warship)) for one occupied run; arrays indexed by count 0..N_MAX."""
+    def posterior(self, l_obs: float, k: int, w: np.ndarray, gap: str, p0: float = P0):
+        """(P(n), P(n_warship)) for one occupied run; arrays indexed by count 0..N_MAX.
+        n = 0 (false alarm) has prior odds p0 : (1 - p0) against n = 1; n = 1..N_MAX are uniform."""
         t = self.table_for(w, gap)
         b = int(np.clip(round(l_obs / BIN_M), 0, t.shape[2] - 1))
         like = t[:, :, b]  # (n-1, n_war)
         n = np.arange(1, N_MAX + 1)
         pk = np.where(n >= k, P_K_OK, P_K_MISS ** np.maximum(k - n, 0))
-        joint = like * pk[:, None]
-        tot = joint.sum()
+        joint = like * pk[:, None] / N_MAX
+        pk0 = P_K_OK if k <= 1 else P_K_MISS ** (k - 1)  # a false alarm is one object
+        # prior odds of n = 0 against n = 1 are p0 : (1 - p0) (not p0 of the whole uniform prior,
+        # which would make short stretches mostly "false" only because 1..16 spreads the ships' prior)
+        zero = (p0 / (1 - p0) / N_MAX) * pk0 * (1.0 / FALSE_MAX_M if 0 <= l_obs <= FALSE_MAX_M else 0.0)
+        tot = joint.sum() + zero
         if not tot > 0:  # far outside every S_n (e.g. a very long run): fall back to the nearest n
             joint = np.zeros_like(like)
             mean_len = (self.lengths * w).sum() / w.sum()
             nn = int(np.clip(round((l_obs + 25) / (mean_len + 25)), max(1, k), N_MAX))
             joint[nn - 1, nn] = 1.0
-            tot = 1.0
+            tot, zero = 1.0, 0.0
         joint = joint / tot
-        pn = np.concatenate([[0.0], joint.sum(1)])
+        pn = np.concatenate([[zero / tot], joint.sum(1)])
         pw = joint.sum(0)
+        pw[0] += zero / tot
         return pn, pw
 
     def single_predictive(self, w: np.ndarray):
@@ -271,6 +282,19 @@ class ZonePrior:
         r = r / r.sum() if r.sum() > 0 else r
         return (cdf < 0.025 or cdf > 0.975), r
 
+    def digest(self) -> str:
+        """Short hash of every zone's alpha (the prior a scene was estimated with)."""
+        import hashlib
+        z = {k: v["alpha"] for k, v in sorted(self.state["zones"].items())}
+        return hashlib.sha256(json.dumps(z, sort_keys=True).encode()).hexdigest()[:12]
+
+    def record(self, acquired_utc: str, used: bool, note: str = "") -> None:
+        """History: the alpha each scene was estimated with (to re-compute later)."""
+        h = [x for x in self.state.setdefault("history", []) if x["acquired_utc"] != acquired_utc]
+        h.append({"acquired_utc": acquired_utc, "prior_hash": self.digest(), "updated": used, "note": note,
+                  "alpha": {k: v["alpha"] for k, v in sorted(self.state["zones"].items())}})
+        self.state["history"] = sorted(h, key=lambda x: x["acquired_utc"])[-400:]
+
     def update(self, acquired_utc: str, soft: dict[str, list[np.ndarray]]) -> bool:
         if acquired_utc in self.state["applied"]:
             return False
@@ -290,7 +314,7 @@ class ZonePrior:
 
 
 def estimate(segments: list[dict], site_id: str, model: Model | None = None, prior: ZonePrior | None = None,
-             sectors: tuple = ("A", "B")) -> dict:
+             sectors: tuple = ("A", "B"), update_prior: bool = True) -> dict:
     """Distribution of the number of ships for one scene's stretches (quay.count()["segments"]).
 
     Adds to every segment: zone, face, k, n_mode, n_p10, n_p90, n_mean, warship_mode, prior_conflict,
@@ -313,20 +337,26 @@ def estimate(segments: list[dict], site_id: str, model: Model | None = None, pri
         sg["k"] = k
         lead = sg.get("cluster_lead", True) is not False
         seg_info.append((sg, w, k, lead))
-    scen = list(product(GAPS_M, TRIMS_M, Q_SETS))
+    scen = list(product(GAPS_M, TRIMS_M, Q_SETS, P_RAFT))
     tot_all, tot_war = [], []
     tot_sec = {s: [] for s in sectors}
     seg_mix = [[np.zeros(1), np.zeros(1)] for _ in seg_info]
-    for gap, trim, qk in scen:
+    capped = [False] * len(seg_info)
+    for gap, trim, qk, p_raft in scen:
         q_short, q_long = Q_SETS[qk]
         ta, tw = np.ones(1), np.ones(1)
         ts = {s: np.ones(1) for s in sectors}
         for i, (sg, w, k, lead) in enumerate(seg_info):
             l_obs = max(sg["length_m"] - trim, 0.0)
             pn, pw = model.posterior(l_obs, k, w, gap)
+            if _quant(pn, 0.9) >= N_MAX:
+                capped[i] = True
             out_len = float(sg.get("outer_len_m") or 0)
             if out_len > 0:
-                on, ow = model.posterior(max(out_len - trim, 0.0), 1, w, gap)
+                on, ow = model.posterior(max(out_len - trim, 0.0), 1, w, gap, p0=0.0)
+                if _quant(on, 0.9) >= N_MAX:
+                    capped[i] = True
+                on, ow = _smear(on, 1 - p_raft), _smear(ow, 1 - p_raft)  # 0 outboard with 1 - p_raft
                 pn, pw = _conv(pn, on), _conv(pw, ow)
             if not lead:
                 q = q_short if sg["length_m"] < Q_SPLIT_M else q_long
@@ -357,9 +387,12 @@ def estimate(segments: list[dict], site_id: str, model: Model | None = None, pri
         conflict = []
         if k > sn["p90"]:
             conflict.append("valleys")
+        if capped[i]:
+            conflict.append("cap")  # the 80 % interval reaches the cap of 16 ships: the count may be higher
         # clean single ship: updates the zone's prior unless it is outside the prior's 95 % interval
         l_obs = sg["length_m"] - BASE_TRIM
-        clean = k == 1 and not (sg.get("outer_len_m") or 0) and lead and CLEAN_MIN_M <= l_obs <= CLEAN_MAX_M
+        clean = (update_prior and k == 1 and not (sg.get("outer_len_m") or 0) and lead
+                 and CLEAN_MIN_M <= l_obs <= CLEAN_MAX_M)
         sg["clean"] = False
         if clean:
             zid, ztype = model.zone_of(site_id, sg.get("way_id"), sg.get("sector"))
@@ -375,7 +408,8 @@ def estimate(segments: list[dict], site_id: str, model: Model | None = None, pri
         "all": stats(mix(tot_all)) if seg_info else {"mode": 0, "p10": 0, "p90": 0, "mean": 0.0},
         "warship": stats(mix(tot_war)) if seg_info else {"mode": 0, "p10": 0, "p90": 0, "mean": 0.0},
         "by_sector": {s: (stats(mix(tot_sec[s])) if seg_info else {"mode": 0, "p10": 0, "p90": 0, "mean": 0.0}) for s in sectors},
-        "conflicts": n_conflict, "soft": soft, "scenarios": len(scen),
+        "conflicts": n_conflict, "capped": int(sum(capped)), "soft": soft, "scenarios": len(scen),
+        "prior_hash": prior.digest(),
     }
     return res
 
@@ -387,14 +421,41 @@ def cols_hint(depth_m) -> int | None:
     return int(min(3, max(1, round((depth_m - 20) / 18))))
 
 
+LIMITS = [
+    "80% 区間はモデル内の区間で、次のものは入っていない（実数は区間の外にもあり得る）",
+    f"横抱き：外側の帯の占有が本当に船である確率 p_raft を {'／'.join(f'{x:g}' for x in P_RAFT)} の混合で入れたが、この値自体は未検証（光学画像で確かめていない）",
+    f"誤検出：n＝0 は n＝1 に対するオッズ {P0:g} の仮置きで、{FALSE_MAX_M:g} m を超える区間は誤検出と見ない。長い区間の一部だけが誤検出（荷役機械と船が並ぶ等）の場合は入っていない",
+    "数えられない区間：基準期間の約 9 割以上同じ場所に居た船・常に埋まっていた岸壁（blind_stretches）の船は区間そのものが無く、推定に入らない",
+    "OSM に無い岸壁・桟橋に横付けされた船は数えない",
+    "艦種表（隻数・湛江への重み）と桟橋の倍率の誤り：すべて推定で、誤っていれば最頻値も区間もずれる。054A＋と掃海艇の全長は未確認、タグ・作業船は出典なし",
+    "区間どうしの独立の仮定：同じ桟橋の区間・両側の区間の相関（例：同じ艦隊がまとまって在泊）は入れていない。合計の区間は狭く出やすい",
+    f"上限：1 区間 {N_MAX} 隻まで（外側の帯も同じ）。80% 区間の上端が上限に達した区間は prior_conflict＝cap",
+    "精度は測っていない。2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値（事前分布の更新にも使わない）",
+]
+
+
+def class_table() -> list[dict]:
+    t = load_classes()
+    return [{"id": c["id"], "name": c["name"], "length_m": c["length_m"], "length_conf": c["length_conf"],
+             "count": c["count"], "count_conf": "推定", "w": c["w"], "w_conf": "推定", "group": c["group"],
+             "source": c["source"], **({"note": c["note"]} if c.get("note") else {})} for c in t["classes"]]
+
+
+def zone_table() -> dict:
+    z = load_zones()
+    return {"types": {k: {**v, "conf": "推定", "basis": v.get("basis", "")} for k, v in z["types"].items()},
+            "sites": z["sites"]}
+
+
 def settings() -> dict:
     m = Model()
     gw = {c["id"]: round(float(x), 4) for c, x in zip(m.table["classes"], m.global_w)}
     return {
         "version": EST_VERSION,
         "status": "試行（精度未測定）。艦種表・重み・桟橋の倍率はすべて推定を含む。湛江 v2 の調整に使った撮影（標本内）で確かめただけ",
-        "class_table": "sat/ship_classes.json（全長は各艦種の Wikipedia 英語版、隻数・湛江への重み w は推定）",
-        "zones": "sat/quay_zones.json（区画＝OSM の way_id、面＝way_id＋側。桟橋の型ごとの群の倍率は推定）",
+        "limits": LIMITS,
+        "class_table_file": "sat/ship_classes.json（全長は各艦種の Wikipedia 英語版、隻数・湛江への重み w は推定）",
+        "zones_file": "sat/quay_zones.json（区画＝OSM の way_id、面＝way_id＋側。桟橋の型ごとの群の倍率は推定）",
         "global_mix": gw,
         "per_stretch": (f"L_obs＝区間長−{BASE_TRIM:g} m。n 隻を縦に並べた全長 S_n＝Σℓ＋Σg（ℓ は艦種表から区画の重みで引き N(0,3 m) を足す、g は隻の間隔 U(10,40) m）を"
                         f"{DRAWS} 本（種 {SEED}）で作り、尤度 N(L_obs; S_n, {SIGMA_M:g} m)。断面の谷の数 k（quay-v1 の最小の片の数）は P(k|n)＝{P_K_OK}（n≥k）、{P_K_MISS}^(k−n)（n<k）。"
@@ -408,8 +469,18 @@ def settings() -> dict:
         "cluster": f"60 m 以内のまとまりの代表以外は確率 q（区間長 {Q_SPLIT_M:g} m 未満 0.5、以上 0.2）で同じ艦のにじみ（0 隻）",
         "small_craft": f"区間長 {SMALL_LEN_M:g} m 未満で ΔVH の最大が {SMALL_DVH_DB:g} dB 未満なら T 群（50 m 未満）の重みを {SMALL_T_BOOST:g} 倍。全船と艦艇（{WARSHIP_MIN_M:g} m 以上）を別に出す",
         "total": "区間の分布を畳み込む（区間どうしは独立と仮定）。A・B は区間の中央の区画",
-        "scenarios": ("構造の不確かさは等重みの混合：隻の間隔 U(5,15)／U(10,40)／U(20,60) m × トリム 10／20／30 m × q（0.3/0.1、0.5/0.2、0.7/0.4）の 27 通り"),
-        "output": "最頻値 mode、80% 区間 p10〜p90（累積 10%・90% に達する最小の数）、平均 mean",
-        "prior_conflict": "valleys＝谷の数 k が n の 80% 区間の上端を超えた、length＝単艦として区画の事前分布の 95% 区間の外",
+        "scenarios": ("区間に入れている不確かさ：区間長と艦の長さの照合（σ 20 m）、艦種の混ざり方（区画の事前分布）、谷の数の数え違い（P(k|n)）、"
+                      "そして等重みの 81 通りの混合＝隻の間隔 U(5,15)／U(10,40)／U(20,60) m × 長さの削り幅 10／20／30 m × にじみの確率 q（0.3/0.1、0.5/0.2、0.7/0.4）"
+                      f" × 横抱きが本当に船である確率 p_raft（{'／'.join(f'{x:g}' for x in P_RAFT)}）。入れていないものは limits"),
+        "false_alarm": (f"n＝0（誤検出：荷役機械・構造物・にじみ）を、n＝1 に対する事前のオッズ {P0:g}：{1 - P0:g} で入れる。誤検出の区間の長さは 0〜{FALSE_MAX_M:g} m の一様、谷は 1 つの物として扱う。"
+                        "値は仮置き：正解データが無く、quay-v1 は ΔVV 12 dB の種と今回の VV −10 dB で風・にじみを抑えているため、残る誤検出を区間の 1 割未満と見た（未検証）。"
+                        "全体の事前の 5% とすると、一様事前（1〜16）が船の側の事前を薄めるため短い区間の大半が 0 隻になってしまうので、n＝1 との比にした"),
+        "interval": "80% 区間はモデル内の区間（このモデルと前提が正しいとしたときの p10〜p90）で、実数がこの区間に入る確率ではない",
+        "output": "最頻値 mode（モデル上の最頻値）、モデル内の 80% 区間 p10〜p90（累積 10%・90% に達する最小の数）、平均 mean",
+        "warship": f"全長 {WARSHIP_MIN_M:g} m 以上の船の数（艦種表の長さによる区別で、艦艇以外の船を含み得る）",
+        "prior_conflict": (f"valleys＝谷の数 k が n の 80% 区間の上端を超えた、length＝単艦として区画の事前分布の 95% 区間の外、"
+                           f"cap＝区間の（または外側の帯の）80% 区間の上端が上限 {N_MAX} 隻に達した（実数はもっと多い可能性）"),
+        "class_table": class_table(),
+        "zone_multipliers": zone_table(),
         "depth": "depth_m＝内側の帯で占有のある点で、水際から法線方向 0〜90 m（5 m おき）に占有が続く奥行きの中央値。cols_hint＝round((depth−20)/18)（1〜3）は横に並ぶ列数の手がかりとして出すだけで推定には使わない（3×3 平均のにじみと艦幅の不確かさが大きく未検証）",
     }

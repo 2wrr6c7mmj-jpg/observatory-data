@@ -64,7 +64,7 @@ QUAY_FIELDS = [
     # est-1 (trial): the number as a distribution (sat/quay_est.py); occupied_min/max stay as they are
     "est_version", "est_mode", "est_p10", "est_p90", "est_mean",
     "est_warship_mode", "est_warship_p10", "est_warship_p90",
-    "est_a_mode", "est_a_p10", "est_a_p90", "est_b_mode", "est_b_p10", "est_b_p90", "est_conflicts",
+    "est_a_mode", "est_a_p10", "est_a_p90", "est_b_mode", "est_b_p10", "est_b_p90", "est_conflicts", "est_capped", "est_prior_hash",
 ]
 
 # Scenes the quay-v1 thresholds were tuned on (CHANGES.md, 2026-10-30): their counts are
@@ -498,11 +498,14 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
                 "quay_version / lines_version": "数え方の版・OSM の線の版",
                 "change_image / change_thumb": "変化カラー画像と縮小版",
                 "in_sample": "tuning＝閾値の調整に使った撮影（標本内の値。基準の期間にも含まれる）、baseline＝基準の期間に含まれる撮影、空＝どちらでもない（精度の評価に使える）",
-                "est_version / est_mode / est_p10 / est_p90 / est_mean": ("推定 est-1（試行・精度未測定）：艦種の長さの分布と桟橋別の事前分布から求めた隻数（全船）の最頻値・80% 区間（p10〜p90）・平均。"
+                "est_version / est_mode / est_p10 / est_p90 / est_mean": ("推定 est-1（試行・精度未測定）：艦種の長さの分布と桟橋別の事前分布から求めた隻数（全船）のモデル上の最頻値・モデル内の 80% 区間（p10〜p90）・平均。"
+                                                                          "モデル内の区間は実数が入る確率ではなく、入っていない不確かさは quay.estimate.limits。"
                                                                           "旧来の occupied_min / occupied_max（幅）はそのまま残す。前提（艦種表・重み・桟橋の倍率）はすべて推定を含む"),
-                "est_warship_mode / est_warship_p10 / est_warship_p90": "同じく、艦艇（全長 60 m 以上）だけの隻数",
+                "est_warship_mode / est_warship_p10 / est_warship_p90": "同じく、全長 60 m 以上の船だけの隻数（艦種表の長さによる区別で、艦艇以外の船を含み得る）",
                 "est_a_* / est_b_*": "区画 A・B ごとの推定（区間の中央の位置で判定）",
-                "est_conflicts": "前提と合わない印（prior_conflict）が付いた区間の数",
+                "est_conflicts": "前提と合わない印（prior_conflict：valleys・length・cap）が付いた区間の数",
+                "est_capped": "モデル内の 80% 区間の上端が上限 16 隻に達した区間の数（1 以上なら合計はもっと多い可能性）",
+                "est_prior_hash": "推定に使った区画の事前分布（quay/<地点>-zone-prior.json の alpha）のハッシュ。history に撮影ごとの alpha が残る",
             },
             "can_say": "岸壁・桟橋に横付けされた物の有無・おおよその数の幅・占有の長さの目安（未検証）。同じ相対軌道どうしの撮影の比較",
             "cannot_say": ("艦種・国籍・所属。民間船・作業船・荷役機械・建設中の構造物も数に入る。基準期間の約 9 割以上同じ場所に居た船"
@@ -531,7 +534,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
                 "横抱きは外側の帯も占有された「可能性」で、確かめていない。長さの目安（区間長−20 m）も未検証",
                 "OSM の線の位置は 10〜20 m ずれることがあり、水際は陸マスクで探す。OSM に無い岸壁は数えない",
                 "相対軌道 84 の基準は 15 シーン（24 未満）で確度 4",
-            ],
+            ] + ["推定 est-1：" + x for x in quay_est.LIMITS],
         },
         "detector": {"version": DETECTOR_VERSION, **DETECT_DEFAULTS,
                      "length_classes_m": [[n, lo, None if hi == math.inf else hi] for n, lo, hi in LENGTH_CLASSES]},
@@ -677,16 +680,21 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         est = None
         try:  # est-1 never stops the quay-v1 count
             zp = store.zone_prior(site["id"], qctx.model())
-            est = quay_est.estimate(q["segments"], site["id"], qctx.model(), zp, tuple(sc["id"] for sc in sectors))
+            tuning = row["in_sample"] == "tuning"  # the thresholds were tuned on it: never informs the prior
+            est = quay_est.estimate(q["segments"], site["id"], qctx.model(), zp, tuple(sc["id"] for sc in sectors),
+                                    update_prior=not tuning)
             row.update(est_version=quay_est.EST_VERSION, est_mode=est["all"]["mode"], est_p10=est["all"]["p10"],
                        est_p90=est["all"]["p90"], est_mean=est["all"]["mean"],
                        est_warship_mode=est["warship"]["mode"], est_warship_p10=est["warship"]["p10"],
-                       est_warship_p90=est["warship"]["p90"], est_conflicts=est["conflicts"])
+                       est_warship_p90=est["warship"]["p90"], est_conflicts=est["conflicts"],
+                       est_capped=est["capped"], est_prior_hash=est["prior_hash"])
             for col, sc in zip(SECTOR_COLUMNS, sectors):
                 st = est["by_sector"].get(sc["id"])
                 if st:
                     row[f"est_{col}_mode"], row[f"est_{col}_p10"], row[f"est_{col}_p90"] = st["mode"], st["p10"], st["p90"]
-            zp.update(acq["acquired_utc"], est["soft"])  # after the estimate: a scene never informs its own prior
+            zp.record(acq["acquired_utc"], bool(est["soft"]) and not tuning, "tuning（更新に使わない）" if tuning else "")
+            if not tuning:
+                zp.update(acq["acquired_utc"], est["soft"])  # after the estimate: a scene never informs its own prior
         except Exception as e:
             est = None
             log(f"{site['id']} {acq['acquired_utc']}: 推定 est-1 で失敗 {str(e)[:200]}")
@@ -709,7 +717,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
     et = ""
     if est is not None:
         et = (f"、推定 est-1 最頻 {est['all']['mode']}（80% {est['all']['p10']}〜{est['all']['p90']}、平均 {est['all']['mean']}、"
-              f"艦艇 {est['warship']['mode']}）" + "".join(f" {k} {v['mode']}（{v['p10']}〜{v['p90']}）" for k, v in est["by_sector"].items()))
+              f"60 m 以上 {est['warship']['mode']}）" + "".join(f" {k} {v['mode']}（{v['p10']}〜{v['p90']}）" for k, v in est["by_sector"].items()))
     return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}、基準 {bver} n={bmeta['scenes']}）{et}"
 
 
