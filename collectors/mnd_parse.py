@@ -19,7 +19,8 @@ import html
 import re
 from datetime import date, datetime, timedelta, timezone
 
-PARSER_VERSION = 4
+PARSER_VERSION = 5
+MAX_PLAUSIBLE = 200  # a daily count above this is a misread (e.g. phone numbers in the page footer)
 TAIPEI = timezone(timedelta(hours=8))
 
 WORDS = {w: i for i, w in enumerate(
@@ -107,13 +108,14 @@ def counts(text: str) -> dict:
     t = re.sub(r"\s+", " ", text)
     aircraft = _first([
         NUM + r" sorties? of (?:PLA|Chinese) (?:military )?aircraft",
-        NUM + r" (?:PLA|Chinese) (?:military )?aircraft",
+        NUM + r" ?(?:PLA|Chinese) (?:military )?aircraft",
         r"共機\s*(\d+)\s*架",
         r"軍機\s*(\d+)\s*架",
     ], t)
     vessels = _first([
         NUM + r" PLAN (?:vessels?|ships?)",
         NUM + r" (?:PLA )?naval (?:vessels?|ships?)",
+        NUM + r" PLAN (?=around|operating)",  # "4 PLA aircraft and 10 PLAN around Taiwan"
         r"共艦\s*(\d+)\s*艘",
         r"(?:軍艦|艦艇)\s*(\d+)\s*艘",
     ], t)
@@ -131,11 +133,25 @@ def counts(text: str) -> dict:
         NUM + r" of (?:the |them )?(?:detected )?(?:PLA )?aircraft (?:had )?(?:crossed|entered)",
         r"\ball " + NUM + r" sorties? (?:crossed|entered)",
         NUM + r" sorties? (?:crossed|entered)",
+        r"\bThe " + NUM + r" (?:detected )?aircraft (?:had )?(?:crossed|entered)",
+        NUM + r" helicopters? (?:had )?(?:crossed|entered)",
         r"其中\s*(\d+)\s*架次(?:逾越|進入)",
     ], t)
     if crossed is None and re.search(r"no PLA aircraft crossed|無逾越海峽中線|did not cross", t, re.I):
         crossed = 0
     if aircraft is None and re.search(r"\bno PLA aircraft\b|未偵獲共機", t, re.I):
+        aircraft = 0
+    if vessels is None and re.search(r"\bno PLA aircraft and (?:PLAN )?(?:vessels?|ships?)\b", t, re.I):
+        vessels = 0  # "No PLA aircraft and PLAN vessel(s) operating around Taiwan were detected"
+    if vessels is None and aircraft is not None and re.search(
+            r"activities\s*[:：]\s*" + NUM + r" ?PLA aircraft (?:operating )?around Taiwan were detected", t, re.I):
+        vessels = 0  # the daily tally names only aircraft: no ships were detected
+    if crossed is None and aircraft and re.search(r"\bThe (?:detected )?aircraft (?:had )?(?:crossed|entered)", t):
+        crossed = aircraft  # "The detected aircraft had entered ...": all of them
+    if aircraft is None and vessels is not None and re.search(
+            r"activities\s*[:：]\s*" + NUM + r" PLAN (?:vessels?|ships?)\b(?: and \d+ (?:PRC |Chinese )?official (?:ships?|vessels?))?"
+            r" (?:operating )?around Taiwan were detected", t, re.I):
+        # The daily tally lists what was detected; a report naming only ships detected no aircraft.
         aircraft = 0
     return {"aircraft": aircraft, "median_line_or_adiz": crossed,
             "plan_vessels": vessels, "official_ships": official, "balloons": balloons}
@@ -155,9 +171,14 @@ def adiz_types(text: str) -> dict | None:
     These count ADIZ entries only and are not comparable with the later
     "around Taiwan" totals, so they are kept in separate fields.
     """
-    m = re.search(r"Aircraft Types?\s*[:：]\s*(.*?)(?:[三3][、.]|Activity Area|$)", re.sub(r"\s+", " ", text), re.I)
-    if not m:
-        return None
+    t = re.sub(r"\s+", " ", text)
+    end = r"(?:[三3][、.]|Activit(?:y|ies) Areas?|Reactions?\s*[:：]|Keywords|$)"
+    m = re.search(r"Aircraft Types?\s*[:：]\s*(.*?)" + end, t, re.I)
+    if not m:  # no "Aircraft Type:" label: the list follows the date line, e.g.
+        # "Date: October 21,2021（Thursday daytime） Two J-16 Two J-11 Activity Area: ..."
+        m = re.search(r"Date\s*[:：][^()（）]{0,40}[(（][^)）]{0,30}[)）]\s*(.*?)" + end, t, re.I)
+        if not m or not re.match(r"(?:" + COUNT.pattern + r")\s+[A-Z]", m[1].strip(), re.I):
+            return None
     section, out = m[1], {}
     hits = list(COUNT.finditer(section))
     for i, h in enumerate(hits):
@@ -168,32 +189,88 @@ def adiz_types(text: str) -> dict | None:
     return out or None
 
 
+def main_text(text: str) -> str:
+    """The report itself: from the "PLA Activities YYYY.MM.DD" heading to "Keywords".
+
+    Site menus and the page footer (addresses and telephone numbers such as
+    "886" or "409") are left out, so they are never read as counts.
+    """
+    body = re.sub(r"\s+", " ", text)
+    i = body.find("PLA Activities 20")
+    j = body.find("Keywords", i if i >= 0 else 0)
+    return body[max(i, 0):j if j > i >= 0 else max(i, 0) + 2000][:3000].strip()
+
+
+TYPE_FORMATS = ("sw-adiz", "afc-around-roc")
+
+
+AFC_AROUND_ROC_FROM = date(2022, 8, 3)
+
+
+def type_format(text: str, d: date | None) -> tuple[str, str]:
+    """Which of the older by-type formats a report is in.
+
+    sw-adiz: "Air activities in the southwestern ADIZ of R.O.C." (aircraft that
+    entered the southwestern ADIZ only).
+    afc-around-roc: "Air activities of PLA aircraft around the R.O.C. airspace"
+    (Air Force Command, 2022-08-03 to 2022-11-12: around Taiwan as a whole,
+    not only the southwestern ADIZ).
+    Returns (format, basis): "heading" when the report says which, "series" when
+    it has no heading and is an Air Force Command report from 2022-08-03 on
+    (all of its headed reports from then on are around-the-R.O.C.).
+    """
+    if re.search(r"around the R\.?\s?O\.?\s?C\.? airspace", text, re.I):
+        return "afc-around-roc", "heading"
+    if re.search(r"southwestern ADIZ|southwest ADIZ", text, re.I):
+        return "sw-adiz", "heading"
+    if d is not None and d >= AFC_AROUND_ROC_FROM and re.search(r"Issuing Authority\s*[:：]\s*Air Force Command", text, re.I):
+        return "afc-around-roc", "series"
+    return "sw-adiz", "series"
+
+
+def period(text: str) -> str | None:
+    """Part of the day in the date line: "(Thursday morning)", "（Monday night）"."""
+    m = re.search(r"Date\s*[:：][^()（）]{0,40}[(（]([^)）]{0,30})[)）]", re.sub(r"\s+", " ", text), re.I)
+    if not m:
+        return None
+    w = m[1].lower()
+    for key, name in (("morning", "morning"), ("afternoon", "afternoon"), ("afteroon", "afternoon"),
+                      ("daytime", "daytime"), ("night", "nighttime")):
+        if key in w:
+            return name
+    return None
+
+
 def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
-    text = page_text(raw_html)
+    full = page_text(raw_html)
+    body = main_text(full)
+    text = body if "PLA Activities 20" in body else full
     d, how = window_end(text, report_date(text))
     c = counts(text)
     types = adiz_types(text)
     fmt = "around-taiwan"
-    if types is not None and c["aircraft"] is None:
-        fmt = "sw-adiz"
+    if types is not None and c["aircraft"] is None and c["plan_vessels"] is None:
         c["adiz_aircraft"] = sum(types.values())
         c["adiz_types"] = types
-        p = re.search(r"\((?:[A-Za-z]+ )?(daytime|nighttime|night)\)|（[A-Za-z]+ (daytime|nighttime|night)）", text, re.I)
-        c["period"] = (p[1] or p[2]).lower().replace("night", "nighttime").replace("nighttimetime", "nighttime") if p else None
+        c["period"] = period(text)
         if d is None or how == "header":
-            dm = re.search(r"Date\s*[:：]\s*([A-Z][a-z]+)\.? (\d{1,2}),\s*(20\d\d)", re.sub(r"\s+", " ", text))
+            dm = re.search(r"Date\s*[:：]\s*([A-Z][a-z]+)\.? ?(\d{1,2}), ?(20\d\d)", re.sub(r"\s+", " ", text))
             if dm and dm[1][:3].lower() in MONTHS:
                 d, how = date(int(dm[3]), MONTHS[dm[1][:3].lower()], int(dm[2])), "date-line"
+        fmt, c["format_basis"] = type_format(text, d)
     ok = d is not None and (c["aircraft"] is not None or c["plan_vessels"] is not None or c.get("adiz_aircraft") is not None)
+    too_big = {k: v for k, v in c.items() if isinstance(v, int) and v > MAX_PLAUSIBLE}
     record = {
         "source_url": url,
         "retrieved_utc": retrieved.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "parser_version": PARSER_VERSION,
-        "parsed": ok,
+        "parsed": ok and not too_big,
         "date_from": how,
         "format": fmt,
     }
-    if d is not None and fmt == "sw-adiz":  # one local calendar day (daytime / nighttime reports)
+    if too_big:  # a misread, not a count: kept for review, never published
+        record["parse_error"] = f"implausible count (> {MAX_PLAUSIBLE}): {too_big}"
+    if d is not None and fmt in TYPE_FORMATS:  # one local calendar day (morning / afternoon / night reports)
         start = datetime(d.year, d.month, d.day, tzinfo=TAIPEI)
         record.update({
             "report_date": d.isoformat(),
@@ -210,10 +287,7 @@ def parse_report(raw_html: str, url: str, retrieved: datetime) -> dict:
     record.update(c)
     # Keep the report's own text (without site menus) so that a later parser
     # version can re-read every report offline instead of crawling the site again.
-    body = re.sub(r"\s+", " ", text)
-    i = body.find("PLA Activities 20")
-    j = body.find("Keywords", i if i >= 0 else 0)
-    record["main_text"] = body[max(i, 0):j if j > i >= 0 else max(i, 0) + 2000][:3000].strip()
+    record["main_text"] = body
     return record
 
 

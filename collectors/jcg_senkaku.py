@@ -41,7 +41,7 @@ UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; p
 PAUSE = float(os.environ.get("JCG_PAUSE_SECONDS", "5"))
 TIMEOUT = 60
 JST = timezone(timedelta(hours=9))
-FIELDS = ["date", "contiguous_zone", "territorial_sea", "subject", "check", "window_start_utc", "window_end_utc",
+FIELDS = ["date", "contiguous_zone", "territorial_sea", "ts_entries", "subject", "check", "window_start_utc", "window_end_utc",
           "as_of", "source_url", "source_last_modified_utc", "retrieved_utc", "parser_version"]
 
 # Repeated in daily.json so the data carries its credit wherever it is copied (same as meta.json).
@@ -195,13 +195,14 @@ def daily_rows(store: dict, today: date) -> tuple[list[dict], dict]:
             r = p["days"].get(str(d))
             if r is None:
                 issues.setdefault(rec["url"], f"day {d} missing")
-                cz = ts = None
+                cz = ts = entries = None
             else:
+                entries = r.get("ts_entries")  # only where the PDF writes 【 】
                 cz = r["cz"] if r["cz"] is not None else (0 if verified else None)
                 ts = r["ts"] if r["ts"] is not None else (0 if ts_verified or cz == 0 else None)
             start = datetime(y, m, d, tzinfo=JST)
             rows.append({
-                "date": f"{key}-{d:02d}", "contiguous_zone": cz, "territorial_sea": ts, "subject": p.get("subject"), "check": result,
+                "date": f"{key}-{d:02d}", "contiguous_zone": cz, "territorial_sea": ts, "ts_entries": entries, "subject": p.get("subject"), "check": result,
                 "window_start_utc": iso(start), "window_end_utc": iso(start + timedelta(days=1)),
                 "as_of": p.get("as_of"), "source_url": rec["url"],
                 "source_last_modified_utc": rec.get("last_modified_utc"),
@@ -459,11 +460,26 @@ def dump(sample_dir: str, start: int, end: int) -> int:
     return 0
 
 
+def reparse_all() -> int:
+    """Re-read every stored PDF from its kept words (no network) and rewrite the outputs."""
+    store = load()
+    for url, rec in list(store["pdfs"].items()):
+        store["pdfs"][url] = reparse(rec)
+    old = {}
+    if (OUT / "status.json").exists():
+        old = json.loads((OUT / "status.json").read_text(encoding="utf-8")).get("last_run") or {}
+    run = {**old, "reparsed_utc": iso(now_utc())}
+    save(store, run, now_utc().astimezone(JST).date())
+    notice(f"jcg-senkaku: {len(store['pdfs'])} PDFs re-read with parser {PARSER_VERSION}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-fetch", type=int, default=250, help="PDF requests at most in this run")
     ap.add_argument("--probe", metavar="DIR")
     ap.add_argument("--dump", metavar="DIR")
+    ap.add_argument("--reparse", action="store_true", help="re-read stored PDFs offline and rewrite the outputs")
     ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--end", type=int, default=6)
     a = ap.parse_args()
@@ -471,6 +487,8 @@ def main() -> int:
         return probe(a.probe)
     if a.dump:
         return dump(a.dump, a.start, a.end)
+    if a.reparse:
+        return reparse_all()
     return collect(a.max_fetch)
 
 

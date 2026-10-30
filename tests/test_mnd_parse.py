@@ -127,5 +127,84 @@ class Parse(unittest.TestCase):
                                               ("news/plaact/84500", 84500)])
 
 
+FOOTER = ("<p>Keywords PLA</p><p>Tel: 886-2-2311-6117 No. 409, Bei'an Rd., Zhongshan Dist., Taipei 104</p>"
+          "<footer>Phone 886 2 8509 9999 409 1997</footer>")
+AFC_2022 = ("<p>PLA Activities 2022.08.05 Issuing Authority：Air Force Command Headquarters Share "
+            "Air activities of PLA aircraft around the R.O.C. airspace Date: August 5, 2022 (Friday) "
+            "Aircraft Type: Seven J-10 Six J-11 Ten J-16 Twenty Four SU-30 One Y-8 EW One Y-8 ASW "
+            "Activities Area: Flight paths as illustrated. Reactions: CAP aircraft tasked.</p>") + FOOTER
+SW_2022 = ("<p>PLA Activities 2022.08.03 Issuing Authority：Air Force Command Headquarters Share "
+           "Air activities in the southwestern ADIZ of R.O.C. Date: August 2, 2022 (Tuesday) "
+           "Aircraft Type: EIGHT J-11 Ten J-16 One KJ-500 AEW&C Activities Area: Flight paths as illustrated.</p>") + FOOTER
+NO_LABEL = ("<p>PLA Activities 2021.10.21 Issuing Authority：Political Warfare Bureau Share Date: October 21,2021"
+            "（Thursday daytime） Two J-16 Two J-11 Activity Area: Flight paths as illustrated</p>")
+
+
+class Fixes2026(unittest.TestCase):
+    def test_footer_numbers_are_not_aircraft(self):
+        r = parse_report(AFC_2022, "u", NOW)
+        self.assertTrue(r["parsed"])
+        self.assertEqual(r["adiz_aircraft"], 49)
+        self.assertEqual(r["format"], "afc-around-roc")
+        self.assertEqual(r["report_date"], "2022-08-05")
+        self.assertNotIn("886", r["main_text"])
+        r = parse_report(SW_2022, "u", NOW)
+        self.assertEqual((r["format"], r["report_date"], r["adiz_aircraft"]), ("sw-adiz", "2022-08-02", 19))
+
+    def test_air_force_report_without_heading_follows_its_series(self):
+        page = AFC_2022.replace("Air activities of PLA aircraft around the R.O.C. airspace ", "")
+        r = parse_report(page, "u", NOW)
+        self.assertEqual((r["format"], r["format_basis"]), ("afc-around-roc", "series"))
+        r = parse_report(NO_LABEL, "u", NOW)  # Political Warfare Bureau, 2021
+        self.assertEqual((r["format"], r["format_basis"]), ("sw-adiz", "series"))
+
+    def test_implausible_count_is_not_published(self):
+        page = AFC_2022.replace("Twenty Four SU-30", "409 SU-30")
+        r = parse_report(page, "u", NOW)
+        self.assertFalse(r["parsed"])
+        self.assertIn("implausible", r["parse_error"])
+
+    def test_type_list_without_label(self):
+        r = parse_report(NO_LABEL, "u", NOW)
+        self.assertTrue(r["parsed"])
+        self.assertEqual((r["format"], r["period"], r["adiz_types"]), ("sw-adiz", "daytime", {"J-16": 2, "J-11": 2}))
+
+    def test_periods(self):
+        for text, want in (("（Thursday morning）", "morning"), ("（Thursday afteroon）", "afternoon"),
+                           ("(Sunday Night)", "nighttime"), ("（Tuesday）", None)):
+            r = parse_report(NO_LABEL.replace("（Thursday daytime）", text), "u", NOW)
+            self.assertEqual(r["period"], want, text)
+
+    def test_no_aircraft_and_vessels_stated(self):
+        c = counts("2.PLA activities： No PLA aircraft and PLAN vessel operating around Taiwan were detected up until 6 a.m.")
+        self.assertEqual((c["aircraft"], c["plan_vessels"]), (0, 0))
+        c = counts("2.PLA activities： No PLA aircraft and PLAN ship operating around Taiwan were detected")
+        self.assertEqual((c["aircraft"], c["plan_vessels"]), (0, 0))
+
+    def test_missing_space_and_plan_without_noun(self):
+        c = counts("2.PLA activities： 17PLA aircraft and 3 PLAN vessels around Taiwan were detected. "
+                   "9 of the detected aircraft had crossed the median line")
+        self.assertEqual((c["aircraft"], c["plan_vessels"], c["median_line_or_adiz"]), (17, 3, 9))
+        c = counts("2.PLA activities： 4 PLA aircraft and 10 PLAN around Taiwan were detected by 6 a.m.")
+        self.assertEqual((c["aircraft"], c["plan_vessels"]), (4, 10))
+
+    def test_all_aircraft_entered(self):
+        c = counts("2.PLA activities： 3 PLA aircraft and 4 PLAN vessels around Taiwan were detected by 6 a.m. today. "
+                   "The detected aircraft had entered Taiwan’s southwest and east ADIZ.")
+        self.assertEqual(c["median_line_or_adiz"], 3)
+        c = counts("2.PLA activities: 1 PLA aircraft and 9 PLAN vessels operating around Taiwan were detected. "
+                   "The aircraft crossed the median line of the Taiwan Strait.")
+        self.assertEqual(c["median_line_or_adiz"], 1)
+
+    def test_only_ships_or_only_aircraft_listed(self):
+        c = counts("2.PLA activities： 4 PLAN vessels around Taiwan were detected by 6 a.m.(UTC+8) today.")
+        self.assertEqual((c["aircraft"], c["plan_vessels"]), (0, 4))
+        c = counts("二、PLA activities： 8 PLAN ships and 1 official ship operating around Taiwan were detected as of 6 a.m.")
+        self.assertEqual((c["aircraft"], c["plan_vessels"], c["official_ships"]), (0, 8, 1))
+        c = counts("2.PLA activities： 5 PLA aircraft around Taiwan were detected by 6 a.m.(UTC+8) today.")
+        self.assertEqual((c["aircraft"], c["plan_vessels"]), (5, 0))
+        self.assertIsNone(c["official_ships"])  # not part of the rule: stays unknown
+
+
 if __name__ == "__main__":
     unittest.main()

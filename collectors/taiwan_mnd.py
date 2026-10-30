@@ -26,7 +26,7 @@ from urllib.parse import urljoin
 from datetime import datetime, timezone
 from pathlib import Path
 
-from collectors.mnd_parse import PARSER_VERSION, page_text, parse_report, reparse, report_links
+from collectors.mnd_parse import PARSER_VERSION, TYPE_FORMATS, page_text, parse_report, reparse, report_links
 
 BASE = "https://www.mnd.gov.tw"
 LIST_URLS = [  # tried in order until one yields report links
@@ -39,7 +39,7 @@ PAUSE = float(os.environ.get("MND_PAUSE_SECONDS", "2.5"))
 FETCH_TIMEOUT = 30  # seconds per connect / read
 FIELDS = ["report_date", "format", "aircraft", "median_line_or_adiz", "plan_vessels", "official_ships",
           "balloons", "adiz_aircraft", "adiz_types", "window_start_utc", "window_end_utc",
-          "source_url", "retrieved_utc", "parser_version"]
+          "source_url", "retrieved_utc", "parser_version", "reports", "merge_note"]
 
 
 def daily_rows(reports: dict) -> list[dict]:
@@ -47,32 +47,51 @@ def daily_rows(reports: dict) -> list[dict]:
 
     around-taiwan: the parsed report with the highest id wins (a later
     correction on the same day replaces the earlier figures).
-    sw-adiz (until late 2022): daytime and nighttime reports of the same day are
-    added together; for the same day and period the highest id wins.
+    sw-adiz / afc-around-roc (until 2022-11-12): every report is one ADIZ entry
+    event, so the reports of one day (morning, afternoon, night, or several
+    without a time of day) are added together. A report with the same time of
+    day and the same aircraft as an earlier one of that day is a re-post and is
+    not counted twice; one with the same stated time of day but different
+    aircraft is taken as a correction of the earlier one (noted in merge_note).
     """
-    latest: dict[tuple, dict] = {}
+    by_day: dict[tuple, list[tuple[int, dict]]] = {}
     for rid in sorted(reports, key=int):
         r = reports[rid]
         if r.get("parsed") and r.get("report_date"):
-            key = (r["report_date"], r.get("format", "around-taiwan"),
-                   r.get("period") if r.get("format") == "sw-adiz" else None)
-            latest[key] = r
+            by_day.setdefault((r["report_date"], r.get("format", "around-taiwan")), []).append((int(rid), r))
     days: dict[str, dict] = {}
-    for (day, fmt, _), r in sorted(latest.items(), key=lambda kv: (kv[0][0], kv[0][1], kv[0][2] or "")):
-        if fmt != "sw-adiz":
-            days[day] = {**r, "format": fmt}
+    for (day, fmt), group in sorted(by_day.items()):
+        if fmt not in TYPE_FORMATS:
+            days[day] = {**group[-1][1], "format": fmt}
             continue
-        row = days.get(day)
-        if row is None or row.get("format") != "sw-adiz":
-            if row is not None:  # an around-taiwan report for the same day takes precedence
+        if day in days and days[day].get("format") not in TYPE_FORMATS:
+            continue  # an around-taiwan report for the same day takes precedence
+        events: list[dict] = []
+        notes: list[str] = []
+        for rid, r in group:
+            types = dict(r.get("adiz_types") or {})
+            per = r.get("period")
+            same = next((e for e in events if e["period"] == per and e["types"] == types), None)
+            if same is not None:
+                notes.append(f"{rid}: re-post of {same['id']} (same time of day and aircraft), counted once")
+                same.update(id=rid, url=r["source_url"])
                 continue
-            row = days[day] = {**r, "adiz_types": dict(r.get("adiz_types") or {}), "sources": [r["source_url"]]}
-            continue
-        row["adiz_aircraft"] = (row.get("adiz_aircraft") or 0) + (r.get("adiz_aircraft") or 0)
-        for k, v in (r.get("adiz_types") or {}).items():
-            row["adiz_types"][k] = row["adiz_types"].get(k, 0) + v
-        row["sources"].append(r["source_url"])
-        row["source_url"] = " ".join(row["sources"])
+            fix = next((e for e in events if per is not None and e["period"] == per), None)
+            if fix is not None:
+                notes.append(f"{rid}: same time of day ({per}) as {fix['id']} with different aircraft; "
+                             f"taken as a correction (unverified)")
+                fix.update(id=rid, url=r["source_url"], types=types, n=r.get("adiz_aircraft") or 0)
+                continue
+            events.append({"id": rid, "url": r["source_url"], "period": per, "types": types,
+                           "n": r.get("adiz_aircraft") or 0})
+        total: dict[str, int] = {}
+        for e in events:
+            for k, v in e["types"].items():
+                total[k] = total.get(k, 0) + v
+        last = group[-1][1]
+        days[day] = {**last, "format": fmt, "adiz_aircraft": sum(e["n"] for e in events), "adiz_types": total,
+                     "source_url": " ".join(e["url"] for e in events), "reports": len(events),
+                     "merge_note": "; ".join(notes) or None}
     out = []
     for day in sorted(days):
         row = dict(days[day])
@@ -131,6 +150,8 @@ def save(store: dict) -> None:
         "first_day": rows[0]["report_date"] if rows else None,
         "last_day": rows[-1]["report_date"] if rows else None,
         "unparsed_ids": unparsed, "parser_version": PARSER_VERSION,
+        "parse_errors": {rid: reports[rid]["parse_error"] for rid in unparsed if reports[rid].get("parse_error")},
+        "days_by_format": {f: sum(1 for r in rows if r.get("format") == f) for f in sorted({r.get("format") for r in rows})},
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
@@ -324,16 +345,30 @@ def probe_ids(ids: list[str]) -> int:
     return 0
 
 
+def reparse_all() -> int:
+    """Re-read every stored report from its kept text (no network) and rewrite the outputs."""
+    store = load()
+    for rid, r in store["reports"].items():
+        if r.get("main_text"):
+            store["reports"][rid] = reparse(r)
+    save(store)
+    notice(f"taiwan-mnd: {len(store['reports'])} reports re-read with parser {PARSER_VERSION}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--pages", type=int, default=3, help="list pages to walk (10 reports each)")
     ap.add_argument("--probe", action="store_true")
+    ap.add_argument("--reparse", action="store_true", help="re-read stored reports offline and rewrite the outputs")
     ap.add_argument("--probe-ids", default="", help="comma-separated report ids to print")
     a = ap.parse_args()
     if a.probe_ids:
         return probe_ids([x for x in a.probe_ids.split(",") if x.strip()])
     if a.probe:
         return probe()
+    if a.reparse:
+        return reparse_all()
     # The daily run stops at the first page with nothing new; a backfill walks all pages.
     return collect(a.pages, stop_when_known=a.pages <= 3)
 

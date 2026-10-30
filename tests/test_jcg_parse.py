@@ -44,6 +44,31 @@ class Pdf(unittest.TestCase):
         self.assertEqual(p["totals"], {"cz_days": 28, "cz_vessels": 116, "ts_days": 1, "ts_vessels": 4})
         self.assertEqual(check(p, 28), "match")
 
+    def test_vessels_with_entry_count_in_brackets(self):
+        # 2016-08: "2【3】※" = 2 vessels entered the territorial sea 3 times in all
+        ws = table()
+        for w in ws:
+            if w[1] == "4" and abs(w[4] - 109) < 1 and w[2] > 200:
+                w[1] = "4【7】"
+        ws.append(word("※", 262, 109))
+        p = parse_words(ws, 2026, 10)
+        self.assertTrue(p["parsed"], p["problems"])
+        self.assertEqual(p["days"]["1"], {"cz": 8, "ts": 4, "cz_cell": "number", "ts_cell": "number", "ts_entries": 7})
+        self.assertNotIn("ts_entries", p["days"]["2"])
+        self.assertEqual(check(p, 28), "match")
+
+    def test_stored_2016_08_matches_monthly_totals(self):
+        import json
+        store = json.loads((Path(__file__).resolve().parent.parent / "docs" / "data" / "jcg-senkaku" / "pdfs.json")
+                           .read_text(encoding="utf-8"))
+        rec = store["pdfs"]["https://www.kaiho.mlit.go.jp/mission/senkaku/data_h28_08.pdf"]
+        p = parse_words(rec["words"], 2016, 8)
+        self.assertTrue(p["parsed"], p["problems"])
+        self.assertEqual(p["totals"], {"cz_days": 25, "cz_vessels": 147, "ts_days": 6, "ts_vessels": 23})
+        self.assertEqual(check(p, 31), "match")
+        self.assertEqual({d: (r["ts"], r.get("ts_entries")) for d, r in p["days"].items() if r.get("ts_entries")},
+                         {"5": (2, 3), "7": (6, 11), "8": (3, 4), "9": (4, 10)})
+
     def test_blank_days_inside_the_month_and_mismatch(self):
         vals = {d: (4, None) for d in range(1, 31) if d not in (22, 23)}
         p = parse_words(table(title="令和8年9月", as_of="( 9/30 現在)", vals=vals, last=30), 2026, 9)

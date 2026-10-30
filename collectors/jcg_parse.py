@@ -19,7 +19,7 @@ import unicodedata
 from datetime import date
 from urllib.parse import urljoin, urlsplit
 
-PARSER_VERSION = 1
+PARSER_VERSION = 2
 
 ERA = {"平成": 1988, "令和": 2018, "H": 1988, "R": 2018}
 DASHES = {"-", "−", "－", "―", "‐", "ー", "—", "–"}
@@ -209,11 +209,20 @@ def _header(words, kind, run, right_bound):
     return min(hs, key=lambda w: (w["x0"] - first["x1"], -w["top"])) if hs else None
 
 
+# "2【3】": 2 vessels, entering the territorial sea 3 times in all (the note of the
+# 2016-08 PDF: the number in 【 】 is the number of entries). NFKC keeps 【 】.
+_VAL_ENTRIES = re.compile(r"^(\d{1,3})隻?[【\[](\d{1,3})[】\]]$")
+_MARKS = {"※", "*", "＊"}  # a footnote mark beside a cell, not a value
+
+
 def _cell(t: str):
     if t in DASHES:
         return 0, "dash"
     m = _VAL.match(t)
-    return (int(m[1]), "number") if m else (None, None)
+    if m:
+        return int(m[1]), "number"
+    m = _VAL_ENTRIES.match(t)
+    return (int(m[1]), "number", int(m[2])) if m else (None, None)
 
 
 # "###" is a spreadsheet cell too narrow for its number (seen in a current-month PDF).
@@ -296,7 +305,13 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
             tol = max(2.5, 0.5 * _h(dw))
             row = sorted((w for w in pw if w is not dw and abs(_cy(w) - _cy(dw)) <= tol
                           and w["x0"] >= dw["x1"] - 0.5 and _cx(w) < right), key=lambda w: w["x0"])
-            cells = [(w, *_cell(w["t"])) for w in row]
+            row = [w for w in row if w["t"] not in _MARKS]
+            cells, entries = [], {}
+            for w in row:
+                v, k, *e = _cell(w["t"])
+                cells.append((w, v, k))
+                if e:
+                    entries[id(w)] = e[0]
             stray = [w["t"] for w, v, _ in cells if v is None]
             cells = [(w, v, k) for w, v, k in cells if v is not None]
             rec = {"cz": None, "ts": None, "cz_cell": "blank", "ts_cell": "blank"}
@@ -306,11 +321,19 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
                     if rec[col + "_cell"] != "blank":
                         out["problems"].append(f"day {d}: two values in one column")
                     rec[col], rec[col + "_cell"] = v, k
+                    if id(w) in entries:
+                        if col != "ts":
+                            out["problems"].append(f"day {d}: entry count 【 】 outside the territorial-sea column")
+                        rec["ts_entries"] = entries[id(w)]
             else:
                 if len(cells) > 2:
                     out["problems"].append(f"day {d}: {len(cells)} values")
                 for col, (w, v, k) in zip(("cz", "ts"), cells):
                     rec[col], rec[col + "_cell"] = v, k
+                    if id(w) in entries:
+                        if col != "ts":
+                            out["problems"].append(f"day {d}: entry count 【 】 outside the territorial-sea column")
+                        rec["ts_entries"] = entries[id(w)]
             if stray:
                 out["problems"].append(f"day {d}: unreadable cell {stray}")
             out["days"][str(d)] = rec

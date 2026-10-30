@@ -12,26 +12,36 @@
   "credibility": "2",
   "rating_note": "暫定評価（アドミラルティ・コード）。当事者の発表であり、探知範囲・計上基準・公表方針は国防部に依存する。中国側は数値を公表していないため、独立した突き合わせは衛星観測等による。"
  },
- "window": "報告日の前日 06:00 から報告日 06:00 まで（UTC+8）。window_start_utc / window_end_utc は UTC で表記。",
+ "window": "書式で異なる（台湾時間 UTC+8）。around-taiwan：報告日の前日 06:00 から報告日 06:00 まで。sw-adiz・afc-around-roc：報告日の暦日（00:00〜24:00）。その日の朝・午後・夜などの発表を合算する。window_start_utc / window_end_utc は UTC で表記。",
  "fields": {
   "report_date": "報告日（台湾時間）",
-  "aircraft": "中国軍機の延べ機数（架次）",
-  "median_line_or_adiz": "そのうち中間線を越えた、または北部・西南・東部の空域に入った延べ機数",
-  "plan_vessels": "中国海軍艦艇の数",
+  "aircraft": "around-taiwan 書式のみ：中国軍機の延べ機数（架次）",
+  "median_line_or_adiz": "around-taiwan 書式のみ：そのうち中間線を越えた、または北部・西南・東部の空域に入った延べ機数。「The detected aircraft had entered…」「The aircraft crossed…」のように全機と書かれた日は aircraft と同じ値",
+  "plan_vessels": "around-taiwan 書式のみ：中国海軍艦艇の数",
   "official_ships": "中国の公務船の数。2024年頃の日報では「CCG vessels（中国海警）」と表記",
   "balloons": "気球の数",
   "source_url": "原文の URL",
   "retrieved_utc": "取得時刻（UTC）。公表時刻ではない",
   "parser_version": "数値を抜き出した処理の版",
-  "format": "日報の書式。around-taiwan＝台湾周辺全体（2022年11月頃以降）、sw-adiz＝南西 ADIZ への進入のみ（それ以前）",
-  "adiz_aircraft": "sw-adiz 書式の日のみ：南西 ADIZ に入った機数（昼・夜の発表を合算）。around-taiwan の aircraft とは定義が異なるため比較しない",
-  "adiz_types": "sw-adiz 書式の日のみ：機種別の内訳（機種:機数;…）"
+  "format": "日報の書式。sw-adiz＝南西 ADIZ に進入した機（〜2022-08-02、機種別）、afc-around-roc＝空軍司令部「Air activities of PLA aircraft around the R.O.C. airspace」（2022-08-03〜2022-11-12、台湾周辺全体の機種別。南西 ADIZ だけではない）、around-taiwan＝台湾周辺全体の機数・艦艇数・中間線越え（2022-11-16〜、06:00〜06:00）。書式は本文の表題で判定する。表題のない発表は、2022-08-03 以降の空軍司令部の発表（7本）を afc-around-roc、それ以外を sw-adiz とする（reports.json の format_basis＝series）",
+  "adiz_aircraft": "sw-adiz・afc-around-roc 書式の日のみ：機種別の機数の合計（その日の別々の発表を合算）。sw-adiz は南西 ADIZ に入った機、afc-around-roc は台湾周辺全体の機で、意味が異なる。around-taiwan の aircraft とも定義が異なるため比較しない",
+  "adiz_types": "sw-adiz・afc-around-roc 書式の日のみ：機種別の内訳（機種:機数;…、その日の発表の合算）",
+  "reports": "sw-adiz・afc-around-roc 書式の日のみ：合算した発表（進入事象）の数",
+  "merge_note": "sw-adiz・afc-around-roc 書式の日のみ：同じ日の発表の扱い（再掲として1回だけ数えた、訂正とみなした等）。空欄は全部を合算"
  },
- "missing_values": "原文に記載のない数値は null（不明）とし、0 とはみなさない。原文に「中間線越えなし」等の明記がある場合のみ 0。",
+ "missing_values": "原文に記載のない数値は null（不明）とし、0 とはみなさない。0 にするのは原文の表現から言える場合だけ：(1)「No PLA aircraft and PLAN vessel(s)/ship」「no PLA aircraft and vessels」→ aircraft・plan_vessels とも 0。(2) around-taiwan の日報は探知したものを列挙する文（「N PLA aircraft and M PLAN vessels around Taiwan were detected」）なので、艦艇だけを挙げた日（「N PLAN vessels/ships (and K official ship) … were detected」）は aircraft を 0、機だけを挙げた日（「N PLA aircraft … were detected」）は plan_vessels を 0 とする。公務船・気球はこの規則の対象外（日報に載り始めた時期があるため、記載のない日は null）。(3) 中間線越え等は「中間線越えなし」等の明記がある場合のみ 0、全機と書かれた日は aircraft と同じ値。sw-adiz・afc-around-roc 期は進入（活動）がない日は発表自体がないため、行のない日は「不明」であり 0 ではない。機数・隻数が 200 を超える値は読み違い（ページ下部の電話番号等）とみなし、その発表は公開せず status.json の parse_errors に理由を残す。",
  "definition_changes": [
   {
-   "date": "2022-11頃",
-   "change": "日報が「南西 ADIZ への進入機（機種別、昼・夜別）」から「台湾周辺全体の機数・艦艇数・中間線越え」に変わる。前後の機数は定義が異なり、そのまま比較できない"
+   "date": "〜2022-08-02",
+   "change": "sw-adiz 書式：南西 ADIZ に進入した機を機種別に、進入の事象ごと（朝・午後・夜など）に発表。集計は暦日（台湾時間）。進入のない日は発表がない"
+  },
+  {
+   "date": "2022-08-03",
+   "change": "afc-around-roc 書式に変わる：空軍司令部の「Air activities of PLA aircraft around the R.O.C. airspace」。対象が南西 ADIZ から台湾周辺全体に広がり、sw-adiz の数とはそのまま比較できない（2022-11-12 まで）"
+  },
+  {
+   "date": "2022-11-16",
+   "change": "around-taiwan 書式に変わる：台湾周辺全体の機数・艦艇数・中間線越え等を 06:00〜06:00 で毎日発表。前の2つの書式とは機数の定義・集計窓が異なり、そのまま比較できない"
   },
   {
    "date": "2024-08",
@@ -48,7 +58,8 @@
  ],
  "limitations": [
   "数値は日報本文から自動で抜き出している。本文が画像のみの日は unparsed として status.json に記録し、推測で埋めない。",
-  "同じ報告日に複数の発表がある場合、番号の大きい（後の）発表を採用する。",
+  "around-taiwan：同じ報告日に複数の発表がある場合、番号の大きい（後の）発表を採用する。",
+  "sw-adiz・afc-around-roc：同じ日の発表は別々の進入事象として合算する。時間帯（朝・午後・夜等）と機種別の内訳がまったく同じ発表は再掲とみなして1回だけ数え、同じ時間帯で内容が違う発表は訂正とみなして後の方を採る（merge_note に記録）。時間帯の書かれていない発表どうしは内容が違えば合算する。",
   "大規模演習の期間中は、日報とは別の臨時発表に異なる集計が出ることがある（日報とは計上範囲が異なる）。"
  ]
 }
