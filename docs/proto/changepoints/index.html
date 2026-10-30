@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>変化点と定義変更｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 3</div>
+<h1>変化点と定義変更<span class="badge">試作</span></h1>
+<p class="lead">週ごとの水準が段のように変わった時期（変化点）を自動で探し、日報の書式・定義の変更、および「記載のない日の割合」の変化点と同じ時間軸に並べます。報告の仕方が変わったのか、行動が変わったのかを見分ける手がかりにします。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>値の変化点が、定義変更や「記載のない日の割合」の変化点と重なっていれば、まず報告の仕方の変化を疑います。重ならなければ、行動の変化の候補です（断定はできません）。</li>
+<li>変化点の日付の幅（ブートストラップの5〜95%）と、作り直したデータで同じ変化点が再び見つかる割合（再検出率）。</li>
+</ul>
+
+<h2>図</h2>
+<div class="controls"><label>指標 <select id="metric"></select></label></div>
+<div id="chart"></div>
+<div id="chart2"></div>
+<h3>変化点の一覧</h3>
+<div id="list"></div>
+
+<h2>手法</h2>
+<ol>
+<li><b>週の系列</b>：月曜始まりの週ごとに、値のある日の<b>中央値</b>を取ります（値のある日が4日未満の週は欠測）。1日だけの大規模演習に引きずられないよう、平均ではなく中央値にしています。</li>
+<li><b>変化点</b>：区間ごとの平均からの二乗誤差（雑音の標準偏差で割ったもの）に、変化点1つあたり 3·log(n) の罰則を加えた量を最小にする分け方を厳密に求めます（PELT と同じ目的関数と解。週の数が200ほどなので枝刈りなしの最適分割で計算）。区間は最短4週。雑音の標準偏差は隣り合う週の差の MAD から見積もります（段差に強い）。</li>
+<li><b>日付の幅</b>：見つかった区間の平均に、同じ区間の残差を復元抽出して足したデータを100通り作り、同じ手順で探し直します。元の変化点から±8週以内で最も近いものの位置の5〜95%を幅、見つかった割合を再検出率としました。</li>
+<li><b>報告の仕方の指標</b>：週のうち、その指標が null または日報なしの日の割合にも同じ手法をかけます（雑音の下限 0.1）。</li>
+<li><b>定義変更</b>：meta.json の definition_changes を縦の破線で示します。「2024-08」のように月だけのものは月の1日に置いています。</li>
+</ol>
+
+<h2>限界</h2>
+<ul>
+<li>平均の段差だけを探すので、ばらつきだけの変化や、ゆっくりした傾きは捉えません。罰則の強さで変化点の数は変わります。</li>
+<li>残差を独立とみなすブートストラップなので、週どうしの相関がある分、幅は狭めに出ます。</li>
+<li>週の中央値は、記載のある日だけから作ります。中間線越え等・公務船は null の日が多く、null の日がゼロに近い日なら、水準は高めに出ます。記載の割合が変わると見かけの水準も変わるので、下の図と合わせて読んでください。</li>
+<li>変化点が定義変更と重ならなくても、記録されていない運用の変更（数え方、公表方針）はあり得ます。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('changepoints.json');
+  const sel = document.getElementById('metric');
+  for (const [m, v] of Object.entries(D.metrics)) sel.appendChild(new Option(v.label, m));
+  const defs = (D.definition_changes || []).map(x => ({x: P.defDate(x.date), label: x.date, change: x.change})).filter(x => x.x);
+  const segLine = (cp, field) => {
+    const out = [];
+    for (const s of cp.segments) { out.push({x: P.t(s.start), y: s.mean}); out.push({x: P.t(s.end) + 6 * P.DAY, y: s.mean}); out.push({x: P.t(s.end) + 6 * P.DAY, y: null}); }
+    return out;
+  };
+  const spans = (cp, color) => cp.changepoints.filter(c => c.week_lo).map(c => ({x0: P.t(c.week_lo), x1: P.t(c.week_hi) + 7 * P.DAY, color, opacity: 0.22}));
+  const draw = () => {
+    const M = D.metrics[sel.value];
+    const W = new Map(M.weeks.map(w => [P.t(w.week), w]));
+    const defLines = defs.map((d, i) => ({x: d.x, label: '定義 ' + d.label, color: P.css('--s7'), row: i % 3}));
+    const cpLines = c => c.changepoints.map(c => ({x: P.t(c.week), color: P.css('--s2'), dash: 'none', width: 1.5}));
+    const tip = x => { const w = W.get(x); if (!w) return '';
+      const near = defs.filter(d => Math.abs(d.x - x) < 21 * P.DAY).map(d => `<br>定義変更 ${d.label}：${P.esc(d.change).slice(0, 40)}…`).join('');
+      return `<b>${w.week} の週</b><br>中央値 ${P.fmt(w.value)}（値のある日 ${w.n}）<br>記載のない日の割合 ${P.fmt(w.missing_share * 100, 0)}%${near}`; };
+    const a = document.getElementById('chart'); a.innerHTML = '';
+    P.chart(a, {
+      height: 280, spans: spans(M.value, P.css('--s2')), vlines: [...defLines, ...cpLines(M.value)],
+      legend: [{color: P.css('--muted'), label: '週の中央値'}, {color: P.css('--s1'), label: '区間の平均', line: true},
+               {color: P.css('--s2'), label: '変化点（帯は5〜95%の幅）', line: true}, {color: P.css('--s7'), label: '定義変更（meta.json）', line: true}],
+      series: [
+        {kind: 'dots', color: P.css('--muted'), r: 2.2, data: M.weeks.map(w => ({x: P.t(w.week), y: w.value}))},
+        {kind: 'line', color: P.css('--s1'), width: 2.5, data: segLine(M.value)},
+      ], tip, ylabel: M.label + '（週の中央値）',
+    });
+    const b = document.getElementById('chart2'); b.innerHTML = '';
+    P.chart(b, {
+      height: 170, ymin: 0, ymax: 1, yfmt: v => Math.round(v * 100) + '%', spans: spans(M.missing, P.css('--s4')), vlines: [...defLines, ...M.missing.changepoints.map(c => ({x: P.t(c.week), color: P.css('--s4'), dash: 'none', width: 1.5}))],
+      legend: [{color: P.css('--muted'), label: '記載のない日の割合'}, {color: P.css('--s4'), label: 'その変化点', line: true}],
+      series: [
+        {kind: 'bars', color: P.css('--muted'), barWidth: 7 * P.DAY, data: M.weeks.map(w => ({x: P.t(w.week), y: w.missing_share}))},
+        {kind: 'line', color: P.css('--s4'), width: 2, data: segLine(M.missing)},
+      ], tip, ylabel: '報告の仕方：記載のない日（null・日報なし）の割合',
+    });
+    const L = document.getElementById('list'); L.innerHTML = '';
+    const nearDef = c => { const lo = P.t(c.week_lo || c.week) - 28 * P.DAY, hi = P.t(c.week_hi || c.week) + 35 * P.DAY;
+      return defs.filter(d => d.x >= lo && d.x <= hi).map(d => d.label).join('、'); };
+    const nearMiss = c => { const lo = P.t(c.week_lo || c.week) - 28 * P.DAY, hi = P.t(c.week_hi || c.week) + 35 * P.DAY;
+      return M.missing.changepoints.filter(m => P.t(m.week) >= lo && P.t(m.week) <= hi).map(m => m.week).join('、'); };
+    P.table(L, ['系列', '変化点の週', '幅（5〜95%）', '再検出率', '前 → 後', '近くの定義変更', '近くの記載割合の変化点'],
+      [...M.value.changepoints.map(c => ['値', c.week, `${c.week_lo || '—'} 〜 ${c.week_hi || '—'}`, P.fmt(c.redetect * 100, 0) + '%', `${P.fmt(c.before)} → ${P.fmt(c.after)}`, nearDef(c) || '—', nearMiss(c) || '—']),
+       ...M.missing.changepoints.map(c => ['記載のない割合', c.week, `${c.week_lo || '—'} 〜 ${c.week_hi || '—'}`, P.fmt(c.redetect * 100, 0) + '%', `${P.fmt(c.before * 100, 0)}% → ${P.fmt(c.after * 100, 0)}%`, nearDef(c) || '—', ''])],
+      ['', '', '', 'n', 'n', '', '']);
+  };
+  sel.addEventListener('change', draw);
+  draw();
+  P.provenance(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

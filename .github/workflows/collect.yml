@@ -30,7 +30,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Tests
-        run: python -m unittest discover -s tests -t .
+        id: tests
+        run: |
+          python -m unittest discover -s tests -t .
+          node --test notam/*.test.mjs
       - name: Probe
         if: inputs.probe
         run: python -m collectors.taiwan_mnd --probe --probe-ids "${{ inputs.probe_ids }}"
@@ -42,14 +45,25 @@ jobs:
         env:
           MND_PAUSE_SECONDS: '1.5'
         run: python -m collectors.taiwan_mnd --pages "${{ inputs.pages || '3' }}"
+      # The steps below run even when the Taiwan MND collection fails, but never
+      # when the tests failed, so a broken build cannot publish data.
+      - name: Launch-related notices from NOTAM Watch (static files; no Worker requests)
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
+        run: |
+          python -m collectors.ll2
+          node notam/extract.mjs /tmp/launch-extract.json
+          python -m notam.launches /tmp/launch-extract.json
+      - name: Rebuild JSO transit datasets (joins the Taiwan MND counts)
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
+        run: python -m jso.build
       - name: Publish changed data
-        if: ${{ always() && !inputs.probe }}
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
         run: |
           git add docs/data
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "データ更新: 台湾国防部 日報 ($(date -u +%Y-%m-%d))"
-          # collect-jcg-senkaku.yml also pushes to main (docs/data/jcg-senkaku only), so
+            commit -q -m "データ更新: 台湾国防部 日報・統幕 ($(date -u +%Y-%m-%d))"
+          # jcg-senkaku.yml also pushes to main (docs/data/jcg-senkaku only), so
           # rebase onto whatever it pushed meanwhile; the directories differ, no conflicts.
           for i in 1 2 3; do
             git pull -q --rebase && git push && exit 0

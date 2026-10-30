@@ -1,0 +1,67 @@
+{
+ "note": "2022-11 以降の大規模演習。開始日は公開情報で確かめたものだけを入れる。day0_report は開始日を含む最初の日報（日報は前日 06:00〜当日 06:00 の集計のため、開始日の翌日付）。",
+ "exercises": [
+  {
+   "id": "joint-sword-2023",
+   "name": "聯合利劍（2023）",
+   "name_en": "Joint Sword",
+   "start": "2023-04-08",
+   "end": "2023-04-10",
+   "sources": [
+    "https://www.pressurepoints.aspi.org.au/taiwan-and-the-taiwan-strait/chinas-military-coercion/chinas-large-scale-exercises-since-2022"
+   ]
+  },
+  {
+   "id": "joint-sword-2024a",
+   "name": "聯合利劍-2024A",
+   "name_en": "Joint Sword-2024A",
+   "start": "2024-05-23",
+   "end": "2024-05-24",
+   "sources": [
+    "https://www.pressurepoints.aspi.org.au/taiwan-and-the-taiwan-strait/chinas-military-coercion/chinas-large-scale-exercises-since-2022"
+   ]
+  },
+  {
+   "id": "joint-sword-2024b",
+   "name": "聯合利劍-2024B",
+   "name_en": "Joint Sword-2024B",
+   "start": "2024-10-14",
+   "end": "2024-10-14",
+   "sources": [
+    "https://www.pressurepoints.aspi.org.au/taiwan-and-the-taiwan-strait/chinas-military-coercion/chinas-large-scale-exercises-since-2022"
+   ]
+  },
+  {
+   "id": "unnamed-2024-12",
+   "name": "名称なしの大規模展開（2024-12）",
+   "name_en": "unnamed (not announced by Beijing)",
+   "start": "2024-12-09",
+   "end": "2024-12-11",
+   "sources": [
+    "https://www.pressurepoints.aspi.org.au/taiwan-and-the-taiwan-strait/chinas-military-coercion/chinas-large-scale-exercises-since-2022"
+   ]
+  },
+  {
+   "id": "strait-thunder-2025a",
+   "name": "海峽雷霆-2025A（4/1 開始の合同演習を含む）",
+   "name_en": "Strait Thunder-2025A",
+   "start": "2025-04-01",
+   "end": "2025-04-02",
+   "sources": [
+    "https://www.pressurepoints.aspi.org.au/taiwan-and-the-taiwan-strait/chinas-military-coercion/chinas-large-scale-exercises-since-2022"
+   ]
+  },
+  {
+   "id": "justice-mission-2025",
+   "name": "正義使命-2025",
+   "name_en": "Justice Mission 2025",
+   "start": "2025-12-29",
+   "end": "2025-12-31",
+   "sources": [
+    "https://m.washingtontimes.com/news/2025/dec/29/china-sends-message-japan-us-massive-military-drills-encircling/",
+    "https://jamestown.org/pla-justice-mission-2025-further-rehearses-taiwan-invasion-operations"
+   ]
+  }
+ ],
+ "checked_utc": "2026-10-30"
+}

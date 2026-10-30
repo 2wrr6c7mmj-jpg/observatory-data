@@ -19,6 +19,8 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 | --- | --- | --- |
 | `taiwan-mnd` | 台湾国防部の日報（中国軍機・中間線越え・艦艇・公務船・気球） | [daily.csv](docs/data/taiwan-mnd/daily.csv)・[daily.json](docs/data/taiwan-mnd/daily.json)・[meta.json](docs/data/taiwan-mnd/meta.json)・[status.json](docs/data/taiwan-mnd/status.json) |
 | `jcg-senkaku` | 海上保安庁：尖閣諸島周辺の中国海警局に所属する船舶等（接続水域入域・領海侵入の隻数、日ごと、2012年9月から） | [daily.csv](docs/data/jcg-senkaku/daily.csv)・[daily.json](docs/data/jcg-senkaku/daily.json)・[meta.json](docs/data/jcg-senkaku/meta.json)・[status.json](docs/data/jcg-senkaku/status.json) |
+| `jso` | 統合幕僚監部の公表資料（中国・ロシア艦艇の海峡通過、往復、演習・政治イベントとの対応） | [passages.csv](docs/data/jso/passages.csv)・[round_trips.csv](docs/data/jso/round_trips.csv)・[context.csv](docs/data/jso/context.csv)・[summary.json](docs/data/jso/summary.json)・[meta.json](docs/data/jso/meta.json) |
+| `launches` | ロケット・ミサイル発射に関わる NOTAM・航行警報（NOTAM Watch のデータから）、発射場・方位の推定、Launch Library 2 の打上げ記録との照合 | [events.json](docs/data/launches/events.json)・[notices.json](docs/data/launches/notices.json)・[ll2.json](docs/data/launches/ll2.json)・[meta.json](docs/data/launches/meta.json) |
 
 各データの定義、情報源の評価、定義変更の履歴、限界は `meta.json` に書いています。
 
@@ -30,6 +32,14 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 - ボット対策のチャレンジページが返ったら、回り込まずにその回を止める
 - 1件ずつ間隔をあけて取得し、User-Agent にこのリポジトリの URL を入れる。取得済みのものは取り直さない
 
+## 分析の試作
+
+[docs/proto/](docs/proto/index.html)（Pages では `proto/`）に、台湾国防部の日報を使った分析の試作を置いています（収集の穴、平常帯、変化点、艦艇の持続度、大規模演習の前後）。計算は `analysis/proto.py`（標準ライブラリのみ）で、`proto.yml` が収集の後に `docs/proto/data/` だけを書き換えます。演習の日付と出典は `analysis/exercises.json` にあります。
+
+```sh
+python -m analysis.proto   # docs/proto/data/*.json を作り直す
+```
+
 ## 記録の原則
 
 - 時刻は UTC で書き、公表・対象期間・取得の時刻を区別する
@@ -37,6 +47,10 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 - 自動で読み取れなかった原文は推測で埋めず、`status.json` に残して確認する
 - 数え方の変更（定義変更）は日付つきで記録し、分析で行動の変化と混同しない
 - 情報源には立場と評価を付け、どれか一つを事実の基準にしない
+
+## 統幕データの更新
+
+統幕のサイト（mod.go.jp）はボット対策があり自動取得できないため、元データの更新は手作業です（手順は [jso/HANDOFF.md](jso/HANDOFF.md)）。解析済みのデータベース `jso/source/jso.sqlite` を差し替えると、毎日の実行で `docs/data/jso/` が作り直され、台湾国防部の日報との突き合わせも更新されます。
 
 ## 実行
 
@@ -48,6 +62,7 @@ python -m collectors.taiwan_mnd --probe    # 取得先のページ構造の確�
 pip install pdfplumber==0.11.10            # jcg-senkaku の PDF の読み取りに使う
 python -m collectors.jcg_senkaku           # 海上保安庁 尖閣周辺（新しい PDF と当月分だけ）
 python -m collectors.jcg_senkaku --probe /tmp/jcg  # ページと見本の PDF を取得して表示するだけ
+python -m jso.build                        # 統幕データの公開用ファイルを作る
 ```
 
 GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に、「Collect JCG Senkaku」は毎日 12:43（日本時間）に動きます（別々の concurrency group で、互いに止め合わない）。過去分の遡りは、手動実行で `pages` を大きくします。

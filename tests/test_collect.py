@@ -112,5 +112,110 @@ class ListPageRetry(unittest.TestCase):
         sl.assert_not_called()
 
 
+class ReportFetchErrors(unittest.TestCase):
+    """Run 40983532615 died on a bare TimeoutError from a report page."""
+
+    def test_read_timeout_is_a_bare_timeout_error_and_counts_as_transient(self):
+        import socket
+        import threading
+        srv = socket.socket()
+        srv.bind(("127.0.0.1", 0))
+        srv.listen(1)
+        held = []
+        t = threading.Thread(target=lambda: held.append(srv.accept()[0]), daemon=True)
+        t.start()  # accepts the connection, never answers
+        try:
+            with mock.patch.object(taiwan_mnd, "FETCH_TIMEOUT", 0.3), mock.patch.object(taiwan_mnd, "PAUSE", 0):
+                with self.assertRaises(TimeoutError) as cm:
+                    taiwan_mnd.fetch(f"http://127.0.0.1:{srv.getsockname()[1]}/")
+        finally:
+            t.join(1)
+            for c in held:
+                c.close()
+            srv.close()
+        import urllib.error
+        self.assertNotIsInstance(cm.exception, urllib.error.URLError)  # why `except URLError` missed it
+        self.assertTrue(taiwan_mnd.transient(cm.exception))
+
+    def test_dropped_connections_count_as_transient(self):
+        import http.client
+        for e in (http.client.RemoteDisconnected("x"), http.client.IncompleteRead(b""), ConnectionResetError()):
+            self.assertTrue(taiwan_mnd.transient(e), e)
+        self.assertFalse(taiwan_mnd.transient(ValueError()))
+
+    def test_fetch_keeps_the_pause_after_a_failure(self):
+        with mock.patch.object(taiwan_mnd.urllib.request, "urlopen", side_effect=TimeoutError("t")), \
+                mock.patch.object(taiwan_mnd.time, "sleep") as sl:
+            with self.assertRaises(TimeoutError):
+                taiwan_mnd.fetch("https://x")
+        sl.assert_called_once_with(taiwan_mnd.PAUSE)
+
+    def run_collect(self, fetch, pages=1):
+        waits = []
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
+                mock.patch.object(taiwan_mnd, "fetch", side_effect=fetch), \
+                mock.patch.object(taiwan_mnd, "_sleep", side_effect=waits.append), \
+                mock.patch.object(taiwan_mnd, "notice"), \
+                mock.patch.object(taiwan_mnd, "warning") as warn:
+            code = taiwan_mnd.collect(pages, stop_when_known=False)
+            stored = json.loads((Path(d) / "reports.json").read_text(encoding="utf-8"))["reports"]
+        return code, set(stored), waits, warn
+
+    def test_one_timeout_is_retried_once(self):
+        calls = {"n": 0}
+
+        def flaky(url):
+            if url.endswith("/plaact/2") and calls["n"] == 0:
+                calls["n"] += 1
+                raise TimeoutError("The read operation timed out")
+            return fake_fetch(url)
+
+        code, stored, waits, _ = self.run_collect(flaky)
+        self.assertEqual((code, stored, waits), (0, {"1", "2"}, [taiwan_mnd.REPORT_RETRY_WAIT]))
+
+    def test_a_report_that_keeps_timing_out_is_skipped_and_the_run_goes_on(self):
+        def stuck(url):
+            if url.endswith("/plaact/2"):
+                raise TimeoutError("The read operation timed out")
+            return fake_fetch(url)
+
+        code, stored, waits, _ = self.run_collect(stuck)
+        self.assertEqual((code, stored), (0, {"1"}))
+        self.assertEqual(len(waits), 1)  # one retry, not more
+
+    def test_many_failures_in_a_row_end_the_run_and_keep_progress(self):
+        pages = {f"/en/news/plaactlist/{p}": "".join(f'<a href="/en/news/plaact/{p * 10 + i}">r</a>' for i in range(5))
+                 for p in (1, 2)}
+
+        def site(url):
+            path = url.replace(taiwan_mnd.BASE, "")
+            if path in pages:
+                return pages[path]
+            if "plaactlist" in path:
+                return ""
+            if path.startswith("/en/news/plaact/2"):  # every report on page 2 times out
+                raise TimeoutError("The read operation timed out")
+            return REPORTS["/en/news/plaact/1"]
+
+        code, stored, waits, warn = self.run_collect(site, pages=5)
+        self.assertEqual(code, 75)
+        self.assertEqual(stored, {str(10 + i) for i in range(5)})
+        self.assertEqual(len(waits), taiwan_mnd.REPORT_FAILURE_LIMIT)
+        self.assertTrue(any("ending this run" in c.args[0] for c in warn.call_args_list))
+
+    def test_unexpected_error_still_saves_what_was_fetched(self):
+        def broken(url):
+            if url.endswith("/plaact/1"):
+                raise RuntimeError("boom")
+            return fake_fetch(url)
+
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
+                mock.patch.object(taiwan_mnd, "fetch", side_effect=broken):
+            with self.assertRaises(RuntimeError):
+                taiwan_mnd.collect(1, stop_when_known=False)
+            stored = json.loads((Path(d) / "reports.json").read_text(encoding="utf-8"))["reports"]
+        self.assertEqual(set(stored), {"2"})
+
+
 if __name__ == "__main__":
     unittest.main()

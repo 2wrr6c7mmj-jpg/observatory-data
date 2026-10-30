@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>収集の穴と沈黙｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 1</div>
+<h1>収集の穴と沈黙<span class="badge">試作</span></h1>
+<p class="lead">台湾国防部の日報について、日ごとに「数値がある」「日報はあるが読み取れなかった」「日報が見当たらない」「日報はあるがその指標の記載がない」を区別して示します。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>グラフの低い値が「活動が少なかった」のか「公表がなかった・取れなかった」のかを、日単位で見分けられます。</li>
+<li>指標ごとに、日報に記載され始めた時期が違います。記載が始まる前の空白は「ゼロ」ではなく書式上の未記載です。</li>
+</ul>
+<div class="kpis" id="kpis"></div>
+
+<h2>暦</h2>
+<div class="controls"><label>指標 <select id="metric"></select></label></div>
+<div id="cal"></div>
+<p class="meta">セルにカーソルを当てると、その日の日報の件数・値・読み取れなかった日報の番号が出ます。</p>
+
+<h2>月ごとの内訳</h2>
+<details><summary>表を開く</summary><div id="months"></div></details>
+
+<h2>手法</h2>
+<ul>
+<li>期間は daily.csv の最初の日から最後の日までの暦日。各日を次の順で分類します。
+ <ol>
+ <li><b>数値あり</b>：daily.csv に行がある日。指標ごとに、値（0 を含む）か null（原文に記載なし）かを分けます。</li>
+ <li><b>日報はあるが読み取れず</b>：reports.json にその報告日の日報があるが、すべて <code>parsed:false</code>（多くは本文が画像のみ）。status.json の <code>unparsed_ids</code> と同じものです。</li>
+ <li><b>日報が見当たらない</b>：その報告日の日報が一覧に無い日。</li>
+ </ol></li>
+<li>「記載が始まった日」は、その指標に初めて値が入った報告日です。それより前の null は書式上の未記載として別の色にしています。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li><b>公表の遅れは測れていません。</b>daily.csv の <code>retrieved_utc</code> は取得（遡り取得を含む）の時刻で、公表時刻ではありません。日報の原文にある発表時刻（例：09:00 UTC+8）は今の取得では列にしていないため、遅れの分布は出していません。</li>
+<li>null は「記載が無い」ことしか意味しません。たとえば中間線越えの null の多くは「越えた機がいなかった」可能性が高いですが、原文に明記がないので 0 にはしていません。軍機が null の日も、本文に艦艇しか書かれていない日（機数が0とみられる日）を含みます。</li>
+<li>「日報が見当たらない」は、国防部が出さなかった場合と、一覧の取得漏れの両方を含みます。区別には一覧ページの再確認が要ります。</li>
+<li>大規模演習の期間に出る臨時の発表は日報とは別の集計で、ここでは数えていません。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('gaps.json');
+  const lab = {aircraft:'軍機', plan_vessels:'艦艇', official_ships:'公務船', median_line_or_adiz:'中間線越え等', balloons:'気球'};
+  const T = D.totals;
+  const kp = document.getElementById('kpis');
+  const kpi = (v, s) => kp.appendChild(P.h('div', {class:'kpi'}, `<b>${v}</b><span>${s}</span>`));
+  kpi(D.calendar_days, `暦日（${D.span[0]}〜${D.span[1]}）`);
+  kpi(T.parsed, '数値を読み取れた日');
+  kpi(T.unparsed_only, '日報はあるが読み取れなかった日');
+  kpi(T.no_report, '日報が見当たらない日');
+  kpi(T.multiple, '同じ日に日報が複数ある日');
+  const sel = document.getElementById('metric');
+  for (const m of Object.keys(lab)) sel.appendChild(new Option(lab[m] + `（記載開始 ${D.first_reported[m] || '—'}）`, m));
+  const C = {val: P.css('--s1'), zero: P.css('--s3'), nul: P.css('--s4'), pre: P.css('--na'), unp: P.css('--s2'), none: P.css('--crit')};
+  const draw = () => {
+    const m = sel.value, cal = document.getElementById('cal');
+    cal.innerHTML = '';
+    const fr = D.first_reported[m];
+    const kind = d => d.status === 'no_report' ? 'none' : d.status === 'unparsed_only' ? 'unp' :
+      d[m] === null || d[m] === undefined ? (fr && d.date < fr ? 'pre' : 'nul') : d[m] === 0 ? 'zero' : 'val';
+    const word = {val:'値あり', zero:'0（原文に明記）', nul:'記載なし（null）', pre:'記載開始前（書式上なし）', unp:'日報はあるが読み取れず', none:'日報が見当たらない'};
+    P.calendar(cal, D.days, d => C[kind(d)], d => {
+      const k = kind(d);
+      return `<b>${d.date}</b>（${'月火水木金土日'[(new Date(d.date+'T00:00:00Z').getUTCDay()+6)%7]}）<br>${word[k]}` +
+        (d[m] !== undefined && d[m] !== null ? `：${d[m]}` : '') + `<br>日報 ${d.reports} 件` +
+        (d.unparsed.length ? `<br>読み取れず：${d.unparsed.join(', ')}` : '');
+    }, Object.entries(word).map(([k, v]) => ({color: C[k], label: v})));
+  };
+  sel.addEventListener('change', draw);
+  sel.value = 'median_line_or_adiz';
+  draw();
+  const months = document.getElementById('months');
+  P.table(months, ['月', '暦日', '日報なし', '読み取れず', 'null:軍機', 'null:艦艇', 'null:公務船', 'null:中間線越え等'],
+    D.months.map(x => [x.month, x.days, x.no_report || '', x.unparsed_only || '', x.null_aircraft || '', x.null_plan_vessels || '', x.null_official_ships || '', x.null_median_line_or_adiz || '']),
+    ['', 'n', 'n', 'n', 'n', 'n', 'n', 'n']);
+  P.provenance(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>
