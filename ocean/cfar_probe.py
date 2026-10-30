@@ -67,8 +67,9 @@ from sat.osm_mask import OVERPASS_URL, USER_AGENT, WATER, build_mask
 PROBE_VERSION = "ocean-cfar-probe-1"
 AREAS_FILE = Path(__file__).resolve().parent / "areas.json"
 MAX_PX = 2500
-# Own ocean cap per UTC month; 2026-10: the October free tier is used before it lapses (HQ, 2026-10-30).
-OCEAN_MONTHLY_PU_CAP = {"2026-10": 4000.0}
+# Own ocean cap per UTC month; 2026-10: the October free tier is used before it lapses (HQ, 2026-10-30;
+# raised from 4,000 to 4,600 PU on 2026-10-30 when the wide snapshot was extended, ports reduced to match).
+OCEAN_MONTHLY_PU_CAP = {"2026-10": 4600.0}
 OCEAN_DEFAULT_PU_CAP = 400.0
 # Safety guard on the whole CDSE account: Sentinel-1 daily run (docs/data/sat/usage.csv) + other
 # probes passed with --sat-usage (e.g. other harbours) + ocean. 2026-10: 9,000 of the 10,000 PU free tier.

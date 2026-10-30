@@ -2,7 +2,8 @@
 
     python -m ocean.cfar_probe --mode wide --out DIR ...
 
-East China Sea to south of the Sakishima islands (``REGION``: 23.5-31.5 N, 121.5-129.5 E), Sentinel-1 IW
+Regions in priority order (``REGIONS``): Senkaku, east of Taiwan (to 21.5 N), Mischief Reef, the Paracels, and the
+East China Sea to south of the Sakishima islands (23.5-31.5 N, 121.5-129.5 E); Sentinel-1 IW
 scenes of the last ``LOOKBACK_DAYS`` (7) days, fetched at 40 m (1/4 of the PU of 20 m) with BILINEAR.
 
 1. Catalog (no PU) over the region; passes grouped into acquisitions (``cdse.acquisitions``).
@@ -42,7 +43,17 @@ from sat import detect2 as v2
 from sat.grid import Grid, dilate, m_per_deg
 
 WIDE_VERSION = "ocean-wide-1"
-REGION = (121.5, 23.5, 129.5, 31.5)          # west, south, east, north
+# Regions in priority order (HQ, 2026-10-30): Senkaku -> east of Taiwan -> Mischief Reef -> Paracels -> rest
+# of the East China Sea. ``min_eff``: lowest share of useful cells in a request (Senkaku: whatever it takes).
+# ``fallback_days``: if no scene of the last LOOKBACK_DAYS covers half of the region, scenes this old are used.
+REGIONS = [
+    {"id": "SENKAKU", "name": "尖閣諸島周辺", "bbox": (123.3, 25.4, 124.0, 26.2), "min_eff": 0.05, "fallback_days": 12},
+    {"id": "TWE", "name": "台湾東方", "bbox": (121.3, 21.5, 124.0, 25.4), "min_eff": 0.3},
+    {"id": "MISCHIEF", "name": "ミスチーフ礁周辺", "bbox": (115.0, 9.0, 116.5, 10.5), "min_eff": 0.3},
+    {"id": "PARACEL", "name": "パラセル（西沙）諸島周辺", "bbox": (111.0, 15.5, 113.0, 17.5), "min_eff": 0.3},
+    {"id": "ECS", "name": "東シナ海〜先島諸島南方", "bbox": (121.5, 23.5, 129.5, 31.5), "min_eff": 0.4},
+]
+REGION = None  # bounding box of REGIONS (computed); tests may set it
 CELL_DEG = 0.2
 PIXEL_M = 40.0
 MAX_PX = 2500
@@ -56,17 +67,29 @@ LAND_POLYS = {
     "cn_shanghai": [(121.4, 31.6), (121.98, 31.6), (121.98, 30.85), (121.8, 30.62), (121.4, 30.62)],
     "cn_zhejiang": [(121.4, 30.32), (121.9, 30.32), (122.3, 30.12), (122.05, 29.62), (121.97, 29.0),
                     (121.72, 28.6), (121.55, 28.25), (121.4, 28.1)],
+    "tw_east": [(120.9, 22.4), (121.2, 22.75), (121.37, 23.0), (121.45, 23.3), (121.5, 23.5), (120.9, 23.5)],
     "tw_northeast": [(121.4, 23.4), (121.4, 25.32), (121.6, 25.32), (121.75, 25.17), (121.93, 25.06),
                      (122.0, 25.0), (121.86, 24.85), (121.86, 24.6), (121.76, 24.3), (121.63, 24.0),
                      (121.52, 23.6), (121.48, 23.4)],
 }
 SUBREGIONS = [  # (id, name, west, south, east, north) -- first match wins
+    ("SENKAKU", "尖閣諸島周辺（25.4–26.2N、123.3–124.0E）", 123.3, 25.4, 124.0, 26.2),
+    ("TWE", "台湾東方（21.5–25.4N、121.3–124.0E）", 121.3, 21.5, 124.0, 25.4),
+    ("MISCHIEF", "ミスチーフ礁周辺（9.0–10.5N、115.0–116.5E）", 115.0, 9.0, 116.5, 10.5),
+    ("PARACEL", "パラセル諸島周辺（15.5–17.5N、111.0–113.0E）", 111.0, 15.5, 113.0, 17.5),
     ("ECS-N", "東シナ海北部（28.5–31.5N、121.5–126E）", 121.5, 28.5, 126.0, 31.5),
     ("ECS-S", "東シナ海南部・台湾北方（25.5–28.5N、121.5–126E）", 121.5, 25.5, 126.0, 28.5),
     ("NANSEI", "沖縄トラフ・南西諸島（奄美〜沖縄）周辺（25.5–31.5N、126–129.5E）", 126.0, 25.5, 129.5, 31.5),
     ("SAKI", "先島諸島周辺・台湾東方（23.5–25.5N、121.5–126E）", 121.5, 23.5, 126.0, 25.5),
     ("SOUTH", "沖縄本島〜先島の南方の太平洋（23.5–25.5N、126–129.5E）", 126.0, 23.5, 129.5, 25.5),
 ]
+
+
+def regions_bbox() -> tuple[float, float, float, float]:
+    if REGION:
+        return REGION
+    b = [r["bbox"] for r in REGIONS]
+    return (min(x[0] for x in b), min(x[1] for x in b), max(x[2] for x in b), max(x[3] for x in b))
 
 
 def subregion(lon: float, lat: float) -> str:
@@ -96,7 +119,7 @@ class Cells:
     """0.2 deg cell grid of the region; sample points (k x k per cell) for shares."""
 
     def __init__(self, region=None, cell=CELL_DEG, k: int = 4):
-        self.w, self.s, self.e, self.n = region or REGION
+        self.w, self.s, self.e, self.n = region or regions_bbox()
         self.cell = cell
         self.nx = int(round((self.e - self.w) / cell))
         self.ny = int(round((self.n - self.s) / cell))
@@ -110,7 +133,17 @@ class Cells:
         land = np.zeros(sx.shape, bool)
         for ring in LAND_POLYS.values():
             land |= _inside_ring(sx, sy, ring)
-        self.sea = 1.0 - land.mean(axis=2)
+        self.frac = {}
+        for r in REGIONS:
+            w, s, e, n = r["bbox"]
+            self.frac[r["id"]] = ((sx >= w) & (sx < e) & (sy >= s) & (sy < n)).mean(axis=2)
+        inside = np.max(np.stack(list(self.frac.values())), axis=0) if self.frac else np.ones(sx.shape[:2])
+        self.sea_all = 1.0 - land.mean(axis=2)
+        self.sea = self.sea_all * inside          # sea of the regions only (0 outside every region)
+        # the region of each cell = the first (highest priority) region it is in
+        self.region = np.full(self.sea.shape, "", dtype=object)
+        for r in reversed(REGIONS):
+            self.region[self.frac[r["id"]] > 0] = r["id"]
 
     def bounds(self, j: int, i: int, h: int = 1, w: int = 1) -> tuple[float, float, float, float]:
         """(west, south, east, north) of rows j..j+h-1 (south to north) and cols i..i+w-1."""
@@ -151,20 +184,47 @@ def _rect_sums(v: np.ndarray, h: int, w: int) -> np.ndarray:
 
 
 def greedy_plan(cells: Cells, fp: list[np.ndarray], recency: list[float], pu_left: float,
-                max_requests: int = 200, thresholds=(0.8, 0.6, 0.4), max_cells: int = 5) -> tuple[list[dict], np.ndarray]:
-    """Rectangles (acquisition index, j, i, h, w) chosen greedily; returns (plan, covered share per cell)."""
-    cov = np.zeros((cells.ny, cells.nx))
+                max_requests: int = 200, thresholds=(0.8, 0.6, 0.4), max_cells: int = 5,
+                passes: list[dict] | None = None, cov: np.ndarray | None = None) -> tuple[list[dict], np.ndarray]:
+    """Rectangles (acquisition index, j, i, h, w) chosen greedily; returns (plan, covered share per cell).
+
+    ``passes`` (priority order): {"id", "weight" (cells of this pass), "acqs" (allowed acquisition indices),
+    "min_eff"}. In a pass a request must contain uncovered sea of the pass; sea of other regions in the
+    rectangle counts half. Without ``passes`` there is one pass over all sea cells."""
+    cov = np.zeros((cells.ny, cells.nx)) if cov is None else cov
+    passes = passes or [{"id": None, "weight": np.ones((cells.ny, cells.nx)), "acqs": list(range(len(fp))),
+                         "min_eff": thresholds[-1]}]
     plan, spent = [], 0.0
+    for ps in passes:
+        thr_list = [t for t in thresholds if t >= ps["min_eff"]] + ([ps["min_eff"]] if ps["min_eff"] < thresholds[-1] else [])
+        p2, spent = _greedy_pass(cells, fp, recency, pu_left, max_requests - len(plan), thr_list, max_cells,
+                                 ps, cov, spent)
+        for p in p2:
+            p["region"] = ps["id"]
+        plan += p2
+    return plan, cov
+
+
+def _greedy_pass(cells, fp, recency, pu_left, max_requests, thresholds, max_cells, ps, cov, spent):
+    plan = []
     sizes = [(h, w) for h in range(1, max_cells + 1) for w in range(1, max_cells + 1)]
+    cur_w = ps["weight"]
+    wgt = np.maximum(cur_w, 0.5 * (cells.sea > 0))
     while len(plan) < max_requests:
         best = None
         for thr in thresholds:
-            for a, f in enumerate(fp):
-                val = cells.sea * np.minimum(f, 1.0 - cov).clip(0)
+            for a in ps["acqs"]:
+                f = fp[a]
+                free = np.minimum(f, 1.0 - cov).clip(0)
+                val = cells.sea * free * wgt
+                cur = cells.sea * free * cur_w
+                if cur.sum() <= 1e-6:
+                    continue
                 for h, w in sizes:
                     if h > cells.ny or w > cells.nx:
                         continue
                     sums = _rect_sums(val, h, w)
+                    sums = np.where(_rect_sums(cur, h, w) > 0.05, sums, 0.0)
                     if sums.max() <= 0:
                         continue
                     # px of a rect depends on latitude: check the widest (southern) row of the grid
@@ -194,7 +254,7 @@ def greedy_plan(cells: Cells, fp: list[np.ndarray], recency: list[float], pu_lef
         spent += cost
         plan.append({"acq_index": a, "j": j, "i": i, "h": h, "w": w, "est_pu": cost,
                      "value_cells": round(value, 3), "efficiency": round(eff, 3)})
-    return plan, cov
+    return plan, spent
 
 
 def confidence(d: dict) -> str:
@@ -311,12 +371,12 @@ def holes_features(cells: Cells, reason: np.ndarray) -> list[dict]:
                 i += 1
                 continue
             k = i
-            while k + 1 < cells.nx and reason[j, k + 1] == r:
+            while k + 1 < cells.nx and reason[j, k + 1] == r and cells.region[j, k + 1] == cells.region[j, i]:
                 k += 1
             w, s, e, n = cells.bounds(j, i, 1, k - i + 1)
             km2 = sum(cells.area_km2(j) * cells.sea[j, x] for x in range(i, k + 1))
             feats.append({"type": "Feature", "geometry": _poly(w, s, e, n),
-                          "properties": {"reason": r, "sea_km2_approx": round(km2, 1)}})
+                          "properties": {"reason": r, "region": cells.region[j, i], "sea_km2_approx": round(km2, 1)}})
             i = k + 1
     return feats
 
@@ -339,26 +399,46 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                "min_length_m": MIN_LENGTH_M, "v1_cfg": V1_CFG_40M, "subregions": SUBREGIONS,
                "hole_reasons": HOLE_REASON, "acquisitions": [], "plan": {}, "results": [], "errors": []}
     log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → 使える {bud['pu_left']} PU")
-    w, s, e, n = REGION
-    summary["region"] = REGION
-    try:
-        feats = client.catalog([w, s, e, n], now - timedelta(days=lookback), now)
-    except cdse.CredentialError:
-        raise
-    except cdse.CDSEError as ex:
-        summary["errors"].append({"stage": "catalog", "error": str(ex)[:300]})
-        feats = []
-    by_id = {f.get("id"): f for f in feats}
+    summary["region"] = regions_bbox()
+    summary["regions"] = REGIONS
+    max_days = max([lookback] + [int(r.get("fallback_days") or 0) for r in REGIONS])
+    by_id = {}
+    for r in REGIONS:
+        try:
+            for f in client.catalog(list(r["bbox"]), now - timedelta(days=max_days), now):
+                by_id[f.get("id")] = f
+        except cdse.CredentialError:
+            raise
+        except cdse.CDSEError as ex:
+            summary["errors"].append({"stage": "catalog", "region": r["id"], "error": str(ex)[:300]})
+    feats = list(by_id.values())
     acqs = [a for a in cdse.acquisitions(feats)]
     cells = Cells()
     fp = [cells.footprint_share([(by_id.get(i) or {}).get("geometry") for i in a["ids"]]) for a in acqs]
     ages = [(now - a["time"]).total_seconds() / 86400 for a in acqs]
-    recency = [max(0.0, 1 - g / lookback) for g in ages]
-    for a, f in zip(acqs, fp):
+    recency = [max(0.0, 1 - g / max_days) for g in ages]
+    passes = []
+    for r in REGIONS:
+        fr = cells.frac[r["id"]] * (cells.sea_all > 0)
+        recent = [k for k, g in enumerate(ages) if g <= lookback]
+        share = lambda ks: max([float((np.minimum(fp[k], 1) * fr).sum() / max(fr.sum(), 1e-9)) for k in ks] or [0.0])
+        use, days = recent, lookback
+        if r.get("fallback_days") and share(recent) < 0.5:
+            use, days = [k for k, g in enumerate(ages) if g <= r["fallback_days"]], r["fallback_days"]
+        passes.append({"id": r["id"], "weight": cells.frac[r["id"]], "acqs": use, "min_eff": r["min_eff"], "days": days})
+    for k, (a, f) in enumerate(zip(acqs, fp)):
         summary["acquisitions"].append({**cp._acq_meta(a), "absolute_orbit": a.get("absolute_orbit"), "slices": len(a["ids"]),
-                                        "region_sea_share": round(float((f * cells.sea).sum() / cells.sea.sum()), 4)})
-    plan, cov = greedy_plan(cells, fp, recency, max(0.0, bud["pu_left"] - 2.0), max_requests=min(200, bud["requests_left"]))
-    any_fp = np.max(np.stack(fp), axis=0) if fp else np.zeros((cells.ny, cells.nx))
+                                        "age_days": round(ages[k], 2),
+                                        "region_sea_share": {r["id"]: round(float((f * cells.frac[r["id"]] * cells.sea).sum()
+                                                                                  / max((cells.frac[r["id"]] * cells.sea).sum(), 1e-9)), 4)
+                                                             for r in REGIONS}})
+    summary["passes"] = [{"id": p["id"], "days": p["days"], "acquisitions": [acqs[k]["acquired_utc"] for k in p["acqs"]]} for p in passes]
+    plan, cov = greedy_plan(cells, fp, recency, max(0.0, bud["pu_left"] - 2.0), max_requests=min(200, bud["requests_left"]),
+                            passes=passes)
+    any_fp = np.zeros((cells.ny, cells.nx))
+    for ps in passes:  # imaged within the region's own window
+        for k in ps["acqs"]:
+            any_fp = np.maximum(any_fp, fp[k] * (cells.frac[ps["id"]] > 0))
     sea_km2 = float(sum(cells.area_km2(j) * cells.sea[j].sum() for j in range(cells.ny)))
     plan_km2 = float(sum(cells.area_km2(j) * (cells.sea[j] * cov[j]).sum() for j in range(cells.ny)))
     seen_km2 = float(sum(cells.area_km2(j) * (cells.sea[j] * any_fp[j]).sum() for j in range(cells.ny)))
@@ -453,6 +533,28 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             else:
                 reason[j, i] = "no_scene"
     hf = holes_features(cells, reason)
+    per_region = {}
+    for rg in REGIONS:
+        fr = cells.frac[rg["id"]]
+        km = lambda arr: float(sum(cells.area_km2(j) * (cells.sea[j] * fr[j] * arr[j]).sum() for j in range(cells.ny)))
+        rs = [r for r in summary["results"] if fr[plan[r["request"]]["j"]:plan[r["request"]]["j"] + plan[r["request"]]["h"],
+                                                   plan[r["request"]]["i"]:plan[r["request"]]["i"] + plan[r["request"]]["w"]].sum() > 0]
+        w0, s0, e0, n0 = rg["bbox"]
+        cs = [c for c in cands if w0 <= c["lon"] <= e0 and s0 <= c["lat"] <= n0]
+        tot = km(np.ones_like(observed))
+        per_region[rg["id"]] = {
+            "name": rg["name"], "bbox": rg["bbox"], "sea_km2": round(tot),
+            "observed_sea_km2": round(km((observed >= 0.5).astype(float))),
+            "observed_share": round(km((observed >= 0.5).astype(float)) / tot, 3) if tot else None,
+            "imaged_in_window_share": round(km(np.minimum(any_fp, 1.0)) / tot, 3) if tot else None,
+            "window_days": next(p["days"] for p in passes if p["id"] == rg["id"]),
+            "acquisitions_used": sorted({r["acquired_utc"] for r in rs}),
+            "requests": len(rs), "pu": round(sum(r["pu"] for r in rs), 3),
+            "candidates": len(cs), "candidates_high": sum(1 for c in cs if c["confidence"] == "high"),
+            "candidates_medium": sum(1 for c in cs if c["confidence"] == "medium"),
+            "candidates_static": sum(1 for c in cs if c["static"]),
+            "candidates_near_coast": sum(1 for c in cs if c["near_coast"])}
+    summary["per_region"] = per_region
     obs_km2 = float(sum(cells.area_km2(j) * (cells.sea[j] * (observed[j] >= 0.5)).sum() for j in range(cells.ny)))
     hole_km2 = {r: round(sum(f["properties"]["sea_km2_approx"] for f in hf if f["properties"]["reason"] == r)) for r in HOLE_REASON}
     by_sub = {}
@@ -501,10 +603,16 @@ def report(s: dict, client) -> str:
          f"実際に見た {s.get('coverage', {}).get('observed_sea_km2')} km²、穴 {s.get('coverage', {}).get('holes_sea_km2')}",
          "撮影（カタログ）:"]
     for a in s["acquisitions"]:
-        L.append(f"  {a['acquired_utc']} {a.get('platform')} {a.get('orbit_direction')} 軌道 {a.get('relative_orbit')} 範囲内の海の {a['region_sea_share']}")
+        L.append(f"  {a['acquired_utc']} {a.get('platform')} {a.get('orbit_direction')} 軌道 {a.get('relative_orbit')} 範囲別の海の被覆 "
+                 + json.dumps({k: v for k, v in a['region_sea_share'].items() if v}, ensure_ascii=False))
     for r in s["results"]:
         L.append(f"#{r['request']} {r['acquired_utc']} {r['bbox']} PU {r['pu']} 有効 {r['valid_fraction']} VV {r['vv_median_db']} "
                  f"v1 {r['v1']['candidates']}（80 m 以上 {r['v1']['large_kept']}、{r['v1']['per_1000km2']}/1000km²）v2 {r['v2']['candidates']}")
+    for rid, v in (s.get("per_region") or {}).items():
+        L.append(f"[{rid}] {v['name']}：海 {v['sea_km2']} km²、見た {v['observed_sea_km2']}（{v['observed_share']}）、"
+                 f"窓 {v['window_days']} 日の撮影の被覆 {v['imaged_in_window_share']}、撮影 {v['acquisitions_used']}、"
+                 f"{v['requests']} 件 {v['pu']} PU、候補 {v['candidates']}（high {v['candidates_high']}・medium {v['candidates_medium']}"
+                 f"・固定物 {v['candidates_static']}・沿岸 {v['candidates_near_coast']}）")
     L.append("候補（範囲別）: " + json.dumps(s.get("candidates", {}), ensure_ascii=False))
     for e in s["errors"]:
         L.append("エラー: " + json.dumps(e, ensure_ascii=False, default=str))

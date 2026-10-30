@@ -141,12 +141,13 @@ class RawModeTest(unittest.TestCase):
 @unittest.skipUnless(np is not None, "numpy not installed")
 class WideModeTest(unittest.TestCase):
     def setUp(self):
-        self._saved = (wide.REGION, wide.PIXEL_M, wide.MIN_LENGTH_M)
+        self._saved = (wide.REGION, wide.PIXEL_M, wide.MIN_LENGTH_M, wide.REGIONS)
         wide.REGION = (124.0, 25.0, 124.8, 25.6)   # 4 x 3 cells
+        wide.REGIONS = [{"id": "T", "name": "t", "bbox": (124.0, 25.0, 124.8, 25.6), "min_eff": 0.4}]
         wide.PIXEL_M = 400.0                        # 0.2 deg = about 56 px: small images
 
     def tearDown(self):
-        wide.REGION, wide.PIXEL_M, wide.MIN_LENGTH_M = self._saved
+        wide.REGION, wide.PIXEL_M, wide.MIN_LENGTH_M, wide.REGIONS = self._saved
 
     def test_plan_covers_footprint_and_reports_holes(self):
         with tempfile.TemporaryDirectory() as d:
@@ -215,7 +216,21 @@ class WideModeTest(unittest.TestCase):
         self.assertEqual(wide.confidence({"contrast_vv_db": 12, "vh_ratio_db": 7, "pixels": 5}), "high")
         self.assertEqual(wide.confidence({"contrast_vv_db": 12, "vh_ratio_db": 7, "pixels": 5, "edge": True}), "medium")
         self.assertEqual(wide.confidence({"contrast_vv_db": 3, "vh_ratio_db": 3, "pixels": 3}), "low")
-        self.assertEqual(wide.subregion(124.0, 24.5), "SAKI")
+        self.assertEqual(wide.subregion(124.5, 24.5), "SAKI")
+        self.assertEqual(wide.subregion(123.6, 25.8), "SENKAKU")
+        self.assertEqual(wide.subregion(122.5, 22.0), "TWE")
+
+    def test_priority_senkaku_first(self):
+        wide.REGIONS, wide.REGION = self._saved[3], None
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            c = Fake(["2026-10-28T09:50:00Z"])  # footprint around each catalog bbox: every region imaged
+            s = op.run_mode(args(tmp, "wide", max_pu=2.0 + 0.3, dry_run=True), client=c, overpass=overpass, now=NOW,
+                            pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            items = s["plan"]["items"]
+            self.assertTrue(items)
+            self.assertEqual(items[0]["region"], "SENKAKU")
+            self.assertIn("SENKAKU", s["per_region"])
         self.assertEqual(wide.subregion(123.0, 30.0), "ECS-N")
 
 
