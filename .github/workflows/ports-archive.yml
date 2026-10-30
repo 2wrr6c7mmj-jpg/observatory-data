@@ -19,8 +19,11 @@ env:
   # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、別枠 300 PU。1 回目（SWS・MIS、165.9 PU）の残り 134 PU を SUB・FCR・WDY に見込みの比で分ける
   PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
   # probe/ports-baseline-fill-*: 基準の不足した軌道だけ、さかのぼり 24 か月で 24 撮影まで（この実行 300 PU）
-  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
-  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || '800' }}
+  # probe/ports-baseline-oct-*: 上限 9,995 への引き上げ分（港 +550 PU）。QGZ 69・171 を 24 枚に、優先 2 の港、造船所の主軌道（この順）
+  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
+  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || '800' }}
+  # 合計ガード：10 月の上限 9,995（ユーザー指示）、湛江の 10-31 の毎日の実行の分として最低 50 PU を残す。港の上限 4,350
+  GUARD_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--cap 4350 --global-cap 9995 --global-margin 50' || '--cap 4000' }}
   RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
@@ -101,11 +104,11 @@ jobs:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
-          python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" --cap 4000 --usage "$RUNNER_TEMP"/usage/*.csv \
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" $GUARD_ARGS --usage "$RUNNER_TEMP"/usage/*.csv \
             --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
           echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
       - name: OSM land masks (missing only)
-        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port SYL SLP QGZ ZDH XSN LSN SWS || true
+        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || true
       - name: Baselines
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
