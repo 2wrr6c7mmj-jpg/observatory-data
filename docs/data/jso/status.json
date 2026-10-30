@@ -1,5 +1,5 @@
 {
- "built_utc": "2026-10-30T02:22:45Z",
+ "built_utc": "2026-10-30T06:26:18Z",
  "releases": 1564,
  "first_release": "2007-07-04",
  "last_release": "2026-10-27",
@@ -30,5 +30,5 @@
   "hull-match": 83
  },
  "context_window_days": 14,
- "with_mnd_counts": 473
+ "with_mnd_counts": 482
 }
