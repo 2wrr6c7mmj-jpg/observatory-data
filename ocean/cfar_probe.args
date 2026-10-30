@@ -1,1 +1,1 @@
---mode raw --max-pu 600 --pu-per-min 100
+--mode raw --max-pu 150 --pu-per-min 100
