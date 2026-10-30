@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大規模演習のイベントスタディ｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 5</div>
+<h1>大規模演習のイベントスタディ<span class="badge">試作</span></h1>
+<p class="lead">2022年11月以降の大規模演習の初日を0日目にそろえ、その前30日から後10日までの各指標を重ねます。演習の前に、ふだんと違う動きが共通して見られるかを確かめるためのものです。</p>
+<p class="note"><b>事例は数件しかありません。</b>この図から「前兆がある」「前兆がない」と言い切ることはできません。1事例を除くと結果がどう変わるか、演習と関係のない日を起点にした場合（偽の起点）とどう違うかを並べています。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>演習の0日目に向けて各指標が上がっていくのか、それとも当日に急に跳ねるのか。</li>
+<li>直前7日（−7〜−1日）の水準が、その前（−30〜−8日）と比べて高いか。それが、偶然の日を起点にした場合の分布のどこにあるか。</li>
+</ul>
+
+<h2>図</h2>
+<div class="controls">
+<label>指標 <select id="metric"></select></label>
+<label>1事例を除く <select id="loo"><option value="">除かない</option></select></label>
+<label><input type="checkbox" id="each" checked> 各事例の線を表示</label>
+</div>
+<div id="chart"></div>
+<h3>直前の上がり方（−7〜−1日の中央値 ÷ −30〜−8日の中央値）</h3>
+<div id="ratio"></div>
+<h3>1事例ずつ除いた結果</h3>
+<div id="loot"></div>
+
+<h2>対象とした演習</h2>
+<div id="evs"></div>
+
+<h2>手法</h2>
+<ul>
+<li><b>0日目</b>：演習の開始日を含む最初の日報（日報は前日 06:00〜当日 06:00 UTC+8 の集計なので、開始日の<b>翌日付</b>の日報）。開始が早朝の場合は1日ずれることがあります。</li>
+<li><b>重ね方</b>：−30〜+10日の各日について、事例の値の中央値と最小〜最大を描きます。null・日報なしは除きます。</li>
+<li><b>直前の比</b>：(−7〜−1日の中央値＋0.5) ÷ (−30〜−8日の中央値＋0.5)。値が4日・12日以上ある事例だけ。</li>
+<li><b>偽の起点</b>：どの演習の0日目からも45日以上離れたすべての日を0日目とみなして同じ比を求め、その分布（5%・50%・95%）と、演習の比の中央値がその分布の何%点にあたるかを示します。</li>
+<li><b>1事例を除く</b>：各事例を除いて中央値の線と比の中央値を計算し直し、0日目より前で中央値の線が最大どれだけ動くかを示します。</li>
+<li><b>演習の選び方</b>：開始日を公開情報で確かめられたものだけを入れ、出典の URL をデータ（<a href="https://github.com/2wrr6c7mmj-jpg/observatory-data/blob/main/analysis/exercises.json">analysis/exercises.json</a>、ページの元データ events.json）に残しています。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>事例が少なく、演習の規模・形式（名称の有無、発表の有無、期間）がそろっていません。中央値は1件で大きく動きます。</li>
+<li>演習期間中、国防部は日報とは別に臨時の発表を出し、計上範囲が異なる数を示すことがあります。ここで使うのは日報だけです。</li>
+<li>公務船は記載が 2024年5月以降で、古い事例は欠けます。中間線越え等も null の日があり、事例によって使える日数が違います（<a href="../gaps/">1</a>）。</li>
+<li>「前兆」の有無は、ここで見ている4指標の、日単位の公表値についてだけの話です。衛星画像・通信・政治日程などの他の情報は含みません。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('events.json');
+  const sel = document.getElementById('metric'), loo = document.getElementById('loo'), each = document.getElementById('each');
+  for (const [m, v] of Object.entries(D.metrics)) sel.appendChild(new Option(v.label, m));
+  D.events.forEach((e, i) => loo.appendChild(new Option(e.name, i)));
+  const cols = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s7'].map(P.css);
+  const med = arr => { const a = arr.filter(v => v !== null).sort((x, y) => x - y); if (a.length < (D.min_cases || 3)) return null; const m = a.length >> 1; return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
+  const draw = () => {
+    const M = D.metrics[sel.value];
+    const keep = D.events.map((_, i) => loo.value === '' || +loo.value !== i);
+    const mm = M.rel.map((_, j) => med(M.matrix.filter((_, i) => keep[i]).map(r => r[j])));
+    const lo = M.rel.map((_, j) => { const a = M.matrix.filter((_, i) => keep[i]).map(r => r[j]).filter(v => v !== null); return a.length ? Math.min(...a) : null; });
+    const hi = M.rel.map((_, j) => { const a = M.matrix.filter((_, i) => keep[i]).map(r => r[j]).filter(v => v !== null); return a.length ? Math.max(...a) : null; });
+    const series = [{kind: 'band', color: P.css('--band'), data: M.rel.map((k, j) => ({x: k, y0: lo[j], y1: hi[j]}))}];
+    const legend = [{color: P.css('--band'), label: '最小〜最大'}, {color: P.css('--ink'), label: '中央値', line: true}];
+    if (each.checked) D.events.forEach((e, i) => { if (!keep[i]) return;
+      series.push({kind: 'line', color: cols[i], width: 1, dash: '3 2', data: M.rel.map((k, j) => ({x: k, y: M.matrix[i][j]}))});
+      legend.push({color: cols[i], label: e.name, line: true}); });
+    if (loo.value !== '') series.push({kind: 'line', color: P.css('--muted'), width: 1.5, dash: '6 3', data: M.rel.map((k, j) => ({x: k, y: M.median[j]}))}), legend.push({color: P.css('--muted'), label: '全事例の中央値', line: true});
+    series.push({kind: 'line', color: P.css('--ink'), width: 2.5, data: M.rel.map((k, j) => ({x: k, y: mm[j]}))});
+    const c = document.getElementById('chart'); c.innerHTML = '';
+    P.chart(c, {
+      height: 320, legend, series, ylabel: M.label,
+      vlines: [{x: 0, label: '0日目', color: P.css('--crit'), dash: 'none'}, {x: -7, label: '−7', dash: '2 3'}],
+      xticks: () => M.rel.filter(k => k % 5 === 0).map(v => ({v, label: (v > 0 ? '+' : '') + v})),
+      tip: k => { const j = M.rel.indexOf(k);
+        return `<b>${k > 0 ? '+' : ''}${k} 日目</b><br>中央値 ${P.fmt(mm[j])}（${P.fmt(lo[j])}〜${P.fmt(hi[j])}）<br>` +
+          D.events.map((e, i) => keep[i] ? `${P.esc(e.name)}：${P.fmt(M.matrix[i][j])}` : '').filter(Boolean).join('<br>'); },
+      caption: '横軸は0日目からの日数。破線は各事例。',
+    });
+    const R = document.getElementById('ratio'); R.innerHTML = '';
+    const pl = M.placebo;
+    P.table(R, ['', '直前の比'], [
+      ...D.events.map((e, i) => [P.esc(e.name), P.fmt(M.pre_ratio[i], 2)]),
+      [`<b>演習の中央値</b>（使えた事例 ${M.n_cases ?? '—'} 件。${D.min_cases || 3} 件未満は「—」）`, `<b>${P.fmt(M.median_pre_ratio, 2)}</b>`],
+      [`偽の起点 ${pl.n} 日の分布（5% / 50% / 95%）`, `${P.fmt(pl.q05, 2)} / ${P.fmt(pl.q50, 2)} / ${P.fmt(pl.q95, 2)}`],
+      ['演習の中央値は偽の起点の分布の', pl.percentile_of_observed === null ? '—' : `${Math.round(pl.percentile_of_observed * 100)}% 点`],
+    ], ['', 'n']);
+    const L = document.getElementById('loot'); L.innerHTML = '';
+    P.table(L, ['除いた事例', '0日目より前の中央値の最大の動き', '直前の比の中央値'],
+      M.loo.map(x => [P.esc(D.events.find(e => e.id === x.excluded).name), P.fmt(x.max_abs_diff_pre, 1), P.fmt(x.median_pre_ratio, 2)]), ['', 'n', 'n']);
+  };
+  for (const s of [sel, loo, each]) s.addEventListener('change', draw);
+  draw();
+  P.table(document.getElementById('evs'), ['演習', '期間', '0日目の日報', '出典'],
+    D.events.map(e => [P.esc(e.name) + `<br><span class="meta">${P.esc(e.name_en)}</span>`, `${e.start} 〜 ${e.end}`, e.day0_report,
+      e.sources.map(u => `<a href="${P.esc(u)}">${P.esc(new URL(u).hostname)}</a>`).join('<br>')]));
+  document.getElementById('evs').appendChild(P.h('p', {class: 'meta'}, `日付の確認：${P.esc(D.checked_utc || '')}。${P.esc(D.exercise_note || '')}`));
+  P.provenance(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

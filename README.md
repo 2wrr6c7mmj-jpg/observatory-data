@@ -23,6 +23,14 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 
 各データの定義、情報源の評価、定義変更の履歴、限界は `meta.json` に書いています。
 
+## 分析の試作
+
+[docs/proto/](docs/proto/index.html)（Pages では `proto/`）に、台湾国防部の日報を使った分析の試作を置いています（収集の穴、平常帯、変化点、艦艇の持続度、大規模演習の前後）。計算は `analysis/proto.py`（標準ライブラリのみ）で、`proto.yml` が収集の後に `docs/proto/data/` だけを書き換えます。演習の日付と出典は `analysis/exercises.json` にあります。
+
+```sh
+python -m analysis.proto   # docs/proto/data/*.json を作り直す
+```
+
 ## 記録の原則
 
 - 時刻は UTC で書き、公表・対象期間・取得の時刻を区別する

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>艦艇の持続度と中間線越えの割合｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 4</div>
+<h1>艦艇の持続度と中間線越えの割合<span class="badge">試作</span></h1>
+<p class="lead">艦艇は一度出ると数日とどまります。「多い日」が何日続くのか、それが偶然の並びより長いのかを示します。あわせて、軍機のうち中間線越え等に数えられた割合を週ごとに、信頼区間つきで示します。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>艦艇数が「その時点の過去1年の上位10%」を超えた日の連続日数の分布と、いま続いている日数。</li>
+<li>多い日が独立に起きると仮定した場合の分布（幾何分布）との比較。長い連続が仮定より多ければ、まとまった展開（滞留）が起きていることを示します。</li>
+<li>中間線越え等の機数 ÷ 軍機の機数の週ごとの割合と、その 95% Wilson 信頼区間。</li>
+</ul>
+
+<h2>艦艇の「多い日」の連続</h2>
+<div class="kpis" id="kpis"></div>
+<div id="hist"></div>
+<div id="runs"></div>
+<details><summary>長い連続の一覧（3日以上）</summary><div id="runlist"></div></details>
+
+<h2>中間線越え等の割合（週ごと）</h2>
+<div class="controls"><label>期間 <select id="range"><option value="0">全期間</option><option value="52">直近52週</option></select></label></div>
+<div id="share"></div>
+
+<h2>手法</h2>
+<ul>
+<li><b>多い日</b>：その日を含まない過去365日の艦艇数（値のある日が180日以上）の90%分位点を<b>超えた</b>日（同じ値は含めない）。基準が時期とともに動くので、全体の水準が上がった時期でも「その時点で多い」日を拾います。</li>
+<li><b>連続</b>：暦日で続いた多い日の数。null または日報のない日で連続を切ります（その日は数えない）。</li>
+<li><b>独立の場合の期待</b>：多い日の割合を p、連続の数を R としたとき、長さ L の連続の期待数 R·(1−p)·p<sup>L−1</sup>。あわせて「多い日の翌日も多い日である割合」を示します（独立なら p に近くなる）。</li>
+<li><b>割合</b>：週ごとに、中間線越え等と軍機の両方が記載された日だけを合計し、k/n と Wilson の 95% 区間を求めます。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>日報の艦艇数は「その時点で台湾周辺にいた数」で、同じ艦が翌日も数えられているのか、入れ替わったのかは分かりません。持続度は「同じ艦がとどまった」ことの証拠ではありません。</li>
+<li>中間線越え等が null の日（越えなしとみられる日）を除くので、割合は高めに出ます。null の多さは時期によって違います（<a href="../gaps/">1</a>）。両方が記載された日がない週は描いていません。</li>
+<li>1機ずつが独立に越えるという二項分布の仮定は成り立ちません（編隊でまとまって動く）。Wilson の区間は実際の不確かさより狭いと考えてください。</li>
+<li>「中間線越え等」は、中間線を越えた機と北部・中部・西南・東部の空域に入った機を合わせた数で、書式により含まれる範囲が少し違います。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('persistence.json');
+  const R = D.runs;
+  const kp = document.getElementById('kpis');
+  const kpi = (v, s) => kp.appendChild(P.h('div', {class:'kpi'}, `<b>${v}</b><span>${s}</span>`));
+  kpi(R.current_run + ' 日', `いま続いている連続（${R.last_day} 時点、値 ${P.fmt(R.last_value)}・基準 ${P.fmt(R.last_threshold)} 隻）`);
+  kpi(P.fmt(R.share_above * 100, 1) + '%', '多い日の割合 p');
+  kpi(P.fmt(R.p_next_given_above * 100, 0) + '%', '多い日の翌日も多い日である割合');
+  kpi(Math.max(...R.runs.map(r => r.length)) + ' 日', '最長の連続');
+  const maxL = Math.max(...Object.keys(R.histogram).map(Number));
+  const Ls = Array.from({length: maxL}, (_, i) => i + 1);
+  P.chart(document.getElementById('hist'), {
+    height: 220, bars: true, barWidth: 1, xmin: 1, xmax: maxL,
+    xticks: () => Ls.map(v => ({v, label: v + '日'})), ylabel: '連続の数',
+    legend: [{color: P.css('--s1'), label: '実際の連続の数'}, {color: P.css('--s4'), label: '独立と仮定した場合の期待数'}],
+    series: [
+      {kind: 'bars', color: P.css('--s1'), offset: 0, data: Ls.map(L => ({x: L, y: R.histogram[L] || 0}))},
+      {kind: 'bars', color: P.css('--s4'), offset: 1, data: Ls.map(L => ({x: L, y: R.independent_expectation[L] || 0}))},
+    ],
+    tip: L => `<b>${L} 日続いた連続</b><br>実際 ${R.histogram[L] || 0} 回<br>独立なら ${P.fmt(R.independent_expectation[L] || 0, 2)} 回`,
+  });
+  const days = R.days.filter(d => d.th !== null);
+  const byx = new Map(days.map(d => [P.t(d.date), d]));
+  P.chart(document.getElementById('runs'), {
+    height: 230, legend: [{color: P.css('--muted'), label: '艦艇数'}, {color: P.css('--s2'), label: '多い日'}, {color: P.css('--s1'), label: '基準（過去365日の90%分位点）', line: true}],
+    series: [
+      {kind: 'step', color: P.css('--s1'), width: 1.5, data: days.map(d => ({x: P.t(d.date), y: d.th}))},
+      {kind: 'dots', color: P.css('--muted'), r: 1.5, data: days.filter(d => !d.above).map(d => ({x: P.t(d.date), y: d.y}))},
+      {kind: 'dots', color: P.css('--s2'), r: 2.6, data: days.filter(d => d.above).map(d => ({x: P.t(d.date), y: d.y}))},
+    ],
+    tip: x => { const d = byx.get(x); return d ? `<b>${d.date}</b><br>艦艇 ${P.fmt(d.y)}（基準 ${P.fmt(d.th)}）${d.above ? '<br>多い日' : ''}` : ''; },
+  });
+  P.table(document.getElementById('runlist'), ['始まり', '日数', '終わり方'],
+    R.runs.filter(r => r.length >= 3).sort((a, b) => b.length - a.length).map(r => [r.start, r.length, {below: '基準以下に戻った', missing: '欠測で切れた', ongoing: '継続中'}[r.ended_by]]), ['', 'n', '']);
+  const rng = document.getElementById('range');
+  const drawShare = () => {
+    let w = D.share.weeks.filter(x => x.n > 0);
+    if (+rng.value) w = w.slice(-rng.value);
+    const byw = new Map(w.map(x => [P.t(x.week), x]));
+    const el = document.getElementById('share'); el.innerHTML = '';
+    P.chart(el, {
+      height: 260, ymin: 0, ymax: 1, yfmt: v => Math.round(v * 100) + '%',
+      legend: [{color: P.css('--band'), label: '95% Wilson 区間'}, {color: P.css('--s1'), label: '週の割合', line: true}],
+      series: [
+        {kind: 'band', color: P.css('--band'), data: w.map(x => ({x: P.t(x.week), y0: x.lo, y1: x.hi}))},
+        {kind: 'line', color: P.css('--s1'), width: 1.8, gap: 8 * P.DAY, data: w.map(x => ({x: P.t(x.week), y: x.p}))},
+      ],
+      tip: x => { const s = byw.get(x); return s ? `<b>${s.week} の週</b><br>${s.k} / ${s.n} 機（両方記載の日 ${s.days}）<br>${P.fmt(s.p * 100, 0)}%（${P.fmt(s.lo * 100, 0)}〜${P.fmt(s.hi * 100, 0)}%）` : ''; },
+      caption: '中間線越え等と軍機の両方が記載された日だけの合計。区間は機ごとの独立を仮定しているため実際より狭い。',
+    });
+  };
+  rng.addEventListener('change', drawShare);
+  drawShare();
+  P.provenance(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>平常帯と起こりにくさ｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 2</div>
+<h1>平常帯と起こりにくさ<span class="badge">試作</span></h1>
+<p class="lead">日々の機数・艦艇数・公務船・中間線越え等について、曜日と季節の癖を除いた「平常の幅」を引き、その幅を上に外れた日と、その件数が平常の下でどれほど起こりにくいかを示します。</p>
+<p class="note"><b>これは警報ではなく目安です。</b>「およそ N 日に1回」は下に書いた統計モデルの仮定の下での数字で、実際の頻度や意図を表すものではありません。1,400日ほどを毎日見ているので、「およそ 1,000 日に1回」の日は偶然でも1〜2日は現れます。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>その時点の直近の水準・曜日・季節から見て、ふだんより多かった日（帯の上に出た点）。</li>
+<li>その日の件数がどのくらい珍しいか（負の二項分布による上側確率を「およそ N 日に1回」に直したもの）。</li>
+</ul>
+
+<h2>図</h2>
+<div class="controls">
+<label>指標 <select id="metric"></select></label>
+<label>期間 <select id="range"><option value="365">直近1年</option><option value="0">全期間</option><option value="120">直近120日</option></select></label>
+<label>縦軸 <select id="clip"><option value="1">極端な日で切る</option><option value="0">切らない</option></select></label>
+</div>
+<div class="kpis" id="kpis"></div>
+<div id="chart"></div>
+<h3>平常を外れた日（起こりにくい順、上位20）</h3>
+<p class="note" id="calib"></p>
+<div id="top"></div>
+<h3>曜日と月の効果（倍率。曜日は日報の報告日の曜日）</h3>
+<div id="eff"></div>
+
+<h2>手法</h2>
+<ol>
+<li><b>尺度</b>：件数 y を log(1+y) に直してから計算します。件数が少ない時期と多い時期で、ばらつきの大きさをそろえるためです（件数に戻すと幅は上下非対称になります）。</li>
+<li><b>水準</b>：その日を含まない過去56日の値の中央値（値が20日以上ある場合のみ）。過去だけを使うので、その日の値や演習の影響が自分の平常に入りません。</li>
+<li><b>曜日・季節</b>：水準からの差の中央値を曜日ごとに求めて引き、次に月ごとの中央値を求めます（それぞれ中央値で中心化）。表では倍率で示します。月の効果は全期間（約4年）から求めるため、ここだけは後の年の情報も使っています。STL の考え方を、外れ値に強い中央値で置き換えたものです。</li>
+<li><b>平常値と幅</b>：平常値 ＝ 水準＋曜日効果＋月効果（log の上で足し、件数に戻す）。幅は、過去56日の残差の MAD（中央絶対偏差、×1.4826 で標準偏差に換算、最小0.15）の±3倍。上限を超えた日を「平常を外れた日」としました。</li>
+<li><b>起こりにくさ</b>：平均＝平常値の負の二項分布で、その日の件数以上になる確率 p を求め、1/p を「およそ N 日に1回」と表示します。分布の形（size、小さいほど裾が重い）は、その日より前の365日の「平常値と実際の値」の組から最尤で選び、30日ごとに当て直します。</li>
+<li><b>当てはまりの確認</b>：上の「p&lt;0.01 の日の割合」は、モデルが正しければ約1%になるはずの値です。これより大きければ、表示する N は実際より大きめ（珍しく見えすぎ）です。</li>
+<li>null（記載なし）と日報がない日は計算に使わず、0 とはみなしません。</li>
+</ol>
+
+<h2>限界</h2>
+<ul>
+<li>過去56日の中央値を使うため、高い水準が数週間続くと平常の側が追いつき、外れが出にくくなります（持続については<a href="../persistence/">4</a>を参照）。</li>
+<li>中間線越え等・公務船は null が多い指標です。null の日の多くは「0 に近い日」とみられるので、記載のある日だけで作った平常は高めに出ます。公務船は記載の始まった 2024年5月以降だけが対象です。</li>
+<li>日々の値を互いに独立とみなしています。実際には多い日は続きやすく（<a href="../persistence/">4</a>）、また負の二項は裾の重さを十分に表せないため、N は大きめに出がちです。N は桁の目安として読んでください。</li>
+<li>日報は前日 06:00〜当日 06:00（UTC+8）の集計で、曜日は報告日の曜日です。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('baseline.json');
+  const sel = document.getElementById('metric'), rng = document.getElementById('range'), clip = document.getElementById('clip');
+  for (const [m, v] of Object.entries(D.metrics)) sel.appendChild(new Option(v.label, m));
+  const draw = () => {
+    const M = D.metrics[sel.value];
+    let days = M.days;
+    if (+rng.value) days = days.slice(-rng.value);
+    const byx = new Map(days.map(d => [P.t(d.date), d]));
+    const ys = days.map(d => d.y).filter(v => v !== null).sort((a, b) => a - b);
+    const q995 = ys[Math.floor(ys.length * 0.995)] || 1;
+    const ch = document.getElementById('chart'); ch.innerHTML = '';
+    const pts = days.map(d => ({x: P.t(d.date), y: d.y}));
+    P.chart(ch, {
+      height: 300, yclip: clip.value === '1' ? Math.ceil(q995 * 1.1) : null,
+      legend: [{color: P.css('--band'), label: '平常の幅（±3 MAD）'}, {color: P.css('--s1'), label: '平常値', line: true},
+               {color: P.css('--ink2'), label: '日々の値'}, {color: P.css('--s2'), label: '平常を外れた日'}],
+      series: [
+        {kind: 'band', color: P.css('--band'), data: days.map(d => ({x: P.t(d.date), y0: d.lo ?? null, y1: d.hi ?? null}))},
+        {kind: 'line', color: P.css('--s1'), width: 1.5, data: days.map(d => ({x: P.t(d.date), y: d.exp ?? null}))},
+        {kind: 'dots', color: P.css('--muted'), r: days.length > 400 ? 1.6 : 2.5, data: pts.filter(p => !byx.get(p.x).out)},
+        {kind: 'dots', color: P.css('--s2'), r: days.length > 400 ? 3 : 4, data: pts.filter(p => byx.get(p.x).out)},
+      ],
+      tip: x => { const d = byx.get(x); if (!d) return '';
+        return `<b>${d.date}</b><br>値 ${P.fmt(d.y)}（平常値 ${P.fmt(d.exp)}、上限 ${P.fmt(d.hi)}）` +
+          (d.p !== undefined ? `<br>この件数以上：${P.oneIn(d.p)}（p=${P.pfmt(d.p)}）` : '') + (d.out ? '<br><b>平常を外れた日</b>' : ''); },
+      caption: '点にカーソルを当てると、その日の平常値と起こりにくさが出ます。',
+    });
+    const last = M.days[M.days.length - 1];
+    const kp = document.getElementById('kpis'); kp.innerHTML = '';
+    const kpi = (v, s) => kp.appendChild(P.h('div', {class:'kpi'}, `<b>${v}</b><span>${s}</span>`));
+    kpi(M.n_out, `平常を外れた日（評価した ${M.n_evaluated} 日のうち）`);
+    kpi(P.fmt(last.y), `最新 ${last.date} の値（平常値 ${P.fmt(last.exp)}）`);
+    kpi(P.oneIn(last.p), '最新の日の件数以上になる頻度の目安');
+    const ev = M.days.filter(d => d.p !== undefined);
+    const share = 100 * ev.filter(d => d.p < 0.01).length / ev.length;
+    kpi(P.fmt(share, 1) + '%', 'p<0.01 の日の割合（モデルが正しければ約1%）');
+    document.getElementById('calib').innerHTML = (share > 1.2 ? `<b>この表の「およそ N 日に1回」は実際より大きめです。</b>` : '') +
+      `この指標で p&lt;0.01 の日は評価した ${ev.length.toLocaleString()} 日の ${P.fmt(share, 1)}% で、モデルどおりなら約1%のはずです` +
+      (share > 1.5 ? `（約${P.fmt(share, 1)}倍。珍しく見えすぎています）` : '') + `。N は桁の目安として読み、p は 0.0001 未満を「&lt;0.0001」とまとめています。`;
+    const top = M.days.filter(d => d.out).sort((a, b) => a.p - b.p).slice(0, 20);
+    const tb = document.getElementById('top'); tb.innerHTML = '';
+    P.table(tb, ['報告日', '値', '平常値', '上限', '起こりにくさの目安', 'p'],
+      top.map(d => [d.date, d.y, P.fmt(d.exp), P.fmt(d.hi), P.oneIn(d.p), P.pfmt(d.p)]), ['', 'n', 'n', 'n', '', 'n']);
+    const ef = document.getElementById('eff'); ef.innerHTML = '';
+    const wd = '月火水木金土日';
+    P.table(ef, ['', ...Array.from(wd)], [['曜日効果', ...Array.from(wd).map((_, i) => '×' + P.fmt(M.weekday_effect[i] ?? null, 2))]], ['', 'n', 'n', 'n', 'n', 'n', 'n', 'n']);
+    P.table(ef, ['', ...Array.from({length: 12}, (_, i) => (i + 1) + '月')], [['月効果', ...Array.from({length: 12}, (_, i) => (M.month_effect[i + 1] ? '×' + P.fmt(M.month_effect[i + 1], 2) : '—'))]], Array(13).fill('n'));
+  };
+  for (const s of [sel, rng, clip]) s.addEventListener('change', draw);
+  draw();
+  P.provenance(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>
