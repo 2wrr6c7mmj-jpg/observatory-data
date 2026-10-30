@@ -59,7 +59,10 @@ OCC_MIN_M = 30.0               # occupied samples in a section (after the runs) 
 RUN_GAP_M = 20.0
 RUN_MIN_M = 30.0
 BEAM_M = 18.0                  # rows abreast = depth / beam
-STRUCT_MIN_DAYS = 8            # the structure needs this many days with data at the sample
+STRUCT_MIN_DAYS = 8            # the structure needs this many days with data at the pixel
+WATER_FREQ_MIN = 0.25          # a pixel that was water on fewer of the clear days is fixed (structure, land)
+FAR_FROM_M = 65.0              # beyond three ships abreast
+FAR_WATER_MIN = 0.9            # the far pixels of a section on open water are water on at least this share of the days
 BLIND_STRUCT_M = 30.0          # structure this deep: the berth looked taken on every day (blind)
 CLOUD_SECTION = 0.3            # SCL cloud + shadow share of the section's pixels: flagged "cloud"
 CORE_MIN = 3
@@ -70,7 +73,7 @@ SCALE = s2.REFL_SCALE
 
 LABEL_FIELDS = [
     "site_id", "section_id", "date", "acquired_utc", "labels_version", "label_source", "status",
-    "occupied", "occ_len_m", "depth_m", "depth_max_m", "struct_m", "c",
+    "occupied", "occ_len_m", "depth_m", "depth_max_m", "struct_m", "far_water", "c",
     "ship_px", "core_px", "core_mode", "med_r", "med_g", "med_b", "med_nir", "hue_deg", "sat", "val",
     "contrast", "color_class", "cloud_share",
     "verified", "verified_occupied", "verified_c", "verified_color", "verified_by", "verified_note",
@@ -180,17 +183,31 @@ def s2_profiles(geom: quay.Geometry, nw: np.ndarray, valid_px: np.ndarray) -> li
     return out
 
 
-def structure(per_day: list[list[dict]], n_profiles: int) -> list[np.ndarray]:
-    """Per profile and sample: the minimum depth over the days with data (NaN with fewer than STRUCT_MIN_DAYS)."""
-    out = []
-    for pi in range(n_profiles):
-        d = np.stack([np.where(day[pi]["has"], day[pi]["depth"], np.nan) for day in per_day])
-        n = np.isfinite(d).sum(0)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", RuntimeWarning)
-            mn = np.nanmin(d, 0)
-        out.append(np.where(n >= STRUCT_MIN_DAYS, mn, np.nan))
-    return out
+def water_freq(nws: list[np.ndarray], valids: list[np.ndarray]) -> np.ndarray:
+    """Per pixel: the share of the clear days with data on which it was water (NaN with fewer than STRUCT_MIN_DAYS)."""
+    n = np.sum(valids, 0)
+    w = np.sum([v & ~nw for nw, v in zip(nws, valids)], 0)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(n >= STRUCT_MIN_DAYS, w / np.maximum(n, 1), np.nan)
+
+
+def structure(geom: quay.Geometry, freq: np.ndarray) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    """Per profile and sample: (the fixed part: metres from the water's edge of pixels that were rarely water,
+    water on fewer than WATER_FREQ_MIN of the days, without a break; the water share of the far pixels,
+    FAR_FROM_M and beyond, where no ship should be on most days). NaN where there are too few days."""
+    step = geom.cfg["depth_step_m"]
+    far_cols = geom.depth_offs >= FAR_FROM_M
+    st, far = [], []
+    for pr in geom.profiles:
+        f = freq[pr["drr"], pr["dcc"]]
+        v = pr["dvalid"] & np.isfinite(f)
+        with np.errstate(invalid="ignore"):
+            rare = v & (f < WATER_FREQ_MIN)
+        d = leading_depth(rare, geom.depth_offs, step)
+        st.append(np.where(np.isfinite(f[:, 0]), d, np.nan))
+        fv = np.where(v[:, far_cols], f[:, far_cols], np.nan)
+        far.append(fv)
+    return st, far
 
 
 def hsv(r: float, g: float, b: float) -> tuple[float, float, float]:
@@ -235,7 +252,8 @@ def hull_colour(refl: np.ndarray, nw: np.ndarray, pix: set) -> dict:
             "contrast": None if contrast is None else round(contrast, 2), "color_class": color_class(ss, contrast)}
 
 
-def label_day(geom: quay.Geometry, secs: list[dict], prof: list[dict], struct: list[np.ndarray], refl: np.ndarray,
+def label_day(geom: quay.Geometry, secs: list[dict], prof: list[dict], struct: list[np.ndarray], dry: list[np.ndarray],
+              refl: np.ndarray,
               scl: np.ndarray, nw: np.ndarray, site_id: str, date: str, acquired: str) -> list[dict]:
     """Automatic labels of one clear day, one row per section."""
     step = geom.cfg["step_m"]
@@ -266,8 +284,15 @@ def label_day(geom: quay.Geometry, secs: list[dict], prof: list[dict], struct: l
             warnings.simplefilter("ignore", RuntimeWarning)
             smed = float(np.nanmedian(st)) if np.isfinite(st).any() else None
         row["struct_m"] = None if smed is None else int(round(smed / 5.0) * 5)
+        fw = dry[pi][idx]
+        fwat = float(np.nanmedian(fw)) if np.isfinite(fw).any() else None
+        row["far_water"] = None if fwat is None else round(fwat, 2)
         if has.mean() < 0.5 or smed is None:
             row.update(status="nodata")
+            rows.append(row)
+            continue
+        if fwat is not None and fwat < FAR_WATER_MIN:
+            row.update(status="not_water")
             rows.append(row)
             continue
         status = "blind" if smed >= BLIND_STRUCT_M else "cloud" if (cshare or 0) > CLOUD_SECTION else "ok"
@@ -392,12 +417,16 @@ def settings() -> dict:
         "water": (f"その日の水の基準：陸マスクの水域で SCL＝6（水）、岸壁の帯（水際から 120 m＋50 m）を除いた画素（切り出し全体から取得時に求める）の B8 と可視（B2・B3・B4 の平均）の中央値と MAD。"
                   f"どちらかが基準より max({NW_MIN:g}, {NW_K:g}×MAD) 以上明るい画素を「水でない」とする"),
         "depth": ("quay-v1 と同じ法線で水際から 5〜120 m を 5 m おきに見て、水でない画素が途切れず続く長さ（m）。"
-                  f"岸壁・桟橋そのもの（線のずれを含む）は、晴れの日すべてのうちの最小値（データのある日が {STRUCT_MIN_DAYS} 日以上の点）とし（struct_m）、それを超えた分を船の奥行きとする"),
+                  f"画素ごとに晴れの日のうち水だった日の割合を数え（データのある日が {STRUCT_MIN_DAYS} 日以上の画素）、{WATER_FREQ_MIN:.0%} 未満の画素は動かないもの（岸壁・桟橋・陸。線のずれを含む）とする。"
+                  "水際から動かないものが途切れず続く長さを struct_m、その日の奥行きのうちそれを超えた分を船の奥行きとする。"
+                  f"水際から {FAR_FROM_M:g} m 以遠（3 隻横並びより外）の画素が晴れの日の {FAR_WATER_MIN:.0%} 未満でしか水でない区間（中央値、far_water）は、"
+                  "開けた水面に面していない（陸マスクの水域が実は陸・干潟・養殖池・工事中の埋立地など。status＝not_water、ラベルなし）"),
         "occupied": (f"超えた分が {OCC_EXCESS_M:g} m 以上の点を、{RUN_GAP_M:g} m 未満の切れ目をつなぎ {RUN_MIN_M:g} m 以上続く所だけ残し、"
                      f"区間の中で {OCC_MIN_M:g} m 以上あれば occupied＝1。depth_m＝その点の超えた分の中央値、depth_max_m＝最大（5 m 単位）"),
         "c": f"列数の目安：c＝clip(round(depth_m／{BEAM_M:g} m), 1, 3)、占有なしは 0（艦の幅を約 {BEAM_M:g} m と仮定。10 m 画素のため ±1 列の誤りがあり得る）",
         "status": {"ok": "ラベルあり", "cloud": f"区間の画素の SCL の雲・影が {CLOUD_SECTION:.0%} 超（ラベルは作るが疑わしい。白い船が雲とされることもある）",
-                   "blind": f"struct_m ≥ {BLIND_STRUCT_M:g} m：晴れの日すべてで水でない（常に船がいる・構造物）。占有を見分けられない",
+                   "blind": f"struct_m ≥ {BLIND_STRUCT_M:g} m：水際の画素が晴れの日の {1 - WATER_FREQ_MIN:.0%} 超で水でない（ほぼ常に船がいる・構造物）。占有を見分けられない",
+                   "not_water": f"far_water < {FAR_WATER_MIN:g}：沖側が開けた水面でない（陸マスクの水域が実際は陸・干潟・養殖池など。ラベルなし）",
                    "nodata": "区間の半分以上でデータなし"},
         "colour": (f"船の画素（struct から奥行きまで）のうち、上下左右も水でない画素を芯とする（{CORE_MIN} 個未満なら全部、core_mode＝all）。"
                    "芯の反射率の中央値 med_r（B4）・med_g（B3）・med_b（B2）・med_nir（B8）、その HSV（反射率 0〜0.3 を 0〜1、線形）、"
@@ -410,9 +439,12 @@ def settings() -> dict:
                "最も重なる stretch の db_line_m・横抱き・min/max、区間の cosφ と face_look"),
         "match": ("d_depth_m＝s1_depth_m−s2 の depth_m（両方占有のとき）。agree＝占有の有無が一致（1/0）。"
                   "時刻は S2 が 03:22 UTC ごろ、S1 が 10:41〜10:49 UTC ごろで、同じ日でも約 7.5 時間ずれる（dt_h）：入出港で船が違うことがある"),
+        "raw": ("取得した切り出し（岸壁の帯だけ残した npz：S2 の B2・B3・B4・B8・SCL と水の基準、S1 の VV・VH の dB）は probe ブランチ "
+                "probe/sat-s2-labels-ops3 の probe-raw/s2-labels/<地点>/ にだけ置く（main には入れない）。"
+                "python -m sat.s2_labels --from-raw <そのディレクトリ> で PU を使わずに作り直せる"),
         "limits": [
             "10 m 画素：幅 18 m 前後の艦は 1〜3 画素で、縁は水と混ざる。c は ±1 列ずれ得る（特に 1 と 2）",
-            "struct（最小値）は、晴れの日すべてで船がいた所では船を構造物とみなす（status＝blind）。晴れの日が少ない月の偏りもある",
+            f"struct は、晴れの日の {1 - WATER_FREQ_MIN:.0%} 超で船がいた所では船を構造物とみなす（status＝blind）。晴れの日は 16 日で季節に偏りがある",
             "水の基準は湾全体の 1 つの値：濁り・航跡・日の照り返しの差は見ていない",
             "色は水との混ざった画素を含み、彩度は高めに出やすい。L2A の大気補正の誤差もある。艦種や軍民の判定には使わない",
             "Sentinel-1 の撮影の一部は基準（bl-1、2026-05 以降）の期間に入っている（s1_in_sample＝baseline）：その撮影は基準の p10 に自分も入っている",
@@ -522,12 +554,13 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
             continue
         nw = not_water(refl, ref) & ~np.isin(scl, (0, s2.NODATA))
         valid_px = ~np.isin(scl, (0, s2.NODATA)) & keep
-        loaded.append((d, refl, scl, nw, s2_profiles(geom, nw, valid_px), ref))
+        loaded.append((d, refl, scl, nw, s2_profiles(geom, nw, valid_px), ref, valid_px))
     labels, match = [], []
     if loaded:
-        struct = structure([x[4] for x in loaded], len(geom.profiles))
-        for d, refl, scl, nw, prof, ref in loaded:
-            rows = label_day(geom, secs, prof, struct, refl, scl, nw, site["id"], d["date"], d["acquired_utc"])
+        freq = water_freq([x[3] for x in loaded], [x[6] for x in loaded])
+        struct, dry = structure(geom, freq)
+        for d, refl, scl, nw, prof, ref, _v in loaded:
+            rows = label_day(geom, secs, prof, struct, dry, refl, scl, nw, site["id"], d["date"], d["acquired_utc"])
             labels.extend(rows)
             a = s1_pick.get(d["date"])
             z = load_raw(raw, f"s1-{s2_stamp(a['acquired_utc'])}") if a else None
@@ -568,7 +601,7 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
     meta = {"generated_utc": cdse.iso(datetime.now(timezone.utc)), "site_id": site["id"], "method": settings(),
             "s2_days": [d["date"] for d, *_ in loaded],
             "s1_scenes": {k: (v or {}).get("acquired_utc") for k, v in s1_pick.items()},
-            "water_reference": {d["date"]: {k: round(v, 4) if isinstance(v, float) else v for k, v in ref.items()} for d, *_, ref in loaded},
+            "water_reference": {d["date"]: {k: round(v, 4) if isinstance(v, float) else v for k, v in ref.items()} for d, *_, ref, _v in loaded},
             "summary": summ["stats"],
             "files": {f"{site['id']}-s2-labels.csv": "区間×晴れの日の自動ラベル（自動・未確認。verified_* は人が確かめて埋める）",
                       f"{site['id']}-s2-s1-match.csv": "同じ区間×晴れの日の S2 ラベルと、近い S1 の撮影の岸壁の特徴の突き合わせ",
