@@ -33,7 +33,7 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 
 `pla-tracker` の出典：Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)（CC BY 4.0）。records.csv を 1 日 1 回取り込み、数値の列を整数にして取得時刻を付けています（値は変えていない）。同じ日に国防部の日報（`taiwan-mnd`）があればそちらを優先します。艦艇（ships_total）は 2026-03 下旬から公務船を含み、中間線越え（median_line_cross）は国防部の median_line_or_adiz より狭い量なので、`taiwan-mnd` の列にそのままつなげません（meta.json の precedence・fields）。ファイルは main での最初の実行で作られます。
 
-`sat` の出典：Contains modified Copernicus Sentinel data 2026（年は撮影年。meta.json の credit は自動で年が入るが、この README と docs/index.html・docs/sat/index.html の表記は手書きなので、撮影年が変わったら（2027 年の撮影が入ったら「2026-2027」に）直す）。Copernicus Data Space Ecosystem の Sentinel Hub Process API で σ0 の切り出しを取得し、このリポジトリが自動で数えています。陸マスクは © OpenStreetMap contributors（ODbL）。数は「候補数」で在泊艦数ではなく、艦種・国籍は分かりません。試行ページは [docs/sat/](docs/sat/index.html)（Pages では `sat/`）。
+`sat` の出典：Contains modified Copernicus Sentinel data 2026（年は撮影年。meta.json の credit は自動で年が入るが、この README と docs/index.html・docs/sat/index.html の表記は手書きなので、撮影年が変わったら（2027 年の撮影が入ったら「2026-2027」に）直す）。Copernicus Data Space Ecosystem の Sentinel Hub Process API で σ0 の切り出しを取得し、このリポジトリが自動で数えています。陸マスクと岸壁の数に使う桟橋・岸壁・海岸線の線（`sat/masks/`、`quay/*.geojson` の区間の線）は © OpenStreetMap contributors（ODbL 1.0）。数は「候補数」で在泊艦数ではなく、艦種・国籍は分かりません。試行ページは [docs/sat/](docs/sat/index.html)（Pages では `sat/`）。
 
 ## 取得の作法
 

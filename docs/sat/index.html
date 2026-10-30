@@ -62,15 +62,20 @@ small,.note{color:#555}
 <p class="trial"><b>試行（精度未測定）</b>：岸壁・桟橋に横付けされた船を、同じ相対軌道の「船のいない岸壁」の基準（過去約 6 か月の 10 パーセンタイル）との変化で数えます。数は<b>幅（最小〜最大）</b>で、正解データとの突き合わせはまだしていません。上の港内の候補数（CFAR）とは別の数え方で、足し合わせません。</p>
 <ul>
 <li>OSM の桟橋・海岸線に沿って 10 m おきに、水際から 0〜30 m の帯で ΔVV ≥ +6 dB かつ ΔVH ≥ +4 dB（今回の VV ≥ −10 dB）の点を占有とし、20 m 未満の切れ目をつなぎ 30 m 以上続く区間を占有区間とします。区間のどこかで ΔVV が 12 dB 以上あるものだけ数えます</li>
-<li>最小＝区間の数（60 m 以内の区間は同じ船の可能性があり 1 つに数える。ΔVV の断面に 3 dB 以上の谷があれば分ける）。最大＝区間長を最小艦長 60 m で割った数の合計＋横抱き（外側 40〜60 m も占有）の可能性。長さの目安＝区間長−20 m</li>
-<li>基準の期間の 1 割を超えて同じ場所に居た船は基準に含まれ、数えられません。艦種・国籍は分からず、民間船・作業船・荷役機械も入ります。軌道 84 の基準は 15 シーン（24 未満）で確度を一段下げています（4）</li>
+<li>最小＝区間の数（60 m 以内の区間は同じ船の可能性があり 1 つに数える。ΔVV の断面に 3 dB 以上の谷があれば分ける）。最大＝区間長を最小艦長 60 m で割った数の合計＋横抱き（外側 40〜60 m も占有）の可能性。長さの目安（未検証）＝区間長−20 m</li>
+<li><b>「最小〜最大」は信頼区間ではありません</b>。誤検出（荷役機械・作業船・建設中の構造物）と見落とし（常時占有・OSM に無い岸壁）があり、実数はこの幅の外にもあり得ます</li>
+<li>最小は 60 m 以内の区間を 1 つにまとめます。湛江の桟橋は両側の線の間隔の中央値が 60〜80 m なので、両側に並んだ 2 隻が 1 隻になりやすく、最小は実質「占有された桟橋のまとまりの数」に近い値です。最大は区間長を 60 m で割った上限で、長い岸壁では大きく出ます</li>
+<li>基準は 10 パーセンタイルなので、<b>基準期間の約 9 割以上同じ場所に居た船（または入れ替わりで常に埋まっていた岸壁）は数えられません</b>。基準の .json の「常時占有」の一覧は陸・構造物から 20 m 以内を除くため、横付けの帯（0〜30 m）はほぼ載りません。代わりに、内側の帯で基準の p10 が −8 dB を超える「数えられない区間」を下に示します</li>
+<li>閾値は湛江 v2 の 6 撮影（2026-10-02・10-08・10-14・10-26 の軌道 157、10-03・10-15 の軌道 84）で調整しました。<b>これらの撮影の数は調整に使った標本内の値で、基準の期間にも含まれます</b>（表の「標本」欄に「調整」）。精度の評価は 2026-10-27 以降の撮影（基準・調整のどちらにも使っていないもの）と光学画像で行います</li>
+<li>艦種・国籍は分からず、民間船・作業船・荷役機械も入ります。横抱きは「可能性」で確かめていません。軌道 84 の基準は 15 シーン（24 未満）で確度を一段下げています（4）</li>
 </ul>
+<p id="qblind" class="note">数えられない区間：読み込み中…（meta.json の quay.blind_stretches）</p>
 <p id="qempty" class="note">読み込み中…</p>
 <table id="qtbl" hidden>
-<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>相対軌道</th><th>占有数（最小〜最大）</th><th>A 軍港区画</th><th>B 水道</th><th>区間</th><th>横抱きの可能性</th><th>基準（シーン数）</th><th>確度</th></tr></thead>
+<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>相対軌道</th><th>占有数（最小〜最大）</th><th>A 軍港区画</th><th>B 水道</th><th>区間</th><th>横抱きの可能性</th><th>基準（シーン数）</th><th>確度</th><th>標本</th></tr></thead>
 <tbody></tbody>
 </table>
-<p class="note">変化カラー：R＝今回の VV、G・B＝同じ相対軌道の基準の VV（どちらも 3×3 平均、−22〜0 dB）。<b>赤＝今回の方が明るい（入港・新しい物）</b>、水色＝今回の方が暗い（出港）、灰＝変化なし。基準が「船のいない状態」なので水色はほとんど出ず、全体がわずかに赤みを帯びます。黄の線＝占有区間（水際から 15 m 沖に描画）、桃の線＝横抱きの可能性がある区間。</p>
+<p class="note">変化カラー：R＝今回の VV、G・B＝同じ相対軌道の基準の VV（どちらも 3×3 平均、−22〜0 dB）。<b>赤＝今回の方が明るい（入港・新しい物）</b>、水色＝今回の方が暗い（出港）、灰＝変化なし。基準が「船のいない状態」なので水色はほとんど出ず、全体がわずかに赤みを帯びます。黄の線＝占有区間（水際から 15 m 沖に描画）、桃の線＝横抱きの可能性がある区間、灰の点線＝その軌道で数えられない可能性が高い区間（quay/blind.geojson）。</p>
 <p id="qcaption" class="note"></p>
 <div id="qbox" style="position:relative;display:inline-block;max-width:100%"><img id="qimg" alt="選んだ撮影の変化カラー画像（凡例つき）" hidden style="display:block;max-width:100%;image-rendering:pixelated;border:1px solid #999"><svg id="qsvg" xmlns="http://www.w3.org/2000/svg" hidden style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none"></svg></div>
 
@@ -126,17 +131,26 @@ fetch(base+'ship_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(
 }).catch(()=>{document.getElementById('empty').textContent='読み込めませんでした。';});
 // Quay count (quay-v1, trial): table from quay_counts.csv, change image with the stretches from quay/YYYY-MM.geojson.
 const qCache={};let qcur=null;
+let blindP=null;function qblind(){if(!blindP)blindP=fetch(base+'quay/blind.geojson',{cache:'no-cache'}).then(r=>r.ok?r.json():{features:[]}).catch(()=>({features:[]}));return blindP;}
+const SAMPLE={tuning:'調整',baseline:'基準内'};
+metaP.then(m=>{const el=document.getElementById('qblind');const b=m&&m.quay&&m.quay.blind_stretches;if(!b||!b.length){el.textContent='数えられない区間：まだ計算していません。';return;}
+ el.textContent='数えられない可能性が高い区間（内側の帯で基準の VV p10 が −8 dB 超）：'+b.map(x=>`軌道 ${x.relative_orbit} で約 ${(x.blind_m/1000).toFixed(1)} km（全長 ${(x.total_m/1000).toFixed(1)} km の ${(x.share*100).toFixed(0)}%。帯の全画素が超える所に限れば ${(x.strict_m/1000).toFixed(1)} km）`).join('、')+'。';});
 function qgj(month){if(!qCache[month])qCache[month]=fetch(base+'quay/'+month+'.geojson',{cache:'no-cache'}).then(r=>r.ok?r.json():{features:[]}).catch(()=>({features:[]}));return qCache[month];}
 function qdraw(r){const svg=document.getElementById('qsvg'),img=document.getElementById('qimg');svg.innerHTML='';svg.hidden=false;
- Promise.all([metaP,qgj(r.acquired_utc.slice(0,7))]).then(([m,fc])=>{
+ Promise.all([metaP,qgj(r.acquired_utc.slice(0,7)),qblind()]).then(([m,fc,bl])=>{
   if(qcur!==r)return;const site=m&&m.sites.find(s=>s.id===r.site_id&&s.mask_version===r.mask_version);if(!site)return;
   const W=img.naturalWidth||site.width_px,H=img.naturalHeight||site.height_px;svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   const [w,s,e,n]=site.bbox,pw=site.width_px,ph=site.height_px;
+  bl.features.filter(f=>f.geometry.type==='LineString'&&f.properties.site_id===r.site_id&&f.properties.mask_version===r.mask_version&&String(f.properties.relative_orbit)===String(r.relative_orbit)).forEach(f=>{
+   const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+   pl.setAttribute('points',f.geometry.coordinates.map(([lon,lat])=>`${(lon-w)/(e-w)*pw},${(n-lat)/(n-s)*ph}`).join(' '));
+   pl.setAttribute('fill','none');pl.setAttribute('stroke','#bbb');pl.setAttribute('stroke-width','2');pl.setAttribute('stroke-dasharray','3 2');pl.setAttribute('vector-effect','non-scaling-stroke');
+   const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=`数えられない可能性が高い区間（基準 ${f.properties.baseline_version}、${f.properties.length_m} m）`;pl.appendChild(t);svg.appendChild(pl);});
   fc.features.filter(f=>f.properties.acquired_utc===r.acquired_utc&&f.properties.site_id===r.site_id&&f.properties.mask_version===r.mask_version).forEach(f=>{
    const p=f.properties;const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline');
    pl.setAttribute('points',f.geometry.coordinates.map(([lon,lat])=>`${(lon-w)/(e-w)*pw},${(n-lat)/(n-s)*ph}`).join(' '));
    pl.setAttribute('fill','none');pl.setAttribute('stroke',p.rafted?'#ff4fd8':'#ffdc00');pl.setAttribute('stroke-width','2');pl.setAttribute('vector-effect','non-scaling-stroke');
-   const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=`区間 ${p.n}（区画 ${p.sector||'—'}）：${p.min}〜${p.max} 隻、区間長 ${p.length_m} m（長さの目安 ${p.est_length_m} m）${p.rafted?'、横抱きの可能性':''}、ΔVV 最大 ${p.peak_dvv_db} dB`;pl.appendChild(t);svg.appendChild(pl);});
+   const t=document.createElementNS('http://www.w3.org/2000/svg','title');t.textContent=`区間 ${p.n}（区画 ${p.sector||'—'}）：${p.min}〜${p.max} 隻、区間長 ${p.length_m} m（長さの目安 ${p.est_length_m} m、未検証）${p.rafted?'、横抱きの可能性':''}、ΔVV 最大 ${p.peak_dvv_db} dB`;pl.appendChild(t);svg.appendChild(pl);});
  });}
 function qshow(r,tr){document.querySelectorAll('#qtbl tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');qcur=r;
  const img=document.getElementById('qimg');document.getElementById('qcaption').textContent=`${r.acquired_utc} ${r.platform} 相対軌道 ${r.relative_orbit}：岸壁の占有 ${r.occupied_min}〜${r.occupied_max}（A ${r.sector_a_min}〜${r.sector_a_max}、B ${r.sector_b_min}〜${r.sector_b_max}）、基準 ${r.baseline_version}（${r.baseline_scenes} シーン）、確度 ${r.credibility}`;
@@ -147,7 +161,7 @@ fetch(base+'quay_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(
  if(!rows.length){document.getElementById('qempty').textContent='まだ岸壁の占有数はありません（基準のある相対軌道の撮影を処理すると出ます）。';return;}
  document.getElementById('qempty').hidden=true;document.getElementById('qtbl').hidden=false;const tb=document.querySelector('#qtbl tbody');
  rows.forEach((r,i)=>{const tr=document.createElement('tr');
-  [r.acquired_utc,r.platform,r.relative_orbit,`${r.occupied_min}〜${r.occupied_max}`,`${r.sector_a_min}〜${r.sector_a_max}`,`${r.sector_b_min}〜${r.sector_b_max}`,r.segments,r.rafted,`${r.baseline_version}（${r.baseline_scenes}）`,r.credibility].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
+  [r.acquired_utc,r.platform,r.relative_orbit,`${r.occupied_min}〜${r.occupied_max}`,`${r.sector_a_min}〜${r.sector_a_max}`,`${r.sector_b_min}〜${r.sector_b_max}`,r.segments,r.rafted,`${r.baseline_version}（${r.baseline_scenes}）`,r.credibility,SAMPLE[r.in_sample]||''].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tr.onclick=()=>qshow(r,tr);tb.appendChild(tr);if(i===0)qshow(r,tr);});
 }).catch(()=>{document.getElementById('qempty').textContent='読み込めませんでした。';});
 </script>

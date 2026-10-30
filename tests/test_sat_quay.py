@@ -1,7 +1,7 @@
 import json
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 try:
@@ -244,12 +244,82 @@ class RunQuayTest(unittest.TestCase):
             self.assertEqual(len(run.read_csv(out / "quay_counts.csv")), 1)
             self.assertEqual(len(run.read_csv(out / "ship_counts.csv")), 2)
 
+    def test_low_coverage_scene_is_not_fetched_again(self):
+        """A scene of an orbit with a baseline, skipped for low coverage, is fetched once only
+        (it used to be fetched again every day while it stayed in the lookback window)."""
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            mask, _chip, lines_dir, bl_dir = self.setup_dirs(d)
+            arr = png.decode(_chip).copy()
+            arr[:, : arr.shape[1] * 3 // 4, 3] = 0  # most of the site without data
+            chip = png.encode(arr, depth=16, filters=[1])
+            out = d / "out"
+            processed = 0
+            for day in range(3):
+                cli = FakeClient(chip, orbits=(157,))
+                store = run.Store(out, [SITE])
+                s = run.process_site(cli, store, SITE, mask, now + timedelta(days=day), None, 100.0, 12,
+                                     log=lambda *a: None, lines_dir=lines_dir, baseline_dir=bl_dir)
+                store.save({"run_utc": f"2026-10-{30 + day}T05:17:00Z", "requests": cli.requests,
+                            "processing_units": cli.processing_units, "pu_source": "header", "scenes": 1})
+                processed += len(cli.processed)
+                if day == 0:
+                    self.assertEqual(s["skipped"], 1)
+            self.assertEqual(processed, 1)
+            st = json.loads((out / "status.json").read_text())["scenes"]
+            self.assertEqual([(x["result"], x["quay_result"]) for x in st], [("skipped_low_coverage", "skipped")])
+            self.assertFalse((out / "quay_counts.csv").exists())
+
+    def test_in_sample_and_quay_attribution(self):
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            mask, chip, lines_dir, bl_dir = self.setup_dirs(d)
+            out = d / "out"
+            store = run.Store(out, [SITE])
+            old = dict(run.QUAY_TUNING_SCENES)
+            run.QUAY_TUNING_SCENES["TQY"] = {"2026-10-20T10:48:45Z"}
+            try:
+                run.process_site(FakeClient(chip), store, SITE, mask, now, None, 100.0, 12, log=lambda *a: None,
+                                 lines_dir=lines_dir, baseline_dir=bl_dir)
+            finally:
+                run.QUAY_TUNING_SCENES.clear()
+                run.QUAY_TUNING_SCENES.update(old)
+            store.save({"run_utc": "2026-10-30T05:17:00Z", "requests": 3, "processing_units": 2.4,
+                        "pu_source": "header", "scenes": 2})
+            self.assertEqual(run.read_csv(out / "quay_counts.csv")[0]["in_sample"], "tuning")
+            gj = json.loads((out / "quay" / "2026-10.geojson").read_text())
+            self.assertIn("OpenStreetMap", gj["attribution"])
+            self.assertIn("ODbL 1.0", gj["license"])
+            self.assertEqual(gj["features"][0]["properties"]["in_sample"], "tuning")
+
+    def test_blind_stretches(self):
+        g, mask, lines, cvv, cvh, base = scene_parts()
+        geo = quay.Geometry(g, mask, lines)
+        dark = np.full(cvv.shape, -20.0)  # no land spreading into the bands
+        r = quay.blind_stretches(geo, {"vv_p10": dark})
+        self.assertEqual((r["blind_m"], r["strict_m"], r["stretches"]), (0, 0, []))
+        self.assertEqual(r["total_m"], geo.samples * 10)
+        vv = dark.copy()
+        vv[50:61, 10:13] = 0.0  # a ship in every baseline scene along the coast (rows 50-60)
+        r = quay.blind_stretches(geo, {"vv_p10": baseline.smooth_db(vv)})
+        self.assertTrue(100 <= r["blind_m"] <= 160, r["blind_m"])
+        self.assertTrue(80 <= r["strict_m"] <= r["blind_m"], r["strict_m"])
+        self.assertTrue(all(len(s["line"]) >= 1 for s in r["stretches"]))
+
     def test_meta_describes_quay(self):
         m = run.build_meta([], run.load_sites())
         self.assertIn("quay", m)
         self.assertEqual(m["quay"]["method"]["version"], quay.QUAY_VERSION)
         self.assertEqual({b["relative_orbit"] for b in m["quay"]["baselines"]}, {157, 84})
         self.assertIn("quay_counts.csv", m["files"])
+        self.assertIn("quay_lines", m["attribution"])
+        self.assertEqual(sorted(m["quay"]["tuning"]["scenes"]["ZJG"])[0], "2026-10-02T10:48:45Z")
+        bl = {b["relative_orbit"]: b for b in m["quay"]["blind_stretches"]}
+        self.assertEqual(set(bl), {157, 84})
+        self.assertTrue(0.01 < bl[157]["share"] < bl[84]["share"] < 0.15)
+        self.assertNotIn("1 割を超えて", json.dumps(m, ensure_ascii=False))
 
 
 if __name__ == "__main__":

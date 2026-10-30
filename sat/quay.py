@@ -302,6 +302,47 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
     }
 
 
+BLIND_P10_DB = -8.0  # the baseline's VV p10 above this in the inner band: a ship there is unlikely to show
+
+
+def blind_stretches(geom: Geometry, base: dict, p10_db: float = BLIND_P10_DB) -> dict:
+    """Stretches of the quay lines where the count is likely blind: the baseline VV p10 in the
+    inner band (0-30 m) is above ``p10_db`` (a ship was there in about 90 % of the baseline
+    scenes, the berth was always taken by turns, or a fixed structure). A ship there adds
+    little to the p10 and is likely not counted.
+
+    ``blind_m``: the maximum over the inner band is above ``p10_db`` (the stretches; an upper
+    figure: a bright pixel at the edge, e.g. the quay itself spreading in the 3x3 mean, is enough).
+    ``strict_m``: even the darkest pixel of the inner band is above it (a lower figure).
+    ``total_m`` is the length of all sides with water (as ``Geometry.samples``).
+    Returns {"total_m", "blind_m", "share", "strict_m", "p10_db", "stretches": [{"length_m", "line", ...}]}."""
+    cfg = geom.cfg
+    step = cfg["step_m"]
+    vv = base["vv_p10"]
+    total = blind = strict = 0
+    out = []
+    import warnings
+    for pr in geom.profiles:
+        rr, cc, valid, ni = pr["rr"], pr["cc"], pr["valid"], pr["n_inner"]
+        a = np.where(valid[:, :ni], vv[rr[:, :ni], cc[:, :ni]], np.nan)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            p = np.nanmax(a, 1)
+            lo = np.nanmin(a, 1)
+        with np.errstate(invalid="ignore"):
+            flags = pr["ok"] & np.isfinite(p) & (p > p10_db)
+            strict += int((pr["ok"] & np.isfinite(lo) & (lo > p10_db)).sum()) * step
+        total += int(pr["ok"].sum()) * step
+        blind += int(flags.sum()) * step
+        n = len(flags)
+        for s, e in runs(flags, step, step, step, pr["closed"]):  # no joining, every run kept
+            idx = np.arange(s, e) % n
+            out.append({"way_id": pr["way_id"], "kind": pr["kind"], "side": pr["side"], "length_m": int((e - s) * step),
+                        "line": [[round(float(pr["lon"][i]), 6), round(float(pr["lat"][i]), 6)] for i in idx]})
+    return {"total_m": int(total), "blind_m": int(blind), "share": round(blind / total, 3) if total else 0.0,
+            "strict_m": int(strict), "p10_db": p10_db, "stretches": out}
+
+
 def cluster(segs: list[dict], dist_m: float) -> list[list[int]]:
     """Groups of stretches whose lines come within ``dist_m`` of each other (union-find).
 
@@ -345,7 +386,7 @@ def settings() -> dict:
         "maximum": (f"Σ max(片の数, floor(区間長／{c['ship_min_m']:g} m))。外側の帯のうち {c['raft_from_m']:g}〜60 m（内側の船の 3×3 のにじみ約 10 m を除く）も"
                     f"内側と並んで {c['raft_min_m']:g} m 以上占有なら横抱きの可能性として +1"),
         "edge": "帯は水際から測る：線から法線方向に 0〜30 m を 5 m おきに見て、最初に陸マスクの水域になる所を水際とする（海岸線は線上、桟橋は中心線から甲板の半幅）",
-        "length": f"区間長 − {c['length_trim_m']:g} m",
+        "length": f"区間長 − {c['length_trim_m']:g} m（目安・未検証）",
         "ownership": f"帯の画素は最も近い線のもの（差 {c['own_tolerance_m']:g} m まで）。桟橋の間の船を二重に数えない",
         "orbits": "基準は撮影と同じ相対軌道のものだけを使う（軌道を混ぜない）",
     }
