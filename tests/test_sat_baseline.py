@@ -157,6 +157,22 @@ class BuildTest(unittest.TestCase):
                                log=lambda *a: None)
         self.assertEqual(cli.calls, [])
 
+    def test_committed_baselines_match_the_site(self):
+        from sat.run import load_sites
+        zjg = next(s for s in load_sites() if s["id"] == "ZJG")
+        g = Grid.for_site(zjg)
+        for orbit, n in ((157, 30), (84, 15)):
+            layers, meta = baseline.load(zjg, orbit)
+            self.assertEqual((meta["width"], meta["height"]), (g.width, g.height))
+            self.assertEqual(meta["scenes"], n)
+            self.assertEqual(meta["credibility"], baseline.credibility(n))
+            self.assertEqual(layers["vv_p10"].shape, (g.height, g.width))
+            water = np.isfinite(layers["vv_p10"])
+            self.assertGreater(water.mean(), 0.4)
+            self.assertLess(np.nanmedian(layers["vv_p10"]), -5)
+        lines = quay_lines.load("ZJG")
+        self.assertEqual(lines["counts"]["pier"], 13)
+
     def test_real_site_config(self):
         from sat.run import load_sites
         zjg = next(s for s in load_sites() if s["id"] == "ZJG")
