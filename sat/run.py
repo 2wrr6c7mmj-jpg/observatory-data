@@ -23,6 +23,7 @@ import numpy as np
 
 from . import baseline as fbase
 from . import cdse, png, quay, quay_est, quay_est2, quay_lines, render, s2
+from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
@@ -36,6 +37,7 @@ FIRST_LOOKBACK_DAYS = 30   # first run for a site (free tier: keep the backfill 
 LOOKBACK_DAYS = 6          # later runs: the last few days
 MAX_LOOKBACK_DAYS = 30
 MAX_SCENES_PER_RUN = 12
+FIRST_RUNS_PER_RUN = 2     # sites whose first 30-day backfill may start in one run (do not add many ports at once)
 MONTHLY_PU_CAP = 1000.0    # own cap for this workflow, well inside the CDSE free tier
 MONTHLY_REQUEST_CAP = 2000
 MIN_COVERAGE = 0.5         # share of the site's water that must have data
@@ -69,14 +71,18 @@ QUAY_FIELDS = [
     # feat-1 (record only): the radar's look azimuth and the orbit pair (same ships seen from two orbits)
     "features_version", "look_az_deg", "pair_id",
 ]
+# Every sector of every site, one row per scene x site x mask version x sector (multi-site PR-1).
+SECTOR_FIELDS = [
+    "site_id", "acquired_utc", "relative_orbit", "mask_version", "sector_id", "sector_name", "role",
+    "occupied_min", "occupied_max", "est_version", "est_mode", "est_p10", "est_p90",
+    "est2_version", "est2_median", "est2_p10", "est2_p90", "est2_calib_source", "source",
+]
 PAIR_MAX_H = 36.0  # feat-1: scenes of two relative orbits within this many hours form a pair
 
 # Scenes the quay-v1 thresholds were tuned on (CHANGES.md, 2026-10-30): their counts are
 # in-sample values, and they are also in the baselines. Accuracy is judged on later scenes.
-QUAY_TUNING_SCENES = {
-    "ZJG": {"2026-10-02T10:48:45Z", "2026-10-03T10:41:00Z", "2026-10-08T10:49:01Z",
-            "2026-10-14T10:48:45Z", "2026-10-15T10:41:00Z", "2026-10-26T10:48:45Z"},
-}
+# Per site in sites.json (quay.tuning_scenes); this dict only adds to it (tests).
+QUAY_TUNING_SCENES: dict[str, set[str]] = {}
 OSM_CREDIT = "© OpenStreetMap contributors"
 OSM_LICENSE = "ODbL 1.0"
 
@@ -99,37 +105,77 @@ def row_mask_tag(r: dict) -> str:
 
 
 def site_sectors(site: dict) -> list[dict]:
-    """[{id, name, bbox|None}] for a site: its listed sectors, then the rest of the chip.
-
-    At most one listed sector (columns sector_a_* / sector_b_*). No sectors: [].
-    """
-    listed = site.get("sectors") or []
-    if not listed:
-        return []
-    if len(listed) > 1:
-        raise ValueError(f"{site['id']}: 区画は1つまで（残りは自動で B）")
-    rest = site.get("sector_rest") or {"id": "B", "name": "それ以外"}
-    return [{"id": listed[0]["id"], "name": listed[0].get("name"), "bbox": listed[0]["bbox"]},
-            {"id": rest["id"], "name": rest.get("name"), "bbox": None}]
+    """[{id, name, role, bbox|None, polygon?}]: the listed sectors (any number, bbox or polygon), then
+    the rest of the chip (sat/sectors.py). No sectors: []."""
+    return fsectors.site_sectors(site)
 
 
 def sector_of(sectors: list[dict], lon: float, lat: float) -> str | None:
-    for sc in sectors:
-        b = sc["bbox"]
-        if b is None or (b[0] <= lon < b[2] and b[1] <= lat < b[3]):
-            return sc["id"]
-    return None
+    return fsectors.sector_of(sectors, lon, lat)
 
 
 def sector_raster(grid: Grid, sectors: list[dict]) -> np.ndarray | None:
-    """Index of the sector (0, 1) of each pixel centre, or None without sectors."""
-    if not sectors:
-        return None
-    lon, lat = grid.to_lonlat(np.arange(grid.height)[:, None] + 0.5, np.arange(grid.width)[None, :] + 0.5)
-    lon, lat = np.broadcast_to(lon, (grid.height, grid.width)), np.broadcast_to(lat, (grid.height, grid.width))
-    b = sectors[0]["bbox"]
-    inside = (lon >= b[0]) & (lon < b[2]) & (lat >= b[1]) & (lat < b[3])
-    return np.where(inside, 0, 1).astype(np.uint8)
+    """Index of the sector of each pixel centre (0 = the first listed one), or None without sectors."""
+    return fsectors.sector_raster(grid, sectors)
+
+
+def wide_sectors(sectors: list[dict], site: dict | None = None) -> list[dict]:
+    """The sectors of the old wide columns (sector_a_* = the listed sector, sector_b_* = the rest):
+    only for a site of the shared layout (Zhanjiang) with one listed sector. Other sites leave them
+    empty; every sector of every site is in quay_sectors.csv."""
+    if site is not None and layout(site) != "shared":
+        return []
+    return sectors if len(sectors) == 2 else []
+
+
+def layout(site: dict) -> str:
+    """"shared": detections/YYYY-MM.geojson and quay/YYYY-MM.geojson for all such sites (Zhanjiang, as
+    before); "per_site": detections/<site>/YYYY-MM.geojson, quay/<site>/YYYY-MM.geojson (new sites)."""
+    return site.get("layout") or "shared"
+
+
+def detections_rel(site: dict | None, month: str) -> str:
+    return f"detections/{site['id']}/{month}.geojson" if site and layout(site) == "per_site" else f"detections/{month}.geojson"
+
+
+def quay_rel(site: dict | None, month: str) -> str:
+    return f"quay/{site['id']}/{month}.geojson" if site and layout(site) == "per_site" else f"quay/{month}.geojson"
+
+
+def makes_png(site: dict) -> bool:
+    """New sites keep no PNG quick-look (the colour WebP is the record, design §5.3)."""
+    return site.get("png", True) is not False
+
+
+def tuning_scenes(site: dict) -> set[str]:
+    """Scenes the quay-v1 thresholds were tuned on: sites.json quay.tuning_scenes (+ QUAY_TUNING_SCENES)."""
+    return set((site.get("quay") or {}).get("tuning_scenes") or []) | set(QUAY_TUNING_SCENES.get(site["id"], set()))
+
+
+def runs_daily(site: dict) -> bool:
+    """Fetched by the daily run: enabled and not ``daily: false`` (a site with settings only)."""
+    return bool(site.get("enabled")) and site.get("daily", True) is not False
+
+
+def site_month_pu(store: "Store", site_id: str, month: str) -> float:
+    """PU a site used this month: its Sentinel-1 scenes (status.json) and Sentinel-2 days (s2_scenes.csv).
+    usage.csv stays one row per run (unchanged): the per-site share comes from the scene records."""
+    pu = 0.0
+    for s in store.status.get("scenes", []):
+        if s.get("site_id") == site_id and str(s.get("retrieved_utc") or "").startswith(month):
+            pu += float(s.get("processing_units") or 0)
+    for r in s2.read_rows(store.out / "s2_scenes.csv"):
+        if r.get("site_id") == site_id and str(r.get("retrieved_utc") or "").startswith(month):
+            pu += float(r.get("processing_units") or 0)
+    return pu
+
+
+def site_budget(store: "Store", site: dict, month: str, budget: float) -> float:
+    """The month's budget left for a site: the run's budget, and its own pu_month_cap if it has one."""
+    cap = site.get("pu_month_cap")
+    if cap is None:
+        return budget
+    return min(budget, float(cap) - site_month_pu(store, site["id"], month))
 
 
 def image_path(site: dict, acquired_utc: str) -> str:
@@ -209,9 +255,24 @@ class Store:
         self.quay_rows = read_csv(out / "quay_counts.csv")
         self.new_quay: dict[str, list] = {}
         self.zone_priors: dict[str, quay_est.ZonePrior] = {}
+        self.by_id = {s["id"]: s for s in self.sites}
+        self.sector_rows = read_csv(out / "quay_sectors.csv")
+        self.new_sector_rows = False
+
+    def site(self, site_id: str) -> dict | None:
+        return self.by_id.get(site_id)
 
     def zone_prior_path(self, site_id: str) -> Path:
         return self.out / "quay" / f"{site_id}-zone-prior.json"
+
+    def add_sectors(self, rows: list[dict]) -> None:
+        """quay_sectors.csv: one row per scene x site x mask version x sector (every sector of every site)."""
+        if not rows:
+            return
+        key = lambda r: (r["site_id"], r["acquired_utc"], row_mask_tag(r))
+        keys = {key(r) for r in rows}
+        self.sector_rows = [r for r in self.sector_rows if key(r) not in keys] + rows
+        self.new_sector_rows = True
 
     def zone_prior(self, site_id: str, model: quay_est.Model) -> quay_est.ZonePrior:
         if site_id not in self.zone_priors:
@@ -243,7 +304,7 @@ class Store:
             q = self.out / rel
             q.parent.mkdir(parents=True, exist_ok=True)
             q.write_bytes(data)
-        self.new_quay.setdefault(row["acquired_utc"][:7], []).append((row, features))
+        self.new_quay.setdefault(quay_rel(self.site(row["site_id"]), row["acquired_utc"][:7]), []).append((row, features))
 
     def has_rows(self, site_id: str, tag: str) -> bool:
         return any(r["site_id"] == site_id and row_mask_tag(r) == tag for r in self.rows)
@@ -255,25 +316,26 @@ class Store:
         sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"], row_mask_tag(s)))
         self.status["scenes"] = sc
 
-    def add(self, row: dict, features: list[dict], image: bytes, extra: dict[str, bytes] | None = None) -> None:
+    def add(self, row: dict, features: list[dict], image: bytes | None, extra: dict[str, bytes] | None = None) -> None:
         key = (row["site_id"], row["acquired_utc"], row_mask_tag(row))
         self.rows = [r for r in self.rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key]
         self.rows.append(row)
         self.rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
-        p = self.out / row["image"]
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes(image)
+        if image is not None and row.get("image"):  # new sites keep no PNG (site png: false)
+            p = self.out / row["image"]
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_bytes(image)
         for rel, data in (extra or {}).items():
             q = self.out / rel
             q.parent.mkdir(parents=True, exist_ok=True)
             q.write_bytes(data)
-        self.new_features.setdefault(row["acquired_utc"][:7], []).append((row, features))
+        self.new_features.setdefault(detections_rel(self.site(row["site_id"]), row["acquired_utc"][:7]), []).append((row, features))
 
     def save(self, run: dict) -> None:
         self.out.mkdir(parents=True, exist_ok=True)
         write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
-        for month, items in self.new_features.items():
-            p = self.out / "detections" / f"{month}.geojson"
+        for rel, items in self.new_features.items():
+            p = self.out / rel
             fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
             fkey = lambda p: (p["site_id"], p["acquired_utc"], row_mask_tag(p))
             keys = {fkey(r) for r, _ in items}
@@ -292,11 +354,13 @@ class Store:
             pid = pairs.get(qkey(r), "")
             if (r.get("pair_id") or "") != pid:
                 r["pair_id"] = pid
-                months.setdefault(r["acquired_utc"][:7], [])  # rewrite the partner's month with its pair id
+                # rewrite the partner's month with its pair id
+                months.setdefault(quay_rel(self.site(r["site_id"]), r["acquired_utc"][:7]), [])
         if self.quay_rows or self.new_quay:
             write_csv(self.out / "quay_counts.csv", self.quay_rows, QUAY_FIELDS)
-        for month, items in months.items():
-            p = self.out / "quay" / f"{month}.geojson"
+        for rel, items in months.items():
+            p = self.out / rel
+            month = rel.rsplit("/", 1)[-1][:7]
             if not items and not p.exists():
                 continue
             fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
@@ -316,11 +380,13 @@ class Store:
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         for sid, zp in self.zone_priors.items():
             zp.save(self.zone_prior_path(sid))
+        est2 = None
         if self.quay_rows:
             try:  # est-2 (trial): recomputed from the stored files only (no fetch); never stops the run
-                quay_est2.build(self.out, self.quay_rows, self.rows, pairs)
+                est2 = quay_est2.build(self.out, self.quay_rows, self.rows, pairs, sites=self.sites)
             except Exception as e:  # noqa: BLE001
                 print(f"est-2: {type(e).__name__}: {e}", file=sys.stderr)
+        self.save_sectors(est2)
         blind_feats = [f for b in blind_summary(self.sites) for f in b["features"]]
         if blind_feats:
             p = self.out / "quay" / "blind.geojson"
@@ -336,6 +402,50 @@ class Store:
         (self.out / "status.json").write_text(json.dumps(self.status, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n",
                                             encoding="utf-8")
+
+
+    def save_sectors(self, est2: dict | None) -> None:
+        """quay_sectors.csv (new, every sector of every site): the rows of this run's scenes, the old
+        wide columns (sector_a_* / sector_b_*) of earlier scenes of a site with one listed sector, and the
+        est-2 values per sector. Written only once there is a row; never stops the run."""
+        try:
+            have = {(r["site_id"], r["acquired_utc"], row_mask_tag(r)) for r in self.sector_rows}
+            back = []
+            for r in self.quay_rows:
+                if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) in have:
+                    continue
+                site = self.site(r["site_id"])
+                secs = wide_sectors(site_sectors(site), site) if site else []
+                for col, sc in zip(SECTOR_COLUMNS, secs):
+                    if r.get(f"sector_{col}_min") in (None, ""):
+                        continue
+                    back.append({"site_id": r["site_id"], "acquired_utc": r["acquired_utc"],
+                                 "relative_orbit": r.get("relative_orbit"), "mask_version": row_mask_tag(r),
+                                 "sector_id": sc["id"], "sector_name": sc.get("name"), "role": sc["role"],
+                                 "occupied_min": r.get(f"sector_{col}_min"), "occupied_max": r.get(f"sector_{col}_max"),
+                                 "est_version": r.get("est_version"), "est_mode": r.get(f"est_{col}_mode"),
+                                 "est_p10": r.get(f"est_{col}_p10"), "est_p90": r.get(f"est_{col}_p90"),
+                                 "source": "quay_counts（横持ちの列から）"})
+            if back:
+                self.sector_rows += back
+                self.new_sector_rows = True
+            if est2:
+                by = {(x["site_id"], x["acquired_utc"]): x for x in est2.get("scenes", [])}
+                for r in self.sector_rows:
+                    e = by.get((r["site_id"], r["acquired_utc"]))
+                    st = (e or {}).get("by_sector", {}).get(r["sector_id"]) if e else None
+                    if st:
+                        new = {"est2_version": quay_est2.EST2_VERSION, "est2_median": st["warship"]["median"],
+                               "est2_p10": st["warship"]["p10"], "est2_p90": st["warship"]["p90"],
+                               "est2_calib_source": e.get("calib_source", "")}
+                        if any(str(r.get(k, "")) != str(v) for k, v in new.items()):
+                            r.update(new)
+                            self.new_sector_rows = True
+            if self.new_sector_rows:
+                self.sector_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r), r["sector_id"]))
+                write_csv(self.out / "quay_sectors.csv", self.sector_rows, SECTOR_FIELDS)
+        except Exception as e:  # noqa: BLE001
+            print(f"quay_sectors.csv: {type(e).__name__}: {e}", file=sys.stderr)
 
 
 def attribution(rows: list[dict]) -> str:
@@ -375,6 +485,7 @@ def quay_fc_attribution(year: str | None) -> dict:
 
 
 _BLIND_CACHE: dict = {}
+_GEOM_CACHE: dict = {}
 
 
 def blind_summary(sites: list[dict]) -> list[dict]:
@@ -446,18 +557,98 @@ def site_meta(site: dict) -> dict:
          "provisional": bool(site.get("provisional")), "note": site.get("note")}
     sec = site_sectors(site)
     if sec:
-        m["sectors"] = [{"column": f"sector_{c}", **sc} for c, sc in zip(SECTOR_COLUMNS, sec)]
+        wide = wide_sectors(sec, site)
+        m["sectors"] = [({"column": f"sector_{SECTOR_COLUMNS[i]}"} if wide else {}) | sc for i, sc in enumerate(sec)]
+    m.update(site_status(site))
     return m
+
+
+def safe_site_meta(site: dict) -> dict:
+    """site_meta, or a short error entry: one site's bad settings never stop meta.json."""
+    try:
+        return site_meta(site)
+    except Exception as e:  # noqa: BLE001
+        print(f"{site.get('id')}: meta.json の地点の項を作れなかった {type(e).__name__}: {str(e)[:200]}", file=sys.stderr)
+        return {"id": site.get("id"), "name": site.get("name"), "error": f"{type(e).__name__}: {str(e)[:300]}",
+                "daily": runs_daily(site), "publish": site.get("publish", "trial")}
+
+
+def validate_site(site: dict) -> None:
+    """Raises ValueError on settings the run cannot use: sectors (ids, roles, overlap, outside the site)."""
+    if not site.get("id"):
+        raise ValueError("地点の id が無い")
+    fsectors.site_sectors(site)
+    ov = fsectors.overlaps(site)
+    if ov:
+        raise ValueError(f"{site['id']}: 区画が重なっている {ov}")
+    out = fsectors.outside(site)
+    if out:
+        raise ValueError(f"{site['id']}: 範囲の外の区画 {out}")
+
+
+def usable_sites(sites: list[dict], log=lambda m: print(m, file=sys.stderr)) -> tuple[list[dict], list[dict]]:
+    """(sites to use, errors). A site of its own folders (layout per_site: a new trial port) with bad
+    settings is left out of this run and recorded; a shared-layout site (Zhanjiang) stops the run as before."""
+    ok, errors = [], []
+    for s in sites:
+        if not s.get("enabled"):
+            ok.append(s)
+            continue
+        try:
+            validate_site(s)
+        except Exception as e:  # noqa: BLE001
+            if layout(s) == "shared":
+                raise
+            errors.append({"site_id": s.get("id"), "error": f"{type(e).__name__}: {str(e)[:300]}"})
+            log(f"{s.get('id')}: 設定の誤りのため、この地点だけ飛ばす {str(e)[:200]}")
+            continue
+        ok.append(s)
+    return ok, errors
+
+
+def site_status(site: dict) -> dict:
+    """Multi-site settings of a site for meta.json (sites[]): kind, priority, daily, publish, where its
+    files are, what the quay count still lacks, the est-1 weights and the est-2 calibration it uses."""
+    qc = site.get("quay") or {}
+    lv = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
+    orbits = fbase.site_config(site)["orbits"]
+    have_bl = [o for o in orbits if fbase.load(site, o) is not None]
+    lacks = []
+    if quay_lines.load(site["id"], lv) is None:
+        lacks.append(f"岸壁線 {site['id']}-quay-v{lv}（OSM、probe で取得）")
+    if not have_bl:
+        lacks.append("基準（" + "・".join(f"軌道 {o}" for o in orbits) + "）")
+    ver = quay_est.classes_version()
+    out = {
+        "kind": site.get("kind", "naval"), "group": site.get("group"), "priority": int(site.get("priority", 1)),
+        "daily": runs_daily(site), "publish": site.get("publish", "trial"),
+        "mode": "毎日の取得" if runs_daily(site) else "設定のみ（毎日の取得なし）",
+        "layout": layout(site), "png": makes_png(site), "pu_month_cap": site.get("pu_month_cap"),
+        "quay": {
+            "ready": not lacks, "lacks": lacks, "baseline_orbits": orbits, "baselines_present": have_bl,
+            "lines_version": f"{site['id']}-quay-v{lv}",
+            "class_weights": quay_est.site_weights_info(site["id"]), "classes_version": ver,
+            "est2_calib_source": quay_est2.calib_source(site["id"]),
+            "label_freeze_utc": qc.get("label_freeze_utc"),
+        },
+    }
+    if site.get("sources"):
+        out["sources"] = site["sources"]
+    return out
 
 
 def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | None = None) -> dict:
     sites = sites if sites is not None else load_sites()
     return {
         "dataset": "sat",
-        "title": "Sentinel-1 による港内の艦船候補数（試行：湛江 1 地点）",
+        "title": "Sentinel-1 による港内の艦船候補数（試行：" + "・".join(
+            f"{s.get('name') or s['id']}" for s in sites if runs_daily(s)) + "）",
         "status": ("試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）。湛江（ZJG）は 2026-10-30 に監視範囲を v2（東岸の軍港を中心とする矩形）"
                    "に変えた。ZJG-land-v1 の行と ZJG-land-v2 の行は範囲が違うため直接比べない（series_breaks）"),
-        "sites": [site_meta(s) for s in sites if s.get("enabled")],
+        "sites": [safe_site_meta(s) for s in sites if s.get("enabled")],
+        "sites_note": ("複数港の土台（multi-site PR-1）。publish＝trial の地点は試行ページだけで扱い、公開の地図には出さない。"
+                       "daily＝false の地点は設定だけで毎日の取得をしない（岸壁線・基準がそろってから有効にする）。"
+                       "kind・priority・pu_month_cap・区画の role は sat/sites.json。湛江（ZJG）のファイルの場所と列は従来どおり"),
         "series_breaks": series_breaks(sites),
         "source": {
             "name": "Copernicus Sentinel-1 IW GRD（Copernicus Data Space Ecosystem, Sentinel Hub Process API）",
@@ -474,7 +665,12 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。",
         },
         "files": {
-            "ship_counts.csv": "1 行＝1 撮影×1 地点×1 範囲版（mask_version）",
+            "ship_counts.csv": "1 行＝1 撮影×1 地点×1 範囲版（mask_version）。区画の列 sector_a_*・sector_b_* は区画が 1 つ＋残りの地点（湛江）だけ。他の地点は空（区画ごとの値は quay_sectors.csv）",
+            "detections/<地点>/YYYY-MM.geojson・quay/<地点>/YYYY-MM.geojson": "湛江以外の地点（layout＝per_site）の候補と岸壁の占有区間。湛江は従来の detections/YYYY-MM.geojson・quay/YYYY-MM.geojson",
+            "quay_sectors.csv": ("区画ごとの岸壁の数（縦持ち）：1 行＝1 撮影×1 地点×1 範囲版×1 区画。role（naval＝軍港の桟橋・岸壁、other＝水道・商港 など）、"
+                                 "quay-v1 の最小〜最大、est-1 の最頻値・80% 区間、est-2 の中央値・80% 区間と較正の出どころ（est2_calib_source）。"
+                                 "source＝quay_counts（横持ちの列から）の行は、このファイルを作る前の撮影を quay_counts.csv の区画 A・B の列から写したもの"),
+            "quay_est2/<地点>.csv・quay_est2/<地点>.json": "湛江以外の地点の est-2（列は quay_est2.csv と同じ、区画 A・B の列は空）。湛江は従来の quay_est2.csv・quay_est2.json",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
             "color/<地点>/v<版>/<撮影時刻>.webp": "疑似カラー（R＝VV、G＝VH、B＝VV−VH を逆向き）の WebP。範囲は全地点・全日で固定、表示用だけ 3×3 Lee フィルタ、凡例と出典は画像の下。候補の枠は焼き込まない（detections の GeoJSON から重ねる）。表示の版 s1fc-1 を入れてから処理した撮影のみ（それより前の撮影は VV の PNG のみ。再取得はしない）",
             "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）",
@@ -550,7 +746,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "cannot_say": ("艦種・国籍・所属。民間船・作業船・荷役機械・建設中の構造物も数に入る。基準期間の約 9 割以上同じ場所に居た船"
                            "（または入れ替わりで常に埋まっていた岸壁）は数えられない（blind_stretches）"),
             "tuning": {
-                "scenes": {k: sorted(v) for k, v in QUAY_TUNING_SCENES.items()},
+                "scenes": {s["id"]: sorted(tuning_scenes(s)) for s in sites if tuning_scenes(s)},
                 "note": ("閾値（ΔVV 12 dB の種、今回の VV −10 dB、60 m のまとまり、横抱きの 40〜60 m など）は湛江 v2 のこの 6 撮影で調整した。"
                          "これらの撮影の数は調整に使った標本内の値で、基準の期間（bl-1）にも含まれる（quay_counts.csv の in_sample＝tuning）。"
                          "精度の評価は 2026-10-27 以降の撮影（基準・調整のどちらにも使っていないもの）と光学画像で行う"),
@@ -606,7 +802,8 @@ class QuayContext:
 
     def model(self) -> quay_est.Model:
         if self._model is None:
-            self._model = quay_est.Model()
+            self._model = quay_est.Model(site_id=self.site["id"],
+                                         sector_roles=fsectors.sector_roles(site_sectors(self.site)))
         return self._model
 
     def baseline(self, orbit):
@@ -621,8 +818,17 @@ class QuayContext:
         return self._bl[key]
 
     def geometry(self) -> quay.Geometry:
+        """The sample geometry of the lines; shared by every context of the same site, mask and lines in
+        one process (it takes ~20 s for Zhanjiang and was built once per context: count + 2 orbits' blind)."""
         if self._geom is None:
-            self._geom = quay.Geometry(self.grid, self.mask, self.lines)
+            import hashlib
+            key = (self.site["id"], mask_tag(self.site), self.lines_version, tuple(self.grid.bbox), self.grid.width, self.grid.height,
+                   hashlib.sha256(np.ascontiguousarray(self.mask).tobytes()).hexdigest(),
+                   hashlib.sha256(json.dumps(self.lines, sort_keys=True).encode()).hexdigest())
+            if key not in _GEOM_CACHE:
+                _GEOM_CACHE.clear()  # keep one (a geometry holds large arrays)
+                _GEOM_CACHE[key] = quay.Geometry(self.grid, self.mask, self.lines)
+            self._geom = _GEOM_CACHE[key]
         return self._geom
 
 
@@ -660,7 +866,7 @@ def orbit_pairs(rows: list[dict], max_h: float = PAIR_MAX_H) -> dict:
 
 def in_sample(site: dict, acquired_utc: str, bmeta: dict) -> str:
     """"tuning" (the thresholds were tuned on it), "baseline" (in the baseline period) or ""."""
-    if acquired_utc in QUAY_TUNING_SCENES.get(site["id"], set()):
+    if acquired_utc in tuning_scenes(site):
         return "tuning"
     if any(sc.get("acquired_utc") == acquired_utc and sc.get("used", True) for sc in bmeta.get("scene_list") or []):
         return "baseline"
@@ -754,7 +960,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
             "in_sample": in_sample(site, acq["acquired_utc"], bmeta),
             "features_version": quay.FEATURES_VERSION, "look_az_deg": look,
         }
-        for col, sc in zip(SECTOR_COLUMNS, sectors):
+        for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
             mn, mx = q["by_sector"].get(sc["id"], [0, 0])
             row[f"sector_{col}_min"], row[f"sector_{col}_max"] = mn, mx
         est = None
@@ -768,7 +974,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
                        est_warship_mode=est["warship"]["mode"], est_warship_p10=est["warship"]["p10"],
                        est_warship_p90=est["warship"]["p90"], est_conflicts=est["conflicts"],
                        est_capped=est["capped"], est_prior_hash=est["prior_hash"])
-            for col, sc in zip(SECTOR_COLUMNS, sectors):
+            for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 st = est["by_sector"].get(sc["id"])
                 if st:
                     row[f"est_{col}_mode"], row[f"est_{col}_p10"], row[f"est_{col}_p90"] = st["mode"], st["p10"], st["p90"]
@@ -788,12 +994,22 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         except Exception as e:
             log(f"{site['id']} {acq['acquired_utc']}: 変化画像を作れなかった {str(e)[:200]}")
         store.add_quay(row, quay_features(site, acq, q, cred, bver, row["in_sample"]), extra)
+        srows = []
+        for sc in sectors:
+            mn, mx = q["by_sector"].get(sc["id"], [0, 0])
+            st = (est or {}).get("by_sector", {}).get(sc["id"]) if est else None
+            srows.append({"site_id": site["id"], "acquired_utc": acq["acquired_utc"], "relative_orbit": acq["relative_orbit"],
+                          "mask_version": mask_tag(site), "sector_id": sc["id"], "sector_name": sc.get("name"),
+                          "role": sc["role"], "occupied_min": mn, "occupied_max": mx,
+                          "est_version": quay_est.EST_VERSION if st else "", "est_mode": st["mode"] if st else "",
+                          "est_p10": st["p10"] if st else "", "est_p90": st["p90"] if st else "", "source": "quay-v1"})
+        store.add_sectors(srows)
     except Exception as e:
         entry.update(quay_result="error", quay_error=str(e)[:300])
         log(f"{site['id']} {acq['acquired_utc']}: 岸壁の数で失敗 {str(e)[:200]}")
         return "、岸壁の数：失敗"
     entry["quay_result"] = "counted"
-    by = "".join(f" {sc['id']} {row.get(f'sector_{c}_min')}〜{row.get(f'sector_{c}_max')}" for c, sc in zip(SECTOR_COLUMNS, sectors))
+    by = "".join(f" {sc['id']} {q['by_sector'].get(sc['id'], [0, 0])[0]}〜{q['by_sector'].get(sc['id'], [0, 0])[1]}" for sc in sectors)
     et = ""
     if est is not None:
         et = (f"、推定 est-1 最頻 {est['all']['mode']}（80% {est['all']['p10']}〜{est['all']['p90']}、平均 {est['all']['mean']}、"
@@ -885,7 +1101,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
                 d["lon"], d["lat"] = float(lon), float(lat)
                 d["sector"] = sector_of(sectors, d["lon"], d["lat"])
-            image = image_path(site, acq["acquired_utc"])
+            image = image_path(site, acq["acquired_utc"]) if makes_png(site) else ""
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
                 inc = round(float(np.nanmedian(lia[valid_water])), 2)
@@ -900,12 +1116,12 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
                 "processing_units": pu, "image": image,
             }
-            for col, sc in zip(SECTOR_COLUMNS, sectors):
+            for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 for zone in ("harbour", "quay"):
                     row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
                 row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
-            quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors))
+            quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors)) if makes_png(site) else None
             features = chip_features(site, grid, acq, dets, image)
         except Exception as e:
             entry.update(result="error", error=f"検出・描画で失敗: {str(e)[:280]}")
@@ -927,8 +1143,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         qtext = count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log)
         store.note_scene(entry)
         summary["counted"] += 1
-        by_sector = "".join(f"、{sc['id']} {row[f'sector_{c}_harbour']}+{row[f'sector_{c}_quay']}"
-                            for c, sc in zip(SECTOR_COLUMNS, sectors))
+        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] for d in dets)}"
+                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] for d in dets)}" for sc in sectors)
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
             f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）{qtext}")
     if len(new) > max_scenes:
@@ -960,20 +1176,24 @@ def main(argv=None, client=None, sites=None) -> int:
         args.out = args.probe / "out"
         probe = {}
     all_sites = sites if sites is not None else load_sites()
+    all_sites, site_errors = usable_sites(all_sites)
     store = Store(args.out, all_sites)
     month = now.strftime("%Y-%m")
     used_pu, used_req = month_usage(store.usage + published_usage, month)
     budget = MONTHLY_PU_CAP - used_pu
     run = {"run_utc": cdse.iso(now), "sites": []}
+    if site_errors:  # recorded in status.json (last_run); absent when there is none (Zhanjiang's status as before)
+        run["site_errors"] = site_errors
     if used_req >= MONTHLY_REQUEST_CAP:
         print(f"今月のリクエスト数が上限（{MONTHLY_REQUEST_CAP}）に達したため取得しない", file=sys.stderr)
         budget = 0
     client = client if client is not None else cdse.Client()
     rc = 0
+    # priority order (1 first; the order of sites.json within a priority); sites with daily: false are not fetched
+    daily = sorted((s for s in all_sites if runs_daily(s)), key=lambda s: int(s.get("priority", 1)))
+    first_runs = 0
     try:
-        for site in all_sites:
-            if not site.get("enabled"):
-                continue
+        for site in daily:
             try:
                 mask, mmeta = load_mask(site["id"], mask_version(site), mask_dir)
             except FileNotFoundError:
@@ -989,8 +1209,18 @@ def main(argv=None, client=None, sites=None) -> int:
             if budget <= 0:
                 run["sites"].append({"site_id": site["id"], "deferred_budget": True})
                 continue
+            sbudget = site_budget(store, site, month, budget)
+            if sbudget <= 0:  # the site's own monthly cap (pu_month_cap)
+                run["sites"].append({"site_id": site["id"], "deferred_site_cap": True})
+                continue
+            if not store.has_rows(site["id"], mask_tag(site)) and args.days is None:
+                # the first 30-day backfill: at most FIRST_RUNS_PER_RUN sites in one run
+                first_runs += 1
+                if first_runs > FIRST_RUNS_PER_RUN:
+                    run["sites"].append({"site_id": site["id"], "deferred_first_run": True})
+                    continue
             try:
-                s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe,
+                s = process_site(client, store, site, mask, now, args.days, sbudget, args.max_scenes, probe=probe,
                                  raw_dir=args.probe / "raw" if probe is not None else None, only=args.only)
             except cdse.CredentialError:
                 raise
@@ -1006,14 +1236,15 @@ def main(argv=None, client=None, sites=None) -> int:
         # Not in a probe (--probe): the Sentinel-1 probe must not spend PU on Sentinel-2 (its backfill has a probe of its own).
         if probe is None:
             req0, pu0 = client.requests, client.processing_units
-            for site in all_sites:
-                if not site.get("enabled") or not (site.get("s2") or {}).get("enabled"):
+            for site in daily:
+                if not (site.get("s2") or {}).get("enabled"):
                     continue
-                if budget < s2.EST_PRE_PU + s2.EST_FULL_PU:
+                sbudget = site_budget(store, site, month, budget)
+                if sbudget < s2.EST_PRE_PU + s2.EST_FULL_PU:
                     run.setdefault("s2", []).append({"site_id": site["id"], "deferred_budget": True})
                     continue
                 try:
-                    r2 = s2.update_site(client, args.out, site, now, s2.LOOKBACK_DAYS, budget,
+                    r2 = s2.update_site(client, args.out, site, now, s2.LOOKBACK_DAYS, sbudget,
                                         log=lambda m: print(m, file=sys.stderr))
                 except cdse.CredentialError:
                     raise

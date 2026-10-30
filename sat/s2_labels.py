@@ -509,8 +509,9 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
     keep = keep_mask(geom, mask.shape)
     near = dilate(keep, 3) if keep.any() else keep
     tag = f"{site['id']}-land-v{mver}"
+    freeze = (site.get("quay") or {}).get("label_freeze_utc") or FREEZE_FROM  # per site (multi-site PR-1)
     days = [r for r in s2.read_rows(out / "s2_scenes.csv")
-            if r["site_id"] == site["id"] and r["mask_version"] == tag and r["result"] == "clear" and r["date"] < FREEZE_FROM]
+            if r["site_id"] == site["id"] and r["mask_version"] == tag and r["result"] == "clear" and r["date"] < freeze]
     days.sort(key=lambda r: r["date"])
     bls = {str(o): fbase.load(site, o, baseline_dir) for o in fbase.site_config(site)["orbits"]}
     bls = {k: v for k, v in bls.items() if v is not None and (v[1].get("width"), v[1].get("height")) == (grid.width, grid.height)}
@@ -549,7 +550,7 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
         if meta_p.exists():
             a = json.loads(meta_p.read_text(encoding="utf-8"))
         elif acqs is not None:
-            a = nearest_s1(acqs, cdse.parse_time(d["acquired_utc"]), set(bls))
+            a = nearest_s1(acqs, cdse.parse_time(d["acquired_utc"]), set(bls), freeze=freeze)
             a = None if a is None else {k: a[k] for k in ("acquired_utc", "platform", "orbit_direction", "relative_orbit")} | {
                 "t_from": cdse.iso(a["t_from"]), "t_to": cdse.iso(a["t_to"])}
             raw.mkdir(parents=True, exist_ok=True)

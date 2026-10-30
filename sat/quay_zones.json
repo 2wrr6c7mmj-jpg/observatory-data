@@ -1,6 +1,6 @@
 {
  "version": "est-1",
- "note": "岸壁の数の推定（est-1）の桟橋別の事前分布。区画（zone）は OSM の線（ZJG-quay-v1）の way_id で決め、面（face）は way_id と線の側（+／−）。倍率は長さの群（sat/ship_classes.json の group）ごとで、すべて推定（2部の設計、2026-10-30）",
+ "note": "岸壁の数の推定（est-1）の桟橋別の事前分布。区画（zone）は OSM の線（ZJG-quay-v1）の way_id で決め、面（face）は way_id と線の側（+／−）。倍率は長さの群（sat/ship_classes.json の group）ごとで、すべて推定（2部の設計、2026-10-30）。carrier・submarine の型と SYL・SLP（multi-site PR-1、2026-10-31）は設計 §1.4 の仮置き・要出典：岸壁線（OSM）がまだ無いので way_id でなく区画（sites.json の sectors）ごとに型を決めた（sector_override）。2部が線と S2 で桟橋ごとに直す",
  "types": {
   "large": {
    "name": "大型艦向き",
@@ -37,6 +37,34 @@
    },
    "basis": "海岸線と区画 B（水道）は作業船・小型艇・民間船が多いという2部の判断（推定、未検証）",
    "conf": "推定"
+  },
+  "carrier": {
+   "name": "空母の専用桟橋",
+   "mult": {
+    "X": 5.0,
+    "L": 0.3,
+    "M": 0.3,
+    "S": 0.3,
+    "T": 0.3
+   },
+   "basis": "設計 §1.4 の仮置き（X 群 5.0、他 0.3）。出典なし・未検証",
+   "conf": "未確認（仮置き）"
+  },
+  "submarine": {
+   "name": "潜水艦の桟橋",
+   "mult": {
+    "X": 0.3,
+    "L": 0.3,
+    "M": 0.3,
+    "S": 0.3,
+    "T": 0.3
+   },
+   "mult_kind": {
+    "submarine": 3.0
+   },
+   "mult_other": 0.3,
+   "basis": "設計 §1.4 の仮置き（艦種表の kind＝submarine の艦 3.0、他 0.3）。出典なし・未検証。潜水艦は SAR で水面上が小さく quay-v1 で落ちる恐れ（設計 §7-1）",
+   "conf": "未確認（仮置き）"
   }
  },
  "sites": {
@@ -95,6 +123,55 @@
      "type": "shore"
     }
    }
+  },
+  "SYL": {
+   "lines_version": "SYL-quay-v1",
+   "status": "placeholder",
+   "zones": [],
+   "default": {
+    "id": "SH",
+    "name": "海岸線・その他",
+    "type": "shore"
+   },
+   "sector_override": {
+    "A1": {
+     "id": "SUB",
+     "name": "第 32 潜水艦支隊の区画（OSM way/299398880 の外形の外接矩形を 150 m 広げたもの）",
+     "type": "submarine"
+    },
+    "A2": {
+     "id": "SN",
+     "name": "南の海軍区画（OSM way/894654960、用途未確認）",
+     "type": "medium"
+    },
+    "B": {
+     "id": "SH",
+     "type": "shore"
+    }
+   },
+   "note": "仮置き・要出典。区画 A1 は OSM の名前（南部战区海军第32潜艇支队）から submarine、A2 は用途が分からないので medium（湛江の櫛形と同じ）。水上艦の桟橋の位置・型は未確認"
+  },
+  "SLP": {
+   "lines_version": "SLP-quay-v1",
+   "status": "placeholder",
+   "zones": [],
+   "default": {
+    "id": "SH",
+    "name": "海岸線・その他",
+    "type": "shore"
+   },
+   "sector_override": {
+    "A1": {
+     "id": "SUB",
+     "name": "基地の桟橋（ORF の座標の周りの仮の矩形）",
+     "type": "submarine"
+    },
+    "B": {
+     "id": "SH",
+     "type": "shore"
+    }
+   },
+   "note": "仮置き・要出典。空母の桟橋（型 carrier）は位置を確かめていないので置いていない（2部が S2 で桟橋を特定してから足す）。潜水艦トンネルの入口は見えない所として後で blind に書く（設計 §7-2）"
   }
  }
 }

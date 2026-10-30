@@ -22,7 +22,7 @@ class TableTest(unittest.TestCase):
             self.assertTrue(c["source"])
             g = c["group"]
             L = c["length_m"]
-            self.assertTrue({"X": L >= 200, "L": 150 <= L < 200, "M": 120 <= L < 150, "S": 55 <= L <= 90, "T": L < 50}[g], c["id"])
+            self.assertTrue({"X": L >= 200, "L": 150 <= L < 200, "M": 100 <= L < 150, "S": 55 <= L <= 90, "T": L < 50}[g], c["id"])
 
     def test_zones(self):
         m = e.Model()

@@ -124,15 +124,14 @@ def day_groups(features: list[dict]) -> list[dict]:
     return out
 
 
+CLOUD_ROLES = ("naval", "dock", "slip", "fitout", "hall_apron", "lagoon", "basin")
+
+
 def sector_index(grid: Grid, site: dict) -> np.ndarray | None:
-    """True where a pixel centre is in the site's first sector (A), None without sectors."""
-    sec = site.get("sectors") or []
-    if not sec:
-        return None
-    b = sec[0]["bbox"]
-    lon, lat = grid.to_lonlat(np.arange(grid.height)[:, None] + 0.5, np.arange(grid.width)[None, :] + 0.5)
-    lon, lat = np.broadcast_to(lon, (grid.height, grid.width)), np.broadcast_to(lat, (grid.height, grid.width))
-    return (lon >= b[0]) & (lon < b[2]) & (lat >= b[1]) & (lat < b[3])
+    """True where a pixel centre is in a listed sector whose role is watched (naval; shipyards' dock /
+    slip / fitout; islands' lagoon / basin), None without sectors. Zhanjiang: its sector A (as before)."""
+    from .sectors import role_index
+    return role_index(grid, site, CLOUD_ROLES)
 
 
 def cloud_shares(scl: np.ndarray, in_a: np.ndarray | None) -> dict:
