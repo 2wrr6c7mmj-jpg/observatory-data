@@ -1,4 +1,4 @@
-"""Quick-look PNG of a chip: VV in grey, land-mask outline, candidate boxes."""
+"""Quick-look PNG of a chip: VV in grey, land-mask outline, sector boundary, candidate boxes."""
 from __future__ import annotations
 
 import numpy as np
@@ -7,13 +7,13 @@ from . import png
 from .grid import dilate
 
 GREYS = 240
-RED, YELLOW, CYAN, NODATA, ORANGE = 240, 241, 242, 243, 244
+RED, YELLOW, CYAN, NODATA, ORANGE, MAGENTA = 240, 241, 242, 243, 244, 245
 PALETTE = [(i * 255 // (GREYS - 1),) * 3 for i in range(GREYS)] + [
-    (255, 40, 40), (255, 220, 0), (0, 200, 255), (20, 20, 60), (255, 140, 0)]
+    (255, 40, 40), (255, 220, 0), (0, 200, 255), (20, 20, 60), (255, 140, 0), (230, 60, 230)]
 VMIN, VMAX = -25.0, 5.0
 
 
-def quicklook(vv_db: np.ndarray, mask: np.ndarray, dets: list[dict]) -> bytes:
+def quicklook(vv_db: np.ndarray, mask: np.ndarray, dets: list[dict], sectors: np.ndarray | None = None) -> bytes:
     g = np.clip((np.nan_to_num(vv_db, nan=VMIN) - VMIN) / (VMAX - VMIN), 0, 1)
     img = np.round(g * (GREYS - 1)).astype(np.uint8)
     img[~np.isfinite(vv_db)] = NODATA
@@ -21,6 +21,13 @@ def quicklook(vv_db: np.ndarray, mask: np.ndarray, dets: list[dict]) -> bytes:
     edge = dilate(land, 1) & ~land
     img[edge] = CYAN
     img[(mask == 2) & ~dilate(mask != 2, 1)] = ORANGE  # interior of structures
+    if sectors is not None:  # dashed line on the pixels where the sector changes
+        edge = np.zeros(sectors.shape, bool)
+        edge[:, 1:] |= sectors[:, 1:] != sectors[:, :-1]
+        edge[1:, :] |= sectors[1:, :] != sectors[:-1, :]
+        rr, cc = np.nonzero(edge)
+        keep = ((rr + cc) // 6) % 2 == 0
+        img[rr[keep], cc[keep]] = MAGENTA
     h, w = img.shape
     for d in dets:
         colour = YELLOW if d["zone"] == "quay" else RED

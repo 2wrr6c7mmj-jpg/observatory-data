@@ -168,14 +168,15 @@ def main(argv=None) -> int:
     from .run import load_sites
     ap = argparse.ArgumentParser(description="Build a site's land mask from OpenStreetMap")
     ap.add_argument("site")
-    ap.add_argument("--version", type=int, default=1)
+    ap.add_argument("--version", type=int, help="mask version (default: the site's mask_version in sites.json)")
     ap.add_argument("--mask-dir", type=Path, default=MASK_DIR)
     args = ap.parse_args(argv)
     site = next(s for s in load_sites() if s["id"] == args.site)
     grid = Grid.for_site(site)
     osm = fetch_osm(grid)
     mask, info = build_mask(grid, osm)
-    meta = save_mask(site, grid, mask, info, osm, args.version, args.mask_dir)
+    from .run import mask_version
+    meta = save_mask(site, grid, mask, info, osm, args.version or mask_version(site), args.mask_dir)
     print(json.dumps(meta, ensure_ascii=False, indent=1))
     return 0
 

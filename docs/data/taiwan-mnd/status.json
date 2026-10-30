@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-10-30T07:21:40Z",
+ "generated_utc": "2026-10-30T07:57:32Z",
  "reports": 1967,
  "days": 1919,
  "first_day": "2020-11-01",
@@ -27,7 +27,7 @@
   "83974",
   "83977"
  ],
- "parser_version": 5,
+ "parser_version": 6,
  "parse_errors": {},
  "days_by_format": {
   "afc-around-roc": 87,

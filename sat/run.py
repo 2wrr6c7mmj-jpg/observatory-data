@@ -29,8 +29,7 @@ from .osm_mask import MASK_DIR, build_mask, fetch_osm, load_mask, save_mask
 ROOT = Path(__file__).resolve().parent.parent
 SITES_FILE = Path(__file__).resolve().parent / "sites.json"
 OUT_DIR = ROOT / "docs" / "data" / "sat"
-PROCESSING_VERSION = "sat-1"
-MASK_VERSION = 1
+PROCESSING_VERSION = "sat-2"  # sat-2: rectangular sites and sectors (A/B) per site
 FIRST_LOOKBACK_DAYS = 30   # first run for a site (free tier: keep the backfill short)
 LOOKBACK_DAYS = 6          # later runs: the last few days
 MAX_LOOKBACK_DAYS = 30
@@ -46,12 +45,68 @@ CSV_FIELDS = [
     "incidence_deg", "harbour_candidates", "quay_candidates", "confirmed",
     "mask_version", "detector_version", "processing_version",
     "coverage", "len_lt50", "len_50_100", "len_100_200", "len_ge200", "processing_units", "image",
+    "sector_a_harbour", "sector_a_quay", "sector_b_harbour", "sector_b_quay",
 ]
+SECTOR_COLUMNS = ("a", "b")  # the first sector of a site is "a"; the rest of the chip is "b"
+
 USAGE_FIELDS = ["run_utc", "requests", "processing_units", "pu_source", "scenes"]
 
 
 def load_sites(path: Path = SITES_FILE) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))["sites"]
+
+
+def mask_version(site: dict) -> int:
+    return int(site.get("mask_version", 1))
+
+
+def mask_tag(site: dict) -> str:
+    return f"{site['id']}-land-v{mask_version(site)}"
+
+
+def row_mask_tag(r: dict) -> str:
+    """Mask version of a published row or scene (entries written before v2 have none: v1)."""
+    return r.get("mask_version") or f"{r['site_id']}-land-v1"
+
+
+def site_sectors(site: dict) -> list[dict]:
+    """[{id, name, bbox|None}] for a site: its listed sectors, then the rest of the chip.
+
+    At most one listed sector (columns sector_a_* / sector_b_*). No sectors: [].
+    """
+    listed = site.get("sectors") or []
+    if not listed:
+        return []
+    if len(listed) > 1:
+        raise ValueError(f"{site['id']}: 区画は1つまで（残りは自動で B）")
+    rest = site.get("sector_rest") or {"id": "B", "name": "それ以外"}
+    return [{"id": listed[0]["id"], "name": listed[0].get("name"), "bbox": listed[0]["bbox"]},
+            {"id": rest["id"], "name": rest.get("name"), "bbox": None}]
+
+
+def sector_of(sectors: list[dict], lon: float, lat: float) -> str | None:
+    for sc in sectors:
+        b = sc["bbox"]
+        if b is None or (b[0] <= lon < b[2] and b[1] <= lat < b[3]):
+            return sc["id"]
+    return None
+
+
+def sector_raster(grid: Grid, sectors: list[dict]) -> np.ndarray | None:
+    """Index of the sector (0, 1) of each pixel centre, or None without sectors."""
+    if not sectors:
+        return None
+    lon, lat = grid.to_lonlat(np.arange(grid.height)[:, None] + 0.5, np.arange(grid.width)[None, :] + 0.5)
+    lon, lat = np.broadcast_to(lon, (grid.height, grid.width)), np.broadcast_to(lat, (grid.height, grid.width))
+    b = sectors[0]["bbox"]
+    inside = (lon >= b[0]) & (lon < b[2]) & (lat >= b[1]) & (lat < b[3])
+    return np.where(inside, 0, 1).astype(np.uint8)
+
+
+def image_path(site: dict, acquired_utc: str) -> str:
+    v = mask_version(site)
+    sub = "" if v == 1 else f"v{v}/"
+    return f"images/{site['id']}/{sub}{stamp(acquired_utc)}.png"
 
 
 def read_csv(path: Path) -> list[dict]:
@@ -96,34 +151,38 @@ def stamp(acquired_utc: str) -> str:
 class Store:
     """The published files under ``out``."""
 
-    def __init__(self, out: Path):
+    def __init__(self, out: Path, sites: list[dict] | None = None):
         self.out = out
+        self.sites = sites if sites is not None else load_sites()
         self.rows = read_csv(out / "ship_counts.csv")
         self.usage = read_csv(out / "usage.csv")
         st = out / "status.json"
         self.status = json.loads(st.read_text(encoding="utf-8")) if st.exists() else {"scenes": []}
         self.new_features: dict[str, list[dict]] = {}
 
-    def done(self, site_id: str) -> set[str]:
-        keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id}
+    # Rows and scenes are kept per mask version: a new version (a new site extent) starts
+    # its own series and re-reads recent scenes; rows of the old version stay as they were.
+    def done(self, site_id: str, tag: str) -> set[str]:
+        keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id and row_mask_tag(r) == tag}
         keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
-                 if s["site_id"] == site_id and s.get("result") != "error"}
+                 if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("result") != "error"}
         return keys
 
-    def has_rows(self, site_id: str) -> bool:
-        return any(r["site_id"] == site_id for r in self.rows)
+    def has_rows(self, site_id: str, tag: str) -> bool:
+        return any(r["site_id"] == site_id and row_mask_tag(r) == tag for r in self.rows)
 
     def note_scene(self, entry: dict) -> None:
-        sc = [s for s in self.status.get("scenes", [])
-              if not (s["site_id"] == entry["site_id"] and s["acquired_utc"] == entry["acquired_utc"])]
+        key = (entry["site_id"], entry["acquired_utc"], row_mask_tag(entry))
+        sc = [s for s in self.status.get("scenes", []) if (s["site_id"], s["acquired_utc"], row_mask_tag(s)) != key]
         sc.append(entry)
-        sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"]))
+        sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"], row_mask_tag(s)))
         self.status["scenes"] = sc
 
     def add(self, row: dict, features: list[dict], image: bytes) -> None:
-        self.rows = [r for r in self.rows if not (r["site_id"] == row["site_id"] and r["acquired_utc"] == row["acquired_utc"])]
+        key = (row["site_id"], row["acquired_utc"], row_mask_tag(row))
+        self.rows = [r for r in self.rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key]
         self.rows.append(row)
-        self.rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"]))
+        self.rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
         p = self.out / row["image"]
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(image)
@@ -135,11 +194,13 @@ class Store:
         for month, items in self.new_features.items():
             p = self.out / "detections" / f"{month}.geojson"
             fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
-            keys = {(r["site_id"], r["acquired_utc"]) for r, _ in items}
-            feats = [f for f in fc["features"] if (f["properties"]["site_id"], f["properties"]["acquired_utc"]) not in keys]
+            fkey = lambda p: (p["site_id"], p["acquired_utc"], row_mask_tag(p))
+            keys = {fkey(r) for r, _ in items}
+            feats = [f for f in fc["features"] if fkey(f["properties"]) not in keys]
             for _r, fs in items:
                 feats.extend(fs)
-            feats.sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"]["site_id"], f["properties"]["n"]))
+            feats.sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"]["site_id"],
+                                      row_mask_tag(f["properties"]), f["properties"]["n"]))
             fc["features"] = feats
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -148,8 +209,10 @@ class Store:
         write_csv(self.out / "usage.csv", self.usage, USAGE_FIELDS)
         self.status["last_run"] = run
         self.status["updated_utc"] = run["run_utc"]
+        self.status["series_breaks"] = series_breaks(self.sites)
         (self.out / "status.json").write_text(json.dumps(self.status, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows, self.sites), ensure_ascii=False, indent=1) + "\n",
+                                            encoding="utf-8")
 
 
 def attribution(rows: list[dict]) -> str:
@@ -160,11 +223,42 @@ def attribution(rows: list[dict]) -> str:
     return f"Contains modified Copernicus Sentinel data {span}"
 
 
-def build_meta(rows: list[dict]) -> dict:
+def series_breaks(sites: list[dict]) -> list[dict]:
+    """Where a site's counts start a new series (a new mask version = a new extent)."""
+    out = []
+    for site in sites:
+        for h in site.get("history") or []:
+            out.append({
+                "site_id": site["id"],
+                "from_mask_version": f"{site['id']}-land-v{h['mask_version']}",
+                "to_mask_version": mask_tag(site),
+                "date_utc": h.get("until_utc"),
+                "note": (f"監視範囲を変更（旧範囲 v{h['mask_version']}：{h.get('note', '')}）。mask_version が違う行の数は範囲が違うため直接比べない。"
+                         "新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"),
+            })
+    return out
+
+
+def site_meta(site: dict) -> dict:
+    grid = Grid.for_site(site)
+    m = {"id": site["id"], "name": site.get("name"), "mask_version": mask_tag(site), "bbox": grid.bbox,
+         "width_px": grid.width, "height_px": grid.height, "area_km2": round(grid.area_km2(), 1),
+         "provisional": bool(site.get("provisional")), "note": site.get("note")}
+    sec = site_sectors(site)
+    if sec:
+        m["sectors"] = [{"column": f"sector_{c}", **sc} for c, sc in zip(SECTOR_COLUMNS, sec)]
+    return m
+
+
+def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
+    sites = sites if sites is not None else load_sites()
     return {
         "dataset": "sat",
         "title": "Sentinel-1 による港内の艦船候補数（試行：湛江 1 地点）",
-        "status": "試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）",
+        "status": ("試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）。湛江（ZJG）は 2026-10-30 に監視範囲を v2（東岸の軍港を中心とする矩形）"
+                   "に変えた。ZJG-land-v1 の行と ZJG-land-v2 の行は範囲が違うため直接比べない（series_breaks）"),
+        "sites": [site_meta(s) for s in sites if s.get("enabled")],
+        "series_breaks": series_breaks(sites),
         "source": {
             "name": "Copernicus Sentinel-1 IW GRD（Copernicus Data Space Ecosystem, Sentinel Hub Process API）",
             "position": "欧州連合 Copernicus 計画の公式データ",
@@ -180,7 +274,7 @@ def build_meta(rows: list[dict]) -> dict:
         "files": {
             "ship_counts.csv": "1 行＝1 撮影×1 地点",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
-            "images/<地点>/<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物",
+            "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",
             "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）",
             "CHANGES.md": "定義変更の記録",
@@ -196,13 +290,15 @@ def build_meta(rows: list[dict]) -> dict:
             "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数",
             "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数",
             "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
-            "mask_version": "陸マスクの版",
+            "mask_version": "陸マスクの版（＝監視範囲の版）。版が違う行は範囲が違い、直接比べない",
             "detector_version": "検出設定の版",
             "processing_version": "処理の版",
             "coverage": "地点の水域のうちデータがあった割合",
             "len_lt50 / len_50_100 / len_100_200 / len_ge200": "候補（両区域）の長さの区分ごとの数（〜50 / 50〜100 / 100〜200 / 200 m〜）",
             "processing_units": "その撮影の取得に使った処理単位（PU）",
             "image": "切り出し画像",
+            "sector_a_harbour / sector_a_quay": "区画 A（地点の sectors の1つ目。湛江は軍港区画）の港内水域・岸壁帯の候補数（重心で判定）。区画のない版の行は空",
+            "sector_b_harbour / sector_b_quay": "区画 B（切り出しの残り。湛江は水道）の港内水域・岸壁帯の候補数。A と B の合計は harbour_candidates / quay_candidates と同じ",
         },
         "detector": {"version": DETECTOR_VERSION, **DETECT_DEFAULTS,
                      "length_classes_m": [[n, lo, None if hi == math.inf else hi] for n, lo, hi in LENGTH_CLASSES]},
@@ -215,7 +311,8 @@ def build_meta(rows: list[dict]) -> dict:
             "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
             "固定物（ブイ・係留施設等）のマスクはまだ無く、固定物も候補に数える",
             "撮影は地点ごとに数日おき。軌道の向き・入射角で見え方が変わるため、比較は同じ相対軌道どうしで行う",
-            "地点の範囲は概略（数 km ずれの可能性）。確定するまで公開画面の地図には出さない",
+            "湛江の範囲 v2 は 2部の確定案（2026-10-30）。北端 21.265N で麻斜の桟橋群が切れていないかは次の撮影の画像で確かめる。確かめるまで公開画面の地図には出さない",
+            "区画は候補の重心で決める。境界をまたぐ艦は重心のある側に数える",
         ],
     }
 
@@ -223,7 +320,9 @@ def build_meta(rows: list[dict]) -> dict:
 def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: str) -> list[dict]:
     feats = []
     for i, d in enumerate(sorted(dets, key=lambda d: (d["row"], d["col"]))):
-        lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
+        lon, lat = d.get("lon"), d.get("lat")
+        if lon is None:
+            lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
         feats.append({
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [round(float(lon), 6), round(float(lat), 6)]},
@@ -231,11 +330,11 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "n": i + 1,
                 "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
                 "relative_orbit": acq["relative_orbit"],
-                "zone": d["zone"], "length_m": d["length_m"], "width_m": d["width_m"],
+                "zone": d["zone"], "sector": d.get("sector"), "length_m": d["length_m"], "width_m": d["width_m"],
                 "length_class": d["length_class"], "pixels": d["pixels"],
                 "peak_vv_db": d["peak_vv_db"], "contrast_vv_db": d["contrast_vv_db"], "vh_ratio_db": d["vh_ratio_db"],
                 "status": "candidate", "reliability": SOURCE_RELIABILITY, "credibility": CANDIDATE_CREDIBILITY,
-                "mask_version": f"{site['id']}-land-v{MASK_VERSION}", "detector_version": DETECTOR_VERSION,
+                "mask_version": mask_tag(site), "detector_version": DETECTOR_VERSION,
                 "image": image,
             },
         })
@@ -245,14 +344,18 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
                  budget_left: float, max_scenes: int, log=print, probe: dict | None = None) -> dict:
     grid = Grid.for_site(site)
+    tag = mask_tag(site)
+    sectors = site_sectors(site)
+    if mask.shape != (grid.height, grid.width):
+        raise ValueError(f"{site['id']}: 陸マスク {tag} の大きさ {mask.shape} が範囲 {(grid.height, grid.width)} と合わない")
     if days is None:
-        days = LOOKBACK_DAYS if store.has_rows(site["id"]) else FIRST_LOOKBACK_DAYS
+        days = LOOKBACK_DAYS if store.has_rows(site["id"], tag) else FIRST_LOOKBACK_DAYS
     days = min(days, MAX_LOOKBACK_DAYS)
     feats = client.catalog(grid.bbox, now - timedelta(days=days), now)
     if probe is not None and feats:
         probe["catalog_property_keys"] = sorted(feats[0].get("properties", {}).keys())
     acqs = cdse.acquisitions(feats)
-    done = store.done(site["id"])
+    done = store.done(site["id"], tag)
     new = [a for a in acqs if a["acquired_utc"] not in done]
     log(f"{site['id']}: カタログ {len(feats)} 件 → 撮影 {len(acqs)} 回（過去 {days} 日）、新着 {len(new)}")
     summary = {"site_id": site["id"], "lookback_days": days, "catalog_items": len(feats),
@@ -268,7 +371,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             break
         entry = {"site_id": site["id"], "acquired_utc": acq["acquired_utc"], "platform": acq["platform"],
                  "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
-                 "catalog_ids": acq["ids"]}
+                 "mask_version": tag, "catalog_ids": acq["ids"]}
         retrieved = cdse.iso(datetime.now(timezone.utc))
         try:
             try:
@@ -303,7 +406,11 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             continue
         try:  # a detection/rendering failure is recorded like a fetch failure (PU already spent)
             dets, info = detect(vv, vh, land, grid.pixel_m)
-            image = f"images/{site['id']}/{stamp(acq['acquired_utc'])}.png"
+            for d in dets:
+                lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
+                d["lon"], d["lat"] = float(lon), float(lat)
+                d["sector"] = sector_of(sectors, d["lon"], d["lat"])
+            image = image_path(site, acq["acquired_utc"])
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
                 inc = round(float(np.nanmedian(lia[valid_water])), 2)
@@ -314,13 +421,16 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
                 "relative_orbit": acq["relative_orbit"], "incidence_deg": inc,
                 "harbour_candidates": nh, "quay_candidates": nq, "confirmed": "",
-                "mask_version": f"{site['id']}-land-v{MASK_VERSION}", "detector_version": DETECTOR_VERSION,
+                "mask_version": tag, "detector_version": DETECTOR_VERSION,
                 "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
                 "processing_units": pu, "image": image,
             }
+            for col, sc in zip(SECTOR_COLUMNS, sectors):
+                for zone in ("harbour", "quay"):
+                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
                 row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
-            quick = render.quicklook(vv, mask, dets)
+            quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors))
             features = chip_features(site, grid, acq, dets, image)
         except Exception as e:
             entry.update(result="error", error=f"検出・描画で失敗: {str(e)[:280]}")
@@ -332,8 +442,10 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         entry.update(result="counted", detector_info=info)
         store.note_scene(entry)
         summary["counted"] += 1
-        log(f"{site['id']} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
-            f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}（{pu} PU、水域の {coverage:.0%}）")
+        by_sector = "".join(f"、{sc['id']} {row[f'sector_{c}_harbour']}+{row[f'sector_{c}_quay']}"
+                            for c, sc in zip(SECTOR_COLUMNS, sectors))
+        log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
+            f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）")
     if len(new) > max_scenes:
         summary["deferred"] = len(new) - max_scenes
     summary["budget_left_pu"] = round(budget_left, 2)
@@ -359,7 +471,8 @@ def main(argv=None, client=None, sites=None) -> int:
         published_usage = read_csv(args.out / "usage.csv")
         args.out = args.probe / "out"
         probe = {}
-    store = Store(args.out)
+    all_sites = sites if sites is not None else load_sites()
+    store = Store(args.out, all_sites)
     month = now.strftime("%Y-%m")
     used_pu, used_req = month_usage(store.usage + published_usage, month)
     budget = MONTHLY_PU_CAP - used_pu
@@ -370,11 +483,11 @@ def main(argv=None, client=None, sites=None) -> int:
     client = client if client is not None else cdse.Client()
     rc = 0
     try:
-        for site in (sites if sites is not None else load_sites()):
+        for site in all_sites:
             if not site.get("enabled"):
                 continue
             try:
-                mask, mmeta = load_mask(site["id"], MASK_VERSION, mask_dir)
+                mask, mmeta = load_mask(site["id"], mask_version(site), mask_dir)
             except FileNotFoundError:
                 if probe is None:
                     raise
@@ -383,7 +496,7 @@ def main(argv=None, client=None, sites=None) -> int:
                 grid = Grid.for_site(site)
                 osm = fetch_osm(grid)
                 mask, info = build_mask(grid, osm)
-                mmeta = save_mask(site, grid, mask, info, osm, MASK_VERSION, args.probe / "masks")
+                mmeta = save_mask(site, grid, mask, info, osm, mask_version(site), args.probe / "masks")
                 print("陸マスクを OSM から作成:", json.dumps({k: mmeta[k] for k in mmeta if k != "query"}, ensure_ascii=False))
             if budget <= 0:
                 run["sites"].append({"site_id": site["id"], "deferred_budget": True})

@@ -1,7 +1,7 @@
 import unittest
 from datetime import date, datetime, timezone
 
-from collectors.mnd_parse import counts, parse_report, reparse, report_date, report_links
+from collectors.mnd_parse import adiz_types, counts, parse_report, reparse, report_date, report_links
 
 NOW = datetime(2026, 10, 30, 2, 0, tzinfo=timezone.utc)
 
@@ -56,6 +56,17 @@ class Parse(unittest.TestCase):
         self.assertEqual(r["window_start_utc"], "2021-10-03T16:00Z")
         r = parse_report(OLD_2020, "u", NOW)
         self.assertEqual((r["report_date"], r["adiz_aircraft"], r["period"]), ("2020-11-15", 2, None))
+
+    def test_number_word_joined_to_type_by_hyphen(self):
+        # Report 79236 (2021-10-26): "One-Y-8 EW" is one Y-8 EW, not part of the "Y-8 RECCE" name.
+        t = ("Aircraft Type: One Y-8 C3 One Y-8 RECCE One-Y-8 EW Two J-16 One Mi-17 Cargo "
+             "One WZ-10 Attack 三、Activity Area")
+        types = adiz_types(t)
+        self.assertEqual(types, {"Y-8 C3": 1, "Y-8 RECCE": 1, "Y-8 EW": 1, "J-16": 2, "Mi-17 Cargo": 1, "WZ-10 Attack": 1})
+        self.assertEqual(sum(types.values()), 7)
+        # Digits after a hyphen stay part of the type name, and "Twenty-Four" is still 24.
+        self.assertEqual(adiz_types("Aircraft Type: Twenty-Four J-16 Two-KJ-500 AEW&C Keywords"),
+                         {"J-16": 24, "KJ-500 AEW&C": 2})
 
     def test_english_current_format(self):
         r = parse_report(EN_2025, "https://www.mnd.gov.tw/en/news/plaact/84583", NOW)

@@ -160,6 +160,14 @@ class Grayzone(unittest.TestCase):
         Z = proto2.build_grayzone(G, M)
         self.assertFalse(Z['jcg_available'])
         self.assertEqual(Z['days'], [['2024-01-01', None, None, None, 1], ['2024-01-02', None, None, 3, 1]])
+        self.assertEqual(Z['jcg_unverified_months'], [])
+
+    def test_unverified_months(self):
+        G = {'daily': {date(2014, 2, 1): {'cz': 3, 'ts': None, 'check': 'no_totals'},
+                       date(2014, 2, 3): {'cz': None, 'ts': None, 'check': 'no_totals'},
+                       date(2014, 3, 1): {'cz': 3, 'ts': 0, 'check': 'match'}}, 'status': {}, 'available': True}
+        Z = proto2.build_grayzone(G, {'daily': {}})
+        self.assertEqual(Z['jcg_unverified_months'], ['2014-02'])
 
 
 class RealData(unittest.TestCase):
