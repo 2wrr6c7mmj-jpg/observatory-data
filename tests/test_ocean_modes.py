@@ -231,6 +231,18 @@ class WideModeTest(unittest.TestCase):
             self.assertTrue(items)
             self.assertEqual(items[0]["region"], "SENKAKU")
             self.assertIn("SENKAKU", s["per_region"])
+
+    def test_partial_cells_are_not_requested_twice(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            # the footprint edge cuts through the middle of a column of cells
+            geom = {"type": "Polygon", "coordinates": [[[123.0, 24.0], [124.3, 24.0], [124.3, 27.0], [123.0, 27.0], [123.0, 24.0]]]}
+            c = Fake(["2026-10-28T09:50:00Z"], geom=geom)
+            s = op.run_mode(args(tmp, "wide", max_pu=500.0, dry_run=True), client=c, overpass=overpass, now=NOW,
+                            pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            keys = [(p["acquired_utc"], tuple(p["bbox"])) for p in s["plan"]["items"]]
+            self.assertEqual(len(keys), len(set(keys)))
+            self.assertLessEqual(len(keys), 4)
         self.assertEqual(wide.subregion(123.0, 30.0), "ECS-N")
 
 
