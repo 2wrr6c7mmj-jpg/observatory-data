@@ -157,7 +157,9 @@ class Client:
         return feats
 
     def process(self, bbox: list[float], width: int, height: int, t_from: datetime, t_to: datetime,
-                with_lia: bool = True) -> tuple[bytes, float | None]:
+                with_lia: bool = True, upsampling: str = "NEAREST") -> tuple[bytes, float | None]:
+        """``upsampling``: interpolation of the S1 GRD (Sentinel Hub docs: for Sentinel-1 it applies
+        "regardless of the resolution" and ``downsampling`` is "Not used"). The daily run keeps NEAREST."""
         payload = {
             "input": {
                 "bounds": {"bbox": bbox, "properties": {"crs": "http://www.opengis.net/def/crs/EPSG/0/4326"}},
@@ -169,7 +171,7 @@ class Client:
                         "mosaickingOrder": "mostRecent",
                     },
                     "processing": {"backCoeff": "SIGMA0_ELLIPSOID", "orthorectify": True,
-                                   "demInstance": "COPERNICUS_30", "upsampling": "NEAREST", "downsampling": "NEAREST"},
+                                   "demInstance": "COPERNICUS_30", "upsampling": upsampling, "downsampling": "NEAREST"},
                 }],
             },
             "output": {"width": width, "height": height,

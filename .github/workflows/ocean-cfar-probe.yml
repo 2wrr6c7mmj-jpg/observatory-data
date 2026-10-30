@@ -1,0 +1,82 @@
+name: Ocean CFAR v1/v2 probe
+# cfar-v2 PR3（実験中）：外洋（香港の南・台湾海峡・東シナ海・南シナ海北部・台湾東方）の Sentinel-1 を 20 m で取り、
+# cfar-v1（sat/detect.py）と cfar-v2（sat/detect2.py）を同じ配列に通して比べる（ocean/cfar_probe.py）。
+# probe 用ブランチへの push でだけ動く（workflow_dispatch・定期実行なし）。ブランチ名に -plan を含むと
+# カタログと PU の見込みだけ（PU を使わない）。本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）と別の
+# concurrency group で、外洋の probe どうしは 1 つの group（同時に走って上限を二重に使わない）。
+# 結果（小さな JSON・GeoJSON・report.txt と docs/data/ocean/usage.csv の 1 行）は同じ probe ブランチにだけ commit する。
+# 生の σ0 は保存しない。main は変えない。
+on:
+  push:
+    branches: ['probe/ocean-cfar', 'probe/ocean-cfar*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-ocean-cfar
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: ${{ !contains(github.event.head_commit.message, '[ocean-cfar-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest tests.test_ocean_cfar_probe tests.test_sat -v
+      - name: Usage of this month (main's sat usage, ocean usage of every ocean-cfar probe branch)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage"
+          git fetch -q origin main '+refs/heads/probe/ocean-cfar*:refs/remotes/origin/probe/ocean-cfar*' || true
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv" || true
+          i=0
+          for r in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/probe/ocean-cfar*'); do
+            i=$((i+1))
+            git show "$r:docs/data/ocean/usage.csv" > "$RUNNER_TEMP/usage/ocean-$i.csv" 2>/dev/null || rm -f "$RUNNER_TEMP/usage/ocean-$i.csv"
+          done
+          ls -l "$RUNNER_TEMP/usage"
+      - name: Probe
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          set -o pipefail
+          RUN="ocean/results/cfar_probe/$(date -u +%Y-%m-%dT%H-%M-%SZ)"
+          echo "RUN_DIR=$RUN" >> "$GITHUB_ENV"
+          DRY=""
+          case "$GITHUB_REF_NAME" in *-plan*) DRY="--dry-run" ;; esac
+          python -m ocean.cfar_probe --out "$RUN" --usage docs/data/ocean/usage.csv \
+            --sat-usage "$RUNNER_TEMP/usage/sat.csv" \
+            --ocean-usage $(ls "$RUNNER_TEMP"/usage/ocean-*.csv 2>/dev/null) \
+            --max-minutes 300 $DRY 2>&1 | tee "$RUNNER_TEMP/probe.log"
+      - name: Report (annotations)
+        if: always()
+        run: |
+          [ -n "$RUN_DIR" ] && [ -e "$RUN_DIR/report.txt" ] || { python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"; exit 0; }
+          python - "$RUN_DIR/report.txt" <<'EOF'
+          import sys
+          text = open(sys.argv[1], encoding="utf-8").read()
+          parts = [text[i:i + 3800] for i in range(0, len(text), 3800)]
+          for k, p in enumerate(parts[:30]):
+              level = ("notice", "warning", "error")[k // 10 % 3]
+              p = p.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+              print(f"::{level} title=ocean-cfar {k + 1}/{len(parts)}::{p}")
+          EOF
+      - name: Commit the result to this probe branch only
+        if: always()
+        run: |
+          [ -n "$RUN_DIR" ] || exit 0
+          git add docs/data/ocean "$RUN_DIR" || true
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 外洋の cfar-v1/v2 比較 ${RUN_DIR##*/} [ocean-cfar-result]"
+          for i in 1 2 3; do
+            git push origin "HEAD:${GITHUB_REF_NAME}" && break
+            git pull -q --rebase origin "${GITHUB_REF_NAME}"
+          done
+          echo "::notice title=ocean-cfar-commit::$(git rev-parse HEAD) ${RUN_DIR}"
