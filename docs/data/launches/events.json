@@ -1,0 +1,890 @@
+{
+ "generated_utc": "2026-10-30T06:38:10Z",
+ "sites": {
+  "酒泉": [
+   40.96,
+   100.29,
+   "CN"
+  ],
+  "太原": [
+   38.85,
+   111.61,
+   "CN"
+  ],
+  "西昌": [
+   28.25,
+   102.03,
+   "CN"
+  ],
+  "文昌": [
+   19.61,
+   110.95,
+   "CN"
+  ],
+  "海陽（海上発射）": [
+   35.0,
+   122.0,
+   "CN"
+  ],
+  "西海（東倉里）": [
+   39.66,
+   124.71,
+   "KP"
+  ],
+  "平壌周辺": [
+   39.03,
+   125.75,
+   "KP"
+  ],
+  "種子島": [
+   30.4,
+   130.97,
+   "JP"
+  ],
+  "内之浦": [
+   31.25,
+   131.08,
+   "JP"
+  ],
+  "羅老": [
+   34.43,
+   127.53,
+   "KR"
+  ],
+  "ボストーチヌイ": [
+   51.88,
+   128.33,
+   "RU"
+  ]
+ },
+ "events": [
+  {
+   "window_start_utc": "2025-09-08T18:00Z",
+   "window_end_utc": "2025-09-08T22:00Z",
+   "areas": [
+    [
+     34.95,
+     120.392
+    ]
+   ],
+   "notices": [
+    "maritime:云航警51/25"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 147
+  },
+  {
+   "window_start_utc": "2025-12-30T22:30Z",
+   "window_end_utc": "2025-12-31T23:10Z",
+   "areas": [
+    [
+     19.619,
+     110.955
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警259/25"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 1
+  },
+  {
+   "window_start_utc": "2026-07-19T22:00Z",
+   "window_end_utc": "2026-07-22T04:00Z",
+   "areas": [
+    [
+     31.165,
+     123.715
+    ]
+   ],
+   "notices": [
+    "maritime:沪航警561/26"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 455
+  },
+  {
+   "window_start_utc": "2026-07-22T01:30Z",
+   "window_end_utc": "2026-07-22T03:30Z",
+   "areas": [
+    [
+     28.233,
+     123.842
+    ]
+   ],
+   "notices": [
+    "maritime:浙航警627/26"
+   ],
+   "method": "nearest-only",
+   "site": "種子島",
+   "country": "JP",
+   "distance_km": 732
+  },
+  {
+   "window_start_utc": "2026-07-29T11:30Z",
+   "window_end_utc": "2026-07-31T14:00Z",
+   "areas": [
+    [
+     19.619,
+     110.955
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警138/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 1
+  },
+  {
+   "window_start_utc": "2026-08-03T06:00Z",
+   "window_end_utc": "2026-08-05T04:00Z",
+   "areas": [
+    [
+     36.227,
+     121.366
+    ]
+   ],
+   "notices": [
+    "maritime:鲁航警629/26"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 148
+  },
+  {
+   "window_start_utc": "2026-08-04T07:50Z",
+   "window_end_utc": "2026-08-05T09:50Z",
+   "areas": [
+    [
+     19.6,
+     110.93
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警130/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2
+  },
+  {
+   "window_start_utc": "2026-08-16T03:00Z",
+   "window_end_utc": "2026-08-17T05:00Z",
+   "areas": [
+    [
+     19.598,
+     110.936
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警148/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2
+  },
+  {
+   "window_start_utc": "2026-08-17T07:09Z",
+   "window_end_utc": "2026-11-16T15:00Z",
+   "areas": [
+    [
+     25.178,
+     125.081
+    ],
+    [
+     24.964,
+     125.022
+    ]
+   ],
+   "notices": [
+    "aviation:P3998/26",
+    "aviation:P3999/26"
+   ],
+   "method": "aligned",
+   "site": "羅老",
+   "country": "KR",
+   "azimuth_deg": 193.6,
+   "bearing_spread_deg": 0.0,
+   "inclination_deg": 101.2,
+   "recorded_launches": [
+    {
+     "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+     "name": "Mir | Demo Flight",
+     "status": "TBC",
+     "net_utc": "2026-11-04T05:00:00Z",
+     "rocket": "Mir",
+     "orbit": "LEO",
+     "pad": "ADD Offshore launch platform"
+    },
+    {
+     "ll2_id": "e0741415-6c63-4236-9736-24a6c04485bc",
+     "name": "Nuri | NeonSat-2 to 6",
+     "status": "Success",
+     "net_utc": "2026-10-07T03:25:00Z",
+     "rocket": "KSLV-2 Nuri",
+     "orbit": "SSO",
+     "pad": "LC-2"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-09-10T08:00Z",
+   "window_end_utc": "2026-09-10T11:00Z",
+   "areas": [
+    [
+     30.284,
+     126.002
+    ]
+   ],
+   "notices": [
+    "maritime:浙航警807/26"
+   ],
+   "method": "nearest-only",
+   "site": "種子島",
+   "country": "JP",
+   "distance_km": 477
+  },
+  {
+   "window_start_utc": "2026-09-13T22:00Z",
+   "window_end_utc": "2026-09-15T23:00Z",
+   "areas": [
+    [
+     31.165,
+     123.711
+    ]
+   ],
+   "notices": [
+    "maritime:沪航警722/26"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 455
+  },
+  {
+   "window_start_utc": "2026-09-15T16:00Z",
+   "window_end_utc": "2026-09-16T00:00Z",
+   "areas": [
+    [
+     28.121,
+     123.621
+    ]
+   ],
+   "notices": [
+    "maritime:浙航警841/26"
+   ],
+   "method": "nearest-only",
+   "site": "種子島",
+   "country": "JP",
+   "distance_km": 756
+  },
+  {
+   "window_start_utc": "2026-09-16T23:30Z",
+   "window_end_utc": "2026-09-18T01:30Z",
+   "areas": [
+    [
+     19.598,
+     110.936
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警174/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2
+  },
+  {
+   "window_start_utc": "2026-09-23T12:32Z",
+   "window_end_utc": "2026-09-24T14:32Z",
+   "areas": [
+    [
+     19.6,
+     110.93
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警185/2026"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2
+  },
+  {
+   "window_start_utc": "2026-09-24T08:00Z",
+   "window_end_utc": "2026-09-24T10:00Z",
+   "areas": [
+    [
+     17.804,
+     112.207
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警182/2026"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 241
+  },
+  {
+   "window_start_utc": "2026-10-07T03:33Z",
+   "window_end_utc": "2026-10-07T04:53Z",
+   "areas": [
+    [
+     15.25,
+     130.016
+    ]
+   ],
+   "notices": [
+    "maritime:NAVAREA XI 26-0439"
+   ],
+   "method": "none"
+  },
+  {
+   "window_start_utc": "2026-10-09T18:30Z",
+   "window_end_utc": "2026-10-10T20:30Z",
+   "areas": [
+    [
+     19.598,
+     110.936
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警190/2026"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2,
+   "recorded_launches": [
+    {
+     "ll2_id": "a1bb0984-19d4-4b47-9bba-706d225573e2",
+     "name": "Long March 12 | SatNet LEO Group 27",
+     "status": "Success",
+     "net_utc": "2026-10-09T19:27:00Z",
+     "rocket": "Long March 12",
+     "orbit": "LEO",
+     "pad": "Commercial LC-2"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-10-18T22:00Z",
+   "window_end_utc": "2026-10-21T07:00Z",
+   "areas": [
+    [
+     35.203,
+     120.009
+    ]
+   ],
+   "notices": [
+    "maritime:鲁航警906/2026"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 183,
+   "recorded_launches": [
+    {
+     "ll2_id": "69ebbcd2-b257-4070-9ef9-21e7d1f8a883",
+     "name": "H3-24 | Martian Moons eXploration (MMX)",
+     "status": "Success",
+     "net_utc": "2026-10-19T19:41:03Z",
+     "rocket": "H3-24",
+     "orbit": "Mars",
+     "pad": "Yoshinobu Launch Complex LP-2"
+    },
+    {
+     "ll2_id": "c6f8b6b0-6bae-460a-99bb-c12a3d29effd",
+     "name": "Ceres-1S | Xiguang-4 01",
+     "status": "Success",
+     "net_utc": "2026-10-21T03:39:00Z",
+     "rocket": "Ceres-1S",
+     "orbit": "LEO",
+     "pad": "Rizhao offshore launch location"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-10-22T02:00Z",
+   "window_end_utc": "2026-10-23T04:00Z",
+   "areas": [
+    [
+     19.6,
+     110.93
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警200/2026"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2
+  },
+  {
+   "window_start_utc": "2026-10-23T19:25Z",
+   "window_end_utc": "2026-10-23T19:45Z",
+   "areas": [
+    [
+     30.284,
+     126.002
+    ]
+   ],
+   "notices": [
+    "maritime:浙航警960/2026",
+    "maritime:浙航警960/26"
+   ],
+   "method": "nearest-only",
+   "site": "種子島",
+   "country": "JP",
+   "distance_km": 477
+  },
+  {
+   "window_start_utc": "2026-10-25T01:00Z",
+   "window_end_utc": "2026-10-26T03:00Z",
+   "areas": [
+    [
+     19.6,
+     110.93
+    ]
+   ],
+   "notices": [
+    "maritime:琼航警210/2026"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 2,
+   "recorded_launches": [
+    {
+     "ll2_id": "6b95bcc8-1f88-4539-84fe-f63630138766",
+     "name": "Long March 8A | SatNet LEO Group 28",
+     "status": "Success",
+     "net_utc": "2026-10-25T02:03:00Z",
+     "rocket": "Long March 8A",
+     "orbit": "LEO",
+     "pad": "Commercial LC-1"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-01T23:00Z",
+   "window_end_utc": "2026-11-02T07:00Z",
+   "areas": [
+    [
+     35.272,
+     138.832
+    ]
+   ],
+   "notices": [
+    "aviation:P5408/26"
+   ],
+   "method": "nearest-only",
+   "site": "内之浦",
+   "country": "JP",
+   "distance_km": 848
+  },
+  {
+   "window_start_utc": "2026-11-05T20:00Z",
+   "window_end_utc": "2026-11-09T23:00Z",
+   "areas": [
+    [
+     9.14,
+     119.21
+    ]
+   ],
+   "notices": [
+    "aviation:B5731/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 1464,
+   "recorded_launches": [
+    {
+     "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
+     "name": "Long March 12 | SatNet LEO Group TBD?",
+     "status": "TBC",
+     "net_utc": "2026-11-05T20:00:00Z",
+     "rocket": "Long March 12",
+     "orbit": "LEO",
+     "pad": "Commercial LC-2"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-10T00:00Z",
+   "window_end_utc": "2026-11-10T10:00Z",
+   "areas": [
+    [
+     31.251,
+     131.082
+    ]
+   ],
+   "notices": [
+    "aviation:P5375/26"
+   ],
+   "method": "nearest-only",
+   "site": "内之浦",
+   "country": "JP",
+   "distance_km": 0
+  }
+ ],
+ "recorded_launches": [
+  {
+   "ll2_id": "e0741415-6c63-4236-9736-24a6c04485bc",
+   "name": "Nuri | NeonSat-2 to 6",
+   "status": "Success",
+   "net_utc": "2026-10-07T03:25:00Z",
+   "rocket": "KSLV-2 Nuri",
+   "provider": "Korea Aerospace Research Institute",
+   "orbit": "SSO",
+   "mission_type": "Earth Science",
+   "pad": "LC-2",
+   "location": "Naro Space Center, South Korea",
+   "country": "KOR",
+   "lat": 34.431867,
+   "lon": 127.535069,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/e0741415-6c63-4236-9736-24a6c04485bc/",
+   "event_index": 8
+  },
+  {
+   "ll2_id": "a1bb0984-19d4-4b47-9bba-706d225573e2",
+   "name": "Long March 12 | SatNet LEO Group 27",
+   "status": "Success",
+   "net_utc": "2026-10-09T19:27:00Z",
+   "rocket": "Long March 12",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-2",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.59755,
+   "lon": 110.936481,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a1bb0984-19d4-4b47-9bba-706d225573e2/",
+   "event_index": 16
+  },
+  {
+   "ll2_id": "dfcabb3c-078b-4f5b-a47c-0161f248cee9",
+   "name": "Zhuque-2E Block 2 | 10 satellites",
+   "status": "Success",
+   "net_utc": "2026-10-14T11:40:00Z",
+   "rocket": "Zhuque-2E Block 2",
+   "provider": "LandSpace",
+   "orbit": "SSO",
+   "mission_type": "Technology",
+   "pad": "Launch Area 96A",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.91491,
+   "lon": 100.245488,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/dfcabb3c-078b-4f5b-a47c-0161f248cee9/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "69ebbcd2-b257-4070-9ef9-21e7d1f8a883",
+   "name": "H3-24 | Martian Moons eXploration (MMX)",
+   "status": "Success",
+   "net_utc": "2026-10-19T19:41:03Z",
+   "rocket": "H3-24",
+   "provider": "Mitsubishi Heavy Industries",
+   "orbit": "Mars",
+   "mission_type": "Planetary Science",
+   "pad": "Yoshinobu Launch Complex LP-2",
+   "location": "Tanegashima Space Center, Japan",
+   "country": "JPN",
+   "lat": 30.400938,
+   "lon": 130.97564,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/69ebbcd2-b257-4070-9ef9-21e7d1f8a883/",
+   "event_index": 17
+  },
+  {
+   "ll2_id": "c6f8b6b0-6bae-460a-99bb-c12a3d29effd",
+   "name": "Ceres-1S | Xiguang-4 01",
+   "status": "Success",
+   "net_utc": "2026-10-21T03:39:00Z",
+   "rocket": "Ceres-1S",
+   "provider": "Galactic Energy",
+   "orbit": "LEO",
+   "mission_type": "Earth Science",
+   "pad": "Rizhao offshore launch location",
+   "location": "Haiyang Oriental Spaceport",
+   "country": "CHN",
+   "lat": 35.391667,
+   "lon": 119.598667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/c6f8b6b0-6bae-460a-99bb-c12a3d29effd/",
+   "event_index": 17
+  },
+  {
+   "ll2_id": "9648124f-8568-46d2-86d7-4b4d6f12187f",
+   "name": "Long March 6A | Yaogan 50-03",
+   "status": "Success",
+   "net_utc": "2026-10-23T10:15:00Z",
+   "rocket": "Long March 6A",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Government/Top Secret",
+   "pad": "Launch Complex 9A",
+   "location": "Taiyuan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 38.8583,
+   "lon": 111.5802,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9648124f-8568-46d2-86d7-4b4d6f12187f/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "3621085f-deae-4f89-bd54-c0f96ee44421",
+   "name": "Long March 4B | Yaogan 53-07 to 09/56-19 to 21",
+   "status": "Success",
+   "net_utc": "2026-10-23T19:25:00Z",
+   "rocket": "Long March 4B",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Government/Top Secret",
+   "pad": "Launch Area 94 (SLS-2 / 603)",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.960482,
+   "lon": 100.298059,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/3621085f-deae-4f89-bd54-c0f96ee44421/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "6b95bcc8-1f88-4539-84fe-f63630138766",
+   "name": "Long March 8A | SatNet LEO Group 28",
+   "status": "Success",
+   "net_utc": "2026-10-25T02:03:00Z",
+   "rocket": "Long March 8A",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-1",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.597275,
+   "lon": 110.930753,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/6b95bcc8-1f88-4539-84fe-f63630138766/",
+   "event_index": 20
+  },
+  {
+   "ll2_id": "f3f201cd-0ff9-4ff7-9aaa-1d22c399c75a",
+   "name": "Kinetica 2 | SpaceSail Polar Group TBD?",
+   "status": "Go",
+   "net_utc": "2026-11-03T00:10:00Z",
+   "rocket": "Kinetica 2",
+   "provider": "CAS Space",
+   "orbit": "PO",
+   "mission_type": "Communications",
+   "pad": "Launch Area 140",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.81748,
+   "lon": 100.21939,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/f3f201cd-0ff9-4ff7-9aaa-1d22c399c75a/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+   "name": "Mir | Demo Flight",
+   "status": "TBC",
+   "net_utc": "2026-11-04T05:00:00Z",
+   "rocket": "Mir",
+   "provider": "Agency for Defense Development",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "pad": "ADD Offshore launch platform",
+   "location": "Sea Launch",
+   "country": "???",
+   "lat": 33.216667,
+   "lon": 126.366667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
+   "event_index": 8
+  },
+  {
+   "ll2_id": "e91d1da2-819b-4523-95bf-39ac7daa871d",
+   "name": "Ceres-2 | Unknown Payload",
+   "status": "TBC",
+   "net_utc": "2026-11-04T21:00:00Z",
+   "rocket": "Ceres-2",
+   "provider": "Galactic Energy",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Area 95A",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.969117,
+   "lon": 100.343333,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/e91d1da2-819b-4523-95bf-39ac7daa871d/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
+   "name": "Long March 12 | SatNet LEO Group TBD?",
+   "status": "TBC",
+   "net_utc": "2026-11-05T20:00:00Z",
+   "rocket": "Long March 12",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-2",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.59755,
+   "lon": 110.936481,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a2423132-f965-423f-8b03-6891b775dc54/",
+   "event_index": 22
+  },
+  {
+   "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
+   "name": "Long March 2F/G | Shenzhou 24",
+   "status": "TBD",
+   "net_utc": "2026-11-25T00:00:00Z",
+   "rocket": "Long March 2F/G",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Human Exploration",
+   "pad": "Launch Area 91 (SLS-1 / 921)",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.957893,
+   "lon": 100.290944,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
+   "name": "Gravity-2 | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Gravity-2",
+   "provider": "Orienspace Technology",
+   "orbit": "N/A",
+   "mission_type": "Test Flight",
+   "pad": "Unknown launch location",
+   "location": "Haiyang Oriental Spaceport",
+   "country": "CHN",
+   "lat": 36.676794,
+   "lon": 121.235103,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/4ca86de3-2ff8-4fd3-a22c-35b7fc618610/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "84f8dd64-8146-45e1-b34c-7df662a59c65",
+   "name": "Hyperbola-3 | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Hyperbola-3",
+   "provider": "i-Space",
+   "orbit": "N/A",
+   "mission_type": "Test Flight",
+   "pad": "Commercial LC-2",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.59755,
+   "lon": 110.936481,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/84f8dd64-8146-45e1-b34c-7df662a59c65/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "8d2a11e2-51e3-4841-a616-d41589373025",
+   "name": "Long March 10A | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Long March 10A",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "N/A",
+   "mission_type": "Test Flight",
+   "pad": "301",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.610019,
+   "lon": 110.944443,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/8d2a11e2-51e3-4841-a616-d41589373025/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "a8d8d683-3ab0-40ab-beb0-e66bb55afd91",
+   "name": "Nebula-1 | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Nebula-1",
+   "provider": "Deep Blue Aerospace",
+   "orbit": "Sub",
+   "mission_type": "Test Flight",
+   "pad": "Land Launch Pad 1",
+   "location": "Haiyang Oriental Spaceport",
+   "country": "CHN",
+   "lat": 36.664312,
+   "lon": 121.188333,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a8d8d683-3ab0-40ab-beb0-e66bb55afd91/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "ac02da00-6e8b-45a0-b829-09d614891e6a",
+   "name": "H3-22 | ETS-9",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "H3-22",
+   "provider": "Mitsubishi Heavy Industries",
+   "orbit": "GTO",
+   "mission_type": "Communications",
+   "pad": "Yoshinobu Launch Complex LP-2",
+   "location": "Tanegashima Space Center, Japan",
+   "country": "JPN",
+   "lat": 30.400938,
+   "lon": 130.97564,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/ac02da00-6e8b-45a0-b829-09d614891e6a/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "cb0c27fd-496c-4f74-aa04-9c0e5af33e3c",
+   "name": "Epsilon S | JV-LOTUSat-1",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Epsilon S",
+   "provider": "Japan Aerospace Exploration Agency",
+   "orbit": "SSO",
+   "mission_type": "Earth Science",
+   "pad": "Mu Center",
+   "location": "Uchinoura Space Center, Japan",
+   "country": "JPN",
+   "lat": 31.2509794,
+   "lon": 131.0821319,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/cb0c27fd-496c-4f74-aa04-9c0e5af33e3c/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "dc570565-4dcf-4ab9-8174-bf88efef477f",
+   "name": "Long March 12A | Flight 2",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Long March 12A",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "pad": "Long March 12 series Pad",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.891596,
+   "lon": 100.217289,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/dc570565-4dcf-4ab9-8174-bf88efef477f/",
+   "event_index": null
+  }
+ ]
+}

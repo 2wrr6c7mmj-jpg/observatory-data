@@ -1,0 +1,1687 @@
+{
+ "last_retrieved_utc": "2026-10-30T06:38:10Z",
+ "last_snapshot": "snapshot-22f863bd9e2f9222.json",
+ "notices": {
+  "aviation:B5731/26": {
+   "authority": "RPHI",
+   "end_utc": "2026-11-09T23:00:00Z",
+   "evidence": [
+    "AEROSPACE FLT",
+    "EST FALL AREA"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "B5731/26",
+   "key": "aviation:B5731/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       9.2667,
+       118.95
+      ],
+      [
+       9.4667,
+       119.2167
+      ],
+      [
+       8.95,
+       119.6
+      ],
+      [
+       8.75,
+       119.3333
+      ],
+      [
+       9.2667,
+       118.95
+      ]
+     ]
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-11-05T20:00:00Z",
+   "text": "B5731/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2611052000 C) 2611092300\r\nD) 2000-2300\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E -\r\n092800N 1191300E -\r\n085700N 1193600E -\r\n084500N 1192000E -\r\n091600N 1185700E\r\n(27NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
+  },
+  "aviation:P3998/26": {
+   "authority": "RJJJ",
+   "end_utc": "2026-11-16T15:00:00Z",
+   "evidence": [
+    "ANTIBALLISTIC"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "P3998/26",
+   "key": "aviation:P3998/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       26.7386,
+       127.9581
+      ],
+      [
+       25.9386,
+       127.9581
+      ],
+      [
+       25.9386,
+       127.3581
+      ],
+      [
+       26.7386,
+       127.3581
+      ],
+      [
+       26.7386,
+       127.9581
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       25.3006,
+       125.625
+      ],
+      [
+       24.5006,
+       125.625
+      ],
+      [
+       24.5006,
+       125.025
+      ],
+      [
+       25.3006,
+       125.025
+      ],
+      [
+       25.3006,
+       125.625
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       24.9344,
+       124.4867
+      ],
+      [
+       24.1344,
+       124.4867
+      ],
+      [
+       24.1344,
+       123.8892
+      ],
+      [
+       24.9344,
+       123.8892
+      ],
+      [
+       24.9344,
+       124.4867
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       24.9772,
+       123.2544
+      ],
+      [
+       24.1772,
+       123.2544
+      ],
+      [
+       24.1772,
+       122.6544
+      ],
+      [
+       24.9772,
+       122.6544
+      ],
+      [
+       24.9772,
+       123.2544
+      ]
+     ]
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-08-17T07:09:00Z",
+   "text": "P3998/26 NOTAMR P2326/26\r\nQ)RJJJ/QRTCA/IV/BO/W/000/999/2530N12516E164\r\nA)RJJJ B)2608170709 C)2611161500EST\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FOLLOWING AIRSPACE\r\nDUE TO THE ANTIBALLISTIC MISSILES MAY BE LAUNCHED\r\nFOR THE DESTRUCTION OF AN OBJECT PROPELLED BY ROCKET\r\nLAUNCHED FROM NORTH KOREA\r\n(1)AIRSPACE: BOUNDED BY FLW POINTS\r\n264419N1275729E - 255619N1275729E - 255619N1272129E - \r\n264419N1272129E - 264419N1275729E (NAHA-SHI)\r\n(2)AIRSPACE: BOUNDED BY FLW POINTS\r\n251802N1253730E - 243002N1253730E - 243002N1250130E - \r\n251802N1250130E - 251802N1253730E (MIYAKOJIMA)\r\n(3)AIRSPACE: BOUNDED BY FLW POINTS\r\n245604N1242912E - 240804N1242912E - 240804N1235321E - \r\n245604N1235321E - 245604N1242912E (ISHIGAKIJIMA)\r\n(4)AIRSPACE: BOUNDED BY FLW POINTS\r\n245838N1231516E - 241038N1231516E - 241038N1223916E - \r\n245838N1223916E - 245838N1231516E (YONAGUNIJIMA)\r\nRMK: 1)EXC ACFT OF GOVERNMENT AGENCIES,DOCTOR HEL AND\r\n  ACFT WITH PRIOR COORDINATION WITH JAPAN SELF DEFENSE FORCE.\r\n  MINISTRY OF DEFENSE JOINT STAFF OFFICE\r\n  TEL:03-3268-3111(EXT 30929)\r\n2)ALL VFR ACFT FLYING WI AIRSPACE(EXC EACH CTR AND INFO ZONE) ARE\r\n  REQUESTED TO CONTACT FLW FREQ\r\n  CALL SIGN : RODE RICK\r\n  FREQ      : 123.1MHZ,138.05MHZ\r\nF)SFC G)UNL"
+  },
+  "aviation:P3999/26": {
+   "authority": "RJJJ",
+   "end_utc": "2026-11-16T15:00:00Z",
+   "evidence": [
+    "ANTIBALLISTIC"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "P3999/26",
+   "key": "aviation:P3999/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       26.2053,
+       127.6581
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       24.7672,
+       125.325
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       24.4011,
+       124.1892
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       24.4439,
+       122.9544
+      ]
+     ]
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-08-17T07:09:00Z",
+   "text": "P3999/26 NOTAMR P2331/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2608170709 C)2611161500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
+  },
+  "aviation:P5375/26": {
+   "authority": "RJJJ",
+   "end_utc": "2026-11-10T10:00:00Z",
+   "evidence": [
+    "ROCKET LAUNCH"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "P5375/26",
+   "key": "aviation:P5375/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       31.2509,
+       131.0824
+      ]
+     ],
+     "radius": 1300
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-11-10T00:00:00Z",
+   "text": "P5375/26 NOTAMN\r\nQ)RJJJ/QROXX/IV/NBO/W/000/050/3115N13105E002\r\nA)RJJJ B)2611100000 C)2611101000\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FLW AIRSPACE AS FAR\r\nAS POSSIBLE DUE TO ROCKET LAUNCH REHEARSAL\r\nAIRSPACE: RADIUS 1.3KM CENTER 311503.34N1310456.76E \r\n(KIMOTSUKI-GUN IN KAGOSHIMA)\r\nF)SFC G)5000FT AMSL"
+  },
+  "aviation:P5408/26": {
+   "authority": "RJJJ",
+   "end_utc": "2026-11-02T07:00:00Z",
+   "evidence": [
+    "MISSILE"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "P5408/26",
+   "key": "aviation:P5408/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       35.2683,
+       138.8119
+      ],
+      [
+       35.2803,
+       138.8467
+      ],
+      [
+       35.2692,
+       138.8561
+      ],
+      [
+       35.2683,
+       138.8119
+      ]
+     ]
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-11-01T23:00:00Z",
+   "text": "P5408/26 NOTAMN\r\nQ)RJJJ/QWMLW/IV/BO/W/000/065/3516N13850E002\r\nA)RJJJ B)2611012300 C)2611020700\r\nE)FRNG EXER\r\n1.WEAPON: ANTI TANK MISSILE\r\n2.AREA: BOUNDED BY FLW POINTS\r\n351606N1384843E - 351649N1385048E - 351609N1385122E - 351606N1384843E\r\nR-114(HIGASHIFUJI MANEUVERING AREA)\r\n(GOTENBA-SHI,SUSONO-SHI IN SHIZUOKA)\r\n3.RMK: SOURCE/JSDF-G(RJAT)\r\nF)SFC G)6500FT AMSL"
+  },
+  "maritime:HN177/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET FIRING"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "HN177/2026",
+   "key": "maritime:HN177/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "HN177/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-36.00N 110-55.80E FROM 1232 UTC TO 1432 UTC DAILY FROM 23 TO 24 SEP. ENTERING PROHIBITED. HAINAN MSA CHINA."
+  },
+  "maritime:HN182/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET FIRING"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "HN182/2026",
+   "key": "maritime:HN182/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       19.5975,
+       110.9363
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "HN182/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-35.85N 110-56.18E FROM 1830 UTC TO 2030 UTC DAILY FROM 9 TO 10 OCT. ENTERING PROHIBITED. HAINAN MSA CHINA."
+  },
+  "maritime:HN192/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET FIRING"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "HN192/2026",
+   "key": "maritime:HN192/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "HN192/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-36.00N 110-55.80E FROM 0200 UTC TO 0400 UTC DAILY FROM 22 TO 23 OCT. ENTERING PROHIBITED. HAINAN MSA CHINA."
+  },
+  "maritime:HN202/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET FIRING"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "HN202/2026",
+   "key": "maritime:HN202/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "HN202/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-36.00N /110-55.80E FROM 0100 UTC TO 0300 UTC DAILY FROM 25 TO 26 OCT. ENTERING PROHIBITED. HAINAN MSA CHINA."
+  },
+  "maritime:NAVAREA XI 26-0439": {
+   "authority": "東シナ海及び北太平洋西部、ロケット打上げ",
+   "end_utc": "2026-10-07T04:53:00Z",
+   "evidence": [
+    "ROCKET LAUNCHING"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "NAVAREA XI 26-0439",
+   "key": "maritime:NAVAREA XI 26-0439",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       21.4939,
+       128.6897
+      ],
+      [
+       21.6331,
+       129.8972
+      ],
+      [
+       18.4953,
+       130.2933
+      ],
+      [
+       18.3561,
+       129.1094
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       12.7506,
+       129.4339
+      ],
+      [
+       12.9214,
+       131.0831
+      ],
+      [
+       8.2469,
+       131.5703
+      ],
+      [
+       8.0758,
+       129.9461
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-07T03:33:00Z",
+   "text": "NO.26-0439 　　　発表日時：2026年10月02日 21時\n\n\nNORTH PACIFIC, WESTERN PART.\nROCKET LAUNCHING. \n070333Z TO 070453Z OCT, \nALTERNATE 0328 TO 0443Z DAILY 08 \nAND 14 OCT. AREAS BOUNDED BY\nA. 21-29-38N 128-41-23E\n   21-37-59N 129-53-50E\n   18-29-43N 130-17-36E\n   18-21-22N 129-06-34E.\nB. 12-45-02N 129-26-02E\n   12-55-17N 131-04-59E\n   08-14-49N 131-34-13E\n   08-04-33N 129-56-46E.\nCANCEL THIS MSG 070553Z OCT."
+  },
+  "maritime:NAVAREA XI 26-0486": {
+   "authority": "東シナ海、北太平洋西部及び南太平洋、ロケット打上げに伴う危険区域設定",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET LAUNCHING"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "NAVAREA XI 26-0486",
+   "key": "maritime:NAVAREA XI 26-0486",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       24.4747,
+       132.7678
+      ],
+      [
+       25.0417,
+       133.7786
+      ],
+      [
+       22.1925,
+       135.6642
+      ],
+      [
+       21.6311,
+       134.6708
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       15.7008,
+       138.9181
+      ],
+      [
+       16.1406,
+       139.7339
+      ],
+      [
+       13.9294,
+       140.9969
+      ],
+      [
+       13.4914,
+       140.1881
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "NO.26-0486 　　　発表日時：2026年10月28日 21時\n\n\nNORTH PACIFIC, WESTERN PART.\nROCKET LAUNCHING.\n040500Z TO 040900Z NOV, \nALTERNATE 0500Z TO 0900Z DAILY 02, 03\nAND 05 TO 30 NOV. AREAS BOUNDED BY\nA. 24-28-29N 132-46-04E\n   25-02-30N 133-46-43E\n   22-11-33N 135-39-51E\n   21-37-52N 134-40-15E.\nB. 15-42-03N 138-55-05E\n   16-08-26N 139-44-02E\n   13-55-46N 140-59-49E\n   13-29-29N 140-11-17E.\nCANCEL THIS MSG 301000Z NOV."
+  },
+  "maritime:SD827/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET FIRING",
+    "ROCKET DEBRIS"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "SD827/2026",
+   "key": "maritime:SD827/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.3917,
+       119.5987
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.3593,
+       119.6383
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.3822,
+       119.6537
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.2735,
+       120.1892
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.0047,
+       120.7605
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       34.7713,
+       120.596
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.0393,
+       120.0258
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "SD827/26 YELLOW SEA \"DONG FANG HANG TIAN GANG\" ROCKET FIRING IN RIZHAO AREA FROM 182200UTC TO 210700UTC OCT. SAFETY CONTROL AREA 1 IS DEFINED AS A CIRCULAR AREA WITHIN A 3-KILOMETER RADIUS OF 35-23.50N 119-35.92E. SAFETY CONTROL AREA 2 IS BOUNDED BY THE LINES JOINING 35-23.50N 119-35.92E, 35-21.56N 119-38.30E AND 35-22.93N 119-39.22E. ROCKET DEBRIS IS EXPECTED TO FALL IN AREA BOUNDED BY THE LINES JOINING 35-16.41N 120-11.35E, 35-00.28N 120-45.63E, 34-46.28N 120-35.76E AND 35-02.36N 120-01.55E . ENTERING PROHIBITED. SHANDONG MSA CHINA."
+  },
+  "maritime:ZJ272/26": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "WRECKAGE FROM THE ROCKET"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "ZJ272/26",
+   "key": "maritime:ZJ272/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       28.5833,
+       123.6167
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       28.6,
+       124.0333
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       27.8833,
+       124.0667
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       27.8667,
+       123.65
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "ZJ272/26 EAST CHINA SEA WRECKAGE FROM THE ROCKET WILL FALL IN AREA BOUNDED BY THE LINES JOINING 28-35N 123-37E,28-36N 124-02E,27-53N 124-04E,27-52N 123-39E FROM 220130UTC TO 220330UTC JUL. ENTERING PROHIBITED.ZHEJIANG MSA CHINA."
+  },
+  "maritime:ZJ332/26": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "WRECKAGE FROM THE ROCKET"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "ZJ332/26",
+   "key": "maritime:ZJ332/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.311,
+       125.397
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.761,
+       125.746
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.253,
+       126.607
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       29.806,
+       126.256
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "ZJ332/26 EAST CHINA SEA WRECKAGE FROM THE ROCKET WILL FALL IN AREA BOUNDED BY THE LINES JOINING 30-18.66N 125-23.82E，30-45.66N 125-44.76E，30-15.18N 126-36.42E AND 29-48.36N 126-15.36E（CGCS2000）FROM 100800UTC TO 101100UTC SEP. ENTERING PROHIBITED. ZHEJIANG　 MSA 　CHINA."
+  },
+  "maritime:ZJ350/26": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "WRECKAGE FROM THE ROCKET"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "ZJ350/26",
+   "key": "maritime:ZJ350/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       28.4843,
+       123.4277
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       28.475,
+       123.8363
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       27.7567,
+       123.8138
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       27.7658,
+       123.408
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "ZJ350/26 EAST CHINA SEA WRECKAGE FROM THE ROCKET WILL FALL IN AREA BOUNDED BY THE LINES JOINING 28-29.06N 123-25.66E,28-28.50N 123-50.18E,27-45.40N 123-48.83E,27-45.95N 123-24.48E FROM 151600UTC TO 160000UTC SEP. ENTERING PROHIBITED.ZHEJIANG MSA CHINA."
+  },
+  "maritime:ZJ385/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "WRECKAGE FROM THE ROCKET"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "ZJ385/2026",
+   "key": "maritime:ZJ385/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.311,
+       125.397
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.761,
+       125.746
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.253,
+       126.607
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       29.806,
+       126.256
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "ZJ385/26 EAST CHINA SEA WRECKAGE FROM THE ROCKET WILL FALL IN AREA BOUNDED BY THE LINES JOINING 30-18.66N 125-23.82E，30-45.66N 125-44.76E，30-15.18N 126-36.42E AND 29-48.36N 126-15.36E（CGCS2000）FROM 231925UTC TO 231945UTC OCT. ENTERING PROHIBITED. ZHEJIANG　 MSA 　CHINA."
+  },
+  "maritime:ZJ385/26": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "WRECKAGE FROM THE ROCKET"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "ZJ385/26",
+   "key": "maritime:ZJ385/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.311,
+       125.397
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.761,
+       125.746
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       30.253,
+       126.607
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       29.806,
+       126.256
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "ZJ385/26 EAST CHINA SEA WRECKAGE FROM THE ROCKET WILL FALL IN AREA BOUNDED BY THE LINES JOINING 30-18.66N 125-23.82E，30-45.66N 125-44.76E，30-15.18N 126-36.42E AND 29-48.36N 126-15.36E（CGCS2000）FROM 231925UTC TO 231945UTC OCT. ENTERING PROHIBITED. ZHEJIANG　 MSA 　CHINA."
+  },
+  "maritime:云航警51/25": {
+   "authority": "黄海",
+   "end_utc": "2025-09-08T22:00:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "云航警51/25",
+   "key": "maritime:云航警51/25",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       34.967,
+       120.0738
+      ],
+      [
+       35.1892,
+       120.2612
+      ],
+      [
+       34.9325,
+       120.7108
+      ],
+      [
+       34.71,
+       120.523
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2025-09-08T18:00:00Z",
+   "text": "云航警51/25，黄海南部，自2025年9月9日0200时至0600时，在34-58.02N 120-04.43E、35-11.35N 120-15.67E、34-55.95N 120-42.65E、34-42.6N 120-31.38E诸点连线范围内有火箭残骸掉落。禁止驶入。"
+  },
+  "maritime:沪航警561/26": {
+   "authority": "东海",
+   "end_utc": "2026-07-22T04:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "沪航警561/26",
+   "key": "maritime:沪航警561/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       31.203,
+       123.7115
+      ]
+     ],
+     "radius": 3000
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       31.203,
+       123.7115
+      ],
+      [
+       31.1613,
+       123.7312
+      ],
+      [
+       31.1607,
+       123.7295
+      ],
+      [
+       31.1602,
+       123.7277
+      ],
+      [
+       31.1598,
+       123.726
+      ],
+      [
+       31.1594,
+       123.7242
+      ],
+      [
+       31.159,
+       123.7224
+      ],
+      [
+       31.1587,
+       123.7206
+      ],
+      [
+       31.1585,
+       123.7188
+      ],
+      [
+       31.1583,
+       123.717
+      ],
+      [
+       31.1581,
+       123.7152
+      ],
+      [
+       31.1581,
+       123.7133
+      ],
+      [
+       31.158,
+       123.7115
+      ],
+      [
+       31.1581,
+       123.7097
+      ],
+      [
+       31.1581,
+       123.7078
+      ],
+      [
+       31.1583,
+       123.706
+      ],
+      [
+       31.1585,
+       123.7042
+      ],
+      [
+       31.1587,
+       123.7024
+      ],
+      [
+       31.159,
+       123.7006
+      ],
+      [
+       31.1594,
+       123.6988
+      ],
+      [
+       31.203,
+       123.7115
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-07-19T22:00:00Z",
+   "text": "沪航警561/26，东海，2026年7月20日0600时至22日1200时，在以31-12.18N 123-42.69E为圆心，半径3千米的圆形海域内和以31-12.18N 123-42.69E为圆心，方位158°-194°，半径5千米的扇形的海域进行火箭发射。禁止驶入。"
+  },
+  "maritime:沪航警722/26": {
+   "authority": "东海",
+   "end_utc": "2026-09-15T23:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "沪航警722/26",
+   "key": "maritime:沪航警722/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       31.203,
+       123.7115
+      ]
+     ],
+     "radius": 3000
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       31.203,
+       123.7115
+      ],
+      [
+       31.1602,
+       123.7277
+      ],
+      [
+       31.1598,
+       123.726
+      ],
+      [
+       31.1594,
+       123.7242
+      ],
+      [
+       31.159,
+       123.7224
+      ],
+      [
+       31.1587,
+       123.7206
+      ],
+      [
+       31.1585,
+       123.7188
+      ],
+      [
+       31.1583,
+       123.717
+      ],
+      [
+       31.1581,
+       123.7152
+      ],
+      [
+       31.1581,
+       123.7133
+      ],
+      [
+       31.158,
+       123.7115
+      ],
+      [
+       31.1581,
+       123.7097
+      ],
+      [
+       31.1581,
+       123.7078
+      ],
+      [
+       31.1583,
+       123.706
+      ],
+      [
+       31.1585,
+       123.7042
+      ],
+      [
+       31.1587,
+       123.7024
+      ],
+      [
+       31.159,
+       123.7006
+      ],
+      [
+       31.1594,
+       123.6988
+      ],
+      [
+       31.1598,
+       123.697
+      ],
+      [
+       31.1602,
+       123.6953
+      ],
+      [
+       31.203,
+       123.7115
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-09-13T22:00:00Z",
+   "text": "沪航警722/26，东海，2026年9月14日0600时至16日0700时，在以31-12.18N 123-42.69E为圆心，半径3千米的圆形海域内和以31-12.18N 123-42.69E为圆心，方位162°-198°，半径5千米的扇形的海域进行火箭发射。禁止驶入。"
+  },
+  "maritime:浙航警627/26": {
+   "authority": "东海",
+   "end_utc": "2026-07-22T03:30:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "浙航警627/26",
+   "key": "maritime:浙航警627/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       28.5833,
+       123.6167
+      ],
+      [
+       28.6,
+       124.0333
+      ],
+      [
+       27.8833,
+       124.0667
+      ],
+      [
+       27.8667,
+       123.65
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-07-22T01:30:00Z",
+   "text": "浙航警627/26，东海，7月22日0930时至1130时，在28-35N 123-37E、28-36N 124-02E、27-53N 124-04E、27-52N 123-39E诸点连线水域范围内有火箭残骸掉落，禁止驶入。"
+  },
+  "maritime:浙航警807/26": {
+   "authority": "东海",
+   "end_utc": "2026-09-10T11:00:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "浙航警807/26",
+   "key": "maritime:浙航警807/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       30.311,
+       125.397
+      ],
+      [
+       30.761,
+       125.746
+      ],
+      [
+       30.253,
+       126.607
+      ],
+      [
+       29.806,
+       126.256
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-09-10T08:00:00Z",
+   "text": "浙航警807/26，东海，9月10日1600时至1900时在30-18.66N 125-23.82E，30-45.66N 125-44.76E，30-15.18N 126-36.42E和29-48.36N 126-15.36E诸点连线范围内水域，有火箭残骸掉落，禁止驶入。"
+  },
+  "maritime:浙航警841/26": {
+   "authority": "东海",
+   "end_utc": "2026-09-16T00:00:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "浙航警841/26",
+   "key": "maritime:浙航警841/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       28.4843,
+       123.4277
+      ],
+      [
+       28.475,
+       123.8363
+      ],
+      [
+       27.7567,
+       123.8138
+      ],
+      [
+       27.7658,
+       123.408
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-09-15T16:00:00Z",
+   "text": "浙航警841/26，东海，9月16日0000时至0800时，在28-29.06N 123-25.66E、28-28.50N 123-50.18E、27-45.40N 123-48.83E、27-45.95N 123-24.48E诸点连线水域范围内有火箭残骸掉落，禁止驶入。"
+  },
+  "maritime:浙航警960/2026": {
+   "authority": "东海",
+   "end_utc": "2026-10-23T19:45:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "浙航警960/2026",
+   "key": "maritime:浙航警960/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       30.311,
+       125.397
+      ],
+      [
+       30.761,
+       125.746
+      ],
+      [
+       30.253,
+       126.607
+      ],
+      [
+       29.806,
+       126.256
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-23T19:25:00Z",
+   "text": "浙航警960/26，东海，10月24日0325时至0345时在30-18.66N 125-23.82E，30-45.66N 125-44.76E，30-15.18N 126-36.42E和29-48.36N 126-15.36E诸点连线范围内水域，有火箭残骸掉落，禁止驶入。"
+  },
+  "maritime:浙航警960/26": {
+   "authority": "东海",
+   "end_utc": "2026-10-23T19:45:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "浙航警960/26",
+   "key": "maritime:浙航警960/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       30.311,
+       125.397
+      ],
+      [
+       30.761,
+       125.746
+      ],
+      [
+       30.253,
+       126.607
+      ],
+      [
+       29.806,
+       126.256
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-23T19:25:00Z",
+   "text": "浙航警960/26，东海，10月24日0325时至0345时在30-18.66N 125-23.82E，30-45.66N 125-44.76E，30-15.18N 126-36.42E和29-48.36N 126-15.36E诸点连线范围内水域，有火箭残骸掉落，禁止驶入。"
+  },
+  "maritime:琼航警130/26": {
+   "authority": "南海",
+   "end_utc": "2026-08-05T09:50:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警130/26",
+   "key": "maritime:琼航警130/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-08-04T07:50:00Z",
+   "text": "琼航警130/26，南海，自8月4日至8月5日，每日1550时至1750时，在以19-36.00N 110-55.80E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警138/26": {
+   "authority": "南海",
+   "end_utc": "2026-07-31T14:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警138/26",
+   "key": "maritime:琼航警138/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.6187,
+       110.9553
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-07-29T11:30:00Z",
+   "text": "琼航警138/26，南海，自7月29日至7月31日，每日1930时至2200时，在以19-37.12N 110-57.32E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警148/26": {
+   "authority": "南海",
+   "end_utc": "2026-08-17T05:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警148/26",
+   "key": "maritime:琼航警148/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.5975,
+       110.9363
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-08-16T03:00:00Z",
+   "text": "琼航警148/26，南海，自8月16日至8月17日，每日1100时至1300时，在以19-35.85N 110-56.18E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警174/26": {
+   "authority": "南海",
+   "end_utc": "2026-09-18T01:30:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警174/26",
+   "key": "maritime:琼航警174/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.5975,
+       110.9363
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-09-16T23:30:00Z",
+   "text": "琼航警174/26，南海，自9月17日至9月18日，每日0730时至0930时，在以19-35.85N 110-56.18E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警182/2026": {
+   "authority": "南海",
+   "end_utc": "2026-09-24T10:00:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警182/2026",
+   "key": "maritime:琼航警182/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       18.384,
+       111.908
+      ],
+      [
+       18.397,
+       112.476
+      ],
+      [
+       17.223,
+       112.503
+      ],
+      [
+       17.21,
+       111.939
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-09-24T08:00:00Z",
+   "text": "琼航警182/26，南海，9月24日1600时至1800时，在18-23.04N/111-54.48E、18-23.82N/112-28.56E、17-13.38N/112-30.18E和17-12.60N/111-56.34E 诸点连线水域范围内有火箭残骸掉落，禁止驶入。"
+  },
+  "maritime:琼航警185/2026": {
+   "authority": "南海",
+   "end_utc": "2026-09-24T14:32:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警185/2026",
+   "key": "maritime:琼航警185/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-09-23T12:32:00Z",
+   "text": "琼航警185/26，南海，自9月23日至9月24日，每日2032时至2232时，在以19-36.00N 110-55.80E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警190/2026": {
+   "authority": "南海",
+   "end_utc": "2026-10-10T20:30:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警190/2026",
+   "key": "maritime:琼航警190/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.5975,
+       110.9363
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-09T18:30:00Z",
+   "text": "琼航警190/26，南海，自10月10日至10月11日，每日0230时至0430时，在以19-35.85N 110-56.18E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警200/2026": {
+   "authority": "南海",
+   "end_utc": "2026-10-23T04:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警200/2026",
+   "key": "maritime:琼航警200/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-22T02:00:00Z",
+   "text": "琼航警200/26，南海，自10月22日至10月23日，每日1000时至1200时，在以19-36.00N 110-55.80E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警210/2026": {
+   "authority": "南海",
+   "end_utc": "2026-10-26T03:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警210/2026",
+   "key": "maritime:琼航警210/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.6,
+       110.93
+      ]
+     ],
+     "radius": 10000.800000000001
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-25T01:00:00Z",
+   "text": "琼航警210/26，南海，自10月25日至10月26日，每日0900时至1100时，在以19-36.00N /110-55.80E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:琼航警259/25": {
+   "authority": "南海",
+   "end_utc": "2025-12-31T23:10:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "琼航警259/25",
+   "key": "maritime:琼航警259/25",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       19.6187,
+       110.9553
+      ]
+     ],
+     "radius": 11112
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2025-12-30T22:30:00Z",
+   "text": "琼航警259/25，南海，自12月31日至2026年1月1日，每日0630时至0710时，在以19-37.12N 110-57.32E为中心，6海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+  },
+  "maritime:鲁航警629/26": {
+   "authority": "黄海",
+   "end_utc": "2026-08-05T04:00:00Z",
+   "evidence": [
+    "火箭发射",
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "鲁航警629/26",
+   "key": "maritime:鲁航警629/26",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       36.631,
+       121.198
+      ],
+      [
+       36.6003,
+       121.239
+      ],
+      [
+       36.5868,
+       121.2087
+      ]
+     ]
+    },
+    {
+     "kind": "circle",
+     "points": [
+      [
+       36.631,
+       121.198
+      ]
+     ],
+     "radius": 2000
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       36.0158,
+       121.278
+      ],
+      [
+       36.0975,
+       121.5955
+      ],
+      [
+       35.6678,
+       121.7613
+      ],
+      [
+       35.5863,
+       121.4458
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-08-03T06:00:00Z",
+   "text": "鲁航警629/26，黄海，自8月3日1400时至5日1200时，东方航天港、北海救118在以36-37.86N 121-11.88E为中心，2千米为半径的圆形水域内和由36-37.86N 121-11.88E、36-36.02N 121-14.34E、36-35.21N 121-12.52E三点连线围成的区域内进行火箭发射。禁止船舶驶入。自8月5日0910时至11100时，火箭残骸落于由36-00.95N 121-16.68E、36-05.85N 121-35.73E、35-40.07N 121-45.68E、35-35.18N 121-26.75E四点连线围成的区域内。禁止船舶驶入。"
+  },
+  "maritime:鲁航警906/2026": {
+   "authority": "黄海",
+   "end_utc": "2026-10-21T07:00:00Z",
+   "evidence": [
+    "火箭发射"
+   ],
+   "first_seen_utc": "2026-10-30T06:38:10Z",
+   "id": "鲁航警906/2026",
+   "key": "maritime:鲁航警906/2026",
+   "last_seen_utc": "2026-10-30T06:38:10Z",
+   "shapes": [
+    {
+     "kind": "circle",
+     "points": [
+      [
+       35.3917,
+       119.5987
+      ]
+     ],
+     "radius": 3000
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       35.3917,
+       119.5987
+      ],
+      [
+       35.3593,
+       119.6383
+      ],
+      [
+       35.3822,
+       119.6537
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       35.2735,
+       120.1892
+      ],
+      [
+       35.0047,
+       120.7605
+      ],
+      [
+       34.7713,
+       120.596
+      ],
+      [
+       35.0393,
+       120.0258
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-10-18T22:00:00Z",
+   "text": "鲁航警906/26，黄海，自10月19日0600时至21日1500时，“东方航天港”轮在日照水域进行海上火箭发射活动。安全管控区域一为以35-23.50N 119-35.92E为中心、半径3公里的圆形区域，安全管控区域二为35-23.50N 119-35.92E、35-21.56N 119-38.30E和35-22.93N 119-39.22E三点连线围成的区域。海上残骸落区为35-16.41N 120-11.35E、35-00.28N 120-45.63E、34-46.28N 120-35.76E、35-02.36N 120-01.55E四点连线围成的区域。其他船舶禁止驶入。"
+  }
+ }
+}
