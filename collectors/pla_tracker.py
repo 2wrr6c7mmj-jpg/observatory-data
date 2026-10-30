@@ -1,0 +1,423 @@
+"""Collect the PLA Activity Tracker daily counts into docs/data/pla-tracker/.
+
+Source: PLA Activity Tracker (https://pla-tracker.skyfaring.net/), one CSV
+(``/data/records.csv``) compiled by an individual from the Taiwan Ministry of
+National Defense (國防部) daily reports. CC BY 4.0. Used from 2026-10-31 on,
+because the Ministry's own site disallows automated access in robots.txt
+(collectors/taiwan_mnd.py SUSPENDED).
+
+  python -m collectors.pla_tracker                 # daily run (one request)
+  python -m collectors.pla_tracker --out DIR       # write to DIR instead (probe)
+  python -m collectors.pla_tracker --from-file F   # rebuild from a saved CSV (no request)
+  python -m collectors.pla_tracker --about         # probe: also read the about page once
+
+Politeness: robots.txt is checked first (collectors/polite.py); the run is
+skipped when it disallows us or cannot be checked, and a bot-challenge page
+stops it. One CSV per run.
+
+Rows are merged by date: a value changed by the source replaces the stored
+one (listed in status.json ``last_run.revised``); a date that disappears from
+the source is kept. A CSV that is much shorter than what is stored, or does
+not have the expected columns, is not used.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import http.client
+import io
+import json
+import re
+import sys
+import urllib.error
+from datetime import date, datetime, timezone
+from pathlib import Path
+
+from collectors import polite
+
+CSV_URL = "https://pla-tracker.skyfaring.net/data/records.csv"
+ABOUT_URL = "https://pla-tracker.skyfaring.net/en/about"
+SITE_URL = "https://pla-tracker.skyfaring.net/"
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "docs" / "data" / "pla-tracker"
+MND = ROOT / "docs" / "data" / "taiwan-mnd"
+UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
+TIMEOUT = 60
+
+SOURCE_COLUMNS = ["date", "aircraft_total", "median_line_cross", "cross_rate", "aircraft_type",
+                  "ships_total", "activity_start", "activity_end", "special_event"]
+INT_COLUMNS = ("aircraft_total", "median_line_cross", "ships_total")
+FIELDS = SOURCE_COLUMNS + ["retrieved_utc"]
+MIN_KEEP_RATIO = 0.8  # a CSV with fewer rows than this share of the stored ones is not used
+MAX_COUNT = 400       # larger counts are treated as broken rows
+
+# The Taiwan MND series and the fields compared with it (tracker -> MND daily.csv).
+COMPARE = {"aircraft_total": "aircraft", "median_line_cross": "median_line_or_adiz", "ships_total": "plan_vessels"}
+
+# Repeated in daily.json so the data carries its credit wherever it is copied (same as meta.json).
+ATTRIBUTION = {
+    "credit": "Data source: Ministry of National Defense, R.O.C. (Taiwan); compiled by PLA Activity Tracker "
+              "(https://pla-tracker.skyfaring.net/)",
+    "credit_ja": "出典：中華民國國防部（台湾国防部）の日報。PLA Activity Tracker（https://pla-tracker.skyfaring.net/）が集約",
+    "license": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+    "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、"
+                  "数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。",
+}
+
+
+class Stop(Exception):
+    """The source cannot be used in this run."""
+
+
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def iso(t: datetime) -> str:
+    return t.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def notice(msg: str, level: str = "notice", title: str = "pla-tracker") -> None:
+    text = msg.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::{level} title={title}::{text[:3900]}")
+
+
+# ---------------------------------------------------------------- parsing
+
+def _int(v: str, col: str, day: str) -> int | None:
+    v = (v or "").strip()
+    if v == "":
+        return None
+    try:
+        f = float(v)
+    except ValueError:
+        raise ValueError(f"{day} {col}: not a number: {v!r}") from None
+    if f != int(f) or f < 0 or f > MAX_COUNT:
+        raise ValueError(f"{day} {col}: out of range: {v!r}")
+    return int(f)
+
+
+def parse_csv(text: str) -> tuple[dict[str, dict], list[str]]:
+    """Rows by date, and the rows that were skipped (with the reason)."""
+    reader = csv.DictReader(io.StringIO(text.lstrip("﻿")))
+    cols = [c.strip() for c in (reader.fieldnames or [])]
+    missing = [c for c in SOURCE_COLUMNS if c not in cols]
+    if missing:
+        raise Stop(f"columns missing: {missing} (got {cols})")
+    rows: dict[str, dict] = {}
+    skipped: list[str] = []
+    for raw in reader:
+        raw = {(k or "").strip(): (v or "").strip() for k, v in raw.items() if k is not None}
+        day = raw.get("date", "")
+        try:
+            date.fromisoformat(day)
+        except ValueError:
+            skipped.append(f"bad date {day!r}")
+            continue
+        try:
+            rec = {c: raw.get(c, "") for c in SOURCE_COLUMNS}
+            for c in INT_COLUMNS:
+                rec[c] = _int(raw.get(c, ""), c, day)
+        except ValueError as e:
+            skipped.append(str(e))
+            continue
+        if day in rows and rows[day] != rec:
+            skipped.append(f"{day}: duplicate date with different values (first kept)")
+            continue
+        rows[day] = rec
+    return rows, skipped
+
+
+def _cell(v) -> str:
+    return "" if v is None else str(v)
+
+
+def read_stored(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8", newline="") as f:
+        out = {}
+        for r in csv.DictReader(f):
+            rec = {c: r.get(c, "") for c in FIELDS}
+            for c in INT_COLUMNS:
+                rec[c] = int(rec[c]) if rec[c] != "" else None
+            out[r["date"]] = rec
+        return out
+
+
+def merge(stored: dict[str, dict], fresh: dict[str, dict], retrieved: str) -> tuple[dict[str, dict], dict]:
+    if stored and len(fresh) < MIN_KEEP_RATIO * len(stored):
+        raise Stop(f"the CSV has {len(fresh)} rows, fewer than {MIN_KEEP_RATIO:.0%} of the {len(stored)} stored; not used")
+    out = dict(stored)
+    added, revised = [], []
+    for day, rec in fresh.items():
+        old = stored.get(day)
+        if old is None:
+            added.append(day)
+        elif any(old.get(c) != rec.get(c) for c in SOURCE_COLUMNS):
+            revised.append({"date": day, "changed": {c: [old.get(c), rec.get(c)] for c in SOURCE_COLUMNS
+                                                     if old.get(c) != rec.get(c)}})
+        else:
+            continue
+        out[day] = {**rec, "retrieved_utc": retrieved}
+    gone = sorted(set(stored) - set(fresh))
+    return out, {"added": len(added), "added_range": [min(added), max(added)] if added else None,
+                 "revised": revised[:50], "revised_count": len(revised),
+                 "kept_not_in_source": gone[:50], "kept_not_in_source_count": len(gone)}
+
+
+# ---------------------------------------------------------------- comparison with the MND reports
+
+def read_mnd(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    out = {}
+    with open(path, encoding="utf-8", newline="") as f:
+        for r in csv.DictReader(f):
+            if r.get("format") != "around-taiwan":
+                continue
+            out[r["report_date"]] = {k: (int(r[k]) if r.get(k, "") != "" else None) for k in COMPARE.values()}
+    return out
+
+
+def _shift(day: str, n: int) -> str:
+    return date.fromordinal(date.fromisoformat(day).toordinal() + n).isoformat()
+
+
+def compare(rows: dict[str, dict], mnd: dict[str, dict], examples: int = 15) -> dict:
+    """Agreement between the tracker and the MND around-taiwan reports (2022-11-16 on).
+
+    ``offsets`` checks the date alignment: tracker date + n days against the
+    MND report date (0 = same date)."""
+    both = sorted(set(rows) & set(mnd))
+    res = {"mnd_format": "around-taiwan", "overlap_days": len(both),
+           "range": [both[0], both[-1]] if both else None, "fields": {}, "offsets": {}}
+    for n in (-1, 0, 1):
+        eq = tot = 0
+        for day, rec in rows.items():
+            m = mnd.get(_shift(day, n))
+            if m is None:
+                continue
+            for t, k in COMPARE.items():
+                if rec.get(t) is not None and m.get(k) is not None:
+                    tot += 1
+                    eq += rec[t] == m[k]
+        res["offsets"][str(n)] = {"pairs": tot, "equal": eq, "rate": round(eq / tot, 4) if tot else None}
+    all_equal = 0
+    for t, k in COMPARE.items():
+        pairs = [(d, rows[d][t], mnd[d][k]) for d in both]
+        comparable = [(d, a, b) for d, a, b in pairs if a is not None and b is not None]
+        diff = [(d, a, b) for d, a, b in comparable if a != b]
+        only_t = sum(1 for _, a, b in pairs if a is not None and b is None)
+        only_m = sum(1 for _, a, b in pairs if a is None and b is not None)
+        big = sorted(diff, key=lambda x: (-abs(x[1] - x[2]), x[0]))[:examples]
+        res["fields"][t] = {
+            "mnd_field": k, "comparable": len(comparable), "equal": len(comparable) - len(diff),
+            "rate": round((len(comparable) - len(diff)) / len(comparable), 4) if comparable else None,
+            "tracker_only": only_t, "mnd_only": only_m,
+            "mean_abs_diff": round(sum(abs(a - b) for _, a, b in diff) / len(comparable), 3) if comparable else None,
+            "examples_latest": [{"date": d, "tracker": a, "mnd": b} for d, a, b in diff[-examples:]],
+            "examples_largest": [{"date": d, "tracker": a, "mnd": b} for d, a, b in big],
+        }
+    for d in both:
+        if all(rows[d][t] == mnd[d][k] for t, k in COMPARE.items()):
+            all_equal += 1
+    res["days_all_three_equal"] = all_equal
+    res["days_all_three_rate"] = round(all_equal / len(both), 4) if both else None
+    return res
+
+
+def compare_text(c: dict) -> str:
+    lines = [f"重なり {c['overlap_days']} 日 {c['range']}、3項目とも一致 {c['days_all_three_equal']} 日（{c['days_all_three_rate']}）",
+             "日付のずれ（tracker の日付+n と国防部の報告日）：" + "、".join(
+                 f"n={n} {v['equal']}/{v['pairs']}={v['rate']}" for n, v in c["offsets"].items())]
+    for t, f in c["fields"].items():
+        lines.append(f"{t}↔{f['mnd_field']}：一致 {f['equal']}/{f['comparable']}={f['rate']}、平均絶対差 {f['mean_abs_diff']}、"
+                     f"tracker のみ {f['tracker_only']}・国防部のみ {f['mnd_only']}")
+        lines.append("  差の大きい例：" + "; ".join(f"{e['date']} {e['tracker']}/{e['mnd']}" for e in f["examples_largest"][:8]))
+        lines.append("  最近の例：" + "; ".join(f"{e['date']} {e['tracker']}/{e['mnd']}" for e in f["examples_latest"][-6:]))
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- writing
+
+def write_atomic(path: Path, text: str) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(path)
+
+
+def dump(v) -> str:
+    return json.dumps(v, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+
+
+def write_all(out: Path, rows: dict[str, dict], status: dict, comparison: dict) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    days = sorted(rows)
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=FIELDS, lineterminator="\n")
+    w.writeheader()
+    for d in days:
+        w.writerow({c: _cell(rows[d].get(c)) for c in FIELDS})
+    write_atomic(out / "daily.csv", buf.getvalue())
+    write_atomic(out / "daily.json", dump({
+        "attribution": ATTRIBUTION, "fields": FIELDS, "first_day": days[0] if days else None,
+        "last_day": days[-1] if days else None,
+        "rows": [[rows[d].get(c) for c in FIELDS] for d in days]}))
+    write_atomic(out / "compare.json", dump(comparison))
+    write_atomic(out / "meta.json", dump(META))
+    write_atomic(out / "status.json", dump({**status, "days": len(days), "first_day": days[0] if days else None,
+                                            "last_day": days[-1] if days else None}))
+
+
+def fetch_csv() -> tuple[str, dict, str]:
+    robots = polite.require_allowed(CSV_URL, UA)
+    try:
+        resp = polite.get(CSV_URL, UA, TIMEOUT)
+    except polite.SourceBlocked:
+        raise
+    except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException, OSError) as e:
+        raise Stop(f"{CSV_URL}: {type(e).__name__}: {e}") from None
+    if resp.status != 200:
+        raise Stop(f"{CSV_URL}: HTTP {resp.status}")
+    text = resp.body.decode("utf-8", errors="replace")
+    if text.lstrip()[:1] == "<":
+        raise Stop(f"{CSV_URL}: an HTML page was returned instead of the CSV")
+    info = {"url": CSV_URL, "http": resp.status, "bytes": len(resp.body),
+            "sha256": hashlib.sha256(resp.body).hexdigest(),
+            "content_type": resp.headers.get("content-type"),
+            "last_modified": resp.headers.get("last-modified"), "etag": resp.headers.get("etag")}
+    return text, info, robots.reason
+
+
+def about_excerpt() -> str:
+    """Probe only: the about page once, cut down to the licence / citation parts."""
+    resp = polite.get(ABOUT_URL, UA, TIMEOUT)
+    body = resp.body.decode("utf-8", errors="replace")
+    body = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", body)
+    text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body)).strip()
+    parts = [f"HTTP {resp.status}, {len(resp.body)} bytes"]
+    for m in re.finditer(r"(?i)(attribution|cite|citation|credit|licen[cs]e|CC BY|source|國防部|Ministry of National Defense)", text):
+        parts.append(text[max(0, m.start() - 200):m.end() + 400])
+        if len(parts) > 6:
+            break
+    return "\n---\n".join(parts) if len(parts) > 1 else parts[0] + "\n" + text[:3000]
+
+
+def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -> int:
+    started = now_utc()
+    status_path = out / "status.json"
+    old_status = json.loads(status_path.read_text(encoding="utf-8")) if status_path.exists() else {}
+    stored = read_stored(out / "daily.csv")
+    try:
+        if from_file:
+            text = from_file.read_text(encoding="utf-8")
+            info = {"url": CSV_URL, "from_file": str(from_file),
+                    "sha256": hashlib.sha256(from_file.read_bytes()).hexdigest()}
+            robots = "not checked (rebuilt from a saved file)"
+        else:
+            text, info, robots = fetch_csv()
+        fresh, skipped = parse_csv(text)
+        if not fresh:
+            raise Stop("no rows")
+        retrieved = iso(now_utc())
+        rows, changes = merge(stored, fresh, retrieved)
+    except (Stop, polite.SourceBlocked) as e:
+        notice(f"PLA Activity Tracker を使わない：{e}", "warning")
+        last_run = {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "skipped", "reason": str(e)}
+        if stored:
+            write_atomic(status_path, dump({**old_status, "last_run": last_run}))
+        return 1 if isinstance(e, polite.Challenge) else 0
+    comparison = compare(rows, read_mnd(mnd_csv or MND / "daily.csv"))
+    src_days = sorted(fresh)
+    status = {
+        "generated_utc": iso(now_utc()),
+        "last_success_utc": iso(now_utc()),
+        "source": {**info, "rows": len(fresh), "first_day": src_days[0], "last_day": src_days[-1],
+                   "skipped_rows": skipped[:30], "skipped_count": len(skipped)},
+        "last_run": {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "ok",
+                     "robots": robots, **changes},
+    }
+    write_all(out, rows, status, comparison)
+    notice(f"取得 {len(fresh)} 行（{src_days[0]}〜{src_days[-1]}）、追加 {changes['added']}・改訂 {changes['revised_count']}・"
+           f"元に無く保持 {changes['kept_not_in_source_count']}・読めない行 {len(skipped)}"
+           + (f"\n読めない行の例：{skipped[:5]}" if skipped else ""), title="pla-tracker summary")
+    notice(compare_text(comparison), title="pla-tracker vs taiwan-mnd")
+    return 0
+
+
+META = {
+    "dataset": "pla-tracker",
+    "title": "PLA Activity Tracker：台湾周辺の中国軍機・艦艇の日ごとの数（台湾国防部の日報の集約）",
+    "attribution": ATTRIBUTION,
+    "source": {
+        "name": "PLA Activity Tracker（個人による集約サイト）",
+        "urls": [SITE_URL, CSV_URL, ABOUT_URL],
+        "original": "中華民國國防部の日報「中共解放軍臺海周邊海、空域動態」（https://www.mnd.gov.tw/）",
+        "position": "原典は紛争当事者（台湾）の公式発表。集約者は個人で、国防部のサイトを自動で読み取って表にしている",
+        "reliability": "B",
+        "credibility": "2",
+        "rating_note": "暫定評価 B-2 目安（アドミラルティ・コード）。数値の原典は当事者である台湾国防部の発表で、探知範囲・計上基準・公表方針は国防部に依存する。"
+                       "集約者は個人であり、読み取りの誤り・修正の有無は国防部の原文で確かめる必要がある。",
+    },
+    "use": "台湾国防部の日報の自動取得は robots.txt（User-agent: * に Disallow: /）で拒否されているため 2026-10-30 で止めた"
+           "（collectors/taiwan_mnd.py SUSPENDED）。2026-10-31 以降の日ごとの数はこのデータで補う。",
+    "precedence": "同じ日に国防部の日報（docs/data/taiwan-mnd/、around-taiwan 書式）とこのデータの両方がある場合は、原典に近い国防部の日報の値を使う。"
+                  "このデータは国防部の日報の行が無い日（主に 2026-10-31 以降）だけに使い、使った日は出典をこのデータとして区別する。"
+                  "食い違いは compare.json に毎回記録する。",
+    "window": "date は国防部の日報の報告日と同じとみなす（台湾時間。前日 06:00〜当日 06:00 の集計）。compare.json の offsets で日付のずれを確かめている",
+    "fields": {
+        "date": "日付（国防部の報告日、台湾時間）",
+        "aircraft_total": "中国軍機の延べ機数（国防部 aircraft に相当）",
+        "median_line_cross": "そのうち中間線を越えた、または北部・西南・東部の空域に入った機数（国防部 median_line_or_adiz に相当）",
+        "cross_rate": "median_line_cross / aircraft_total（集約者の計算、文字列のまま）",
+        "aircraft_type": "機種（集約者の表記のまま）",
+        "ships_total": "艦艇の数（国防部 plan_vessels に相当。公務船を含むかは compare.json で確かめる）",
+        "activity_start": "活動の始まり（集約者の表記のまま）",
+        "activity_end": "活動の終わり（集約者の表記のまま）",
+        "special_event": "特記事項（集約者の表記のまま）",
+        "retrieved_utc": "その行を取り込んだ（または値が変わった）時刻（UTC）。公表時刻ではない",
+    },
+    "missing_values": "空欄は不明（null）で、0 とはみなさない。集約者が空欄にした理由は分からない",
+    "merge": "日付ごとに取り込み、集約者が値を変えた日は新しい値で置き換えて status.json の last_run.revised に記録する。"
+             "元の CSV から消えた日は残す。保存済みの 80% より行が少ない CSV、列の足りない CSV は使わない",
+    "limits": [
+        "集約者が国防部のサイトを自動で取得して作った表であり、国防部自身の robots.txt は自動取得を拒んでいる。集約者の取得方法・許諾の有無は確認していない",
+        "集約者は個人で、更新が止まる・形式が変わる・公開をやめる可能性がある。status.json の source.last_day で最新日を確かめる",
+        "集約の過程での読み取り誤り・転記の遅れがありうる。国防部の日報との突き合わせ（compare.json）で一致率を確かめ、食い違いは国防部の原文を優先する",
+        "国防部の日報の書式・定義の変更（taiwan-mnd/meta.json の definition_changes）は、このデータでは記録されない",
+    ],
+    "files": {
+        "daily.csv": "日ごとの値（元の列＋取り込み時刻）",
+        "daily.json": "同じ内容の JSON（出典表記つき）",
+        "compare.json": "国防部の日報（around-taiwan 書式）との突き合わせ：重なる期間の項目ごとの一致率、日付のずれ、食い違いの例",
+        "status.json": "最後の取得の結果（HTTP、行数、最新日、追加・改訂、robots.txt の判定）",
+    },
+}
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--from-file", type=Path)
+    ap.add_argument("--about", action="store_true", help="probe: also read the about page once")
+    ap.add_argument("--save-raw", type=Path, help="probe: keep the fetched CSV here")
+    a = ap.parse_args(argv)
+    if a.save_raw and not a.from_file:
+        text, info, robots = fetch_csv()
+        a.save_raw.write_text(text, encoding="utf-8")
+        notice(f"{robots}\n{json.dumps(info, ensure_ascii=False)}", title="pla-tracker fetch")
+        rc = run(a.out, from_file=a.save_raw)
+    else:
+        rc = run(a.out, from_file=a.from_file)
+    if a.about:
+        try:
+            notice(about_excerpt(), title="pla-tracker about")
+        except Exception as e:  # noqa: BLE001 - probe output only
+            notice(f"about: {type(e).__name__}: {e}", "warning", title="pla-tracker about")
+    return rc
+
+
+if __name__ == "__main__":
+    sys.exit(main())
