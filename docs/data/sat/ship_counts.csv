@@ -1,0 +1,2 @@
+site,acquired_utc,retrieved_utc,platform,orbit_state,relative_orbit,scene_id,harbour_candidates,quay_candidates,confirmed,water_mask,detector,run_version,status
+ZJG,2026-10-26T10:48:45Z,2026-10-30T00:58:22Z,sentinel-1c,ascending,157,S1C_IW_GRDH_1SDV_20261026T104845_20261026T104919_010055_01411E_2FC0_COG.SAFE,39,143,,image-trial,cfar-trial-1,sat-trial-1,試行（陸マスクは画像から・固定物マスクなし）
