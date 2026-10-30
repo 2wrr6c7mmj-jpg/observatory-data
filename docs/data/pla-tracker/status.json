@@ -1,0 +1,36 @@
+{
+ "days": 300,
+ "first_day": "2026-01-01",
+ "generated_utc": "2026-10-30T09:31:33Z",
+ "last_day": "2026-10-30",
+ "last_run": {
+  "added": 300,
+  "added_range": [
+   "2026-01-01",
+   "2026-10-30"
+  ],
+  "finished_utc": "2026-10-30T09:31:33Z",
+  "kept_not_in_source": [],
+  "kept_not_in_source_count": 0,
+  "result": "ok",
+  "revised": [],
+  "revised_count": 0,
+  "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
+  "started_utc": "2026-10-30T09:31:33Z"
+ },
+ "last_success_utc": "2026-10-30T09:31:33Z",
+ "source": {
+  "bytes": 19726,
+  "content_type": "text/csv; charset=utf-8",
+  "etag": "\"78eacb7a970aca5d6490eb97951eff82\"",
+  "first_day": "2026-01-01",
+  "http": 200,
+  "last_day": "2026-10-30",
+  "last_modified": null,
+  "rows": 300,
+  "sha256": "32a12576a2decca44f474f717bd49b808199c486399b8a3fc7a6f1c27263cd91",
+  "skipped_count": 0,
+  "skipped_rows": [],
+  "url": "https://pla-tracker.skyfaring.net/data/records.csv"
+ }
+}

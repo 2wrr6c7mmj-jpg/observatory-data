@@ -1,0 +1,723 @@
+{
+ "days_aircraft_and_ships_equal": 257,
+ "days_aircraft_and_ships_rate": 0.8595,
+ "fields": {
+  "aircraft_total": {
+   "by_month": {
+    "2026-01": "31/31",
+    "2026-02": "27/28",
+    "2026-03": "21/31",
+    "2026-04": "28/30",
+    "2026-05": "31/31",
+    "2026-06": "29/29",
+    "2026-07": "31/31",
+    "2026-08": "29/30",
+    "2026-09": "29/29",
+    "2026-10": "29/29"
+   },
+   "comparable": 299,
+   "equal": 285,
+   "examples_largest": [
+    {
+     "date": "2026-03-17",
+     "mnd": 2,
+     "tracker": 36
+    },
+    {
+     "date": "2026-03-15",
+     "mnd": 26,
+     "tracker": 2
+    },
+    {
+     "date": "2026-03-18",
+     "mnd": 36,
+     "tracker": 12
+    },
+    {
+     "date": "2026-03-14",
+     "mnd": 3,
+     "tracker": 26
+    },
+    {
+     "date": "2026-04-02",
+     "mnd": 25,
+     "tracker": 2
+    },
+    {
+     "date": "2026-04-01",
+     "mnd": 11,
+     "tracker": 25
+    },
+    {
+     "date": "2026-03-31",
+     "mnd": 1,
+     "tracker": 11
+    },
+    {
+     "date": "2026-08-05",
+     "mnd": 14,
+     "tracker": 21
+    },
+    {
+     "date": "2026-03-19",
+     "mnd": 12,
+     "tracker": 6
+    },
+    {
+     "date": "2026-03-11",
+     "mnd": 0,
+     "tracker": 5
+    },
+    {
+     "date": "2026-03-05",
+     "mnd": 0,
+     "tracker": 2
+    },
+    {
+     "date": "2026-03-07",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-03-12",
+     "mnd": 5,
+     "tracker": 3
+    },
+    {
+     "date": "2026-02-01",
+     "mnd": 1,
+     "tracker": 0
+    }
+   ],
+   "examples_latest": [
+    {
+     "date": "2026-02-01",
+     "mnd": 1,
+     "tracker": 0
+    },
+    {
+     "date": "2026-03-05",
+     "mnd": 0,
+     "tracker": 2
+    },
+    {
+     "date": "2026-03-07",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-03-11",
+     "mnd": 0,
+     "tracker": 5
+    },
+    {
+     "date": "2026-03-12",
+     "mnd": 5,
+     "tracker": 3
+    },
+    {
+     "date": "2026-03-14",
+     "mnd": 3,
+     "tracker": 26
+    },
+    {
+     "date": "2026-03-15",
+     "mnd": 26,
+     "tracker": 2
+    },
+    {
+     "date": "2026-03-17",
+     "mnd": 2,
+     "tracker": 36
+    },
+    {
+     "date": "2026-03-18",
+     "mnd": 36,
+     "tracker": 12
+    },
+    {
+     "date": "2026-03-19",
+     "mnd": 12,
+     "tracker": 6
+    },
+    {
+     "date": "2026-03-31",
+     "mnd": 1,
+     "tracker": 11
+    },
+    {
+     "date": "2026-04-01",
+     "mnd": 11,
+     "tracker": 25
+    },
+    {
+     "date": "2026-04-02",
+     "mnd": 25,
+     "tracker": 2
+    },
+    {
+     "date": "2026-08-05",
+     "mnd": 14,
+     "tracker": 21
+    }
+   ],
+   "mean_abs_diff": 0.592,
+   "mnd_field": "aircraft",
+   "mnd_only": 0,
+   "rate": 0.9532,
+   "tracker_field": "aircraft_total",
+   "tracker_only": 0
+  },
+  "median_line_cross": {
+   "by_month": {
+    "2026-01": "18/24",
+    "2026-02": "13/16",
+    "2026-03": "9/18",
+    "2026-04": "9/26",
+    "2026-05": "19/27",
+    "2026-06": "10/17",
+    "2026-07": "19/24",
+    "2026-08": "15/22",
+    "2026-09": "17/26",
+    "2026-10": "15/21"
+   },
+   "comparable": 221,
+   "equal": 144,
+   "examples_largest": [
+    {
+     "date": "2026-03-17",
+     "mnd": 2,
+     "tracker": 24
+    },
+    {
+     "date": "2026-03-18",
+     "mnd": 24,
+     "tracker": 5
+    },
+    {
+     "date": "2026-03-15",
+     "mnd": 16,
+     "tracker": 0
+    },
+    {
+     "date": "2026-04-02",
+     "mnd": 16,
+     "tracker": 2
+    },
+    {
+     "date": "2026-04-23",
+     "mnd": 14,
+     "tracker": 0
+    },
+    {
+     "date": "2026-03-14",
+     "mnd": 3,
+     "tracker": 16
+    },
+    {
+     "date": "2026-07-22",
+     "mnd": 11,
+     "tracker": 0
+    },
+    {
+     "date": "2026-08-05",
+     "mnd": 6,
+     "tracker": 17
+    },
+    {
+     "date": "2026-03-31",
+     "mnd": 1,
+     "tracker": 11
+    },
+    {
+     "date": "2026-09-11",
+     "mnd": 10,
+     "tracker": 0
+    },
+    {
+     "date": "2026-04-14",
+     "mnd": 8,
+     "tracker": 0
+    },
+    {
+     "date": "2026-05-25",
+     "mnd": 8,
+     "tracker": 0
+    },
+    {
+     "date": "2026-06-02",
+     "mnd": 7,
+     "tracker": 0
+    },
+    {
+     "date": "2026-04-27",
+     "mnd": 6,
+     "tracker": 0
+    },
+    {
+     "date": "2026-05-22",
+     "mnd": 6,
+     "tracker": 0
+    }
+   ],
+   "examples_latest": [
+    {
+     "date": "2026-09-01",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-02",
+     "mnd": 1,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-05",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-08",
+     "mnd": 4,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-11",
+     "mnd": 10,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-14",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-25",
+     "mnd": 1,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-29",
+     "mnd": 1,
+     "tracker": 0
+    },
+    {
+     "date": "2026-09-30",
+     "mnd": 5,
+     "tracker": 0
+    },
+    {
+     "date": "2026-10-03",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-10-08",
+     "mnd": 1,
+     "tracker": 0
+    },
+    {
+     "date": "2026-10-09",
+     "mnd": 2,
+     "tracker": 0
+    },
+    {
+     "date": "2026-10-11",
+     "mnd": 5,
+     "tracker": 0
+    },
+    {
+     "date": "2026-10-12",
+     "mnd": 4,
+     "tracker": 0
+    },
+    {
+     "date": "2026-10-27",
+     "mnd": 3,
+     "tracker": 0
+    }
+   ],
+   "mean_abs_diff": 1.52,
+   "mnd_field": "median_line_or_adiz",
+   "mnd_only": 0,
+   "rate": 0.6516,
+   "tracker_field": "median_line_cross",
+   "tracker_only": 78
+  },
+  "ships_total": {
+   "by_month": {
+    "2026-01": "31/31",
+    "2026-02": "28/28",
+    "2026-03": "12/31",
+    "2026-04": "7/30",
+    "2026-05": "6/31",
+    "2026-06": "6/29",
+    "2026-07": "1/31",
+    "2026-08": "1/30",
+    "2026-09": "0/29",
+    "2026-10": "0/29"
+   },
+   "comparable": 299,
+   "equal": 92,
+   "examples_largest": [
+    {
+     "date": "2026-08-10",
+     "mnd": 9,
+     "tracker": 20
+    },
+    {
+     "date": "2026-06-10",
+     "mnd": 6,
+     "tracker": 16
+    },
+    {
+     "date": "2026-07-13",
+     "mnd": 5,
+     "tracker": 15
+    },
+    {
+     "date": "2026-06-09",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-08-09",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-05",
+     "mnd": 8,
+     "tracker": 17
+    },
+    {
+     "date": "2026-10-19",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-21",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-26",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-07-14",
+     "mnd": 6,
+     "tracker": 14
+    },
+    {
+     "date": "2026-08-08",
+     "mnd": 6,
+     "tracker": 14
+    },
+    {
+     "date": "2026-10-02",
+     "mnd": 7,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-04",
+     "mnd": 7,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-06",
+     "mnd": 8,
+     "tracker": 16
+    },
+    {
+     "date": "2026-10-17",
+     "mnd": 6,
+     "tracker": 14
+    }
+   ],
+   "examples_latest": [
+    {
+     "date": "2026-10-15",
+     "mnd": 10,
+     "tracker": 17
+    },
+    {
+     "date": "2026-10-16",
+     "mnd": 9,
+     "tracker": 16
+    },
+    {
+     "date": "2026-10-17",
+     "mnd": 6,
+     "tracker": 14
+    },
+    {
+     "date": "2026-10-19",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-20",
+     "mnd": 7,
+     "tracker": 14
+    },
+    {
+     "date": "2026-10-21",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-22",
+     "mnd": 6,
+     "tracker": 13
+    },
+    {
+     "date": "2026-10-23",
+     "mnd": 3,
+     "tracker": 10
+    },
+    {
+     "date": "2026-10-24",
+     "mnd": 1,
+     "tracker": 6
+    },
+    {
+     "date": "2026-10-25",
+     "mnd": 5,
+     "tracker": 13
+    },
+    {
+     "date": "2026-10-26",
+     "mnd": 6,
+     "tracker": 15
+    },
+    {
+     "date": "2026-10-27",
+     "mnd": 8,
+     "tracker": 12
+    },
+    {
+     "date": "2026-10-28",
+     "mnd": 7,
+     "tracker": 8
+    },
+    {
+     "date": "2026-10-29",
+     "mnd": 7,
+     "tracker": 8
+    },
+    {
+     "date": "2026-10-30",
+     "mnd": 7,
+     "tracker": 8
+    }
+   ],
+   "mean_abs_diff": 2.538,
+   "mnd_field": "plan_vessels",
+   "mnd_only": 0,
+   "rate": 0.3077,
+   "tracker_field": "ships_total",
+   "tracker_only": 0
+  },
+  "ships_total_vs_plan_plus_official": {
+   "by_month": {
+    "2026-01": "15/31",
+    "2026-02": "23/28",
+    "2026-03": "19/31",
+    "2026-04": "26/30",
+    "2026-05": "31/31",
+    "2026-06": "29/29",
+    "2026-07": "31/31",
+    "2026-08": "29/30",
+    "2026-09": "29/29",
+    "2026-10": "29/29"
+   },
+   "comparable": 299,
+   "equal": 261,
+   "examples_largest": [
+    {
+     "date": "2026-01-01",
+     "mnd": 25,
+     "tracker": 17
+    },
+    {
+     "date": "2026-01-25",
+     "mnd": 10,
+     "tracker": 7
+    },
+    {
+     "date": "2026-01-26",
+     "mnd": 11,
+     "tracker": 8
+    },
+    {
+     "date": "2026-03-19",
+     "mnd": 11,
+     "tracker": 8
+    },
+    {
+     "date": "2026-04-01",
+     "mnd": 8,
+     "tracker": 11
+    },
+    {
+     "date": "2026-03-06",
+     "mnd": 9,
+     "tracker": 7
+    },
+    {
+     "date": "2026-03-09",
+     "mnd": 8,
+     "tracker": 6
+    },
+    {
+     "date": "2026-03-14",
+     "mnd": 5,
+     "tracker": 7
+    },
+    {
+     "date": "2026-04-02",
+     "mnd": 11,
+     "tracker": 9
+    },
+    {
+     "date": "2026-08-05",
+     "mnd": 16,
+     "tracker": 14
+    },
+    {
+     "date": "2026-01-02",
+     "mnd": 7,
+     "tracker": 6
+    },
+    {
+     "date": "2026-01-03",
+     "mnd": 7,
+     "tracker": 6
+    },
+    {
+     "date": "2026-01-04",
+     "mnd": 6,
+     "tracker": 5
+    },
+    {
+     "date": "2026-01-05",
+     "mnd": 9,
+     "tracker": 8
+    },
+    {
+     "date": "2026-01-07",
+     "mnd": 7,
+     "tracker": 6
+    }
+   ],
+   "examples_latest": [
+    {
+     "date": "2026-03-07",
+     "mnd": 7,
+     "tracker": 8
+    },
+    {
+     "date": "2026-03-08",
+     "mnd": 7,
+     "tracker": 8
+    },
+    {
+     "date": "2026-03-09",
+     "mnd": 8,
+     "tracker": 6
+    },
+    {
+     "date": "2026-03-12",
+     "mnd": 6,
+     "tracker": 5
+    },
+    {
+     "date": "2026-03-14",
+     "mnd": 5,
+     "tracker": 7
+    },
+    {
+     "date": "2026-03-16",
+     "mnd": 7,
+     "tracker": 8
+    },
+    {
+     "date": "2026-03-17",
+     "mnd": 9,
+     "tracker": 8
+    },
+    {
+     "date": "2026-03-19",
+     "mnd": 11,
+     "tracker": 8
+    },
+    {
+     "date": "2026-03-22",
+     "mnd": 8,
+     "tracker": 7
+    },
+    {
+     "date": "2026-03-31",
+     "mnd": 7,
+     "tracker": 8
+    },
+    {
+     "date": "2026-04-01",
+     "mnd": 8,
+     "tracker": 11
+    },
+    {
+     "date": "2026-04-02",
+     "mnd": 11,
+     "tracker": 9
+    },
+    {
+     "date": "2026-04-03",
+     "mnd": 9,
+     "tracker": 8
+    },
+    {
+     "date": "2026-04-09",
+     "mnd": 9,
+     "tracker": 8
+    },
+    {
+     "date": "2026-08-05",
+     "mnd": 16,
+     "tracker": 14
+    }
+   ],
+   "mean_abs_diff": 0.194,
+   "mnd_field": "plan_plus_official",
+   "mnd_only": 0,
+   "rate": 0.8729,
+   "tracker_field": "ships_total",
+   "tracker_only": 0
+  }
+ },
+ "mnd_format": "around-taiwan",
+ "offsets": {
+  "-1": {
+   "equal": 100,
+   "pairs": 819,
+   "rate": 0.1221
+  },
+  "0": {
+   "equal": 521,
+   "pairs": 819,
+   "rate": 0.6361
+  },
+  "1": {
+   "equal": 133,
+   "pairs": 816,
+   "rate": 0.163
+  }
+ },
+ "overlap_days": 299,
+ "range": [
+  "2026-01-01",
+  "2026-10-30"
+ ]
+}

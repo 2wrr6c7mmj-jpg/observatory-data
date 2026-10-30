@@ -1,0 +1,57 @@
+{
+ "attribution": {
+  "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)",
+  "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net）",
+  "license": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+  "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。"
+ },
+ "comparison_2026": "国防部の日報（around-taiwan 書式）と重なる 2026-01-01〜2026-10-30 の 299 日（2026-10-30 取得の CSV）：機数 285/299 一致（95.3%、食い違い 14 日は 2026-02-01・03-05〜03-19・03-31〜04-02・08-05 で、多くは 1 日のずれ）、艦艇は国防部の海軍艦艇＋公務船と 261/299 一致（87.3%。2026-05 以降は 147/149）、海軍艦艇だけとは 92/299、中間線越えは国防部に値のある 221 日で 144 一致（65.2%、定義が狭いため）。毎回の結果は compare.json",
+ "dataset": "pla-tracker",
+ "fields": {
+  "activity_end": "活動の終わり（同上）",
+  "activity_start": "活動の始まり（台湾時間の時刻、集約者の表記のまま。記載はまれ）",
+  "aircraft_total": "中国軍機の延べ機数（国防部 aircraft に相当。定義は同じ）",
+  "aircraft_type": "機の種類の区分（Manned・Zero・Mixed・UAV・Helicopter。大文字小文字の揺れは原文のまま）。機種名ではない",
+  "cross_rate": "median_line_cross / aircraft_total の百分率（集約者の計算、文字列のまま。0.0〜100）",
+  "date": "日付（国防部の報告日、台湾時間とみなす）。2026-03-05〜03-19 と 03-31〜04-02 には、国防部の報告日より 1 日早い日付で載っているとみられる行がある（compare.json）",
+  "median_line_cross": "中間線を越えた機数。国防部 median_line_or_adiz（中間線越え＋北部・中部・西南・東部空域への進入）より狭く、空域への進入だけの日は 0 になることが多い（例：2026-10-27 は 0、国防部 3「進入北部及西南空域(3架次)」）。ただし進入の機数を入れた日もあり一定しない（2026-10-29 は 5「進入北部、中部及西南空域(5架次)」）。国防部の原文に記載のない日も 0 になっている（国防部の側では null）",
+  "retrieved_utc": "その行を取り込んだ（または値が変わった）時刻（UTC）。公表時刻ではない",
+  "ships_total": "艦艇の数。2026-01〜02 は中国海軍艦艇だけ（国防部 plan_vessels と同じ）、2026-03 下旬（03-23 ごろ）以降は海軍艦艇＋公務船（国防部 plan_vessels + official_ships）。集約者の定義変更とみられ、内訳は分からない",
+  "special_event": "国防部の原文（中国語）の一部の写し：空域・中間線越えの記述、気球など（集約者の表記のまま）"
+ },
+ "files": {
+  "compare.json": "国防部の日報（around-taiwan 書式）との突き合わせ：重なる期間の項目ごとの一致率、日付のずれ、食い違いの例",
+  "daily.csv": "日ごとの値（元の列＋取り込み時刻）",
+  "daily.json": "同じ内容の JSON（出典表記つき）",
+  "status.json": "最後の取得の結果（HTTP、行数、最新日、追加・改訂、robots.txt の判定）"
+ },
+ "limits": [
+  "集約者が国防部のサイトを自動で取得して作った表であり、国防部自身の robots.txt は自動取得を拒んでいる。集約者の取得方法・許諾の有無は確認していない",
+  "集約者は個人で、更新が止まる・形式が変わる・公開をやめる可能性がある。status.json の source.last_day で最新日を確かめる",
+  "集約の過程での読み取り誤り・転記の遅れがありうる。国防部の日報との突き合わせ（compare.json）で一致率を確かめ、食い違いは国防部の原文を優先する",
+  "国防部の日報の書式・定義の変更（taiwan-mnd/meta.json の definition_changes）は、このデータでは記録されない",
+  "about ページは「vessels は PLA Navy の艦艇数」と説明しているが、実際の ships_total は 2026-03 下旬から公務船を含む（compare.json）。集約者の説明と値が合っていない",
+  "about ページは「記録は追記のみで書き換えない」としている。過去の日付のずれ（2026-03 の 1 日ずれ等）も直されない可能性が高い",
+  "収録は 2026-01-01 から（それより前は無い）"
+ ],
+ "merge": "日付ごとに取り込み、集約者が値を変えた日は新しい値で置き換えて status.json の last_run.revised に記録する。元の CSV から消えた日は残す。保存済みの 80% より行が少ない CSV、列の足りない CSV は使わない",
+ "missing_values": "空欄は不明（null）で、0 とはみなさない。集約者が空欄にした理由は分からない",
+ "precedence": "同じ日に国防部の日報（docs/data/taiwan-mnd/、around-taiwan 書式）とこのデータの両方がある場合は、原典に近い国防部の日報の値を使う。このデータは国防部の日報の行が無い日（主に 2026-10-31 以降）だけに使い、使った日は出典をこのデータとして区別する。つなぐときは aircraft_total→aircraft はそのまま、ships_total は海軍艦艇＋公務船（plan_vessels とは別の量）、median_line_cross は median_line_or_adiz より狭い量として扱い、同じ列として続けない。食い違いは compare.json に毎回記録する。",
+ "source": {
+  "compiler": "Adam Pan（Skyfaring、about ページの記名）",
+  "credibility": "2",
+  "name": "PLA Activity Tracker（個人による集約サイト）",
+  "original": "中華民國國防部の日報「中共解放軍臺海周邊海、空域動態」（https://www.mnd.gov.tw/）",
+  "position": "原典は紛争当事者（台湾）の公式発表。集約者は個人で、国防部のサイトを自動で読み取って表にしている",
+  "rating_note": "暫定評価 B-2 目安（アドミラルティ・コード）。数値の原典は当事者である台湾国防部の発表で、探知範囲・計上基準・公表方針は国防部に依存する。集約者は個人であり、読み取りの誤り・修正の有無は国防部の原文で確かめる必要がある。",
+  "reliability": "B",
+  "urls": [
+   "https://pla-tracker.skyfaring.net/",
+   "https://pla-tracker.skyfaring.net/data/records.csv",
+   "https://pla-tracker.skyfaring.net/en/about"
+  ]
+ },
+ "title": "PLA Activity Tracker：台湾周辺の中国軍機・艦艇の日ごとの数（台湾国防部の日報の集約）",
+ "use": "台湾国防部の日報の自動取得は robots.txt（User-agent: * に Disallow: /）で拒否されているため 2026-10-30 で止めた（collectors/taiwan_mnd.py SUSPENDED）。2026-10-31 以降の日ごとの数はこのデータで補う。",
+ "window": "date は国防部の日報の報告日と同じとみなす（台湾時間。前日 06:00〜当日 06:00 の集計）。集約者は国防部の公表（台湾時間の正午〜14 時ごろ）の後に自動で取り込む（about ページ）。compare.json の offsets で日付のずれを確かめている"
+}
