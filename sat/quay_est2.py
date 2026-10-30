@@ -683,7 +683,12 @@ def _limits_calib(c: dict) -> list[str]:
     bc, ac = ev.get("before", {}).get("columns", {}), ev.get("after_cv", {}).get("columns", {})
     bo, ao = ev.get("before", {}).get("occupied", {}), ev.get("after_cv", {}).get("occupied", {})
     hw = fit.get("hard_ways", {})
-    pct = lambda x: f"{100 * x:.0f}%" if x is not None else "—"
+    sm, sh = fit.get("smear", {}), c.get("shrinkage", {})
+    hw_counts = "・".join(f"{v['cannot_judge']}／{v['answered']}" for v in hw.values())
+
+    def pct(k, n):  # from the counts (the shares in the file are already rounded)
+        return f"{100 * k / n:.0f}%" if k is not None and n else "—"
+
     return [
         (f"較正 1 回目（#7）：所有者 1 人が Sentinel-2 の 10 m 自然色で目で確かめたラベル（判断できた {lab.get('verified')} 区間×日、"
          f"判断できない {lab.get('cannot_judge')}）で、列数の奥行きの平均・σ、にじみの割り引き、S2 の色の LR を見直した。"
@@ -693,11 +698,18 @@ def _limits_calib(c: dict) -> list[str]:
         (f"列数の較正に使えたのは {lab.get('column_rows')} 件（人の列数と S1 の奥行きの組、大半が軌道 157 のレーダー向きの面）と少ない。"
          "反対向き・沿う面の 2・3 列と軌道 84 は 0〜1 件で、全体のずれ"
          f"（{fit.get('depth', {}).get('offset')} m）を足した仮置き値に近いまま。日付ごとの交差検証で、列数の一致率は "
-         f"{pct(bc.get('share'))}→{pct(ac.get('share'))}（{bc.get('n')} 件）、占有の一致率は {pct(bo.get('share'))}→{pct(ao.get('share'))}（{bo.get('n')} 件）"),
-        "人のラベルは S2 の時刻（03 時台 UTC）、S1 は −40.5〜+79.4 時間ずれる。その間の入出港を含んだまま較正している",
+         f"{pct(bc.get('agree'), bc.get('n'))}→{pct(ac.get('agree'), ac.get('n'))}（{bc.get('n')} 件）、占有の一致率は "
+         f"{pct(bo.get('agree'), bo.get('n'))}→{pct(ao.get('agree'), ao.get('n'))}（{bo.get('n')} 件。上がった分はにじみの割り引きの "
+         f"{sm.get('n')} 行から来ており、それ以外の行の判定は較正の前後で同じ）"),
+        (f"にじみの割り引き（本当に船である確率）{SMEAR_P_REAL:g} は、該当する S1 占有 {sm.get('n')} 件のうち人が船を見た {sm.get('seen')} 件に基づき、"
+         f"擬似件数 {sh.get('smear_pseudo_n', 5):g} で仮置き {PH_SMEAR_P_REAL:g} 側へ縮めた値。件数が少なく、確かな値ではない"),
+        ("人の判定は S2 の時刻（03 時台 UTC）のもので、S1 とは −40.5〜+79.4 時間ずれる。その間の入出港を含んだまま較正しており、"
+         "奥行き・にじみ・占有の値はどちら向きにも偏り得る（S2 の後に入港すれば人は「いない」・S1 は「いる」、出港すればその逆）"),
         ("S2 の色は 10 m では灰と白（海警・白い船体）を分けられないとみなし「無彩色」にまとめた。LR は上限（無彩色 1.5、強い色 0.3）を置き、"
          "自動の判定は人との一致の割合で 1 に近づけた。所有者が確かめた行は人の色を使う"),
-        (f"OSM の線 {'・'.join(hw)} は人の目でも判断できない区間×日が多い（{'・'.join(pct(v['share']) for v in hw.values())}）。"
+        (f"OSM の線 {'・'.join(hw)} は人の目でも判断できない区間×日が多い（{hw_counts}）。"
+         f"規則：人が答えた行が {sh.get('hard', {}).get('min_answers', 5)} 件以上で、その {100 * sh.get('hard', {}).get('cannot_share', 0.5):.0f}% 以上が「判断できない」の線"
+         "（971239820 は 5 件でちょうど下限。件数が増えれば外れることがある）。"
          "est-2 の値は変えず、区間に hard_to_judge、撮影ごとに hard_stretches（区間の数）・hard_warship_mean（その区間の 60 m 以上の軍艦の期待値）として注記する"),
     ]
 
@@ -721,7 +733,8 @@ LIMITS = (_limits_calib(CALIB) if _P else LIMITS_PH) + [
     "軌道の組（36 時間以内）の間の入出港は無いものとしている",
     ("区間どうしは独立と仮定（同じ桟橋の区間の相関を入れていない）ので、合計の 80% 区間は実際より狭く出やすい。"
      "est-1 の「60 m 以内のまとまり」のにじみの割り引きは入れていない（反対向きの面のにじみだけ割り引く）"),
-    "2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値",
+    ("2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値。10-26 の S1 は S2 の 10-23 と組んで #7 の較正データ（奥行き・にじみ）にも入っている"
+     if _P else "2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値"),
     "数えられない区間（常時占有・OSM に無い岸壁）は est-1 と同じく入らない",
 ]
 

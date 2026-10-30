@@ -246,6 +246,27 @@ class CalibrationTest(unittest.TestCase):
         for v in res["params"]["s2_lr_auto"].values():
             self.assertTrue(cal.LR_STRONG <= v <= cal.LR_ACHROMATIC)
 
+    def test_placeholders_without_calibration_file(self):
+        """No sat/quay_est2_calib.json (or unreadable): est-2 falls back to the design's placeholders."""
+        import importlib
+        try:
+            with mock.patch.object(e2, "load_calibration", lambda path=None: None), \
+                    mock.patch("pathlib.Path.read_text", side_effect=OSError("absent")):
+                m = importlib.reload(e2)
+            self.assertIsNone(m.CALIB)
+            self.assertEqual(m.DEPTH_MU["away"], m.PH_DEPTH_MU["away"])
+            self.assertEqual(m.TOWARD_MU, m.PH_TOWARD_MU)
+            self.assertEqual(m.DEPTH_SD_M, m.PH_DEPTH_SD_M)
+            self.assertEqual(m.SMEAR_P_REAL, m.PH_SMEAR_P_REAL)
+            self.assertEqual(m.S2_LR, m.PH_S2_LR)
+            self.assertEqual(m.S2_LR_OWNER, {})
+            self.assertEqual(m.HARD_WAYS, set())
+            self.assertIn("較正前", m.STATUS)
+            self.assertIsNone(m.settings()["calibration"])
+        finally:
+            importlib.reload(e2)
+        self.assertIsNotNone(e2.CALIB)
+
     def test_shrink_to_placeholder_without_data(self):
         from sat import quay_est2_calib as cal
         d = cal.fit_depth([])
