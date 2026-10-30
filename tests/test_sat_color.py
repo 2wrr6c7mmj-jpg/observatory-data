@@ -50,8 +50,8 @@ class ColorTest(unittest.TestCase):
         self.assertIn(rgb[0, 2, 0], (127, 128))
         self.assertEqual(rgb[0, 0, 1], 0)
         self.assertEqual(rgb[0, 1, 1], 255)
-        # VV-VH: 6 dB -> 0.75 blue, 6 dB, 15 dB -> 0
-        self.assertEqual(rgb[0, 0, 2], round(0.75 * 255))
+        # VV-VH: 6 dB -> 0.75 before gamma, 15 dB -> 0
+        self.assertEqual(rgb[0, 0, 2], round(0.75 ** (1 / color.GAMMA[2]) * 255))
         self.assertEqual(rgb[0, 2, 2], 0)
         self.assertEqual(tuple(rgb[0, 3]), color.NODATA_RGB)
         # The same values give the same colour in a scene with a different spread.

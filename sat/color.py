@@ -25,7 +25,10 @@ COLOR_VERSION = "s1fc-1"
 VV_RANGE = (-22.0, 0.0)
 VH_RANGE = (-28.0, -6.0)
 RATIO_RANGE = (15.0, 3.0)
-GAMMA = (1.0, 1.0, 1.0)      # out = n ** (1 / gamma) per channel (R, G, B)
+# out = n ** (1 / gamma) per channel (R, G, B). B 0.5 (2026-10-30, ZJG 2026-10-26 S1C asc RO157):
+# open water sits near the VH noise floor, so its VV-VH (median 6.4 dB) made the whole bay
+# saturated blue at gamma 1; 0.5 turns it navy and leaves land near neutral. Ranges unchanged.
+GAMMA = (1.0, 1.0, 0.5)
 LEE_HALF = 1                  # 3x3 window
 LEE_ENL = 4.4                 # equivalent number of looks of Sentinel-1 IW GRDH
 NODATA_RGB = (0, 0, 0)
@@ -87,14 +90,14 @@ def _font(size: int = 10):
 
 
 def _fmt(x: float) -> str:
-    return f"{x:g}".replace("-", "−")
+    return f"{x:g}"  # ASCII minus: the default font has no U+2212
 
 
 def legend(width: int, label: str, credit: str):
     """Legend image (Pillow) of the three channels, the label and the credit."""
     from PIL import Image, ImageDraw
     font = _font(10)
-    rows = [("R  VV", VV_RANGE, 0), ("G  VH", VH_RANGE, 1), ("B  VV−VH", RATIO_RANGE, 2)]
+    rows = [("R  VV", VV_RANGE, 0), ("G  VH", VH_RANGE, 1), ("B  VV-VH", RATIO_RANGE, 2)]
     lh = 14
     h = 6 + lh * len(rows) + 4 + lh * 2 + 4
     im = Image.new("RGB", (width, h), BG)
