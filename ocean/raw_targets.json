@@ -1,22 +1,19 @@
 {
  "version": "ocean-raw-targets-1",
- "note": "cfar-v2 の当てはめ失敗の原因調べ（probe のみ）。前回の外洋 probe（probe/ocean-cfar-ops3 の ocean/results/cfar_probe/2026-10-30T17-44-27Z/、44 撮影）から代表を選んだ。nomodel は v2 で当てはめも借用もされなかったタイル数（全 400）。 2 回目（probe ブランチのみ）：1 回目に Overpass が 502 で取れなかった TS の 3 撮影だけ。",
+ "note": "cfar-v2 の当てはめ失敗の原因調べ（probe のみ）。前回の外洋 probe（probe/ocean-cfar-ops3 の ocean/results/cfar_probe/2026-10-30T17-44-27Z/、44 撮影）から代表を選んだ。nomodel は v2 で当てはめも借用もされなかったタイル数（全 400）。",
  "source_run": "ocean/results/cfar_probe/2026-10-30T17-44-27Z",
  "targets": [
-  {
-   "area": "TS",
-   "acquired_utc": "2026-10-16T21:51:39Z",
-   "why": "台湾海峡（洋上風力を含む）・低風（VV -26.3 dB、nomodel 375）"
-  },
-  {
-   "area": "TS",
-   "acquired_utc": "2026-08-23T21:51:23Z",
-   "why": "台湾海峡（洋上風力を含む）・正常（VV -15.3 dB、nomodel 0、被覆 1.0）"
-  },
-  {
-   "area": "TS",
-   "acquired_utc": "2026-10-26T10:00:29Z",
-   "why": "台湾海峡・強風（VV -11.1 dB、nomodel 61）"
-  }
+  {"area": "HK",  "acquired_utc": "2026-09-04T10:32:46Z", "why": "香港・低風（VV 中央値 -26.5 dB、nomodel 351）"},
+  {"area": "HK",  "acquired_utc": "2026-09-16T10:32:47Z", "why": "香港・やや強風（VV -19.0 dB、nomodel 39）"},
+  {"area": "TS",  "acquired_utc": "2026-10-16T21:51:39Z", "why": "台湾海峡（洋上風力を含む）・低風（VV -26.3 dB、nomodel 375）"},
+  {"area": "TS",  "acquired_utc": "2026-08-23T21:51:23Z", "why": "台湾海峡（洋上風力を含む）・正常（VV -15.3 dB、nomodel 0、被覆 1.0）"},
+  {"area": "TS",  "acquired_utc": "2026-10-26T10:00:29Z", "why": "台湾海峡・強風（VV -11.1 dB、nomodel 61）"},
+  {"area": "ECS", "acquired_utc": "2026-10-09T09:53:33Z", "why": "東シナ海・全 400 タイル未当てはめ（VV -23.3 dB）"},
+  {"area": "ECS", "acquired_utc": "2026-08-10T09:53:32Z", "why": "東シナ海・強風（VV -13.5 dB、nomodel 53）"},
+  {"area": "TE",  "acquired_utc": "2026-08-27T10:00:28Z", "why": "台湾東方・低風・全 400 タイル未当てはめ（VV -26.8 dB）"},
+  {"area": "TE",  "acquired_utc": "2026-10-22T21:51:23Z", "why": "台湾東方・強風（VV -8.6 dB、nomodel 64）"},
+  {"area": "TE",  "acquired_utc": "2026-10-14T10:00:29Z", "why": "台湾東方・正常（VV -17.0 dB、nomodel 0、被覆 1.0）"},
+  {"area": "TE",  "acquired_utc": "2026-10-03T09:52:09Z", "why": "台湾東方・中程度の風なのに全 400 タイル未当てはめ（VV -13.6 dB、IW1 側 31.8°）"},
+  {"area": "TE",  "acquired_utc": "2026-08-16T09:52:07Z", "why": "台湾東方・全 400 タイル未当てはめ（VV -16.4 dB、IW1 側）"}
  ]
 }
