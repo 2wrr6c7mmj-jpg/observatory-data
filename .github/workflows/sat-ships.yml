@@ -47,7 +47,7 @@ jobs:
           DAYS: ${{ inputs.days || '30' }}
         run: |
           set -o pipefail
-          python -m sat.run --probe "$RUNNER_TEMP/sat" --days "$DAYS" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+          python -m sat.run --probe "$RUNNER_TEMP/sat" --days "$DAYS" --only 2026-10-26T10:48 2>&1 | tee "$RUNNER_TEMP/probe.log"
       - name: Probe report (annotations)
         # Logs and artifacts are on blob storage; annotations can be read through the REST API.
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
