@@ -1,0 +1,38 @@
+name: Probe Taiwan MND robots.txt
+# 読み取り専用の probe：www.mnd.gov.tw/robots.txt を1回だけ取得し、本文と判定を注釈に出す。
+# データは commit しない。このファイルは probe ブランチにだけ置く（main には入れない）。
+on:
+  push:
+    branches: ['probe/mnd-robots']
+permissions:
+  contents: read
+jobs:
+  robots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch robots.txt once (collector User-Agent)
+        run: |
+          python - <<'PY'
+          import urllib.robotparser
+          from collectors import polite
+          from collectors.taiwan_mnd import UA
+          def esc(s): return s.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+          r = polite.raw_get("https://www.mnd.gov.tw/robots.txt", UA, 30, None, polite.ROBOTS_MAX_BYTES)
+          text = r.body.decode("utf-8", errors="replace")
+          hdr = {k: r.headers.get(k) for k in ("content-type", "server", "content-length", "cf-mitigated", "last-modified")}
+          print("::notice title=robots-meta::" + esc(f"status {r.status}, final url {r.url}, headers {hdr}, bytes {len(r.body)}, challenge {polite.is_challenge(r)}"))
+          for i in range(0, max(len(text), 1), 3500):
+              print(f"::notice title=robots-body-{i // 3500}::" + esc(text[i:i + 3500] or "(empty)"))
+          rp = urllib.robotparser.RobotFileParser("https://www.mnd.gov.tw/robots.txt")
+          rp.parse(text.splitlines())
+          urls = ["https://www.mnd.gov.tw/en/news/plaactlist/1", "https://www.mnd.gov.tw/news/plaactlist/1",
+                  "https://www.mnd.gov.tw/en/News/PLAAct/1", "https://www.mnd.gov.tw/en/News/PLAAct/80000"]
+          out = [f"{u}: can_fetch(UA)={rp.can_fetch(UA, u)} can_fetch(*)={rp.can_fetch('*', u)}" for u in urls]
+          out.append(f"crawl_delay(UA)={rp.crawl_delay(UA)} crawl_delay(*)={rp.crawl_delay('*')} request_rate(*)={rp.request_rate('*')}")
+          print("::notice title=robots-verdict::" + esc("\n".join(out)))
+          PY
