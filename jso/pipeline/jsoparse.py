@@ -246,7 +246,7 @@ NEAR_STRAIT = {
     "上対馬": "tsushima", "下対馬": "tsushima", "対馬": "tsushima", "壱岐": "tsushima", "沖ノ島": "tsushima", "見島": "tsushima", "福江島": "tsushima", "五島列島": "tsushima", "男女群島": "tsushima",
     "大隅半島": "osumi", "佐多岬": "osumi", "種子島": "osumi", "屋久島": "osumi", "都井岬": "osumi", "口永良部島": "osumi",
     "竜飛崎": "tsugaru", "尻屋崎": "tsugaru", "大間崎": "tsugaru", "恵山岬": "tsugaru", "白神岬": "tsugaru", "津軽半島": "tsugaru", "下北半島": "tsugaru", "松前": "tsugaru", "奥尻島": "tsugaru",
-    "宗谷岬": "soya", "礼文島": "soya", "利尻島": "soya", "稚内": "soya", "知床岬": "soya",
+    "宗谷岬": "soya", "礼文島": "soya", "利尻島": "soya", "稚内": "soya",  # 知床岬 is on the Nemuro side, not Soya: no candidate strait
     "与那国島": "yonaguni_taiwan", "仲ノ神島": "yonaguni_taiwan", "波照間島": "yonaguni_iriomote", "西表島": "yonaguni_iriomote", "石垣島": "ishigaki_iriomote",
     "奄美大島": "amami_yokoate", "横当島": "amami_yokoate", "喜界島": "kikai", "徳之島": "amami_tokunoshima", "沖永良部島": "amami_tokunoshima", "与論島": "amami_tokunoshima",
     "宝島": "tokara", "小宝島": "tokara", "悪石島": "tokara", "諏訪之瀬島": "tokara", "中之島": "tokara", "口之島": "tokara",

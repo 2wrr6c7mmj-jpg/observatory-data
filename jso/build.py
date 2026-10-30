@@ -34,6 +34,8 @@ OUT = ROOT / "docs" / "data" / "jso"
 MND = ROOT / "docs" / "data" / "taiwan-mnd" / "daily.csv"
 WINDOW = 14        # days before/after a passage for context matching
 PAIR_MAX_DAYS = 90  # longest stay considered for a hull-number match
+DUP_DAYS = 2        # passages this close are treated as one (see dedupe())
+HOME = {"CN": {"東シナ海"}, "RU": {"日本海"}, "CNRU": {"東シナ海", "日本海"}}  # each navy's home side
 NAMES = {'miyako': '宮古海峡', 'osumi': '大隅海峡', 'tsushima': '対馬海峡', 'tsugaru': '津軽海峡', 'soya': '宗谷海峡',
          'yonaguni_taiwan': '与那国－台湾', 'yonaguni_iriomote': '与那国－西表', 'amami_yokoate': '奄美－横当', 'tokara': 'トカラ',
          'okinawa_kume': '沖縄－久米', 'ishigaki_iriomote': '石垣－西表', 'miyako_ishigaki': '宮古－石垣',
@@ -102,21 +104,71 @@ def load_passages(c: sqlite3.Cursor) -> list[dict]:
     return list(seen.values())
 
 
+def hulls_match(a: str | None, b: str | None) -> bool:
+    """At least half of the smaller hull set is shared (the hull_pairs rule)."""
+    ha, hb = set((a or "").split()), set((b or "").split())
+    shared = ha & hb
+    return bool(shared) and len(shared) * 2 >= min(len(ha), len(hb))
+
+
+def same_way(a: dict, b: dict) -> bool:
+    """Same direction: the same destination basin when both name one, else the same compass heading."""
+    if a["waters_to"] and b["waters_to"]:
+        return sea(a["waters_to"]) == sea(b["waters_to"])
+    return a["dir"] == b["dir"]
+
+
+def dedupe(passages: list[dict]) -> tuple[list[dict], dict[int, int], dict[str, int]]:
+    """Drop passages counted twice (2部 検品 A1, A2).
+
+    A1  An inferred strait is usually the first sighting, not the passage: drop it
+        when the same release states a passage within +-DUP_DAYS days.
+    A2  A later release repeating an earlier passage: same hulls, strait and
+        direction (same_way) within +-DUP_DAYS days -> keep the earliest release's row.
+    Returns the kept rows, {dropped sighting -> kept sighting} for A2 (the same
+    passage, so round trips stated on the repeat still apply) and counts.
+    """
+    stated_days = collections.defaultdict(list)
+    for p in passages:
+        if not p["inferred"]:
+            stated_days[p["release_id"]].append(D(p["date"]))
+    kept = [p for p in passages if not (p["inferred"] and any(
+        abs((D(p["date"]) - d).days) <= DUP_DAYS for d in stated_days[p["release_id"]]))]
+    a1 = len(passages) - len(kept)
+    kept.sort(key=lambda p: (p["pub_date"] or "", p["release_id"], p["date"]))
+    out, alias = [], {}
+    for p in kept:
+        twin = next((q for q in out if p["hulls"] and q["release_id"] != p["release_id"] and q["nation"] == p["nation"]
+                     and q["strait"] == p["strait"] and same_way(q, p)
+                     and abs((D(q["date"]) - D(p["date"])).days) <= DUP_DAYS and hulls_match(q["hulls"], p["hulls"])), None)
+        if twin:
+            alias[p["sighting_id"]] = twin["sighting_id"]
+        else:
+            out.append(p)
+    out.sort(key=lambda p: (p["date"], p["sighting_id"]))
+    return out, alias, {"inferred_near_stated": a1, "repeated_in_later_release": len(alias)}
+
+
+def direction(nation: str, out_waters_to: str | None) -> str:
+    """進出→帰投 when the outbound leg leaves home waters; 帰投→再進出 when it heads home (2部 検品 A3)."""
+    return "帰投→再進出" if sea(out_waters_to) in HOME.get(nation, set()) else "進出→帰投"
+
+
 def stated_pairs(c: sqlite3.Cursor) -> list[dict]:
     out = []
-    for o_sid, i_sid, od, ost, idt, ist, days, nat, units, aor, cv, orel, irel, url in c.execute("""
+    for o_sid, i_sid, od, ost, idt, ist, days, nat, units, aor, cv, orel, irel, url, oto in c.execute("""
         select o.sighting_id, i.sighting_id, o.observed_date, o.strait, i.observed_date, i.strait, p.days_away, r.nation,
                (select group_concat(class_jp || coalesce('(' || hull_no || ')', ''), ' / ') from sighting_units u where u.sighting_id = o.sighting_id),
                (select count(*) from sighting_units u join vessel_classes v on v.class_key = u.class_key where u.sighting_id = o.sighting_id and v.type_cat in ('AOR','AKS')),
                (select count(*) from sighting_units u join vessel_classes v on v.class_key = u.class_key where u.sighting_id = o.sighting_id and v.type_cat = 'CV'),
-               o.release_id, i.release_id, r.url
+               o.release_id, i.release_id, r.url, o.waters_to
           from transit_pairs p join sightings o on o.sighting_id = p.out_sighting_id
           join sightings i on i.sighting_id = p.in_sighting_id join releases r on r.release_id = i.release_id
          where p.days_away between 0 and 200 order by 3"""):
         out.append(dict(method="stated", out_sighting=o_sid, in_sighting=i_sid, out_date=od, out_strait=ost,
                         out_strait_jp=NAMES.get(ost, ost), in_date=idt, in_strait=ist, in_strait_jp=NAMES.get(ist, ist),
-                        days_away=days, nation=nat, units=units, with_aor=int(bool(aor)), has_cv=int(bool(cv)),
-                        out_release=orel, in_release=irel, in_url=url, shared_hulls=None))
+                        days_away=days, direction=direction(nat, oto), nation=nat, units=units, with_aor=int(bool(aor)),
+                        has_cv=int(bool(cv)), out_release=orel, in_release=irel, in_url=url, shared_hulls=None))
     return out
 
 
@@ -152,7 +204,8 @@ def hull_pairs(passages: list[dict], stated: list[dict]) -> list[dict]:
                 taken |= {a["sighting_id"], b["sighting_id"]}
                 out.append(dict(method="hull-match", out_sighting=a["sighting_id"], in_sighting=b["sighting_id"],
                                 out_date=a["date"], out_strait=a["strait"], out_strait_jp=a["strait_jp"], in_date=b["date"],
-                                in_strait=b["strait"], in_strait_jp=b["strait_jp"], days_away=days, nation=a["nation"],
+                                in_strait=b["strait"], in_strait_jp=b["strait_jp"], days_away=days,
+                                direction=direction(a["nation"], a["waters_to"]), nation=a["nation"],
                                 units=a["units"], with_aor=int(bool(a["has_aor"])), has_cv=int(bool(a["has_cv"])),
                                 out_release=a["release_id"], in_release=b["release_id"], in_url=b["url"],
                                 shared_hulls=" ".join(sorted(shared))))
@@ -172,13 +225,15 @@ def main() -> int:
     c = con.cursor()
     events = [(D(a), D(b or a), actor, cat, name, reg) for a, b, actor, cat, name, reg in
               c.execute("select date_start, date_end, actor, category, name, region from context_events")]
-    passages = load_passages(c)
+    raw = load_passages(c)
+    passages, alias, removed = dedupe(raw)
     stated = stated_pairs(c)
     inferred = hull_pairs(passages, stated)
     pairs = sorted(stated + inferred, key=lambda p: (p["out_date"], p["method"]))
     stay = {}
-    for p in pairs:
-        stay[p["in_sighting"]] = (p["days_away"], p["method"])
+    for p in pairs:  # days away is a stay only when the pair left home waters first
+        if p["direction"] == "進出→帰投":
+            stay[alias.get(p["in_sighting"], p["in_sighting"])] = (p["days_away"], p["method"])
     mnd = mnd_daily()
     for p in passages:
         day = D(p["date"])
@@ -208,7 +263,8 @@ def main() -> int:
     summary = {
         "by_year_strait": {n: [{"year": y, "strait": s, "count": k} for (y, s), k in sorted(v.items())] for n, v in by_year.items()},
         "by_month": {n: [v.get(m, 0) for m in range(1, 13)] for n, v in by_month.items()},
-        "stay_days": {meth: sorted(p["days_away"] for p in pairs if p["method"] == meth) for meth in ("stated", "hull-match")},
+        "stay_days": {meth: sorted(p["days_away"] for p in pairs if p["method"] == meth and p["direction"] == "進出→帰投")
+                      for meth in ("stated", "hull-match")},
     }
     (OUT / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     releases = c.execute("select count(*), min(pub_date), max(pub_date) from releases").fetchone()
@@ -217,7 +273,10 @@ def main() -> int:
         "releases": releases[0], "first_release": releases[1], "last_release": releases[2],
         "passages": len(passages), "by_nation": dict(collections.Counter(p["nation"] for p in passages)),
         "inferred_strait": sum(p["inferred"] for p in passages),
+        "inferred_strait_before_dedupe": sum(p["inferred"] for p in raw),
+        "removed_duplicates": removed,
         "round_trips": {"stated": len(stated), "hull-match": len(inferred)},
+        "round_trips_by_direction": dict(collections.Counter(p["direction"] for p in pairs)),
         "context_window_days": WINDOW,
         "with_mnd_counts": sum(1 for p in passages if p["mnd_aircraft"] is not None),
     }
