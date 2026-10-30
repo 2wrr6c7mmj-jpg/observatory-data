@@ -1,0 +1,53 @@
+name: Sentinel-2 quay labels probe
+# est-2 #5（s2lab-1、自動・未確認）：Sentinel-2 の晴れの日の岸壁区間のラベルと、近い Sentinel-1 の取り直し（sat/s2_labels.py）。
+# probe 用ブランチへの push でだけ動く（1 回きりの取得）。本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）と別の concurrency group。
+# 取得した切り出し（岸壁の帯だけ残した npz）とラベル・突き合わせの表・usage.csv の 1 行は、この probe ブランチにだけ commit し、
+# 確かめてから人の PR に取り込む（main には書かない。切り出しは取り込まない）。PU は --max-pu と月の上限（sat/run.py）で止める。
+on:
+  push:
+    branches: ['probe/sat-s2-labels', 'probe/sat-s2-labels-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-sat-s2-labels-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  labels:
+    if: ${{ !contains(github.event.head_commit.message, '[s2-labels-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Labels (fetch what is missing, own PU cap)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          rc=0
+          python -m sat.s2_labels --site ZJG --raw probe-raw/s2-labels/ZJG --max-pu 120 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/labels.log" || rc=$?
+          cat "$RUNNER_TEMP/labels.log" "$RUNNER_TEMP/summary.json"
+          exit $rc
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text labels-summary "$RUNNER_TEMP/summary.json"
+          python -m sat.annotate text labels-log "$RUNNER_TEMP/labels.log"
+          tail -n 1 docs/data/sat/usage.csv > "$RUNNER_TEMP/usage_row.txt" || true
+          python -m sat.annotate text usage-row "$RUNNER_TEMP/usage_row.txt"
+      - name: Commit the result to this probe branch only
+        if: always()
+        run: |
+          git add docs/data/sat probe-raw
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: Sentinel-2 の岸壁区間のラベルと Sentinel-1 の取り直し [s2-labels-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "::notice title=labels-commit::$(git rev-parse HEAD)"
