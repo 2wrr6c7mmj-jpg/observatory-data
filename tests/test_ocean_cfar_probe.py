@@ -131,7 +131,7 @@ class AreasTest(unittest.TestCase):
 @unittest.skipUnless(np is not None, "numpy not installed")
 class BudgetTest(unittest.TestCase):
     def test_caps_by_month(self):
-        self.assertEqual(op.caps_for("2026-10")["ocean_pu"], 4000.0)
+        self.assertEqual(op.caps_for("2026-10")["ocean_pu"], 4600.0)
         self.assertEqual(op.caps_for("2026-11")["ocean_pu"], 400.0)
         self.assertEqual(op.caps_for("2026-10")["total_pu"], 9000.0)
 
