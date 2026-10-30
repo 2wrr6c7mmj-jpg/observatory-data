@@ -77,7 +77,7 @@ def quicklook(path, vv, masks, cands, year):
     arr = np.array(img)
     arr[edge] = (0.6 * arr[edge] + 0.4 * np.array([0, 160, 255])).astype(np.uint8)
     img = Image.fromarray(arr)
-    ImageDraw.Draw(img).text((6, img.height - 16), ATTRIBUTION % year + " / 候補（未確認）", fill=(255, 255, 255))
+    ImageDraw.Draw(img).text((6, img.height - 16), ATTRIBUTION % year + " / candidates, unconfirmed", fill=(255, 255, 255))
     path.parent.mkdir(parents=True, exist_ok=True)
     img.save(path, optimize=True)
 
