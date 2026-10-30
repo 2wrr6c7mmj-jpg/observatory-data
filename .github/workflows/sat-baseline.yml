@@ -1,6 +1,6 @@
 name: Sentinel-1 quay baseline probe
 # 岸壁の数（quay-v1）の基準（相対軌道ごとの「船のいない岸壁」）を作る probe。過去約 6 か月の撮影をまとめて 1 回だけ取得する
-# （sat/baseline.py。湛江で約 50 シーン・約 90 PU）。OSM の桟橋・岸壁・海岸線も取る（sat/quay_lines.py）。
+# （sat/baseline.py。湛江で 45 シーン・55 PU の実績：2026-10-30、1 シーン約 1.23 PU）。OSM の桟橋・岸壁・海岸線も取る（sat/quay_lines.py）。
 # データは commit しない：結果は注釈（xz の tar を base64 で分割）に出し、確かめてから手で commit する（陸マスクと同じ流儀）。
 # 本番の定期実行はない。probe 用ブランチへの push でだけ動き、本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）と別の concurrency group。
 on:

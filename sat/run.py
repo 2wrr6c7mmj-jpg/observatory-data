@@ -21,7 +21,8 @@ from pathlib import Path
 
 import numpy as np
 
-from . import cdse, png, render
+from . import baseline as fbase
+from . import cdse, png, quay, quay_lines, render
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
@@ -52,6 +53,24 @@ CSV_FIELDS = [
 SECTOR_COLUMNS = ("a", "b")  # the first sector of a site is "a"; the rest of the chip is "b"
 
 USAGE_FIELDS = ["run_utc", "requests", "processing_units", "pu_source", "scenes"]
+
+# Quay count (quay-v1, trial): one row per scene x site x mask version, only where a baseline
+# of the scene's relative orbit exists. Separate from ship_counts.csv (the CFAR count stays as it is).
+QUAY_FIELDS = [
+    "site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "mask_version",
+    "quay_version", "lines_version", "baseline_version", "baseline_scenes", "credibility",
+    "occupied_min", "occupied_max", "sector_a_min", "sector_a_max", "sector_b_min", "sector_b_max",
+    "segments", "rafted", "quay_coverage", "change_image", "change_thumb", "in_sample",
+]
+
+# Scenes the quay-v1 thresholds were tuned on (CHANGES.md, 2026-10-30): their counts are
+# in-sample values, and they are also in the baselines. Accuracy is judged on later scenes.
+QUAY_TUNING_SCENES = {
+    "ZJG": {"2026-10-02T10:48:45Z", "2026-10-03T10:41:00Z", "2026-10-08T10:49:01Z",
+            "2026-10-14T10:48:45Z", "2026-10-15T10:41:00Z", "2026-10-26T10:48:45Z"},
+}
+OSM_CREDIT = "© OpenStreetMap contributors"
+OSM_LICENSE = "ODbL 1.0"
 
 
 def load_sites(path: Path = SITES_FILE) -> list[dict]:
@@ -117,6 +136,12 @@ def color_paths(site: dict, acquired_utc: str) -> tuple[str, str]:
     return base + ".webp", base + ".thumb.webp"
 
 
+def change_paths(site: dict, acquired_utc: str) -> tuple[str, str]:
+    """Change image (R = this VV, G = B = baseline VV) and its thumbnail."""
+    base = f"change/{site['id']}/v{mask_version(site)}/{stamp(acquired_utc)}"
+    return base + ".webp", base + ".thumb.webp"
+
+
 def color_label(site: dict, acq: dict) -> str:
     plat = (acq.get("platform") or "").replace("sentinel-", "S").upper()
     od = {"ascending": "asc", "descending": "desc"}.get(acq.get("orbit_direction"), acq.get("orbit_direction") or "?")
@@ -173,6 +198,8 @@ class Store:
         st = out / "status.json"
         self.status = json.loads(st.read_text(encoding="utf-8")) if st.exists() else {"scenes": []}
         self.new_features: dict[str, list[dict]] = {}
+        self.quay_rows = read_csv(out / "quay_counts.csv")
+        self.new_quay: dict[str, list] = {}
 
     # Rows and scenes are kept per mask version: a new version (a new site extent) starts
     # its own series and re-reads recent scenes; rows of the old version stay as they were.
@@ -181,6 +208,25 @@ class Store:
         keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
                  if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("result") != "error"}
         return keys
+
+    def quay_done(self, site_id: str, tag: str) -> set[str]:
+        """Scenes with a quay row, or whose quay count was tried or cannot be made: an error and a
+        scene skipped for low coverage are not fetched again."""
+        keys = {r["acquired_utc"] for r in self.quay_rows if r["site_id"] == site_id and row_mask_tag(r) == tag}
+        keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
+                 if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("quay_result") in ("counted", "error", "skipped")}
+        return keys
+
+    def add_quay(self, row: dict, features: list[dict], extra: dict[str, bytes] | None = None) -> None:
+        key = (row["site_id"], row["acquired_utc"], row_mask_tag(row))
+        self.quay_rows = [r for r in self.quay_rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key]
+        self.quay_rows.append(row)
+        self.quay_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
+        for rel, data in (extra or {}).items():
+            q = self.out / rel
+            q.parent.mkdir(parents=True, exist_ok=True)
+            q.write_bytes(data)
+        self.new_quay.setdefault(row["acquired_utc"][:7], []).append((row, features))
 
     def has_rows(self, site_id: str, tag: str) -> bool:
         return any(r["site_id"] == site_id and row_mask_tag(r) == tag for r in self.rows)
@@ -222,6 +268,27 @@ class Store:
             fc["features"] = feats
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        if self.quay_rows or self.new_quay:
+            write_csv(self.out / "quay_counts.csv", self.quay_rows, QUAY_FIELDS)
+        for month, items in self.new_quay.items():
+            p = self.out / "quay" / f"{month}.geojson"
+            fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
+            fkey = lambda p: (p["site_id"], p["acquired_utc"], row_mask_tag(p))
+            keys = {fkey(r) for r, _ in items}
+            feats = [f for f in fc["features"] if fkey(f["properties"]) not in keys]
+            for _r, fs in items:
+                feats.extend(fs)
+            feats.sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"]["site_id"],
+                                      row_mask_tag(f["properties"]), f["properties"]["n"]))
+            fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4]), "features": feats}
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        blind_feats = [f for b in blind_summary(self.sites) for f in b["features"]]
+        if blind_feats:
+            p = self.out / "quay" / "blind.geojson"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            fc = {"type": "FeatureCollection", **quay_fc_attribution(None), "features": blind_feats}
+            p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         if run.get("requests"):
             self.usage.append({k: run.get(k) for k in USAGE_FIELDS})
         write_csv(self.out / "usage.csv", self.usage, USAGE_FIELDS)
@@ -257,6 +324,77 @@ def series_breaks(sites: list[dict]) -> list[dict]:
     return out
 
 
+def quay_fc_attribution(year: str | None) -> dict:
+    """attribution / license of a quay GeoJSON: its lines follow the OSM quay lines (ODbL)."""
+    cop = f"; contains modified Copernicus Sentinel data {year}" if year else ""
+    return {"attribution": f"岸壁の線：{OSM_CREDIT}{cop}", "license": f"{OSM_LICENSE}（{OSM_CREDIT}。線の幾何は OpenStreetMap に由来）"}
+
+
+_BLIND_CACHE: dict = {}
+
+
+def blind_summary(sites: list[dict]) -> list[dict]:
+    """Per site and orbit: where the quay count is likely blind (baseline VV p10 > -8 dB in the inner band).
+    Fixed by the baseline, the lines and the mask; computed once per process."""
+    out = []
+    for site in sites:
+        if not site.get("enabled"):
+            continue
+        orbits = fbase.site_config(site)["orbits"]
+        lv = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
+        if not orbits or quay_lines.load(site["id"], lv) is None:
+            continue
+        for o in orbits:
+            bl = fbase.load(site, o)
+            if bl is None:
+                continue
+            key = (site["id"], mask_tag(site), lv, o, bl[1]["version"], bl[1].get("built_utc"))
+            if key not in _BLIND_CACHE:
+                try:
+                    grid = Grid.for_site(site)
+                    mask, _info = load_mask(site["id"], mask_version(site))
+                    qctx = QuayContext(site, grid, mask)
+                    layers = qctx.baseline(o)
+                    if layers is None:
+                        continue
+                    r = quay.blind_stretches(qctx.geometry(), layers[0])
+                except Exception as e:  # the summary never stops a run
+                    print(f"{site['id']} 軌道 {o}: 数えられない区間を計算できなかった {str(e)[:200]}", file=sys.stderr)
+                    continue
+                bver = f"ro{o}-{bl[1]['version']}"
+                geom = lambda ln: ({"type": "LineString", "coordinates": ln} if len(ln) >= 2
+                                   else {"type": "Point", "coordinates": ln[0]})  # a single 10 m sample
+                feats = [{"type": "Feature", "geometry": geom(st["line"]),
+                          "properties": {"site_id": site["id"], "mask_version": mask_tag(site), "relative_orbit": o,
+                                         "baseline_version": bver, "line_kind": st["kind"], "osm_way": st["way_id"],
+                                         "length_m": st["length_m"], "status": "likely_blind"}}
+                         for st in r["stretches"]]
+                _BLIND_CACHE[key] = {
+                    "site_id": site["id"], "mask_version": mask_tag(site), "relative_orbit": o, "baseline_version": bver,
+                    "lines_version": f"{site['id']}-quay-v{lv}", "total_m": r["total_m"], "blind_m": r["blind_m"],
+                    "share": r["share"], "strict_m": r["strict_m"], "stretches": len(r["stretches"]), "features": feats,
+                }
+            out.append(_BLIND_CACHE[key])
+    return out
+
+
+def baseline_meta(sites: list[dict]) -> list[dict]:
+    out = []
+    for site in sites:
+        if not site.get("enabled"):
+            continue
+        for o in fbase.site_config(site)["orbits"]:
+            bl = fbase.load(site, o)
+            if bl is None:
+                continue
+            m = bl[1]
+            out.append({"site_id": site["id"], "mask_version": m["mask_version"], "relative_orbit": m["relative_orbit"],
+                        "version": f"ro{m['relative_orbit']}-{m['version']}", "scenes": m["scenes"],
+                        "first_utc": m["first_utc"], "last_utc": m["last_utc"], "credibility": m["credibility"],
+                        "file": f"sat/baselines/{m['mask_version']}/ro{m['relative_orbit']}-{m['version']}.json"})
+    return out
+
+
 def site_meta(site: dict) -> dict:
     grid = Grid.for_site(site)
     m = {"id": site["id"], "name": site.get("name"), "mask_version": mask_tag(site), "bbox": grid.bbox,
@@ -287,6 +425,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
         "attribution": {
             "credit": attribution(rows),
             "land_mask": "陸マスク：(c) OpenStreetMap contributors, ODbL 1.0",
+            "quay_lines": "岸壁の数に使う桟橋・岸壁・海岸線の線（sat/masks/<地点>-quay-v<版>.json）と、それに沿う quay/*.geojson の線：(c) OpenStreetMap contributors, ODbL 1.0",
             "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。",
         },
         "files": {
@@ -298,6 +437,10 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "status.json": "処理したシーンと結果、最後の実行",
             "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）",
             "CHANGES.md": "定義変更の記録",
+            "quay_counts.csv": "岸壁の占有数（quay-v1、試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ",
+            "quay/YYYY-MM.geojson": "撮影月ごとの岸壁の占有区間（線、水際から 15 m 沖に描く。長さ・数の幅・横抱きの可能性つき）。線は OSM 由来（attribution・license）",
+            "quay/blind.geojson": "数えられない可能性が高い区間（軌道ごと。内側の帯で基準の VV p10 が −8 dB を超える所。1 点だけの区間は Point）",
+            "change/<地点>/v<版>/<撮影時刻>.webp": "変化カラー（R＝今回の VV、G・B＝同じ相対軌道の基準の VV）の WebP と縮小版 .thumb.webp。基準がある撮影だけ",
         },
         "columns": {
             "site_id": "地点 ID",
@@ -323,13 +466,58 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "sector_b_harbour / sector_b_quay": "区画 B（切り出しの残り。湛江は水道）の港内水域・岸壁帯の候補数。A と B の合計は harbour_candidates / quay_candidates と同じ",
         },
         "display": fcolor.settings(),
+        "quay": {
+            "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
+            "method": quay.settings(),
+            "baselines": baseline_meta(sites),
+            "change_image": fcolor.change_settings(),
+            "credibility": "基準が 24 シーン以上なら 3、未満なら 4（一段下げる）",
+            "columns": {
+                "occupied_min / occupied_max": "岸壁の占有数（最小〜最大、信頼区間ではない）。最小＝占有区間のまとまり（60 m 以内の区間は同じ船の可能性があり、最大の 1 つだけ）の数＋断面の谷で切れた数。最大＝全区間の Σ max(片の数, floor(区間長／60 m))＋横抱きの可能性",
+                "sector_a_min / sector_a_max / sector_b_min / sector_b_max": "区画 A（軍港区画）・B（水道）ごとの最小〜最大（区間の中央の位置で判定。まとまりの最小はその代表の区画に数える）",
+                "segments": "占有区間の数", "rafted": "横抱きの可能性がある区間の数",
+                "quay_coverage": "線の水側の点のうち、今回と基準の両方にデータがあった割合",
+                "baseline_version / baseline_scenes / credibility": "使った基準（ro<軌道>-bl-<版>）・そのシーン数・確度",
+                "quay_version / lines_version": "数え方の版・OSM の線の版",
+                "change_image / change_thumb": "変化カラー画像と縮小版",
+                "in_sample": "tuning＝閾値の調整に使った撮影（標本内の値。基準の期間にも含まれる）、baseline＝基準の期間に含まれる撮影、空＝どちらでもない（精度の評価に使える）",
+            },
+            "can_say": "岸壁・桟橋に横付けされた物の有無・おおよその数の幅・占有の長さの目安（未検証）。同じ相対軌道どうしの撮影の比較",
+            "cannot_say": ("艦種・国籍・所属。民間船・作業船・荷役機械・建設中の構造物も数に入る。基準期間の約 9 割以上同じ場所に居た船"
+                           "（または入れ替わりで常に埋まっていた岸壁）は数えられない（blind_stretches）"),
+            "tuning": {
+                "scenes": {k: sorted(v) for k, v in QUAY_TUNING_SCENES.items()},
+                "note": ("閾値（ΔVV 12 dB の種、今回の VV −10 dB、60 m のまとまり、横抱きの 40〜60 m など）は湛江 v2 のこの 6 撮影で調整した。"
+                         "これらの撮影の数は調整に使った標本内の値で、基準の期間（bl-1）にも含まれる（quay_counts.csv の in_sample＝tuning）。"
+                         "精度の評価は 2026-10-27 以降の撮影（基準・調整のどちらにも使っていないもの）と光学画像で行う"),
+            },
+            "blind_stretches": [{k: v for k, v in b.items() if k != "features"} for b in blind_summary(sites)],
+            "blind_note": ("内側の帯（水際から 0〜30 m）の最大で基準の VV p10 が −8 dB を超える区間は、基準に船（または構造物）が入っていて"
+                           "数えられない可能性が高い。total_m＝水側のある線の全長、blind_m＝その区間の長さの合計、share＝割合（判定は帯の 3 画素の最大なので、岸壁自体のにじみも拾う多めの値）。strict_m＝帯の 3 画素すべてが −8 dB を超える長さ（少なめの値）。線は quay/blind.geojson"),
+            "limits": [
+                "試行で精度は測っていない。数は幅（最小〜最大）だが信頼区間ではない：誤検出（荷役機械・作業船・建設中の構造物）と見落とし（常時占有・OSM に無い岸壁）があり、実数はこの幅の外にもあり得る",
+                ("最小は 60 m 以内の区間を 1 つにまとめる。湛江の桟橋は両側の線の間隔の中央値が 60〜80 m で、両側に並んだ 2 隻が 1 隻になりやすく、"
+                 "最小は実質「占有された桟橋のまとまりの数」に近い"),
+                "最大は区間長を 60 m（最短の艦の想定）で割った上限で、長い岸壁では大きく出る",
+                ("基準は 10 パーセンタイルなので、基準期間の約 9 割以上同じ場所に居た船（または入れ替わりで常に埋まっていた岸壁）は"
+                 "「船のいない岸壁」に含まれてしまい数えられない。基準の .json の always_occupied_on_water は陸・構造物から 20 m 以内を除くため、"
+                 "横付けの帯（0〜30 m）の常時占有はほぼ載らない。代わりに内側の帯で基準の p10 が −8 dB を超える区間を blind_stretches・quay/blind.geojson に出す"),
+                ("閾値は湛江 v2 の 6 撮影（2026-10-02・10-08・10-14・10-26 の軌道 157、10-03・10-15 の軌道 84）で調整した。"
+                 "これらの撮影の数は標本内の値で、基準の期間にも含まれる（in_sample＝tuning）。精度の評価は 2026-10-27 以降の撮影と光学画像で行う"),
+                "風・雨で水面や陸の σ0 が上がった日は、岸に沿って弱い増分が出る。種（ΔVV 12 dB 以上）と今回の VV −10 dB 以上の条件で抑えている",
+                "明るい船の横の反対側や桟橋の角に同じ船が出ることがある（60 m 以内のまとまりは最小では 1 つに数える）",
+                "横抱きは外側の帯も占有された「可能性」で、確かめていない。長さの目安（区間長−20 m）も未検証",
+                "OSM の線の位置は 10〜20 m ずれることがあり、水際は陸マスクで探す。OSM に無い岸壁は数えない",
+                "相対軌道 84 の基準は 15 シーン（24 未満）で確度 4",
+            ],
+        },
         "detector": {"version": DETECTOR_VERSION, **DETECT_DEFAULTS,
                      "length_classes_m": [[n, lo, None if hi == math.inf else hi] for n, lo, hi in LENGTH_CLASSES]},
         "can_say": "目標の有無・数・位置・長さの目安（±20〜30 m）",
         "cannot_say": "艦種・国籍・所属。民間船・作業船・ブイ・養殖施設なども候補に入る",
         "limits": [
             "「候補数」「確認数」であり在泊艦数ではない",
-            "岸壁に横付けされた艦は陸と区別しにくく数え落とす前提（岸壁帯は別に数える）",
+            "岸壁に横付けされた艦は陸と区別しにくく数え落とす前提（岸壁帯は別に数える。横付けの船は基準との変化で quay_counts.csv に別に数える：quay）",
             "画素 10 m・実分解能約 20 m。接して並ぶ艦は 1 つにまとまり、大型艦は分かれることがある",
             "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
             "固定物（ブイ・係留施設等）のマスクはまだ無く、固定物も候補に数える",
@@ -338,6 +526,65 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "区画は候補の重心で決める。境界をまたぐ艦は重心のある側に数える",
         ],
     }
+
+
+class QuayContext:
+    """A site's quay lines, their sample geometry and its per-orbit baselines (loaded on demand)."""
+
+    def __init__(self, site: dict, grid: Grid, mask: np.ndarray, lines_dir: Path = MASK_DIR,
+                 baseline_dir: Path = fbase.BASELINE_DIR):
+        self.site, self.grid, self.mask, self.baseline_dir = site, grid, mask, baseline_dir
+        self.lines_version = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
+        self.lines = quay_lines.load(site["id"], self.lines_version, lines_dir)
+        self._geom = None
+        self._bl: dict = {}
+
+    def baseline(self, orbit):
+        if self.lines is None:
+            return None
+        key = str(orbit)
+        if key not in self._bl:
+            bl = fbase.load(self.site, orbit, self.baseline_dir)
+            if bl is not None and (bl[1].get("width"), bl[1].get("height")) != (self.grid.width, self.grid.height):
+                bl = None  # a baseline of another extent: never used
+            self._bl[key] = bl
+        return self._bl[key]
+
+    def geometry(self) -> quay.Geometry:
+        if self._geom is None:
+            self._geom = quay.Geometry(self.grid, self.mask, self.lines)
+        return self._geom
+
+
+def in_sample(site: dict, acquired_utc: str, bmeta: dict) -> str:
+    """"tuning" (the thresholds were tuned on it), "baseline" (in the baseline period) or ""."""
+    if acquired_utc in QUAY_TUNING_SCENES.get(site["id"], set()):
+        return "tuning"
+    if any(sc.get("acquired_utc") == acquired_utc and sc.get("used", True) for sc in bmeta.get("scene_list") or []):
+        return "baseline"
+    return ""
+
+
+def quay_features(site: dict, acq: dict, q: dict, credibility: str, bver: str, sample: str = "") -> list[dict]:
+    feats = []
+    segs = sorted(q["segments"], key=lambda s: (-s["lat"], s["lon"]))
+    for i, sg in enumerate(segs):
+        feats.append({
+            "type": "Feature",
+            "geometry": {"type": "LineString", "coordinates": sg["line"]},
+            "properties": {
+                "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "n": i + 1,
+                "relative_orbit": acq["relative_orbit"], "sector": sg["sector"],
+                "line_kind": sg["kind"], "osm_way": sg["way_id"],
+                "length_m": sg["length_m"], "est_length_m": sg["est_length_m"],
+                "min": sg["min"], "max": sg["max"], "rafted": sg["rafted"], "peak_dvv_db": sg["peak_dvv_db"],
+                "cluster": sg.get("cluster"), "cluster_lead": sg.get("cluster_lead"),
+                "status": "trial", "reliability": SOURCE_RELIABILITY, "credibility": credibility,
+                "mask_version": mask_tag(site), "quay_version": quay.QUAY_VERSION, "baseline_version": bver,
+                "in_sample": sample,
+            },
+        })
+    return feats
 
 
 def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: str) -> list[dict]:
@@ -364,23 +611,78 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
     return feats
 
 
+def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.ndarray, vh: np.ndarray,
+               sectors: list[dict], entry: dict, log=print) -> str:
+    """Quay count of one scene against the baseline of its orbit; never stops the run."""
+    if qctx.lines is None:
+        entry["quay_result"] = "no_lines"
+        return ""
+    bl = qctx.baseline(acq["relative_orbit"])
+    if bl is None:
+        entry["quay_result"] = "no_baseline"
+        return f"、岸壁の数：軌道 {acq['relative_orbit']} の基準なし"
+    layers, bmeta = bl
+    try:
+        q = quay.count(qctx.geometry(), vv, vh, layers, lambda lo, la: sector_of(sectors, lo, la))
+        bver = f"ro{bmeta['relative_orbit']}-{bmeta['version']}"
+        cred = fbase.credibility(int(bmeta["scenes"]), int(fbase.site_config(site)["min_scenes"]))
+        row = {
+            "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "platform": acq["platform"],
+            "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
+            "mask_version": mask_tag(site), "quay_version": quay.QUAY_VERSION,
+            "lines_version": f"{site['id']}-quay-v{qctx.lines_version}", "baseline_version": bver,
+            "baseline_scenes": bmeta["scenes"], "credibility": cred,
+            "occupied_min": q["min"], "occupied_max": q["max"],
+            "segments": len(q["segments"]), "rafted": q["rafted"], "quay_coverage": q["coverage"],
+            "in_sample": in_sample(site, acq["acquired_utc"], bmeta),
+        }
+        for col, sc in zip(SECTOR_COLUMNS, sectors):
+            mn, mx = q["by_sector"].get(sc["id"], [0, 0])
+            row[f"sector_{col}_min"], row[f"sector_{col}_max"] = mn, mx
+        extra = {}
+        try:
+            cpath, tpath = change_paths(site, acq["acquired_utc"])
+            full, thumb = fcolor.render_change(vv, layers["vv_p10"], color_label(site, acq) + f"\nbase {bver} (VV p10, n={bmeta['scenes']})",
+                                               f"Contains modified Copernicus Sentinel data {acq['acquired_utc'][:4]}")
+            extra = {cpath: full, tpath: thumb}
+            row.update(change_image=cpath, change_thumb=tpath)
+        except Exception as e:
+            log(f"{site['id']} {acq['acquired_utc']}: 変化画像を作れなかった {str(e)[:200]}")
+        store.add_quay(row, quay_features(site, acq, q, cred, bver, row["in_sample"]), extra)
+    except Exception as e:
+        entry.update(quay_result="error", quay_error=str(e)[:300])
+        log(f"{site['id']} {acq['acquired_utc']}: 岸壁の数で失敗 {str(e)[:200]}")
+        return "、岸壁の数：失敗"
+    entry["quay_result"] = "counted"
+    by = "".join(f" {sc['id']} {row.get(f'sector_{c}_min')}〜{row.get(f'sector_{c}_max')}" for c, sc in zip(SECTOR_COLUMNS, sectors))
+    return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}、基準 {bver} n={bmeta['scenes']}）"
+
+
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
                  budget_left: float, max_scenes: int, log=print, probe: dict | None = None,
-                 raw_dir: Path | None = None) -> dict:
+                 raw_dir: Path | None = None, lines_dir: Path = MASK_DIR,
+                 baseline_dir: Path = fbase.BASELINE_DIR) -> dict:
     grid = Grid.for_site(site)
     tag = mask_tag(site)
     sectors = site_sectors(site)
     if mask.shape != (grid.height, grid.width):
         raise ValueError(f"{site['id']}: 陸マスク {tag} の大きさ {mask.shape} が範囲 {(grid.height, grid.width)} と合わない")
+    qctx = QuayContext(site, grid, mask, lines_dir, baseline_dir)
     if days is None:
         days = LOOKBACK_DAYS if store.has_rows(site["id"], tag) else FIRST_LOOKBACK_DAYS
+        # the first run with a baseline also gives the recent scenes a quay count (fetched again once)
+        if not store.quay_done(site["id"], tag) and any(qctx.baseline(o) for o in fbase.site_config(site)["orbits"]):
+            days = FIRST_LOOKBACK_DAYS
     days = min(days, MAX_LOOKBACK_DAYS)
     feats = client.catalog(grid.bbox, now - timedelta(days=days), now)
     if probe is not None and feats:
         probe["catalog_property_keys"] = sorted(feats[0].get("properties", {}).keys())
     acqs = cdse.acquisitions(feats)
     done = store.done(site["id"], tag)
-    new = [a for a in acqs if a["acquired_utc"] not in done]
+    qdone = store.quay_done(site["id"], tag)
+    # Also a counted scene without a quay count, once a baseline of its orbit exists (re-fetched once).
+    new = [a for a in acqs if a["acquired_utc"] not in done
+           or (a["acquired_utc"] not in qdone and qctx.baseline(a["relative_orbit"]) is not None)]
     log(f"{site['id']}: カタログ {len(feats)} 件 → 撮影 {len(acqs)} 回（過去 {days} 日）、新着 {len(new)}")
     summary = {"site_id": site["id"], "lookback_days": days, "catalog_items": len(feats),
                "acquisitions": len(acqs), "new": len(new), "counted": 0, "skipped": 0, "errors": 0}
@@ -427,6 +729,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         entry.update(retrieved_utc=retrieved, processing_units=pu, coverage=round(float(coverage), 3))
         if coverage < MIN_COVERAGE:
             entry["result"] = "skipped_low_coverage"
+            entry["quay_result"] = "skipped"  # never re-fetched for the quay count either
             store.note_scene(entry)
             summary["skipped"] += 1
             log(f"{site['id']} {acq['acquired_utc']}: 水域の {coverage:.0%} しか写っていないため数えない")
@@ -476,12 +779,13 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             log(f"{site['id']} {acq['acquired_utc']}: カラー画像を作れなかった {str(e)[:200]}")
         store.add(row, features, quick, extra)
         entry.update(result="counted", detector_info=info)
+        qtext = count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log)
         store.note_scene(entry)
         summary["counted"] += 1
         by_sector = "".join(f"、{sc['id']} {row[f'sector_{c}_harbour']}+{row[f'sector_{c}_quay']}"
                             for c, sc in zip(SECTOR_COLUMNS, sectors))
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
-            f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）")
+            f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）{qtext}")
     if len(new) > max_scenes:
         summary["deferred"] = len(new) - max_scenes
     summary["budget_left_pu"] = round(budget_left, 2)

@@ -63,7 +63,31 @@ def main(argv=None) -> int:
                 lines.append(f"{p['n']} {p['zone']}/{p.get('sector')} {lat:.5f},{lon:.5f} L={p['length_m']} W={p['width_m']} px={p['pixels']}"
                              f" peak={p['peak_vv_db']} c={p['contrast_vv_db']} vh={p['vh_ratio_db']}")
     (dest / "candidates.txt").write_text("\n".join(lines)[:3900] + "\n", encoding="utf-8")
+    quay_report(out, dest)
     return 0
+
+
+def quay_report(out: Path, dest: Path) -> None:
+    """DEST/quay.txt (every scene's quay count, the newest scene's stretches) and DEST/change_thumb.webp."""
+    rows = sorted(read_csv(out / "quay_counts.csv"), key=lambda r: r["acquired_utc"])
+    if not rows:
+        (dest / "quay.txt").write_text("no quay count\n", encoding="utf-8")
+        return
+    lines = [f"{r['acquired_utc']} {r['platform']} ro={r['relative_orbit']} base={r['baseline_version']} n={r['baseline_scenes']}"
+             f" cred={r['credibility']} occ={r['occupied_min']}-{r['occupied_max']} A={r['sector_a_min']}-{r['sector_a_max']}"
+             f" B={r['sector_b_min']}-{r['sector_b_max']} seg={r['segments']} raft={r['rafted']} cov={r['quay_coverage']}" for r in rows]
+    row = rows[-1]
+    if row.get("change_thumb") and (out / row["change_thumb"]).exists():
+        (dest / "change_thumb.webp").write_bytes((out / row["change_thumb"]).read_bytes())
+    gj = out / "quay" / f"{row['acquired_utc'][:7]}.geojson"
+    if gj.exists():
+        for f in json.loads(gj.read_text(encoding="utf-8"))["features"]:
+            p = f["properties"]
+            if p["acquired_utc"] == row["acquired_utc"]:
+                lon, lat = f["geometry"]["coordinates"][len(f["geometry"]["coordinates"]) // 2]
+                lines.append(f"{p['n']} {p['sector']} {p['line_kind']} {lat:.5f},{lon:.5f} L={p['length_m']} est={p['est_length_m']}"
+                             f" {p['min']}-{p['max']}{' raft' if p['rafted'] else ''} pk={p['peak_dvv_db']} cl={p.get('cluster')}")
+    (dest / "quay.txt").write_text("\n".join(lines)[:3900] + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
