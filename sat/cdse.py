@@ -146,7 +146,7 @@ class Client:
         }
         feats = []
         for _ in range(10):
-            _h, data = self._post_sh(CATALOG_URL, payload, "application/json")
+            _h, data = self._post_sh(CATALOG_URL, payload, "application/geo+json, application/json")
             res = json.loads(data)
             feats.extend(res.get("features", []))
             nxt = (res.get("context") or {}).get("next")

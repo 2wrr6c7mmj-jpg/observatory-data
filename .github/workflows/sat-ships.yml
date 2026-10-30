@@ -52,6 +52,12 @@ jobs:
           python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
           python -m sat.annotate b64 mask-ZJG "$RUNNER_TEMP/sat/masks/ZJG-land-v1.png"
           python -m sat.annotate text mask-ZJG-meta "$RUNNER_TEMP/sat/masks/ZJG-land-v1.json"
+      - name: Probe preview (annotations)
+        if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
+        run: |
+          python -m sat.preview "$RUNNER_TEMP/sat/out" "$RUNNER_TEMP/preview" 4
+          python -m sat.annotate text candidates "$RUNNER_TEMP/preview/candidates.txt"
+          python -m sat.annotate b64 preview "$RUNNER_TEMP/preview/preview.png"
       - name: Upload probe output
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         uses: actions/upload-artifact@v4

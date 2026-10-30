@@ -25,14 +25,17 @@ def main(argv=None) -> int:
         print(f"::warning title={title}::{path} がありません")
         return 0
     if kind == "text":
-        text = p.read_text(encoding="utf-8", errors="replace")[-6000:]
+        text = p.read_text(encoding="utf-8", errors="replace")[-3900:]
         print(f"::notice title={title}::{esc(text)}")
         return 0
-    chunk = int(argv[3]) if len(argv) > 3 else 30000
+    # Annotation messages are cut at 4096 characters, and a step keeps at most
+    # 10 annotations of each level, so parts cycle through notice/warning/error.
+    chunk = int(argv[3]) if len(argv) > 3 else 4000
     data = base64.b64encode(p.read_bytes()).decode()
     parts = [data[i:i + chunk] for i in range(0, len(data), chunk)] or [""]
     for i, part in enumerate(parts, 1):
-        print(f"::notice title={title} {i}/{len(parts)}::{part}")
+        level = ("notice", "warning", "error")[(i - 1) // 10 % 3]
+        print(f"::{level} title={title} {i}/{len(parts)}::{part}")
     return 0
 
 

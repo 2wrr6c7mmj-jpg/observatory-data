@@ -389,7 +389,7 @@ def main(argv=None) -> int:
     if probe is not None:
         probe.update(run)
         probe["last_process_header_names"] = sorted(getattr(client, "last_headers", []))
-        print(json.dumps(probe, ensure_ascii=False, indent=1))
+        print(json.dumps(probe, ensure_ascii=False, separators=(",", ":")))
     else:
         print(json.dumps(run, ensure_ascii=False))
     return rc
