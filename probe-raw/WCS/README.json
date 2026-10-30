@@ -1,0 +1,21 @@
+{
+ "site": "WCS",
+ "mask_version": "WCS-land-v1",
+ "bbox": [
+  114.54,
+  30.625,
+  114.58,
+  30.665
+ ],
+ "width": 383,
+ "height": 443,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "WCS/2026-05-14T10-19-38Z.png",
+  "WCS/2026-05-07T10-27-47Z.png",
+  "WCS/2025-11-03T10-19-47Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}
