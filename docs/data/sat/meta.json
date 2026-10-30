@@ -1,0 +1,87 @@
+{
+ "dataset": "sat",
+ "title": "Sentinel-1 による港内の艦船候補数（試行：湛江 1 地点）",
+ "status": "試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）",
+ "source": {
+  "name": "Copernicus Sentinel-1 IW GRD（Copernicus Data Space Ecosystem, Sentinel Hub Process API）",
+  "position": "欧州連合 Copernicus 計画の公式データ",
+  "reliability": "A",
+  "credibility_of_candidates": "3",
+  "rating_note": "情報源は A（Copernicus 公式）。自動検出はすべて「候補」で、確度は 3（未確認）とする。"
+ },
+ "attribution": {
+  "credit": "Contains modified Copernicus Sentinel data 2026",
+  "land_mask": "陸マスク：(c) OpenStreetMap contributors, ODbL 1.0",
+  "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。"
+ },
+ "files": {
+  "ship_counts.csv": "1 行＝1 撮影×1 地点",
+  "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
+  "images/<地点>/<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物",
+  "status.json": "処理したシーンと結果、最後の実行",
+  "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）",
+  "CHANGES.md": "定義変更の記録"
+ },
+ "columns": {
+  "site_id": "地点 ID",
+  "acquired_utc": "撮影時刻（UTC、同じ通過の最初のスライス）",
+  "retrieved_utc": "取得時刻（UTC）",
+  "platform": "衛星",
+  "orbit_direction": "軌道の向き（ascending / descending）",
+  "relative_orbit": "相対軌道（不明は空）",
+  "incidence_deg": "入射角（地点の水域の中央値、度）",
+  "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数",
+  "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数",
+  "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
+  "mask_version": "陸マスクの版",
+  "detector_version": "検出設定の版",
+  "processing_version": "処理の版",
+  "coverage": "地点の水域のうちデータがあった割合",
+  "len_lt50 / len_50_100 / len_100_200 / len_ge200": "候補（両区域）の長さの区分ごとの数（〜50 / 50〜100 / 100〜200 / 200 m〜）",
+  "processing_units": "その撮影の取得に使った処理単位（PU）",
+  "image": "切り出し画像"
+ },
+ "detector": {
+  "version": "cfar-v1",
+  "pfa": 1e-05,
+  "guard_m": 70.0,
+  "background_m": 150.0,
+  "min_background_fraction": 0.25,
+  "min_pixels": 3,
+  "vh_min_ratio": 2.0,
+  "quay_band_m": 50.0,
+  "length_classes_m": [
+   [
+    "lt50",
+    0,
+    50
+   ],
+   [
+    "50_100",
+    50,
+    100
+   ],
+   [
+    "100_200",
+    100,
+    200
+   ],
+   [
+    "ge200",
+    200,
+    null
+   ]
+  ]
+ },
+ "can_say": "目標の有無・数・位置・長さの目安（±20〜30 m）",
+ "cannot_say": "艦種・国籍・所属。民間船・作業船・ブイ・養殖施設なども候補に入る",
+ "limits": [
+  "「候補数」「確認数」であり在泊艦数ではない",
+  "岸壁に横付けされた艦は陸と区別しにくく数え落とす前提（岸壁帯は別に数える）",
+  "画素 10 m・実分解能約 20 m。接して並ぶ艦は 1 つにまとまり、大型艦は分かれることがある",
+  "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
+  "固定物（ブイ・係留施設等）のマスクはまだ無く、固定物も候補に数える",
+  "撮影は地点ごとに数日おき。軌道の向き・入射角で見え方が変わるため、比較は同じ相対軌道どうしで行う",
+  "地点の範囲は概略（数 km ずれの可能性）。確定するまで公開画面の地図には出さない"
+ ]
+}
