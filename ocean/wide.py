@@ -378,7 +378,11 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
         cfg = cp.load_areas(args.areas)
         seamark_re = cfg["osm_static"]["seamark_types"]
         deadline = time.monotonic() + args.max_minutes * 60
-        for k, p in enumerate(plan):
+        queue = [(k, 0) for k in range(len(plan))]
+        n_done = 0
+        while queue:
+            k, attempt = queue.pop(0)
+            p = plan[k]
             a = acqs[p["acq_index"]]
             g = Grid(p["bbox"][0], p["bbox"][1], p["bbox"][2], p["bbox"][3], p["width"], p["height"])
             sl = (slice(p["j"], p["j"] + p["h"]), slice(p["i"], p["i"] + p["w"]))
@@ -391,11 +395,15 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             if client.processing_units + p["est_pu"] > bud["pu_left"] + 1e-9:
                 summary["errors"].append({"stage": "stop", "error": "実際の PU が上限に届くため止めた"})
                 break
-            if k:
-                sleep(10)
+            if n_done:
+                sleep(10 if not attempt else 60)
+            n_done += 1
             try:
                 osm = overpass(cp.overpass_query(g, seamark_re))
             except Exception as ex:
+                if attempt == 0:  # Overpass busy (e.g. 502): try this request once more at the end
+                    queue.append((k, 1))
+                    continue
                 osm_fail[sl] = True
                 summary["errors"].append({"request": k, "stage": "overpass", "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
                 continue

@@ -178,6 +178,30 @@ class WideModeTest(unittest.TestCase):
             self.assertIn("budget", s["coverage"]["holes_sea_km2"])
             self.assertGreater(s["coverage"]["holes_sea_km2"]["budget"], 0)
 
+    def test_overpass_failure_is_retried_once_then_a_hole(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            c = Fake(["2026-10-28T09:50:00Z"])
+            calls = []
+
+            def flaky(q):
+                calls.append(q)
+                if len(calls) == 1:
+                    raise OSError("502")
+                return {"elements": []}
+            s = op.run_mode(args(tmp, "wide", max_pu=500.0), client=c, overpass=flaky, now=NOW, pacer=Pacer(),
+                            sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            self.assertEqual(len(c.calls), s["plan"]["requests"])  # the failed one was fetched on the retry
+            self.assertEqual(s["coverage"]["holes_sea_km2"]["osm_failed"], 0)
+
+            def down(q):
+                raise OSError("502")
+            c2 = Fake(["2026-10-28T09:50:00Z"])
+            s2 = op.run_mode(args(tmp, "wide", max_pu=500.0, out=tmp / "o2"), client=c2, overpass=down, now=NOW,
+                             pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            self.assertEqual(c2.calls, [])
+            self.assertGreater(s2["coverage"]["holes_sea_km2"]["osm_failed"], 0)
+
     def test_dry_run_spends_nothing(self):
         with tempfile.TemporaryDirectory() as d:
             tmp = Path(d)
