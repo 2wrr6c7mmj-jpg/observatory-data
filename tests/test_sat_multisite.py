@@ -36,6 +36,10 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
             meta = sat_zjg_golden.zjg_meta(Path(d))
             sectors = run.read_csv(Path(d) / "out" / "quay_sectors.csv")
         changed = sorted(k for k in gold["files"] if snap.get(k) != gold["files"][k])
+        if changed:  # visible in the Actions annotations
+            import sys, PIL
+            print(f"::error::golden mismatch py{sys.version_info[:2]} numpy {np.__version__} pillow {PIL.__version__}: "
+                  + ", ".join(changed))
         self.assertEqual(changed, [], "湛江の出力が変わった")
         self.assertEqual(sorted(set(snap) - set(gold["files"])), sorted(NEW_FILES))
         # meta.json: Zhanjiang's entry is the same but for the new role of each sector
