@@ -155,38 +155,55 @@ def dedupe(passages: list[dict]) -> tuple[list[dict], dict[int, int], dict[str, 
     return out, alias, {"inferred_near_stated": a1, "repeated_in_later_release": len(alias)}
 
 
-def direction(nation: str, out_waters_to: str | None) -> str:
-    """進出→帰投 when the outbound leg leaves home waters; 帰投→再進出 when it heads home (2部 検品 A3)."""
+def direction(nation: str, out_waters_to: str | None, out_waters_from: str | None = None) -> str:
+    """進出→帰投 when the outbound leg leaves home waters; 帰投→再進出 when it heads home (2部 検品 A3).
+
+    不明 when the outbound leg names no destination, or leaves and enters the
+    same basin (e.g. 東シナ海→東シナ海): the heading cannot be told (1部 審査).
+    """
+    if not sea(out_waters_to) or (out_waters_from and sea(out_waters_from) == sea(out_waters_to)):
+        return "不明"
     return "帰投→再進出" if sea(out_waters_to) in HOME.get(nation, set()) else "進出→帰投"
+
+
+def is_stay(p: dict) -> bool:
+    """A pair measures a stay only when it left home waters first and the return is a strait passage.
+
+    Stated returns without a strait (e.g. carrier flight operations the next day)
+    stay in round_trips.csv but are not stays (1部 審査).
+    """
+    return p["direction"] == "進出→帰投" and bool(p["in_strait"])
 
 
 def stated_pairs(c: sqlite3.Cursor) -> list[dict]:
     out = []
-    for o_sid, i_sid, od, ost, idt, ist, days, nat, units, aor, cv, orel, irel, url, oto in c.execute("""
+    for o_sid, i_sid, od, ost, idt, ist, days, nat, units, aor, cv, orel, irel, url, oto, ofrom in c.execute("""
         select o.sighting_id, i.sighting_id, o.observed_date, o.strait, i.observed_date, i.strait, p.days_away, r.nation,
                (select group_concat(class_jp || coalesce('(' || hull_no || ')', ''), ' / ') from sighting_units u where u.sighting_id = o.sighting_id),
                (select count(*) from sighting_units u join vessel_classes v on v.class_key = u.class_key where u.sighting_id = o.sighting_id and v.type_cat in ('AOR','AKS')),
                (select count(*) from sighting_units u join vessel_classes v on v.class_key = u.class_key where u.sighting_id = o.sighting_id and v.type_cat = 'CV'),
-               o.release_id, i.release_id, r.url, o.waters_to
+               o.release_id, i.release_id, r.url, o.waters_to, o.waters_from
           from transit_pairs p join sightings o on o.sighting_id = p.out_sighting_id
           join sightings i on i.sighting_id = p.in_sighting_id join releases r on r.release_id = i.release_id
          where p.days_away between 0 and 200 order by 3"""):
         out.append(dict(method="stated", out_sighting=o_sid, in_sighting=i_sid, out_date=od, out_strait=ost,
                         out_strait_jp=NAMES.get(ost, ost), in_date=idt, in_strait=ist, in_strait_jp=NAMES.get(ist, ist),
-                        days_away=days, direction=direction(nat, oto), nation=nat, units=units, with_aor=int(bool(aor)),
+                        days_away=days, direction=direction(nat, oto, ofrom), nation=nat, units=units, with_aor=int(bool(aor)),
                         has_cv=int(bool(cv)), out_release=orel, in_release=irel, in_url=url, shared_hulls=None))
     return out
 
 
-def hull_pairs(passages: list[dict], stated: list[dict]) -> list[dict]:
+def hull_pairs(passages: list[dict], stated: list[dict], alias: dict[int, int] | None = None) -> list[dict]:
     """Infer return passages from hull numbers.
 
     A passage B is the return of A when the same nation's ships (at least half
     of the smaller hull set) leave the basin A entered (sea(B.from) ==
     sea(A.to)), B is the first such passage after A, and no pair is already
-    stated for either side.
+    stated for either side. alias maps repeats dropped by dedupe() to the kept
+    row, so a pair stated on a repeat also blocks the kept row (1部 審査).
     """
-    used = {p["out_sighting"] for p in stated} | {p["in_sighting"] for p in stated}
+    alias = alias or {}
+    used = {alias.get(s, s) for p in stated for s in (p["out_sighting"], p["in_sighting"])}
     hs = lambda p: set((p["hulls"] or "").split())
     ordered = sorted((p for p in passages if p["hulls"] and p["waters_from"] and p["waters_to"]), key=lambda p: p["date"])
     out, taken = [], set()
@@ -211,7 +228,7 @@ def hull_pairs(passages: list[dict], stated: list[dict]) -> list[dict]:
                 out.append(dict(method="hull-match", out_sighting=a["sighting_id"], in_sighting=b["sighting_id"],
                                 out_date=a["date"], out_strait=a["strait"], out_strait_jp=a["strait_jp"], in_date=b["date"],
                                 in_strait=b["strait"], in_strait_jp=b["strait_jp"], days_away=days,
-                                direction=direction(a["nation"], a["waters_to"]), nation=a["nation"],
+                                direction=direction(a["nation"], a["waters_to"], a["waters_from"]), nation=a["nation"],
                                 units=a["units"], with_aor=int(bool(a["has_aor"])), has_cv=int(bool(a["has_cv"])),
                                 out_release=a["release_id"], in_release=b["release_id"], in_url=b["url"],
                                 shared_hulls=" ".join(sorted(shared))))
@@ -234,11 +251,11 @@ def main() -> int:
     raw = load_passages(c)
     passages, alias, removed = dedupe(raw)
     stated = stated_pairs(c)
-    inferred = hull_pairs(passages, stated)
+    inferred = hull_pairs(passages, stated, alias)
     pairs = sorted(stated + inferred, key=lambda p: (p["out_date"], p["method"]))
     stay = {}
-    for p in pairs:  # days away is a stay only when the pair left home waters first
-        if p["direction"] == "進出→帰投":
+    for p in pairs:  # see is_stay()
+        if is_stay(p):
             stay[alias.get(p["in_sighting"], p["in_sighting"])] = (p["days_away"], p["method"])
     mnd = mnd_daily()
     for p in passages:
@@ -269,7 +286,7 @@ def main() -> int:
     summary = {
         "by_year_strait": {n: [{"year": y, "strait": s, "count": k} for (y, s), k in sorted(v.items())] for n, v in by_year.items()},
         "by_month": {n: [v.get(m, 0) for m in range(1, 13)] for n, v in by_month.items()},
-        "stay_days": {meth: sorted(p["days_away"] for p in pairs if p["method"] == meth and p["direction"] == "進出→帰投")
+        "stay_days": {meth: sorted(p["days_away"] for p in pairs if p["method"] == meth and is_stay(p))
                       for meth in ("stated", "hull-match")},
     }
     (OUT / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -283,6 +300,8 @@ def main() -> int:
         "removed_duplicates": removed,
         "round_trips": {"stated": len(stated), "hull-match": len(inferred)},
         "round_trips_by_direction": dict(collections.Counter(p["direction"] for p in pairs)),
+        "round_trips_return_without_strait": sum(1 for p in pairs if not p["in_strait"]),
+        "stay_days": {m: len(v) for m, v in summary["stay_days"].items()},
         "context_window_days": WINDOW,
         "with_mnd_counts": sum(1 for p in passages if p["mnd_aircraft"] is not None),
     }
