@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>海峡×月の通過件数｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 6</div>
+<h1>海峡×月の通過件数と年ごとの変化<span class="badge">試作</span></h1>
+<p class="lead">統合幕僚監部が公表した中国艦・ロシア艦の海峡の通過を、海峡と月の格子で数えます。年ごとの増減は、前年との率の比とその信頼区間で示します。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>どの海峡が、いつ、どれだけ使われたか（公表された件数）。季節の偏りと年による変化。</li>
+<li>ある年の件数が前年より多い・少ないと言えるか（率の比の 95% 区間が 1 をまたぐかどうか）。</li>
+<li>海峡名が本文になく推定した通過（推定）と、本文に海峡名がある通過（明記）を分けて見られます。</li>
+</ul>
+
+<div class="controls">
+<label>国 <select id="nat"><option value="CN">中国</option><option value="RU">ロシア</option></select></label>
+<label>通過 <select id="inf"><option value="all">明記と推定</option><option value="0">明記だけ</option><option value="1">推定だけ</option></select></label>
+<label>表示 <select id="view"><option value="month">年月</option><option value="cal">暦月の合計（季節）</option><option value="year">年</option></select></label>
+</div>
+<div class="kpis" id="kpis"></div>
+<div id="heat"></div>
+
+<h2>前年との率の比</h2>
+<div class="controls"><label>海峡 <select id="strait"></select></label><span class="meta">推定の通過を含めるかは上の「通過」に従う（「推定だけ」のときは明記と推定の合計）</span></div>
+<div id="rr"></div>
+<details><summary>年ごとの表</summary><div id="rrtab"></div></details>
+
+<h2>手法</h2>
+<ul>
+<li><b>件数の単位</b>：公開データ passages.csv の1行（1資料×1海峡×1日）。後の資料が前の通過を再び書いたもの、推定の行で同じ資料に明記の通過があるものは、元のデータの段階で除いてあります（meta.json の重複の除去）。</li>
+<li><b>国</b>：中国の資料・ロシアの資料はその国。中露を1つにまとめた資料の行は、艦級名（jso/ref/vessel_classes.csv）から国を判定し、両国の艦が入っていれば両方に数えます。そのため中国とロシアの件数を足すと行数より多くなります。艦級名から国を判定できない行は「両国」とはせず、どちらにも数えません（判定できない行の数はデータの heatmap.json の n_cnru_unknown）。</li>
+<li><b>率の比</b>：その年の件数 ÷ 観測日数 を、前年の同じ値で割ったもの。観測日数は最初の公表日（2007-07-04）から最後の公表日までで、途中の年（最初と最後の年）は日数で補正します。95% 区間は、2年の件数の合計を固定したときの二項分布の正確な区間（Clopper-Pearson）を率の比に換算したもの。件数が 0 の年でも区間は出ます。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>件数は<b>公表された</b>通過の数で、実際の通過数ではありません。統幕の公表基準（どの艦種・どの海域を公表するか）は年によって変わりうるため、古い年との比較は公表方針の変化を含みます。</li>
+<li>率の比の区間は、通過が互いに独立に起きる（ポアソン）と仮定しています。実際は艦隊がまとまって複数の海峡を通るので、ばらつきは仮定より大きく、区間は狭すぎます。1 をわずかに外れた程度の比は、強い根拠になりません。</li>
+<li>前年との比だけを示しており、多くの年・海峡を同時に見ると、偶然に 1 を外れる組が出ます（多重比較の補正はしていません）。</li>
+<li>推定の通過は、基準地・距離・針路と「〜から〜に向けて」の海域から海峡を推定したもので、誤りを含みえます。</li>
+<li>資料は手作業で追加しているため、最後の公表日より後は空です（自動の取得はできない）。</li>
+<li>統幕の公表の無い日を0件として数えています。資料の取りこぼし（公表はあったが資料に入っていない）と、通過が無かった0を区別できません。</li>
+
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('heatmap.json');
+  const nat = document.getElementById('nat'), inf = document.getElementById('inf'), view = document.getElementById('view'), sel = document.getElementById('strait');
+  const sj = Object.fromEntries(D.straits.map(s => [s.key, s.jp]));
+  sel.appendChild(P.h('option', {value: 'all'}, '全海峡'));
+  for (const s of D.straits) sel.appendChild(P.h('option', {value: s.key}, `${s.jp}（${s.n}）`));
+  const firstM = D.months[0], lastM = D.months[D.months.length - 1];
+  const drawHeat = () => {
+    const n = nat.value, f = inf.value;
+    const cnt = {};
+    let total = 0, ninf = 0;
+    for (const [n_, s_, mo, i_, k] of D.cells) {
+      if (n_ !== n || (f !== 'all' && String(i_) !== f)) continue;
+      const key = view.value === 'month' ? mo : view.value === 'cal' ? mo.slice(5) : mo.slice(0, 4);
+      cnt[s_ + '|' + key] = (cnt[s_ + '|' + key] || 0) + k;
+      total += k; if (i_) ninf += k;
+    }
+    let cols;
+    if (view.value === 'month') cols = D.months.map(m => ({key: m, label: m, tick: m.endsWith('-01') && +m.slice(0, 4) % 2 === 0 ? m.slice(0, 4) : ''}));
+    else if (view.value === 'cal') cols = Array.from({length: 12}, (_, i) => { const k = String(i + 1).padStart(2, '0'); return {key: k, label: (i + 1) + '月', tick: (i + 1) + '月'}; });
+    else cols = Object.keys(D.exposure).map(y => ({key: y, label: y, tick: +y % 2 === 0 ? y : ''}));
+    const rows = D.straits.map(s => ({key: s.key, label: s.jp}));
+    const max = Math.max(1, ...Object.values(cnt));
+    const kp = document.getElementById('kpis'); kp.innerHTML = '';
+    const kpi = (v, s) => kp.appendChild(P.h('div', {class: 'kpi'}, `<b>${v}</b><span>${s}</span>`));
+    kpi(total, `${n === 'CN' ? '中国' : 'ロシア'}艦の通過（表示中）`);
+    kpi(ninf, 'うち推定の通過');
+    kpi(D.span[0] + '〜' + D.span[1], '公表の期間');
+    const el = document.getElementById('heat'); el.innerHTML = '';
+    P.heat(el, {
+      rows, cols, left: 100, cellH: 20,
+      value: (r, c) => cnt[r.key + '|' + c.key] || 0,
+      color: v => P.ramp(Math.sqrt(v / max)),
+      tip: (r, c, v) => `<b>${P.esc(r.label)}</b> ${P.esc(c.label)}<br>${v} 件${view.value === 'month' && (c.key === firstM || c.key === lastM) ? '<br>（月の途中まで）' : ''}`,
+      legend: [{color: P.ramp(0), label: '0 件'}, {color: P.ramp(Math.sqrt(1 / max)), label: '1 件'}, {color: P.ramp(1), label: `${max} 件（最大）`}],
+      caption: '色の濃さは件数の平方根に比例（少ない件数の差を見やすくするため）。' + (view.value === 'cal' ? '全期間の合計。' : '') + (view.value === 'month' ? `最初の月（${firstM}）と最後の月（${lastM}）は月の途中まで。` : ''),
+    });
+  };
+  const drawRR = () => {
+    const incl = inf.value === '0' ? 0 : 1;
+    const rec = D.rate_ratios.find(x => x.nation === nat.value && x.strait === sel.value && x.inferred === incl);
+    const ys = rec.years.filter(y => y.rr !== undefined);
+    const el = document.getElementById('rr'); el.innerHTML = '';
+    const lg = v => v === null || v === undefined ? null : Math.log2(Math.max(v, 1 / 64));
+    const yrs = ys.map(y => y.year);
+    const c = P.chart(el, {
+      height: 260, xmin: yrs[0], xmax: yrs[yrs.length - 1], xticks: () => yrs.filter(y => y % 2 === 0).map(v => ({v, label: String(v)})),
+      ymin: -3, ymax: 3, yfmt: v => (v >= 0 ? 2 ** v : '1/' + 2 ** -v) + '倍',
+      legend: [{color: P.css('--s1'), label: '率の比（前年比）'}, {color: P.css('--s2'), label: '区間が 1 をまたがない年'}],
+      series: [
+        {kind: 'line', color: P.css('--axis'), width: 1, data: yrs.map(x => ({x, y: 0}))},
+        {kind: 'dots', color: P.css('--s1'), r: 3.5, data: ys.filter(y => y.rr !== null && y.rr > 0).map(y => ({x: y.year, y: Math.max(-3, Math.min(3, lg(y.rr))), color: (y.lo > 1 || y.hi < 1) ? P.css('--s2') : undefined}))},
+      ],
+      tip: x => { const y = ys.find(z => z.year === x); return y ? `<b>${x}年 ÷ ${x - 1}年</b><br>${y.n} 件（${y.days}日）<br>比 ${P.fmt(y.rr, 2)}（95% ${P.fmt(y.lo, 2)}〜${y.hi === null ? '∞' : P.fmt(y.hi, 2)}）` : ''; },
+      caption: '縦軸は2を底とする対数（0＝1倍、1＝2倍）。縦線は 95% 区間で、±8倍の外は切っています。前年が 0 件の年（比が無限大）とその年が 0 件の年（比が 0）は点を描かず、区間だけを描きます。',
+    });
+    const NS = 'http://www.w3.org/2000/svg';
+    for (const y of ys) {
+      const lo = y.lo === null ? -3 : Math.max(-3, lg(y.lo)), hi = y.hi === null ? 3 : Math.min(3, lg(y.hi));
+      const ln = document.createElementNS(NS, 'line');
+      for (const [k, v] of Object.entries({x1: c.X(y.year), x2: c.X(y.year), y1: c.Y(lo), y2: c.Y(hi), stroke: (y.lo > 1 || y.hi < 1) ? P.css('--s2') : P.css('--s1'), 'stroke-width': 1.5})) ln.setAttribute(k, v);
+      c.svg.insertBefore(ln, c.svg.firstChild.nextSibling);
+    }
+    const tb = document.getElementById('rrtab'); tb.innerHTML = '';
+    P.table(tb, ['年', '件数', '観測日数', '年率換算', '前年との比', '95% 区間'],
+      rec.years.map(y => [y.year, y.n, y.days, P.fmt(y.per_year, 1), y.rr === undefined ? '' : P.fmt(y.rr, 2), y.lo === undefined ? '' : `${P.fmt(y.lo, 2)}〜${y.hi === null ? '∞' : P.fmt(y.hi, 2)}`]), ['n', 'n', 'n', 'n', 'n', 'n']);
+  };
+  for (const e of [nat, inf, view]) e.addEventListener('change', () => { drawHeat(); drawRR(); });
+  sel.addEventListener('change', drawRR);
+  drawHeat(); drawRR();
+  P.sources(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

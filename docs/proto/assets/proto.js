@@ -39,6 +39,11 @@ const P = (() => {
   function dateTicks(x0, x1) {
     const out = [];
     const d0 = new Date(x0), span = (x1 - x0) / DAY;
+    if (span > 1800) { // 5年を超える期間は年の目盛り（第2弾の長い系列）
+      const yStep = span > 3650 ? 2 : 1;
+      for (let y = d0.getUTCFullYear() + 1; Date.UTC(y, 0, 1) <= x1; y++) if (y % yStep === 0) out.push({ v: Date.UTC(y, 0, 1), label: String(y) });
+      return out;
+    }
     const stepM = span > 900 ? 6 : span > 400 ? 3 : span > 120 ? 1 : 0;
     if (stepM) {
       let y = d0.getUTCFullYear(), m = d0.getUTCMonth() + 1;
@@ -249,5 +254,64 @@ const P = (() => {
     return p < 0.01 ? p.toFixed(4) : p.toFixed(2);
   }
 
-  return { load, chart, calendar, table, provenance, defDate, oneIn, pfmt, t, iso, fmt, esc, css, h, DAY };
+
+  // 格子（ヒートマップ）。rows/cols: [{key,label}]、value(r,c) は数値か null（null は対象外の色）
+  function heat(container, o) {
+    const fig = h('div', { class: 'fig' });
+    if (o.legend) {
+      const lg = h('div', { class: 'legend' });
+      for (const it of o.legend) lg.appendChild(h('span', {}, `<i style="background:${it.color}"></i>${esc(it.label)}`));
+      fig.appendChild(lg);
+    }
+    const left = o.left || 110, top = o.top || 18, ch = o.cellH || 18, W = o.width || 960;
+    const cw = (W - left - 8) / o.cols.length, H = top + o.rows.length * ch + 4;
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': o.title || '' });
+    fig.appendChild(svg);
+    const tip = h('div', { class: 'tip' });
+    fig.appendChild(tip);
+    if (o.caption) fig.appendChild(h('div', { class: 'cap' }, o.caption));
+    container.appendChild(fig);
+    o.cols.forEach((c, j) => {
+      if (c.tick) el('text', { x: left + j * cw, y: top - 5, 'text-anchor': 'start' }, svg).textContent = c.tick;
+    });
+    o.rows.forEach((rw, i) => {
+      el('text', { x: left - 6, y: top + i * ch + ch * 0.68, 'text-anchor': 'end' }, svg).textContent = rw.label;
+      o.cols.forEach((c, j) => {
+        const v = o.value(rw, c);
+        const rc = el('rect', { x: left + j * cw, y: top + i * ch, width: Math.max(0.5, cw - (cw > 4 ? 1 : 0)), height: ch - 2, fill: o.color(v, rw, c) }, svg);
+        if (o.tip) {
+          rc.addEventListener('mousemove', ev => {
+            tip.innerHTML = o.tip(rw, c, v); tip.style.display = 'block';
+            const fb = fig.getBoundingClientRect();
+            let lft = ev.clientX - fb.left + 12;
+            if (lft + tip.offsetWidth > fb.width) lft = ev.clientX - fb.left - tip.offsetWidth - 12;
+            tip.style.left = Math.max(0, lft) + 'px'; tip.style.top = (ev.clientY - fb.top + 10) + 'px';
+          });
+          rc.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+        }
+      });
+    });
+    return { fig, svg };
+  }
+
+  // 0〜1 を薄い色から濃い色へ（--s1 を濃さで）
+  function ramp(x) {
+    if (x === null || x === undefined) return css('--na');
+    const a = Math.max(0, Math.min(1, x));
+    return a === 0 ? css('--grid') : `color-mix(in srgb, ${css('--s1')} ${Math.round(18 + a * 82)}%, ${css('--surface')})`;
+  }
+
+  // 複数の出典（第2弾）：data.sources = [{name, urls, rating, version, files, credit, license, processing}]
+  function sources(container, data) {
+    const dl = h('dl', { class: 'meta' });
+    let html = '';
+    for (const s of data.sources || []) {
+      html += `<dt>${esc(s.name)}</dt><dd>データの版：${esc(s.version)}<br>元データ：${(s.files || []).map(f => `<a href="../../data/${esc(f)}">${esc(f)}</a>`).join('・')}<br>出典：${(s.urls || []).map(u => `<a href="${esc(u)}">${esc(u)}</a>`).join('・')}${s.rating ? '<br>' + esc(s.rating) : ''}${s.credit ? '<br>' + esc(s.credit) : ''}${s.license ? '<br>利用規約：' + esc(s.license) : ''}${s.processing ? '<br>' + esc(s.processing) : ''}</dd>`;
+    }
+    html += `<dt>この図の計算</dt><dd>${esc(data.computed_utc)}（UTC）に計算（計算の版 ${esc(data.algo_version)}、<a href="https://github.com/2wrr6c7mmj-jpg/observatory-data/blob/main/analysis/proto2.py">analysis/proto2.py</a>）</dd>`;
+    dl.innerHTML = html;
+    container.appendChild(dl);
+  }
+
+  return { load, chart, calendar, table, provenance, heat, ramp, sources, defDate, oneIn, pfmt, t, iso, fmt, esc, css, h, DAY };
 })();

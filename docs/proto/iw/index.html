@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>複数の指標の同時の上振れ｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 10</div>
+<h1>複数の指標の同時の上振れ（兆候と警報の試作）<span class="badge">試作</span></h1>
+<p class="lead">シナリオごとに関係しそうな指標を並べ、それぞれを<b>その指標自身の過去1年の分布</b>の中で位置づけます（パーセンタイル）。90 を超えた指標がその日にいくつあったかと、その一覧を示します。重み付け・合成点数・「何件そろったら危険」といった閾値は付けません。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>ある日に、普段より多い（過去1年の上位10%を超える）指標がいくつ同時に出ていたか。</li>
+<li>どの指標が上振れていたか、値は何か、比べられる指標がその日にいくつあったか（欠測の日は数えない）。</li>
+</ul>
+<p class="note">指標はシナリオに「関係しうる」ものを選んだだけで、シナリオが起きている・起きることを判定するものではありません。上振れた指標の数は、指標の数・欠測の多さ・指標どうしの相関（同じ出来事が複数の指標に現れる）に左右されます。</p>
+
+<div class="controls">
+<label>シナリオ <select id="sc"></select></label>
+<label>期間 <select id="range"><option value="180">直近180日</option><option value="365">直近1年</option><option value="0">全期間</option></select></label>
+</div>
+<p class="meta" id="scnote"></p>
+<div class="kpis" id="kpis"></div>
+<div id="count"></div>
+<div id="grid"></div>
+<h3>上振れた指標の一覧（新しい順）</h3>
+<div class="controls"><label><input type="checkbox" id="only" checked> 上振れが1つ以上の日だけ</label></div>
+<div id="tab"></div>
+<h3>指標</h3>
+<div id="inds"></div>
+
+<h2>手法</h2>
+<ul>
+<li><b>パーセンタイル</b>：その日を含まない直前 <span class="win"></span> 日のうち値のある日（<span class="min"></span> 日以上ある場合だけ）を参照の分布とし、その日の値より小さい日の数＋同じ値の日の数の半分を、参照の日数で割って 100 倍（中央順位）。0 が多い指標で、ふつうの 0 が高いパーセンタイルにならないようにするためです。</li>
+<li><b>上振れ</b>：パーセンタイルが <span class="th"></span> を<b>超えた</b>指標。数は、その日に値のあった指標の中で数えます。値がない（日報なし・記載なし・データの期間外）指標は「比べられない」とし、0 とも上振れなしともみなしません。</li>
+<li><b>統幕の通過</b>：通過日の7日（中露の同じ記述は30日）の合計。資料は通過の翌日ごろに公表されるため、最後の公表日の前日までを値のある日とし、それ以降は比べられない日とします。</li>
+<li><b>台湾国防部</b>：2022年11月以降の台湾周辺全体の書式の日だけ（それ以前は数える範囲が違う）。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>参照は直前1年なので、水準が上がり続けている時期は上振れが出にくく、下がった後は出やすくなります。「その時点の1年と比べて多い」という意味です。</li>
+<li>7日の合計は日をまたいで重なるため、1回の通過が7日間続けて上振れとして数えられます。</li>
+<li>統幕の資料は手作業で追加しているため、追加が遅れた期間は比べられない日になります。海上保安庁のデータが公開データに入るまでは、その指標は比べられません。</li>
+<li>台湾国防部の公務船と中間線越え等は、記載のない日が多く（越え・確認がなかった日の可能性が高いが、原文に数の記載がない）、記載のある日だけで分布を作ります。上振れがどちらにずれるかは分かりません。記載のある日だけを比べるので、記載の出る日の増減（出る日が多くなること自体）は捉えられません。また比べられる期間が短く（公務船は 2026-07 以降）、参照の日数が少ないうちは結果が不安定です。</li>
+<li>統幕の公表の無い日を0件として数えています。資料の取りこぼし（公表はあったが資料に入っていない）と、通過が無かった0を区別できません。</li>
+
+<li>指標の選び方は試作で、根拠のある重みや閾値を与えるものではありません。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('iw.json');
+  document.querySelectorAll('.win').forEach(e => e.textContent = D.window);
+  document.querySelectorAll('.min').forEach(e => e.textContent = D.min_obs);
+  document.querySelectorAll('.th').forEach(e => e.textContent = D.threshold);
+  const sc = document.getElementById('sc'), rng = document.getElementById('range'), only = document.getElementById('only');
+  for (const s of D.scenarios) sc.appendChild(P.h('option', {value: s.key}, P.esc(s.label)));
+  const start = P.t(D.start);
+  const dates = D.series[Object.keys(D.series)[0]].p.map((_, i) => P.iso(start + i * P.DAY));
+  const bucket = p => p === null ? null : p > D.threshold ? 1 : p > 75 ? 0.55 : p > 50 ? 0.25 : 0.06;
+  const draw = () => {
+    const S = D.scenarios.find(s => s.key === sc.value);
+    document.getElementById('scnote').textContent = S.note;
+    const n = +rng.value, N = dates.length, i0 = n ? Math.max(0, N - n) : 0;
+    const idx = Array.from({length: N - i0}, (_, k) => i0 + k);
+    const kp = document.getElementById('kpis'); kp.innerHTML = '';
+    const kpi = (v, s) => kp.appendChild(P.h('div', {class: 'kpi'}, `<b>${v}</b><span>${s}</span>`));
+    let last = N - 1; while (last > 0 && S.available[last] === 0) last--;
+    kpi(`${S.above[last]} / ${S.available[last]}`, `${dates[last]}：上振れ／比べられた指標`);
+    kpi(idx.filter(i => S.above[i] > 0).length, '上振れが1つ以上の日（表示期間）');
+    kpi(Math.max(...idx.map(i => S.above[i])), '同時の上振れの最大（表示期間）');
+    const by = new Map(idx.map(i => [P.t(dates[i]), i]));
+    const el = document.getElementById('count'); el.innerHTML = '';
+    P.chart(el, {
+      height: 210, ymin: 0, ymax: S.indicators.length, yticks: S.indicators.length, ylabel: '指標の数', bars: n > 0, barWidth: P.DAY,
+      legend: [{color: P.css('--s2'), label: '上振れた指標の数'}, {color: P.css('--ink2'), label: '比べられた指標の数', line: true}],
+      series: [
+        {kind: 'bars', color: P.css('--s2'), data: idx.map(i => ({x: P.t(dates[i]), y: S.above[i]}))},
+        {kind: 'step', color: P.css('--ink2'), width: 1.2, data: idx.map(i => ({x: P.t(dates[i]), y: S.available[i]}))},
+      ],
+      tip: x => { const i = by.get(x); if (i === undefined) return ''; const ks = S.indicators.filter(k => D.series[k].p[i] !== null && D.series[k].p[i] > D.threshold);
+        return `<b>${dates[i]}</b><br>上振れ ${S.above[i]} / ${S.available[i]}` + ks.map(k => `<br>・${P.esc(D.indicators[k].label)}`).join(''); },
+    });
+    const g = document.getElementById('grid'); g.innerHTML = '';
+    P.heat(g, {
+      rows: S.indicators.map(k => ({key: k, label: D.indicators[k].label.replace(/（.*$/, '')})), left: 250, cellH: 18,
+      cols: idx.map(i => ({key: i, label: dates[i], tick: dates[i].endsWith('-01') ? dates[i].slice(0, 7) : ''})),
+      value: (r, c) => D.series[r.key].p[c.key],
+      color: v => v === null ? P.css('--na') : bucket(v) === 1 ? P.css('--s2') : P.ramp(bucket(v)),
+      tip: (r, c, v) => `<b>${dates[c.key]}</b><br>${P.esc(D.indicators[r.key].label)}<br>値 ${P.fmt(D.series[r.key].v[c.key])}（${D.indicators[r.key].unit}）<br>パーセンタイル ${v === null ? '比べられない' : P.fmt(v, 1)}`,
+      legend: [{color: P.css('--s2'), label: `${D.threshold} 超`}, {color: P.ramp(0.55), label: '75〜90'}, {color: P.ramp(0.25), label: '50〜75'}, {color: P.ramp(0.06), label: '50 以下'}, {color: P.css('--na'), label: '比べられない（欠測・期間外・参照が足りない）'}],
+    });
+    const tb = document.getElementById('tab'); tb.innerHTML = '';
+    const rows = idx.slice().reverse().filter(i => !only.checked || S.above[i] > 0).slice(0, 120).map(i => {
+      const ks = S.indicators.filter(k => D.series[k].p[i] !== null && D.series[k].p[i] > D.threshold);
+      const na = S.indicators.filter(k => D.series[k].p[i] === null);
+      return [dates[i], `${S.above[i]} / ${S.available[i]}`, ks.map(k => `${P.esc(D.indicators[k].label)}：${P.fmt(D.series[k].v[i])}（${P.fmt(D.series[k].p[i], 1)}）`).join('<br>') || '—',
+        na.map(k => P.esc(D.indicators[k].label.replace(/（.*$/, ''))).join('・') || '—'];
+    });
+    P.table(tb, ['日付', '上振れ／比べられた', '上振れた指標：値（パーセンタイル）', '比べられない指標'], rows, ['', 'n', '', '']);
+    const ti = document.getElementById('inds'); ti.innerHTML = '';
+    P.table(ti, ['指標', '単位', '値のある期間'], S.indicators.map(k => [P.esc(D.indicators[k].label), D.indicators[k].unit, D.indicators[k].first ? `${D.indicators[k].first}〜${D.indicators[k].last}` : 'まだデータなし']));
+  };
+  for (const e of [sc, rng, only]) e.addEventListener('change', draw);
+  draw();
+  P.sources(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>
