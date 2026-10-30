@@ -2,3 +2,4 @@ run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s
 2026-10-30T18:03:38Z,LSN,268,190.14,header,71,155,45,114.963,75.178,241.0,ports-1
 2026-10-30T19:39:36Z,LSN,53,84.198,header,52,0,0,84.198,0,105.2,ports-1
 2026-10-30T20:18:26Z,LSN,66,70.165,header,,,,70.165,,635.5489999999986,baseline-bl-1
+2026-10-30T20:44:05Z,LSN,42,43.179,header,,,,43.179,,300.0,baseline-bl-1

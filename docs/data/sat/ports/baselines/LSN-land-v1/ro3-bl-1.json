@@ -3,7 +3,7 @@
  "site": "LSN",
  "mask_version": "LSN-land-v1",
  "relative_orbit": 3,
- "built_utc": "2026-10-30T20:18:26Z",
+ "built_utc": "2026-10-30T20:44:05Z",
  "bbox": [
   121.225,
   38.785,
@@ -12,11 +12,11 @@
  ],
  "width": 478,
  "height": 444,
- "scenes": 15,
- "first_utc": "2025-11-30T21:55:52Z",
+ "scenes": 16,
+ "first_utc": "2025-10-25T21:55:53Z",
  "last_utc": "2026-10-15T21:55:55Z",
  "credibility": "4",
- "credibility_note": "15 シーンで 24 未満のため、この基準による岸壁の数の確度を一段下げる（3→4）",
+ "credibility_note": "16 シーンで 24 未満のため、この基準による岸壁の数の確度を一段下げる（3→4）",
  "method": {
   "smooth": "3x3 の平均（線形の σ0、有効画素のみ）を取ってから dB",
   "percentiles": [
@@ -31,7 +31,7 @@
   "always_occupied": "vv_p10 > -8 dB かつ vv_p90 − vv_p10 < 3 dB",
   "min_valid": 10,
   "min_coverage": 0.9,
-  "lookback_days": 365,
+  "lookback_days": 730,
   "max_scenes": 24
  },
  "encoding": {
@@ -46,20 +46,29 @@
   "vh_p10": "ro3-bl-1.vh_p10.png"
  },
  "png_bytes": {
-  "vv_p10": 44429,
-  "vv_p90": 43151,
-  "vh_p10": 49811
+  "vv_p10": 44180,
+  "vv_p90": 43050,
+  "vh_p10": 49315
  },
  "stats": {
   "kept_fraction": 0.4008,
-  "water_vv_p10_median_db": -21.96,
-  "water_vh_p10_median_db": -30.14,
-  "always_occupied_px": 1387,
+  "water_vv_p10_median_db": -22.12,
+  "water_vh_p10_median_db": -30.17,
+  "always_occupied_px": 1298,
   "always_occupied_on_water_px": 0,
-  "min_valid_scenes_in_kept": 13
+  "min_valid_scenes_in_kept": 14
  },
  "always_occupied_on_water": [],
  "scene_list": [
+  {
+   "acquired_utc": "2025-10-25T21:55:53Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "coverage": 0.999,
+   "processing_units": 1.0794678056081466,
+   "water_vv_median_db": -20.94,
+   "used": true
+  },
   {
    "acquired_utc": "2025-11-30T21:55:52Z",
    "platform": "sentinel-1c",
@@ -197,5 +206,12 @@
   }
  ],
  "source": "Copernicus Sentinel-1 IW GRD（CDSE Sentinel Hub Process API、σ0 楕円体基準、COPERNICUS_30 で地形補正、10 m）",
- "credit": "Contains modified Copernicus Sentinel data 2026"
+ "credit": "Contains modified Copernicus Sentinel data 2026",
+ "period": {
+  "lookback_days": 730,
+  "first_utc": "2025-10-25T21:55:53Z",
+  "last_utc": "2026-10-15T21:55:55Z",
+  "older_than_12_months": 1,
+  "note": "直近 12 か月では 24 撮影に届かないため、さかのぼりを 730 日に延ばし、13〜24 か月前の撮影 1 枚を含む（最新から順に 24 撮影まで）。その間に岸壁・桟橋が変わっていれば基準がずれる"
+ }
 }
