@@ -1,9 +1,9 @@
 name: Build analysis prototypes
-# 分析の試作（docs/proto/）の JSON を、台湾国防部の収集（collect.yml）が終わるたびに作り直す。
+# 分析の試作（docs/proto/）の JSON を、台湾国防部の収集（collect.yml）と海保の収集（jcg-senkaku.yml）が終わるたびに作り直す。
 # 書き込むのは docs/proto/data/ だけ。標準ライブラリだけで動くので追加の導入はない。
 on:
   workflow_run:
-    workflows: ['Collect public data']
+    workflows: ['Collect public data', 'Collect JCG Senkaku']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -27,7 +27,9 @@ jobs:
       - name: Tests
         run: python -m unittest discover -s tests -t .
       - name: Build
-        run: python -m analysis.proto
+        run: |
+          python -m analysis.proto
+          python -m analysis.proto2
       - name: Publish changed results
         run: |
           git add docs/proto/data

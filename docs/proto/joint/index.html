@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>中露の共同行動の候補｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 8</div>
+<h1>中露の共同行動の候補（海峡の通過）<span class="badge">試作</span></h1>
+<p class="lead">中国艦とロシア艦が近い時期に同じ海峡を同じ向きに通った例を、統合幕僚監部の資料の書き方の強さで3段に分けて一覧にします。3段目は時期が重なっただけの<b>候補</b>で、共同の行動であったことを示すものではありません。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>資料が「共同」と明記した通過、資料が中露の艦をひとまとまりに書いた通過、別々に書かれたが日付が近い通過の区別。</li>
+<li>日付が近い組の数が、偶然の重なりで期待される数と比べて多いか（日付をずらした比較）。</li>
+</ul>
+<div class="kpis" id="kpis"></div>
+
+<h2>1. 資料に「共同」と明記</h2>
+<p class="meta">中露をまとめた資料の表題に「共同」（中露共同航行など）とある通過。</p>
+<div id="t1"></div>
+<h2>2. 資料が中露の艦をひとまとまりに記述</h2>
+<p class="meta">中露をまとめた資料で、同じ通過の行に中国艦とロシア艦の両方が書かれているもの（「これらの艦艇が〜海峡を東進」など）。「共同」とは書かれていません。</p>
+<div id="t2"></div>
+<h2>3. 候補：時期が重なっただけ</h2>
+<p class="meta">中国艦だけの行とロシア艦だけの行で、同じ海峡・通過日の差が ±<span id="w"></span>日以内・同じ向き。共同の行動か、偶然の重なりか、互いに監視していたのかは判定しません。</p>
+<div id="dist"></div>
+<div id="t3"></div>
+<details><summary>向きが比べられない組（どちらかの向きの記載がない）</summary><div id="t4"></div></details>
+
+<h2>手法</h2>
+<ul>
+<li><b>国の判定</b>：中国の資料・ロシアの資料の行はその国。中露をまとめた資料の行は、艦級名（jso/ref/vessel_classes.csv）で国を判定し、片方の国の艦だけなら、その国の行として3段目の対象にします（例：同じ資料でもロシア艦は津軽海峡、中国艦は宮古海峡を通った場合）。</li>
+<li><b>同じ向き</b>：両方に行先の海域があれば行先が同じこと、なければ通過の方位（東進・北東進など）が同じこと。</li>
+<li><b>偶然の目安</b>：ロシア艦の行の日付を前後 30〜180 日（3日刻み、<span id="ns"></span>通り）ずらし、同じ条件で数えた組の数の分布。季節や海峡ごとの多さはそのまま残るので、「同じ季節に同じ海峡を使うこと」による重なりも含んだ目安です。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>「共同」の明記は資料の表題で判定しています。本文だけに書かれた例や、後の資料で「共同航行を行ったものと同一」と遡って書かれた例は1段目に入らず、2段目か3段目に入ります。</li>
+<li>2段目は資料の書き方であり、同じ編成で航行したことの明記ではありません。</li>
+<li>公表された通過だけが対象です。公表されない通過、海峡を通らない共同の行動（洋上での合流など）は入りません。</li>
+<li>1つの通過が、相手の複数の行と組になることがあります（数日にわたる通過が別の行になっている場合など）。組の数は事象の数より多めに出ます。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('joint.json');
+  document.getElementById('w').textContent = D.window;
+  document.getElementById('ns').textContent = D.placebo.n;
+  const kp = document.getElementById('kpis');
+  const kpi = (v, s) => kp.appendChild(P.h('div', {class: 'kpi'}, `<b>${v}</b><span>${s}</span>`));
+  kpi(D.stated.length, '1. 「共同」と明記');
+  kpi(D.together.length, '2. ひとまとまりに記述');
+  kpi(D.candidates.length, '3. 時期が重なった候補の組');
+  kpi(`${P.fmt(D.placebo.median, 0)}（${P.fmt(D.placebo.q05, 0)}〜${P.fmt(D.placebo.q95, 0)}）`, '日付をずらしたときの組の数：中央値（5〜95%）');
+  const link = (u, s) => `<a href="${P.esc(u)}">${P.esc(s)}</a>`;
+  const rowA = x => [x.date, P.esc(x.strait) + (x.inferred ? '（推定）' : ''), P.esc(x.dir), P.esc(x.to), P.esc(x.units), link(x.url, x.title)];
+  P.table(document.getElementById('t1'), ['通過日', '海峡', '方位', '行先', '艦艇', '資料'], D.stated.map(rowA));
+  P.table(document.getElementById('t2'), ['通過日', '海峡', '方位', '行先', '艦艇', '資料'], D.together.map(rowA));
+  const rowC = x => [x.cn_date, x.ru_date, (x.gap > 0 ? '+' : '') + x.gap, P.esc(x.strait) + (x.inferred ? '（推定を含む）' : ''), P.esc(x.dir), P.esc(x.to), P.esc(x.cn_units), P.esc(x.ru_units),
+    link(x.cn_url, '中国') + '・' + link(x.ru_url, 'ロシア') + (x.same_release ? '（同じ資料）' : '')];
+  const head = ['中国艦の通過', 'ロシア艦の通過', '差（日）', '海峡', '方位', '行先', '中国艦', 'ロシア艦', '資料'];
+  P.table(document.getElementById('t3'), head, D.candidates.map(rowC));
+  if (D.unknown_direction.length) P.table(document.getElementById('t4'), head, D.unknown_direction.map(rowC));
+  else document.getElementById('t4').append('ありません。');
+  // 偶然の目安との比較
+  const ys = Object.keys(D.by_year).map(Number);
+  const lo = Math.min(...ys), hi = Math.max(...ys);
+  P.chart(document.getElementById('dist'), {
+    height: 200, bars: true, xmin: lo, xmax: hi, xticks: () => Array.from({length: hi - lo + 1}, (_, i) => lo + i).filter(v => v % 2 === 0).map(v => ({v, label: String(v)})),
+    ylabel: '候補の組（年ごと）',
+    series: [{kind: 'bars', color: P.css('--s1'), data: Array.from({length: hi - lo + 1}, (_, i) => ({x: lo + i, y: D.by_year[lo + i] || 0}))}],
+    tip: x => `<b>${x}年</b><br>${D.by_year[x] || 0} 組`,
+    caption: `全期間の候補の組は ${D.placebo.observed}。ロシア側の日付をずらした ${D.placebo.n} 通りでは中央値 ${P.fmt(D.placebo.median, 0)}、5〜95% は ${P.fmt(D.placebo.q05, 0)}〜${P.fmt(D.placebo.q95, 0)}、最大 ${D.placebo.max}。実際の数がこの範囲の上端付近なら、偶然の重なりだけでは説明しにくい組が一部ある程度の目安です（個々の組がどちらかは分かりません）。`,
+  });
+  P.sources(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

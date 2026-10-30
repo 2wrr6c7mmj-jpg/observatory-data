@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>自国側の海の外での滞在日数｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 7</div>
+<h1>太平洋側など自国側の海の外での滞在日数<span class="badge">試作</span></h1>
+<p class="lead">中国艦・ロシア艦が海峡を通って自国側の海（中国＝東シナ海、ロシア＝日本海）から出て、海峡を通って戻るまでの日数を、年ごとに比べます。滞在が長くなる傾向は、遠方での活動の拡大を示しうる一方、組み合わせの方法にも左右されます。</p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>往路の年ごとの、帰るまでの日数の分布（Kaplan-Meier の「まだ戻っていない割合」の曲線と四分位）。</li>
+<li>資料に「同一である」と明記された組と、艦番号の一致から推定した組で、分布が違うか。</li>
+<li>帰りが確認されていない往路がどれだけあるか。</li>
+</ul>
+
+<div class="controls">
+<label>国 <select id="nat"><option value="ALL">中国とロシア</option><option value="CN">中国</option><option value="RU">ロシア</option></select></label>
+<label>組の根拠 <select id="meth"><option value="all">明記と推定</option><option value="stated">明記（同一である）</option><option value="hull-match">推定（艦番号の一致）</option></select></label>
+<label>横軸 <select id="xmax"><option value="120">120日まで</option><option value="200">200日まで</option><option value="60">60日まで</option></select></label>
+</div>
+<div class="kpis" id="kpis"></div>
+<div class="controls" id="years"></div>
+<div id="km"></div>
+<div id="strip"></div>
+<h3>年ごとの要約</h3>
+<div id="tab"></div>
+<details><summary>帰りが確認されていない往路の一覧</summary><div id="open"></div></details>
+
+<h2>手法</h2>
+<ul>
+<li><b>数える組</b>：round_trips.csv のうち、向きが「進出→帰投」で、復路に海峡がある組だけ（meta.json・status.json の滞在日数の定義と同じ）。帰投→再進出の組（母港側にいた日数）と、向きが不明の組、復路が海峡の通過でない組は入れません。年は往路の日付の年。</li>
+<li><b>帰りが確認されていない往路</b>：自国側の海から外へ出る通過（出発側が東シナ海の中国艦、日本海のロシア艦、行先の記載があるもの）で、どの往復の組にも入っていないもの。
+<ul>
+<li>最後の公表日から {H} 日以内に出た往路は、まだ戻っていない可能性があるので、<b>打ち切り</b>（その日数までは戻っていない）として Kaplan-Meier に入れます。艦番号による推定は {H} 日までしか組を作らないためこの日数にしました。</li>
+<li>それより古い往路は、帰りの通過が公表されなかった、艦番号がなく組にできなかった、海峡を通らず帰ったなどの可能性があり、「まだ海の外にいる」とはみなせません。曲線には入れず、年ごとの数を表に示します（曲線はこれらを除いた組の分布で、除いた往路が多い年ほど偏りの余地が大きい）。</li>
+</ul></li>
+<li><b>Kaplan-Meier</b>：帰りを確認した組の日数を出来事、打ち切りを途中の観測として、「まだ戻っていない割合」を推定。打ち切りのない年は、組の日数の経験分布と同じです。中央値・四分位は曲線が 0.5・0.75・0.25 を下回った最初の日。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>推定（艦番号の一致）の組は、明記された組を答えとした検証で適合率 91%、再現率 53%（meta.json）。90日を超える組は作らないので、推定の組の日数は 90日以下に偏ります。</li>
+<li>往路と復路の艦が全部同じとは限りません（一部の艦だけが戻る、途中で入れ替わる）。</li>
+<li>公表された通過の日付の差であり、実際に海峡を出入りした時刻の差ではありません。</li>
+<li>打ち切りの扱いは「帰りがまだ公表されていない」ことだけを根拠にしています。資料の追加は手作業のため、最後の公表日の近くは特に不確かです。</li>
+</ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('stay.json');
+  document.querySelectorAll('main li').forEach(li => { if (li.innerHTML.includes('{H}')) li.innerHTML = li.innerHTML.replaceAll('{H}', D.horizon); });
+  const nat = document.getElementById('nat'), meth = document.getElementById('meth'), xmax = document.getElementById('xmax');
+  const yb = document.getElementById('years');
+  const recent = D.years.slice(-4);
+  const colors = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s7'];
+  yb.appendChild(P.h('span', {class: 'meta'}, '年：'));
+  for (const y of ['all', ...D.years]) {
+    const lb = P.h('label', {}, `<input type="checkbox" value="${y}" ${y === 'all' || recent.includes(y) ? 'checked' : ''}> ${y === 'all' ? '全期間' : y}`);
+    yb.appendChild(lb);
+  }
+  const kp = document.getElementById('kpis');
+  const kpi = (v, s) => kp.appendChild(P.h('div', {class: 'kpi'}, `<b>${v}</b><span>${s}</span>`));
+  kpi(D.counts.trips, `数える組（明記 ${D.counts.stated}・推定 ${D.counts.hull_match}）`);
+  kpi(D.counts.open_recent, `打ち切り（最後の公表 ${D.last_release} から ${D.horizon}日以内の往路）`);
+  kpi(D.counts.open_out - D.counts.open_recent, '帰りが確認されていない古い往路（曲線に入れない）');
+  const draw = () => {
+    const ys = [...yb.querySelectorAll('input:checked')].map(i => i.value === 'all' ? 'all' : +i.value);
+    const cur = D.curves.filter(c => c.nation === nat.value && c.method === meth.value);
+    const X = +xmax.value;
+    const el = document.getElementById('km'); el.innerHTML = '';
+    const shown = cur.filter(c => ys.includes(c.year));
+    const col = (c, i) => c.year === 'all' ? P.css('--ink2') : P.css(colors[i % colors.length]);
+    const series = shown.map((c, i) => {
+      const pts = [];
+      for (let k = 0; k < c.steps.length; k++) {
+        const [t, s] = c.steps[k];
+        if (t > X) break;
+        pts.push({x: t, y: s});
+      }
+      pts.push({x: X, y: pts[pts.length - 1].y});
+      return {kind: 'step', color: col(c, i), width: c.year === 'all' ? 2.5 : 1.8, dash: c.year === 'all' ? '5 3' : undefined, data: pts};
+    });
+    if (!shown.length) { el.append('年を選んでください'); }
+    else P.chart(el, {
+      height: 300, xmin: 0, xmax: X, ymin: 0, ymax: 1, yfmt: v => Math.round(v * 100) + '%',
+      xticks: () => Array.from({length: Math.floor(X / 10) + 1}, (_, i) => ({v: i * 10, label: i * 10 + '日'})),
+      ylabel: 'まだ戻っていない割合',
+      legend: shown.map((c, i) => ({color: col(c, i), label: `${c.year === 'all' ? '全期間' : c.year}（組 ${c.events}・打ち切り ${c.censored}）`, line: true})),
+      series,
+      tip: x => '<b>' + x + ' 日</b><br>' + shown.map(c => { let s = 1; for (const [t, v] of c.steps) if (t <= x) s = v; return `${c.year === 'all' ? '全期間' : c.year}：${Math.round(s * 100)}%`; }).join('<br>'),
+    });
+    // 年ごとの散布（1点＝1組）
+    const tr = D.trips.filter(t => (nat.value === 'ALL' || t.nation === nat.value) && (meth.value === 'all' || t.method === meth.value));
+    const st = document.getElementById('strip'); st.innerHTML = '';
+    const jit = t => ((t.out_date.charCodeAt(8) * 7 + t.out_date.charCodeAt(9) * 13 + t.days) % 60) / 100 - 0.3;
+    if (tr.length) P.chart(st, {
+      height: 260, xmin: D.years[0], xmax: D.years[D.years.length - 1], yclip: X,
+      xticks: () => D.years.filter(y => y % 2 === 0).map(v => ({v, label: String(v)})), ylabel: '日数',
+      legend: [{color: P.css('--s1'), label: '明記の組'}, {color: P.css('--s2'), label: '推定の組'}, {color: P.css('--ink'), label: '年の中央値（KM）'}],
+      series: [
+        {kind: 'dots', color: P.css('--s1'), r: 2.4, data: tr.filter(t => t.method === 'stated').map(t => ({x: t.year + jit(t), y: Math.min(t.days, X)}))},
+        {kind: 'dots', color: P.css('--s2'), r: 2.4, data: tr.filter(t => t.method !== 'stated').map(t => ({x: t.year + jit(t), y: Math.min(t.days, X)}))},
+        {kind: 'dots', color: P.css('--ink'), r: 4, data: cur.filter(c => c.year !== 'all' && c.median !== null).map(c => ({x: c.year, y: Math.min(c.median, X)}))},
+      ],
+      caption: '1点が1組。横の散らばりは重なりを避けるためで意味はありません。',
+    });
+    const old = {};
+    for (const o of D.open_out) if (!o.recent && (nat.value === 'ALL' || o.nation === nat.value)) old[o.year] = (old[o.year] || 0) + 1;
+    const tb = document.getElementById('tab'); tb.innerHTML = '';
+    P.table(tb, ['往路の年', '組', '打ち切り', '25%', '中央値', '75%', '帰り未確認の古い往路'],
+      cur.filter(c => c.year !== 'all').map(c => [c.year, c.events, c.censored, P.fmt(c.q25), P.fmt(c.median), c.q75 === null ? '未到達' : P.fmt(c.q75), old[c.year] || 0])
+        .concat(cur.filter(c => c.year === 'all').map(c => ['全期間', c.events, c.censored, P.fmt(c.q25), P.fmt(c.median), c.q75 === null ? '未到達' : P.fmt(c.q75), Object.values(old).reduce((a, b) => a + b, 0)])),
+      ['', 'n', 'n', 'n', 'n', 'n', 'n']);
+    const op = document.getElementById('open'); op.innerHTML = '';
+    P.table(op, ['往路の日', '国', '海峡', '行先', '艦艇', '扱い'],
+      D.open_out.filter(o => nat.value === 'ALL' || o.nation === nat.value).sort((a, b) => b.date.localeCompare(a.date))
+        .map(o => [o.date, o.nation === 'CN' ? '中国' : 'ロシア', P.esc(o.strait) + (o.inferred ? '（推定）' : ''), P.esc(o.to), P.esc(o.units), o.recent ? `打ち切り（${o.age}日）` : '曲線に入れない']));
+  };
+  for (const e of [nat, meth, xmax]) e.addEventListener('change', draw);
+  yb.addEventListener('change', draw);
+  draw();
+  P.sources(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

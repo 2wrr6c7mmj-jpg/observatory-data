@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>グレーゾーンの一覧（尖閣の中国海警・台湾周辺の公務船）｜分析の試作</title>
+<link rel="stylesheet" href="../assets/proto.css">
+<body><main>
+<div class="crumb"><a href="../">分析の試作</a> ／ 9</div>
+<h1>グレーゾーンの一覧：尖閣の中国海警と台湾周辺の公務船<span class="badge">試作</span></h1>
+<p class="lead">軍ではない公船による圧力を、日本側（海上保安庁）と台湾側（台湾国防部）の発表から日ごとに並べます。2つは数える範囲も基準も違うため、<b>足し合わせません</b>。</p>
+<p class="note" id="empty" hidden></p>
+
+<h2>何が分かるか</h2>
+<ul>
+<li>尖閣諸島周辺の接続水域に入った中国海警局の船舶等の隻数と、そのうち領海に侵入した隻数（海上保安庁）。</li>
+<li>台湾国防部の日報が台湾周辺で確認したとする中国の公務船の隻数。</li>
+<li>両方が同じ時期に増えているか・片方だけかを、同じ日付の軸で見比べること。</li>
+</ul>
+
+<div class="controls"><label>期間 <select id="range"><option value="90">直近90日</option><option value="365" selected>直近1年</option><option value="0">全期間</option></select></label></div>
+<div id="c1"></div>
+<div id="c2"></div>
+<h3>日ごとの表（新しい順、直近60日）</h3>
+<div id="tab"></div>
+
+<h2>手法</h2>
+<ul>
+<li>値は公開データをそのまま並べています（計算はしていません）。空欄は「記載なし・取得できず」で、0 とはみなしません。</li>
+<li>海上保安庁の空欄の扱い：<span id="jcgmiss"></span></li>
+<li>台湾国防部の公務船は、日報に公務船の記載が始まった後も、記載のない日があります（その日は空欄）。</li>
+</ul>
+
+<h2>限界</h2>
+<ul>
+<li>日付の区切りが違います。海上保安庁は日本時間の暦日、台湾国防部の日報は台湾時間の前日6時〜当日6時。</li>
+<li>海域が違います。海保は尖閣の接続水域・領海だけ、台湾国防部は台湾周辺の広い範囲で、場所の内訳は公表されていません。同じ船が両方で数えられている可能性もあります。</li>
+<li>どちらも当事者側の発表で、確認・公表の基準は発表する側に依存します。中国海警局は別に「巡航」として発表することがあり、日付・隻数は一致しません。</li>
+<li>打上げ告知と実際の打上げの照合（当初の案9）は、NOTAM Watch から抜いた告知（docs/data/launches/）がまだ公開データに入っていないため、代わりにこの一覧を作りました<span id="launch"></span>。</li>
+</ul>
+<h3>海上保安庁のデータの定義の変更</h3>
+<ul id="defs"></ul>
+
+<h2>データの版と出典</h2>
+<div id="prov"></div>
+</main>
+<script src="../assets/proto.js"></script>
+<script>
+(async () => {
+  const D = await P.load('grayzone.json');
+  const jm = D.jcg_meta || {};
+  document.getElementById('jcgmiss').textContent = jm.missing_values || '（meta.json の記載なし）';
+  const dl = document.getElementById('defs');
+  for (const x of jm.definition_changes || []) dl.appendChild(P.h('li', {}, `${P.esc(x.date)}：${P.esc(x.change)}`));
+  if (D.launches_ready) document.getElementById('launch').textContent = '（告知のデータが入ったので、照合の試作は次に作れます）';
+  if (!D.jcg_available) {
+    const e = document.getElementById('empty');
+    e.hidden = false;
+    e.textContent = '海上保安庁の日ごとのデータ（docs/data/jcg-senkaku/daily.csv）は、まだ公開データに入っていません。収集（jcg-senkaku.yml）の後の計算で自動的に描かれます。いまは台湾国防部の公務船だけを表示しています。';
+  }
+  const rng = document.getElementById('range');
+  const draw = () => {
+    let days = D.days;
+    const n = +rng.value;
+    if (n) { const lastT = P.t(days[days.length - 1][0]); days = days.filter(r => P.t(r[0]) > lastT - n * P.DAY); }
+    const x0 = P.t(days[0][0]), x1 = P.t(days[days.length - 1][0]);
+    const by = new Map(days.map(r => [P.t(r[0]), r]));
+    const monthly = col => { // 全期間：月ごとの日平均（値のある日だけ）
+      const m = {};
+      for (const r of days) if (r[col] !== null) { const k = r[0].slice(0, 7); (m[k] ||= []).push(r[col]); }
+      return Object.entries(m).map(([k, v]) => ({x: P.t(k + '-01'), y: v.reduce((a, b) => a + b, 0) / v.length}));
+    };
+    const c1 = document.getElementById('c1'), c2 = document.getElementById('c2');
+    c1.innerHTML = ''; c2.innerHTML = '';
+    if (D.jcg_available) {
+      P.chart(c1, {
+        height: 220, xmin: x0, xmax: x1, ylabel: '海上保安庁：尖閣（隻）', bars: !!n, barWidth: P.DAY,
+        legend: [{color: P.css('--s1'), label: '接続水域に入った隻数'}, {color: P.css('--s2'), label: 'うち領海に侵入した隻数'}],
+        series: n ? [
+          {kind: 'bars', color: P.css('--s1'), data: days.filter(r => r[1] !== null).map(r => ({x: P.t(r[0]), y: r[1]}))},
+          {kind: 'bars', color: P.css('--s2'), data: days.filter(r => r[2] !== null && r[2] > 0).map(r => ({x: P.t(r[0]), y: r[2]}))},
+        ] : [
+          {kind: 'step', color: P.css('--s1'), width: 1.6, gap: 40 * P.DAY, data: monthly(1)},
+          {kind: 'step', color: P.css('--s2'), width: 1.6, gap: 40 * P.DAY, data: monthly(2)},
+        ],
+        tip: x => { const r = by.get(x); return r ? `<b>${r[0]}</b><br>接続水域 ${P.fmt(r[1])}／領海 ${P.fmt(r[2])}` : ''; },
+        caption: n ? '空欄（不明）の日は描いていません。領海侵入は接続水域の内数なので重ねて描いています。' : '全期間は月ごとの日平均（値のある日だけ）。',
+      });
+    } else c1.appendChild(P.h('div', {class: 'fig'}, '<div class="cap">海上保安庁のデータ待ち（まだ公開データに入っていません）</div>'));
+    const mnd = days.filter(r => r[4]);
+    if (mnd.length) P.chart(c2, {
+      height: 200, xmin: x0, xmax: x1, ylabel: '台湾国防部：公務船（隻）', bars: !!n, barWidth: P.DAY,
+      legend: [{color: P.css('--s3'), label: '公務船'}, {color: P.css('--na'), label: '日報はあるが公務船の記載なし（高さは意味なし）'}],
+      series: n ? [
+        {kind: 'bars', color: P.css('--s3'), data: mnd.filter(r => r[3] !== null).map(r => ({x: P.t(r[0]), y: r[3]}))},
+        {kind: 'dots', color: P.css('--na'), r: 1.6, data: mnd.filter(r => r[3] === null).map(r => ({x: P.t(r[0]), y: 0}))},
+      ] : [{kind: 'step', color: P.css('--s3'), width: 1.6, gap: 40 * P.DAY, data: monthly(3)}],
+      tip: x => { const r = by.get(x); return r ? `<b>${r[0]}</b><br>公務船 ${r[4] ? P.fmt(r[3]) : '日報なし'}` : ''; },
+      caption: n ? '灰色の点は、日報はあるが公務船の記載がない日（0 とはみなさない）。' : '全期間は月ごとの日平均（記載のある日だけ）。',
+    });
+    const tb = document.getElementById('tab'); tb.innerHTML = '';
+    P.table(tb, ['日付', '尖閣：接続水域', '尖閣：領海', '台湾周辺：公務船', '台湾国防部の日報'],
+      D.days.slice(-60).reverse().map(r => [r[0], P.fmt(r[1]), P.fmt(r[2]), P.fmt(r[3]), r[4] ? 'あり' : 'なし']), ['', 'n', 'n', 'n', '']);
+  };
+  rng.addEventListener('change', draw);
+  draw();
+  P.sources(document.getElementById('prov'), D);
+})().catch(e => document.querySelector('main').append('読み込みに失敗しました：' + e.message));
+</script>
+</body></html>

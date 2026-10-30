@@ -5,7 +5,7 @@
 <body><main>
 <div class="crumb"><a href="../">observatory-data</a></div>
 <h1>分析の試作<span class="badge">試作・採用前</span></h1>
-<p class="lead">台湾国防部の日報（2022年11月〜）から、中国軍の台湾周辺での動静が「平常を超えているか」を、根拠と手法を明示して示すための試作です。どれも警報ではなく、読む人が自分で確かめるための目安です。</p>
+<p class="lead">台湾国防部の日報（2022年11月〜）、統合幕僚監部の海峡の通過の公表、海上保安庁の尖閣の発表から、中国軍などの東アジアでの動静が「平常を超えているか」を、根拠と手法を明示して示すための試作です。1〜5 は台湾国防部の日報、6〜8 は統幕の資料、9〜10 は複数の出典を使います。どれも警報ではなく、読む人が自分で確かめるための目安です。</p>
 <p class="note">まだ採用を決めていない試作です。表示や数値の出し方は変わることがあります。各ページに手法・限界・データの版・出典を書いています。</p>
 <div class="cards">
 <a class="card" href="gaps/"><h3>1. 収集の穴と沈黙</h3><span class="meta">欠けた日、null、読み取れなかった日報を暦で。「活動なし」と「公表なし・取得できず」を分けて見る。</span></a>
@@ -13,11 +13,17 @@
 <a class="card" href="changepoints/"><h3>3. 変化点と定義変更</h3><span class="meta">週の水準の段差を検出し、日報の定義変更・記載の割合の変化と重ねる。</span></a>
 <a class="card" href="persistence/"><h3>4. 艦艇の持続度と中間線越えの割合</h3><span class="meta">「多い日」の連続日数の分布といまの連続、中間線越え等の割合と Wilson 区間。</span></a>
 <a class="card" href="events/"><h3>5. 大規模演習のイベントスタディ</h3><span class="meta">演習初日を0日目にそろえた前後の動き。1事例ずつ除いた結果と偽の起点との比較。</span></a>
+<a class="card" href="heatmap/"><h3>6. 海峡×月の通過件数</h3><span class="meta">中国艦・ロシア艦の海峡の通過を格子で。前年との率の比と正確な信頼区間。推定の通過を区別。</span></a>
+<a class="card" href="stay/"><h3>7. 自国側の海の外での滞在日数</h3><span class="meta">進出→帰投の往復の日数を年ごとに Kaplan-Meier で。明記の組と艦番号による推定の組を区別。</span></a>
+<a class="card" href="joint/"><h3>8. 中露の共同行動の候補</h3><span class="meta">「共同」の明記・同じ記述・時期の重なり（±2日・同じ海峡・同じ向き）の3段。日付をずらした比較つき。</span></a>
+<a class="card" href="grayzone/"><h3>9. グレーゾーンの一覧</h3><span class="meta">尖閣の中国海警（海保）と台湾周辺の公務船（台湾国防部）を日ごとに並べる。足し合わせない。</span></a>
+<a class="card" href="iw/"><h3>10. 複数の指標の同時の上振れ</h3><span class="meta">シナリオごとに、各指標の過去1年でのパーセンタイルが90を超えた数と一覧。重みや閾値は付けない。</span></a>
 </div>
 <h2>共通の約束</h2>
 <ul>
 <li>原文に記載のない数値（null）は 0 とみなしません。</li>
-<li>計算は GitHub Actions（proto.yml）が台湾の収集の後に行い、結果を JSON（<a href="data/gaps.json">gaps.json</a>・<a href="data/baseline.json">baseline.json</a>・<a href="data/changepoints.json">changepoints.json</a>・<a href="data/persistence.json">persistence.json</a>・<a href="data/events.json">events.json</a>） に書き出します。ページはその JSON を読んで描くだけで、外部のライブラリは使っていません。</li>
-<li>計算の中身：<a href="https://github.com/2wrr6c7mmj-jpg/observatory-data/blob/main/analysis/proto.py">analysis/proto.py</a></li>
+<li>計算は GitHub Actions（proto.yml）が台湾・海保の収集の後に行い、結果を JSON（<a href="data/gaps.json">gaps.json</a>・<a href="data/baseline.json">baseline.json</a>・<a href="data/changepoints.json">changepoints.json</a>・<a href="data/persistence.json">persistence.json</a>・<a href="data/events.json">events.json</a>・<a href="data/heatmap.json">heatmap.json</a>・<a href="data/stay.json">stay.json</a>・<a href="data/joint.json">joint.json</a>・<a href="data/grayzone.json">grayzone.json</a>・<a href="data/iw.json">iw.json</a>）に書き出します。ページはその JSON を読んで描くだけで、外部のライブラリは使っていません。</li>
+<li>計算の中身：<a href="https://github.com/2wrr6c7mmj-jpg/observatory-data/blob/main/analysis/proto.py">analysis/proto.py</a>（1〜5）・<a href="https://github.com/2wrr6c7mmj-jpg/observatory-data/blob/main/analysis/proto2.py">analysis/proto2.py</a>（6〜10）</li>
+<li>統幕の資料は手作業で追加しているため、6〜8 と 10 の統幕の指標は、資料の追加の後の最初の計算で更新されます。</li>
 </ul>
 </main></body></html>
