@@ -322,7 +322,7 @@ def allocate_ordered(estimates: list[dict], cap: float, req_cap: int) -> list[di
 
 def plan(client, ports: list[dict], now: datetime, cap: float, req_cap: int, log=print,
          out_root: Path | None = None, mask_dir: Path | None = None, days_from: int = LOOKBACK_DAYS,
-         days_to: int = 0, s2_on: bool = True, ordered: bool = False) -> dict:
+         days_to: int = 0, s2_on: bool = True, ordered: bool = False, s2_days: int = LOOKBACK_DAYS) -> dict:
     """Only the work not done yet (S1 scenes and S2 days of the current mask version) is estimated; scenes
     whose catalog footprint covers less than MIN_COVERAGE of the water are not counted (not fetched)."""
     from .osm_mask import load_mask
@@ -354,7 +354,7 @@ def plan(client, ports: list[dict], now: datetime, cap: float, req_cap: int, log
         low = [a for a in new1 if (lambda f: f is not None and f < MIN_COVERAGE)(footprint_share(a["geometries"], grid, water))]
         n1 = len(new1) - len(low)
         # S2 is always the last 12 months (run_s2), whatever the S1 window
-        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, now - timedelta(days=LOOKBACK_DAYS), now,
+        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, now - timedelta(days=s2_days), now,
                                                           collection=s2.COLLECTION))
                   if d["date"] not in done2]) if s2_on else 0
         e = estimate_port(site, n1, n2)
@@ -559,12 +559,13 @@ def keep_raw(site: dict, out: Path, tmp_raw: Path, raw_dir: Path, tag: str | Non
     return kept
 
 
-def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left, deadline_left, log=print) -> dict:
+def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left, deadline_left, log=print,
+           s2_days: int = LOOKBACK_DAYS) -> dict:
     tot = {"days": 0, "clear": 0, "cloudy": 0, "skipped": 0, "deferred": 0, "errors": 0, "processing_units": 0.0,
            "stopped": None}
     s2site = {**site, "sectors": []}
     end = now
-    start = now - timedelta(days=LOOKBACK_DAYS)
+    start = now - timedelta(days=s2_days)
     while end > start:
         days = min(S2_WINDOW_DAYS, (end - start).days or 1)
         if deadline_left() <= 0:
@@ -589,7 +590,7 @@ def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left
 
 def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, tmp_raw: Path,
              mask_dir: Path, now: datetime, log=print, days_from: int = LOOKBACK_DAYS, days_to: int = 0,
-             s2_on: bool = True) -> dict:
+             s2_on: bool = True, s2_days: int = LOOKBACK_DAYS) -> dict:
     from .osm_mask import load_mask
     out = out_root / site["id"]
     try:
@@ -607,7 +608,8 @@ def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, t
     elif s1.get("stopped"):
         s2s = {"stopped": "S1 で上限"}
     else:
-        s2s = run_s2(client, site, out, now, lambda: client.cap_pu - client.processing_units, deadline_left, log=log)
+        s2s = run_s2(client, site, out, now, lambda: client.cap_pu - client.processing_units, deadline_left, log=log,
+                     s2_days=s2_days)
     return {"site_id": site["id"], "mask": (mmeta or {}).get("version"), "s1": s1, "raw_kept": kept, "s2": s2s,
             "requests": client.requests, "s1_requests": s1_req, "processing_units": round(client.processing_units, 3),
             "pu_source": "header" if client.pu_reported else "estimate", "cap_pu": client.cap_pu,
@@ -766,6 +768,7 @@ def main(argv=None) -> int:
         q.add_argument("--days-from", type=int, default=LOOKBACK_DAYS, help="oldest acquisition, days before now")
         q.add_argument("--days-to", type=int, default=0, help="newest acquisition, days before now")
         q.add_argument("--s1-only", action="store_true")
+        q.add_argument("--s2-days", type=int, default=LOOKBACK_DAYS, help="S2 days back (default 12 months)")
     b = sub.add_parser("baseline")
     b.add_argument("--ports", type=Path, default=PORTS_FILE)
     b.add_argument("--only", nargs="+", required=True, help="ports in this order of priority")
@@ -858,9 +861,14 @@ def main(argv=None) -> int:
 
     if args.cmd == "plan":
         month = now.strftime("%Y-%m")
-        other_pu, other_req = month_usage(args.usage, month)
+        # copies of one usage file on several branches (other-<key>--<n>.csv): count the largest copy only
+        groups: dict = {}
+        for u in args.usage:
+            groups.setdefault(u.name.split("--")[0] if "--" in u.name else u.name, []).append(u)
+        best = {k: max(v, key=lambda u: month_usage([u], month)[0]) for k, v in groups.items()}
+        other_pu, other_req = month_usage(list(best.values()), month)
         if args.ocean_cap is not None:
-            ocean_pu, _r = month_usage([u for u in args.usage if u.name.startswith("other-")], month)
+            ocean_pu, _r = month_usage([u for k, u in best.items() if k.startswith("other-")], month)
             args.reserve = max(args.reserve, round(args.ocean_cap - ocean_pu, 1))
         done_pu, done_req = month_usage(args.ports_usage, month)
         cap = min(args.cap - done_pu, args.global_cap - args.global_margin - other_pu - args.reserve - done_pu)
@@ -873,7 +881,8 @@ def main(argv=None) -> int:
         client = cdse.Client()
         res = plan(client, ports, now, max(0.0, cap), max(0, req_cap - 200),
                    log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir,
-                   days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only) and not args.proportional)
+                   days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only) and not args.proportional,
+                   s2_days=args.s2_days)
         res.update(other_usage_pu=round(other_pu, 1), reserve_pu=args.reserve, other_usage_requests=other_req,
                    ports_done_pu=round(done_pu, 1), global_cap=args.global_cap, global_margin=args.global_margin, ports_cap=args.cap, max_pu=args.max_pu,
                    window_days=[args.days_from, args.days_to], s1_only=args.s1_only, order=args.only)
@@ -886,7 +895,7 @@ def main(argv=None) -> int:
                            deadline=time.monotonic() + args.max_minutes * 60)
     res = run_port(client, site, args.out, args.raw_dir, args.tmp, args.mask_dir, now,
                    log=lambda s: print(s, file=sys.stderr, flush=True), days_from=args.days_from,
-                   days_to=args.days_to, s2_on=not args.s1_only)
+                   days_to=args.days_to, s2_on=not args.s1_only, s2_days=args.s2_days)
     res["trend"] = trend(args.out / site["id"], mask_tag(site))
     out = args.out / site["id"]
     write_csv(out / "usage.csv", read_csv(out / "usage.csv") + [usage_row(res, now)], USAGE_FIELDS)

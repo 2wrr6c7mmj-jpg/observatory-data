@@ -1,5 +1,5 @@
 {
- "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。 2026-10-30 追加：呉淞 SWS、南シナ海の美済 MIS・渚碧 SUB・永暑 FCR・永興 WDY（reef: true は海上の小範囲。礁の上の構造物は陸マスクの陸・構造物として固定物扱い、礁湖・港内の船を数える）。小さい 4 礁は OSM の地物が無く（南薫礁の礁の外形だけ）、今回は取らない。",
+ "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。 2026-10-30 追加：呉淞 SWS、南シナ海の美済 MIS・渚碧 SUB・永暑 FCR・永興 WDY（reef: true は海上の小範囲。礁の上の構造物は陸マスクの陸・構造物として固定物扱い、礁湖・港内の船を数える）。小さい 4 礁は OSM の地物が無く（南薫礁の礁の外形だけ）、今回は取らない。 2026-10-30 追加：滬東中華 HDZ、武船重工 WCS（OSM）。",
  "sites": [
   {
    "id": "SYL",
@@ -867,6 +867,81 @@
    ],
    "note": "永興島と石島、礁の上の港（約 5.3×5.0 km）。範囲は S2 の概観（docs/data/sat/ports/locate/、probe/ports-locate-ops3-scs）で礁・島の輪郭を見て置いた",
    "reef": true
+  },
+  {
+   "id": "HDZ",
+   "name": "上海・滬東中華造船（浦東）",
+   "group": "上海",
+   "bbox": [
+    121.54,
+    31.25,
+    121.585,
+    31.295
+   ],
+   "center_lat": 31.2725,
+   "center_lon": 121.5625,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/165711825「沪东中华造船（Hudong–Zhonghua Shipbuilding）」",
+     "url": "https://www.openstreetmap.org/way/165711825",
+     "bbox": [
+      121.56401,
+      31.27136,
+      121.57252,
+      31.28691
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/988359413「申佳船厂(4805厂)」",
+     "url": "https://www.openstreetmap.org/way/988359413",
+     "bbox": [
+      121.54373,
+      31.25306,
+      121.55442,
+      31.26269
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "黄浦江の東岸（浦東）の滬東中華の造船所と、南西の海軍 4805 工場（約 4.3×5.0 km）。範囲は locate（probe/ports-locate-ops3-yards）の OSM の外形で置いた。揚陸艦（071・075・076）を建造した岸壁がこの範囲かは画像で確かめる"
+  },
+  {
+   "id": "WCS",
+   "name": "武漢・武船重工（陽邏付近）",
+   "group": "武漢",
+   "bbox": [
+    114.54,
+    30.625,
+    114.58,
+    30.665
+   ],
+   "center_lat": 30.645,
+   "center_lon": 114.56,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/947969003「武船重工（landuse=industrial）」",
+     "url": "https://www.openstreetmap.org/way/947969003",
+     "bbox": [
+      114.55576,
+      30.64039,
+      114.56424,
+      30.65062
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "長江の岸の武船重工（武昌船舶重工）の工場（OSM、約 3.8×4.4 km）。潜水艦を建造する旧武昌の工場（市内）と双柳の新工場は OSM の地物で確かめられず、この範囲が潜水艦の建造の場所かは未確認"
   }
  ]
 }

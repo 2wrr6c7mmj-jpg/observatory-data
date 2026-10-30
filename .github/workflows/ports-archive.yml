@@ -8,7 +8,7 @@ name: PLAN ports archive probe
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
-    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*', 'probe/ports-extra-*', 'probe/ports-baseline-*']
+    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*', 'probe/ports-extra-*', 'probe/ports-baseline-*', 'probe/ports-yards-*', 'probe/ports-s2ext-*']
 permissions:
   contents: write
 concurrency:
@@ -17,14 +17,16 @@ concurrency:
 env:
   # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
   # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、別枠 300 PU。1 回目（SWS・MIS、165.9 PU）の残り 134 PU を SUB・FCR・WDY に見込みの比で分ける
-  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
+  # probe/ports-yards-*: 造船所 2 つの追加（S1＋S2 の 12 か月）。probe/ports-s2ext-*: SLP・XSN・ZDH の S2 を 24 か月に（目視ラベル用）
+  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-yards-') && '--only HDZ WCS --proportional' || startsWith(github.ref_name, 'probe/ports-s2ext-') && '--only SLP XSN ZDH --proportional --s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
   # probe/ports-baseline-fill-*: 基準の不足した軌道だけ、さかのぼり 24 か月で 24 撮影まで（この実行 300 PU）
   # probe/ports-baseline-oct-*: 上限 9,995 への引き上げ分（港 +550 PU）。QGZ 69・171 を 24 枚に、優先 2 の港、造船所の主軌道（この順）
-  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
-  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || '800' }}
+  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
+  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
   # 合計ガード：10 月の上限 9,995（ユーザー指示）、湛江の 10-31 の毎日の実行の分として最低 50 PU を残す。港の上限 4,350
-  GUARD_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--cap 4350 --global-cap 9995 --global-margin 50' || '--cap 4000' }}
-  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
+  # 2026-10-30 21:20 以降（港の上限 4,750、合計 9,995、湛江の分 50 PU）：すべての実行に
+  GUARD_ARGS: '--cap 4750 --global-cap 9995 --global-margin 50'
+  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-s2ext-') && '--s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
     # probe/ports-locate-*: OSM の軍・造船所の地物と S2 の広域の概観（1 地域 1〜4 PU）だけ。範囲を置くため
@@ -95,8 +97,9 @@ jobs:
             for f in $(git ls-tree -r --name-only "$ref" docs/data | grep -E 'usage[^/]*\.csv$' | grep -v -E '^docs/data/sat/(usage|ports_usage)\.csv$|^docs/data/sat/ports/'); do
               echo "$ref $f $(git log -1 --format=%ct "$ref")"
             done
-          done | sort -k2,2 -k3,3nr | awk '!seen[$2]++' > "$RUNNER_TEMP/usage/list.txt"
-          while read ref f t; do git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
+          done | sort -k2,2 > "$RUNNER_TEMP/usage/list.txt"
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
+          while read ref f t; do k=$(echo "$f" | tr '/' '_'); git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$k--$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
           rm "$RUNNER_TEMP/usage/list.txt"
       - name: Cap (guard 9,000 with the ocean's 4,600, the ports' 4,000, this run 800)
         id: cap
@@ -156,7 +159,7 @@ jobs:
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
   plan:
-    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-') || startsWith(github.ref_name, 'probe/ports-extra-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
+    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-') || startsWith(github.ref_name, 'probe/ports-extra-') || startsWith(github.ref_name, 'probe/ports-yards-') || startsWith(github.ref_name, 'probe/ports-s2ext-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -190,12 +193,13 @@ jobs:
               for f in files:
                   if "usage" in f.split("/")[-1] and f.endswith(".csv") and f not in ("docs/data/sat/usage.csv", "docs/data/sat/ports_usage.csv") \
                      and not f.startswith("docs/data/sat/ports/"):
-                      if f not in best or int(t) > best[f][1]:
-                          best[f] = (ref, int(t))
-          for i, (f, (ref, _t)) in enumerate(sorted(best.items())):
-              data = subprocess.run(["git", "show", f"{ref}:{f}"], capture_output=True, text=True).stdout
-              open(f"{out}/other-{i}.csv", "w").write(data)
-              print("other usage:", ref, f)
+                      best.setdefault(f, []).append(ref)
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
+          for i, (f, refs) in enumerate(sorted(best.items())):
+              for j, ref in enumerate(refs):
+                  data = subprocess.run(["git", "show", f"{ref}:{f}"], capture_output=True, text=True).stdout
+                  open(f"{out}/other-{i}--{j}.csv", "w").write(data)
+                  print("other usage:", ref, f)
           EOF
           ls -l "$RUNNER_TEMP/usage"
       - name: OSM land masks (Overpass, one port at a time)
@@ -207,7 +211,7 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           set -o pipefail
-          python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --cap 4000 \
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" $GUARD_ARGS \
             --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
