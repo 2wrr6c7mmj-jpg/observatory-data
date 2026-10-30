@@ -1,7 +1,7 @@
 """Zhanjiang (ZJG) end-to-end snapshot for the multi-site refactor: every output file must stay the same.
 
 ``snapshot(work)`` copies the published Zhanjiang records (CSV, GeoJSON, zone prior, S2 labels) into
-``work``, runs ``sat.run.main`` on the ZJG entry of sat/sites.json with a fake client (two new scenes,
+``work``, runs ``sat.run.main`` on sat/sites.json with a fake client (two new scenes,
 orbits 157 and 84, a synthetic chip built from the real baselines with ships along the real quay lines;
 no Sentinel-2 day) at a frozen time, and returns {relative path: sha256} of every file it wrote.
 
@@ -109,7 +109,8 @@ def snapshot(work: Path) -> dict:
     run._BLIND_CACHE.clear()
     with mock.patch.object(run, "datetime", Frozen), \
             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-        rc = run.main(["--out", str(out)], client=cli, sites=[site])
+        # every site of sites.json (on origin/main: Zhanjiang only; later the new ports with daily false too)
+        rc = run.main(["--out", str(out)], client=cli, sites=run.load_sites())
     if rc != 0:
         raise RuntimeError(f"run.main returned {rc}")
     return {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest()

@@ -312,5 +312,54 @@ class MainOrderTest(unittest.TestCase):
             self.assertEqual(list(run.read_csv(out / "usage.csv")[0].keys()), run.USAGE_FIELDS)
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
+class SanyaSitesTest(unittest.TestCase):
+    """楡林 SYL・亜龍湾 SLP（PR-1 の 2 つ目のコミット）：設定・マスク・仮置きの重みと桟橋の型。"""
+
+    def sites(self):
+        return {s["id"]: s for s in run.load_sites()}
+
+    def test_settings(self):
+        s = self.sites()
+        for sid, mv in (("SYL", 2), ("SLP", 1)):
+            x = s[sid]
+            self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]), ("naval", "trial", "per_site", False, mv))
+            self.assertFalse(x["daily"])  # settings only until the quay lines and the baseline are in
+            self.assertEqual(x["baseline"], {"orbits": [157], "lookback_days": 365, "max_scenes": 30, "min_scenes": 24})
+            self.assertTrue(x["pu_month_cap"] > 0)
+            mask, info = run.load_mask(sid, mv)
+            g = Grid.for_site(x)
+            self.assertEqual(mask.shape, (g.height, g.width))
+            self.assertEqual(info["bbox"], x["bbox"])
+            meta = run.site_meta(x)
+            self.assertFalse(meta["quay"]["ready"])
+            self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
+        self.assertNotIn("SYL", [y["id"] for y in run.load_sites() if run.runs_daily(y)])
+
+    def test_weights_are_placeholders(self):
+        t = quay_est.load_classes()
+        for sid in ("SYL", "SLP"):
+            st = t["sites"][sid]
+            self.assertEqual(st["status"], "placeholder")
+            self.assertIn("要出典", st["w_conf"])
+            self.assertTrue(quay_est.site_weights_info(sid)["own"])
+        slp = [c["id"] for c in quay_est.Model(site_id="SLP").classes]
+        self.assertIn("094", slp)
+        self.assertNotIn("022", slp)  # no weight: not in the prior
+        self.assertNotIn("094", [c["id"] for c in quay_est.Model().classes])  # Zhanjiang unchanged
+
+    def test_zone_types(self):
+        m = quay_est.Model(site_id="SLP", sector_roles=fsectors.sector_roles(run.site_sectors(self.sites()["SLP"])))
+        self.assertEqual(m.zone_of("SLP", 123, "A1"), ("SUB", "submarine"))
+        self.assertEqual(m.zone_of("SLP", 123, "B"), ("SH", "shore"))
+        sub = np.array([k == "submarine" for k in m.kinds])
+        self.assertGreater(m.zone_weights("submarine")[sub].sum(), m.zone_weights("large")[sub].sum())
+        y = quay_est.Model(site_id="SYL")
+        self.assertEqual(y.zone_of("SYL", 1, "A2"), ("SN", "medium"))
+        z = quay_est.load_zones()
+        for t in ("carrier", "submarine"):
+            self.assertIn("仮置き", z["types"][t]["conf"])
+
+
 if __name__ == "__main__":
     unittest.main()
