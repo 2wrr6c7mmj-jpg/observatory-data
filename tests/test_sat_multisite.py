@@ -21,38 +21,36 @@ if np is not None:
     from tests import sat_zjg_golden
     from tests.test_sat_quay import FakeClient, scene_parts, ships
 
-# Files a run may add next to Zhanjiang's (new in PR-1); everything else must match the golden.
-NEW_FILES = {"quay_sectors.csv"}
-
-
 @unittest.skipUnless(np is not None, "numpy not installed")
 class ZhanjiangUnchangedTest(unittest.TestCase):
-    """The golden (tests/fixtures/sat_zjg_golden.json) was made with origin/main before PR-1."""
+    """The code before PR-1 (9e86565) and this code, on the same scenario and the same machine
+    (tests/sat_zjg_golden.py): Zhanjiang's files must be byte for byte the same."""
 
     def test_every_zjg_file_is_byte_identical(self):
-        gold = json.loads(sat_zjg_golden.GOLDEN.read_text(encoding="utf-8"))
         with tempfile.TemporaryDirectory() as d:
-            snap = sat_zjg_golden.snapshot(Path(d))
-            meta = sat_zjg_golden.zjg_meta(Path(d))
-            sectors = run.read_csv(Path(d) / "out" / "quay_sectors.csv")
-        changed = sorted(k for k in gold["files"] if snap.get(k) != gold["files"][k])
+            old, new = sat_zjg_golden.compare(Path(d))
+        self.assertEqual((old["rc"], new["rc"]), (0, 0))
+        # the scenario reaches the quay count, est-1 and est-2 in both
+        self.assertEqual(old["quay_results"], ["counted", "counted"])
+        self.assertEqual(new["quay_results"], ["counted", "counted"])
+        self.assertGreater(len(old["files"]), 20)
+        changed = sorted(k for k in old["files"] if new["files"].get(k) != old["files"][k])
         if changed:  # visible in the Actions annotations
-            import sys, PIL
-            print(f"::error::golden mismatch py{sys.version_info[:2]} numpy {np.__version__} pillow {PIL.__version__}: "
-                  + ", ".join(changed))
+            print("::error::Zhanjiang outputs differ from 9e86565: " + ", ".join(changed))
         self.assertEqual(changed, [], "湛江の出力が変わった")
-        self.assertEqual(sorted(set(snap) - set(gold["files"])), sorted(NEW_FILES))
+        self.assertEqual(sorted(set(new["files"]) - set(old["files"])), sorted(sat_zjg_golden.NEW_FILES))
         # meta.json: Zhanjiang's entry is the same but for the new role of each sector
-        for sc in meta["site"]["sectors"]:
+        for sc in new["meta"]["site"]["sectors"]:
             sc.pop("role")
-        self.assertEqual(meta, gold["meta"])
+        self.assertEqual(new["meta"], old["meta"])
         # quay_sectors.csv: the old scenes from the wide columns, the two new scenes from quay-v1
-        new = [r for r in sectors if r["acquired_utc"] >= "2026-11"]
-        self.assertEqual(sorted({(r["sector_id"], r["role"]) for r in new}), [("A", "naval"), ("B", "other")])
-        self.assertEqual({r["source"] for r in new}, {"quay-v1"})
+        sectors = new["sectors"]
+        fresh = [r for r in sectors if r["acquired_utc"] >= "2026-11"]
+        self.assertEqual(sorted({(r["sector_id"], r["role"]) for r in fresh}), [("A", "naval"), ("B", "other")])
+        self.assertEqual({r["source"] for r in fresh}, {"quay-v1"})
         self.assertEqual({r["est2_calib_source"] for r in sectors}, {"self"})
-        old = [r for r in sectors if r["acquired_utc"] < "2026-11"]
-        self.assertTrue(old and {r["source"] for r in old} == {"quay_counts（横持ちの列から）"})
+        past = [r for r in sectors if r["acquired_utc"] < "2026-11"]
+        self.assertTrue(past and {r["source"] for r in past} == {"quay_counts（横持ちの列から）"})
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
