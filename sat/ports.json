@@ -1,5 +1,5 @@
 {
- "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。",
+ "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。 2026-10-30 追加：呉淞 SWS、南シナ海の美済 MIS・渚碧 SUB・永暑 FCR・永興 WDY（reef: true は海上の小範囲。礁の上の構造物は陸マスクの陸・構造物として固定物扱い、礁湖・港内の船を数える）。小さい 4 礁は OSM の地物が無く（南薫礁の礁の外形だけ）、今回は取らない。",
  "sites": [
   {
    "id": "SYL",
@@ -639,6 +639,234 @@
     }
    ],
    "note": "閩江の馬尾造船所（OSM）の岸壁（約 4.0×3.3 km）"
+  },
+  {
+   "id": "SWS",
+   "name": "上海・呉淞（上海水警区）",
+   "group": "上海",
+   "bbox": [
+    121.48,
+    31.37,
+    121.52,
+    31.4
+   ],
+   "center_lat": 31.385,
+   "center_lon": 121.5,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/653753242「上海水警区（military=naval_base）」",
+     "url": "https://www.openstreetmap.org/way/653753242",
+     "bbox": [
+      121.49322,
+      31.38233,
+      121.50993,
+      31.39428
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/988368515「东海舰队宝山水兵训练基地 91150部队」",
+     "url": "https://www.openstreetmap.org/way/988368515",
+     "bbox": [
+      121.48286,
+      31.3849,
+      121.48904,
+      31.39119
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "黄浦江と長江の合流部（呉淞口）の上海水警区と水兵訓練基地の岸壁（約 3.8×3.3 km）。黄浦江の上流の海軍曳船支隊（OSM way/1420716408、121.537E 31.345N）は範囲外。範囲は S2 の概観（docs/data/sat/ports/locate/、probe/ports-locate-ops3-scs）で礁・島の輪郭を見て置いた"
+  },
+  {
+   "id": "MIS",
+   "name": "南沙・美済礁（ミスチーフ礁）",
+   "group": "南シナ海",
+   "bbox": [
+    115.483,
+    9.873,
+    115.568,
+    9.937
+   ],
+   "center_lat": 9.905,
+   "center_lon": 115.5255,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/821899487「美济南岛港」",
+     "url": "https://www.openstreetmap.org/way/821899487",
+     "bbox": [
+      115.52219,
+      9.8826,
+      115.52386,
+      9.88323
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/1060376057「landuse=military」",
+     "url": "https://www.openstreetmap.org/way/1060376057",
+     "bbox": [
+      115.49854,
+      9.90024,
+      115.5014,
+      9.90519
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "Wikipedia: Mischief Reef",
+     "url": "https://en.wikipedia.org/wiki/Mischief_Reef",
+     "coord": "9°55′N 115°32′E（記事の座標、確かめは S2 の概観で）"
+    }
+   ],
+   "note": "礁全体（環礁と礁湖、南と西の水路、約 9.3×7.1 km）。範囲は S2 の概観（docs/data/sat/ports/locate/、probe/ports-locate-ops3-scs）で礁・島の輪郭を見て置いた",
+   "reef": true
+  },
+  {
+   "id": "SUB",
+   "name": "南沙・渚碧礁（スビ礁）",
+   "group": "南シナ海",
+   "bbox": [
+    114.05,
+    10.9,
+    114.11,
+    10.95
+   ],
+   "center_lat": 10.925,
+   "center_lon": 114.08,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/537200587「渚碧岛（Subi Island）」",
+     "url": "https://www.openstreetmap.org/way/537200587",
+     "bbox": [
+      114.05859,
+      10.90625,
+      114.10351,
+      10.94515
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/558033884「渚碧礁机场」",
+     "url": "https://www.openstreetmap.org/way/558033884",
+     "bbox": [
+      114.06168,
+      10.90894,
+      114.08108,
+      10.9385
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "人工島と礁湖（約 6.6×5.5 km）。範囲は S2 の概観（docs/data/sat/ports/locate/、probe/ports-locate-ops3-scs）で礁・島の輪郭を見て置いた",
+   "reef": true
+  },
+  {
+   "id": "FCR",
+   "name": "南沙・永暑礁（ファイアリー・クロス礁）",
+   "group": "南シナ海",
+   "bbox": [
+    112.865,
+    9.53,
+    112.915,
+    9.575
+   ],
+   "center_lat": 9.5525,
+   "center_lon": 112.89,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/425005575「永暑礁机场」",
+     "url": "https://www.openstreetmap.org/way/425005575",
+     "bbox": [
+      112.8752,
+      9.53895,
+      112.90021,
+      9.56356
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "Wikipedia: Fiery Cross Reef",
+     "url": "https://en.wikipedia.org/wiki/Fiery_Cross_Reef"
+    }
+   ],
+   "note": "人工島と港（約 5.5×5.0 km）。北東に伸びる礁の先は範囲外。範囲は S2 の概観（docs/data/sat/ports/locate/、probe/ports-locate-ops3-scs）で礁・島の輪郭を見て置いた",
+   "reef": true
+  },
+  {
+   "id": "WDY",
+   "name": "西沙・永興島（ウッディー島）",
+   "group": "南シナ海",
+   "bbox": [
+    112.315,
+    16.82,
+    112.365,
+    16.865
+   ],
+   "center_lat": 16.8425,
+   "center_lon": 112.34,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1052071399「三沙警备区」",
+     "url": "https://www.openstreetmap.org/way/1052071399",
+     "bbox": [
+      112.33409,
+      16.83476,
+      112.33627,
+      16.83715
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/779453901「永兴岛营区」",
+     "url": "https://www.openstreetmap.org/way/779453901",
+     "bbox": [
+      112.33185,
+      16.83804,
+      112.33581,
+      16.84039
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/1498135590「石岛（military=base）」",
+     "url": "https://www.openstreetmap.org/way/1498135590",
+     "bbox": [
+      112.34599,
+      16.8426,
+      112.34886,
+      16.84685
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "永興島と石島、礁の上の港（約 5.3×5.0 km）。範囲は S2 の概観（docs/data/sat/ports/locate/、probe/ports-locate-ops3-scs）で礁・島の輪郭を見て置いた",
+   "reef": true
   }
  ]
 }

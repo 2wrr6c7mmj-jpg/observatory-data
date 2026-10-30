@@ -4,11 +4,11 @@ name: PLAN ports archive probe
 # 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別の concurrency group。
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
 # PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読み、
-# まだ usage に出ていない外洋の再取得の予定 約 1,800 PU を --reserve で差し引く）。
+# 外洋の 10 月上限 4,600 PU から、外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
-    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*']
+    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*', 'probe/ports-extra-*', 'probe/ports-baseline-*']
 permissions:
   contents: write
 concurrency:
@@ -16,8 +16,9 @@ concurrency:
   cancel-in-progress: false
 env:
   # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
-  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 1400 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || '' }}
-  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || '' }}
+  # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、別枠 300 PU。1 回目（SWS・MIS、165.9 PU）の残り 134 PU を SUB・FCR・WDY に見込みの比で分ける
+  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
+  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
     # probe/ports-locate-*: OSM の軍・造船所の地物と S2 の広域の概観（1 地域 1〜4 PU）だけ。範囲を置くため
@@ -62,8 +63,94 @@ jobs:
           git commit -q -m "probe: 港の位置の確認（OSM と S2 の概観） [ports-locate-result]"
           git push origin "HEAD:${GITHUB_REF_NAME}"
 
+  baseline:
+    # probe/ports-baseline-*: 主要港の軌道ごとの基準（湛江と同じ sat/baseline.py、bl-1）。直近 12 か月の S1 を取り直し、
+    # 基準の統計（vv_p10・vv_p90・vh_p10）だけを残す（生の σ0 は保存しない）。上限はこの実行 800 PU と合計ガードの小さい方
+    if: ${{ startsWith(github.ref_name, 'probe/ports-baseline-') && !contains(github.event.head_commit.message, '[ports-baseline-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest tests.test_sat_port_archive tests.test_sat_baseline -v
+      - name: Other CDSE usage of this month
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          i=0
+          for ref in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin); do
+            for f in $(git ls-tree -r --name-only "$ref" docs/data | grep -E 'usage[^/]*\.csv$' | grep -v -E '^docs/data/sat/(usage|ports_usage)\.csv$|^docs/data/sat/ports/'); do
+              echo "$ref $f $(git log -1 --format=%ct "$ref")"
+            done
+          done | sort -k2,2 -k3,3nr | awk '!seen[$2]++' > "$RUNNER_TEMP/usage/list.txt"
+          while read ref f t; do git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
+          rm "$RUNNER_TEMP/usage/list.txt"
+      - name: Cap (guard 9,000 with the ocean's 4,600, the ports' 4,000, this run 800)
+        id: cap
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" --cap 4000 --usage "$RUNNER_TEMP"/usage/*.csv \
+            --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 --max-pu 800 --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
+          echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
+      - name: OSM land masks (missing only)
+        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port SYL SLP QGZ ZDH XSN LSN SWS || true
+      - name: Baselines
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          rc=0
+          python -m sat.port_archive baseline --only SYL SLP QGZ ZDH XSN LSN SWS --cap "${{ steps.cap.outputs.cap }}" \
+            --summary "$RUNNER_TEMP/baseline.json" --max-minutes 290 > /dev/null 2> "$RUNNER_TEMP/baseline.log" || rc=$?
+          tail -n 60 "$RUNNER_TEMP/baseline.log"
+          exit $rc
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text cap "$RUNNER_TEMP/cap-summary.json"
+          python - "$RUNNER_TEMP/baseline.json" > "$RUNNER_TEMP/bl-short.txt" <<'EOF' || true
+          import json, sys
+          d = json.load(open(sys.argv[1]))
+          print("total", d["processing_units"], "PU", d["requests"], "req")
+          for p in d["ports"]:
+              o = {k: (v.get("scenes", v.get("used")), v.get("built"), v.get("enough")) for k, v in (p.get("orbits") or {}).items()}
+              print(p["site_id"], p.get("mask_version"), p.get("processing_units"), "PU; catalog", p.get("catalog_by_orbit"),
+                    "fp-drop", p.get("footprint_dropped"), "max", p.get("max_scenes_used"), "orbits(scenes,built,enough)", o, p.get("error", ""))
+          EOF
+          python -m sat.annotate text baseline-summary "$RUNNER_TEMP/bl-short.txt"
+          python -m sat.annotate text baseline-log "$RUNNER_TEMP/baseline.log"
+      - name: Commit to this probe branch only
+        if: always()
+        run: |
+          [ -f "$RUNNER_TEMP/baseline.json" ] && cp "$RUNNER_TEMP/baseline.json" docs/data/sat/ports/baselines/run-summary.json || true
+          python - <<'EOF'
+          import glob
+          from pathlib import Path
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv
+          rows = []
+          for p in sorted(glob.glob("docs/data/sat/ports/*/usage.csv")):
+              rows += read_csv(Path(p))
+          rows.sort(key=lambda r: (r["run_utc"], r["site_id"]))
+          write_csv(Path("docs/data/sat/ports_usage.csv"), rows, USAGE_FIELDS)
+          EOF
+          git add docs/data/sat/ports docs/data/sat/ports_usage.csv
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 主要港の軌道ごとの基準（bl-1） [ports-baseline-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
   plan:
-    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
+    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-') || startsWith(github.ref_name, 'probe/ports-extra-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -115,7 +202,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --cap 4000 \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --reserve 1800 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json

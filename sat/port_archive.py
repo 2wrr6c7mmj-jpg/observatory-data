@@ -342,18 +342,27 @@ def plan(client, ports: list[dict], now: datetime, cap: float, req_cap: int, log
                  and r.get("result") in DONE_RESULTS} if out else set()
         done2 = {r["date"] for r in read_csv(out / "s2_scenes.csv") if r.get("mask_version") == s2.mask_tag(site)
                  and r.get("result") != "error"} if out else set()
-        acqs = acquisitions_with_footprints(client.catalog(grid.bbox, t0, t1))
+        feats1 = client.catalog(grid.bbox, t0, t1)
+        modes: dict = {}
+        for f in feats1:
+            pr = f.get("properties") or {}
+            k = f"{pr.get('sar:instrument_mode', '?')}/{'+'.join(pr.get('sar:polarizations') or [])}"
+            modes[k] = modes.get(k, 0) + 1
+        acqs = acquisitions_with_footprints(feats1)
         water = water_of(site, mask)
         new1 = [a for a in acqs if a["acquired_utc"] not in done1]
         low = [a for a in new1 if (lambda f: f is not None and f < MIN_COVERAGE)(footprint_share(a["geometries"], grid, water))]
         n1 = len(new1) - len(low)
-        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, t0, t1, collection=s2.COLLECTION))
+        # S2 is always the last 12 months (run_s2), whatever the S1 window
+        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, now - timedelta(days=LOOKBACK_DAYS), now,
+                                                          collection=s2.COLLECTION))
                   if d["date"] not in done2]) if s2_on else 0
         e = estimate_port(site, n1, n2)
-        e.update(s1_done=len(done1), s2_done=len(done2), s1_footprint_skip=len(low), mask_version=tag)
+        e.update(s1_done=len(done1), s2_done=len(done2), s1_footprint_skip=len(low), mask_version=tag,
+                 s1_catalog_items=len(feats1), s1_catalog_modes=modes)
         est.append(e)
         log(f"{site['id']} {site['name']} [{tag}]: S1 新 {n1} 撮影（済み {len(done1)}、足跡で除く {len(low)}）× "
-            f"{e['s1_pu_per_scene']} PU = {e['s1_pu']} PU、S2 新 {n2} 日（済み {len(done2)}）→ 約 {e['s2_pu']} PU、計 {e['pu']} PU")
+            f"{e['s1_pu_per_scene']} PU = {e['s1_pu']} PU（カタログ {len(feats1)} 件 {modes}）、S2 新 {n2} 日（済み {len(done2)}）→ 約 {e['s2_pu']} PU、計 {e['pu']} PU")
     todo = [e for e in est if e["s1_scenes"] or e["s2_days"]]
     if not s2_on:
         for e in todo:
@@ -605,6 +614,75 @@ def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, t
             "waited_s": round(client.waited_s, 1), "retries_429": client.retries_429}
 
 
+# ---------- per-orbit baselines (as Zhanjiang, sat/baseline.py) ----------
+
+BASELINE_LOOKBACK = 365
+BASELINE_MAX_SCENES = 24
+BASELINE_MIN_SCENES = 24      # below this the quay count is one credibility step lower (as Zhanjiang)
+
+
+class _CatalogView:
+    """A client whose catalog returns fixed features (the scenes chosen beforehand); the rest is the real client."""
+
+    def __init__(self, client, feats):
+        self._c, self._feats = client, feats
+
+    def catalog(self, *a, **k):
+        return list(self._feats)
+
+    def __getattr__(self, name):
+        return getattr(self._c, name)
+
+
+def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir: Path, now: datetime,
+                  log=print, lookback: int = BASELINE_LOOKBACK, max_scenes: int = BASELINE_MAX_SCENES) -> dict:
+    """Per-orbit baselines of a port with sat/baseline.py: scenes of the last ``lookback`` days whose catalog
+    footprint covers at least the baseline's min_coverage of the water (others are not fetched); every orbit with
+    at least 3 such scenes; the newest ``max_scenes`` per orbit, fewer if the cap would be exceeded. Nothing
+    but the baseline layers is kept (no raw sigma0)."""
+    from . import baseline as fbase
+    grid = Grid.for_site(site)
+    water = mask == 0
+    feats = client.catalog(grid.bbox, now - timedelta(days=lookback), now)
+    acqs = acquisitions_with_footprints(feats)
+    min_cov = fbase.DEFAULTS["min_coverage"]
+    keep_ids, by_orbit, dropped = set(), {}, 0
+    for a in acqs:
+        sh = footprint_share(a["geometries"], grid, water)
+        if sh is not None and sh < min_cov:
+            dropped += 1
+            continue
+        by_orbit.setdefault(a["relative_orbit"], []).append(a)
+    orbits = sorted(o for o, v in by_orbit.items() if o is not None and len(v) >= 3)
+    per = cdse.estimate_pu(grid.width, grid.height, 2)
+    left = client.cap_pu - client.processing_units
+    n = max_scenes
+    while n > 3 and per * sum(min(len(by_orbit[o]), n) for o in orbits) > left:
+        n -= 1
+    for o in orbits:
+        for a in sorted(by_orbit[o], key=lambda a: a["acquired_utc"])[-n:]:
+            keep_ids.update(a["ids"])
+    counts = {str(o): len(v) for o, v in sorted(by_orbit.items(), key=lambda kv: str(kv[0]))}
+    log(f"{site['id']}: 撮影 {len(acqs)}（足跡で除く {dropped}）、軌道別 {counts}、基準に使う軌道 {orbits}、"
+        f"1 軌道あたり最大 {n} 撮影（{per} PU／撮影、残り {left:.1f} PU）")
+    summary = {"site_id": site["id"], "mask_version": mask_tag(site), "lookback_days": lookback,
+               "catalog_by_orbit": counts, "footprint_dropped": dropped, "max_scenes_used": n,
+               "min_scenes": BASELINE_MIN_SCENES, "orbits": {}}
+    if not orbits:
+        summary["note"] = "3 撮影以上の軌道がないため基準を作らない"
+        return summary
+    bsite = {**site, "baseline": {"orbits": orbits, "lookback_days": lookback, "max_scenes": n,
+                                  "min_scenes": BASELINE_MIN_SCENES}}
+    view = _CatalogView(client, [f for f in feats if f.get("id") in keep_ids])
+    res = fbase.build(view, bsite, mask, base_dir, now, max(0.0, client.cap_pu - client.processing_units) + 0.5, log=log)
+    for o, r in res.get("orbits", {}).items():
+        r = dict(r)
+        r.pop("stats", None)
+        r["enough"] = bool(r.get("built") and r.get("scenes", r.get("used", 0)) >= BASELINE_MIN_SCENES)
+        summary["orbits"][o] = r
+    return summary
+
+
 def usage_row(res: dict, now: datetime) -> dict:
     return {"run_utc": cdse.iso(now), "site_id": res["site_id"], "requests": res["requests"],
             "processing_units": res["processing_units"], "pu_source": res["pu_source"],
@@ -634,12 +712,15 @@ def main(argv=None) -> int:
     p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
     p.add_argument("--ports-usage", type=Path, nargs="*", default=[],
                    help="usage CSVs of earlier runs of this archive (docs/data/sat/ports/*/usage.csv)")
+    p.add_argument("--ocean-cap", type=float,
+                   help="ocean's monthly cap: reserve = cap - the ocean usage already in --usage files named other-*")
     p.add_argument("--reserve", type=float, default=0.0,
                    help="PU announced by other jobs but not in their usage CSV yet (counted in the 9,000 PU guard)")
     p.add_argument("--out-root", type=Path, default=OUT_DIR, help="earlier results (only new work is planned)")
     p.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
     p.add_argument("--max-pu", type=float, help="cap of this run (e.g. a backfill), inside the ports cap")
     p.add_argument("--only", nargs="*", help="these ports, in this order of priority (ordered allocation)")
+    p.add_argument("--proportional", action="store_true", help="with --only: share the cap in proportion to the estimates")
     m = sub.add_parser("mask")
     m.add_argument("--ports", type=Path, default=PORTS_FILE)
     m.add_argument("--mask-dir", type=Path, required=True)
@@ -661,9 +742,52 @@ def main(argv=None) -> int:
         q.add_argument("--days-from", type=int, default=LOOKBACK_DAYS, help="oldest acquisition, days before now")
         q.add_argument("--days-to", type=int, default=0, help="newest acquisition, days before now")
         q.add_argument("--s1-only", action="store_true")
+    b = sub.add_parser("baseline")
+    b.add_argument("--ports", type=Path, default=PORTS_FILE)
+    b.add_argument("--only", nargs="+", required=True, help="ports in this order of priority")
+    b.add_argument("--cap", type=float, required=True, help="PU of this run (already inside the ports cap and the guard)")
+    b.add_argument("--req", type=int, default=1500)
+    b.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
+    b.add_argument("--base-dir", type=Path, default=OUT_DIR / "baselines")
+    b.add_argument("--out", type=Path, default=OUT_DIR)
+    b.add_argument("--pu-per-min", type=float, default=150)
+    b.add_argument("--req-per-min", type=int, default=150)
+    b.add_argument("--max-minutes", type=float, default=300)
+    b.add_argument("--summary", type=Path)
     args = ap.parse_args(argv)
     now = datetime.now(timezone.utc)
     ports = load_ports(args.ports)
+
+    if args.cmd == "baseline":
+        from .osm_mask import load_mask
+        client = LimitedClient(args.cap, args.req, args.pu_per_min, args.req_per_min,
+                               deadline=time.monotonic() + args.max_minutes * 60)
+        byid = {p["id"]: p for p in ports}
+        out = {"run_utc": cdse.iso(now), "cap_pu": args.cap, "ports": []}
+        for pid in args.only:
+            site = byid[pid]
+            pu0, req0 = client.processing_units, client.requests
+            try:
+                mask, _m = load_mask(site["id"], int(site.get("mask_version", 1)), args.mask_dir)
+                s = baseline_port(client, site, mask, args.base_dir, now, log=lambda t: print(t, file=sys.stderr, flush=True))
+            except (BudgetStop, FileNotFoundError, cdse.CDSEError) as e:
+                if isinstance(e, cdse.CredentialError) and not isinstance(e, BudgetStop):
+                    raise
+                s = {"site_id": pid, "error": str(e)[:300]}
+                print(f"{pid}: {e}", file=sys.stderr)
+            s.update(processing_units=round(client.processing_units - pu0, 3), requests=client.requests - req0)
+            out["ports"].append(s)
+            d = args.out / pid
+            write_csv(d / "usage.csv", read_csv(d / "usage.csv") + [{
+                "run_utc": cdse.iso(now), "site_id": pid, "requests": s["requests"], "processing_units": s["processing_units"],
+                "pu_source": "header" if client.pu_reported else "estimate", "s1_processing_units": s["processing_units"],
+                "cap_pu": args.cap, "archive_version": "baseline-bl-1"}], USAGE_FIELDS)
+        out.update(processing_units=round(client.processing_units, 3), requests=client.requests)
+        text = json.dumps(out, ensure_ascii=False, indent=1)
+        if args.summary:
+            args.summary.write_text(text + "\n", encoding="utf-8")
+        print(text)
+        return 0
 
     if args.cmd == "mask":
         from .osm_mask import build_mask, fetch_osm, save_mask
@@ -693,6 +817,9 @@ def main(argv=None) -> int:
     if args.cmd == "plan":
         month = now.strftime("%Y-%m")
         other_pu, other_req = month_usage(args.usage, month)
+        if args.ocean_cap is not None:
+            ocean_pu, _r = month_usage([u for u in args.usage if u.name.startswith("other-")], month)
+            args.reserve = max(args.reserve, round(args.ocean_cap - ocean_pu, 1))
         done_pu, done_req = month_usage(args.ports_usage, month)
         cap = min(args.cap - done_pu, GLOBAL_CAP - GLOBAL_MARGIN - other_pu - args.reserve - done_pu)
         if args.max_pu is not None:
@@ -704,7 +831,7 @@ def main(argv=None) -> int:
         client = cdse.Client()
         res = plan(client, ports, now, max(0.0, cap), max(0, req_cap - 200),
                    log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir,
-                   days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only))
+                   days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only) and not args.proportional)
         res.update(other_usage_pu=round(other_pu, 1), reserve_pu=args.reserve, other_usage_requests=other_req,
                    ports_done_pu=round(done_pu, 1), global_cap=GLOBAL_CAP, ports_cap=args.cap, max_pu=args.max_pu,
                    window_days=[args.days_from, args.days_to], s1_only=args.s1_only, order=args.only)
