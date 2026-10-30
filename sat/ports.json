@@ -1,0 +1,89 @@
+{
+ "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。",
+ "sites": [
+  {
+   "id": "SYL", "name": "三亜・楡林（楡林海軍基地）", "group": "三亜",
+   "bbox": [109.505, 18.205, 109.555, 18.245], "center_lat": 18.2253, "center_lon": 109.5292,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "Wikipedia: Yulin Naval Base", "url": "https://en.wikipedia.org/wiki/Yulin_Naval_Base",
+                "coord": "18°13′31″N 109°31′45″E", "note": "三亜の東の郊外、楡林港の隣。三亜寄りは小型艦と通常動力潜水艦"}],
+   "note": "楡林港の湾内（約 5.3×4.4 km）。亜龍湾の龍坡（SLP）は約 15 km 東で別の範囲"
+  },
+  {
+   "id": "SLP", "name": "三亜・亜龍湾（龍坡、潜水艦基地）", "group": "三亜",
+   "bbox": [109.665, 18.185, 109.715, 18.230], "center_lat": 18.210, "center_lon": 109.688,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "ORF: China's Nuclear Submarine Bases: A Stocktaking", "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+                "coord": "18°12.6′N 109°41.3′E", "note": "Longpo（第 2 潜水艦基地、南部戦区海軍）、三亜の東約 18 km"},
+               {"title": "Wikipedia: Longpo Naval Base", "url": "https://en.wikipedia.org/wiki/Longpo_Naval_Base",
+                "note": "亜龍湾の隣。原子力潜水艦と空母の基地（旧称 Yulin-East）"}],
+   "note": "亜龍湾の西側の基地の桟橋と潜水艦トンネルの入口の周り（約 5.3×5.0 km）"
+  },
+  {
+   "id": "QGZ", "name": "青島・古鎮口（楡池海軍基地）", "group": "青島",
+   "bbox": [119.955, 35.700, 120.010, 35.745], "center_lat": 35.7233, "center_lon": 119.9817,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion", "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+                "coord": "35°43.4′N 119°58.9′E（原文の表記 35°43.'4 N, 119°58'.9 E を読み替え）", "note": "古鎮湾、青島の南西約 50 km。内外の泊地と桟橋 1〜7（空母用の桟橋 5 を含む）"},
+               {"title": "Wikipedia: Yuchi Naval Base", "url": "https://en.wikipedia.org/wiki/Yuchi_Naval_Base", "note": "青島の西海岸新区、北海艦隊"}],
+   "note": "古鎮湾の泊地と桟橋群（約 5.0×5.0 km）"
+  },
+  {
+   "id": "QDH", "name": "青島港内の海軍区域", "group": "青島",
+   "bbox": [120.275, 36.050, 120.330, 36.100], "center_lat": 36.075, "center_lon": 120.302,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "GlobalSecurity: Qingdao", "url": "https://www.globalsecurity.org/military/world/china/qingdao.htm",
+                "coord": "36°04′N 120°19′E（市の位置）", "note": "主基地は港の大きな防波堤の最奥（岸壁 4）、後湾の補助艦の岸壁、海軍工廠、潜水艦の岸壁などが港内にある。個々の座標は出典になし"}],
+   "note": "青島の旧市街西側の港内（大港・小港・団島の周り、約 4.9×5.5 km）。商港を含むため、海軍の岸壁の区画は画像で確かめてから決める"
+  },
+  {
+   "id": "QJG", "name": "青島・姜哥荘（第 1 潜水艦基地）", "group": "青島",
+   "bbox": [120.570, 36.095, 120.602, 36.122], "center_lat": 36.1083, "center_lon": 120.585,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 2,
+   "sources": [{"title": "ORF: China's Nuclear Submarine Bases: A Stocktaking", "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+                "coord": "36°06.5′N 120°35.1′E", "note": "北部戦区海軍の第 1 潜水艦基地、青島の東北東約 18 km の湾"}],
+   "note": "小さな湾の潜水艦の岸壁（約 2.9×3.0 km）。指示の範囲外の追加（枠が足りる場合だけ）"
+  },
+  {
+   "id": "ZDH", "name": "舟山・定海（東海艦隊）", "group": "寧波・舟山",
+   "bbox": [122.070, 29.990, 122.135, 30.040], "center_lat": 30.017, "center_lon": 122.100,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "GlobalSecurity: Zhoushan Naval Base", "url": "https://www.globalsecurity.org/military/world/china/zhoushan.htm",
+                "coord": "30°01′N 122°06′E", "note": "舟山海軍基地。個々の桟橋の座標は出典になし"},
+               {"title": "GlobalSecurity (CNA 2013): New Chinese Navy vessels pack Zhoushan port", "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm"}],
+   "note": "定海の港と南の水道（約 6.3×5.6 km）。象山は基地の位置の公開の出典が確かめられず、今回は外した（未解決）"
+  },
+  {
+   "id": "DLS", "name": "大連・造船所（大連造船）", "group": "大連",
+   "bbox": [121.595, 38.915, 121.665, 38.955], "center_lat": 38.935, "center_lon": 121.630,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "Wikipedia: Dalian Shipbuilding Industry Company", "url": "https://en.wikipedia.org/wiki/Dalian_Shipbuilding_Industry_Company",
+                "note": "旧造船所は大連港の隣、新造船所（1990 年）はその西。座標は出典になし。範囲は大連港の西側の造船所の岸壁を含むよう置いた"}],
+   "note": "大連湾の南岸、大連港の西の旧・新造船所の艤装岸壁（約 6.1×4.4 km）。位置は OSM と画像で確かめる"
+  },
+  {
+   "id": "LSN", "name": "大連・旅順（旅順港）", "group": "大連",
+   "bbox": [121.225, 38.785, 121.280, 38.825], "center_lat": 38.805, "center_lon": 121.252,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 2,
+   "sources": [{"title": "Wikipedia: Lüshunkou District", "url": "https://en.wikipedia.org/wiki/L%C3%BCshunkou_District",
+                "coord": "38°51′03″N 121°15′25″E（区の位置）", "note": "半島の先端の湖のような内港。軍港区域は外国人の立入禁止"}],
+   "note": "旅順の内港と港口（約 4.8×4.4 km、区の中心より南の半島先端）。枠が足りる場合だけ"
+  },
+  {
+   "id": "SJN", "name": "上海・長興島（江南造船）", "group": "上海",
+   "bbox": [121.715, 31.335, 121.765, 31.370], "center_lat": 31.3541, "center_lon": 121.7374,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "Wikipedia: Jiangnan Shipyard", "url": "https://en.wikipedia.org/wiki/Jiangnan_Shipyard",
+                "coord": "31°21′15″N 121°44′15″E", "note": "長江河口の長興島（2009〜2010 年に移転）"}],
+   "note": "長興島の南岸の造船所の艤装岸壁とドック（約 4.8×3.9 km）"
+  },
+  {
+   "id": "HLD", "name": "葫芦島（渤海造船）", "group": "葫芦島",
+   "bbox": [120.985, 40.695, 121.035, 40.735], "center_lat": 40.7153, "center_lon": 121.0103,
+   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
+   "sources": [{"title": "Wikipedia: Bohai Shipbuilding Heavy Industry", "url": "https://en.wikipedia.org/wiki/Bohai_Shipbuilding_Heavy_Industry",
+                "coord": "40°42′55″N 121°00′37″E"}],
+   "note": "渤海造船の岸壁と建造ホール前の泊地（約 4.2×4.4 km）"
+  }
+ ]
+}
