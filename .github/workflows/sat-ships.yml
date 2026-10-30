@@ -47,7 +47,7 @@ jobs:
           DAYS: ${{ inputs.days || '30' }}
         run: |
           set -o pipefail
-          python -m sat.run --probe "$RUNNER_TEMP/sat" --days "$DAYS" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+          python -m sat.run --probe "$RUNNER_TEMP/sat" --days 6 --max-scenes 1 2>&1 | tee "$RUNNER_TEMP/probe.log"
       - name: Probe report (annotations)
         # Logs and artifacts are on blob storage; annotations can be read through the REST API.
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
@@ -100,3 +100,51 @@ jobs:
             sleep 20
           done
           exit 1
+
+  # probe 用ブランチだけの一時ジョブ（PR には入れない）：カラー画像・統計・2x2 の生データを注釈に出す
+  extra:
+    needs: sat
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        part: [stats, full1, full2, pack1, pack2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: sat-probe
+          path: ${{ runner.temp }}/sat
+      - name: Emit
+        env:
+          PART: ${{ matrix.part }}
+        run: |
+          python -m sat.probe_color_extra "$RUNNER_TEMP/sat/raw" "$RUNNER_TEMP/x"
+          ls -la "$RUNNER_TEMP"/sat/out/color/*/*/ || true
+          python - <<'PY'
+          import base64, os, glob
+          part = os.environ["PART"]; t = os.environ["RUNNER_TEMP"]
+          def emit(title, data, lo, hi):
+              b = base64.b64encode(data).decode()
+              chunks = [b[i:i+4000] for i in range(0, len(b), 4000)]
+              for i in range(lo, min(hi, len(chunks))):
+                  lvl = ("notice", "warning", "error")[(i - lo) // 10 % 3]
+                  print(f"::{lvl} title={title} {i+1}/{len(chunks)}::{chunks[i]}")
+          if part == "stats":
+              s = open(f"{t}/x/stats.txt").read()
+              sizes = " ".join(f"{os.path.basename(p)}={os.path.getsize(p)}" for p in sorted(glob.glob(f"{t}/sat/out/color/*/*/*.webp")))
+              print(f"::notice title=color-stats::{sizes} {s}".replace("\n", " "))
+          else:
+              if part.startswith("full"):
+                  fs = sorted(p for p in glob.glob(f"{t}/sat/out/color/*/*/*.webp") if not p.endswith(".thumb.webp"))
+                  data = open(fs[-1], "rb").read() if fs else b""
+              else:
+                  data = open(f"{t}/x/pack.xz", "rb").read()
+              k = int(part[-1]) - 1
+              emit(part[:-1], data, 30 * k, 30 * (k + 1))
+          PY
