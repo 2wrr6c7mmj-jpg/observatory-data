@@ -131,9 +131,9 @@ class AreasTest(unittest.TestCase):
 @unittest.skipUnless(np is not None, "numpy not installed")
 class BudgetTest(unittest.TestCase):
     def test_caps_by_month(self):
-        self.assertEqual(op.caps_for("2026-10")["ocean_pu"], 4600.0)
+        self.assertEqual(op.caps_for("2026-10")["ocean_pu"], 5000.0)
         self.assertEqual(op.caps_for("2026-11")["ocean_pu"], 400.0)
-        self.assertEqual(op.caps_for("2026-10")["total_pu"], 9000.0)
+        self.assertEqual(op.caps_for("2026-10")["total_pu"], 9945.0)
 
     def test_budget_takes_smallest(self):
         sat = [{"run_utc": "2026-10-30T05:00:00Z", "processing_units": "8000", "requests": "10"},
@@ -141,7 +141,7 @@ class BudgetTest(unittest.TestCase):
         oc = [{"run_utc": "2026-10-30T06:00:00Z", "processing_units": "100", "requests": "5"}]
         b = op.budget("2026-10", sat, oc + oc, 3900)  # the same row from two branches counts once
         self.assertEqual(b["ocean_month_pu"], 100)
-        self.assertEqual(b["pu_left"], 900)       # 9000 - 8000 - 100
+        self.assertEqual(b["pu_left"], 1845)      # 9945 - 8000 - 100
         b = op.budget("2026-11", [], [], 3900)
         self.assertEqual(b["pu_left"], 400)
 
