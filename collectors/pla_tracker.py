@@ -59,9 +59,9 @@ COMPARE_EXTRA = {"ships_total_vs_plan_plus_official": ("ships_total", "plan_plus
 
 # Repeated in daily.json so the data carries its credit wherever it is copied (same as meta.json).
 ATTRIBUTION = {
-    "credit": "Data source: Ministry of National Defense, R.O.C. (Taiwan); compiled by PLA Activity Tracker "
-              "(https://pla-tracker.skyfaring.net/)",
-    "credit_ja": "出典：中華民國國防部（台湾国防部）の日報。PLA Activity Tracker（https://pla-tracker.skyfaring.net/）が集約",
+    # The wording the site asks for (about page, "Citation & license", read 2026-10-30).
+    "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)",
+    "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net）",
     "license": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
     "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、"
                   "数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。",
@@ -370,6 +370,7 @@ META = {
         "position": "原典は紛争当事者（台湾）の公式発表。集約者は個人で、国防部のサイトを自動で読み取って表にしている",
         "reliability": "B",
         "credibility": "2",
+        "compiler": "Adam Pan（Skyfaring、about ページの記名）",
         "rating_note": "暫定評価 B-2 目安（アドミラルティ・コード）。数値の原典は当事者である台湾国防部の発表で、探知範囲・計上基準・公表方針は国防部に依存する。"
                        "集約者は個人であり、読み取りの誤り・修正の有無は国防部の原文で確かめる必要がある。",
     },
@@ -408,6 +409,9 @@ META = {
         "集約者は個人で、更新が止まる・形式が変わる・公開をやめる可能性がある。status.json の source.last_day で最新日を確かめる",
         "集約の過程での読み取り誤り・転記の遅れがありうる。国防部の日報との突き合わせ（compare.json）で一致率を確かめ、食い違いは国防部の原文を優先する",
         "国防部の日報の書式・定義の変更（taiwan-mnd/meta.json の definition_changes）は、このデータでは記録されない",
+        "about ページは「vessels は PLA Navy の艦艇数」と説明しているが、実際の ships_total は 2026-03 下旬から公務船を含む（compare.json）。集約者の説明と値が合っていない",
+        "about ページは「記録は追記のみで書き換えない」としている。過去の日付のずれ（2026-03 の 1 日ずれ等）も直されない可能性が高い",
+        "収録は 2026-01-01 から（それより前は無い）",
     ],
     "files": {
         "daily.csv": "日ごとの値（元の列＋取り込み時刻）",
