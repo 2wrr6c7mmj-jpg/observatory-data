@@ -150,6 +150,12 @@ class Cells:
         return (round(self.w + i * self.cell, 6), round(self.s + j * self.cell, 6),
                 round(self.w + (i + w) * self.cell, 6), round(self.s + (j + h) * self.cell, 6))
 
+    def rect_of(self, bbox) -> tuple[int, int, int, int]:
+        """(j, i, h, w) of a cell-aligned bbox."""
+        w, s, e, n = bbox
+        i, j = int(round((w - self.w) / self.cell)), int(round((s - self.s) / self.cell))
+        return j, i, int(round((n - s) / self.cell)), int(round((e - w) / self.cell))
+
     def area_km2(self, j: int) -> float:
         lat = self.s + (j + 0.5) * self.cell
         my, mx = m_per_deg(lat)
@@ -185,27 +191,38 @@ def _rect_sums(v: np.ndarray, h: int, w: int) -> np.ndarray:
 
 def greedy_plan(cells: Cells, fp: list[np.ndarray], recency: list[float], pu_left: float,
                 max_requests: int = 200, thresholds=(0.8, 0.6, 0.4), max_cells: int = 5,
-                passes: list[dict] | None = None, cov: np.ndarray | None = None) -> tuple[list[dict], np.ndarray]:
+                passes: list[dict] | None = None, cov: np.ndarray | None = None,
+                state: dict | None = None) -> tuple[list[dict], np.ndarray]:
     """Rectangles (acquisition index, j, i, h, w) chosen greedily; returns (plan, covered share per cell).
 
     ``passes`` (priority order): {"id", "weight" (cells of this pass), "acqs" (allowed acquisition indices),
     "min_eff"}. In a pass a request must contain uncovered sea of the pass; sea of other regions in the
     rectangle counts half. Without ``passes`` there is one pass over all sea cells."""
-    cov = np.zeros((cells.ny, cells.nx)) if cov is None else cov
+    state = state if state is not None else {}
+    cov = state.setdefault("cov", np.zeros((cells.ny, cells.nx)) if cov is None else cov)
+    state.setdefault("covA", {})
+    state.setdefault("cov2", np.zeros((cells.ny, cells.nx)))
     passes = passes or [{"id": None, "weight": np.ones((cells.ny, cells.nx)), "acqs": list(range(len(fp))),
                          "min_eff": thresholds[-1]}]
     plan, spent = [], 0.0
     for ps in passes:
         thr_list = [t for t in thresholds if t >= ps["min_eff"]] + ([ps["min_eff"]] if ps["min_eff"] < thresholds[-1] else [])
         p2, spent = _greedy_pass(cells, fp, recency, pu_left, max_requests - len(plan), thr_list, max_cells,
-                                 ps, cov, spent)
+                                 ps, cov, spent, state)
         for p in p2:
             p["region"] = ps["id"]
+            p["kind"] = ps.get("kind", "first")
         plan += p2
     return plan, cov
 
 
-def _greedy_pass(cells, fp, recency, pu_left, max_requests, thresholds, max_cells, ps, cov, spent):
+def _greedy_pass(cells, fp, recency, pu_left, max_requests, thresholds, max_cells, ps, cov, spent, state=None):
+    """kind "first": cells not yet seen. kind "second": cells already seen by another scene of
+    ``ps["other_acqs"]`` (a second time over the same sea), not yet seen twice."""
+    state = state if state is not None else {"covA": {}, "cov2": np.zeros_like(cov)}
+    covA, cov2 = state["covA"], state["cov2"]
+    zero = np.zeros_like(cov)
+    kind = ps.get("kind", "first")
     plan = []
     sizes = [(h, w) for h in range(1, max_cells + 1) for w in range(1, max_cells + 1)]
     cur_w = ps["weight"]
@@ -215,7 +232,12 @@ def _greedy_pass(cells, fp, recency, pu_left, max_requests, thresholds, max_cell
         for thr in thresholds:
             for a in ps["acqs"]:
                 f = fp[a]
-                free = (f - cov).clip(0)   # new share only (a scene never pays twice for its own cells)
+                if kind == "second":
+                    others = [covA[b] for b in ps.get("other_acqs", list(covA)) if b != a and b in covA]
+                    other = np.max(np.stack(others), axis=0) if others else zero
+                    free = np.minimum((f - covA.get(a, zero)).clip(0), (other - cov2).clip(0))
+                else:
+                    free = (f - cov).clip(0)   # new share only (a scene never pays twice for its own cells)
                 val = cells.sea * free * wgt
                 cur = cells.sea * free * cur_w
                 if cur.sum() <= 1e-6:
@@ -250,6 +272,12 @@ def _greedy_pass(cells, fp, recency, pu_left, max_requests, thresholds, max_cell
         if best is None:
             break
         _s, a, j, i, h, w, cost, value, eff = best
+        if kind == "second":
+            others = [covA[b] for b in ps.get("other_acqs", list(covA)) if b != a and b in covA]
+            other = np.max(np.stack(others), axis=0) if others else zero
+            cov2[j:j + h, i:i + w] = np.maximum(cov2[j:j + h, i:i + w], np.minimum(fp[a], other)[j:j + h, i:i + w])
+        ca = covA.setdefault(a, np.zeros_like(cov))
+        ca[j:j + h, i:i + w] = np.maximum(ca[j:j + h, i:i + w], fp[a][j:j + h, i:i + w])
         cov[j:j + h, i:i + w] = np.maximum(cov[j:j + h, i:i + w], fp[a][j:j + h, i:i + w])
         spent += cost
         plan.append({"acq_index": a, "j": j, "i": i, "h": h, "w": w, "est_pu": cost,
@@ -381,6 +409,28 @@ def holes_features(cells: Cells, reason: np.ndarray) -> list[dict]:
     return feats
 
 
+# extend run (--extend): hole filling with older scenes, in days (HQ 2026-10-30: fill the holes, then a
+# second look within 7 days, priority Senkaku -> east of Taiwan -> Mischief -> Paracels -> East China Sea)
+EXTEND_HOLE_DAYS = {"SENKAKU": 12, "TWE": 12, "MISCHIEF": 30, "PARACEL": 30, "ECS": 12}
+
+
+def load_prior(out: Path) -> list[dict]:
+    """Results of earlier (not dry-run) wide runs next to ``out`` (same probe branch)."""
+    rows = []
+    for f in sorted(out.parent.glob("*/summary.json")):
+        if f.parent == out:
+            continue
+        try:
+            s = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if s.get("mode") != "wide" or s.get("dry_run"):
+            continue
+        for r in s.get("results", []):
+            rows.append({**r, "_run": f.parent.name})
+    return rows
+
+
 HOLE_REASON = {"no_scene": "7 日以内に撮影なし", "budget": "撮影はあるが PU の上限で取得せず",
                "no_data": "取得したが画像にデータなし（撮影の端など）", "osm_failed": "陸地マスク（OSM）を取れず取得せず"}
 
@@ -401,7 +451,10 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → 使える {bud['pu_left']} PU")
     summary["region"] = regions_bbox()
     summary["regions"] = REGIONS
-    max_days = max([lookback] + [int(r.get("fallback_days") or 0) for r in REGIONS])
+    extend = bool(getattr(args, "extend", False))
+    summary["extend"] = extend
+    max_days = max([lookback] + [int(r.get("fallback_days") or 0) for r in REGIONS]
+                   + (list(EXTEND_HOLE_DAYS.values()) if extend else []))
     by_id = {}
     for r in REGIONS:
         try:
@@ -432,9 +485,44 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                                         "region_sea_share": {r["id"]: round(float((f * cells.frac[r["id"]] * cells.sea).sum()
                                                                                   / max((cells.frac[r["id"]] * cells.sea).sum(), 1e-9)), 4)
                                                              for r in REGIONS}})
-    summary["passes"] = [{"id": p["id"], "days": p["days"], "acquisitions": [acqs[k]["acquired_utc"] for k in p["acqs"]]} for p in passes]
+    state = {"cov": np.zeros((cells.ny, cells.nx)), "covA": {}, "cov2": np.zeros((cells.ny, cells.nx))}
+    observed = np.zeros((cells.ny, cells.nx))
+    obs_by_acq: dict = {}
+    prior = []
+    if extend:
+        prior = load_prior(Path(args.out))
+        summary["prior_runs"] = sorted({r["_run"] for r in prior})
+        idx = {a["acquired_utc"]: k for k, a in enumerate(acqs)}
+        for r in prior:
+            j, i, h, w = cells.rect_of(r["bbox"])
+            if h <= 0 or w <= 0:
+                continue
+            sl = (slice(j, j + h), slice(i, i + w))
+            k = idx.get(r["acquired_utc"])
+            share = fp[k][sl] if k is not None else np.full((h, w), float(r.get("valid_fraction") or 0))
+            if k is not None:
+                ca = state["covA"].setdefault(k, np.zeros((cells.ny, cells.nx)))
+                ca[sl] = np.maximum(ca[sl], share)
+            state["cov"][sl] = np.maximum(state["cov"][sl], share)
+            observed[sl] = np.maximum(observed[sl], share)
+            oa = obs_by_acq.setdefault(r["acquired_utc"], np.zeros((cells.ny, cells.nx)))
+            oa[sl] = np.maximum(oa[sl], share)
+        recent = [k for k, g in enumerate(ages) if g <= lookback]
+        byid = {p["id"]: p for p in passes}
+        hole = lambda rid: {"id": rid, "kind": "first", "weight": cells.frac[rid], "min_eff": byid[rid]["min_eff"],
+                            "days": EXTEND_HOLE_DAYS.get(rid, 12),
+                            "acqs": [k for k, g in enumerate(ages) if g <= EXTEND_HOLE_DAYS.get(rid, 12)]}
+        second = lambda rid: {"id": rid, "kind": "second", "weight": cells.frac[rid], "min_eff": byid[rid]["min_eff"],
+                              "days": lookback, "acqs": recent, "other_acqs": recent}
+        ids = [r["id"] for r in REGIONS]
+        # holes of the priority regions, a second look at the first two, holes of the last (largest) region,
+        # then second looks at the rest
+        passes = ([hole(r) for r in ids[:-1]] + [second(r) for r in ids[:2] if r != ids[-1]] + [hole(ids[-1])]
+                  + [second(r) for r in ids[2:]] + ([second(ids[-1])] if len(ids) <= 2 else []))
+    summary["passes"] = [{"id": p["id"], "kind": p.get("kind", "first"), "days": p["days"],
+                          "acquisitions": [acqs[k]["acquired_utc"] for k in p["acqs"]]} for p in passes]
     plan, cov = greedy_plan(cells, fp, recency, max(0.0, bud["pu_left"] - 2.0), max_requests=min(200, bud["requests_left"]),
-                            passes=passes)
+                            passes=passes, state=state)
     any_fp = np.zeros((cells.ny, cells.nx))
     for ps in passes:  # imaged within the region's own window
         for k in ps["acqs"]:
@@ -451,7 +539,6 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                        "region_sea_km2": round(sea_km2), "imaged_in_lookback_sea_km2": round(seen_km2),
                        "planned_sea_km2": round(plan_km2), "items": plan}
     log(f"計画: {len(plan)} 件 {summary['plan']['est_pu']} PU、海域 {sea_km2:.0f} km² のうち 7 日以内の撮影 {seen_km2:.0f}・取得予定 {plan_km2:.0f} km²")
-    observed = np.zeros((cells.ny, cells.nx))
     osm_fail = np.zeros((cells.ny, cells.nx), bool)
     cands = []
     if not args.dry_run and plan:
@@ -499,7 +586,10 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                 land, static, minfo = cp.masks(g, osm, seamark_re, float(cfg["static_dilate_m"]))
                 c, info = detect_rect(vv, vh, lia, land, static, g, a)
                 valid = np.isfinite(vv) & np.isfinite(vh)
-                observed[sl] = np.maximum(observed[sl], cell_valid(valid, p["h"], p["w"]))
+                cv = cell_valid(valid, p["h"], p["w"])
+                observed[sl] = np.maximum(observed[sl], cv)
+                oa = obs_by_acq.setdefault(a["acquired_utc"], np.zeros((cells.ny, cells.nx)))
+                oa[sl] = np.maximum(oa[sl], cv)
                 cands.extend(c)
                 row = {"request": k, **cp._acq_meta(a), "bbox": g.bbox, "width": g.width, "height": g.height,
                        "pu": pu, "fetch_seconds": tf, **info,
@@ -550,6 +640,9 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             "window_days": next(p["days"] for p in passes if p["id"] == rg["id"]),
             "acquisitions_used": sorted({r["acquired_utc"] for r in rs}),
             "requests": len(rs), "pu": round(sum(r["pu"] for r in rs), 3),
+            "seen_twice_sea_km2": round(km((sum((o >= 0.5).astype(int) for o in obs_by_acq.values()) >= 2).astype(float)))
+                                  if obs_by_acq else 0,
+            "acquisitions_incl_prior": sorted(t for t, o in obs_by_acq.items() if ((o >= 0.5) * fr * cells.sea).sum() > 0),
             "candidates": len(cs), "candidates_high": sum(1 for c in cs if c["confidence"] == "high"),
             "candidates_medium": sum(1 for c in cs if c["confidence"] == "medium"),
             "candidates_static": sum(1 for c in cs if c["static"]),

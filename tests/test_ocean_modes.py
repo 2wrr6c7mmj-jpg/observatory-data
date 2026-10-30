@@ -84,7 +84,7 @@ def small_areas(tmp: Path) -> Path:
 def args(tmp: Path, mode: str, **kw) -> Namespace:
     base = dict(out=tmp / "out", areas=small_areas(tmp), usage=tmp / "usage.csv", sat_usage=[], ocean_usage=[],
                 max_pu=600.0, max_minutes=10, lookback_days=None, min_coverage=None, dry_run=False, no_check=True,
-                mode=mode, raw_out=tmp / "raw", targets=None, pu_per_min=100.0)
+                mode=mode, raw_out=tmp / "raw", targets=None, pu_per_min=100.0, extend=False)
     base.update(kw)
     return Namespace(**base)
 
@@ -202,6 +202,30 @@ class WideModeTest(unittest.TestCase):
                              pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
             self.assertEqual(c2.calls, [])
             self.assertGreater(s2["coverage"]["holes_sea_km2"]["osm_failed"], 0)
+
+    def test_extend_fills_holes_then_second_look(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            half = {"type": "Polygon", "coordinates": [[[123.0, 24.0], [124.4, 24.0], [124.4, 27.0], [123.0, 27.0], [123.0, 24.0]]]}
+            c = Fake(["2026-10-28T09:50:00Z"], geom=half)
+            run1 = tmp / "res" / "r1"
+            op.run_mode(args(tmp, "wide", max_pu=500.0, out=run1), client=c, overpass=overpass, now=NOW, pacer=Pacer(),
+                        sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            full = None  # second scene: whole region, newer
+            c2 = Fake(["2026-10-28T09:50:00Z", "2026-10-29T21:50:00Z"], geom=full)
+            c2.geom = None
+            s = op.run_mode(args(tmp, "wide", max_pu=500.0, out=tmp / "res" / "r2", extend=True), client=c2, overpass=overpass,
+                            now=NOW, pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            self.assertEqual(s["prior_runs"], ["r1"])
+            kinds = {p["kind"] for p in s["plan"]["items"]}
+            self.assertEqual(kinds, {"first", "second"})
+            # a second look never repeats the scene that already covers the same rectangle
+            firsts = {(p["acquired_utc"], tuple(p["bbox"])) for p in s["plan"]["items"] if p["kind"] == "first"}
+            for p in s["plan"]["items"]:
+                if p["kind"] == "second":
+                    self.assertNotIn((p["acquired_utc"], tuple(p["bbox"])), firsts)
+            self.assertGreater(s["per_region"]["T"]["seen_twice_sea_km2"], 0)
+            self.assertEqual(s["coverage"]["holes_sea_km2"]["no_scene"], 0)
 
     def test_dry_run_spends_nothing(self):
         with tempfile.TemporaryDirectory() as d:

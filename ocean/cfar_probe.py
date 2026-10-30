@@ -68,12 +68,14 @@ PROBE_VERSION = "ocean-cfar-probe-1"
 AREAS_FILE = Path(__file__).resolve().parent / "areas.json"
 MAX_PX = 2500
 # Own ocean cap per UTC month; 2026-10: the October free tier is used before it lapses (HQ, 2026-10-30;
-# raised from 4,000 to 4,600 PU on 2026-10-30 when the wide snapshot was extended, ports reduced to match).
-OCEAN_MONTHLY_PU_CAP = {"2026-10": 4600.0}
+# raised from 4,000 to 4,600 PU on 2026-10-30 when the wide snapshot was extended, then to 5,000 PU when the
+# account guard was raised to 9,995 PU).
+OCEAN_MONTHLY_PU_CAP = {"2026-10": 5000.0}
 OCEAN_DEFAULT_PU_CAP = 400.0
 # Safety guard on the whole CDSE account: Sentinel-1 daily run (docs/data/sat/usage.csv) + other
 # probes passed with --sat-usage (e.g. other harbours) + ocean. 2026-10: 9,000 of the 10,000 PU free tier.
-TOTAL_MONTHLY_PU_GUARD = {"2026-10": 9000.0}
+# 2026-10-30 (HQ): the account guard is 9,995 PU; at least 50 PU are kept for the daily Zhanjiang run -> 9,945.
+TOTAL_MONTHLY_PU_GUARD = {"2026-10": 9945.0}
 TOTAL_DEFAULT_PU_GUARD = 1400.0  # = the daily run's own 1,000 + the ocean 400
 MONTHLY_REQUEST_CAP = 2000       # same number as sat/run.py, counted on sat + ocean together
 # 2026-10: the ports probe's requests (ports_usage.csv, passed with --sat-usage) are counted too, so the cap is
@@ -782,6 +784,7 @@ def main(argv=None) -> int:
                          "(ocean/raw_cut.py); wide: 40 m wide-area snapshot (ocean/wide.py)")
     ap.add_argument("--raw-out", type=Path, help="raw mode: directory for the .npz tiles (probe branch only)")
     ap.add_argument("--targets", type=Path, help="raw mode: targets file (default ocean/raw_targets.json)")
+    ap.add_argument("--extend", action="store_true", help="wide mode: fill holes and take second looks after earlier wide runs")
     ap.add_argument("--pu-per-min", type=float, default=PU_PER_MIN, help="pacer limit (PU and requests per minute)")
     args = ap.parse_args(argv)
     try:
