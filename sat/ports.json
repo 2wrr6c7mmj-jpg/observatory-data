@@ -1,89 +1,644 @@
 {
- "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。",
+ "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。",
  "sites": [
   {
-   "id": "SYL", "name": "三亜・楡林（楡林海軍基地）", "group": "三亜",
-   "bbox": [109.505, 18.205, 109.555, 18.245], "center_lat": 18.2253, "center_lon": 109.5292,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "Wikipedia: Yulin Naval Base", "url": "https://en.wikipedia.org/wiki/Yulin_Naval_Base",
-                "coord": "18°13′31″N 109°31′45″E", "note": "三亜の東の郊外、楡林港の隣。三亜寄りは小型艦と通常動力潜水艦"}],
-   "note": "楡林港の湾内（約 5.3×4.4 km）。亜龍湾の龍坡（SLP）は約 15 km 東で別の範囲"
+   "id": "SYL",
+   "name": "三亜・楡林（楡林海軍基地）",
+   "group": "三亜",
+   "bbox": [
+    109.525,
+    18.185,
+    109.585,
+    18.245
+   ],
+   "center_lat": 18.215,
+   "center_lon": 109.555,
+   "pixel_m": 10,
+   "mask_version": 2,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "Wikipedia: Yulin Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Yulin_Naval_Base",
+     "coord": "18°13′31″N 109°31′45″E",
+     "note": "三亜の東の郊外、楡林港の隣。三亜寄りは小型艦と通常動力潜水艦"
+    },
+    {
+     "title": "OpenStreetMap way/299398880「南部战区海军第32潜艇支队」",
+     "url": "https://www.openstreetmap.org/way/299398880",
+     "bbox": [
+      109.54228,
+      18.2141,
+      109.55937,
+      18.2302
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/894654960「military=naval_base」",
+     "url": "https://www.openstreetmap.org/way/894654960",
+     "bbox": [
+      109.56335,
+      18.19105,
+      109.56603,
+      18.19396
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "v2（2026-10-30）：v1 は東端 109.555E で第 32 潜水艦支隊（OSM）の桟橋が切れていた。東へ 109.585E まで広げ、南の naval_base（OSM）も入れた（約 6.3×6.6 km）",
+   "history": [
+    {
+     "mask_version": 1,
+     "until_utc": "2026-10-30",
+     "bbox": [
+      109.505,
+      18.205,
+      109.555,
+      18.245
+     ],
+     "note": "楡林港の湾内（約 5.3×4.4 km）。亜龍湾の龍坡（SLP）は約 15 km 東で別の範囲"
+    }
+   ]
   },
   {
-   "id": "SLP", "name": "三亜・亜龍湾（龍坡、潜水艦基地）", "group": "三亜",
-   "bbox": [109.665, 18.185, 109.715, 18.230], "center_lat": 18.210, "center_lon": 109.688,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "ORF: China's Nuclear Submarine Bases: A Stocktaking", "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
-                "coord": "18°12.6′N 109°41.3′E", "note": "Longpo（第 2 潜水艦基地、南部戦区海軍）、三亜の東約 18 km"},
-               {"title": "Wikipedia: Longpo Naval Base", "url": "https://en.wikipedia.org/wiki/Longpo_Naval_Base",
-                "note": "亜龍湾の隣。原子力潜水艦と空母の基地（旧称 Yulin-East）"}],
+   "id": "SLP",
+   "name": "三亜・亜龍湾（龍坡、潜水艦基地）",
+   "group": "三亜",
+   "bbox": [
+    109.665,
+    18.185,
+    109.715,
+    18.23
+   ],
+   "center_lat": 18.21,
+   "center_lon": 109.688,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "ORF: China's Nuclear Submarine Bases: A Stocktaking",
+     "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+     "coord": "18°12.6′N 109°41.3′E",
+     "note": "Longpo（第 2 潜水艦基地、南部戦区海軍）、三亜の東約 18 km"
+    },
+    {
+     "title": "Wikipedia: Longpo Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Longpo_Naval_Base",
+     "note": "亜龍湾の隣。原子力潜水艦と空母の基地（旧称 Yulin-East）"
+    }
+   ],
    "note": "亜龍湾の西側の基地の桟橋と潜水艦トンネルの入口の周り（約 5.3×5.0 km）"
   },
   {
-   "id": "QGZ", "name": "青島・古鎮口（楡池海軍基地）", "group": "青島",
-   "bbox": [119.955, 35.700, 120.010, 35.745], "center_lat": 35.7233, "center_lon": 119.9817,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion", "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
-                "coord": "35°43.4′N 119°58.9′E（原文の表記 35°43.'4 N, 119°58'.9 E を読み替え）", "note": "古鎮湾、青島の南西約 50 km。内外の泊地と桟橋 1〜7（空母用の桟橋 5 を含む）"},
-               {"title": "Wikipedia: Yuchi Naval Base", "url": "https://en.wikipedia.org/wiki/Yuchi_Naval_Base", "note": "青島の西海岸新区、北海艦隊"}],
+   "id": "QGZ",
+   "name": "青島・古鎮口（楡池海軍基地）",
+   "group": "青島",
+   "bbox": [
+    119.955,
+    35.7,
+    120.01,
+    35.745
+   ],
+   "center_lat": 35.7233,
+   "center_lon": 119.9817,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion",
+     "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+     "coord": "35°43.4′N 119°58.9′E（原文の表記 35°43.'4 N, 119°58'.9 E を読み替え）",
+     "note": "古鎮湾、青島の南西約 50 km。内外の泊地と桟橋 1〜7（空母用の桟橋 5 を含む）"
+    },
+    {
+     "title": "Wikipedia: Yuchi Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Yuchi_Naval_Base",
+     "note": "青島の西海岸新区、北海艦隊"
+    }
+   ],
    "note": "古鎮湾の泊地と桟橋群（約 5.0×5.0 km）"
   },
   {
-   "id": "QDH", "name": "青島港内の海軍区域", "group": "青島",
-   "bbox": [120.275, 36.050, 120.330, 36.100], "center_lat": 36.075, "center_lon": 120.302,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "GlobalSecurity: Qingdao", "url": "https://www.globalsecurity.org/military/world/china/qingdao.htm",
-                "coord": "36°04′N 120°19′E（市の位置）", "note": "主基地は港の大きな防波堤の最奥（岸壁 4）、後湾の補助艦の岸壁、海軍工廠、潜水艦の岸壁などが港内にある。個々の座標は出典になし"}],
-   "note": "青島の旧市街西側の港内（大港・小港・団島の周り、約 4.9×5.5 km）。商港を含むため、海軍の岸壁の区画は画像で確かめてから決める"
+   "id": "QDH",
+   "name": "青島港内の海軍区域",
+   "group": "青島",
+   "bbox": [
+    120.29,
+    36.065,
+    120.335,
+    36.11
+   ],
+   "center_lat": 36.0875,
+   "center_lon": 120.3125,
+   "pixel_m": 10,
+   "mask_version": 2,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "GlobalSecurity: Qingdao",
+     "url": "https://www.globalsecurity.org/military/world/china/qingdao.htm",
+     "coord": "36°04′N 120°19′E（市の位置）",
+     "note": "主基地は港の大きな防波堤の最奥（岸壁 4）、後湾の補助艦の岸壁、海軍工廠、潜水艦の岸壁などが港内にある。個々の座標は出典になし"
+    },
+    {
+     "title": "OpenStreetMap way/979396338「中国人民解放军海军基地」",
+     "url": "https://www.openstreetmap.org/way/979396338",
+     "bbox": [
+      120.30273,
+      36.08921,
+      120.32365,
+      36.10232
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/545704292「青岛前进船厂」",
+     "url": "https://www.openstreetmap.org/way/545704292",
+     "bbox": [
+      120.29708,
+      36.06805,
+      120.30627,
+      36.07582
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "v2（2026-10-30）：v1 は北端 36.10N で海軍基地（OSM）の北部が切れ、南西の団島の市街を多く含んでいた。海軍基地と前進船廠（OSM）を含む矩形（約 4.0×5.0 km）",
+   "history": [
+    {
+     "mask_version": 1,
+     "until_utc": "2026-10-30",
+     "bbox": [
+      120.275,
+      36.05,
+      120.33,
+      36.1
+     ],
+     "note": "青島の旧市街西側の港内（大港・小港・団島の周り、約 4.9×5.5 km）。商港を含むため、海軍の岸壁の区画は画像で確かめてから決める"
+    }
+   ]
   },
   {
-   "id": "QJG", "name": "青島・姜哥荘（第 1 潜水艦基地）", "group": "青島",
-   "bbox": [120.570, 36.095, 120.602, 36.122], "center_lat": 36.1083, "center_lon": 120.585,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 2,
-   "sources": [{"title": "ORF: China's Nuclear Submarine Bases: A Stocktaking", "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
-                "coord": "36°06.5′N 120°35.1′E", "note": "北部戦区海軍の第 1 潜水艦基地、青島の東北東約 18 km の湾"}],
+   "id": "QJG",
+   "name": "青島・姜哥荘（第 1 潜水艦基地）",
+   "group": "青島",
+   "bbox": [
+    120.57,
+    36.095,
+    120.602,
+    36.122
+   ],
+   "center_lat": 36.1083,
+   "center_lon": 120.585,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 2,
+   "sources": [
+    {
+     "title": "ORF: China's Nuclear Submarine Bases: A Stocktaking",
+     "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+     "coord": "36°06.5′N 120°35.1′E",
+     "note": "北部戦区海軍の第 1 潜水艦基地、青島の東北東約 18 km の湾"
+    }
+   ],
    "note": "小さな湾の潜水艦の岸壁（約 2.9×3.0 km）。指示の範囲外の追加（枠が足りる場合だけ）"
   },
   {
-   "id": "ZDH", "name": "舟山・定海（東海艦隊）", "group": "寧波・舟山",
-   "bbox": [122.070, 29.990, 122.135, 30.040], "center_lat": 30.017, "center_lon": 122.100,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "GlobalSecurity: Zhoushan Naval Base", "url": "https://www.globalsecurity.org/military/world/china/zhoushan.htm",
-                "coord": "30°01′N 122°06′E", "note": "舟山海軍基地。個々の桟橋の座標は出典になし"},
-               {"title": "GlobalSecurity (CNA 2013): New Chinese Navy vessels pack Zhoushan port", "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm"}],
-   "note": "定海の港と南の水道（約 6.3×5.6 km）。象山は基地の位置の公開の出典が確かめられず、今回は外した（未解決）"
+   "id": "ZDH",
+   "name": "舟山・定海（東海艦隊）",
+   "group": "寧波・舟山",
+   "bbox": [
+    121.995,
+    29.99,
+    122.08,
+    30.035
+   ],
+   "center_lat": 30.0125,
+   "center_lon": 122.0375,
+   "pixel_m": 10,
+   "mask_version": 2,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "GlobalSecurity: Zhoushan Naval Base",
+     "url": "https://www.globalsecurity.org/military/world/china/zhoushan.htm",
+     "coord": "30°01′N 122°06′E",
+     "note": "舟山海軍基地。個々の桟橋の座標は出典になし"
+    },
+    {
+     "title": "GlobalSecurity (CNA 2013): New Chinese Navy vessels pack Zhoushan port",
+     "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm"
+    },
+    {
+     "title": "OpenStreetMap way/482638691「东部战区海军驱逐舰第3支队」",
+     "url": "https://www.openstreetmap.org/way/482638691",
+     "bbox": [
+      122.00677,
+      29.99856,
+      122.02686,
+      30.03043
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/351277058「舟山水警区机关」",
+     "url": "https://www.openstreetmap.org/way/351277058",
+     "bbox": [
+      122.05601,
+      30.00658,
+      122.07517,
+      30.01465
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "v2（2026-10-30）：v1 は定海の市街（陸 80%）で、海軍の桟橋が範囲外だった。駆逐艦第 3 支隊（OSM、定海の西の海岸）と舟山水警区（OSM）の岸壁を含む矩形（約 8.2×5.0 km）",
+   "history": [
+    {
+     "mask_version": 1,
+     "until_utc": "2026-10-30",
+     "bbox": [
+      122.07,
+      29.99,
+      122.135,
+      30.04
+     ],
+     "note": "定海の港と南の水道（約 6.3×5.6 km）。象山は基地の位置の公開の出典が確かめられず、今回は外した（未解決）"
+    }
+   ]
   },
   {
-   "id": "DLS", "name": "大連・造船所（大連造船）", "group": "大連",
-   "bbox": [121.595, 38.915, 121.665, 38.955], "center_lat": 38.935, "center_lon": 121.630,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "Wikipedia: Dalian Shipbuilding Industry Company", "url": "https://en.wikipedia.org/wiki/Dalian_Shipbuilding_Industry_Company",
-                "note": "旧造船所は大連港の隣、新造船所（1990 年）はその西。座標は出典になし。範囲は大連港の西側の造船所の岸壁を含むよう置いた"}],
-   "note": "大連湾の南岸、大連港の西の旧・新造船所の艤装岸壁（約 6.1×4.4 km）。位置は OSM と画像で確かめる"
+   "id": "DLS",
+   "name": "大連・造船所（大連造船）",
+   "group": "大連",
+   "bbox": [
+    121.595,
+    38.915,
+    121.665,
+    38.955
+   ],
+   "center_lat": 38.935,
+   "center_lon": 121.63,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "Wikipedia: Dalian Shipbuilding Industry Company",
+     "url": "https://en.wikipedia.org/wiki/Dalian_Shipbuilding_Industry_Company",
+     "note": "旧造船所は大連港の隣、新造船所（1990 年）はその西。座標は出典になし。範囲は大連港の西側の造船所の岸壁を含むよう置いた"
+    },
+    {
+     "title": "OpenStreetMap way/485911443「大连造船厂（DSIC）」",
+     "url": "https://www.openstreetmap.org/way/485911443",
+     "bbox": [
+      121.62823,
+      38.93034,
+      121.64688,
+      38.94238
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/485911444「大连造船新厂（DSIC）」",
+     "url": "https://www.openstreetmap.org/way/485911444",
+     "bbox": [
+      121.59675,
+      38.93351,
+      121.61617,
+      38.94755
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "大連湾の南岸、大連港の西の旧・新造船所の艤装岸壁（約 6.1×4.4 km）。位置は OSM と画像で確かめる。2026-10-30：OSM の両造船所の外形が v1 の範囲内にあることを確かめた（範囲は変えない）"
   },
   {
-   "id": "LSN", "name": "大連・旅順（旅順港）", "group": "大連",
-   "bbox": [121.225, 38.785, 121.280, 38.825], "center_lat": 38.805, "center_lon": 121.252,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 2,
-   "sources": [{"title": "Wikipedia: Lüshunkou District", "url": "https://en.wikipedia.org/wiki/L%C3%BCshunkou_District",
-                "coord": "38°51′03″N 121°15′25″E（区の位置）", "note": "半島の先端の湖のような内港。軍港区域は外国人の立入禁止"}],
+   "id": "LSN",
+   "name": "大連・旅順（旅順港）",
+   "group": "大連",
+   "bbox": [
+    121.225,
+    38.785,
+    121.28,
+    38.825
+   ],
+   "center_lat": 38.805,
+   "center_lon": 121.252,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 2,
+   "sources": [
+    {
+     "title": "Wikipedia: Lüshunkou District",
+     "url": "https://en.wikipedia.org/wiki/L%C3%BCshunkou_District",
+     "coord": "38°51′03″N 121°15′25″E（区の位置）",
+     "note": "半島の先端の湖のような内港。軍港区域は外国人の立入禁止"
+    }
+   ],
    "note": "旅順の内港と港口（約 4.8×4.4 km、区の中心より南の半島先端）。枠が足りる場合だけ"
   },
   {
-   "id": "SJN", "name": "上海・長興島（江南造船）", "group": "上海",
-   "bbox": [121.715, 31.335, 121.765, 31.370], "center_lat": 31.3541, "center_lon": 121.7374,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "Wikipedia: Jiangnan Shipyard", "url": "https://en.wikipedia.org/wiki/Jiangnan_Shipyard",
-                "coord": "31°21′15″N 121°44′15″E", "note": "長江河口の長興島（2009〜2010 年に移転）"}],
+   "id": "SJN",
+   "name": "上海・長興島（江南造船）",
+   "group": "上海",
+   "bbox": [
+    121.715,
+    31.335,
+    121.765,
+    31.37
+   ],
+   "center_lat": 31.3541,
+   "center_lon": 121.7374,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "Wikipedia: Jiangnan Shipyard",
+     "url": "https://en.wikipedia.org/wiki/Jiangnan_Shipyard",
+     "coord": "31°21′15″N 121°44′15″E",
+     "note": "長江河口の長興島（2009〜2010 年に移転）"
+    }
+   ],
    "note": "長興島の南岸の造船所の艤装岸壁とドック（約 4.8×3.9 km）"
   },
   {
-   "id": "HLD", "name": "葫芦島（渤海造船）", "group": "葫芦島",
-   "bbox": [120.985, 40.695, 121.035, 40.735], "center_lat": 40.7153, "center_lon": 121.0103,
-   "pixel_m": 10, "mask_version": 1, "enabled": true, "provisional": true, "priority": 1,
-   "sources": [{"title": "Wikipedia: Bohai Shipbuilding Heavy Industry", "url": "https://en.wikipedia.org/wiki/Bohai_Shipbuilding_Heavy_Industry",
-                "coord": "40°42′55″N 121°00′37″E"}],
+   "id": "HLD",
+   "name": "葫芦島（渤海造船）",
+   "group": "葫芦島",
+   "bbox": [
+    120.985,
+    40.695,
+    121.035,
+    40.735
+   ],
+   "center_lat": 40.7153,
+   "center_lon": 121.0103,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "Wikipedia: Bohai Shipbuilding Heavy Industry",
+     "url": "https://en.wikipedia.org/wiki/Bohai_Shipbuilding_Heavy_Industry",
+     "coord": "40°42′55″N 121°00′37″E"
+    }
+   ],
    "note": "渤海造船の岸壁と建造ホール前の泊地（約 4.2×4.4 km）"
+  },
+  {
+   "id": "XSN",
+   "name": "象山（潜水艦基地）",
+   "group": "寧波・舟山",
+   "bbox": [
+    121.745,
+    29.515,
+    121.8,
+    29.555
+   ],
+   "center_lat": 29.535,
+   "center_lon": 121.7725,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/351273275「Submarine base（military=naval_base）」",
+     "url": "https://www.openstreetmap.org/way/351273275",
+     "bbox": [
+      121.76211,
+      29.53075,
+      121.7808,
+      29.53817
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "象山港の潜水艦基地（OSM）の岸壁の周り（約 5.3×4.4 km）。公開の文献の座標は確かめられず、OSM の地物だけが出典"
+  },
+  {
+   "id": "GZH",
+   "name": "広州・黄埔（長洲）",
+   "group": "広州",
+   "bbox": [
+    113.395,
+    23.065,
+    113.445,
+    23.1
+   ],
+   "center_lat": 23.0825,
+   "center_lon": 113.42,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/469207126「中船黄埔文冲船舶有限公司-长洲厂区」",
+     "url": "https://www.openstreetmap.org/way/469207126",
+     "bbox": [
+      113.4038,
+      23.07537,
+      113.41747,
+      23.08896
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/469207123「中国人民解放军海军4801工厂」",
+     "url": "https://www.openstreetmap.org/way/469207123",
+     "bbox": [
+      113.42185,
+      23.08614,
+      113.42726,
+      23.09029
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "GlobalSecurity: Huangpu",
+     "url": "https://www.globalsecurity.org/military/world/china/huangpu.htm",
+     "coord": "23°05'N 113°25'E",
+     "note": "長洲島の黄埔造船所（軍艦の建造）"
+    }
+   ],
+   "note": "長洲島の黄埔文冲の造船所と海軍 4801 工場（約 5.1×3.9 km）"
+  },
+  {
+   "id": "LXD",
+   "name": "広州・龍穴島（造船所）",
+   "group": "広州",
+   "bbox": [
+    113.615,
+    22.69,
+    113.665,
+    22.735
+   ],
+   "center_lat": 22.7125,
+   "center_lon": 113.64,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 1,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1099901653「中船黄埔文冲船舶有限公司（龙穴厂区）」",
+     "url": "https://www.openstreetmap.org/way/1099901653",
+     "bbox": [
+      113.63374,
+      22.69696,
+      113.64829,
+      22.71345
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "GlobalSecurity: Huangpu",
+     "url": "https://www.globalsecurity.org/military/world/china/huangpu.htm",
+     "note": "龍穴島（南沙区）の造船所。座標は出典になし"
+    }
+   ],
+   "note": "龍穴島の黄埔文冲（龍穴）と北の岸壁（約 5.1×5.0 km）。広船国際の龍穴の造船所は OSM で確かめられず、範囲内かは画像で確かめる"
+  },
+  {
+   "id": "XMN",
+   "name": "廈門（廈門水警区）",
+   "group": "廈門",
+   "bbox": [
+    118.055,
+    24.435,
+    118.1,
+    24.47
+   ],
+   "center_lat": 24.4525,
+   "center_lon": 118.0775,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 2,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/409154029「厦门水警区」",
+     "url": "https://www.openstreetmap.org/way/409154029",
+     "bbox": [
+      118.07532,
+      24.44934,
+      118.07913,
+      24.45277
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "廈門島の南西岸、廈門水警区（OSM）の岸壁の周り（約 4.6×3.9 km）。商港・フェリーを含む"
+  },
+  {
+   "id": "STU",
+   "name": "汕頭（汕頭水警区）",
+   "group": "汕頭",
+   "bbox": [
+    116.64,
+    23.32,
+    116.695,
+    23.355
+   ],
+   "center_lat": 23.3375,
+   "center_lon": 116.6675,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 2,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1092040603「东海舰队福建基地汕头水警区导弹快艇大队92376部队」",
+     "url": "https://www.openstreetmap.org/way/1092040603",
+     "bbox": [
+      116.65154,
+      23.33314,
+      116.65708,
+      23.33948
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/1429145743「military=base」",
+     "url": "https://www.openstreetmap.org/way/1429145743",
+     "bbox": [
+      116.67655,
+      23.33659,
+      116.68498,
+      23.34259
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "汕頭港の南岸、ミサイル艇大隊（OSM）と東の基地（約 5.6×3.9 km）"
+  },
+  {
+   "id": "MAW",
+   "name": "福州・馬尾（造船所）",
+   "group": "福州",
+   "bbox": [
+    119.425,
+    25.975,
+    119.465,
+    26.005
+   ],
+   "center_lat": 25.99,
+   "center_lon": 119.445,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "enabled": true,
+   "provisional": true,
+   "priority": 2,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/431595199「马尾造船厂」",
+     "url": "https://www.openstreetmap.org/way/431595199",
+     "bbox": [
+      119.44196,
+      25.98683,
+      119.44452,
+      25.99017
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "Wikipedia: Foochow Arsenal",
+     "url": "https://en.wikipedia.org/wiki/Foochow_Arsenal",
+     "note": "馬尾の旧福州船政局の跡に近代の造船所が再建された。座標は出典になし"
+    }
+   ],
+   "note": "閩江の馬尾造船所（OSM）の岸壁（約 4.0×3.3 km）"
   }
  ]
 }

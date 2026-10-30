@@ -3,19 +3,63 @@ name: PLAN ports archive probe
 # probe 用ブランチへの push でだけ動く（workflow_dispatch なし、定期実行なし）。main は読むだけで変えない。
 # 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別の concurrency group。
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
-# PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読む）。
+# PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読み、
+# まだ usage に出ていない外洋の再取得の予定 約 1,800 PU を --reserve で差し引く）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
-    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*']
+    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*']
 permissions:
   contents: write
 concurrency:
   group: probe-ports-archive-${{ github.ref_name }}
   cancel-in-progress: false
 jobs:
+  locate:
+    # probe/ports-locate-*: OSM の軍・造船所の地物と S2 の広域の概観（1 地域 1〜4 PU）だけ。範囲を置くため
+    if: ${{ startsWith(github.ref_name, 'probe/ports-locate-') && !contains(github.event.head_commit.message, '[ports-locate-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Locate
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          python -m sat.port_locate --out docs/data/sat/ports/locate > "$RUNNER_TEMP/locate.json" 2> "$RUNNER_TEMP/locate.log" || true
+          cat "$RUNNER_TEMP/locate.log" "$RUNNER_TEMP/locate.json"
+          # the PU of the overview goes to the archive's usage (one row)
+          python - <<'EOF'
+          import json
+          from pathlib import Path
+          from datetime import datetime, timezone
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv
+          r = json.loads(Path("docs/data/sat/ports/locate/locate.json").read_text())
+          p = Path("docs/data/sat/ports/locate/usage.csv")
+          write_csv(p, read_csv(p) + [{"run_utc": r["run_utc"], "site_id": "locate", "requests": r["requests"],
+                                       "processing_units": r["pu"], "pu_source": "header", "archive_version": "locate-1"}], USAGE_FIELDS)
+          EOF
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text locate-log "$RUNNER_TEMP/locate.log"
+      - name: Commit to this probe branch only
+        run: |
+          git add docs/data/sat/ports/locate
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 港の位置の確認（OSM と S2 の概観） [ports-locate-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
   plan:
-    if: ${{ !contains(github.event.head_commit.message, '[ports-archive-result]') }}
+    if: ${{ startsWith(github.ref_name, 'probe/ports-archive-') && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     outputs:
@@ -67,7 +111,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --cap 4000 \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports_usage.csv 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --reserve 1800 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json
@@ -163,10 +207,11 @@ jobs:
           for t in "$RUNNER_TEMP"/art/*.tgz; do tar xzf "$t"; done
           python - <<'EOF' | tee "$RUNNER_TEMP/total.txt"
           import csv, glob, io
-          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv, trend
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv, trend, load_ports, mask_tag
+          tags = {p["id"]: mask_tag(p) for p in load_ports()}
           from pathlib import Path
           rows = []
-          for p in sorted(glob.glob("docs/data/sat/ports/*/usage.csv")):
+          for p in sorted(glob.glob("docs/data/sat/ports/*/usage.csv")):  # includes locate/usage.csv
               rows += read_csv(Path(p))
           rows.sort(key=lambda r: (r["run_utc"], r["site_id"]))
           write_csv(Path("docs/data/sat/ports_usage.csv"), rows, USAGE_FIELDS)
@@ -179,7 +224,7 @@ jobs:
               b[0] += float(r["processing_units"] or 0); b[1] += int(r["requests"] or 0)
               b[2] += int(r["s1_scenes"] or 0); b[3] += int(r["s2_days"] or 0); b[4] += int(r["s2_clear"] or 0)
           for k, b in sorted(by.items()):
-              print(f"{k}: {b[0]:.1f} PU, {b[1]} req, S1 {b[2]} scenes, S2 {b[3]} days / clear {b[4]}; trend {trend(Path('docs/data/sat/ports') / k)}")
+              print(f"{k}: {b[0]:.1f} PU, {b[1]} req, S1 {b[2]} scenes, S2 {b[3]} days / clear {b[4]}; {tags.get(k, '')} trend {trend(Path('docs/data/sat/ports') / k, tags.get(k))}")
           EOF
       - name: Report (annotations)
         if: always()

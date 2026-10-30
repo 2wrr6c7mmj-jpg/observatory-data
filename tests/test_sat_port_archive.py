@@ -76,12 +76,16 @@ class Fake:
                          for d in ("2026-06-01", "2026-09-01")]
             else:
                 p = {"sar:instrument_mode": "IW", "sar:polarizations": ["VV", "VH"]}
-                feats = [{"id": f"s{i}", "properties": {**p, "platform": "sentinel-1a", "datetime": t,
-                                                        "sat:orbit_state": o, "sat:relative_orbit": r}}
-                         for i, (t, o, r) in enumerate([("2026-01-02T10:00:00Z", "ascending", 11),
-                                                        ("2026-03-02T22:00:00Z", "descending", 40),
-                                                        ("2026-05-02T10:00:00Z", "ascending", 11),
-                                                        ("2026-07-02T10:00:00Z", "ascending", 11)])]
+                full = {"type": "Polygon", "coordinates": [[[119, 29], [121, 29], [121, 31], [119, 31], [119, 29]]]}
+                # the swath edge: covers only the western strip (mostly land) of the site
+                edge = {"type": "MultiPolygon", "coordinates": [[[[119, 29], [120.0015, 29], [120.0015, 31], [119, 31], [119, 29]]]]}
+                feats = [{"id": f"s{i}", "geometry": g, "properties": {**p, "platform": "sentinel-1a", "datetime": t,
+                                                                       "sat:orbit_state": o, "sat:relative_orbit": r}}
+                         for i, (t, o, r, g) in enumerate([("2026-01-02T10:00:00Z", "ascending", 11, full),
+                                                           ("2026-03-02T22:00:00Z", "descending", 40, full),
+                                                           ("2026-05-02T10:00:00Z", "ascending", 11, full),
+                                                           ("2026-06-02T10:00:00Z", "ascending", 157, edge),
+                                                           ("2026-07-02T10:00:00Z", "ascending", 11, full)])]
             return Resp(json.dumps({"features": feats}).encode(), {})
         self.process_calls += 1
         if self.fail_429 > 0:
@@ -219,8 +223,11 @@ class RunPortTest(unittest.TestCase):
             save_mask(SITE, g, mask, {}, {}, 1, d / "masks")
             res = pa.run_port(c, SITE, d / "out", d / "raw", d / "tmp", d / "masks", now, log=lambda s: None)
             self.assertEqual(res["s1"]["counted"], 4)
+            self.assertEqual(res["s1"]["footprint_skipped"], 1)
             self.assertEqual(len(res["raw_kept"]), 3)
             rows = pa.read_csv(d / "out" / "TPA" / "s1_scenes.csv")
+            self.assertEqual([r["result"] for r in rows].count("skipped_footprint"), 1)
+            rows = [r for r in rows if r["result"] == "counted"]
             self.assertEqual(len(rows), 4)
             self.assertTrue(all(int(r["candidates"]) >= 1 for r in rows))
             self.assertEqual(sum(bool(r["raw_chip"]) for r in rows), 3)
@@ -239,6 +246,48 @@ class RunPortTest(unittest.TestCase):
             self.assertEqual(res2["s1"]["counted"], 0)
             self.assertEqual(res2["processing_units"], 0)
             self.assertIn("26-01:", pa.trend(d / "out" / "TPA"))
+            # a new mask version re-fetches the 12 months; the v1 rows, detections and raw chips stay
+            site2 = {**SITE, "mask_version": 2}
+            save_mask(site2, g, mask, {}, {}, 2, d / "masks")
+            c3 = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i",
+                                  client_secret="s", opener=Fake(g))
+            res3 = pa.run_port(c3, site2, d / "out", d / "raw", d / "tmp2", d / "masks", now, log=lambda s: None)
+            self.assertEqual(res3["s1"]["counted"], 4)
+            self.assertEqual(res3["s2"]["clear"], 2)
+            rows = pa.read_csv(d / "out" / "TPA" / "s1_scenes.csv")
+            self.assertEqual(len(rows), 10)
+            self.assertEqual(sum(r["raw_chip"].startswith("probe-raw/TPA/v2/") for r in rows), 3)
+            self.assertEqual(sum(r["raw_chip"].startswith("probe-raw/TPA/2") for r in rows), 3)
+            fc = json.loads((d / "out" / "TPA" / "detections" / "2026-01.geojson").read_text())
+            self.assertEqual({f["properties"]["mask_version"] for f in fc["features"]}, {"TPA-land-v1", "TPA-land-v2"})
+            self.assertTrue((d / "out" / "TPA" / "color" / "v2").is_dir())
+
+    def test_plan_counts_only_new_work(self):
+        g = Grid.for_site(SITE)
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, : g.width // 4] = 1
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            from sat.osm_mask import save_mask
+            save_mask(SITE, g, mask, {}, {}, 1, d / "masks")
+            c = pa.cdse.Client("i", "s", opener=Fake(g))
+            p = pa.plan(c, [SITE], now, 100, 1000, log=lambda s: None, out_root=d / "out", mask_dir=d / "masks")
+            self.assertEqual((p["ports"][0]["s1_scenes"], p["ports"][0]["s1_footprint_skip"], p["ports"][0]["s2_days"]), (4, 1, 2))
+            clock = Clock()
+            lc = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i",
+                                  client_secret="s", opener=Fake(g))
+            pa.run_port(lc, SITE, d / "out", d / "raw", d / "tmp", d / "masks", now, log=lambda s: None)
+            p = pa.plan(c, [SITE], now, 100, 1000, log=lambda s: None, out_root=d / "out", mask_dir=d / "masks")
+            self.assertEqual((p["ports"][0]["s1_scenes"], p["ports"][0]["s2_days"]), (0, 0))
+            self.assertEqual(p["matrix"], [])
+
+    def test_footprint_share(self):
+        g = Grid.for_site(SITE)
+        water = np.ones((g.height, g.width), bool)
+        half = {"type": "Polygon", "coordinates": [[[119, 29], [120.0025, 29], [120.0025, 31], [119, 31], [119, 29]]]}
+        self.assertAlmostEqual(pa.footprint_share([half], g, water, step=1), 0.5, delta=0.05)
+        self.assertIsNone(pa.footprint_share([], g, water))
 
     def test_cap_stops_s1_and_skips_s2(self):
         g = Grid.for_site(SITE)
@@ -251,7 +300,7 @@ class RunPortTest(unittest.TestCase):
             res = pa.run_port(c, SITE, d / "out", d / "raw", d / "tmp", d / "masks", now, log=lambda s: None)
             self.assertLessEqual(res["processing_units"], 1.2)
             self.assertTrue(res["s1"]["stopped"])
-            self.assertEqual(res["s1"]["counted"], 2)  # no mask: images only
+            self.assertEqual(res["s1"]["counted"], 2)  # no mask: images only (the edge scene is skipped on its footprint)
             self.assertEqual(pa.read_csv(d / "out" / "TPA" / "s1_scenes.csv")[0]["candidates"], "")
 
 
