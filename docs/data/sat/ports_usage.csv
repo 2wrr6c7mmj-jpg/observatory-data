@@ -60,3 +60,6 @@ run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s
 2026-10-30T21:23:02Z,locate,2,5.256,header,,,,,,,locate-1
 2026-10-30T21:31:44Z,WCS,157,102.193,header,57,89,21,73.785,28.409,137.5,ports-1
 2026-10-30T21:31:45Z,HDZ,180,101.725,header,26,158,31,42.464,59.262,153.1,ports-1
+2026-10-30T21:36:39Z,HDZ,25,26.132,header,,,,26.132,,400.0,baseline-bl-1
+2026-10-30T21:36:39Z,HLD,28,24.778,header,,,,24.778,,400.0,baseline-bl-1
+2026-10-30T21:36:39Z,WCS,26,20.712,header,,,,20.712,,400.0,baseline-bl-1

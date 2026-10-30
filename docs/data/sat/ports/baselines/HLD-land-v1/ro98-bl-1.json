@@ -3,7 +3,7 @@
  "site": "HLD",
  "mask_version": "HLD-land-v1",
  "relative_orbit": 98,
- "built_utc": "2026-10-30T21:03:40Z",
+ "built_utc": "2026-10-30T21:36:39Z",
  "bbox": [
   120.985,
   40.695,
@@ -12,11 +12,11 @@
  ],
  "width": 422,
  "height": 444,
- "scenes": 22,
- "first_utc": "2025-10-14T09:49:33Z",
+ "scenes": 24,
+ "first_utc": "2025-09-20T09:49:32Z",
  "last_utc": "2026-07-12T09:48:42Z",
- "credibility": "4",
- "credibility_note": "22 シーンで 24 未満のため、この基準による岸壁の数の確度を一段下げる（3→4）",
+ "credibility": "3",
+ "credibility_note": "24 シーン（24 以上）",
  "method": {
   "smooth": "3x3 の平均（線形の σ0、有効画素のみ）を取ってから dB",
   "percentiles": [
@@ -32,7 +32,7 @@
   "min_valid": 10,
   "min_coverage": 0.9,
   "lookback_days": 730,
-  "max_scenes": 24
+  "max_scenes": 26
  },
  "encoding": {
   "format": "PNG 8 bit grey",
@@ -46,17 +46,17 @@
   "vh_p10": "ro98-bl-1.vh_p10.png"
  },
  "png_bytes": {
-  "vv_p10": 72966,
-  "vv_p90": 66813,
-  "vh_p10": 81537
+  "vv_p10": 70929,
+  "vv_p90": 64270,
+  "vh_p10": 80655
  },
  "stats": {
   "kept_fraction": 0.7025,
-  "water_vv_p10_median_db": -20.49,
-  "water_vh_p10_median_db": -28.97,
-  "always_occupied_px": 2021,
+  "water_vv_p10_median_db": -20.43,
+  "water_vh_p10_median_db": -28.98,
+  "always_occupied_px": 2003,
   "always_occupied_on_water_px": 21,
-  "min_valid_scenes_in_kept": 18
+  "min_valid_scenes_in_kept": 20
  },
  "always_occupied_on_water": [
   {
@@ -73,6 +73,24 @@
   }
  ],
  "scene_list": [
+  {
+   "acquired_utc": "2025-09-20T09:49:32Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.996,
+   "processing_units": 0.9530029580892005,
+   "water_vv_median_db": -17.04,
+   "used": true
+  },
+  {
+   "acquired_utc": "2025-10-02T09:49:32Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.999,
+   "processing_units": 0.9530029580892005,
+   "water_vv_median_db": -16.33,
+   "used": true
+  },
   {
    "acquired_utc": "2025-10-14T09:49:33Z",
    "platform": "sentinel-1a",
@@ -296,9 +314,9 @@
  "credit": "Contains modified Copernicus Sentinel data 2026",
  "period": {
   "lookback_days": 730,
-  "first_utc": "2025-10-14T09:49:33Z",
+  "first_utc": "2025-09-20T09:49:32Z",
   "last_utc": "2026-07-12T09:48:42Z",
-  "older_than_12_months": 2,
-  "note": "直近 12 か月では 24 撮影に届かないため、さかのぼりを 730 日に延ばし、13〜24 か月前の撮影 2 枚を含む（最新から順に 24 撮影まで）。その間に岸壁・桟橋が変わっていれば基準がずれる"
+  "older_than_12_months": 4,
+  "note": "直近 12 か月では 24 撮影に届かないため、さかのぼりを 730 日に延ばし、13〜24 か月前の撮影 4 枚を含む（最新から順に 24 撮影まで）。その間に岸壁・桟橋が変わっていれば基準がずれる"
  }
 }
