@@ -1,0 +1,363 @@
+{
+ "version": "est-2-cal1",
+ "site_id": "ZJG",
+ "labels": {
+  "answered": 119,
+  "verified": 81,
+  "cannot_judge": 38,
+  "by": "所有者 1 人の目視（確認ページ 2026-10-30、Sentinel-2 10 m 自然色を 8 倍に拡大、水色の枠は水際から 120 m）",
+  "used": "status＝ok かつ verified＝1、2026-10-27 より前の日だけ",
+  "column_rows": 45,
+  "occupancy_rows": 81,
+  "days": 16
+ },
+ "params": {
+  "depth_mu": {
+   "away": [
+    23.9,
+    47.0,
+    67.0
+   ],
+   "along": [
+    30.0,
+    52.0,
+    72.0
+   ],
+   "toward_157": [
+    35.0,
+    60.3,
+    86.5
+   ],
+   "toward_84": [
+    47.0,
+    69.2,
+    87.0
+   ]
+  },
+  "depth_sd": 10.8,
+  "smear_p_real": 0.68,
+  "s2_lr_auto": {
+   "grey": 1.35,
+   "colour": 0.82,
+   "contrast": 1.14,
+   "mixed": 1.12
+  },
+  "s2_lr_owner": {
+   "achromatic": 1.5,
+   "strong": 0.3,
+   "blank": 1.0
+  },
+  "hard_ways": [
+   "13977070",
+   "971239820"
+  ]
+ },
+ "fit": {
+  "depth": {
+   "offset": -8.0,
+   "n": 45,
+   "pooled_sd_obs": 10.6,
+   "table": [
+    {
+     "group": "away",
+     "c": 1,
+     "n": 9,
+     "mean_obs": 22.2,
+     "sd_obs": 6.7,
+     "placeholder": 35.0,
+     "calibrated": 23.9
+    },
+    {
+     "group": "away",
+     "c": 2,
+     "n": 0,
+     "mean_obs": null,
+     "sd_obs": null,
+     "placeholder": 55.0,
+     "calibrated": 47.0
+    },
+    {
+     "group": "away",
+     "c": 3,
+     "n": 0,
+     "mean_obs": null,
+     "sd_obs": null,
+     "placeholder": 75.0,
+     "calibrated": 67.0
+    },
+    {
+     "group": "along",
+     "c": 1,
+     "n": 2,
+     "mean_obs": 25.0,
+     "sd_obs": 7.1,
+     "placeholder": 40.0,
+     "calibrated": 30.0
+    },
+    {
+     "group": "along",
+     "c": 2,
+     "n": 0,
+     "mean_obs": null,
+     "sd_obs": null,
+     "placeholder": 60.0,
+     "calibrated": 52.0
+    },
+    {
+     "group": "along",
+     "c": 3,
+     "n": 0,
+     "mean_obs": null,
+     "sd_obs": null,
+     "placeholder": 80.0,
+     "calibrated": 72.0
+    },
+    {
+     "group": "toward_157",
+     "c": 1,
+     "n": 17,
+     "mean_obs": 34.4,
+     "sd_obs": 11.4,
+     "placeholder": 45.0,
+     "calibrated": 35.0
+    },
+    {
+     "group": "toward_157",
+     "c": 2,
+     "n": 11,
+     "mean_obs": 61.8,
+     "sd_obs": 12.5,
+     "placeholder": 65.0,
+     "calibrated": 60.3
+    },
+    {
+     "group": "toward_157",
+     "c": 3,
+     "n": 5,
+     "mean_obs": 86.0,
+     "sd_obs": 8.9,
+     "placeholder": 95.0,
+     "calibrated": 86.5
+    },
+    {
+     "group": "toward_84",
+     "c": 1,
+     "n": 0,
+     "mean_obs": null,
+     "sd_obs": null,
+     "placeholder": 55.0,
+     "calibrated": 47.0
+    },
+    {
+     "group": "toward_84",
+     "c": 2,
+     "n": 1,
+     "mean_obs": 80.0,
+     "sd_obs": null,
+     "placeholder": 75.0,
+     "calibrated": 69.2
+    },
+    {
+     "group": "toward_84",
+     "c": 3,
+     "n": 0,
+     "mean_obs": null,
+     "sd_obs": null,
+     "placeholder": 95.0,
+     "calibrated": 87.0
+    }
+   ]
+  },
+  "smear": {
+   "smear_p_real": 0.68,
+   "n": 12,
+   "seen": 10,
+   "other_s1_occupied": {
+    "n": 46,
+    "seen": 42
+   }
+  },
+  "colour": {
+   "grey": {
+    "n": 36,
+    "owner_achromatic": 30,
+    "owner_strong": 1,
+    "owner_blank": 5
+   },
+   "colour": {
+    "n": 3,
+    "owner_achromatic": 0,
+    "owner_strong": 2,
+    "owner_blank": 1
+   },
+   "contrast": {
+    "n": 2,
+    "owner_achromatic": 2,
+    "owner_strong": 0,
+    "owner_blank": 0
+   },
+   "mixed": {
+    "n": 3,
+    "owner_achromatic": 2,
+    "owner_strong": 0,
+    "owner_blank": 1
+   }
+  },
+  "hard_ways": {
+   "13977070": {
+    "answered": 49,
+    "cannot_judge": 30,
+    "share": 0.61
+   },
+   "971239820": {
+    "answered": 5,
+    "cannot_judge": 5,
+    "share": 1.0
+   }
+  }
+ },
+ "shrinkage": {
+  "depth_mean_pseudo_n": 5.0,
+  "offset_pseudo_n": 5.0,
+  "sd_pseudo_df": 5.0,
+  "min_gap_m": 10.0,
+  "smear_pseudo_n": 5.0,
+  "colour_pseudo_n": 5.0,
+  "lr_caps": {
+   "achromatic": 1.5,
+   "strong": 0.3
+  },
+  "hard": {
+   "min_answers": 5,
+   "cannot_share": 0.5
+  }
+ },
+ "evaluation": {
+  "method": "日付ごとの leave-one-out（S2 の晴れの日 1 日を外し、残りの日で較正して外した日を評価）",
+  "days": 16,
+  "before": {
+   "columns": {
+    "n": 45,
+    "agree": 38,
+    "share": 0.844,
+    "confusion": {
+     "1->1": 28,
+     "2->1": 4,
+     "2->2": 8,
+     "3->2": 3,
+     "3->3": 2
+    },
+    "mean_p_true": 0.792,
+    "sum_c_owner": 67,
+    "sum_c_expected": 62.6,
+    "log_score": -0.332
+   },
+   "occupied": {
+    "n": 81,
+    "agree": 66,
+    "share": 0.815,
+    "brier": 0.124
+   },
+   "smear_rows": {
+    "n": 12,
+    "brier": 0.423
+   }
+  },
+  "after_cv": {
+   "columns": {
+    "n": 45,
+    "agree": 38,
+    "share": 0.844,
+    "confusion": {
+     "1->1": 23,
+     "1->2": 5,
+     "2->1": 1,
+     "2->2": 10,
+     "2->3": 1,
+     "3->3": 5
+    },
+    "mean_p_true": 0.785,
+    "sum_c_owner": 67,
+    "sum_c_expected": 69.3,
+    "log_score": -0.335
+   },
+   "occupied": {
+    "n": 81,
+    "agree": 74,
+    "share": 0.914,
+    "brier": 0.09
+   },
+   "smear_rows": {
+    "n": 12,
+    "brier": 0.189
+   }
+  },
+  "after_in_sample": {
+   "columns": {
+    "n": 45,
+    "agree": 38,
+    "share": 0.844,
+    "confusion": {
+     "1->1": 23,
+     "1->2": 5,
+     "2->1": 1,
+     "2->2": 10,
+     "2->3": 1,
+     "3->3": 5
+    },
+    "mean_p_true": 0.802,
+    "sum_c_owner": 67,
+    "sum_c_expected": 68.9,
+    "log_score": -0.285
+   },
+   "occupied": {
+    "n": 81,
+    "agree": 74,
+    "share": 0.914,
+    "brier": 0.086
+   },
+   "smear_rows": {
+    "n": 12,
+    "brier": 0.162
+   }
+  },
+  "always_c1": {
+   "n": 45,
+   "agree": 28,
+   "share": 0.622,
+   "confusion": {
+    "1->1": 28,
+    "2->1": 12,
+    "3->1": 5
+   }
+  },
+  "note": "列数は人の c（S2 の時刻）と S1 の奥行き（−40.5〜+79.4 時間ずれる）の組で 45 件と少ない。占有は S1 の占有×本当に船である確率（にじみ）が 0.5 以上を「いる」として人と比べた。mean_p_true＝人の c に付けた事後確率の平均、log_score＝その対数の平均（0 に近いほどよい）。sum_c_owner／sum_c_expected＝人の列数の合計と、事後の列数の期待値の合計（隻数の偏りの目安）"
+ },
+ "auto_vs_owner": {
+  "occupied": {
+   "n": 81,
+   "agree": 58,
+   "auto_yes_owner_no": 14,
+   "auto_no_owner_yes": 9
+  },
+  "columns": {
+   "n": 37,
+   "agree": 28,
+   "confusion": {
+    "auto 1 / owner 1": 17,
+    "auto 2 / owner 1": 2,
+    "auto 2 / owner 2": 7,
+    "auto 2 / owner 3": 1,
+    "auto 3 / owner 1": 1,
+    "auto 3 / owner 2": 5,
+    "auto 3 / owner 3": 4
+   }
+  },
+  "s1_occupied": {
+   "n": 81,
+   "agree": 74,
+   "s1_yes_owner_no": 6,
+   "s1_no_owner_yes": 1
+  }
+ }
+}
