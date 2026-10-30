@@ -22,7 +22,8 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: collect-sat-ships
+  # probe（push）は本番（schedule・dispatch）と別の group：probe の再 push で本番の待ちが取り消されない
+  group: collect-sat-ships${{ github.event_name == 'push' && format('-probe-{0}', github.ref_name) || '' }}
   cancel-in-progress: false
 jobs:
   sat:
@@ -52,6 +53,8 @@ jobs:
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         run: |
           python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
+          # PU spent by this probe (same CDSE account; not in the published usage.csv)
+          python -m sat.annotate pu probe-pu "$RUNNER_TEMP/sat/out/usage.csv"
           # Masks the probe built from OSM (missing from sat/masks/), to be checked and committed by hand.
           for f in "$RUNNER_TEMP"/sat/masks/*.png; do
             [ -e "$f" ] || continue

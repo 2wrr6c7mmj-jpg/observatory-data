@@ -272,7 +272,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。",
         },
         "files": {
-            "ship_counts.csv": "1 行＝1 撮影×1 地点",
+            "ship_counts.csv": "1 行＝1 撮影×1 地点×1 範囲版（mask_version）",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
             "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",

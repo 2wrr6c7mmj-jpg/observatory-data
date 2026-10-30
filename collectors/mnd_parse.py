@@ -19,7 +19,7 @@ import html
 import re
 from datetime import date, datetime, timedelta, timezone
 
-PARSER_VERSION = 6
+PARSER_VERSION = 7
 MAX_PLAUSIBLE = 200  # a daily count above this is a misread (e.g. phone numbers in the page footer)
 TAIPEI = timezone(timedelta(hours=8))
 
@@ -186,7 +186,9 @@ def adiz_types(text: str) -> dict | None:
     hits = list(COUNT.finditer(section))
     for i, h in enumerate(hits):
         n = TENS[h[1].lower()] + (WORDS[h[2].lower()] if h[2] else 0) if h[1] else WORDS[h[3].lower()] if h[3] else int(h[4])
-        name = section[h.end():hits[i + 1].start() if i + 1 < len(hits) else len(section)].strip(" ,;、.-")
+        # Brackets around each entry ("(One Y-8 ASW) (Two J-10)") or a stray ")" are not
+        # part of the type name (parser 7).
+        name = section[h.end():hits[i + 1].start() if i + 1 < len(hits) else len(section)].strip(" ,;、.-()（）")
         if name:
             out[name] = out.get(name, 0) + n
     return out or None

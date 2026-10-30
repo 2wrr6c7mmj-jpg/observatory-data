@@ -109,6 +109,11 @@ class PublishedData(unittest.TestCase):
                 if r[k]:
                     self.assertLessEqual(int(r[k]), 200, (d, k))
 
+    def test_type_names_have_no_brackets(self):
+        for d, r in self.rows.items():
+            self.assertNotRegex(r["adiz_types"] or "", r"[()（）]", d)
+        self.assertEqual(self.rows["2021-03-25"]["adiz_types"], "J-10:2;Y-8 ASW:1")
+
     def test_formats_by_period(self):
         fmt = {d: r["format"] for d, r in self.rows.items()}
         self.assertEqual(fmt["2022-08-02"], "sw-adiz")

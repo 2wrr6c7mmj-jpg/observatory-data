@@ -25,7 +25,7 @@
   "parser_version": "数値を抜き出した処理の版",
   "format": "日報の書式。sw-adiz＝南西 ADIZ に進入した機（〜2022-08-02、機種別）、afc-around-roc＝空軍司令部「Air activities of PLA aircraft around the R.O.C. airspace」（2022-08-03〜2022-11-12、台湾周辺の機種別。南西 ADIZ だけではないが、その日の全機とは限らず、中間線を越えた機だけの日がある）、around-taiwan＝台湾周辺全体の機数・艦艇数・中間線越え（2022-11-16〜、06:00〜06:00）。書式は本文の表題で判定する。表題のない発表は、2022-08-03 以降の空軍司令部の発表（7本）を afc-around-roc、それ以外を sw-adiz とする（reports.json の format_basis＝series）",
   "adiz_aircraft": "sw-adiz・afc-around-roc 書式の日のみ：機種別の機数の合計（その日の別々の発表を合算）。意味は書式で異なる。sw-adiz＝南西 ADIZ に入った機。afc-around-roc＝その報告に載った台湾周辺の機数で、その日に台湾周辺で活動した全機（国防部の総数）とは限らない。中間線を越えた機数として発表された日がある（例：2022-08-05 は 49 機で、同日の国防部の発表の総数 68 機とは別の数）。around-taiwan の aircraft（総数）とも定義が異なるため、そのまま比較しない",
-  "adiz_types": "sw-adiz・afc-around-roc 書式の日のみ：機種別の内訳（機種:機数;…、その日の発表の合算）。機種名は原文の表記のまま（「One-Y-8 EW」のように数詞と機種名がハイフンでつながった表記は、読み取り処理 第6版から分けて数える）",
+  "adiz_types": "sw-adiz・afc-around-roc 書式の日のみ：機種別の内訳（機種:機数;…、その日の発表の合算）。機種名は原文の表記のまま（「One-Y-8 EW」のように数詞と機種名がハイフンでつながった表記は、読み取り処理 第6版から分けて数える。「(One Y-8 ASW) (Two J-10)」のように項目を囲む括弧は、第7版から機種名に含めない）",
   "reports": "sw-adiz・afc-around-roc 書式の日のみ：合算した発表（進入事象）の数",
   "merge_note": "sw-adiz・afc-around-roc 書式の日のみ：同じ日の発表の扱い（再掲として1回だけ数えた、訂正とみなした等）。空欄は全部を合算"
  },

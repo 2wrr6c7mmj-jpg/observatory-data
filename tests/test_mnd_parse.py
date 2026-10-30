@@ -67,6 +67,13 @@ class Parse(unittest.TestCase):
         # Digits after a hyphen stay part of the type name, and "Twenty-Four" is still 24.
         self.assertEqual(adiz_types("Aircraft Type: Twenty-Four J-16 Two-KJ-500 AEW&C Keywords"),
                          {"J-16": 24, "KJ-500 AEW&C": 2})
+        # Brackets around each entry (2021-03..09) and a stray ")" (2022-05) are not part of the name.
+        self.assertEqual(adiz_types("Aircraft Type: (Two J-10) (One Y-8 ASW) 三、Activity Area: x"),
+                         {"J-10": 2, "Y-8 ASW": 1})
+        self.assertEqual(adiz_types("Aircraft Type: (One Y-8 ASW) (One KJ-500 AEW&C) (Six J-16) Activity Area: x"),
+                         {"Y-8 ASW": 1, "KJ-500 AEW&C": 1, "J-16": 6})
+        self.assertEqual(adiz_types("Aircraft Type: One Y-8 EW Five J-16) Four J-11 Activities Area: x"),
+                         {"Y-8 EW": 1, "J-16": 5, "J-11": 4})
 
     def test_english_current_format(self):
         r = parse_report(EN_2025, "https://www.mnd.gov.tw/en/news/plaact/84583", NOW)
