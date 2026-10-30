@@ -1,0 +1,49 @@
+name: Satellite ship-count trial (ZJG)
+# 仕様書 v0 第8節の2: one site, from retrieval to detection. Runs only on the
+# trial branch and commits its outputs there for 2部 to review; nothing is
+# published on main. Public-repository Actions only (no Cloudflare usage).
+on:
+  push:
+    branches: [sat-zjg-trial]
+    paths: ['sat/**', '.github/workflows/sat-trial.yml']
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Look back this many days for scenes'
+        default: '12'
+      max_scenes:
+        description: 'Process at most this many new scenes (limits processing units)'
+        default: '3'
+permissions:
+  contents: write
+concurrency:
+  group: sat-trial
+  cancel-in-progress: false
+jobs:
+  zjg:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install
+        run: pip install -q -r sat/requirements.txt
+      - name: Tests
+        id: tests
+        run: python -m unittest discover -s tests -t .
+      - name: Fetch and detect (Zhanjiang)
+        if: ${{ steps.tests.outcome == 'success' }}
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: python -m sat.run --site ZJG --days "${{ inputs.days || '12' }}" --max-scenes "${{ inputs.max_scenes || '3' }}"
+      - name: Commit results to the trial branch
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' }}
+        run: |
+          git add docs/data/sat
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "試行: 湛江の衛星艦船候補 ($(date -u +%Y-%m-%d))"
+          git push
