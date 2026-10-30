@@ -1,0 +1,45 @@
+name: Wen PLA map import (one-time probe)
+# 溫約瑟の Google マイマップ（PLA 基地）の KML を一度だけ取得し、GeoJSON に変換して
+# この probe ブランチに commit する。元の KML は runner の一時ディレクトリにのみ置き、commit しない。
+# 変換済みのファイルがブランチにあれば取得しない（一度だけ）。定期実行・workflow_dispatch はない。
+on:
+  push:
+    branches: ['probe/wen-map-ops3']
+permissions:
+  contents: write
+concurrency:
+  # 本番のワークフロー（collect・jcg-senkaku・sat-ships・proto）とは別の group
+  group: probe-wen-map-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests (standard library only)
+        run: python -m unittest tests.test_wen_map -v
+      - name: Fetch once and convert
+        id: fetch
+        run: |
+          set -o pipefail
+          if [ -e docs/data/ref/wen_pla_map.geojson ]; then echo "already imported; not fetching"; exit 0; fi
+          mkdir -p docs/data/ref
+          python -m ref.wen_map fetch docs/data/ref/wen_pla_map.geojson "$RUNNER_TEMP/summary.txt" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+          echo "new=1" >> "$GITHUB_OUTPUT"
+      - name: Commit the converted data (not the KML)
+        if: steps.fetch.outputs.new == '1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/ref/wen_pla_map.geojson
+          git commit -m "溫約瑟 PLA 基地地図の取り込み（一度だけ、GeoJSON に変換、元の KML は置かない）"
+          git push origin HEAD:${{ github.ref_name }}
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
+          python -m sat.annotate text summary "$RUNNER_TEMP/summary.txt"
