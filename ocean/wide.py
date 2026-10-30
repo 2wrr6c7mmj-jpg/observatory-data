@@ -215,7 +215,7 @@ def _greedy_pass(cells, fp, recency, pu_left, max_requests, thresholds, max_cell
         for thr in thresholds:
             for a in ps["acqs"]:
                 f = fp[a]
-                free = np.minimum(f, 1.0 - cov).clip(0)
+                free = (f - cov).clip(0)   # new share only (a scene never pays twice for its own cells)
                 val = cells.sea * free * wgt
                 cur = cells.sea * free * cur_w
                 if cur.sum() <= 1e-6:
