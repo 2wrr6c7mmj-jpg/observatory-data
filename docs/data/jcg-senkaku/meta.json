@@ -38,9 +38,9 @@
   "retrieved_utc": "取得時刻（UTC）",
   "parser_version": "数値を抜き出した処理の版"
  },
- "missing_values": "原文の表で空欄の日は、その月の合計（日数・のべ隻数）と日ごとの値が一致した月（check=match または match_days）に限り 0（確認されず）とする。月合計を読み取れない月（no_totals）の空欄は null（不明）。「－」等の記号が書かれた欄は 0。領海侵入は内数のため、接続水域が 0 の日は 0。月合計と一致しない月は公開せず、status.json の not_published に理由を残す。",
+ "missing_values": "原文の表で空欄の日は、その月の合計（日数・のべ隻数）と日ごとの値が一致した月（check=match または match_days）に限り 0（確認されず）とする。月合計を読み取れない月（no_totals）の空欄は null（不明）。「－」等の記号が書かれた欄は 0。領海侵入は内数のため、接続水域が 0 の日は 0。月合計と一致しない月は公開せず、status.json の not_published に理由を残す。2012-09 以外で表が1日から始まらない月は、始まる前の日を null（不明）とし、status.json に記録する。同じ月の PDF が複数あるときは新しい方（「現在」の日付、次に Last-Modified が後のもの）を使い、どちらが新しいか分からなければその月は公開しない。",
  "files": {
-  "daily.csv / daily.json": "日ごとの値",
+  "daily.csv / daily.json": "日ごとの値（daily.json には attribution も入れる）",
   "pdfs.json": "取得した PDF ごとの記録（URL、SHA-256、ETag、Last-Modified、取得時刻、抜き出した語と位置、解析結果）。解析を直すときは PDF を取り直さず、ここから読み直す",
   "status.json": "最後の実行の結果（robots.txt の判定を含む）と、公開していない月とその理由"
  },

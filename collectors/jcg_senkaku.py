@@ -22,6 +22,7 @@ import calendar
 import csv
 import hashlib
 import http.client
+import io
 import json
 import os
 import re
@@ -42,6 +43,15 @@ TIMEOUT = 60
 JST = timezone(timedelta(hours=9))
 FIELDS = ["date", "contiguous_zone", "territorial_sea", "subject", "check", "window_start_utc", "window_end_utc",
           "as_of", "source_url", "source_last_modified_utc", "retrieved_utc", "parser_version"]
+
+# Repeated in daily.json so the data carries its credit wherever it is copied (same as meta.json).
+ATTRIBUTION = {
+    "credit": "出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）",
+    "license": "公共データ利用規約 第1.0版（PDL1.0） https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+    "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が月ごとの PDF から数値を自動で抜き出し、"
+                  "日ごとの表に加工した。加工したデータは海上保安庁が作成したものではなく、誤りがあれば加工者の責任による。",
+    "note": "海上保安庁のロゴ等は使用しない。",
+}
 
 _sleep = time.sleep
 
@@ -71,8 +81,6 @@ def get(url: str, headers: dict | None = None) -> polite.Response:
 
 def pdf_words(data: bytes) -> list[list]:
     """[page, text, x0, x1, top, bottom] for every word (pdfplumber, imported lazily)."""
-    import io
-
     import pdfplumber  # installed by the workflow; tests do not need it
 
     out = []
@@ -138,17 +146,30 @@ def last_day(rec: dict, today: date) -> int | None:
     return None
 
 
+def newness(rec: dict) -> tuple:
+    return ((rec.get("parse") or {}).get("as_of") or "", rec.get("last_modified_utc") or "")
+
+
 def daily_rows(store: dict, today: date) -> tuple[list[dict], dict]:
-    rows, by_month, issues = [], {}, {}
+    rows, months, issues = [], {}, {}
     for url, rec in store["pdfs"].items():
         key = month_key(rec)
         if not key:
             issues[url] = "year/month unknown"
             continue
-        if key in by_month:
-            issues[url] = f"second PDF for {key} (kept {by_month[key]['url']})"
+        months.setdefault(key, []).append(rec)
+    by_month = {}
+    for key, recs in months.items():
+        # Two PDFs for one month: the newer (later as-of date, then Last-Modified) is
+        # published; if neither is known to be newer, neither is.
+        recs.sort(key=newness, reverse=True)
+        if len(recs) > 1 and newness(recs[0]) == newness(recs[1]):
+            for r in recs:
+                issues[r["url"]] = f"{len(recs)} PDFs for {key}, none known to be newer"
             continue
-        by_month[key] = rec
+        for r in recs[1:]:
+            issues[r["url"]] = f"older PDF for {key} (published {recs[0]['url']})"
+        by_month[key] = recs[0]
     for key in sorted(by_month):
         rec = by_month[key]
         p = rec.get("parse") or {}
@@ -166,7 +187,10 @@ def daily_rows(store: dict, today: date) -> tuple[list[dict], dict]:
         verified = result in ("match", "match_days")
         ts_verified = verified and "ts_days" in p["totals"]
         y, m = (int(x) for x in key.split("-"))
-        first = min(int(d) for d in p["days"])  # 2012-09 starts on the 14th
+        first = min(int(d) for d in p["days"])
+        if key != "2012-09" and first != 1:  # only the first month (2012-09) starts later, on the 14th
+            issues.setdefault(rec["url"], f"table starts on day {first}, not 1")
+            first = 1  # the days before are published as unknown (null)
         for d in range(first, end + 1):
             r = p["days"].get(str(d))
             if r is None:
@@ -196,25 +220,36 @@ def dump_store(store: dict) -> str:
     return "{\n" + body + "\n}\n"
 
 
+def write_atomic(path: Path, text: str) -> None:
+    """Write beside the file and rename, so a killed run never leaves half a file to commit."""
+    tmp = path.with_name(path.name + ".tmp")
+    with open(tmp, "w", newline="", encoding="utf-8") as f:
+        f.write(text)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
 def save(store: dict, run: dict, today: date) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "pdfs.json").write_text(dump_store(store), encoding="utf-8")
+    write_atomic(OUT / "pdfs.json", dump_store(store))
     rows, issues = daily_rows(store, today)
-    with open(OUT / "daily.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS)
-        w.writeheader()
-        w.writerows(rows)
+    buf = io.StringIO(newline="")
+    w = csv.DictWriter(buf, fieldnames=FIELDS)
+    w.writeheader()
+    w.writerows(rows)
+    write_atomic(OUT / "daily.csv", buf.getvalue())
     generated = iso(now_utc())
-    (OUT / "daily.json").write_text(json.dumps({
-        "generated_utc": generated, "fields": FIELDS,
+    write_atomic(OUT / "daily.json", json.dumps({
+        "generated_utc": generated, "attribution": ATTRIBUTION, "fields": FIELDS,
         "rows": [[r[k] for k in FIELDS] for r in rows],
-    }, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    (OUT / "status.json").write_text(json.dumps({
+    }, ensure_ascii=False, separators=(",", ":")) + "\n")
+    write_atomic(OUT / "status.json", json.dumps({
         "generated_utc": generated, "last_run": run,
         "pdfs": len(store["pdfs"]), "days": len(rows),
         "first_day": rows[0]["date"] if rows else None, "last_day": rows[-1]["date"] if rows else None,
         "page": store.get("page"), "not_published": issues, "parser_version": PARSER_VERSION,
-    }, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    }, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
 
 
 def record(link: dict, resp: polite.Response, retrieved: datetime) -> dict:

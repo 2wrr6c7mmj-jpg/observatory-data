@@ -132,6 +132,44 @@ class Rows(unittest.TestCase):
         self.assertEqual(sum(r["territorial_sea"] for r in rows), 13)
         self.assertEqual(rows[0]["check"], "match")
 
+    def sept(self, name, lm, **kw):
+        rec = j.reparse({"url": BASE + name, "label": "9月", "year": 2026, "month": 9,
+                         "words": table(title="令和8年9月", as_of="( 9/30 現在)", vals=SEPT, last=30, **kw)})
+        return {**rec, "last_modified_utc": lm}
+
+    def test_newer_pdf_of_a_month_is_published(self):
+        old, new = self.sept("old.pdf", "2026-10-01T00:00:00Z"), self.sept("new.pdf", "2026-10-05T00:00:00Z")
+        rows, issues = j.daily_rows({"pdfs": {old["url"]: old, new["url"]: new}}, datetime(2026, 10, 30).date())
+        self.assertEqual({r["source_url"] for r in rows}, {new["url"]})
+        self.assertEqual(list(issues), [old["url"]])
+
+    def test_month_with_two_equally_new_pdfs_is_not_published(self):
+        a, b = self.sept("a.pdf", None), self.sept("b.pdf", None)
+        rows, issues = j.daily_rows({"pdfs": {a["url"]: a, b["url"]: b}}, datetime(2026, 10, 30).date())
+        self.assertEqual(rows, [])
+        self.assertEqual(set(issues), {a["url"], b["url"]})
+
+    def test_month_not_starting_on_day_1_is_recorded(self):
+        rec = self.sept("late.pdf", None, totals=False)
+        for d in ("1", "2"):
+            rec["parse"]["days"].pop(d)
+        rows, issues = j.daily_rows({"pdfs": {rec["url"]: rec}}, datetime(2026, 10, 30).date())
+        self.assertIn("starts on day 3", issues[rec["url"]])
+        self.assertEqual((rows[0]["date"], rows[0]["contiguous_zone"], len(rows)), ("2026-09-01", None, 30))
+
+
+class Save(unittest.TestCase):
+    def test_daily_json_carries_the_attribution_of_meta_json(self):
+        meta = json.loads((Path(j.__file__).resolve().parent.parent / "docs/data/jcg-senkaku/meta.json")
+                          .read_text(encoding="utf-8"))
+        self.assertEqual(j.ATTRIBUTION, meta["attribution"])
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(j, "OUT", Path(d)):
+            j.save({"pdfs": {}}, {"result": "ok"}, datetime(2026, 10, 30).date())
+            daily = json.loads((Path(d) / "daily.json").read_text(encoding="utf-8"))
+            self.assertEqual(daily["attribution"], meta["attribution"])
+            self.assertEqual(sorted(p.name for p in Path(d).iterdir()),
+                             ["daily.csv", "daily.json", "pdfs.json", "status.json"])  # no .tmp left
+
 
 if __name__ == "__main__":
     unittest.main()
