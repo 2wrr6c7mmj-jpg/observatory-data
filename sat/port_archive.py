@@ -602,7 +602,10 @@ def main(argv=None) -> int:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--cap", type=float, default=PORTS_CAP)
     p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
-    p.add_argument("--ports-usage", type=Path, help="ports_usage.csv (earlier runs of this archive)")
+    p.add_argument("--ports-usage", type=Path, nargs="*", default=[],
+                   help="usage CSVs of earlier runs of this archive (docs/data/sat/ports/*/usage.csv)")
+    p.add_argument("--reserve", type=float, default=0.0,
+                   help="PU announced by other jobs but not in their usage CSV yet (counted in the 9,000 PU guard)")
     p.add_argument("--out-root", type=Path, default=OUT_DIR, help="earlier results (only new work is planned)")
     p.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
     m = sub.add_parser("mask")
@@ -654,13 +657,13 @@ def main(argv=None) -> int:
     if args.cmd == "plan":
         month = now.strftime("%Y-%m")
         other_pu, other_req = month_usage(args.usage, month)
-        done_pu, done_req = month_usage([args.ports_usage] if args.ports_usage else [], month)
-        cap = min(args.cap - done_pu, GLOBAL_CAP - GLOBAL_MARGIN - other_pu - done_pu)
+        done_pu, done_req = month_usage(args.ports_usage, month)
+        cap = min(args.cap - done_pu, GLOBAL_CAP - GLOBAL_MARGIN - other_pu - args.reserve - done_pu)
         req_cap = REQUEST_CAP - REQUEST_MARGIN - other_req - done_req
         client = cdse.Client()
         res = plan(client, ports, now, max(0.0, cap), max(0, req_cap - 200),
                    log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir)
-        res.update(other_usage_pu=round(other_pu, 1), other_usage_requests=other_req,
+        res.update(other_usage_pu=round(other_pu, 1), reserve_pu=args.reserve, other_usage_requests=other_req,
                    ports_done_pu=round(done_pu, 1), global_cap=GLOBAL_CAP, ports_cap=args.cap)
         args.out.write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(json.dumps({k: v for k, v in res.items() if k != "ports"}, ensure_ascii=False))

@@ -3,7 +3,8 @@ name: PLAN ports archive probe
 # probe 用ブランチへの push でだけ動く（workflow_dispatch なし、定期実行なし）。main は読むだけで変えない。
 # 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別の concurrency group。
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
-# PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読む）。
+# PU：港の取得全体で 4,000 PU 以内（ヘッダの実 PU）。sat＋外洋＋港で月 9,000 PU の安全ガード（plan が他の usage を読み、
+# まだ usage に出ていない外洋の再取得の予定 約 1,800 PU を --reserve で差し引く）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
@@ -110,7 +111,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --cap 4000 \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports_usage.csv 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --reserve 1800 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json
