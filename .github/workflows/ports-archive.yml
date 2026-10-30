@@ -206,7 +206,8 @@ jobs:
           for t in "$RUNNER_TEMP"/art/*.tgz; do tar xzf "$t"; done
           python - <<'EOF' | tee "$RUNNER_TEMP/total.txt"
           import csv, glob, io
-          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv, trend
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv, trend, load_ports, mask_tag
+          tags = {p["id"]: mask_tag(p) for p in load_ports()}
           from pathlib import Path
           rows = []
           for p in sorted(glob.glob("docs/data/sat/ports/*/usage.csv")):  # includes locate/usage.csv
@@ -222,7 +223,7 @@ jobs:
               b[0] += float(r["processing_units"] or 0); b[1] += int(r["requests"] or 0)
               b[2] += int(r["s1_scenes"] or 0); b[3] += int(r["s2_days"] or 0); b[4] += int(r["s2_clear"] or 0)
           for k, b in sorted(by.items()):
-              print(f"{k}: {b[0]:.1f} PU, {b[1]} req, S1 {b[2]} scenes, S2 {b[3]} days / clear {b[4]}; trend {trend(Path('docs/data/sat/ports') / k)}")
+              print(f"{k}: {b[0]:.1f} PU, {b[1]} req, S1 {b[2]} scenes, S2 {b[3]} days / clear {b[4]}; {tags.get(k, '')} trend {trend(Path('docs/data/sat/ports') / k, tags.get(k))}")
           EOF
       - name: Report (annotations)
         if: always()

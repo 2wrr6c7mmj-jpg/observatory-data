@@ -56,6 +56,7 @@ S2_WINDOW_DAYS = 30
 S2_CLEAR_SHARE = 0.35       # plan only: share of days with a 10 m request
 S2_PRE_PU = 0.03
 RAW_KEEP = 3
+DONE_RESULTS = ("counted", "skipped_low_coverage", "skipped_footprint")
 SCENE_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "result",
                 "coverage", "incidence_deg", "candidates", "harbour_candidates", "quay_candidates"] + \
                [f"len_{n}" for n, _lo, _hi in LENGTH_CLASSES] + \
@@ -198,6 +199,68 @@ def month_usage(paths: list[Path], month: str) -> tuple[float, int]:
     return pu, req
 
 
+# ---------- catalog footprints ----------
+
+def _rings(geom: dict | None) -> list:
+    if not geom:
+        return []
+    t, c = geom.get("type"), geom.get("coordinates") or []
+    if t == "Polygon":
+        return [c[0]] if c else []
+    if t == "MultiPolygon":
+        return [p[0] for p in c if p]
+    return []
+
+
+def _inside(x: np.ndarray, y: np.ndarray, ring) -> np.ndarray:
+    r = np.asarray(ring, float)
+    xs, ys = r[:, 0], r[:, 1]
+    out = np.zeros(x.shape, bool)
+    j = len(r) - 1
+    for i in range(len(r)):
+        xi, yi, xj, yj = xs[i], ys[i], xs[j], ys[j]
+        if yi != yj:
+            out ^= ((yi > y) != (yj > y)) & (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+        j = i
+    return out
+
+
+def footprint_share(geoms: list, grid: Grid, water: np.ndarray, step: int = 8) -> float | None:
+    """Share of the site's water (sampled every ``step`` pixels) inside the union of the catalog footprints.
+    None when no footprint geometry is known (the scene is then fetched as before)."""
+    rings = [r for g in geoms for r in _rings(g)]
+    if not rings:
+        return None
+    rr = np.arange(step // 2, grid.height, step)
+    cc = np.arange(step // 2, grid.width, step)
+    lon, lat = grid.to_lonlat(rr[:, None] + 0.5, cc[None, :] + 0.5)
+    lon, lat = np.broadcast_to(lon, (len(rr), len(cc))), np.broadcast_to(lat, (len(rr), len(cc)))
+    sel = water[np.ix_(rr, cc)]
+    if not sel.any():
+        return None
+    inside = np.zeros(sel.shape, bool)
+    for ring in rings:
+        inside |= _inside(lon, lat, ring)
+    return round(float(inside[sel].mean()), 3)
+
+
+def acquisitions_with_footprints(feats: list[dict]) -> list[dict]:
+    geo = {f.get("id"): f.get("geometry") for f in feats}
+    acqs = cdse.acquisitions(feats)
+    for a in acqs:
+        a["geometries"] = [geo.get(i) for i in a["ids"] if geo.get(i)]
+    return acqs
+
+
+def water_of(site: dict, mask: np.ndarray | None) -> np.ndarray:
+    grid = Grid.for_site(site)
+    return (mask == 0) if mask is not None else np.ones((grid.height, grid.width), bool)
+
+
+def row_tag(site: dict, has_mask: bool) -> str:
+    return mask_tag(site) if has_mask else "none"
+
+
 # ---------- plan ----------
 
 def s2_full_pu(grid: Grid) -> float:
@@ -239,18 +302,39 @@ def allocate(estimates: list[dict], cap: float, req_cap: int) -> list[dict]:
     return out
 
 
-def plan(client, ports: list[dict], now: datetime, cap: float, req_cap: int, log=print) -> dict:
+def plan(client, ports: list[dict], now: datetime, cap: float, req_cap: int, log=print,
+         out_root: Path | None = None, mask_dir: Path | None = None) -> dict:
+    """Only the work not done yet (S1 scenes and S2 days of the current mask version) is estimated; scenes
+    whose catalog footprint covers less than MIN_COVERAGE of the water are not counted (not fetched)."""
+    from .osm_mask import load_mask
     est = []
     for site in ports:
         grid = Grid.for_site(site)
         t0 = now - timedelta(days=LOOKBACK_DAYS)
-        n1 = len(cdse.acquisitions(client.catalog(grid.bbox, t0, now)))
-        n2 = len(s2.day_groups(client.catalog(grid.bbox, t0, now, collection=s2.COLLECTION)))
+        mask = None
+        if mask_dir is not None:
+            try:
+                mask, _m = load_mask(site["id"], int(site.get("mask_version", 1)), mask_dir)
+            except FileNotFoundError:
+                mask = None
+        tag = row_tag(site, mask is not None)
+        out = (out_root / site["id"]) if out_root is not None else None
+        done1 = {r["acquired_utc"] for r in read_csv(out / "s1_scenes.csv") if r.get("mask_version") == tag
+                 and r.get("result") in DONE_RESULTS} if out else set()
+        done2 = {r["date"] for r in read_csv(out / "s2_scenes.csv") if r.get("mask_version") == s2.mask_tag(site)
+                 and r.get("result") != "error"} if out else set()
+        acqs = acquisitions_with_footprints(client.catalog(grid.bbox, t0, now))
+        water = water_of(site, mask)
+        new1 = [a for a in acqs if a["acquired_utc"] not in done1]
+        low = [a for a in new1 if (lambda f: f is not None and f < MIN_COVERAGE)(footprint_share(a["geometries"], grid, water))]
+        n1 = len(new1) - len(low)
+        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, t0, now, collection=s2.COLLECTION)) if d["date"] not in done2])
         e = estimate_port(site, n1, n2)
+        e.update(s1_done=len(done1), s2_done=len(done2), s1_footprint_skip=len(low), mask_version=tag)
         est.append(e)
-        log(f"{site['id']} {site['name']}: S1 {n1} 撮影 × {e['s1_pu_per_scene']} PU = {e['s1_pu']} PU、"
-            f"S2 {n2} 日 → 約 {e['s2_pu']} PU、計 {e['pu']} PU")
-    chosen = allocate(est, cap, req_cap)
+        log(f"{site['id']} {site['name']} [{tag}]: S1 新 {n1} 撮影（済み {len(done1)}、足跡で除く {len(low)}）× "
+            f"{e['s1_pu_per_scene']} PU = {e['s1_pu']} PU、S2 新 {n2} 日（済み {len(done2)}）→ 約 {e['s2_pu']} PU、計 {e['pu']} PU")
+    chosen = allocate([e for e in est if e["s1_scenes"] or e["s2_days"]], cap, req_cap)
     return {"plan_utc": cdse.iso(now), "cap_pu": cap, "cap_req": req_cap,
             "estimate_pu": round(sum(e["pu"] for e in est), 1),
             "chosen_estimate_pu": round(sum(e["pu"] for e in chosen), 1),
@@ -287,16 +371,20 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
     from .run import decode_chip
     grid = Grid.for_site(site)
     path = out / "s1_scenes.csv"
-    rows = read_csv(path)
-    done = {r["acquired_utc"] for r in rows if r.get("result") in ("counted", "skipped_low_coverage")}
+    tag = row_tag(site, mask is not None)
+    rows_all = read_csv(path)
+    others = [r for r in rows_all if r.get("mask_version") != tag]  # earlier mask versions stay as they are
+    rows = [r for r in rows_all if r.get("mask_version") == tag]
+    done = {r["acquired_utc"] for r in rows if r.get("result") in DONE_RESULTS}
     rows = [r for r in rows if r["acquired_utc"] in done]
-    acqs = cdse.acquisitions(client.catalog(grid.bbox, now - timedelta(days=days), now))
+    acqs = acquisitions_with_footprints(client.catalog(grid.bbox, now - timedelta(days=days), now))
     land = (mask > 0) if mask is not None else np.zeros((grid.height, grid.width), bool)
     if land.shape != (grid.height, grid.width):
         raise ValueError(f"{site['id']}: 陸マスクの大きさ {land.shape} が範囲 {(grid.height, grid.width)} と合わない")
     water_px = int((~land).sum())
     feats_by_month: dict = {}
-    summary = {"catalog_acquisitions": len(acqs), "counted": 0, "skipped": 0, "errors": 0, "stopped": None}
+    summary = {"catalog_acquisitions": len(acqs), "counted": 0, "skipped": 0, "footprint_skipped": 0, "errors": 0,
+               "stopped": None}
     pu0 = client.processing_units
     log(f"{site['id']} S1: 撮影 {len(acqs)} 回（過去 {days} 日）、済み {len(done)}")
     for acq in acqs:
@@ -305,8 +393,15 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
             continue
         row = {"site_id": site["id"], "acquired_utc": a, "platform": acq["platform"],
                "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
-               "mask_version": mask_tag(site) if mask is not None else "none", "detector_version": DETECTOR_VERSION,
+               "mask_version": tag, "detector_version": DETECTOR_VERSION,
                "archive_version": ARCHIVE_VERSION, "retrieved_utc": cdse.iso(datetime.now(timezone.utc))}
+        share = footprint_share(acq.get("geometries") or [], grid, ~land)
+        if share is not None and share < MIN_COVERAGE:  # catalog footprint: no request, no PU
+            row.update(result="skipped_footprint", coverage=share, processing_units=0)
+            rows.append(row)
+            summary["footprint_skipped"] += 1
+            log(f"{site['id']} S1 {a}: 足跡が水域の {share:.0%} しか覆わないため取らない")
+            continue
         try:
             data, pu = client.process(grid.bbox, grid.width, grid.height, acq["t_from"], acq["t_to"], True)
         except BudgetStop as e:
@@ -377,40 +472,51 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
             summary["errors"] += 1
             log(f"{site['id']} S1 {a}: 検出・描画で失敗 {str(e)[:200]}")
         rows.append(row)
-    rows.sort(key=lambda r: r["acquired_utc"])
-    write_csv(path, rows, SCENE_FIELDS)
+    write_csv(path, sorted(others + rows, key=lambda r: (r["acquired_utc"], r.get("mask_version") or "")), SCENE_FIELDS)
     for month, feats in feats_by_month.items():
         p = out / "detections" / f"{month}.geojson"
         fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
-        keep = {f["properties"]["acquired_utc"] for f in feats}
-        fc["features"] = [f for f in fc["features"] if f["properties"]["acquired_utc"] not in keep] + feats
-        fc["features"].sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"]["n"]))
+        keep = {(f["properties"]["acquired_utc"], f["properties"]["mask_version"]) for f in feats}
+        fc["features"] = [f for f in fc["features"]
+                          if (f["properties"]["acquired_utc"], f["properties"].get("mask_version")) not in keep] + feats
+        fc["features"].sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"].get("mask_version") or "",
+                                           f["properties"]["n"]))
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     summary["processing_units"] = round(client.processing_units - pu0, 3)
     return summary
 
 
-def keep_raw(site: dict, out: Path, tmp_raw: Path, raw_dir: Path) -> list[str]:
+def raw_subdir(site: dict) -> str:
+    v = int(site.get("mask_version", 1))
+    return site["id"] if v == 1 else f"{site['id']}/v{v}"  # v1 keeps the path of the first run
+
+
+def keep_raw(site: dict, out: Path, tmp_raw: Path, raw_dir: Path, tag: str | None = None) -> list[str]:
     path = out / "s1_scenes.csv"
     rows = read_csv(path)
-    have = {r["acquired_utc"] for r in rows if (tmp_raw / f"{site['id']}-{stamp(r['acquired_utc'])}.png").exists()}
-    picks = representative([r for r in rows if r["acquired_utc"] in have])
+    tag = tag or mask_tag(site)
+    mine = [r for r in rows if r.get("mask_version") == tag]
+    if any(r.get("raw_chip") for r in mine):
+        return []  # already kept for this version
+    have = {r["acquired_utc"] for r in mine if (tmp_raw / f"{site['id']}-{stamp(r['acquired_utc'])}.png").exists()}
+    picks = representative([r for r in mine if r["acquired_utc"] in have])
+    sub = raw_subdir(site)
     kept = []
     for a in picks:
         src = tmp_raw / f"{site['id']}-{stamp(a)}.png"
-        dst = raw_dir / site["id"] / f"{stamp(a)}.png"
+        dst = raw_dir / sub / f"{stamp(a)}.png"
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_bytes(src.read_bytes())
         kept.append(str(dst.relative_to(raw_dir)))
     if kept:
-        for r in rows:
+        for r in mine:
             if r["acquired_utc"] in picks:
-                r["raw_chip"] = f"probe-raw/{site['id']}/{stamp(r['acquired_utc'])}.png"
+                r["raw_chip"] = f"probe-raw/{sub}/{stamp(r['acquired_utc'])}.png"
         write_csv(path, rows, SCENE_FIELDS)
         grid = Grid.for_site(site)
-        (raw_dir / site["id"] / "README.json").write_text(json.dumps({
-            "site": site["id"], "bbox": grid.bbox, "width": grid.width, "height": grid.height,
+        (raw_dir / sub / "README.json").write_text(json.dumps({
+            "site": site["id"], "mask_version": tag, "bbox": grid.bbox, "width": grid.width, "height": grid.height,
             "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
             "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
             "credit": "Contains modified Copernicus Sentinel data",
@@ -458,7 +564,7 @@ def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, t
         mask, mmeta = None, None
     req0 = client.requests
     s1 = run_s1(client, site, out, tmp_raw, mask, now, log=log)
-    kept = keep_raw(site, out, tmp_raw, raw_dir)
+    kept = keep_raw(site, out, tmp_raw, raw_dir, row_tag(site, mask is not None))
     s1_req = client.requests - req0
     deadline_left = (lambda: client.deadline - client.clock()) if client.deadline is not None else (lambda: 1e9)
     s2s = run_s2(client, site, out, now, lambda: client.cap_pu - client.processing_units, deadline_left, log=log) \
@@ -478,9 +584,10 @@ def usage_row(res: dict, now: datetime) -> dict:
             "archive_version": ARCHIVE_VERSION}
 
 
-def trend(out: Path) -> str:
-    """Monthly median of the candidates (counted scenes) — the rough series of the summary."""
-    rows = [r for r in read_csv(out / "s1_scenes.csv") if r.get("result") == "counted" and r.get("candidates") != ""]
+def trend(out: Path, tag: str | None = None) -> str:
+    """Monthly median of the candidates (counted scenes of one mask version) — the rough series of the summary."""
+    rows = [r for r in read_csv(out / "s1_scenes.csv") if r.get("result") == "counted" and r.get("candidates") != ""
+            and (tag is None or r.get("mask_version") == tag)]
     by: dict = {}
     for r in rows:
         by.setdefault(r["acquired_utc"][:7], []).append(int(r["candidates"]))
@@ -496,6 +603,8 @@ def main(argv=None) -> int:
     p.add_argument("--cap", type=float, default=PORTS_CAP)
     p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
     p.add_argument("--ports-usage", type=Path, help="ports_usage.csv (earlier runs of this archive)")
+    p.add_argument("--out-root", type=Path, default=OUT_DIR, help="earlier results (only new work is planned)")
+    p.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
     m = sub.add_parser("mask")
     m.add_argument("--ports", type=Path, default=PORTS_FILE)
     m.add_argument("--mask-dir", type=Path, required=True)
@@ -550,7 +659,7 @@ def main(argv=None) -> int:
         req_cap = REQUEST_CAP - REQUEST_MARGIN - other_req - done_req
         client = cdse.Client()
         res = plan(client, ports, now, max(0.0, cap), max(0, req_cap - 200),
-                   log=lambda s: print(s, file=sys.stderr))
+                   log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir)
         res.update(other_usage_pu=round(other_pu, 1), other_usage_requests=other_req,
                    ports_done_pu=round(done_pu, 1), global_cap=GLOBAL_CAP, ports_cap=args.cap)
         args.out.write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -562,7 +671,7 @@ def main(argv=None) -> int:
                            deadline=time.monotonic() + args.max_minutes * 60)
     res = run_port(client, site, args.out, args.raw_dir, args.tmp, args.mask_dir, now,
                    log=lambda s: print(s, file=sys.stderr, flush=True))
-    res["trend"] = trend(args.out / site["id"])
+    res["trend"] = trend(args.out / site["id"], mask_tag(site))
     out = args.out / site["id"]
     write_csv(out / "usage.csv", read_csv(out / "usage.csv") + [usage_row(res, now)], USAGE_FIELDS)
     text = json.dumps(res, ensure_ascii=False, indent=1)

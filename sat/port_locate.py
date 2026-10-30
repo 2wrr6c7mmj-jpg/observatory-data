@@ -152,7 +152,7 @@ def main(argv=None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     res = []
     for r in regions:
-        if args.only and r["id"] not in args.only:
+        if (args.only and r["id"] not in args.only) or (not args.only and r.get("done")):
             continue
         b = r["bbox"]
         try:
@@ -171,6 +171,10 @@ def main(argv=None) -> int:
             print(f"{r['id']}: S2 失敗 {str(e)[:200]}", file=sys.stderr)
         res.append({"id": r["id"], "bbox": b, "pu": pu, "features": feats[:60]})
         print(f"{r['id']}: OSM {len(feats)} 件、S2 {pu} PU", file=sys.stderr)
+    prev = args.out / "locate.json"
+    if prev.exists():
+        ids = {r["id"] for r in res}
+        res = [r for r in json.loads(prev.read_text(encoding="utf-8"))["regions"] if r["id"] not in ids] + res
     (args.out / "locate.json").write_text(json.dumps({"run_utc": cdse.iso(now), "regions": res,
                                                         "requests": client.requests, "pu": round(client.processing_units, 3),
                                                         "osm_license": "(c) OpenStreetMap contributors, ODbL 1.0"},
