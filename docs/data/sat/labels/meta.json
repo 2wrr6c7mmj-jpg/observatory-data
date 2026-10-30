@@ -1,12 +1,12 @@
 {
- "generated_utc": "2026-10-30T12:26:30Z",
+ "generated_utc": "2026-10-30T12:33:55Z",
  "site_id": "ZJG",
  "method": {
   "version": "s2lab-1",
   "status": {
    "ok": "ラベルあり",
    "cloud": "区間の画素の SCL の雲・影が 30% 超（ラベルは作るが疑わしい。白い船が雲とされることもある）",
-   "blind": "struct_m ≥ 30 m：水際の画素が晴れの日の 75% 超で水でない（ほぼ常に船がいる・構造物）。占有を見分けられない",
+   "blind": "struct_m ≥ 30 m：水際の画素が晴れの日の 75% 超で水でない（ほぼ常に船がいる・構造物）。占有を見分けられない（occupied・c は空欄）",
    "not_water": "far_water < 0.9：沖側が開けた水面でない（陸マスクの水域が実際は陸・干潟・養殖池など。ラベルなし）",
    "nodata": "区間の半分以上でデータなし"
   },
@@ -19,7 +19,7 @@
   "colour": "船の画素（struct から奥行きまで）のうち、上下左右も水でない画素を芯とする（3 個未満なら全部、core_mode＝all）。芯の反射率の中央値 med_r（B4）・med_g（B3）・med_b（B2）・med_nir（B8）、その HSV（反射率 0〜0.3 を 0〜1、線形）、contrast＝船の画素の明るさ（可視の平均）の (p90−p10)／中央値",
   "color_class": "記録だけ（判定に使わない）：colour（彩度 ≥ 0.3）、contrast（≥ 0.8、白黒の対比）、grey（彩度 < 0.15）、mixed（その他）",
   "s1": "各晴れの日の ±4 日以内で基準のある相対軌道（湛江は 157 と 84。カタログではどちらも上昇＝夕方の軌道）の撮影のうち最も近いもの（2026-10-27 より前）を取り直し、quay-v1（feat-1 込み）で数えた。quay_counts.csv・est-1 の事前分布は変えない。区間ごとに、数えた占有区間（stretch）に入る内側の帯の占有点の長さ s1_occ_len_m、その点の depth_m・depth_1x3_m の中央値、最も重なる stretch の db_line_m・横抱き・min/max、区間の cosφ と face_look",
-  "match": "d_depth_m＝s1_depth_m−s2 の depth_m（両方占有のとき）。agree＝占有の有無が一致（1/0）。時刻は S2 が 03:22 UTC ごろ、S1 が 10:41〜10:49 UTC ごろで、同じ日でも約 7.5 時間ずれる（dt_h）：入出港で船が違うことがある",
+  "match": "d_depth_m＝s1_depth_m−s2 の depth_m（両方占有のとき）。agree＝占有の有無が一致（1/0）。時刻は S2 が 03:22 UTC ごろ、S1 が 10:41〜10:49 UTC ごろで、同じ日でも約 7.5 時間ずれる（dt_h＝S1−S2、時間）：入出港で船が違うことがある。実際の時刻差の範囲・同じ日に組めた数は meta.json の match_dt。列数の式が違う：S2 の c＝depth_m／18 m（構造物を除いた奥行き）、S1 の s1_cols_hint＝(depth_m−20 m)／18 m（est-1 の cols_hint と同じ。3×3 平均のにじみ約 20 m を引く）。s1_in_sample：tuning＝quay-v1 の閾値の調整に使った撮影、baseline＝基準 bl-1 の期間内の撮影、空＝どちらでもない",
   "raw": "取得した切り出し（岸壁の帯だけ残した npz：S2 の B2・B3・B4・B8・SCL と水の基準、S1 の VV・VH の dB）は probe ブランチ probe/sat-s2-labels-ops3 の probe-raw/s2-labels/<地点>/ にだけ置く（main には入れない）。python -m sat.s2_labels --from-raw <そのディレクトリ> で PU を使わずに作り直せる",
   "limits": [
    "10 m 画素：幅 18 m 前後の艦は 1〜3 画素で、縁は水と混ざる。c は ±1 列ずれ得る（特に 1 と 2）",
@@ -189,15 +189,15 @@
   },
   "c": {
    "0": 1615,
-   "1": 229,
-   "2": 105,
-   "3": 35
+   "1": 228,
+   "2": 104,
+   "3": 28
   },
   "color_class": {
-   "grey": 158,
-   "mixed": 142,
+   "grey": 151,
+   "mixed": 141,
    "colour": 49,
-   "contrast": 20
+   "contrast": 19
   },
   "occupancy_s2_vs_s1": {
    "both": 199,
@@ -234,12 +234,27 @@
    "3-3": 8
   }
  },
+ "summary_note": "summary の c・color_class・S1 との比較は status＝ok の行だけで数える",
+ "match_dt": {
+  "pairs": 16,
+  "s2_days": 16,
+  "dt_h_min": -40.5,
+  "dt_h_max": 79.4,
+  "same_day": 4,
+  "abs_days": {
+   "0": 7,
+   "1": 7,
+   "2": 1,
+   "3": 1
+  },
+  "note": "dt_h＝S1−S2（時間）。abs_days＝|dt_h| を 24 時間で切り捨てた日数ごとの組の数"
+ },
  "files": {
   "ZJG-s2-labels.csv": "区間×晴れの日の自動ラベル（自動・未確認。verified_* は人が確かめて埋める）",
   "ZJG-s2-s1-match.csv": "同じ区間×晴れの日の S2 ラベルと、近い S1 の撮影の岸壁の特徴の突き合わせ",
   "ZJG-s2-sections.geojson": "区間の線（OSM 由来、ODbL）"
  },
- "verify": "verified＝1（確かめた）／0（見たが判断できない）、verified_occupied・verified_c・verified_color に人の判定、verified_by に確かめた人、verified_note に根拠（画像 s2/<地点>/v<版>/<撮影>.webp）。空欄は未確認",
+ "verify": "verified＝1（確かめた）／0（見たが判断できない）、verified_occupied・verified_c・verified_color に人の判定、verified_by に確かめた人、verified_note に根拠（画像 s2/<地点>/v<版>/<撮影>.webp）。空欄は未確認。後段（est-2・較正）で使うのは status＝ok かつ verified＝1 の行だけ（cloud・blind・not_water・nodata と未確認の行は使わない）",
  "credit": "Contains modified Copernicus Sentinel data 2025, 2026",
  "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）"
 }

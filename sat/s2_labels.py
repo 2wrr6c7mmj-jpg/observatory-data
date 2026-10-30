@@ -8,9 +8,12 @@ pieces of about SECTION_M), an automatic label is made from the 10 m reflectance
    water of the land mask that SCL calls water (6), away from the quay lines. A pixel is "not water"
    when B8 or the visible mean is above the reference by max(NW_MIN, NW_K x MAD).
 2. Depth: along the same normals as the Sentinel-1 quay count (quay.Geometry, 5-120 m off the water's
-   edge every 5 m, the nearest line owns a pixel), the leading run of not-water pixels (m). The fixed
-   structure (pier deck, OSM line offset) is the minimum of that depth over all clear days of the sample
-   (struct); the excess over it is the ship part.
+   edge every 5 m, the nearest line owns a pixel), the leading run of not-water pixels (m). A pixel that
+   was water on fewer than WATER_FREQ_MIN (25 %) of the clear days is fixed (pier deck, land, OSM line
+   offset); the leading run of fixed pixels is the structure (struct), the excess over it the ship part.
+   A section whose pixels FAR_FROM_M (65 m) and beyond were water on fewer than FAR_WATER_MIN (90 %) of
+   the days does not face open water (the land mask is wrong there): status not_water, no label.
+   struct >= BLIND_STRUCT_M: status blind, no label either.
 3. Occupied samples: excess >= OCC_EXCESS_M; runs as in quay-v1 (gaps < 20 m joined, >= 30 m kept).
    A section is occupied when its occupied samples reach OCC_MIN_M. Its depth = median excess of the
    occupied samples (5 m); rows abreast c = clip(round(depth / BEAM_M), 1, 3), 0 when not occupied.
@@ -295,7 +298,11 @@ def label_day(geom: quay.Geometry, secs: list[dict], prof: list[dict], struct: l
             row.update(status="not_water")
             rows.append(row)
             continue
-        status = "blind" if smed >= BLIND_STRUCT_M else "cloud" if (cshare or 0) > CLOUD_SECTION else "ok"
+        if smed >= BLIND_STRUCT_M:  # the berth looked taken on most days: occupation cannot be told
+            row.update(status="blind")
+            rows.append(row)
+            continue
+        status = "cloud" if (cshare or 0) > CLOUD_SECTION else "ok"
         occ_len = int(occ.sum() * step)
         occupied = occ_len >= OCC_MIN_M
         row.update(status=status, occupied=int(occupied), occ_len_m=occ_len, c=0)
@@ -425,7 +432,7 @@ def settings() -> dict:
                      f"区間の中で {OCC_MIN_M:g} m 以上あれば occupied＝1。depth_m＝その点の超えた分の中央値、depth_max_m＝最大（5 m 単位）"),
         "c": f"列数の目安：c＝clip(round(depth_m／{BEAM_M:g} m), 1, 3)、占有なしは 0（艦の幅を約 {BEAM_M:g} m と仮定。10 m 画素のため ±1 列の誤りがあり得る）",
         "status": {"ok": "ラベルあり", "cloud": f"区間の画素の SCL の雲・影が {CLOUD_SECTION:.0%} 超（ラベルは作るが疑わしい。白い船が雲とされることもある）",
-                   "blind": f"struct_m ≥ {BLIND_STRUCT_M:g} m：水際の画素が晴れの日の {1 - WATER_FREQ_MIN:.0%} 超で水でない（ほぼ常に船がいる・構造物）。占有を見分けられない",
+                   "blind": f"struct_m ≥ {BLIND_STRUCT_M:g} m：水際の画素が晴れの日の {1 - WATER_FREQ_MIN:.0%} 超で水でない（ほぼ常に船がいる・構造物）。占有を見分けられない（occupied・c は空欄）",
                    "not_water": f"far_water < {FAR_WATER_MIN:g}：沖側が開けた水面でない（陸マスクの水域が実際は陸・干潟・養殖池など。ラベルなし）",
                    "nodata": "区間の半分以上でデータなし"},
         "colour": (f"船の画素（struct から奥行きまで）のうち、上下左右も水でない画素を芯とする（{CORE_MIN} 個未満なら全部、core_mode＝all）。"
@@ -438,7 +445,10 @@ def settings() -> dict:
                "区間ごとに、数えた占有区間（stretch）に入る内側の帯の占有点の長さ s1_occ_len_m、その点の depth_m・depth_1x3_m の中央値、"
                "最も重なる stretch の db_line_m・横抱き・min/max、区間の cosφ と face_look"),
         "match": ("d_depth_m＝s1_depth_m−s2 の depth_m（両方占有のとき）。agree＝占有の有無が一致（1/0）。"
-                  "時刻は S2 が 03:22 UTC ごろ、S1 が 10:41〜10:49 UTC ごろで、同じ日でも約 7.5 時間ずれる（dt_h）：入出港で船が違うことがある"),
+                  "時刻は S2 が 03:22 UTC ごろ、S1 が 10:41〜10:49 UTC ごろで、同じ日でも約 7.5 時間ずれる（dt_h＝S1−S2、時間）：入出港で船が違うことがある。"
+                  "実際の時刻差の範囲・同じ日に組めた数は meta.json の match_dt。"
+                  "列数の式が違う：S2 の c＝depth_m／18 m（構造物を除いた奥行き）、S1 の s1_cols_hint＝(depth_m−20 m)／18 m（est-1 の cols_hint と同じ。3×3 平均のにじみ約 20 m を引く）。"
+                  "s1_in_sample：tuning＝quay-v1 の閾値の調整に使った撮影、baseline＝基準 bl-1 の期間内の撮影、空＝どちらでもない"),
         "raw": ("取得した切り出し（岸壁の帯だけ残した npz：S2 の B2・B3・B4・B8・SCL と水の基準、S1 の VV・VH の dB）は probe ブランチ "
                 "probe/sat-s2-labels-ops3 の probe-raw/s2-labels/<地点>/ にだけ置く（main には入れない）。"
                 "python -m sat.s2_labels --from-raw <そのディレクトリ> で PU を使わずに作り直せる"),
@@ -457,7 +467,7 @@ def settings() -> dict:
 def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, mask_dir: Path = MASK_DIR,
           baseline_dir: Path = fbase.BASELINE_DIR, log=print, budget: float = 1e9) -> dict:
     """Fetch what is missing in ``raw`` (only with a client) and write the labels and the match table."""
-    from .run import site_sectors, sector_of as _sector_of
+    from .run import site_sectors, sector_of as _sector_of, in_sample
     grid = Grid.for_site(site)
     mver = int(site.get("mask_version", 1))
     mask, _ = load_mask(site["id"], mver, mask_dir)
@@ -571,7 +581,7 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
                 samples: list = []
                 q = quay.count(geom, z["vv"].astype(float), z["vh"].astype(float), layers, look_az_deg=look, samples_out=samples)
                 s1f = s1_sections(secs, q, samples, geom.cfg["step_m"], geom.cfg["face_cos"])
-                insample = "baseline" if any(sc.get("acquired_utc") == a["acquired_utc"] for sc in bmeta.get("scene_list") or []) else ""
+                insample = in_sample(site, a["acquired_utc"], bmeta)
             byid = {sc["section_id"]: sc for sc in secs}
             for r in rows:
                 sc = byid[r["section_id"]]
@@ -598,16 +608,26 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
                         "properties": {k: sc[k] for k in SECTION_FIELDS}} for sc in secs]}
     (ldir / f"{site['id']}-s2-sections.geojson").write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     summ.update(sections=len(secs), labels=len(labels), stats=stats(labels, match))
+    pairs = {(m["s2_date"], m.get("s1_acquired_utc"), m.get("dt_h")) for m in match if m.get("s1_acquired_utc")}
+    dts = [p[2] for p in pairs]
+    match_dt = {"pairs": len(pairs), "s2_days": len(loaded),
+                "dt_h_min": min(dts) if dts else None, "dt_h_max": max(dts) if dts else None,
+                "same_day": sum(1 for d, a, _ in pairs if a[:10] == d),
+                "abs_days": dict(sorted(__import__("collections").Counter(int(abs(x) // 24) for x in dts).items())),
+                "note": "dt_h＝S1−S2（時間）。abs_days＝|dt_h| を 24 時間で切り捨てた日数ごとの組の数"}
     meta = {"generated_utc": cdse.iso(datetime.now(timezone.utc)), "site_id": site["id"], "method": settings(),
             "s2_days": [d["date"] for d, *_ in loaded],
             "s1_scenes": {k: (v or {}).get("acquired_utc") for k, v in s1_pick.items()},
             "water_reference": {d["date"]: {k: round(v, 4) if isinstance(v, float) else v for k, v in ref.items()} for d, *_, ref, _v in loaded},
             "summary": summ["stats"],
+            "summary_note": "summary の c・color_class・S1 との比較は status＝ok の行だけで数える",
+            "match_dt": match_dt,
             "files": {f"{site['id']}-s2-labels.csv": "区間×晴れの日の自動ラベル（自動・未確認。verified_* は人が確かめて埋める）",
                       f"{site['id']}-s2-s1-match.csv": "同じ区間×晴れの日の S2 ラベルと、近い S1 の撮影の岸壁の特徴の突き合わせ",
                       f"{site['id']}-s2-sections.geojson": "区間の線（OSM 由来、ODbL）"},
             "verify": ("verified＝1（確かめた）／0（見たが判断できない）、verified_occupied・verified_c・verified_color に人の判定、"
-                       "verified_by に確かめた人、verified_note に根拠（画像 s2/<地点>/v<版>/<撮影>.webp）。空欄は未確認"),
+                       "verified_by に確かめた人、verified_note に根拠（画像 s2/<地点>/v<版>/<撮影>.webp）。空欄は未確認。"
+                       "後段（est-2・較正）で使うのは status＝ok かつ verified＝1 の行だけ（cloud・blind・not_water・nodata と未確認の行は使わない）"),
             "credit": "Contains modified Copernicus Sentinel data 2025, 2026",
             "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）"}
     (ldir / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -621,7 +641,7 @@ def s2_stamp(t: str) -> str:
 def stats(labels: list[dict], match: list[dict]) -> dict:
     from collections import Counter
     st = Counter(r["status"] for r in labels)
-    use = [r for r in labels if r["status"] in ("ok", "cloud")]
+    use = [r for r in labels if r["status"] == "ok"]
     c = Counter(r.get("c") for r in use if r.get("c") is not None)
     occ = Counter(r.get("color_class") or "-" for r in use if r.get("occupied"))
     out = {"labels": len(labels), "status": dict(st), "c": {str(k): c[k] for k in sorted(c)}, "color_class": dict(occ)}
