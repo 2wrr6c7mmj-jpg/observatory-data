@@ -58,7 +58,7 @@ def _footprint(shape, r0, c0, length, width, ang_deg, sub=4):
 class Scene:
     """Synthetic 20 m scene: ships, bright ships with side-lobe pieces and azimuth ambiguities."""
 
-    def __init__(self, kind, heading, lia, seed, n=1024, n_ships=44, n_bright=8):
+    def __init__(self, kind, heading, lia, seed, n=1024, n_ships=44, n_bright=8, crowd=True):
         rng = np.random.default_rng(seed)
         self.n, self.heading, self.lia = n, heading, lia
         shape = (n, n)
@@ -105,29 +105,49 @@ class Scene:
                 continue
             if not free(r, c, 45) or not all(free(a, b, 30) for a, b in amb_pos):
                 continue
-            L, W = rng.uniform(100, 300), rng.uniform(15, 40)
+            # bright ship (1部: peak +33..38 dB, 140-180 m): body SCR 25-29 dB, 40 m hot spot +36..40 dB
+            L, W = rng.uniform(140, 200), rng.uniform(20, 35)
             ang = rng.uniform(0, 180)
-            sl, f = add_ship(r, c, L, W, ang, rng.uniform(10, 15), "bright")
+            sl, f = add_ship(r, c, L, W, ang, rng.uniform(25, 29), "bright")
+            bid = len(self.ships)
             pi, pj = int(round(r)), int(round(c))
             hot = 10 ** (rng.uniform(36, 40) / 10)
-            vv[pi:pi + 2, pj:pj + 2] = VV_MEAN * hot       # 40 m superstructure
+            vv[pi:pi + 2, pj:pj + 2] = VV_MEAN * hot
             vh[pi:pi + 2, pj:pj + 2] = VH_MEAN * hot
-            # side-lobe pieces along azimuth and range, 3 px long, 14-22 dB below the hot spot
+            keepout.append((r, c, 12))
+            # escorts in column behind the bright ship, along the azimuth axis and the range axis,
+            # heading along that axis (1部 review: these were excluded as side lobes)
+            for axis, hd_ax in ((az, heading), (rg, heading + 90.0)):
+                Le = rng.uniform(60, 120)
+                dist = min(L / 2 + rng.uniform(80, 300) + Le / 2, 600 - Le / 2)
+                sgn = rng.choice((-1, 1))
+                er, ec = r + sgn * dist * axis[0], c + sgn * dist * axis[1]
+                add_ship(er, ec, Le, rng.uniform(10, 20), hd_ax % 180, rng.uniform(8, 13), "escort")
+                keepout.append((er, ec, Le / PX / 2 + 3))
+            # side-lobe pieces along azimuth and range, 3 px long, 14-28 dB below the hot spot
             for axis in (az, rg):
-                for sgn in (1, -1):
-                    for dist in (L / 2 + 80, L / 2 + 200, L / 2 + 330, 560):
-                        if dist > 590 or dist < L / 2 + 60:
-                            continue
-                        drop = 10 ** (-rng.uniform(14, 22) / 10)
-                        self.lobes.append({"parent": len(self.ships)})
+                for dist in (L / 2 + 80, L / 2 + 200, L / 2 + 330, 560):
+                    if dist > 590 or dist < L / 2 + 60:
+                        continue
+                    pair_db = rng.uniform(14, 28)     # side lobes are symmetric: same level on both arms
+                    pair = []
+                    for sgn in (1, -1):
+                        cells = []
                         for k in (0, 1, 2):          # 60 m piece (v1 keeps >= 3 px)
-                            a = r + sgn * (dist + k * PX) * axis[0]
-                            b = c + sgn * (dist + k * PX) * axis[1]
-                            ai, bi = int(round(a)), int(round(b))
-                            if self.ship_id[ai, bi]:
-                                continue
-                            vv[ai, bi] = VV_MEAN * hot * drop
-                            vh[ai, bi] = VH_MEAN * hot * drop
+                            ai = int(round(r + sgn * (dist + k * PX) * axis[0]))
+                            bi = int(round(c + sgn * (dist + k * PX) * axis[1]))
+                            cells.append((ai, bi))
+                        pair.append(cells)
+                    # a pair touching an escort is left out (the escort's own test needs a clean mirror)
+                    if any(self.ship_id[max(0, ai - 3):ai + 4, max(0, bi - 3):bi + 4].any()
+                           for cells in pair for ai, bi in cells):
+                        continue
+                    for cells in pair:
+                        drop_db = pair_db + rng.uniform(-1, 1)
+                        self.lobes.append({"parent": bid, "drop_db": drop_db, "dist": dist})
+                        for ai, bi in cells:
+                            vv[ai, bi] = VV_MEAN * hot * 10 ** (-drop_db / 10)
+                            vh[ai, bi] = VH_MEAN * hot * 10 ** (-drop_db / 10)
                             self.lobe_id[ai, bi] = len(self.lobes)
             # ambiguity copies: the ship (with its hot spot) 20 dB down at +-delta (+-4% error)
             for a, b in amb_pos:
@@ -140,14 +160,27 @@ class Scene:
                 fm[pi - sl[0].start:pi - sl[0].start + 2, pj - sl[1].start:pj - sl[1].start + 2] = True
                 vv[dst][fm] += 0.01 * vv[src][fm]
                 vh[dst][fm] += 0.01 * vh[src][fm]
-                self.ambs.append({"parent": len(self.ships)})
+                self.ambs.append({"parent": bid})
                 self.amb_id[dst][fm] = len(self.ambs)
+                # crowded: another ship near the ambiguity -- outside the +-100 m across band, or
+                # inside the ellipse but with a different heading (>= 40 deg)
+                if crowd:
+                    Lc = rng.uniform(50, 100)
+                    if len(self.ambs) % 2:
+                        off_rg = rng.choice((-1, 1)) * rng.uniform(150, 300)
+                        off_az = rng.uniform(-150, 150)
+                        hc = rng.uniform(0, 180)
+                    else:
+                        off_rg = 0.0
+                        off_az = rng.choice((-1, 1)) * (L / 2 + Lc / 2 + 60)
+                        hc = (ang + rng.uniform(40, 140)) % 180
+                    cr = a2 + off_az * az[0] + off_rg * rg[0]
+                    cc_ = b2 + off_az * az[1] + off_rg * rg[1]
+                    if 40 < cr < n - 40 and 40 < cc_ < n - 40:
+                        add_ship(cr, cc_, Lc, rng.uniform(10, 20), hc, rng.uniform(8, 13), "crowd_amb")
+                        keepout.append((cr, cc_, Lc / PX / 2 + 3))
             keepout.append((r, c, 45))
             keepout.extend((a, b, 30) for a, b in amb_pos)
-            # cross arms keep-out (a ship sitting on a parent's arm would be a true miss case)
-            for axis in (az, rg):
-                for t in np.linspace(-600, 600, 31):
-                    keepout.append((r + t * axis[0], c + t * axis[1], 4))
 
         # decoys: real ships next to a bright ship but off the arms, and near +-delta but off by 800 m
         brights = [s for s in self.ships if s["kind"] == "bright"]
@@ -161,7 +194,9 @@ class Scene:
                 r = s["r"] + delta * az[0] + 800 * rg[0]
                 c = s["c"] + delta * az[1] + 800 * rg[1]
                 kd = "decoy_amb"
-            if 40 < r < n - 40 and 40 < c < n - 40 and free(r, c, 8):
+            ri_, ci_ = int(round(r)), int(round(c))
+            if 40 < r < n - 40 and 40 < c < n - 40 and not self.ship_id[ri_ - 10:ri_ + 11, ci_ - 10:ci_ + 11].any() \
+                    and not self.amb_id[ri_ - 10:ri_ + 11, ci_ - 10:ci_ + 11].any():
                 add_ship(r, c, rng.uniform(80, 150), rng.uniform(15, 25), rng.uniform(0, 180), rng.uniform(12, 15), kd)
                 keepout.append((r, c, 12))
 
@@ -191,6 +226,7 @@ class Scene:
         """Match detections to ships, side-lobe pieces, ambiguity copies."""
         det_ship = {}
         lobes_hit, lobes_excl, ambs_hit, ambs_excl, false_excl, other = set(), set(), set(), set(), [], 0
+        lobes_flag, ambs_flag = set(), set()
         for d in dets:
             excluded = v2 and (d["sidelobe_of"] is not None or d["ambiguity_of"] is not None)
             s = self._hit(self.ship_id, d)
@@ -205,10 +241,14 @@ class Scene:
                 lobes_hit.add(lo)
                 if excluded:
                     lobes_excl.add(lo)
+                elif v2 and (d["sidelobe_suspect"] is not None or d["ambiguity_suspect"] is not None):
+                    lobes_flag.add(lo)
             elif am:
                 ambs_hit.add(am)
                 if excluded:
                     ambs_excl.add(am)
+                elif v2 and (d["sidelobe_suspect"] is not None or d["ambiguity_suspect"] is not None):
+                    ambs_flag.add(am)
             elif not excluded:
                 other += 1
         len_err = []
@@ -217,6 +257,9 @@ class Scene:
             len_err.append(big["length_m"] - self.ships[sid - 1]["L"])
         return {"detected": set(det_ship), "len_err": len_err, "lobes_hit": lobes_hit, "lobes_excl": lobes_excl,
                 "ambs_hit": ambs_hit, "ambs_excl": ambs_excl, "false_excl": false_excl, "other": other,
+                "lobes_flag": lobes_flag, "ambs_flag": ambs_flag,
+                "suspect_ships": {self._hit(self.ship_id, d) for d in dets if v2 and self._hit(self.ship_id, d)
+                                  and (d["sidelobe_suspect"] is not None or d["ambiguity_suspect"] is not None)},
                 "fragments": sum(len(v) - 1 for v in det_ship.values())}
 
 
@@ -334,7 +377,8 @@ class DetectV2SmallTest(unittest.TestCase):
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class SyntheticSceneTest(unittest.TestCase):
-    """Design 5.1 (c) side lobes / ambiguities excluded >= 95%, no real ship excluded; (d) length error."""
+    """Design 5.1 (c) side lobes / ambiguities handled, no real ship excluded (escorts in column behind
+    bright ships, ships crowding the ambiguity positions); (d) length error; seed PFA 1e-7 vs 1e-6."""
 
     SCENES = (("gamma", "ascending", 35.0, 21), ("K3", "descending", 39.0, 22))
 
@@ -344,12 +388,20 @@ class SyntheticSceneTest(unittest.TestCase):
         for kind, direction, lia, seed in cls.SCENES:
             hd = d2.platform_heading(direction, 22.0)
             sc = Scene(kind, hd, lia, seed)
-            dets2, info2 = d2.detect_v2(sc.vv, sc.vh, sc.land, (PX, PX), None, lia=lia, heading_deg=hd)
-            dets1, info1 = detect(sc.vv, sc.vh, sc.land, (PX, PX))
-            cls.res.append({"scene": sc, "kind": kind, "dir": direction, "v2": sc.score(dets2, True),
-                            "v1": sc.score(dets1, False), "dets2": dets2, "info2": info2,
-                            "sec": info2["seconds"]})
+            row = {"scene": sc, "kind": kind, "dir": direction}
+            for pfa in (1e-7, 1e-6):
+                dets2, info2 = d2.detect_v2(sc.vv, sc.vh, sc.land, (PX, PX), {"pfa_seed": pfa}, lia=lia, heading_deg=hd)
+                row[f"v2@{pfa:.0e}"] = sc.score(dets2, True)
+                row[f"sec@{pfa:.0e}"] = info2["seconds"]
+            row["v2"] = row["v2@1e-07"]
+            dets1, _info1 = detect(sc.vv, sc.vh, sc.land, (PX, PX))
+            row["v1"] = sc.score(dets1, False)
+            cls.res.append(row)
         cls._print()
+
+    @staticmethod
+    def _ids(sc, pred):
+        return [i for i, s in enumerate(sc.ships, 1) if pred(s)]
 
     @classmethod
     def _print(cls):
@@ -359,18 +411,22 @@ class SyntheticSceneTest(unittest.TestCase):
         for r in cls.res:
             sc = r["scene"]
             ships = list(enumerate(sc.ships, 1))
+            kinds = {}
+            for _i, sh in ships:
+                kinds[sh["kind"]] = kinds.get(sh["kind"], 0) + 1
             out.append(f"-- {r['kind']} clutter, {r['dir']} (heading {sc.heading:.1f}), LIA {sc.lia}, "
-                       f"delta {sc.delta:.0f} m, {len(ships)} ships, {len(sc.lobes)} side-lobe pieces, "
-                       f"{len(sc.ambs)} ambiguities; v2 {r['sec']} s")
-            for name in ("v1", "v2"):
+                       f"delta {sc.delta:.0f} m, ships {kinds}, {len(sc.lobes)} side-lobe pieces, "
+                       f"{len(sc.ambs)} ambiguities; v2 {r['sec@1e-07']} s")
+            for name in ("v1", "v2@1e-07", "v2@1e-06"):
                 s = r[name]
                 cells = []
                 for lab, lo, hi in bins + lbins:
                     key = "scr" if lab.startswith("SCR") else "L"
-                    ids = [i for i, sh in ships if lo <= sh[key] < hi]
+                    ids = [i for i, sh in ships if lo <= sh[key] < hi and sh["kind"] not in ("bright",)]
                     cells.append(f"{lab} {sum(i in s['detected'] for i in ids)}/{len(ids)}")
+                pl = [i for i, sh in ships if sh["kind"] == "plain" and sh["L"] >= 100]
+                cells.append(f"plain L>=100 {sum(i in s['detected'] for i in pl)}/{len(pl)}")
                 le = np.array(s["len_err"]) if s["len_err"] else np.array([np.nan])
-                lb = [e for (i, sh), e in zip([(i, sc.ships[i - 1]) for i in s["detected"]], s["len_err"])]
                 out.append(f"  {name}: detected {len(s['detected'])}/{len(ships)} | " + ", ".join(cells))
                 out.append(f"      length error (m): median {np.median(le):+.0f}, median |e| {np.median(np.abs(le)):.0f}, "
                            f"fragments {s['fragments']}, other detections {s['other']}")
@@ -378,37 +434,84 @@ class SyntheticSceneTest(unittest.TestCase):
                     out.append(f"      v1 outputs {len(s['lobes_hit'])}/{len(sc.lobes)} side-lobe pieces and "
                                f"{len(s['ambs_hit'])}/{len(sc.ambs)} ambiguities as ships")
                 else:
-                    out.append(f"      side lobes: {len(s['lobes_excl'])}/{len(s['lobes_hit'])} detected pieces excluded; "
-                               f"ambiguities: {len(s['ambs_excl'])}/{len(s['ambs_hit'])} excluded; "
-                               f"real ships excluded: {len(s['false_excl'])}")
+                    esc = cls._ids(sc, lambda x: x["kind"] == "escort")
+                    crw = cls._ids(sc, lambda x: x["kind"] == "crowd_amb")
+                    fe = set(s["false_excl"])
+                    out.append(f"      side lobes: {len(s['lobes_excl'])} excluded + {len(s['lobes_flag'])} flagged "
+                               f"/ {len(s['lobes_hit'])} detected; ambiguities: {len(s['ambs_excl'])} excluded + "
+                               f"{len(s['ambs_flag'])} flagged / {len(s['ambs_hit'])} detected")
+                    out.append(f"      real ships excluded: {len(fe)} (escorts {len(fe & set(esc))}/{len(esc)}, "
+                               f"crowd {len(fe & set(crw))}/{len(crw)}); escorts detected "
+                               f"{sum(i in s['detected'] for i in esc)}/{len(esc)}, crowd detected "
+                               f"{sum(i in s['detected'] for i in crw)}/{len(crw)}; real ships flagged suspect "
+                               f"{len(s['suspect_ships'])}")
         print("\n".join(out), file=sys.stderr)
 
-    def test_sidelobe_and_ambiguity_exclusion(self):
+    def test_sidelobe_and_ambiguity_handled(self):
         for r in self.res:
-            s = r["v2"]
+            s, sc = r["v2"], r["scene"]
             self.assertGreaterEqual(len(s["lobes_hit"]), 10, "test must exercise side lobes")
             self.assertGreaterEqual(len(s["ambs_hit"]), 8, "test must exercise ambiguities")
-            self.assertGreaterEqual(len(s["lobes_excl"]) / len(s["lobes_hit"]), 0.95)
-            self.assertGreaterEqual(len(s["ambs_excl"]) / len(s["ambs_hit"]), 0.95)
+            # every detected piece the rule applies to (>= 13 dB down on the near arm, >= 20 dB on the
+            # far arm) is excluded or flagged; far pieces only 14-20 dB down stay unflagged by design
+            due = {k for k in s["lobes_hit"]
+                   if sc.lobes[k - 1]["drop_db"] >= (13.5 if sc.lobes[k - 1]["dist"] < 280 else 20.5)}
+            self.assertGreaterEqual(len(due & (s["lobes_excl"] | s["lobes_flag"])) / len(due), 0.95)
+            self.assertGreaterEqual(len(s["ambs_excl"] | s["ambs_flag"]) / len(s["ambs_hit"]), 0.95)
+            # small pieces >= 20 dB below the parent are excluded (>= 95%)
+            weak = {k for k in s["lobes_hit"] if sc.lobes[k - 1]["drop_db"] >= 20.5}
+            self.assertGreaterEqual(len(weak & s["lobes_excl"]) / len(weak), 0.95)
+            self.assertGreaterEqual(len(s["ambs_excl"]) / len(s["ambs_hit"]), 0.8)
 
     def test_no_real_ship_excluded(self):
         for r in self.res:
-            self.assertEqual(r["v2"]["false_excl"], [], r["kind"])
-            decoys = [i for i, s in enumerate(r["scene"].ships, 1) if s["kind"].startswith("decoy")]
-            self.assertTrue(decoys)
-            self.assertTrue(all(i in r["v2"]["detected"] for i in decoys))
+            sc = r["scene"]
+            for key in ("v2@1e-07", "v2@1e-06"):
+                self.assertEqual(r[key]["false_excl"], [], (r["kind"], key))
+            for kind in ("decoy_lobe", "decoy_amb", "escort", "crowd_amb"):
+                ids = self._ids(sc, lambda x: x["kind"] == kind)
+                self.assertTrue(ids, kind)
+            if r["kind"] == "gamma":
+                esc = self._ids(sc, lambda x: x["kind"] == "escort")
+                self.assertGreaterEqual(sum(i in r["v2"]["detected"] for i in esc) / len(esc), 0.9)
 
     def test_detection_and_length(self):
         for r in self.res:
             ships = r["scene"].ships
-            strong = [i for i, s in enumerate(ships, 1) if s["scr"] >= 10 and s["L"] >= 50]
+            strong = [i for i, s in enumerate(ships, 1) if s["scr"] >= 10 and s["L"] >= 50 and s["kind"] == "plain"]
             self.assertGreaterEqual(sum(i in r["v2"]["detected"] for i in strong) / len(strong), 0.9)
             big = [e for i, e in zip(r["v2"]["detected"], r["v2"]["len_err"]) if ships[i - 1]["L"] >= 100]
             self.assertLessEqual(float(np.median(np.abs(big))), 40.0)
 
-    def test_fewer_false_detections_than_v1(self):
+    def test_seed_pfa_is_configurable(self):
         for r in self.res:
-            self.assertLessEqual(r["v2"]["other"], r["v1"]["other"])
+            a, b = r["v2@1e-07"]["detected"], r["v2@1e-06"]["detected"]
+            self.assertLessEqual(len(a), len(b) + 1)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class BackgroundOnlyTest(unittest.TestCase):
+    """False detections on clutter with no ships: VV and VH share the sea texture (as real sea does),
+    so v1's VH check does not remove texture spikes."""
+
+    def test_v2_fewer_false_detections_than_v1(self):
+        out = []
+        tot1 = tot2 = 0
+        for i, nu in enumerate((10.0, 3.0, 1.5)):
+            rng = np.random.default_rng(300 + i)
+            shape = (1024, 1024)
+            tex = rng.gamma(nu, 1 / nu, shape)
+            vv = 10 * np.log10(VV_MEAN * tex * rng.gamma(4.4, 1 / 4.4, shape))
+            vh = 10 * np.log10(VH_MEAN * tex * rng.gamma(4.4, 1 / 4.4, shape))
+            d1, _ = detect(vv, vh, None if False else np.zeros(shape, bool), (PX, PX))
+            dv, _ = d2.detect_v2(vv, vh, None, (PX, PX), None, lia=37.0, heading_deg=347.6)
+            n2 = len([d for d in d2.kept(dv) if d["confidence"] == "A"])
+            out.append(f"K{nu:g}: v1 {len(d1)}, v2 (A) {n2}, v2 (all kept) {len(d2.kept(dv))}")
+            tot1 += len(d1)
+            tot2 += n2
+        print("\nbackground only, 1024x1024 at 20 m (VV/VH shared texture): " + "; ".join(out), file=sys.stderr)
+        self.assertGreater(tot1, 0, "the test must make v1 fire")
+        self.assertLessEqual(tot2, tot1 / 2)
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

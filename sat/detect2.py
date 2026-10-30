@@ -16,19 +16,27 @@ Steps (design ``cfar-v2`` 3.4-3.6):
    ``tophat_db``; not used to decide.
 6. Confidence from VH: ``A`` if the component's max ``z_vh >= z_t_vh(1e-3)`` or its mean VH is
    >= +3 dB over the background; else ``B`` if ``length_m >= 80`` (VV only; recorded, not counted);
-   else dropped.
+   else dropped. With no VH background (ratio infinite) a candidate is ``B``, never ``A``.
 7. Shape: length and width along the principal axes (one pixel of footprint included), heading of
    the major axis (degrees from true north, 0-180), area, length/width, fill (pixels / rotated
    bounding rectangle).
-8. Side lobes: a brighter component (by peak dB) is a parent; a component whose centroid lies in
-   the cross centred on the parent's peak pixel -- along azimuth and along range, half-width
-   ``sidelobe_band_px`` (2) px, half-length ``sidelobe_len_m`` (600 m) -- and whose peak is at least
-   ``sidelobe_drop_db`` (13 dB) below the parent's is marked ``sidelobe_of=<parent index>``.
+8. Side lobes ("keep with a flag" over "drop": a missed ship costs more than a flagged lobe): a
+   brighter component (by peak dB) is a parent; a component whose centroid lies in the cross
+   centred on the parent's peak pixel -- along azimuth and along range, half-width
+   ``sidelobe_band_px`` (2) px, half-length ``sidelobe_len_m`` (600 m, plus half the component's
+   length) -- and whose peak is weaker than the parent's by at least 13 dB on the near arm
+   (< 300 m) or 20 dB on the far arm (300-600 m) is a side-lobe candidate. It is *excluded*
+   (``sidelobe_of=<parent index>``) only if it is >= 20 dB weaker, smaller than 5 px, and mirrored
+   (the point opposite it through the parent's brightest pixel has a pixel within 3 dB of its peak: side lobes
+   are symmetric, a ship in column is on one side only); otherwise it stays in the count with
+   ``sidelobe_suspect=<parent index>``.
    Azimuth = the platform heading (``heading_deg``); without it the image axes are used.
 9. Azimuth ambiguities: ``delta = lambda * R * PRF / (2 V)`` (R = slant range from the incidence
    angle, PRF from the nominal per-sub-swath table ``IW_PRF_HZ`` below, V = orbital speed). A
-   component within ``ambiguity_tol_m`` (400 m) of ``parent +- delta`` along the azimuth, whose VV
-   peak is >= 15 dB and VH peak >= 10 dB below the parent's, is marked ``ambiguity_of=<parent>``.
+   component inside the ellipse (+-400 m along azimuth, +-100 m across) around ``parent +- delta``,
+   whose VV peak is >= 15 dB and VH peak >= 10 dB below the parent's, is excluded
+   (``ambiguity_of=<parent>``) if it looks like a copy of the parent (heading within 20 deg, length
+   within +-50%); otherwise it stays with ``ambiguity_suspect=<parent>``.
    Needs ``lia`` (incidence, deg) and ``heading_deg``; skipped otherwise (``info``).
 10. Wake (recorded only): mean dB on 3-px-wide lines continuing the major axis 1.5 km beyond each
     end, minus the local background (the darker end) -> ``wake_dark_db``.
@@ -89,8 +97,18 @@ DEFAULTS_DET2 = {
     "b_min_length_m": 80.0,
     "sidelobe_band_px": 2.0,
     "sidelobe_len_m": 600.0,
-    "sidelobe_drop_db": 13.0,
-    "ambiguity_tol_m": 400.0,
+    "sidelobe_drop_db": 13.0,       # near arm (< sidelobe_far_m from the parent's peak)
+    "sidelobe_far_m": 300.0,
+    "sidelobe_far_drop_db": 20.0,   # far arm (300-600 m)
+    "sidelobe_exclude_drop_db": 20.0,  # excluded only if >= 20 dB weaker ...
+    "sidelobe_ship_px": 5,          # ... and smaller than this ...
+    "sidelobe_mirror_db": 3.0,      # ... and mirrored: the opposite arm at the same distance is within
+                                    # 3 dB of it (side lobes are symmetric; an escort is on one side).
+                                    # Otherwise kept with sidelobe_suspect
+    "ambiguity_tol_az_m": 400.0,    # ellipse around parent +- delta: +-400 m along azimuth ...
+    "ambiguity_tol_rg_m": 100.0,    # ... +-100 m across (range)
+    "ambiguity_heading_tol_deg": 20.0,
+    "ambiguity_length_tol": 0.5,    # |length / parent length - 1| <= 0.5
     "ambiguity_drop_db": 15.0,
     "ambiguity_vh_drop_db": 10.0,   # "VH weak": VH peak this far below the parent's (provisional)
     "incidence_margin_deg": 0.5,    # near a sub-swath boundary both PRFs are tried
@@ -242,6 +260,28 @@ def length_class(length_m: float) -> str:
     return "ge200"
 
 
+def _mirrored(vv_db, water, peak, C: dict, tol_db: float) -> bool:
+    """True if the point mirrored through the parent's peak has a pixel (5x5) within ``tol_db`` of C's peak."""
+    pr, pc = peak
+    mr, mc = int(round(2 * pr - C["row"])), int(round(2 * pc - C["col"]))
+    h, w = vv_db.shape
+    if not (0 <= mr < h and 0 <= mc < w) or not water[mr, mc]:
+        return False
+    win = vv_db[max(0, mr - 2):mr + 3, max(0, mc - 2):mc + 3]
+    ok = water[max(0, mr - 2):mr + 3, max(0, mc - 2):mc + 3]
+    return bool(np.nanmax(np.where(ok, win, -np.inf)) >= C["_peak_db"] - tol_db)
+
+
+def _similar(P: dict, C: dict, cfg: dict) -> bool:
+    """An ambiguity is a weak copy of its parent: similar heading (+-20 deg) and length (+-50%)."""
+    if P["heading_deg"] is None or C["heading_deg"] is None:
+        return False
+    dh = abs(P["heading_deg"] - C["heading_deg"]) % 180.0
+    dh = min(dh, 180.0 - dh)
+    return dh <= cfg["ambiguity_heading_tol_deg"] and \
+        abs(C["length_m"] / max(P["length_m"], 1e-9) - 1.0) <= cfg["ambiguity_length_tol"]
+
+
 def _at(a, r: int, c: int):
     if a is None:
         return None
@@ -344,8 +384,7 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
     for fr, fc in comps:
         sf = shape_features(fr, fc, (ry, rx))
         length, width = sf["length_m"], sf["width_m"]
-        zc = z[fr, fc]
-        k = int(np.nanargmax(np.where(np.isfinite(zc), zc, -np.inf)))
+        k = int(np.argmax(vv_db[fr, fc]))       # brightest pixel: origin of side lobes / z_peak
         pr, pc = int(fr[k]), int(fc[k])
         vh_z = float(np.nanmax(zh[fr, fc])) if np.isfinite(zh[fr, fc]).any() else None
         zt_vh_here = float(np.nanmax(zt_vh[fr, fc])) if np.isfinite(zt_vh[fr, fc]).any() else math.inf
@@ -353,8 +392,9 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
         b_vh = float(np.nanmean(bg_vh[fr, fc]))
         ratio = m_vh / b_vh if b_vh > 0 else math.inf
         ratio_db = 10 * math.log10(ratio) if math.isfinite(ratio) and ratio > 0 else None
-        if (vh_z is not None and vh_z >= zt_vh_here) or (ratio_db is not None and ratio_db >= cfg["vh_ratio_min_db"]) \
-                or ratio == math.inf:
+        if ratio == math.inf:                    # no VH background (e.g. VH ring empty): not A
+            conf = "B"
+        elif (vh_z is not None and vh_z >= zt_vh_here) or (ratio_db is not None and ratio_db >= cfg["vh_ratio_min_db"]):
             conf = "A"
         elif length >= cfg["b_min_length_m"]:
             conf = "B"
@@ -388,7 +428,7 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
             "lon": None, "lat": None, "acquired_utc": None,
             "heading_deg": sf["heading_deg"], "area_m2": round(sf["area_m2"]),
             "lw_ratio": sf["lw_ratio"], "fill": sf["fill"],
-            "z_peak": round(float(z[pr, pc]), 2),
+            "z_peak": round(float(np.nanmax(z[fr, fc])), 2),
             "z_t": round(float(zt_seed[pr, pc]), 3) if np.isfinite(zt_seed[pr, pc]) else None,
             "model": t.get("model"), "tail_rmse": t.get("tail_rmse"),
             "vh_z": round(vh_z, 2) if vh_z is not None else None,
@@ -398,7 +438,7 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
             "near_coast": near_coast,
             "static": bool(static is not None and np.asarray(static, bool)[fr, fc].any()),
             "edge": bool(edge_img[fr, fc].any()),
-            "sidelobe_of": None, "ambiguity_of": None,
+            "sidelobe_of": None, "ambiguity_of": None, "sidelobe_suspect": None, "ambiguity_suspect": None,
             "wake_dark_db": None,
             "confidence": conf, "large": False,
             "pixel_m": round(px, 2),
@@ -466,20 +506,36 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
             across = de * u_rg[0] + dn * u_rg[1]
             drop = P["_peak_db"] - C["_peak_db"]
             reach = cfg["sidelobe_len_m"] + C["length_m"] / 2      # the piece may start inside the arm
-            if drop >= cfg["sidelobe_drop_db"] and (
-                    (abs(across) <= band and abs(along) <= reach) or
-                    (abs(along) <= band and abs(across) <= reach)):
-                C["sidelobe_of"] = i
-                continue
+            on_az = abs(across) <= band and abs(along) <= reach
+            on_rg = abs(along) <= band and abs(across) <= reach
+            if on_az or on_rg:
+                dist = max(abs(along), abs(across)) - C["length_m"] / 2
+                need = cfg["sidelobe_drop_db"] if dist < cfg["sidelobe_far_m"] else cfg["sidelobe_far_drop_db"]
+                if drop >= need:
+                    # only small and much weaker pieces are excluded; the rest stay counted, flagged
+                    if drop >= cfg["sidelobe_exclude_drop_db"] and C["pixels"] < cfg["sidelobe_ship_px"] \
+                            and _mirrored(vv_db, water, P["_peak"], C, cfg["sidelobe_mirror_db"]):
+                        C["sidelobe_of"] = i
+                        continue
+                    if C["sidelobe_suspect"] is None:
+                        C["sidelobe_suspect"] = i
             if deltas and drop >= cfg["ambiguity_drop_db"] and \
                     P["_peak_vh_db"] - C["_peak_vh_db"] >= cfg["ambiguity_vh_drop_db"]:
                 for dl in deltas:
-                    if min(math.hypot(along - dl, across), math.hypot(along + dl, across)) <= cfg["ambiguity_tol_m"]:
+                    da = min(abs(along - dl), abs(along + dl))
+                    if (da / cfg["ambiguity_tol_az_m"]) ** 2 + (across / cfg["ambiguity_tol_rg_m"]) ** 2 > 1:
+                        continue
+                    if _similar(P, C, cfg):
                         C["ambiguity_of"] = i
-                        break
+                    elif C["ambiguity_suspect"] is None:
+                        C["ambiguity_suspect"] = i
+                    break
 
-    excl = {"small": dropped_small, "vh": dropped_vh, "sidelobe": 0, "ambiguity": 0, "static": 0, "near_coast": 0}
+    excl = {"small": dropped_small, "vh": dropped_vh, "sidelobe": 0, "ambiguity": 0, "static": 0, "near_coast": 0,
+            "sidelobe_suspect_kept": 0, "ambiguity_suspect_kept": 0}
     for d in dets:
+        excl["sidelobe_suspect_kept"] += d["sidelobe_of"] is None and d["ambiguity_of"] is None and d["sidelobe_suspect"] is not None
+        excl["ambiguity_suspect_kept"] += d["sidelobe_of"] is None and d["ambiguity_of"] is None and d["ambiguity_suspect"] is not None
         excl["sidelobe"] += d["sidelobe_of"] is not None
         excl["ambiguity"] += d["ambiguity_of"] is not None
         excl["static"] += d["static"]
