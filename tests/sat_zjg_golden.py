@@ -6,7 +6,9 @@ orbits 157 and 84, a synthetic chip built from the real baselines with ships alo
 no Sentinel-2 day) at a frozen time, and returns {relative path: sha256} of every file it wrote.
 
 The golden (tests/fixtures/sat_zjg_golden.json) was made with the code of origin/main before the
-multi-site change (PR-1):
+multi-site change (PR-1). PNG entries hash the decoded pixels (the compressed bytes depend on the zlib of
+the Python build); they were converted from the byte hashes after checking that this machine's PNG bytes
+still matched main's:
 
     python -m tests.sat_zjg_golden --write
 """
@@ -113,8 +115,18 @@ def snapshot(work: Path) -> dict:
         rc = run.main(["--out", str(out)], client=cli, sites=run.load_sites())
     if rc != 0:
         raise RuntimeError(f"run.main returned {rc}")
-    return {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest()
+    return {str(p.relative_to(out)): file_hash(p)
             for p in sorted(out.rglob("*")) if p.is_file() and str(p.relative_to(out)) not in SKIP}
+
+
+def file_hash(p: Path) -> str:
+    """SHA-256 of the bytes; for a PNG, of its decoded pixels ("px:"): the zlib stream of the same image
+    differs between Python builds (zlib versions), e.g. this machine and the Actions runner."""
+    data = p.read_bytes()
+    if p.suffix == ".png":
+        arr = np.ascontiguousarray(png.decode(data))
+        return "px:" + hashlib.sha256(f"{arr.shape}{arr.dtype}".encode() + arr.tobytes()).hexdigest()
+    return hashlib.sha256(data).hexdigest()
 
 
 def zjg_meta(work: Path) -> dict:
