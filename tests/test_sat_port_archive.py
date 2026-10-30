@@ -330,6 +330,23 @@ class RunPortTest(unittest.TestCase):
             self.assertTrue((Path(d) / "TPA-land-v1" / "ro11-bl-1.json").exists())
             self.assertTrue((Path(d) / "TPA-land-v1" / "ro11-bl-1.vv_p10.png").exists())
 
+    def test_baseline_fill_orbits_and_period(self):
+        g = Grid.for_site(SITE)
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, : g.width // 4] = 1
+        now = datetime(2027, 3, 1, tzinfo=timezone.utc)  # the fake scenes are 8-14 months back
+        clock = Clock()
+        fake = Fake(g)
+        c = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i",
+                             client_secret="s", opener=fake)
+        with tempfile.TemporaryDirectory() as d:
+            s = pa.baseline_port(c, SITE, mask, Path(d), now, log=lambda t: None, lookback=730, max_scenes=3,
+                                 only_orbits=[11])
+            self.assertEqual(fake.process_calls, 3)  # orbit 11 only (orbit 40 left out)
+            meta = json.loads((Path(d) / "TPA-land-v1" / "ro11-bl-1.json").read_text())
+            self.assertEqual(meta["period"]["lookback_days"], 730)
+            self.assertEqual(meta["period"]["older_than_12_months"], 1)  # 2026-01 < 2026-03-01
+
     def test_footprint_share(self):
         g = Grid.for_site(SITE)
         water = np.ones((g.height, g.width), bool)

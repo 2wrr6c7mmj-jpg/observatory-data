@@ -635,7 +635,8 @@ class _CatalogView:
 
 
 def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir: Path, now: datetime,
-                  log=print, lookback: int = BASELINE_LOOKBACK, max_scenes: int = BASELINE_MAX_SCENES) -> dict:
+                  log=print, lookback: int = BASELINE_LOOKBACK, max_scenes: int = BASELINE_MAX_SCENES,
+                  only_orbits: list[int] | None = None) -> dict:
     """Per-orbit baselines of a port with sat/baseline.py: scenes of the last ``lookback`` days whose catalog
     footprint covers at least the baseline's min_coverage of the water (others are not fetched); every orbit with
     at least 3 such scenes; the newest ``max_scenes`` per orbit, fewer if the cap would be exceeded. Nothing
@@ -653,7 +654,8 @@ def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir:
             dropped += 1
             continue
         by_orbit.setdefault(a["relative_orbit"], []).append(a)
-    orbits = sorted(o for o, v in by_orbit.items() if o is not None and len(v) >= 3)
+    orbits = sorted(o for o, v in by_orbit.items() if o is not None and len(v) >= 3
+                    and (only_orbits is None or int(o) in only_orbits))
     per = cdse.estimate_pu(grid.width, grid.height, 2)
     left = client.cap_pu - client.processing_units
     n = max_scenes
@@ -675,6 +677,20 @@ def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir:
                                   "min_scenes": BASELINE_MIN_SCENES}}
     view = _CatalogView(client, [f for f in feats if f.get("id") in keep_ids])
     res = fbase.build(view, bsite, mask, base_dir, now, max(0.0, client.cap_pu - client.processing_units) + 0.5, log=log)
+    if lookback > BASELINE_LOOKBACK:  # record that scenes older than 12 months are mixed in
+        for o, r in res.get("orbits", {}).items():
+            pj = fbase.paths(bsite, int(o), base_dir)["json"]
+            if r.get("built") and pj.exists():
+                meta = json.loads(pj.read_text(encoding="utf-8"))
+                old = [x["acquired_utc"] for x in meta.get("scene_list", [])
+                       if x.get("used") and x["acquired_utc"] < cdse.iso(now - timedelta(days=BASELINE_LOOKBACK))]
+                meta["period"] = {"lookback_days": lookback, "first_utc": meta.get("first_utc"), "last_utc": meta.get("last_utc"),
+                                  "older_than_12_months": len(old),
+                                  "note": (f"直近 12 か月では {BASELINE_MIN_SCENES} 撮影に届かないため、さかのぼりを {lookback} 日に延ばし、"
+                                           f"13〜24 か月前の撮影 {len(old)} 枚を含む（最新から順に {max_scenes} 撮影まで）。"
+                                           "その間に岸壁・桟橋が変わっていれば基準がずれる")}
+                pj.write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+                r["older_than_12_months"] = len(old)
     for o, r in res.get("orbits", {}).items():
         r = dict(r)
         r.pop("stats", None)
@@ -754,6 +770,9 @@ def main(argv=None) -> int:
     b.add_argument("--req-per-min", type=int, default=150)
     b.add_argument("--max-minutes", type=float, default=300)
     b.add_argument("--summary", type=Path)
+    b.add_argument("--lookback", type=int, default=BASELINE_LOOKBACK)
+    b.add_argument("--orbits", nargs="*", default=[],
+                   help="ID:orbit[,orbit][:max scenes], e.g. SYL:157:26 QGZ:69,171 (only these orbits of these ports)")
     args = ap.parse_args(argv)
     now = datetime.now(timezone.utc)
     ports = load_ports(args.ports)
@@ -769,7 +788,12 @@ def main(argv=None) -> int:
             pu0, req0 = client.processing_units, client.requests
             try:
                 mask, _m = load_mask(site["id"], int(site.get("mask_version", 1)), args.mask_dir)
-                s = baseline_port(client, site, mask, args.base_dir, now, log=lambda t: print(t, file=sys.stderr, flush=True))
+                spec = {x.split(":")[0]: x.split(":")[1:] for x in args.orbits}
+                sp = spec.get(pid)
+                s = baseline_port(client, site, mask, args.base_dir, now, log=lambda t: print(t, file=sys.stderr, flush=True),
+                                  lookback=args.lookback,
+                                  max_scenes=int(sp[1]) if sp and len(sp) > 1 else BASELINE_MAX_SCENES,
+                                  only_orbits=[int(o) for o in sp[0].split(",")] if sp else None)
             except (BudgetStop, FileNotFoundError, cdse.CDSEError) as e:
                 if isinstance(e, cdse.CredentialError) and not isinstance(e, BudgetStop):
                     raise

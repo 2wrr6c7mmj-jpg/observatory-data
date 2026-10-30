@@ -18,6 +18,9 @@ env:
   # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
   # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、別枠 300 PU。1 回目（SWS・MIS、165.9 PU）の残り 134 PU を SUB・FCR・WDY に見込みの比で分ける
   PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
+  # probe/ports-baseline-fill-*: 基準の不足した軌道だけ、さかのぼり 24 か月で 24 撮影まで（この実行 300 PU）
+  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
+  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || '800' }}
   RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
@@ -99,7 +102,7 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" --cap 4000 --usage "$RUNNER_TEMP"/usage/*.csv \
-            --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 --max-pu 800 --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
+            --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap 4600 --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
           echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
       - name: OSM land masks (missing only)
         run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port SYL SLP QGZ ZDH XSN LSN SWS || true
@@ -109,7 +112,7 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           rc=0
-          python -m sat.port_archive baseline --only SYL SLP QGZ ZDH XSN LSN SWS --cap "${{ steps.cap.outputs.cap }}" \
+          python -m sat.port_archive baseline $BASELINE_ARGS --cap "${{ steps.cap.outputs.cap }}" \
             --summary "$RUNNER_TEMP/baseline.json" --max-minutes 290 > /dev/null 2> "$RUNNER_TEMP/baseline.log" || rc=$?
           tail -n 60 "$RUNNER_TEMP/baseline.log"
           exit $rc
