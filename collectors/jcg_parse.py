@@ -21,7 +21,7 @@ from urllib.parse import urljoin, urlsplit
 
 PARSER_VERSION = 1
 
-ERA = {"平成": 1988, "令和": 2018}
+ERA = {"平成": 1988, "令和": 2018, "H": 1988, "R": 2018}
 DASHES = {"-", "−", "－", "―", "‐", "ー", "—", "–"}
 
 
@@ -145,9 +145,13 @@ _DAY = re.compile(r"^(\d{1,2})日?$")
 _VAL = re.compile(r"^(\d{1,3})隻?$")
 
 
+def _dnum(w) -> int:
+    return int(_DAY.match(w["t"])[1])
+
+
 def _day_columns(words: list[dict]) -> list[list[dict]]:
-    """Vertical runs of consecutive day numbers (1, 2, 3, ... going down)."""
-    cands = [w for w in words if _DAY.match(w["t"]) and 1 <= int(_DAY.match(w["t"])[1]) <= 31]
+    """Vertical runs of consecutive day numbers (n, n+1, ... going down)."""
+    cands = [w for w in words if _DAY.match(w["t"]) and 1 <= _dnum(w) <= 31]
     clusters: list[list[dict]] = []
     for w in sorted(cands, key=lambda w: w["x1"]):
         for c in clusters:  # day numbers are right-aligned or centred: compare both
@@ -162,45 +166,47 @@ def _day_columns(words: list[dict]) -> list[list[dict]]:
         c.sort(key=lambda w: w["top"])
         run: list[dict] = []
         for w in c:
-            d = int(_DAY.match(w["t"])[1])
-            if run and d == int(_DAY.match(run[-1]["t"])[1]) + 1:
+            if run and _dnum(w) == _dnum(run[-1]) + 1:
                 run.append(w)
             else:
-                if len(run) >= 5:
+                if len(run) >= 2:
                     runs.append(run)
                 run = [w]
-        if len(run) >= 5:
+        if len(run) >= 2:
             runs.append(run)
     return runs
 
 
-def _chain(runs: list[list[dict]]) -> list[dict]:
-    """The days 1..N, possibly split over side-by-side runs (1-16 | 17-31)."""
-    by_first = {}
-    for r in runs:
-        by_first.setdefault(int(_DAY.match(r[0]["t"])[1]), []).append(r)
-    best: list[dict] = []
-    for start in by_first.get(1, []):
-        chain = list(start)
+def _chain(runs: list[list[dict]]) -> list[list[dict]]:
+    """The longest sequence of runs continuing each other left to right.
+
+    The PDFs have two tables side by side (days 1-16 | 17-31); the first
+    month (2012-09) starts at day 14.
+    """
+    best: list[list[dict]] = []
+    for start in runs:
+        chain = [start]
         while True:
-            nxt = int(_DAY.match(chain[-1]["t"])[1]) + 1
-            follow = [r for r in by_first.get(nxt, []) if r[0]["x0"] > chain[-1]["x1"]]
+            nxt = _dnum(chain[-1][-1]) + 1
+            follow = [r for r in runs if _dnum(r[0]) == nxt and r[0]["x0"] > chain[-1][0]["x1"]]
             if not follow:
                 break
-            chain += max(follow, key=len)
-        if len(chain) > len(best):
+            chain.append(max(follow, key=len))
+        if sum(map(len, chain)) > sum(map(len, best)):
             best = chain
     return best
 
 
-def _header(words, kind, first_day, right_of):
-    """Nearest column header above the first day row."""
+def _header(words, kind, run, right_bound):
+    """Column header above a run of days: the nearest one to the right of the day column."""
     def ok(t):
         if kind == "cz":
             return "接続水域" in t and "領海" not in t and "内数" not in t
-        return "領海" in t and "接続" not in t
-    hs = [w for w in words if ok(w["t"]) and w["bottom"] <= first_day["top"] + 1 and w["x1"] > right_of]
-    return max(hs, key=lambda w: w["top"]) if hs else None
+        return "領海" in t and "接続" not in t and "内数" not in t
+    first = run[0]
+    hs = [w for w in words if ok(w["t"]) and w["bottom"] <= first["top"] + 1
+          and w["x0"] >= first["x1"] - 2 and _cx(w) < right_bound]
+    return min(hs, key=lambda w: (w["x0"] - first["x1"], -w["top"])) if hs else None
 
 
 def _cell(t: str):
@@ -210,12 +216,17 @@ def _cell(t: str):
     return (int(m[1]), "number") if m else (None, None)
 
 
-_TOTAL_CZ = re.compile(r"接続水域入域\)?[;:]\s*(\d+)日[、,]?\s*(?:のべ|延べ)?\s*(\d+)隻")
-_TOTAL_TS = re.compile(r"領海侵入.*?[;:]\s*(\d+)日[、,]?\s*(?:のべ|延べ)?\s*(\d+)隻")
+# "###" is a spreadsheet cell too narrow for its number (seen in a current-month PDF).
+_TOTAL_CZ = re.compile(r"接続水域入域\)?[;:]\s*(\d+)日[、,]?\s*(?:のべ|延べ)?\s*(\d+|#+)隻")
+_TOTAL_TS = re.compile(r"領海侵入.*?[;:]\s*(\d+)日[、,]?\s*(?:のべ|延べ)?\s*(\d+|#+)隻")
 _TOTAL_TS_NONE = re.compile(r"領海侵入.*?[;:]\s*(?:なし|0日)")
 _ASOF = [re.compile(r"\(?\s*(\d{1,2})\s*/\s*(\d{1,2})\s*現在"),
          re.compile(r"(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*現在")]
-_TITLE = re.compile(r"(平成|令和)\s*(元|\d{1,2})\s*年\s*(\d{1,2})\s*月")
+_TITLE = re.compile(r"[-−－―]\s*(平成|令和|H|R)\s*(元|\d{1,2})\s*年\s*(\d{1,2})\s*月\s*[-−－―]")
+
+
+def _num(s: str) -> int | None:
+    return int(s) if s.isdigit() else None
 
 
 def parse_words(raw_words: list, year: int | None = None, month: int | None = None) -> dict:
@@ -228,7 +239,8 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
     totals in check().
     """
     words = [_w(w) for w in raw_words]
-    out = {"parsed": False, "problems": [], "days": {}, "totals": {}, "as_of": None, "title_year_month": None}
+    out = {"parsed": False, "problems": [], "days": {}, "totals": {}, "as_of": None, "title_year_month": None,
+           "subject": None}
     if not words:
         out["problems"].append("no text in PDF (image only?)")
         return out
@@ -243,6 +255,8 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
     alltext = [line_text(l) for p in pages for l in lines([w for w in words if w["p"] == p])]
 
     for t in alltext:
+        if out["subject"] is None and (m := re.search(r"^(.+?)による尖閣諸島接近", t)):
+            out["subject"] = m[1]  # 中国公船 / 中国海警局に所属する船舶等
         m = _TITLE.search(t)
         if m and out["title_year_month"] is None:
             out["title_year_month"] = f"{era_year(m[1], m[2]):04d}-{int(m[3]):02d}"
@@ -251,9 +265,9 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
 
     for t in alltext:
         if "領海" not in t and (m := _TOTAL_CZ.search(t)):
-            out["totals"]["cz_days"], out["totals"]["cz_vessels"] = int(m[1]), int(m[2])
+            out["totals"]["cz_days"], out["totals"]["cz_vessels"] = int(m[1]), _num(m[2])
         elif m := _TOTAL_TS.search(t):
-            out["totals"]["ts_days"], out["totals"]["ts_vessels"] = int(m[1]), int(m[2])
+            out["totals"]["ts_days"], out["totals"]["ts_vessels"] = int(m[1]), _num(m[2])
         elif _TOTAL_TS_NONE.search(t):
             out["totals"]["ts_days"], out["totals"]["ts_vessels"] = 0, 0
         for rx in _ASOF:
@@ -265,41 +279,41 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
                 except ValueError:
                     out["problems"].append(f"bad as-of date {m[0]!r}")
 
-    if len(chain) < 5:
-        out["problems"].append(f"day column not found ({len(chain)} consecutive days)")
+    ndays = sum(map(len, chain))
+    if ndays < 5:
+        out["problems"].append(f"day column not found ({ndays} consecutive days)")
         return out
-    first = chain[0]
-    cz_h = _header(pw, "cz", first, first["x1"])
-    ts_h = _header(pw, "ts", first, first["x1"])
-    if cz_h and ts_h and _cx(ts_h) <= _cx(cz_h):
-        cz_h = ts_h = None  # unexpected order; fall back to left-to-right
-    split_x = [w["x0"] for w in chain[1:] if w["x0"] > chain[0]["x1"] + 5]  # side-by-side runs
-    for i, dw in enumerate(chain):
-        d = int(_DAY.match(dw["t"])[1])
-        right = min([x for x in split_x if x > dw["x1"] + 1] or [float("inf")])
+    for i, run in enumerate(chain):
+        right = chain[i + 1][0]["x0"] if i + 1 < len(chain) else float("inf")
+        cz_h = _header(pw, "cz", run, right)
+        ts_h = _header(pw, "ts", run, right)
+        if cz_h and ts_h and _cx(ts_h) <= _cx(cz_h):
+            cz_h = ts_h = None  # unexpected order; fall back to left-to-right
         if cz_h and ts_h and right == float("inf"):
             right = ts_h["x1"] + max(30.0, ts_h["x1"] - ts_h["x0"])
-        tol = max(2.5, 0.5 * _h(dw))
-        row = sorted((w for w in pw if w is not dw and abs(_cy(w) - _cy(dw)) <= tol
-                      and w["x0"] >= dw["x1"] - 0.5 and _cx(w) < right), key=lambda w: w["x0"])
-        cells = [(w, *_cell(w["t"])) for w in row]
-        stray = [w["t"] for w, v, _ in cells if v is None]
-        cells = [(w, v, k) for w, v, k in cells if v is not None]
-        rec = {"cz": None, "ts": None, "cz_cell": "blank", "ts_cell": "blank"}
-        if cz_h and ts_h:
-            for w, v, k in cells:
-                col = "cz" if abs(_cx(w) - _cx(cz_h)) <= abs(_cx(w) - _cx(ts_h)) else "ts"
-                if rec[col + "_cell"] != "blank":
-                    out["problems"].append(f"day {d}: two values in one column")
-                rec[col], rec[col + "_cell"] = v, k
-        else:
-            if len(cells) > 2:
-                out["problems"].append(f"day {d}: {len(cells)} values")
-            for col, (w, v, k) in zip(("cz", "ts"), cells):
-                rec[col], rec[col + "_cell"] = v, k
-        if stray:
-            out["problems"].append(f"day {d}: unreadable cell {stray}")
-        out["days"][str(d)] = rec
+        for dw in run:
+            d = _dnum(dw)
+            tol = max(2.5, 0.5 * _h(dw))
+            row = sorted((w for w in pw if w is not dw and abs(_cy(w) - _cy(dw)) <= tol
+                          and w["x0"] >= dw["x1"] - 0.5 and _cx(w) < right), key=lambda w: w["x0"])
+            cells = [(w, *_cell(w["t"])) for w in row]
+            stray = [w["t"] for w, v, _ in cells if v is None]
+            cells = [(w, v, k) for w, v, k in cells if v is not None]
+            rec = {"cz": None, "ts": None, "cz_cell": "blank", "ts_cell": "blank"}
+            if cz_h and ts_h:
+                for w, v, k in cells:
+                    col = "cz" if abs(_cx(w) - _cx(cz_h)) <= abs(_cx(w) - _cx(ts_h)) else "ts"
+                    if rec[col + "_cell"] != "blank":
+                        out["problems"].append(f"day {d}: two values in one column")
+                    rec[col], rec[col + "_cell"] = v, k
+            else:
+                if len(cells) > 2:
+                    out["problems"].append(f"day {d}: {len(cells)} values")
+                for col, (w, v, k) in zip(("cz", "ts"), cells):
+                    rec[col], rec[col + "_cell"] = v, k
+            if stray:
+                out["problems"].append(f"day {d}: unreadable cell {stray}")
+            out["days"][str(d)] = rec
     if year and month:
         last = calendar.monthrange(year, month)[1]
         extra = [d for d in out["days"] if int(d) > last]
@@ -317,16 +331,24 @@ def parse_words(raw_words: list, year: int | None = None, month: int | None = No
 def check(parsed: dict, last_day: int) -> str:
     """Compare the day rows (up to last_day) with the monthly totals.
 
-    "match": totals found and equal to the rows (blank cells then mean none
-    confirmed, i.e. 0); "no_totals": totals not found; "mismatch": they differ.
+    "match": the totals (days and vessels) equal the rows, so blank cells mean
+    none confirmed (0); "match_days": the same, but a vessel total was
+    unreadable ("###") and only the day counts could be compared;
+    "no_totals": totals not found; "mismatch": they differ.
     """
     t = parsed.get("totals") or {}
     days = [r for d, r in parsed.get("days", {}).items() if int(d) <= last_day]
     if "cz_days" not in t:
         return "no_totals"
-    cz = [r["cz"] or 0 for r in days]
-    ok = (sum(1 for v in cz if v > 0), sum(cz)) == (t["cz_days"], t["cz_vessels"])
-    if "ts_days" in t:
-        ts = [r["ts"] or 0 for r in days]
-        ok = ok and (sum(1 for v in ts if v > 0), sum(ts)) == (t["ts_days"], t["ts_vessels"])
-    return "match" if ok else "mismatch"
+    partial = False
+    for key in ("cz", "ts"):
+        if f"{key}_days" not in t:
+            continue
+        vals = [r[key] or 0 for r in days]
+        if sum(1 for v in vals if v > 0) != t[f"{key}_days"]:
+            return "mismatch"
+        if t.get(f"{key}_vessels") is None:
+            partial = True
+        elif sum(vals) != t[f"{key}_vessels"]:
+            return "mismatch"
+    return "match_days" if partial else "match"

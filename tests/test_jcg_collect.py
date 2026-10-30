@@ -120,5 +120,18 @@ class Collect(unittest.TestCase):
         self.assertFalse(any(r[0].startswith("2026-09") for r in daily["rows"]))
 
 
+class Rows(unittest.TestCase):
+    def test_first_month_rows_start_where_the_table_starts(self):
+        from tests.test_jcg_parse import layout
+        rec = j.reparse({"url": BASE + "data_h24_09.pdf", "label": "9月", "year": 2012, "month": 9,
+                         "words": layout("h24_09")})
+        rows, issues = j.daily_rows({"pdfs": {rec["url"]: rec}}, datetime(2026, 10, 30).date())
+        self.assertEqual(issues, {})
+        self.assertEqual((rows[0]["date"], rows[-1]["date"], len(rows)), ("2012-09-14", "2012-09-30", 17))
+        self.assertEqual(sum(r["contiguous_zone"] for r in rows), 81)
+        self.assertEqual(sum(r["territorial_sea"] for r in rows), 13)
+        self.assertEqual(rows[0]["check"], "match")
+
+
 if __name__ == "__main__":
     unittest.main()

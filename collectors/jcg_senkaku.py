@@ -40,7 +40,7 @@ UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; p
 PAUSE = float(os.environ.get("JCG_PAUSE_SECONDS", "5"))
 TIMEOUT = 60
 JST = timezone(timedelta(hours=9))
-FIELDS = ["date", "contiguous_zone", "territorial_sea", "check", "window_start_utc", "window_end_utc",
+FIELDS = ["date", "contiguous_zone", "territorial_sea", "subject", "check", "window_start_utc", "window_end_utc",
           "as_of", "source_url", "source_last_modified_utc", "retrieved_utc", "parser_version"]
 
 _sleep = time.sleep
@@ -163,19 +163,21 @@ def daily_rows(store: dict, today: date) -> tuple[list[dict], dict]:
         if result == "mismatch":
             issues[rec["url"]] = f"rows do not match the monthly totals {p.get('totals')}"
             continue
-        ts_verified = result == "match" and "ts_days" in p["totals"]
+        verified = result in ("match", "match_days")
+        ts_verified = verified and "ts_days" in p["totals"]
         y, m = (int(x) for x in key.split("-"))
-        for d in range(1, end + 1):
+        first = min(int(d) for d in p["days"])  # 2012-09 starts on the 14th
+        for d in range(first, end + 1):
             r = p["days"].get(str(d))
             if r is None:
                 issues.setdefault(rec["url"], f"day {d} missing")
                 cz = ts = None
             else:
-                cz = r["cz"] if r["cz"] is not None else (0 if result == "match" else None)
+                cz = r["cz"] if r["cz"] is not None else (0 if verified else None)
                 ts = r["ts"] if r["ts"] is not None else (0 if ts_verified or cz == 0 else None)
             start = datetime(y, m, d, tzinfo=JST)
             rows.append({
-                "date": f"{key}-{d:02d}", "contiguous_zone": cz, "territorial_sea": ts, "check": result,
+                "date": f"{key}-{d:02d}", "contiguous_zone": cz, "territorial_sea": ts, "subject": p.get("subject"), "check": result,
                 "window_start_utc": iso(start), "window_end_utc": iso(start + timedelta(days=1)),
                 "as_of": p.get("as_of"), "source_url": rec["url"],
                 "source_last_modified_utc": rec.get("last_modified_utc"),
@@ -184,10 +186,19 @@ def daily_rows(store: dict, today: date) -> tuple[list[dict], dict]:
     return rows, issues
 
 
+def dump_store(store: dict) -> str:
+    """JSON with one line per PDF (small diffs when one month changes)."""
+    def one(v):
+        return json.dumps(v, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    head = [f" {one(k)}:{one(v)}" for k, v in sorted(store.items()) if k != "pdfs"]
+    pdfs = [f"  {one(u)}:{one(r)}" for u, r in sorted(store["pdfs"].items())]
+    body = ",\n".join(head + [' "pdfs":{\n' + ",\n".join(pdfs) + "\n }"])
+    return "{\n" + body + "\n}\n"
+
+
 def save(store: dict, run: dict, today: date) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "pdfs.json").write_text(json.dumps(store, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
-                                   encoding="utf-8")
+    (OUT / "pdfs.json").write_text(dump_store(store), encoding="utf-8")
     rows, issues = daily_rows(store, today)
     with open(OUT / "daily.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)

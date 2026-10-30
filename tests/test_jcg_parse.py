@@ -1,7 +1,16 @@
 import unittest
 
 from collectors.jcg_parse import check, decode_html, page_links, parse_words
-from tests.jcg_fixtures import PAGE, table, word
+import calendar
+from pathlib import Path
+
+from tests.jcg_fixtures import PAGE, from_layout, table, word
+
+LAYOUTS = Path(__file__).resolve().parent / "fixtures" / "jcg"
+
+
+def layout(name):
+    return from_layout(next(LAYOUTS.glob(f"*_{name}.pdf.txt")).read_text(encoding="utf-8"))
 
 URL = "https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html"
 
@@ -77,6 +86,45 @@ class Pdf(unittest.TestCase):
     def test_as_of_in_january_for_december(self):
         p = parse_words(table(title="令和7年12月", as_of="( 1/1 現在)"), 2025, 12)
         self.assertEqual(p["as_of"], "2026-01-01")
+
+
+class RealLayouts(unittest.TestCase):
+    """Word positions printed by the probe run on GitHub Actions (2026-10-30), one PDF per year."""
+
+    def test_every_sample_parses_and_matches_its_totals(self):
+        files = sorted(LAYOUTS.glob("*.txt"))
+        self.assertGreaterEqual(len(files), 19)
+        for f in files:
+            with self.subTest(f.name):
+                p = parse_words(from_layout(f.read_text(encoding="utf-8")))
+                self.assertTrue(p["parsed"], p["problems"])
+                y, m = (int(x) for x in p["title_year_month"].split("-"))
+                last = calendar.monthrange(y, m)[1]
+                if p["as_of"] and p["as_of"][:7] == p["title_year_month"]:
+                    last = int(p["as_of"][8:])
+                self.assertIn(check(p, last), ("match", "match_days"))
+
+    def test_two_tables_side_by_side(self):
+        p = parse_words(layout("R8_9"))
+        self.assertEqual(p["title_year_month"], "2026-09")
+        self.assertEqual(p["as_of"], "2026-09-30")
+        self.assertEqual(p["days"]["1"]["cz"], 8)
+        self.assertEqual((p["days"]["10"]["cz"], p["days"]["10"]["ts"]), (4, 4))
+        self.assertEqual((p["days"]["20"]["cz"], p["days"]["20"]["ts"]), (2, None))
+        self.assertEqual(p["totals"], {"cz_days": 30, "cz_vessels": 120, "ts_days": 1, "ts_vessels": 4})
+
+    def test_first_month_starts_on_the_14th_and_has_no_as_of(self):
+        p = parse_words(layout("h24_09"))
+        self.assertEqual((p["title_year_month"], p["as_of"]), ("2012-09", None))
+        self.assertEqual(min(map(int, p["days"])), 14)
+        self.assertEqual(p["days"]["18"], {"cz": 12, "ts": 3, "cz_cell": "number", "ts_cell": "number"})
+
+    def test_unreadable_vessel_total(self):
+        p = parse_words(layout("R8_10"))
+        self.assertEqual(p["totals"]["cz_vessels"], None)
+        self.assertEqual(check(p, 29), "match_days")
+        p["days"]["2"]["cz"] = None
+        self.assertEqual(check(p, 29), "mismatch")
 
 
 if __name__ == "__main__":

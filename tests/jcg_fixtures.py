@@ -46,3 +46,22 @@ PAGE = """<html><body><a href="/top.pdf">x</a>
 <tr><td>令和8年</td><td><a href="https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_10.pdf">10月</a>
 <a href="data_R8_10.pdf">10月</a><a href="odd.pdf">資料</a></td></tr></table>
 <p>平成24年9月以降の状況</p></body></html>"""
+
+
+def from_layout(text: str) -> list:
+    """Words from a probe layout dump ('top|x0:text x0:text ...').
+
+    The dump keeps x0 and top only; widths are estimated (digits about 4.5pt,
+    other characters about 9pt), which is enough for the column logic.
+    """
+    out, page = [], 0
+    for line in text.splitlines():
+        if line.startswith("--page"):
+            page = int(line.split()[1])
+            continue
+        top, rest = line.split("|", 1)
+        for tok in rest.split(" "):
+            x0, _, t = tok.partition(":")
+            w = sum(4.5 if c.isdigit() or c in "/()-#" else 9.0 for c in t)
+            out.append([page, t, float(x0), float(x0) + w, float(top), float(top) + 9.0])
+    return out
