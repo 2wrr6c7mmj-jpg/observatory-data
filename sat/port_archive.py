@@ -342,18 +342,27 @@ def plan(client, ports: list[dict], now: datetime, cap: float, req_cap: int, log
                  and r.get("result") in DONE_RESULTS} if out else set()
         done2 = {r["date"] for r in read_csv(out / "s2_scenes.csv") if r.get("mask_version") == s2.mask_tag(site)
                  and r.get("result") != "error"} if out else set()
-        acqs = acquisitions_with_footprints(client.catalog(grid.bbox, t0, t1))
+        feats1 = client.catalog(grid.bbox, t0, t1)
+        modes: dict = {}
+        for f in feats1:
+            pr = f.get("properties") or {}
+            k = f"{pr.get('sar:instrument_mode', '?')}/{'+'.join(pr.get('sar:polarizations') or [])}"
+            modes[k] = modes.get(k, 0) + 1
+        acqs = acquisitions_with_footprints(feats1)
         water = water_of(site, mask)
         new1 = [a for a in acqs if a["acquired_utc"] not in done1]
         low = [a for a in new1 if (lambda f: f is not None and f < MIN_COVERAGE)(footprint_share(a["geometries"], grid, water))]
         n1 = len(new1) - len(low)
-        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, t0, t1, collection=s2.COLLECTION))
+        # S2 is always the last 12 months (run_s2), whatever the S1 window
+        n2 = len([d for d in s2.day_groups(client.catalog(grid.bbox, now - timedelta(days=LOOKBACK_DAYS), now,
+                                                          collection=s2.COLLECTION))
                   if d["date"] not in done2]) if s2_on else 0
         e = estimate_port(site, n1, n2)
-        e.update(s1_done=len(done1), s2_done=len(done2), s1_footprint_skip=len(low), mask_version=tag)
+        e.update(s1_done=len(done1), s2_done=len(done2), s1_footprint_skip=len(low), mask_version=tag,
+                 s1_catalog_items=len(feats1), s1_catalog_modes=modes)
         est.append(e)
         log(f"{site['id']} {site['name']} [{tag}]: S1 新 {n1} 撮影（済み {len(done1)}、足跡で除く {len(low)}）× "
-            f"{e['s1_pu_per_scene']} PU = {e['s1_pu']} PU、S2 新 {n2} 日（済み {len(done2)}）→ 約 {e['s2_pu']} PU、計 {e['pu']} PU")
+            f"{e['s1_pu_per_scene']} PU = {e['s1_pu']} PU（カタログ {len(feats1)} 件 {modes}）、S2 新 {n2} 日（済み {len(done2)}）→ 約 {e['s2_pu']} PU、計 {e['pu']} PU")
     todo = [e for e in est if e["s1_scenes"] or e["s2_days"]]
     if not s2_on:
         for e in todo:
@@ -711,6 +720,7 @@ def main(argv=None) -> int:
     p.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
     p.add_argument("--max-pu", type=float, help="cap of this run (e.g. a backfill), inside the ports cap")
     p.add_argument("--only", nargs="*", help="these ports, in this order of priority (ordered allocation)")
+    p.add_argument("--proportional", action="store_true", help="with --only: share the cap in proportion to the estimates")
     m = sub.add_parser("mask")
     m.add_argument("--ports", type=Path, default=PORTS_FILE)
     m.add_argument("--mask-dir", type=Path, required=True)
@@ -821,7 +831,7 @@ def main(argv=None) -> int:
         client = cdse.Client()
         res = plan(client, ports, now, max(0.0, cap), max(0, req_cap - 200),
                    log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir,
-                   days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only))
+                   days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only) and not args.proportional)
         res.update(other_usage_pu=round(other_pu, 1), reserve_pu=args.reserve, other_usage_requests=other_req,
                    ports_done_pu=round(done_pu, 1), global_cap=GLOBAL_CAP, ports_cap=args.cap, max_pu=args.max_pu,
                    window_days=[args.days_from, args.days_to], s1_only=args.s1_only, order=args.only)

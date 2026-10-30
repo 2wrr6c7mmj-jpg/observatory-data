@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: false
 env:
   # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
-  # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、司令部の優先順、別枠 300 PU
-  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 300 --only SWS MIS SUB FCR WDY' || '' }}
+  # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、別枠 300 PU。1 回目（SWS・MIS、165.9 PU）の残り 134 PU を SUB・FCR・WDY に見込みの比で分ける
+  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
   RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
