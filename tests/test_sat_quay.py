@@ -410,5 +410,5 @@ class FeaturesTest(unittest.TestCase):
         self.assertNotIn(k("2026-10-20T10:48:45Z"), p)
         rows.append({"site_id": "ZJG", "mask_version": "2", "acquired_utc": "2026-10-21T10:41:00Z", "relative_orbit": "84"})
         p2 = run.orbit_pairs(rows)
-        self.assertEqual({kk: v for kk, v in p2.items() if kk in p}, p)  # a new scene never breaks a pair
+        self.assertEqual({kk: v for kk, v in p2.items() if kk in p}, p)  # a later scene never breaks a pair
         self.assertIn(k("2026-10-20T10:48:45Z"), p2)

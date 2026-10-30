@@ -522,7 +522,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
                 "est_a_* / est_b_*": "区画 A・B ごとの推定（区間の中央の位置で判定）",
                 "est_conflicts": "前提と合わない印（prior_conflict：valleys・length・cap）が付いた区間の数",
                 "est_capped": "モデル内の 80% 区間の上端が上限 16 隻に達した区間の数（1 以上なら合計はもっと多い可能性）",
-                "features_version / look_az_deg / pair_id": "feat-1（記録だけ）：レーダーが地上で見る方位と、軌道の組の ID（quay.method.features）",
+                "features_version / look_az_deg / pair_id": "feat-1（記録だけ）：レーダーが地上で見る方位と、同じ岸壁を2つの軌道で見る組の ID（36 時間以内。その間に入出港があれば船は違う。quay.method.features）",
                 "est_prior_hash": "推定に使った区画の事前分布（quay/<地点>-zone-prior.json の alpha）のハッシュ。history に撮影ごとの alpha が残る",
             },
             "can_say": "岸壁・桟橋に横付けされた物の有無・おおよその数の幅・占有の長さの目安（未検証）。同じ相対軌道どうしの撮影の比較",
@@ -607,8 +607,10 @@ class QuayContext:
 
 def orbit_pairs(rows: list[dict], max_h: float = PAIR_MAX_H) -> dict:
     """feat-1: pair ids of quay rows. In time order, an unpaired scene is paired with the next unpaired
-    scene of another relative orbit (same site and mask version) within ``max_h`` hours: the same ships
-    seen from two geometries (e.g. 157 and the next day's 84 at Zhanjiang). A new scene never breaks a pair.
+    scene of another relative orbit (same site and mask version) within ``max_h`` hours: the same quays
+    seen from two geometries (e.g. 157 and the next day's 84 at Zhanjiang; ships may arrive or leave in
+    between). Re-made over all rows on every save (past rows get ids too); a scene that comes later in
+    time never breaks an existing pair (a scene inserted earlier in time may).
     Returns {(site_id, acquired_utc, mask tag): "<site>-<first scene's time>-ro<a>+ro<b>"}."""
     def t(r):
         return datetime.strptime(r["acquired_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
@@ -713,7 +715,10 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         return f"、岸壁の数：軌道 {acq['relative_orbit']} の基準なし"
     layers, bmeta = bl
     try:
-        look = quay.look_azimuth(acq.get("orbit_direction"), float(site.get("center_lat") or 0.0))
+        clat = site.get("center_lat")
+        if clat is None and site.get("bbox"):
+            clat = (float(site["bbox"][1]) + float(site["bbox"][3])) / 2  # the bbox centre; no latitude: no look azimuth
+        look = quay.look_azimuth(acq.get("orbit_direction"), float(clat)) if clat is not None else None
         q = quay.count(qctx.geometry(), vv, vh, layers, lambda lo, la: sector_of(sectors, lo, la), look_az_deg=look)
         bver = f"ro{bmeta['relative_orbit']}-{bmeta['version']}"
         cred = fbase.credibility(int(bmeta["scenes"]), int(fbase.site_config(site)["min_scenes"]))
