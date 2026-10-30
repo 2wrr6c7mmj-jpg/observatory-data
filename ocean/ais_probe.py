@@ -27,6 +27,9 @@ CONTROLS = {
     "haikou": (19.95, 20.25, 110.0, 110.6),
     "hongkong": (22.20, 22.40, 114.05, 114.30),
 }
+# 受信範囲の確認用の広域（0.5° の升目ごとのユニーク MMSI 数だけを数える）
+REGION = (18.0, 23.5, 108.0, 115.0)
+CELL = 0.5
 STILL_KN = 0.5
 POS_TYPES = {"PositionReport", "StandardClassBPositionReport", "ExtendedClassBPositionReport"}
 
@@ -52,6 +55,7 @@ class Tally:
         self.cls = {}                # mmsi -> 'A' / 'B'
         self.errors = []
         self.first_msg_s = None
+        self.cells = defaultdict(set)
 
     def feed(self, m: dict, t: float, t0: float):
         if "error" in m:
@@ -71,6 +75,8 @@ class Tally:
         self.msgs += 1
         if self.first_msg_s is None:
             self.first_msg_s = t - t0
+        if inside(REGION, lat, lon):
+            self.cells[(int(lat // CELL), int(lon // CELL))].add(mmsi)
         areas = []
         if inside(OUTER, lat, lon):
             areas.append("outer")
@@ -143,6 +149,7 @@ class Tally:
             "interval_s_per_ship_median": {"ships": len(per_ship_med), "p10": q(per_ship_med, .1),
                                            "p50": q(per_ship_med, .5), "p90": q(per_ship_med, .9)},
             "errors": self.errors[:5],
+            "cells": {f"{a*CELL:.1f}N{b*CELL:.1f}E": len(v) for (a, b), v in sorted(self.cells.items())},
         }
 
 
@@ -155,7 +162,7 @@ async def run(minutes: float, key: str, tally: Tally, meta: dict):
     t0 = time.time()
     end = t0 + minutes * 60
     sub = {"APIKey": key,
-           "BoundingBoxes": [bbox(OUTER)] + [bbox(b) for b in CONTROLS.values()]}
+           "BoundingBoxes": [bbox(REGION)]}
     connects = 0
     while time.time() < end:
         connects += 1
@@ -211,7 +218,10 @@ def text_reports(r: dict) -> dict:
     st = [f"内側で速度 ≤{STILL_KN} kn の船 {len(r['inner_still'])} 隻（MID・船種・Class・位置は 0.001° に丸め）："]
     for x in r["inner_still"][:60]:
         st.append(f"MID{x['mid']} 種{x['type']} {x['cls']} {x['lat']},{x['lon']} sog{x['sog']} 報告{x['n_pos']}")
-    return {"summary": "\n".join(s), "types": "\n".join(t), "inner-still": "\n".join(st)}
+    c = [f"広域 {REGION} の 0.5° 升目ごとのユニーク MMSI（升目の南西端、0 の升目は省略）："]
+    c += [f"{k}: {v}" for k, v in r.get("cells", {}).items()]
+    return {"summary": "\n".join(s), "types": "\n".join(t), "inner-still": "\n".join(st),
+            "cells": "\n".join(c)}
 
 
 def main(argv=None) -> int:

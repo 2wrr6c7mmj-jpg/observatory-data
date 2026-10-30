@@ -31,7 +31,7 @@ jobs:
       - name: Report (annotations)
         if: always()
         run: |
-          for f in summary types inner-still; do
+          for f in summary types inner-still cells; do
             python -m sat.annotate text "ais-$f" "$RUNNER_TEMP/report/$f.txt"
           done
           python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
