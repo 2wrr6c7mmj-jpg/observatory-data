@@ -1,0 +1,21 @@
+{
+ "site": "XMN",
+ "mask_version": "XMN-land-v1",
+ "bbox": [
+  118.055,
+  24.435,
+  118.1,
+  24.47
+ ],
+ "width": 456,
+ "height": 388,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "XMN/2026-05-14T10-17-29Z.png",
+  "XMN/2026-04-27T10-09-36Z.png",
+  "XMN/2025-11-03T10-17-38Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}

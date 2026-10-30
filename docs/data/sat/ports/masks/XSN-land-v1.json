@@ -1,0 +1,29 @@
+{
+ "version": "XSN-land-v1",
+ "site": "XSN",
+ "built_utc": "2026-10-30T19:05:12Z",
+ "bbox": [
+  121.745,
+  29.515,
+  121.8,
+  29.555
+ ],
+ "width": 533,
+ "height": 443,
+ "values": {
+  "0": "water",
+  "1": "land",
+  "2": "structure (pier/breakwater/groyne/quay/bridge)"
+ },
+ "source": "OpenStreetMap via Overpass API",
+ "osm_base": "2026-10-30T19:03:16Z",
+ "query": "[out:json][timeout:90];(way[\"natural\"=\"coastline\"](29.515,121.745,29.555,121.8);way[\"man_made\"~\"^(pier|breakwater|groyne|quay)$\"](29.515,121.745,29.555,121.8);way[\"bridge\"][\"highway\"](29.515,121.745,29.555,121.8);way[\"bridge\"][\"railway\"](29.515,121.745,29.555,121.8););out geom;",
+ "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
+ "coastline_ways": 6,
+ "structure_ways": 15,
+ "regions": 6,
+ "regions_without_votes": 1,
+ "water_fraction": 0.4898,
+ "land_fraction": 0.5052,
+ "structure_fraction": 0.0051
+}

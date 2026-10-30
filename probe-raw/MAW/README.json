@@ -1,0 +1,21 @@
+{
+ "site": "MAW",
+ "mask_version": "MAW-land-v1",
+ "bbox": [
+  119.425,
+  25.975,
+  119.465,
+  26.005
+ ],
+ "width": 401,
+ "height": 332,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "MAW/2026-04-27T10-10-05Z.png",
+  "MAW/2025-11-10T10-10-13Z.png",
+  "MAW/2026-10-07T10-09-26Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}

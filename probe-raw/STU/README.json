@@ -1,0 +1,21 @@
+{
+ "site": "STU",
+ "mask_version": "STU-land-v1",
+ "bbox": [
+  116.64,
+  23.32,
+  116.695,
+  23.355
+ ],
+ "width": 562,
+ "height": 388,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "STU/2026-05-14T10-17-29Z.png",
+  "STU/2025-11-03T10-17-38Z.png",
+  "STU/2026-10-24T10-16-50Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}

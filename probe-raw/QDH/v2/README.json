@@ -1,0 +1,21 @@
+{
+ "site": "QDH",
+ "mask_version": "QDH-land-v2",
+ "bbox": [
+  120.29,
+  36.065,
+  120.335,
+  36.11
+ ],
+ "width": 405,
+ "height": 499,
+ "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
+ "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
+ "credit": "Contains modified Copernicus Sentinel data",
+ "chips": [
+  "QDH/v2/2026-04-17T09-56-08Z.png",
+  "QDH/v2/2026-06-11T21-56-53Z.png",
+  "QDH/v2/2026-07-28T22-04-34Z.png"
+ ],
+ "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）"
+}
