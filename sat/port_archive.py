@@ -605,6 +605,75 @@ def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, t
             "waited_s": round(client.waited_s, 1), "retries_429": client.retries_429}
 
 
+# ---------- per-orbit baselines (as Zhanjiang, sat/baseline.py) ----------
+
+BASELINE_LOOKBACK = 365
+BASELINE_MAX_SCENES = 24
+BASELINE_MIN_SCENES = 24      # below this the quay count is one credibility step lower (as Zhanjiang)
+
+
+class _CatalogView:
+    """A client whose catalog returns fixed features (the scenes chosen beforehand); the rest is the real client."""
+
+    def __init__(self, client, feats):
+        self._c, self._feats = client, feats
+
+    def catalog(self, *a, **k):
+        return list(self._feats)
+
+    def __getattr__(self, name):
+        return getattr(self._c, name)
+
+
+def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir: Path, now: datetime,
+                  log=print, lookback: int = BASELINE_LOOKBACK, max_scenes: int = BASELINE_MAX_SCENES) -> dict:
+    """Per-orbit baselines of a port with sat/baseline.py: scenes of the last ``lookback`` days whose catalog
+    footprint covers at least the baseline's min_coverage of the water (others are not fetched); every orbit with
+    at least 3 such scenes; the newest ``max_scenes`` per orbit, fewer if the cap would be exceeded. Nothing
+    but the baseline layers is kept (no raw sigma0)."""
+    from . import baseline as fbase
+    grid = Grid.for_site(site)
+    water = mask == 0
+    feats = client.catalog(grid.bbox, now - timedelta(days=lookback), now)
+    acqs = acquisitions_with_footprints(feats)
+    min_cov = fbase.DEFAULTS["min_coverage"]
+    keep_ids, by_orbit, dropped = set(), {}, 0
+    for a in acqs:
+        sh = footprint_share(a["geometries"], grid, water)
+        if sh is not None and sh < min_cov:
+            dropped += 1
+            continue
+        by_orbit.setdefault(a["relative_orbit"], []).append(a)
+    orbits = sorted(o for o, v in by_orbit.items() if o is not None and len(v) >= 3)
+    per = cdse.estimate_pu(grid.width, grid.height, 2)
+    left = client.cap_pu - client.processing_units
+    n = max_scenes
+    while n > 3 and per * sum(min(len(by_orbit[o]), n) for o in orbits) > left:
+        n -= 1
+    for o in orbits:
+        for a in sorted(by_orbit[o], key=lambda a: a["acquired_utc"])[-n:]:
+            keep_ids.update(a["ids"])
+    counts = {str(o): len(v) for o, v in sorted(by_orbit.items(), key=lambda kv: str(kv[0]))}
+    log(f"{site['id']}: 撮影 {len(acqs)}（足跡で除く {dropped}）、軌道別 {counts}、基準に使う軌道 {orbits}、"
+        f"1 軌道あたり最大 {n} 撮影（{per} PU／撮影、残り {left:.1f} PU）")
+    summary = {"site_id": site["id"], "mask_version": mask_tag(site), "lookback_days": lookback,
+               "catalog_by_orbit": counts, "footprint_dropped": dropped, "max_scenes_used": n,
+               "min_scenes": BASELINE_MIN_SCENES, "orbits": {}}
+    if not orbits:
+        summary["note"] = "3 撮影以上の軌道がないため基準を作らない"
+        return summary
+    bsite = {**site, "baseline": {"orbits": orbits, "lookback_days": lookback, "max_scenes": n,
+                                  "min_scenes": BASELINE_MIN_SCENES}}
+    view = _CatalogView(client, [f for f in feats if f.get("id") in keep_ids])
+    res = fbase.build(view, bsite, mask, base_dir, now, max(0.0, client.cap_pu - client.processing_units) + 0.5, log=log)
+    for o, r in res.get("orbits", {}).items():
+        r = dict(r)
+        r.pop("stats", None)
+        r["enough"] = bool(r.get("built") and r.get("scenes", r.get("used", 0)) >= BASELINE_MIN_SCENES)
+        summary["orbits"][o] = r
+    return summary
+
+
 def usage_row(res: dict, now: datetime) -> dict:
     return {"run_utc": cdse.iso(now), "site_id": res["site_id"], "requests": res["requests"],
             "processing_units": res["processing_units"], "pu_source": res["pu_source"],
@@ -663,9 +732,52 @@ def main(argv=None) -> int:
         q.add_argument("--days-from", type=int, default=LOOKBACK_DAYS, help="oldest acquisition, days before now")
         q.add_argument("--days-to", type=int, default=0, help="newest acquisition, days before now")
         q.add_argument("--s1-only", action="store_true")
+    b = sub.add_parser("baseline")
+    b.add_argument("--ports", type=Path, default=PORTS_FILE)
+    b.add_argument("--only", nargs="+", required=True, help="ports in this order of priority")
+    b.add_argument("--cap", type=float, required=True, help="PU of this run (already inside the ports cap and the guard)")
+    b.add_argument("--req", type=int, default=1500)
+    b.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
+    b.add_argument("--base-dir", type=Path, default=OUT_DIR / "baselines")
+    b.add_argument("--out", type=Path, default=OUT_DIR)
+    b.add_argument("--pu-per-min", type=float, default=150)
+    b.add_argument("--req-per-min", type=int, default=150)
+    b.add_argument("--max-minutes", type=float, default=300)
+    b.add_argument("--summary", type=Path)
     args = ap.parse_args(argv)
     now = datetime.now(timezone.utc)
     ports = load_ports(args.ports)
+
+    if args.cmd == "baseline":
+        from .osm_mask import load_mask
+        client = LimitedClient(args.cap, args.req, args.pu_per_min, args.req_per_min,
+                               deadline=time.monotonic() + args.max_minutes * 60)
+        byid = {p["id"]: p for p in ports}
+        out = {"run_utc": cdse.iso(now), "cap_pu": args.cap, "ports": []}
+        for pid in args.only:
+            site = byid[pid]
+            pu0, req0 = client.processing_units, client.requests
+            try:
+                mask, _m = load_mask(site["id"], int(site.get("mask_version", 1)), args.mask_dir)
+                s = baseline_port(client, site, mask, args.base_dir, now, log=lambda t: print(t, file=sys.stderr, flush=True))
+            except (BudgetStop, FileNotFoundError, cdse.CDSEError) as e:
+                if isinstance(e, cdse.CredentialError) and not isinstance(e, BudgetStop):
+                    raise
+                s = {"site_id": pid, "error": str(e)[:300]}
+                print(f"{pid}: {e}", file=sys.stderr)
+            s.update(processing_units=round(client.processing_units - pu0, 3), requests=client.requests - req0)
+            out["ports"].append(s)
+            d = args.out / pid
+            write_csv(d / "usage.csv", read_csv(d / "usage.csv") + [{
+                "run_utc": cdse.iso(now), "site_id": pid, "requests": s["requests"], "processing_units": s["processing_units"],
+                "pu_source": "header" if client.pu_reported else "estimate", "s1_processing_units": s["processing_units"],
+                "cap_pu": args.cap, "archive_version": "baseline-bl-1"}], USAGE_FIELDS)
+        out.update(processing_units=round(client.processing_units, 3), requests=client.requests)
+        text = json.dumps(out, ensure_ascii=False, indent=1)
+        if args.summary:
+            args.summary.write_text(text + "\n", encoding="utf-8")
+        print(text)
+        return 0
 
     if args.cmd == "mask":
         from .osm_mask import build_mask, fetch_osm, save_mask

@@ -312,6 +312,24 @@ class RunPortTest(unittest.TestCase):
         self.assertEqual([(e["site_id"], e["cap_pu"]) for e in out], [("A", 500), ("B", 500)])
         self.assertIn("skipped", est[2])
 
+    def test_baseline_port(self):
+        g = Grid.for_site(SITE)
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, : g.width // 4] = 1
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        clock = Clock()
+        fake = Fake(g)
+        c = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i",
+                             client_secret="s", opener=fake)
+        with tempfile.TemporaryDirectory() as d:
+            s = pa.baseline_port(c, SITE, mask, Path(d), now, log=lambda t: None)
+            self.assertEqual(s["footprint_dropped"], 1)  # the swath-edge scene is not fetched
+            self.assertEqual(list(s["orbits"]), ["11"])   # orbit 40 has one scene only
+            self.assertEqual(fake.process_calls, 3)
+            self.assertFalse(s["orbits"]["11"]["enough"])
+            self.assertTrue((Path(d) / "TPA-land-v1" / "ro11-bl-1.json").exists())
+            self.assertTrue((Path(d) / "TPA-land-v1" / "ro11-bl-1.vv_p10.png").exists())
+
     def test_footprint_share(self):
         g = Grid.for_site(SITE)
         water = np.ones((g.height, g.width), bool)
