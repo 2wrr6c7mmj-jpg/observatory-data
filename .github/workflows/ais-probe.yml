@@ -1,0 +1,37 @@
+name: AIS probe
+# est-2 #3：aisstream.io の AIS を湛江周辺（区画 v2 と外側）で約 20 分受信して集計する試験（probe のみ）。
+# 生データは保存も commit もしない。集計を注釈に出す。キーは secret AISSTREAM_API_KEY（ログに出さない）。
+# probe 用ブランチへの push で動く。本番の定期実行はない。
+on:
+  push:
+    branches: ['probe/ais-zjg-*']
+permissions:
+  contents: read
+concurrency:
+  # 本番のワークフロー（collect・jcg-senkaku・sat-ships・proto・pla-tracker）や他の probe とは別の group
+  group: probe-ais-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install websockets
+        run: python -m pip install --quiet 'websockets==13.1'
+      - name: Probe (temporary directory only, about 20 minutes)
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          set -o pipefail
+          python -m ocean.ais_probe --minutes 20 --report "$RUNNER_TEMP/report" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+      - name: Report (annotations)
+        if: always()
+        run: |
+          for f in summary types inner-still; do
+            python -m sat.annotate text "ais-$f" "$RUNNER_TEMP/report/$f.txt"
+          done
+          python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
