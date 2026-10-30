@@ -4,7 +4,25 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from collectors import taiwan_mnd
+from collectors import polite, taiwan_mnd
+
+ALLOWED = polite.RobotsResult(True, True, "test: allowed")
+_robots_patches = []
+
+
+def setUpModule():
+    # The collector tests below are about parsing and retries; robots.txt is
+    # allowed here and tested on its own in the Robots class.
+    for target, kw in ((taiwan_mnd, {"require_robots": ALLOWED}), (taiwan_mnd.polite, {"check_robots": ALLOWED})):
+        for name, value in kw.items():
+            p = mock.patch.object(target, name, return_value=value)
+            p.start()
+            _robots_patches.append(p)
+
+
+def tearDownModule():
+    for p in _robots_patches:
+        p.stop()
 
 LIST = '<base href="/en/"><a href="news/plaact/2">b</a><a href="/en/news/plaact/1">a</a>'
 REPORTS = {
@@ -277,3 +295,99 @@ class ReportFetchErrors(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# robots.txt as served on 2026-10-30 (read once from GitHub Actions with our User-Agent).
+MND_ROBOTS_2026_10_30 = b"""User-agent: Googlebot
+Disallow: /search
+Disallow: /tag
+Disallow: /*?*
+Disallow: /*.aspx$
+
+Sitemap: https://www.mnd.gov.tw/sitemap.xml
+
+User-agent: *
+Disallow: /
+"""
+
+
+class Robots(unittest.TestCase):
+    def setUp(self):
+        for p in _robots_patches:
+            p.stop()
+        polite._cache.clear()
+        self.addCleanup(polite._cache.clear)
+        self.addCleanup(lambda: [p.start() for p in _robots_patches])
+
+    def getter(self, status=200, body=MND_ROBOTS_2026_10_30, calls=None):
+        def g(url, ua, timeout, headers, max_bytes):
+            if calls is not None:
+                calls.append(url)
+            self.assertEqual(url, "https://www.mnd.gov.tw/robots.txt")
+            self.assertEqual(ua, taiwan_mnd.UA)
+            return polite.Response(url, status, {"content-type": "text/plain"}, body)
+        return g
+
+    def test_robots_of_2026_10_30_disallows_every_page_we_read(self):
+        g = self.getter()
+        for url in ("https://www.mnd.gov.tw/en/news/plaactlist/1", "https://www.mnd.gov.tw/news/plaactlist/1",
+                    "https://www.mnd.gov.tw/en/News/PLAAct/83900"):
+            r = polite.check_robots(url, taiwan_mnd.UA, g)
+            self.assertFalse(r.allowed, url)
+            self.assertTrue(r.verified)
+
+    def run_collect(self, getter):
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
+                mock.patch.object(polite, "raw_get", side_effect=getter), \
+                mock.patch.object(taiwan_mnd.urllib.request, "urlopen") as urlopen, \
+                mock.patch.object(taiwan_mnd, "warning") as warn, mock.patch.object(taiwan_mnd, "notice"):
+            (Path(d) / "reports.json").write_text('{"reports": {}}', encoding="utf-8")
+            rc = taiwan_mnd.collect(1, True)
+            files = sorted(x.name for x in Path(d).iterdir())
+        return rc, urlopen, warn, files
+
+    def test_disallowed_means_no_page_is_fetched_and_nothing_rewritten(self):
+        rc, urlopen, warn, files = self.run_collect(self.getter())
+        self.assertEqual(rc, 0)
+        urlopen.assert_not_called()
+        self.assertIn("not collecting", warn.call_args[0][0])
+        self.assertEqual(files, ["reports.json"])
+
+    def test_unverifiable_robots_means_no_page_is_fetched(self):
+        rc, urlopen, warn, files = self.run_collect(self.getter(status=503, body=b""))
+        self.assertEqual(rc, 75)
+        urlopen.assert_not_called()
+        self.assertEqual(files, ["reports.json"])
+
+    def test_fetch_refuses_a_disallowed_page(self):
+        with mock.patch.object(polite, "raw_get", side_effect=self.getter()), \
+                mock.patch.object(taiwan_mnd.urllib.request, "urlopen") as urlopen:
+            with self.assertRaises(polite.SourceBlocked):
+                taiwan_mnd.fetch("https://www.mnd.gov.tw/en/News/PLAAct/1")
+        urlopen.assert_not_called()
+
+    def test_allowed_robots_lets_collection_go_on(self):
+        calls = []
+        g = self.getter(body=b"User-agent: *\nAllow: /\n", calls=calls)
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
+                mock.patch.object(polite, "raw_get", side_effect=g), \
+                mock.patch.object(taiwan_mnd, "PAUSE", 0), \
+                mock.patch.object(taiwan_mnd.urllib.request, "urlopen", side_effect=AssertionError("network")), \
+                mock.patch.object(taiwan_mnd, "notice"):
+            # fetch itself is replaced, so only the robots gate in collect() runs for real
+            with mock.patch.object(taiwan_mnd, "fetch", side_effect=fake_fetch):
+                self.assertEqual(taiwan_mnd.collect(1, True), 0)
+            self.assertTrue((Path(d) / "daily.csv").exists())
+        self.assertEqual(calls, ["https://www.mnd.gov.tw/robots.txt"])
+
+    def test_suspended_main_makes_no_request(self):
+        self.assertTrue(taiwan_mnd.SUSPENDED)
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
+                mock.patch.object(polite, "raw_get", side_effect=AssertionError("network")), \
+                mock.patch.object(taiwan_mnd.urllib.request, "urlopen", side_effect=AssertionError("network")), \
+                mock.patch.object(taiwan_mnd, "warning"), mock.patch("sys.argv", ["x"]):
+            (Path(d) / "status.json").write_text('{"reports": 1}', encoding="utf-8")
+            self.assertEqual(taiwan_mnd.main(), 0)
+            self.assertEqual(json.loads((Path(d) / "status.json").read_text())["collection"], taiwan_mnd.SUSPENDED)
+            with mock.patch("sys.argv", ["x", "--probe"]):
+                self.assertEqual(taiwan_mnd.main(), 0)

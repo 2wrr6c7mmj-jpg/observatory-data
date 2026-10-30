@@ -36,8 +36,13 @@ jobs:
           node --test notam/*.test.mjs
       - name: Probe
         if: inputs.probe
-        run: python -m collectors.taiwan_mnd --probe --probe-ids "${{ inputs.probe_ids }}"
+        # robots.txt is read first (one request); while collection is suspended
+        # (collectors/taiwan_mnd.py SUSPENDED) the probe itself fetches nothing.
+        run: |
+          python -m collectors.taiwan_mnd --check-robots
+          python -m collectors.taiwan_mnd --probe --probe-ids "${{ inputs.probe_ids }}"
       - name: Collect Taiwan MND daily reports
+        # Suspended (robots.txt disallows all but Googlebot): only a warning, no request.
         if: ${{ !inputs.probe }}
         # A long backfill may stop at this limit; progress is saved per page and
         # published below, and the next run continues where this one stopped.

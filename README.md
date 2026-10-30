@@ -53,6 +53,8 @@ python -m analysis.proto   # docs/proto/data/*.json を作り直す
 
 ## 統幕データの更新
 
+**台湾国防部の取得は停止中です。** 2026-10-30 に GitHub Actions から収集器と同じ User-Agent で読んだ https://www.mnd.gov.tw/robots.txt（Last-Modified 2026-10-13）は、Googlebot 以外のすべて（`User-agent: *`）に `Disallow: /` を指定していたため、`collectors/taiwan_mnd.py` の `SUSPENDED` で取得を止めています（毎日の実行は警告だけで、台湾国防部へは一切リクエストしない。保存済みの日報 `docs/data/taiwan-mnd/` はそのまま残り、`status.json` の `collection` に停止の理由を書く）。収集器は一覧・個別ページの取得前に robots.txt を確かめ（`collectors/polite.py`）、拒否または確認できないときは取得しません。再開は、robots.txt が `/en/news/plaactlist/` と `/en/News/PLAAct/` を許すようになったのを `python -m collectors.taiwan_mnd --check-robots`（robots.txt の1回だけ取得）で確かめてから、`SUSPENDED` を外す変更で行います。
+
 統幕のサイト（mod.go.jp）はボット対策があり自動取得できないため、元データの更新は手作業です（手順は [jso/HANDOFF.md](jso/HANDOFF.md)）。解析済みのデータベース `jso/source/jso.sqlite` を差し替えると、毎日の実行で `docs/data/jso/` が作り直され、台湾国防部の日報との突き合わせも更新されます。
 
 ## 実行
