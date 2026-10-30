@@ -466,3 +466,19 @@ class RunTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FollowupTest(unittest.TestCase):
+    def test_probe_pu_annotation_sums_the_probe_usage(self):
+        from sat import annotate
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "usage.csv"
+            p.write_text("run_utc,requests,processing_units,pu_source,scenes\n"
+                         "2026-10-30T05:17:00Z,4,12.5,header,2\n2026-10-30T06:00:00Z,1,0.25,header,0\n", encoding="utf-8")
+            text = annotate.pu_summary(p)
+        self.assertIn("12.750 PU", text)
+        self.assertIn("リクエスト 5", text)
+
+    def test_meta_describes_one_row_per_mask_version(self):
+        from sat import run
+        self.assertEqual(run.build_meta([])["files"]["ship_counts.csv"], "1 行＝1 撮影×1 地点×1 範囲版（mask_version）")
