@@ -375,7 +375,8 @@ class SanyaSitesTest(unittest.TestCase):
             x = s[sid]
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]), ("naval", "trial", "per_site", False, mv))
             self.assertFalse(x["daily"])  # settings only until the quay lines and the baseline are in
-            self.assertEqual(x["baseline"], {"orbits": [157], "lookback_days": 365, "max_scenes": 30, "min_scenes": 24})
+            self.assertEqual({k: v for k, v in x["baseline"].items() if k != "note"},
+                             {"orbits": [157], "lookback_days": 365, "max_scenes": 30, "min_scenes": 24})
             self.assertTrue(x["pu_month_cap"] > 0)
             mask, info = run.load_mask(sid, mv)
             g = Grid.for_site(x)
