@@ -23,6 +23,7 @@
 <div class="kpis" id="kpis"></div>
 <div id="chart"></div>
 <h3>平常を外れた日（起こりにくい順、上位20）</h3>
+<p class="note" id="calib"></p>
 <div id="top"></div>
 <h3>曜日と月の効果（倍率。曜日は日報の報告日の曜日）</h3>
 <div id="eff"></div>
@@ -76,7 +77,7 @@
       ],
       tip: x => { const d = byx.get(x); if (!d) return '';
         return `<b>${d.date}</b><br>値 ${P.fmt(d.y)}（平常値 ${P.fmt(d.exp)}、上限 ${P.fmt(d.hi)}）` +
-          (d.p !== undefined ? `<br>この件数以上：${P.oneIn(d.p)}（p=${d.p}）` : '') + (d.out ? '<br><b>平常を外れた日</b>' : ''); },
+          (d.p !== undefined ? `<br>この件数以上：${P.oneIn(d.p)}（p=${P.pfmt(d.p)}）` : '') + (d.out ? '<br><b>平常を外れた日</b>' : ''); },
       caption: '点にカーソルを当てると、その日の平常値と起こりにくさが出ます。',
     });
     const last = M.days[M.days.length - 1];
@@ -86,11 +87,15 @@
     kpi(P.fmt(last.y), `最新 ${last.date} の値（平常値 ${P.fmt(last.exp)}）`);
     kpi(P.oneIn(last.p), '最新の日の件数以上になる頻度の目安');
     const ev = M.days.filter(d => d.p !== undefined);
-    kpi(P.fmt(100 * ev.filter(d => d.p < 0.01).length / ev.length, 1) + '%', 'p<0.01 の日の割合（モデルが正しければ約1%）');
+    const share = 100 * ev.filter(d => d.p < 0.01).length / ev.length;
+    kpi(P.fmt(share, 1) + '%', 'p<0.01 の日の割合（モデルが正しければ約1%）');
+    document.getElementById('calib').innerHTML = (share > 1.2 ? `<b>この表の「およそ N 日に1回」は実際より大きめです。</b>` : '') +
+      `この指標で p&lt;0.01 の日は評価した ${ev.length.toLocaleString()} 日の ${P.fmt(share, 1)}% で、モデルどおりなら約1%のはずです` +
+      (share > 1.5 ? `（約${P.fmt(share, 1)}倍。珍しく見えすぎています）` : '') + `。N は桁の目安として読み、p は 0.0001 未満を「&lt;0.0001」とまとめています。`;
     const top = M.days.filter(d => d.out).sort((a, b) => a.p - b.p).slice(0, 20);
     const tb = document.getElementById('top'); tb.innerHTML = '';
     P.table(tb, ['報告日', '値', '平常値', '上限', '起こりにくさの目安', 'p'],
-      top.map(d => [d.date, d.y, P.fmt(d.exp), P.fmt(d.hi), P.oneIn(d.p), d.p]), ['', 'n', 'n', 'n', '', 'n']);
+      top.map(d => [d.date, d.y, P.fmt(d.exp), P.fmt(d.hi), P.oneIn(d.p), P.pfmt(d.p)]), ['', 'n', 'n', 'n', '', 'n']);
     const ef = document.getElementById('eff'); ef.innerHTML = '';
     const wd = '月火水木金土日';
     P.table(ef, ['', ...Array.from(wd)], [['曜日効果', ...Array.from(wd).map((_, i) => '×' + P.fmt(M.weekday_effect[i] ?? null, 2))]], ['', 'n', 'n', 'n', 'n', 'n', 'n', 'n']);

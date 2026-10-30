@@ -243,5 +243,11 @@ const P = (() => {
     return `およそ ${r.toLocaleString()} 日に1回`;
   }
 
-  return { load, chart, calendar, table, provenance, defDate, oneIn, t, iso, fmt, esc, css, h, DAY };
+  function pfmt(p) { // 生の極小値（1e-14 など）は出さず、下限で丸める
+    if (p === null || p === undefined) return '—';
+    if (p < 0.0001) return '<0.0001';
+    return p < 0.01 ? p.toFixed(4) : p.toFixed(2);
+  }
+
+  return { load, chart, calendar, table, provenance, defDate, oneIn, pfmt, t, iso, fmt, esc, css, h, DAY };
 })();

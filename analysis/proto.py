@@ -507,6 +507,9 @@ def weekly_share(rows, num='median_line_or_adiz', den='aircraft'):
 
 # ---------------------------------------------------------------- 5. イベントスタディ
 
+MIN_CASES = 3  # 使える事例がこれ未満の要約値（中央値・偽の起点との比較）は出さない（1部 審査）
+
+
 def event_study(rows, exercises, metrics=METRICS, pre=30, post=10):
     rel = list(range(-pre, post + 1))
     evs = []
@@ -525,7 +528,7 @@ def event_study(rows, exercises, metrics=METRICS, pre=30, post=10):
             med, lo, hi, n = [], [], [], []
             for j in range(len(rel)):
                 col = [mat[i][j] for i in idx if mat[i][j] is not None]
-                med.append(median(col))
+                med.append(median(col) if len(col) >= MIN_CASES else None)
                 lo.append(min(col) if col else None)
                 hi.append(max(col) if col else None)
                 n.append(len(col))
@@ -550,7 +553,7 @@ def event_study(rows, exercises, metrics=METRICS, pre=30, post=10):
             rs = [x for j, x in enumerate(ratios) if j != i and x is not None]
             loo.append({'excluded': evs[i]['id'], 'median': mm,
                         'max_abs_diff_pre': r(max(diffs) if diffs else None, 2),
-                        'median_pre_ratio': r(median(rs), 3) if rs else None})
+                        'median_pre_ratio': r(median(rs), 3) if len(rs) >= MIN_CASES else None})
         # 偽の起点（演習の前後 45 日を除くすべての日）で同じ比を取ったときの分布
         placebo = []
         for x in sorted(rows):
@@ -561,14 +564,14 @@ def event_study(rows, exercises, metrics=METRICS, pre=30, post=10):
             if pr is not None:
                 placebo.append(pr)
         rs = [x for x in ratios if x is not None]
-        obs = median(rs) if rs else None
+        obs = median(rs) if len(rs) >= MIN_CASES else None
         pct = (sum(1 for p in placebo if p < obs) / len(placebo)) if (placebo and obs is not None) else None
         res[m] = {'label': LABELS[m], 'rel': rel, 'matrix': mat, 'median': med, 'min': lo, 'max': hi, 'n': n,
-                  'pre_ratio': [r(x, 3) for x in ratios], 'median_pre_ratio': r(obs, 3),
+                  'pre_ratio': [r(x, 3) for x in ratios], 'n_cases': len(rs), 'median_pre_ratio': r(obs, 3),
                   'placebo': {'n': len(placebo), 'q05': r(quantile(placebo, 0.05), 3), 'q50': r(quantile(placebo, 0.5), 3),
                               'q95': r(quantile(placebo, 0.95), 3), 'percentile_of_observed': r(pct, 3)},
                   'loo': loo}
-    return {'events': evs, 'pre': pre, 'post': post, 'metrics': res}
+    return {'events': evs, 'pre': pre, 'post': post, 'min_cases': MIN_CASES, 'metrics': res}
 
 
 # ---------------------------------------------------------------- 書き出し

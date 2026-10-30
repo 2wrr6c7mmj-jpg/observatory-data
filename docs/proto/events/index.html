@@ -58,7 +58,7 @@
   for (const [m, v] of Object.entries(D.metrics)) sel.appendChild(new Option(v.label, m));
   D.events.forEach((e, i) => loo.appendChild(new Option(e.name, i)));
   const cols = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s7'].map(P.css);
-  const med = arr => { const a = arr.filter(v => v !== null).sort((x, y) => x - y); if (!a.length) return null; const m = a.length >> 1; return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
+  const med = arr => { const a = arr.filter(v => v !== null).sort((x, y) => x - y); if (a.length < (D.min_cases || 3)) return null; const m = a.length >> 1; return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
   const draw = () => {
     const M = D.metrics[sel.value];
     const keep = D.events.map((_, i) => loo.value === '' || +loo.value !== i);
@@ -86,7 +86,7 @@
     const pl = M.placebo;
     P.table(R, ['', '直前の比'], [
       ...D.events.map((e, i) => [P.esc(e.name), P.fmt(M.pre_ratio[i], 2)]),
-      ['<b>演習の中央値</b>', `<b>${P.fmt(M.median_pre_ratio, 2)}</b>`],
+      [`<b>演習の中央値</b>（使えた事例 ${M.n_cases ?? '—'} 件。${D.min_cases || 3} 件未満は「—」）`, `<b>${P.fmt(M.median_pre_ratio, 2)}</b>`],
       [`偽の起点 ${pl.n} 日の分布（5% / 50% / 95%）`, `${P.fmt(pl.q05, 2)} / ${P.fmt(pl.q50, 2)} / ${P.fmt(pl.q95, 2)}`],
       ['演習の中央値は偽の起点の分布の', pl.percentile_of_observed === null ? '—' : `${Math.round(pl.percentile_of_observed * 100)}% 点`],
     ], ['', 'n']);

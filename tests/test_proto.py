@@ -137,6 +137,20 @@ class Events(unittest.TestCase):
         self.assertEqual(M['matrix'][0][j], (date(2024, 3, 2) - date(2024, 1, 1)).days)
         self.assertEqual(len(M['loo']), 2)
 
+    def test_summary_needs_three_cases(self):
+        vals = list(range(300))
+        two = [{'id': c, 'start': s, 'sources': []} for c, s in (('a', '2024-03-01'), ('b', '2024-05-01'))]
+        M = proto.event_study(make_rows(vals), two, metrics=['plan_vessels'])['metrics']['plan_vessels']
+        self.assertEqual(M['n_cases'], 2)
+        self.assertIsNone(M['median_pre_ratio'])
+        self.assertIsNone(M['placebo']['percentile_of_observed'])
+        self.assertTrue(all(v is None for v in M['median']))
+        three = two + [{'id': 'c', 'start': '2024-07-01', 'sources': []}]
+        M = proto.event_study(make_rows(vals), three, metrics=['plan_vessels'])['metrics']['plan_vessels']
+        self.assertEqual(M['n_cases'], 3)
+        self.assertIsNotNone(M['median_pre_ratio'])
+        self.assertTrue(all(x['median_pre_ratio'] is None for x in M['loo']))  # 1件除くと2件
+
     def test_exercise_list_is_sourced(self):
         with open(proto.EXERCISES, encoding='utf-8') as f:
             ex = json.load(f)['exercises']
