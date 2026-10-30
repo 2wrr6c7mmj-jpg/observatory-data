@@ -1,12 +1,10 @@
 {
- "generated_utc": "2026-10-30T02:07:05Z",
+ "generated_utc": "2026-10-30T06:18:24Z",
  "reports": 1967,
- "days": 1917,
+ "days": 1919,
  "first_day": "2020-11-01",
  "last_day": "2026-10-30",
  "unparsed_ids": [
-  "79224",
-  "80454",
   "82456",
   "83892",
   "83894",
@@ -29,5 +27,11 @@
   "83974",
   "83977"
  ],
- "parser_version": 4
+ "parser_version": 5,
+ "parse_errors": {},
+ "days_by_format": {
+  "afc-around-roc": 87,
+  "around-taiwan": 1418,
+  "sw-adiz": 414
+ }
 }

@@ -52,6 +52,64 @@ class Daily(unittest.TestCase):
         self.assertEqual(rows["2021-10-04"]["source_url"], "a b2")
         self.assertEqual(rows["2023-01-01"]["aircraft"], 6)
 
+    def test_separate_events_are_added_and_reposts_counted_once(self):
+        base = {"parsed": True, "format": "sw-adiz", "report_date": "2021-09-23"}
+        reports = {
+            "1": {**base, "period": "morning", "adiz_aircraft": 19, "adiz_types": {"J-16": 12, "H-6": 7}, "source_url": "m"},
+            "2": {**base, "period": "afternoon", "adiz_aircraft": 5, "adiz_types": {"J-16": 5}, "source_url": "a"},
+            # two reports without a time of day but different aircraft: separate events
+            "3": {**base, "report_date": "2022-01-04", "period": None, "adiz_aircraft": 5, "adiz_types": {"J-16": 5}, "source_url": "x"},
+            "4": {**base, "report_date": "2022-01-04", "period": None, "adiz_aircraft": 2, "adiz_types": {"J-16": 2}, "source_url": "y"},
+            # the same report posted twice (afc-around-roc): once
+            "5": {**base, "format": "afc-around-roc", "report_date": "2022-10-20", "period": None, "adiz_aircraft": 2,
+                  "adiz_types": {"Y-8 ASW": 1, "Y-8 RECCE": 1}, "source_url": "p"},
+            "6": {**base, "format": "afc-around-roc", "report_date": "2022-10-20", "period": None, "adiz_aircraft": 2,
+                  "adiz_types": {"Y-8 ASW": 1, "Y-8 RECCE": 1}, "source_url": "q"},
+        }
+        rows = {r["report_date"]: r for r in taiwan_mnd.daily_rows(reports)}
+        self.assertEqual((rows["2021-09-23"]["adiz_aircraft"], rows["2021-09-23"]["reports"]), (24, 2))
+        self.assertEqual(rows["2021-09-23"]["adiz_types"], "H-6:7;J-16:17")
+        self.assertEqual(rows["2022-01-04"]["adiz_aircraft"], 7)
+        self.assertIsNone(rows["2022-01-04"]["merge_note"])
+        r = rows["2022-10-20"]
+        self.assertEqual((r["format"], r["adiz_aircraft"], r["reports"], r["source_url"]), ("afc-around-roc", 2, 1, "q"))
+        self.assertIn("re-post", r["merge_note"])
+
+
+class PublishedData(unittest.TestCase):
+    """Checks on the committed data (docs/data/taiwan-mnd), rebuilt offline with --reparse."""
+
+    @classmethod
+    def setUpClass(cls):
+        import csv
+        path = Path(__file__).resolve().parent.parent / "docs" / "data" / "taiwan-mnd" / "daily.csv"
+        cls.rows = {r["report_date"]: r for r in csv.DictReader(open(path, encoding="utf-8"))}
+
+    def test_no_implausible_counts(self):
+        for d, r in self.rows.items():
+            for k in ("aircraft", "adiz_aircraft", "plan_vessels", "median_line_or_adiz"):
+                if r[k]:
+                    self.assertLessEqual(int(r[k]), 200, (d, k))
+
+    def test_formats_by_period(self):
+        fmt = {d: r["format"] for d, r in self.rows.items()}
+        self.assertEqual(fmt["2022-08-02"], "sw-adiz")
+        self.assertEqual({fmt[d] for d in fmt if "2022-08-03" <= d <= "2022-11-12"}, {"afc-around-roc"})
+        self.assertEqual({fmt[d] for d in fmt if d >= "2022-11-16"}, {"around-taiwan"})
+        self.assertEqual({fmt[d] for d in fmt if d < "2022-08-03"}, {"sw-adiz"})
+
+    def test_known_days(self):
+        r = self.rows
+        self.assertEqual(r["2022-08-05"]["adiz_aircraft"], "49")
+        self.assertEqual(r["2021-09-23"]["adiz_aircraft"], "24")
+        self.assertEqual(r["2022-10-20"]["adiz_aircraft"], "2")
+        self.assertEqual(r["2024-07-26"]["plan_vessels"], "0")
+        self.assertEqual(r["2022-12-19"]["aircraft"], "17")
+        self.assertEqual(r["2023-08-02"]["plan_vessels"], "10")
+        self.assertEqual(r["2022-11-23"]["median_line_or_adiz"], "3")
+        self.assertEqual(r["2021-10-21"]["adiz_aircraft"], "4")
+        self.assertEqual(r["2022-09-22"]["adiz_aircraft"], "3")
+
 
 def http_error(code, retry_after=None):
     import email.message
