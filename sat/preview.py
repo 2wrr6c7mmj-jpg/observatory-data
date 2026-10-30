@@ -68,26 +68,37 @@ def main(argv=None) -> int:
 
 
 def quay_report(out: Path, dest: Path) -> None:
-    """DEST/quay.txt (every scene's quay count, the newest scene's stretches) and DEST/change_thumb.webp."""
+    """DEST/quay.txt (every scene's quay count, the newest scene's stretches), DEST/quay_segs.json (those
+    stretches with every property) and DEST/change_thumb.webp."""
     rows = sorted(read_csv(out / "quay_counts.csv"), key=lambda r: r["acquired_utc"])
     if not rows:
         (dest / "quay.txt").write_text("no quay count\n", encoding="utf-8")
         return
     lines = [f"{r['acquired_utc']} {r['platform']} ro={r['relative_orbit']} base={r['baseline_version']} n={r['baseline_scenes']}"
              f" cred={r['credibility']} occ={r['occupied_min']}-{r['occupied_max']} A={r['sector_a_min']}-{r['sector_a_max']}"
-             f" B={r['sector_b_min']}-{r['sector_b_max']} seg={r['segments']} raft={r['rafted']} cov={r['quay_coverage']}" for r in rows]
+             f" B={r['sector_b_min']}-{r['sector_b_max']} seg={r['segments']} raft={r['rafted']} cov={r['quay_coverage']}"
+             + (f" est={r.get('est_mode')}[{r.get('est_p10')}-{r.get('est_p90')}] m={r.get('est_mean')} war={r.get('est_warship_mode')}"
+                f" eA={r.get('est_a_mode')}[{r.get('est_a_p10')}-{r.get('est_a_p90')}] eB={r.get('est_b_mode')}[{r.get('est_b_p10')}-{r.get('est_b_p90')}]"
+                f" cf={r.get('est_conflicts')}" if r.get("est_version") else "") for r in rows]
     row = rows[-1]
     if row.get("change_thumb") and (out / row["change_thumb"]).exists():
         (dest / "change_thumb.webp").write_bytes((out / row["change_thumb"]).read_bytes())
     gj = out / "quay" / f"{row['acquired_utc'][:7]}.geojson"
+    segs = []
     if gj.exists():
         for f in json.loads(gj.read_text(encoding="utf-8"))["features"]:
             p = f["properties"]
             if p["acquired_utc"] == row["acquired_utc"]:
+                segs.append({k: v for k, v in p.items() if k not in ("site_id", "acquired_utc", "status", "reliability",
+                                                                      "credibility", "mask_version", "quay_version",
+                                                                      "baseline_version", "in_sample", "est_version")})
                 lon, lat = f["geometry"]["coordinates"][len(f["geometry"]["coordinates"]) // 2]
                 lines.append(f"{p['n']} {p['sector']} {p['line_kind']} {lat:.5f},{lon:.5f} L={p['length_m']} est={p['est_length_m']}"
                              f" {p['min']}-{p['max']}{' raft' if p['rafted'] else ''} pk={p['peak_dvv_db']} cl={p.get('cluster')}")
     (dest / "quay.txt").write_text("\n".join(lines)[:3900] + "\n", encoding="utf-8")
+    # the newest scene's stretches with every property (est-1 inputs), for re-computing offline
+    (dest / "quay_segs.json").write_text(json.dumps({"acquired_utc": row["acquired_utc"], "segments": segs},
+                                                    ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
 if __name__ == "__main__":
