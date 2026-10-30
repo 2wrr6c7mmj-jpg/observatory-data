@@ -301,25 +301,34 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             summary["skipped"] += 1
             log(f"{site['id']} {acq['acquired_utc']}: 水域の {coverage:.0%} しか写っていないため数えない")
             continue
-        dets, info = detect(vv, vh, land, grid.pixel_m)
-        image = f"images/{site['id']}/{stamp(acq['acquired_utc'])}.png"
-        inc = None
-        if lia is not None and np.isfinite(lia[valid_water]).any():
-            inc = round(float(np.nanmedian(lia[valid_water])), 2)
-        nh = sum(d["zone"] == "harbour" for d in dets)
-        nq = sum(d["zone"] == "quay" for d in dets)
-        row = {
-            "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
-            "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
-            "relative_orbit": acq["relative_orbit"], "incidence_deg": inc,
-            "harbour_candidates": nh, "quay_candidates": nq, "confirmed": "",
-            "mask_version": f"{site['id']}-land-v{MASK_VERSION}", "detector_version": DETECTOR_VERSION,
-            "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
-            "processing_units": pu, "image": image,
-        }
-        for name, _lo, _hi in LENGTH_CLASSES:
-            row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
-        store.add(row, chip_features(site, grid, acq, dets, image), render.quicklook(vv, mask, dets))
+        try:  # a detection/rendering failure is recorded like a fetch failure (PU already spent)
+            dets, info = detect(vv, vh, land, grid.pixel_m)
+            image = f"images/{site['id']}/{stamp(acq['acquired_utc'])}.png"
+            inc = None
+            if lia is not None and np.isfinite(lia[valid_water]).any():
+                inc = round(float(np.nanmedian(lia[valid_water])), 2)
+            nh = sum(d["zone"] == "harbour" for d in dets)
+            nq = sum(d["zone"] == "quay" for d in dets)
+            row = {
+                "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
+                "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
+                "relative_orbit": acq["relative_orbit"], "incidence_deg": inc,
+                "harbour_candidates": nh, "quay_candidates": nq, "confirmed": "",
+                "mask_version": f"{site['id']}-land-v{MASK_VERSION}", "detector_version": DETECTOR_VERSION,
+                "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
+                "processing_units": pu, "image": image,
+            }
+            for name, _lo, _hi in LENGTH_CLASSES:
+                row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
+            quick = render.quicklook(vv, mask, dets)
+            features = chip_features(site, grid, acq, dets, image)
+        except Exception as e:
+            entry.update(result="error", error=f"検出・描画で失敗: {str(e)[:280]}")
+            store.note_scene(entry)
+            summary["errors"] += 1
+            log(f"{site['id']} {acq['acquired_utc']}: 検出・描画で失敗 {str(e)[:200]}")
+            continue
+        store.add(row, features, quick)
         entry.update(result="counted", detector_info=info)
         store.note_scene(entry)
         summary["counted"] += 1
@@ -331,7 +340,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
     return summary
 
 
-def main(argv=None) -> int:
+def main(argv=None, client=None, sites=None) -> int:
     ap = argparse.ArgumentParser(description="Sentinel-1 harbour ship-candidate counts (trial)")
     ap.add_argument("--out", type=Path, default=OUT_DIR)
     ap.add_argument("--mask-dir", type=Path, default=MASK_DIR)
@@ -342,21 +351,26 @@ def main(argv=None) -> int:
     now = datetime.now(timezone.utc)
     probe = None
     mask_dir = args.mask_dir
+    published_usage: list[dict] = []
     if args.probe:
+        # The probe writes its own usage.csv under the probe directory, but the same
+        # CDSE account is used: count this month's published usage (args.out, the
+        # repository data) against the cap too, so a probe cannot push the month over it.
+        published_usage = read_csv(args.out / "usage.csv")
         args.out = args.probe / "out"
         probe = {}
     store = Store(args.out)
     month = now.strftime("%Y-%m")
-    used_pu, used_req = month_usage(store.usage, month)
+    used_pu, used_req = month_usage(store.usage + published_usage, month)
     budget = MONTHLY_PU_CAP - used_pu
     run = {"run_utc": cdse.iso(now), "sites": []}
     if used_req >= MONTHLY_REQUEST_CAP:
         print(f"今月のリクエスト数が上限（{MONTHLY_REQUEST_CAP}）に達したため取得しない", file=sys.stderr)
         budget = 0
-    client = cdse.Client()
+    client = client if client is not None else cdse.Client()
     rc = 0
     try:
-        for site in load_sites():
+        for site in (sites if sites is not None else load_sites()):
             if not site.get("enabled"):
                 continue
             try:
@@ -374,18 +388,31 @@ def main(argv=None) -> int:
             if budget <= 0:
                 run["sites"].append({"site_id": site["id"], "deferred_budget": True})
                 continue
-            s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe)
-            budget = s["budget_left_pu"]
+            try:
+                s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe)
+            except cdse.CredentialError:
+                raise
+            except cdse.CDSEError as e:  # e.g. catalog 429/5xx: record it, go on to the next site
+                print(f"{site['id']}: 失敗 {str(e)[:200]}", file=sys.stderr)
+                s = {"site_id": site["id"], "error": str(e)[:300]}
+                rc = 1
+            # Budget from what the client actually spent (also covers a site that failed midway).
+            budget = MONTHLY_PU_CAP - used_pu - client.processing_units
+            s["budget_left_pu"] = round(budget, 2)
             run["sites"].append(s)
     except cdse.CredentialError as e:
         print(f"エラー: {e}", file=sys.stderr)
         run["error"] = str(e)
         rc = 2
-    run.update(requests=client.requests, processing_units=round(client.processing_units, 3),
-               pu_source="header" if client.pu_reported else "estimate",
-               scenes=sum(s.get("counted", 0) + s.get("skipped", 0) for s in run["sites"]),
-               month_pu_before=round(used_pu, 3), month_pu_cap=MONTHLY_PU_CAP)
-    store.save(run)
+    except BaseException as e:  # unexpected: still record the PU spent (finally), then fail the run
+        run["error"] = f"{type(e).__name__}: {str(e)[:300]}"
+        raise
+    finally:
+        run.update(requests=client.requests, processing_units=round(client.processing_units, 3),
+                   pu_source="header" if client.pu_reported else "estimate",
+                   scenes=sum(s.get("counted", 0) + s.get("skipped", 0) for s in run["sites"]),
+                   month_pu_before=round(used_pu, 3), month_pu_cap=MONTHLY_PU_CAP)
+        store.save(run)
     if probe is not None:
         probe.update(run)
         probe["last_process_header_names"] = sorted(getattr(client, "last_headers", []))

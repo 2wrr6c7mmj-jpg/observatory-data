@@ -27,7 +27,7 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 
 `jcg-senkaku` の出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）。公共データ利用規約 第1.0版（PDL1.0）に基づき、このリポジトリが PDF から数値を抜き出して日ごとの表に加工しています。加工したデータは海上保安庁が作成したものではありません。
 
-`sat` の出典：Contains modified Copernicus Sentinel data（年は meta.json）。Copernicus Data Space Ecosystem の Sentinel Hub Process API で σ0 の切り出しを取得し、このリポジトリが自動で数えています。陸マスクは © OpenStreetMap contributors（ODbL）。数は「候補数」で在泊艦数ではなく、艦種・国籍は分かりません。試行ページは [docs/sat/](docs/sat/index.html)（Pages では `sat/`）。
+`sat` の出典：Contains modified Copernicus Sentinel data 2026（年は撮影年。meta.json の credit は自動で年が入るが、この README と docs/index.html・docs/sat/index.html の表記は手書きなので、撮影年が変わったら（2027 年の撮影が入ったら「2026-2027」に）直す）。Copernicus Data Space Ecosystem の Sentinel Hub Process API で σ0 の切り出しを取得し、このリポジトリが自動で数えています。陸マスクは © OpenStreetMap contributors（ODbL）。数は「候補数」で在泊艦数ではなく、艦種・国籍は分かりません。試行ページは [docs/sat/](docs/sat/index.html)（Pages では `sat/`）。
 
 ## 取得の作法
 
@@ -72,4 +72,4 @@ python -m sat.run --probe /tmp/sat         # /tmp/sat の下にだけ書く確�
 python -m sat.osm_mask ZJG --version 2     # 陸マスクを OSM から作り直す（版を上げ、CHANGES.md に書く）
 ```
 
-GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に、「Collect JCG Senkaku」は毎日 12:43（日本時間）に、「Sentinel-1 ship candidates」は毎日 14:17（日本時間）に動きます（別々の concurrency group で、互いに止め合わない）。Sentinel-1 は無料枠を守るため、1 回の実行で最大 12 撮影、月 1000 処理単位（PU）までに自分で制限し、使った PU を usage.csv に残します。台湾国防部の過去分の遡りは、手動実行で `pages` を大きくします。
+GitHub Actions の「Collect public data」は毎日 10:23（日本時間）に、「Collect JCG Senkaku」は毎日 12:43（日本時間）に、「Sentinel-1 ship candidates」は毎日 14:17（日本時間）に動きます（別々の concurrency group で、互いに止め合わない）。Sentinel-1 は無料枠を守るため、1 回の実行で最大 12 撮影、月 1000 処理単位（PU）までに自分で制限し、使った PU を usage.csv に残します。確認用の probe（`--probe`、`probe/sat-ships` への push）は同じ CDSE アカウントを使いますが、結果は一時ディレクトリにしか書かないため、その PU は公開の usage.csv に残らず、毎日の実行の月上限にも数えられません（probe 側は公開の usage.csv の今月分を自分の上限に数えます）。probe を多く回した月は CDSE の利用状況画面で使用量を確かめてください。台湾国防部の過去分の遡りは、手動実行で `pages` を大きくします。

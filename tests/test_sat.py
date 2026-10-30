@@ -311,6 +311,69 @@ class RunTest(unittest.TestCase):
             self.assertEqual(s["counted"], 1)
             self.assertTrue(s.get("deferred_budget"))
 
+    def run_main(self, argv, cli, land):
+        from unittest import mock
+        import contextlib
+        with mock.patch.object(run, "load_mask", return_value=(land.astype(np.uint8), {})), \
+                contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            return run.main(argv, client=cli, sites=[SITE])
+
+    def test_detect_failure_still_saves_usage(self):
+        from unittest import mock
+        chip, land = self.chip()
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            with mock.patch.object(run, "detect", side_effect=ValueError("boom")):
+                rc = self.run_main(["--out", str(out)], FakeClient(chip), land)
+            self.assertEqual(rc, 0)
+            usage = run.read_csv(out / "usage.csv")
+            self.assertEqual(len(usage), 1)
+            self.assertAlmostEqual(float(usage[0]["processing_units"]), 2 * 4.883, places=3)
+            st = json.loads((out / "status.json").read_text())
+            self.assertEqual([s["result"] for s in st["scenes"]], ["error", "error"])
+            self.assertEqual(run.read_csv(out / "ship_counts.csv"), [])
+
+    def test_unexpected_error_saves_then_raises(self):
+        from unittest import mock
+        chip, land = self.chip()
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            with mock.patch.object(run.Store, "add", side_effect=RuntimeError("disk")):
+                with self.assertRaises(RuntimeError):
+                    self.run_main(["--out", str(out)], FakeClient(chip), land)
+            usage = run.read_csv(out / "usage.csv")
+            self.assertEqual(len(usage), 1)
+            self.assertIn("RuntimeError", json.loads((out / "status.json").read_text())["last_run"]["error"])
+
+    def test_catalog_error_updates_status(self):
+        chip, land = self.chip()
+
+        class Failing(FakeClient):
+            def catalog(self, *a):
+                self.requests += 4
+                raise cdse.CDSEError("Sentinel Hub の利用制限（HTTP 429）")
+
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            rc = self.run_main(["--out", str(out)], Failing(chip), land)
+            self.assertEqual(rc, 1)
+            st = json.loads((out / "status.json").read_text())
+            self.assertIn("429", st["last_run"]["sites"][0]["error"])
+            self.assertEqual(run.read_csv(out / "usage.csv")[0]["requests"], "4")
+
+    def test_probe_counts_published_usage(self):
+        chip, land = self.chip()
+        now = datetime.now(timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            pub = Path(d) / "pub"
+            run.write_csv(pub / "usage.csv", [{"run_utc": run.cdse.iso(now), "requests": 1,
+                                               "processing_units": run.MONTHLY_PU_CAP, "pu_source": "header", "scenes": 1}],
+                          run.USAGE_FIELDS)
+            cli = FakeClient(chip)
+            self.run_main(["--out", str(pub), "--probe", str(Path(d) / "probe")], cli, land)
+            self.assertEqual(cli.processed, [])
+            self.assertEqual(len(run.read_csv(pub / "usage.csv")), 1)  # published data untouched
+
     def test_month_usage(self):
         u = [{"run_utc": "2026-10-01T05:17:00Z", "requests": "3", "processing_units": "9.7"},
              {"run_utc": "2026-09-30T05:17:00Z", "requests": "2", "processing_units": "4.9"}]
