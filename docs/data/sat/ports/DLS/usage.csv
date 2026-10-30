@@ -1,2 +1,3 @@
 run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s1_processing_units,s2_processing_units,cap_pu,archive_version
 2026-10-30T17:53:13Z,DLS,226,172.489,header,40,155,41,82.247,90.24,224.8,ports-1
+2026-10-30T19:40:06Z,DLS,33,65.798,header,32,0,0,65.798,0,82.2,ports-1
