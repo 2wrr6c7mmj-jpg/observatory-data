@@ -63,5 +63,10 @@ jobs:
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -q -m "データ更新: 台湾国防部 日報・統幕 ($(date -u +%Y-%m-%d))"
-          git pull -q --rebase origin main
-          git push
+          # jcg-senkaku.yml also pushes to main (docs/data/jcg-senkaku only), so
+          # rebase onto whatever it pushed meanwhile; the directories differ, no conflicts.
+          for i in 1 2 3; do
+            git pull -q --rebase && git push && exit 0
+            sleep 20
+          done
+          exit 1

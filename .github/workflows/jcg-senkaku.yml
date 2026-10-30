@@ -1,0 +1,69 @@
+name: Collect JCG Senkaku
+# 海上保安庁「尖閣諸島周辺海域における中国海警局に所属する船舶等の動向」.
+# Separate from collect.yml (own concurrency group) so the two never cancel or
+# block each other; they write to different directories under docs/data.
+on:
+  # A push to this branch runs the probe only (workflow_dispatch needs the file on main).
+  push:
+    branches: ['probe/jcg-senkaku']
+  schedule:
+    - cron: '43 3 * * *'  # 12:43 JST, once a day
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: 'Only fetch the page and sample PDFs and print what the parser sees (no data change)'
+        type: boolean
+        default: true
+permissions:
+  contents: write
+concurrency:
+  group: collect-jcg-senkaku
+  cancel-in-progress: false
+jobs:
+  jcg-senkaku:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PDF reader
+        run: python -m pip install --disable-pip-version-check -q pdfplumber==0.11.10
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Probe (page and sample PDFs)
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --probe "$RUNNER_TEMP/jcg"
+      - name: Probe layouts 1
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 0 --end 5
+      - name: Probe layouts 2
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 5 --end 10
+      - name: Probe layouts 3
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 10 --end 15
+      - name: Probe layouts 4
+        if: inputs.probe || github.event_name == 'push'
+        run: python -m collectors.jcg_senkaku --dump "$RUNNER_TEMP/jcg" --start 15 --end 20
+      - name: Collect
+        # Data is only collected and published from main (scheduled runs).
+        if: ${{ !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
+        timeout-minutes: 45
+        env:
+          JCG_PAUSE_SECONDS: '5'
+        run: python -m collectors.jcg_senkaku
+      - name: Publish changed data
+        if: ${{ always() && !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          git add docs/data/jcg-senkaku
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: 海上保安庁 尖閣周辺 ($(date -u +%Y-%m-%d))"
+          for i in 1 2 3; do
+            git pull -q --rebase && git push && exit 0
+            sleep 20
+          done
+          exit 1
