@@ -3,9 +3,10 @@ name: Sentinel-1 ship candidates
 # Own concurrency group; writes only docs/data/sat. Cron avoids 01:23 (collect)
 # and 03:43 (jcg-senkaku).
 on:
-  # A push to this branch runs the probe only (workflow_dispatch needs the file on main).
+  # A push to these branches runs the probe only (workflow_dispatch needs the file on main).
+  # probe/sat-ships-*: a probe of a change still in a pull request (e.g. a new site extent and mask).
   push:
-    branches: ['probe/sat-ships']
+    branches: ['probe/sat-ships', 'probe/sat-ships-*']
   schedule:
     - cron: '17 5 * * *'  # 14:17 JST, once a day
   workflow_dispatch:
@@ -51,8 +52,13 @@ jobs:
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         run: |
           python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
-          python -m sat.annotate b64 mask-ZJG "$RUNNER_TEMP/sat/masks/ZJG-land-v1.png"
-          python -m sat.annotate text mask-ZJG-meta "$RUNNER_TEMP/sat/masks/ZJG-land-v1.json"
+          # Masks the probe built from OSM (missing from sat/masks/), to be checked and committed by hand.
+          for f in "$RUNNER_TEMP"/sat/masks/*.png; do
+            [ -e "$f" ] || continue
+            n=$(basename "$f" .png)
+            python -m sat.annotate b64 "mask-$n" "$f"
+            python -m sat.annotate text "mask-$n-meta" "${f%.png}.json"
+          done
       - name: Probe preview (annotations)
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         run: |

@@ -45,6 +45,14 @@ class PNGTest(unittest.TestCase):
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class GridTest(unittest.TestCase):
+    def test_rect_grid(self):
+        g = Grid.for_site({"id": "R", "bbox": [110.425, 21.195, 110.455, 21.265], "pixel_m": 10})
+        self.assertEqual((g.width, g.height), (311, 775))
+        self.assertAlmostEqual(g.pixel_m[0], 10, delta=0.1)
+        self.assertAlmostEqual(g.pixel_m[1], 10, delta=0.1)
+        with self.assertRaises(ValueError):
+            Grid.for_site({"id": "R", "bbox": [110.455, 21.195, 110.425, 21.265], "pixel_m": 10})
+
     def test_site_grid_is_10m(self):
         g = Grid.for_site({**SITE, "size_m": 8000})
         self.assertEqual((g.width, g.height), (800, 800))
@@ -373,6 +381,82 @@ class RunTest(unittest.TestCase):
             self.run_main(["--out", str(pub), "--probe", str(Path(d) / "probe")], cli, land)
             self.assertEqual(cli.processed, [])
             self.assertEqual(len(run.read_csv(pub / "usage.csv")), 1)  # published data untouched
+
+    def sector_site(self):
+        g = Grid.for_site(SITE)
+        mid = round((g.west + g.east) / 2, 6)
+        return {"id": "TSB", "bbox": g.bbox, "pixel_m": 10, "enabled": True, "mask_version": 2,
+                "sectors": [{"id": "A", "name": "east", "bbox": [mid, g.south, g.east, g.north]}],
+                "sector_rest": {"id": "B", "name": "west"},
+                "history": [{"mask_version": 1, "until_utc": "2026-10-30", "note": "old square"}]}
+
+    def test_rect_site_sectors_and_new_series(self):
+        chip, land = self.chip()
+        site = self.sector_site()
+        self.assertEqual((Grid.for_site(site).height, Grid.for_site(site).width), land.shape)
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            # Rows of the old version (v1) for the same scenes are already published.
+            run.write_csv(out / "ship_counts.csv", [
+                {"site_id": "TSB", "acquired_utc": t, "harbour_candidates": 9, "quay_candidates": 9, "image": "images/TSB/x.png"}
+                for t in ("2026-10-20T22:30:00Z", "2026-10-26T22:30:00Z")], run.CSV_FIELDS)
+            store = run.Store(out, [site])
+            cli = FakeClient(chip)
+            s = run.process_site(cli, store, site, land.astype(np.uint8), now, None, 100.0, 12, log=lambda *a: None)
+            self.assertEqual(s["lookback_days"], run.FIRST_LOOKBACK_DAYS)  # a new series for v2
+            self.assertEqual(s["counted"], 2)
+            store.save({"run_utc": "2026-10-30T05:17:00Z", "requests": cli.requests,
+                        "processing_units": cli.processing_units, "pu_source": "header", "scenes": 2})
+            rows = run.read_csv(out / "ship_counts.csv")
+            self.assertEqual(len(rows), 4)  # v1 rows kept
+            v1 = [r for r in rows if r["mask_version"] == ""]
+            v2 = [r for r in rows if r["mask_version"] == "TSB-land-v2"]
+            self.assertEqual((len(v1), len(v2)), (2, 2))
+            self.assertEqual(v1[0]["harbour_candidates"], "9")
+            r = v2[0]
+            # The 150 m ship (cols 100-114) is in the east sector A, the quay ship (cols 40-45) in B.
+            self.assertEqual((r["sector_a_harbour"], r["sector_a_quay"], r["sector_b_harbour"], r["sector_b_quay"]),
+                             ("1", "0", "0", "1"))
+            self.assertTrue(r["image"].startswith("images/TSB/v2/"))
+            self.assertTrue((out / r["image"]).exists())
+            gj = json.loads((out / "detections" / "2026-10.geojson").read_text())
+            self.assertEqual(sorted(f["properties"]["sector"] for f in gj["features"]), ["A", "A", "B", "B"])
+            st = json.loads((out / "status.json").read_text())
+            self.assertEqual({x["mask_version"] for x in st["scenes"]}, {"TSB-land-v2"})
+            self.assertEqual(st["series_breaks"][0]["from_mask_version"], "TSB-land-v1")
+            meta = json.loads((out / "meta.json").read_text())
+            self.assertEqual(meta["series_breaks"][0]["to_mask_version"], "TSB-land-v2")
+            self.assertEqual([x["id"] for x in meta["sites"][0]["sectors"]], ["A", "B"])
+            # Next run: v2 scenes are done, v1 rows do not count as done for v2 and are not touched.
+            s2 = run.process_site(FakeClient(chip), run.Store(out, [site]), site, land.astype(np.uint8), now, None,
+                                  100.0, 12, log=lambda *a: None)
+            self.assertEqual((s2["lookback_days"], s2["new"]), (run.LOOKBACK_DAYS, 0))
+
+    def test_mask_size_must_match_site(self):
+        chip, land = self.chip()
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(ValueError):
+                run.process_site(FakeClient(chip), run.Store(Path(d), [SITE]), SITE, land[:, :150].astype(np.uint8),
+                                 datetime(2026, 10, 30, tzinfo=timezone.utc), None, 100.0, 12, log=lambda *a: None)
+
+    def test_real_sites_file(self):
+        sites = run.load_sites()
+        zjg = next(x for x in sites if x["id"] == "ZJG")
+        g = Grid.for_site(zjg)
+        self.assertEqual(g.bbox, [110.425, 21.195, 110.455, 21.265])
+        self.assertAlmostEqual(g.area_km2(), 24.1, places=1)
+        self.assertEqual((g.width, g.height), (311, 775))
+        self.assertEqual(run.mask_tag(zjg), "ZJG-land-v2")
+        sec = run.site_sectors(zjg)
+        self.assertEqual(run.sector_of(sec, 110.437, 21.22), "A")   # Mazhang piers
+        self.assertEqual(run.sector_of(sec, 110.427, 21.22), "B")   # channel
+        self.assertEqual(run.sector_of(sec, 110.440, 21.197), "B")  # south of sector A
+        # The committed land mask of the current version covers exactly this extent.
+        mask, meta = run.load_mask("ZJG", run.mask_version(zjg))
+        self.assertEqual(mask.shape, (g.height, g.width))
+        self.assertEqual(meta["bbox"], g.bbox)
+        self.assertEqual(meta["version"], "ZJG-land-v2")
 
     def test_month_usage(self):
         u = [{"run_utc": "2026-10-01T05:17:00Z", "requests": "3", "processing_units": "9.7"},

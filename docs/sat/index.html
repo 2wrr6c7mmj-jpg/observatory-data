@@ -12,6 +12,7 @@ th,td{border-bottom:1px solid #ddd;padding:.3rem .4rem;text-align:right;white-sp
 th:first-child,td:first-child{text-align:left}
 tr.sel{background:#eef5ff}
 tr{cursor:pointer}
+tr.brk td{background:#f3f3f3;color:#444;text-align:left;white-space:normal;cursor:default}
 #chip{max-width:100%;image-rendering:pixelated;border:1px solid #999}
 .legend span{display:inline-block;margin-right:1rem}
 .sw{display:inline-block;width:.9em;height:.9em;vertical-align:-.1em;margin-right:.3em;border:1px solid #555}
@@ -20,7 +21,7 @@ small,.note{color:#555}
 </head>
 <body>
 <h1>Sentinel-1 港内の艦船候補数（試行）</h1>
-<p class="trial"><b>試行</b>：湛江（ZJG）の 1 地点のみ。陸マスクだけで数えています（固定物マスクは 20 シーン蓄積後）。地点の範囲は概略で、港の形を確かめるまで公開画面の地図には出しません。数は自動検出の<b>候補数</b>で、在泊艦数ではありません。</p>
+<p class="trial"><b>試行</b>：湛江（ZJG）の 1 地点のみ。陸マスクだけで数えています（固定物マスクは 20 シーン蓄積後）。2026-10-30 に監視範囲を v2（東岸の軍港を中心とする矩形）に変えました。<b>旧範囲（v1）の数とは直接比べません</b>。北端で桟橋群が切れていないかを次の撮影で確かめるまで、公開画面の地図には出しません。数は自動検出の<b>候補数</b>で、在泊艦数ではありません。</p>
 
 <h2>言えること・言えないこと</h2>
 <ul>
@@ -31,17 +32,23 @@ small,.note{color:#555}
 </ul>
 
 <h2>地点</h2>
-<p id="site">湛江 ZJG：中心 21.20°N 110.41°E、8×8 km（概略）。<a href="https://www.openstreetmap.org/?mlat=21.20&mlon=110.41#map=13/21.20/110.41">OpenStreetMap で見る</a></p>
+<p id="site">湛江 ZJG（範囲 v2、ZJG-land-v2）：110.425〜110.455°E、21.195〜21.265°N の矩形（中心 21.230°N 110.440°E、約 3.1×7.75 km、約 24 km²）。湾の東岸（麻斜）の櫛形・T字の桟橋群を含め、西岸の霞山の市街地・商港と南の特呈島の漁船係留を外しています。<a href="https://www.openstreetmap.org/?minlon=110.425&minlat=21.195&maxlon=110.455&maxlat=21.265#map=13/21.230/110.440">OpenStreetMap で見る</a></p>
+<ul>
+<li>区画 A「軍港区画」：110.430〜110.455°E、21.200〜21.265°N</li>
+<li>区画 B「水道」：範囲のそれ以外（西側の水道）</li>
+<li>候補は重心のある区画に数えます。北端 21.265°N で桟橋群が切れていないかは、次の撮影の画像で確かめます。</li>
+<li>旧範囲 v1（〜2026-10-30）：中心 21.20°N 110.41°E の 8×8 km 正方形（概略の中心）。霞山・特呈島を含み、麻斜の桟橋群の北半分が外れていました。</li>
+</ul>
 
 <h2>撮影ごとの候補数</h2>
 <p id="empty" class="note">読み込み中…</p>
 <table id="tbl" hidden>
-<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>軌道</th><th>相対軌道</th><th>入射角</th><th>港内候補</th><th>岸壁帯候補</th><th>確認数</th><th>〜50</th><th>50〜100</th><th>100〜200</th><th>200 m〜</th></tr></thead>
+<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>軌道</th><th>相対軌道</th><th>入射角</th><th>港内候補</th><th>岸壁帯候補</th><th>A 港内+岸壁</th><th>B 港内+岸壁</th><th>確認数</th><th>〜50</th><th>50〜100</th><th>100〜200</th><th>200 m〜</th></tr></thead>
 <tbody></tbody>
 </table>
 
 <h2>切り出し画像</h2>
-<p class="legend"><span><i class="sw" style="background:#ff2828"></i>港内水域の候補</span><span><i class="sw" style="background:#ffdc00"></i>岸壁帯の候補</span><span><i class="sw" style="background:#00c8ff"></i>陸マスクの縁</span><span><i class="sw" style="background:#ff8c00"></i>桟橋・橋など</span></p>
+<p class="legend"><span><i class="sw" style="background:#ff2828"></i>港内水域の候補</span><span><i class="sw" style="background:#ffdc00"></i>岸壁帯の候補</span><span><i class="sw" style="background:#00c8ff"></i>陸マスクの縁</span><span><i class="sw" style="background:#ff8c00"></i>桟橋・橋など</span><span><i class="sw" style="background:#e63ce6"></i>区画 A/B の境界（v2）</span></p>
 <p id="caption" class="note"></p>
 <img id="chip" alt="選んだ撮影の VV 画像と候補の位置" hidden>
 
@@ -56,13 +63,19 @@ const base = '../data/sat/';
 function parseCSV(t){const L=t.trim().split('\n');const h=L.shift().split(',');return L.map(l=>{const v=l.split(',');const o={};h.forEach((k,i)=>o[k]=v[i]??'');return o;});}
 function show(r,tr){document.querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');
  const img=document.getElementById('chip');img.src=base+r.image;img.hidden=false;
- document.getElementById('caption').textContent=`${r.acquired_utc} ${r.platform} ${r.orbit_direction} 相対軌道 ${r.relative_orbit||'不明'}：港内候補 ${r.harbour_candidates}、岸壁帯候補 ${r.quay_candidates}`;}
+ document.getElementById('caption').textContent=`${r.acquired_utc} ${r.platform} ${r.orbit_direction} 相対軌道 ${r.relative_orbit||'不明'}（範囲 ${ver(r)}）：港内候補 ${r.harbour_candidates}、岸壁帯候補 ${r.quay_candidates}`+(r.sector_a_harbour!==''&&r.sector_a_harbour!==undefined?`（A ${r.sector_a_harbour}+${r.sector_a_quay}、B ${r.sector_b_harbour}+${r.sector_b_quay}）`:'');}
+function ver(r){return r.mask_version||'ZJG-land-v1';}
+const AB=(h,q)=>h===''||h===undefined?'—':`${h}+${q}`;
 fetch(base+'ship_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(t=>{
- const rows=t?parseCSV(t).filter(r=>r.site_id==='ZJG').reverse():[];
+ // Newest mask version first, then newest scene: a different version is a different extent.
+ const rows=t?parseCSV(t).filter(r=>r.site_id==='ZJG').sort((a,b)=>ver(b).localeCompare(ver(a),undefined,{numeric:true})||b.acquired_utc.localeCompare(a.acquired_utc)):[];
  if(!rows.length){document.getElementById('empty').textContent='まだ撮影の記録がありません。';return;}
  document.getElementById('empty').hidden=true;const tb=document.querySelector('#tbl tbody');document.getElementById('tbl').hidden=false;
- rows.forEach((r,i)=>{const tr=document.createElement('tr');
-  [r.acquired_utc,r.platform,r.orbit_direction,r.relative_orbit,r.incidence_deg,r.harbour_candidates,r.quay_candidates,r.confirmed,r.len_lt50,r.len_50_100,r.len_100_200,r.len_ge200].forEach(v=>{const td=document.createElement('td');td.textContent=v===''?'—':v;tr.appendChild(td);});
+ let prev=null;
+ rows.forEach((r,i)=>{if(ver(r)!==prev){const b=document.createElement('tr');b.className='brk';const td=document.createElement('td');td.colSpan=14;
+   td.textContent=prev===null?`範囲 ${ver(r)}`:`ここから下は旧範囲 ${ver(r)}。範囲が違うため、上の数と直接比べない`;b.appendChild(td);tb.appendChild(b);prev=ver(r);}
+  const tr=document.createElement('tr');
+  [r.acquired_utc,r.platform,r.orbit_direction,r.relative_orbit,r.incidence_deg,r.harbour_candidates,r.quay_candidates,AB(r.sector_a_harbour,r.sector_a_quay),AB(r.sector_b_harbour,r.sector_b_quay),r.confirmed,r.len_lt50,r.len_50_100,r.len_100_200,r.len_ge200].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tr.onclick=()=>show(r,tr);tb.appendChild(tr);if(i===0)show(r,tr);});
 }).catch(()=>{document.getElementById('empty').textContent='読み込めませんでした。';});
 fetch(base+'meta.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(m=>{if(m&&m.attribution)document.getElementById('credit').textContent=m.attribution.credit+'.';}).catch(()=>{});

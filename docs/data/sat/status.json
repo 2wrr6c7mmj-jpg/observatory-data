@@ -173,5 +173,14 @@
   "month_pu_before": 0,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-10-30T05:47:18Z"
+ "updated_utc": "2026-10-30T05:47:18Z",
+ "series_breaks": [
+  {
+   "site_id": "ZJG",
+   "from_mask_version": "ZJG-land-v1",
+   "to_mask_version": "ZJG-land-v2",
+   "date_utc": "2026-10-30",
+   "note": "監視範囲を変更（旧範囲 v1：概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
+  }
+ ]
 }

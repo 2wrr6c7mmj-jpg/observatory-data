@@ -19,7 +19,7 @@ import html
 import re
 from datetime import date, datetime, timedelta, timezone
 
-PARSER_VERSION = 5
+PARSER_VERSION = 6
 MAX_PLAUSIBLE = 200  # a daily count above this is a misread (e.g. phone numbers in the page footer)
 TAIPEI = timezone(timedelta(hours=8))
 
@@ -161,7 +161,10 @@ TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seve
 UNITS = [w for w in WORDS if 0 < WORDS[w] < 20]
 COUNT = re.compile(
     r"(?<![\w-])(?:(" + "|".join(TENS) + r")(?:[\s-]+(" + "|".join(w for w in UNITS if WORDS[w] < 10) + r"))?"
-    r"|(" + "|".join(sorted(UNITS, key=len, reverse=True)) + r")|(\d{1,3}))(?![\w-])", re.I)
+    r"|(" + "|".join(sorted(UNITS, key=len, reverse=True)) + r")|(\d{1,3}))"
+    # A number word may be joined to the type by a hyphen ("One-Y-8 EW"); a digit may not
+    # (the "8" of "Y-8" and the "16" of "J-16" are preceded by "-" and never start a count).
+    r"(?:(?![\w-])|(?<=[a-z])(?=-[a-z]))", re.I)
 
 
 def adiz_types(text: str) -> dict | None:
@@ -183,7 +186,7 @@ def adiz_types(text: str) -> dict | None:
     hits = list(COUNT.finditer(section))
     for i, h in enumerate(hits):
         n = TENS[h[1].lower()] + (WORDS[h[2].lower()] if h[2] else 0) if h[1] else WORDS[h[3].lower()] if h[3] else int(h[4])
-        name = section[h.end():hits[i + 1].start() if i + 1 < len(hits) else len(section)].strip(" ,;、.")
+        name = section[h.end():hits[i + 1].start() if i + 1 < len(hits) else len(section)].strip(" ,;、.-")
         if name:
             out[name] = out.get(name, 0) + n
     return out or None

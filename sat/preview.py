@@ -26,7 +26,7 @@ def shrink(index_img: np.ndarray, factor: int = 4, levels: int = 32) -> np.ndarr
     mean = np.where(n > 0, grey.sum(-1) / np.maximum(n, 1), 0)
     step = render.GREYS / levels
     out = (np.floor(mean / step) * step).astype(np.uint8)
-    for colour, need in ((render.CYAN, factor), (render.ORANGE, factor), (render.YELLOW, 1), (render.RED, 1)):
+    for colour, need in ((render.CYAN, factor), (render.ORANGE, factor), (render.MAGENTA, 1), (render.YELLOW, 1), (render.RED, 1)):
         out[(blocks == colour).sum(-1) >= need] = colour
     out[(blocks == render.NODATA).sum(-1) > factor * factor // 2] = render.NODATA
     return out
@@ -48,15 +48,17 @@ def main(argv=None) -> int:
     lines = ["scene " + ",".join(f"{k}={row[k]}" for k in ("acquired_utc", "platform", "orbit_direction", "relative_orbit",
                                                          "incidence_deg", "harbour_candidates", "quay_candidates", "coverage"))]
     lines += ["all " + r["acquired_utc"] + f" {r['platform']} {r['orbit_direction']} ro={r['relative_orbit']} inc={r['incidence_deg']}"
-              f" H={r['harbour_candidates']} Q={r['quay_candidates']} cov={r['coverage']} pu={r['processing_units']}"
+              f" H={r['harbour_candidates']} Q={r['quay_candidates']}"
+              f" A={r.get('sector_a_harbour', '')}+{r.get('sector_a_quay', '')} B={r.get('sector_b_harbour', '')}+{r.get('sector_b_quay', '')}"
+              f" mask={r.get('mask_version', '')} cov={r['coverage']} pu={r['processing_units']}"
               for r in sorted(rows, key=lambda r: r["acquired_utc"])]
     gj = out / "detections" / f"{row['acquired_utc'][:7]}.geojson"
     if gj.exists():
         for f in json.loads(gj.read_text(encoding="utf-8"))["features"]:
             p = f["properties"]
-            if p["acquired_utc"] == row["acquired_utc"]:
+            if p["acquired_utc"] == row["acquired_utc"] and p.get("mask_version", "") == row.get("mask_version", p.get("mask_version", "")):
                 lon, lat = f["geometry"]["coordinates"]
-                lines.append(f"{p['n']} {p['zone']} {lat:.5f},{lon:.5f} L={p['length_m']} W={p['width_m']} px={p['pixels']}"
+                lines.append(f"{p['n']} {p['zone']}/{p.get('sector')} {lat:.5f},{lon:.5f} L={p['length_m']} W={p['width_m']} px={p['pixels']}"
                              f" peak={p['peak_vv_db']} c={p['contrast_vv_db']} vh={p['vh_ratio_db']}")
     (dest / "candidates.txt").write_text("\n".join(lines)[:3900] + "\n", encoding="utf-8")
     return 0

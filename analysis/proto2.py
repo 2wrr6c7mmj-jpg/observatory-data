@@ -444,6 +444,8 @@ def build_grayzone(G, M):
     return {'jcg_available': G['available'], 'jcg_span': [min(G['daily']).isoformat(), max(G['daily']).isoformat()] if G['available'] else None,
             'mnd_span': [min(mnd).isoformat(), max(mnd).isoformat()] if mnd else None,
             'jcg_not_published': (G['status'] or {}).get('not_published'),
+            # 月合計と突き合わせられなかった月（check=no_totals、例：2014-02 は PDF に合計行がない）。値はあるが未検算
+            'jcg_unverified_months': sorted({x.strftime('%Y-%m') for x, g in G['daily'].items() if g.get('check') == 'no_totals'}),
             'fields': ['date', 'jcg_contiguous', 'jcg_territorial', 'mnd_official_ships', 'mnd_report'],
             'days': out, 'launches_ready': launches_ready}
 
@@ -558,6 +560,7 @@ def main(argv=None):
         'grayzone.json': {**common(['jcg', 'mnd']), **build_grayzone(G, M),
                           'jcg_meta': {'missing_values': G['meta'].get('missing_values'),
                                        'definition_changes': G['meta'].get('definition_changes', []),
+                                       'unverified_months': G['meta'].get('unverified_months', []),
                                        'limitations': G['meta'].get('limitations', [])}},
         'iw.json': {**common(['mnd', 'jso', 'jcg']), **build_iw(J, G, M)},
     }

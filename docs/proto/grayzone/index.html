@@ -25,6 +25,7 @@
 <ul>
 <li>値は公開データをそのまま並べています（計算はしていません）。空欄は「記載なし・取得できず」で、0 とはみなしません。</li>
 <li>海上保安庁の空欄の扱い：<span id="jcgmiss"></span></li>
+<li>海上保安庁の未検算の月：<span id="jcgunv">なし</span>。PDF に月の合計行がなく、日ごとの値を合計で確かめられていない月です。値は表から読んだままで、グラフの吹き出しと表に「未検算」と付けます。</li>
 <li>台湾国防部の公務船は、日報に公務船の記載が始まった後も、記載のない日があります（その日は空欄）。</li>
 </ul>
 
@@ -47,6 +48,12 @@
   const D = await P.load('grayzone.json');
   const jm = D.jcg_meta || {};
   document.getElementById('jcgmiss').textContent = jm.missing_values || '（meta.json の記載なし）';
+  const unv = new Set(D.jcg_unverified_months || []);
+  const unvNote = {};
+  for (const x of jm.unverified_months || []) unvNote[x.month] = x.note;
+  if (unv.size) document.getElementById('jcgunv').textContent =
+    [...unv].map(k => unvNote[k] ? `${k}（${unvNote[k]}）` : k).join('、');
+  const isUnv = r => unv.has(r[0].slice(0, 7));
   const dl = document.getElementById('defs');
   for (const x of jm.definition_changes || []) dl.appendChild(P.h('li', {}, `${P.esc(x.date)}：${P.esc(x.change)}`));
   if (D.launches_ready) document.getElementById('launch').textContent = '（告知のデータが入ったので、照合の試作は次に作れます）';
@@ -80,8 +87,9 @@
           {kind: 'step', color: P.css('--s1'), width: 1.6, gap: 40 * P.DAY, data: monthly(1)},
           {kind: 'step', color: P.css('--s2'), width: 1.6, gap: 40 * P.DAY, data: monthly(2)},
         ],
-        tip: x => { const r = by.get(x); return r ? `<b>${r[0]}</b><br>接続水域 ${P.fmt(r[1])}／領海 ${P.fmt(r[2])}` : ''; },
-        caption: n ? '空欄（不明）の日は描いていません。領海侵入は接続水域の内数なので重ねて描いています。' : '全期間は月ごとの日平均（値のある日だけ）。',
+        tip: x => { const r = by.get(x); return r ? `<b>${r[0]}</b><br>接続水域 ${P.fmt(r[1])}／領海 ${P.fmt(r[2])}${isUnv(r) ? '<br>未検算（月合計なし）' : ''}` : ''; },
+        caption: (n ? '空欄（不明）の日は描いていません。領海侵入は接続水域の内数なので重ねて描いています。' : '全期間は月ごとの日平均（値のある日だけ）。')
+          + (unv.size ? `未検算の月（${[...unv].join('、')}）を含みます。` : ''),
       });
     } else c1.appendChild(P.h('div', {class: 'fig'}, '<div class="cap">海上保安庁のデータ待ち（まだ公開データに入っていません）</div>'));
     const mnd = days.filter(r => r[4]);
@@ -97,7 +105,7 @@
     });
     const tb = document.getElementById('tab'); tb.innerHTML = '';
     P.table(tb, ['日付', '尖閣：接続水域', '尖閣：領海', '台湾周辺：公務船', '台湾国防部の日報'],
-      D.days.slice(-60).reverse().map(r => [r[0], P.fmt(r[1]), P.fmt(r[2]), P.fmt(r[3]), r[4] ? 'あり' : 'なし']), ['', 'n', 'n', 'n', '']);
+      D.days.slice(-60).reverse().map(r => [r[0] + (isUnv(r) ? '（未検算）' : ''), P.fmt(r[1]), P.fmt(r[2]), P.fmt(r[3]), r[4] ? 'あり' : 'なし']), ['', 'n', 'n', 'n', '']);
   };
   rng.addEventListener('change', draw);
   draw();

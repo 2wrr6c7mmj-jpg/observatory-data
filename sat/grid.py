@@ -27,6 +27,16 @@ class Grid:
 
     @classmethod
     def for_site(cls, site: dict) -> "Grid":
+        """A rectangle ``bbox`` [west, south, east, north] if the site has one, else a square
+        of ``size_m`` around the centre. Pixels are about ``pixel_m`` on each side."""
+        if site.get("bbox"):
+            w, s, e, n = (float(v) for v in site["bbox"])
+            if not (w < e and s < n):
+                raise ValueError(f"{site.get('id')}: bbox は [西, 南, 東, 北] の順で、西<東・南<北であること")
+            mlat, mlon = m_per_deg((s + n) / 2)
+            width = max(1, int(round((e - w) * mlon / site["pixel_m"])))
+            height = max(1, int(round((n - s) * mlat / site["pixel_m"])))
+            return cls(w, s, e, n, width, height)
         n = int(round(site["size_m"] / site["pixel_m"]))
         mlat, mlon = m_per_deg(site["center_lat"])
         half = site["size_m"] / 2
@@ -49,6 +59,10 @@ class Grid:
         col = (np.asarray(lon, float) - self.west) / (self.east - self.west) * self.width
         row = (self.north - np.asarray(lat, float)) / (self.north - self.south) * self.height
         return row, col
+
+    def area_km2(self) -> float:
+        mr, mc = self.pixel_m
+        return self.width * mc * self.height * mr / 1e6
 
     def to_lonlat(self, row, col):
         lon = self.west + np.asarray(col, float) / self.width * (self.east - self.west)
