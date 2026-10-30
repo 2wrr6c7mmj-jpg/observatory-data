@@ -1,0 +1,64 @@
+name: Sentinel-2 clear-day backfill probe
+# Sentinel-2 L2A の自然色（s2nc-1、試行・表示だけ）の過去の晴れの日を、まとめて 1 回だけ取る probe（sat/s2.py）。
+# 毎日の実行（sat-ships.yml）は直近 10 日の新しい撮影だけを取る。ここは probe 用ブランチへの push でだけ動き、
+# 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）と別の concurrency group。
+# 結果（docs/data/sat の s2_scenes.csv・s2/・usage.csv の 1 行）は同じ probe ブランチにだけ commit し、
+# 確かめてから人の PR に取り込む（main には書かない）。PU は usage.csv の行と注釈に出す。
+on:
+  push:
+    branches: ['probe/sat-s2-backfill', 'probe/sat-s2-backfill-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-sat-s2-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  backfill:
+    if: ${{ !contains(github.event.head_commit.message, '[s2-backfill-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Backfill (past 12 months, one batch, own PU cap)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          rc=0
+          python -m sat.s2 --days 365 --max-pu 100 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/s2.log" || rc=$?
+          cat "$RUNNER_TEMP/s2.log" "$RUNNER_TEMP/summary.json"
+          exit $rc
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text s2-summary "$RUNNER_TEMP/summary.json"
+          python -m sat.annotate text s2-log "$RUNNER_TEMP/s2.log"
+          python - <<'EOF' > "$RUNNER_TEMP/stats.txt" || true
+          import csv, collections, os
+          rows = list(csv.DictReader(open("docs/data/sat/s2_scenes.csv", encoding="utf-8")))
+          c = collections.Counter(r["result"] for r in rows)
+          sizes = [os.path.getsize("docs/data/sat/" + r[k]) for r in rows for k in ("image",) if r.get(k)]
+          th = [os.path.getsize("docs/data/sat/" + r["thumb"]) for r in rows if r.get("thumb")]
+          print(dict(c), "days", len(rows), "PU", round(sum(float(r["processing_units"] or 0) for r in rows), 3))
+          if sizes:
+              print("image bytes min/median/max", min(sizes), sorted(sizes)[len(sizes) // 2], max(sizes), "total", sum(sizes) + sum(th))
+          print("clear:", " ".join(r["date"] for r in rows if r["result"] == "clear"))
+          EOF
+          python -m sat.annotate text s2-stats "$RUNNER_TEMP/stats.txt"
+      - name: Commit the result to this probe branch only
+        if: always()
+        run: |
+          git add docs/data/sat
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: Sentinel-2 の晴れの日のさかのぼり（過去 12 か月） [s2-backfill-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "::notice title=s2-commit::$(git rev-parse HEAD)"

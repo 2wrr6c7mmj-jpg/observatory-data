@@ -88,8 +88,27 @@ small,.note{color:#555}
 <p id="qcaption" class="note"></p>
 <div id="qbox" style="position:relative;display:inline-block;max-width:100%"><img id="qimg" alt="選んだ撮影の変化カラー画像（凡例つき）" hidden style="display:block;max-width:100%;image-rendering:pixelated;border:1px solid #999"><svg id="qsvg" xmlns="http://www.w3.org/2000/svg" hidden style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none"></svg></div>
 
+<h2>Sentinel-2 自然色（試行・表示だけ）</h2>
+<p class="trial"><b>試行</b>：Sentinel-2 L2A の雲の少ない日（範囲内の雲・雲の影が 10% 以下、区画 A は 2% 以下。SCL による判定）の自然色です。同じ日か近い日の Sentinel-1 のカラー・変化カラーと並べて、岸壁の数の確かめに使います。<b>数・推定には使っていません</b>。</p>
+<ul>
+<li>R＝B4、G＝B3、B＝B2、反射率 0〜0.3 を γ 1/2.2 で表示（範囲は全日で固定）。画素は 10 m で、艦の形や艦種は分かりません</li>
+<li>雲の判定は SCL（雲 8・9・10、影 3）に頼るため、薄い雲・霞・雲の縁を見落とすことがあります</li>
+<li>Sentinel-2 は現地の昼前（UTC 03 時台）、Sentinel-1 の上昇軌道は夕方（UTC 10〜11 時）で、同じ日でも数時間ずれます。その間に入出港があれば船は違います</li>
+</ul>
+<p id="s2empty" class="note">読み込み中…</p>
+<table id="s2tbl" hidden>
+<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>雲（範囲）</th><th>雲（区画 A）</th><th>近い Sentinel-1</th><th>差</th></tr></thead>
+<tbody></tbody>
+</table>
+<p id="s2caption" class="note"></p>
+<div id="s2box" style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-start">
+<figure style="margin:0;flex:1 1 30%;min-width:220px"><img id="s2img" alt="Sentinel-2 の自然色" hidden style="display:block;max-width:100%;border:1px solid #999"><figcaption class="note">Sentinel-2 自然色</figcaption></figure>
+<figure style="margin:0;flex:1 1 30%;min-width:220px"><img id="s2s1c" alt="近い日の Sentinel-1 カラー" hidden style="display:block;max-width:100%;image-rendering:pixelated;border:1px solid #999"><figcaption id="s2s1ccap" class="note">Sentinel-1 カラー</figcaption></figure>
+<figure style="margin:0;flex:1 1 30%;min-width:220px"><img id="s2s1d" alt="近い日の Sentinel-1 変化カラー" hidden style="display:block;max-width:100%;image-rendering:pixelated;border:1px solid #999"><figcaption id="s2s1dcap" class="note">Sentinel-1 変化カラー</figcaption></figure>
+</div>
+
 <h2>データ</h2>
-<p><a href="../data/sat/ship_counts.csv">ship_counts.csv</a> ・ <a href="../data/sat/meta.json">定義と限界</a> ・ <a href="../data/sat/status.json">処理状況</a> ・ <a href="../data/sat/usage.csv">処理単位の記録</a> ・ <a href="../data/sat/CHANGES.md">定義変更の記録</a> ・ 候補の位置：<code>../data/sat/detections/YYYY-MM.geojson</code> ・ <a href="../data/sat/quay_counts.csv">quay_counts.csv</a>（岸壁の占有数）・ 占有区間：<code>../data/sat/quay/YYYY-MM.geojson</code></p>
+<p><a href="../data/sat/ship_counts.csv">ship_counts.csv</a> ・ <a href="../data/sat/meta.json">定義と限界</a> ・ <a href="../data/sat/status.json">処理状況</a> ・ <a href="../data/sat/usage.csv">処理単位の記録</a> ・ <a href="../data/sat/CHANGES.md">定義変更の記録</a> ・ 候補の位置：<code>../data/sat/detections/YYYY-MM.geojson</code> ・ <a href="../data/sat/quay_counts.csv">quay_counts.csv</a>（岸壁の占有数）・ 占有区間：<code>../data/sat/quay/YYYY-MM.geojson</code> ・ <a href="../data/sat/s2_scenes.csv">s2_scenes.csv</a>（Sentinel-2 の雲の判定）・ 自然色：<code>../data/sat/s2/</code></p>
 
 <p><small id="credit">Contains modified Copernicus Sentinel data 2026.</small><br>
 <small>陸マスク・岸壁の線：© OpenStreetMap contributors（ODbL 1.0）。数は observatory-data が自動で数えたもので、ESA・欧州委員会が作成したものではありません。</small></p>
@@ -174,6 +193,27 @@ fetch(base+'quay_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(
   [r.acquired_utc,r.platform,r.relative_orbit,`${r.occupied_min}〜${r.occupied_max}`,E(`${r.est_mode}（${r.est_p10}〜${r.est_p90}）`),E(`${r.est_warship_mode}（${r.est_warship_p10}〜${r.est_warship_p90}）`),`${r.sector_a_min}〜${r.sector_a_max}`+E(`／推定 ${r.est_a_mode}（${r.est_a_p10}〜${r.est_a_p90}）`),`${r.sector_b_min}〜${r.sector_b_max}`+E(`／推定 ${r.est_b_mode}（${r.est_b_p10}〜${r.est_b_p90}）`),r.segments,r.rafted,`${r.baseline_version}（${r.baseline_scenes}）`,r.credibility,SAMPLE[r.in_sample]||'',E(r.est_conflicts+(+r.est_capped?`（上限 ${r.est_capped}）`:''))].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tr.onclick=()=>qshow(r,tr);tb.appendChild(tr);if(i===0)qshow(r,tr);});
 }).catch(()=>{document.getElementById('qempty').textContent='読み込めませんでした。';});
+// Sentinel-2 natural colour (s2nc-1, display only): clear days, each next to the nearest Sentinel-1 colour / change image (within 3 days).
+const S2_PAIR_DAYS=3;
+const txt=u=>fetch(base+u,{cache:'no-cache'}).then(r=>r.ok?r.text():'').catch(()=>'');
+const pct=x=>x===''||x===undefined?'—':(100*+x).toFixed(1)+'%';
+Promise.all([txt('s2_scenes.csv'),txt('ship_counts.csv'),txt('quay_counts.csv')]).then(([a,b,c])=>{
+ const s2rows=a?parseCSV(a).filter(r=>r.site_id==='ZJG'&&r.result==='clear'&&r.image).sort((x,y)=>y.acquired_utc.localeCompare(x.acquired_utc)):[];
+ if(!s2rows.length){document.getElementById('s2empty').textContent='まだ晴れの日の Sentinel-2 はありません。';return;}
+ const s1=b?parseCSV(b).filter(r=>r.site_id==='ZJG'&&r.color_image):[];const qc=c?parseCSV(c).filter(r=>r.site_id==='ZJG'&&r.change_image):[];
+ const near=(rows,t,tag)=>{let best=null,bd=1e18;rows.filter(r=>(r.mask_version||'')===tag).forEach(r=>{const d=Math.abs(Date.parse(r.acquired_utc)-Date.parse(t));if(d<bd){bd=d;best=r;}});return best&&bd<=S2_PAIR_DAYS*864e5?best:null;};
+ const dh=(x,y)=>{const h=(Date.parse(x)-Date.parse(y))/36e5;return (h>=0?'+':'−')+Math.abs(h).toFixed(0)+' 時間';};
+ document.getElementById('s2empty').hidden=true;document.getElementById('s2tbl').hidden=false;const tb=document.querySelector('#s2tbl tbody');
+ s2rows.forEach((r,i)=>{const p=near(s1,r.acquired_utc,r.mask_version),q=near(qc,r.acquired_utc,r.mask_version);const tr=document.createElement('tr');
+  [r.acquired_utc,r.platform,pct(r.cloud),pct(r.cloud_a),p?`${p.acquired_utc}（RO ${p.relative_orbit}）`:'3 日以内になし',p?dh(p.acquired_utc,r.acquired_utc):''].forEach(v=>{const td=document.createElement('td');td.textContent=v===''?'—':v;tr.appendChild(td);});
+  tr.onclick=()=>{document.querySelectorAll('#s2tbl tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');
+   const im=document.getElementById('s2img');im.src=base+r.image;im.hidden=false;
+   document.getElementById('s2caption').textContent=`Sentinel-2 ${r.acquired_utc}（${r.platform}、雲 ${pct(r.cloud)}、区画 A ${pct(r.cloud_a)}）`;
+   [['s2s1c',p,p&&p.color_image,'Sentinel-1 カラー'],['s2s1d',q,q&&q.change_image,'Sentinel-1 変化カラー']].forEach(([id,row,src,name])=>{const el=document.getElementById(id);
+    if(src){el.src=base+src;el.hidden=false;document.getElementById(id+'cap').textContent=`${name} ${row.acquired_utc}（相対軌道 ${row.relative_orbit}、${dh(row.acquired_utc,r.acquired_utc)}）`;}
+    else{el.hidden=true;document.getElementById(id+'cap').textContent=`${name}：${S2_PAIR_DAYS} 日以内の撮影なし`;}});};
+  tb.appendChild(tr);if(i===0)tr.onclick();});
+});
 </script>
 </body>
 </html>
