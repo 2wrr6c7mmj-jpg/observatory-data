@@ -54,6 +54,8 @@ MAX_COUNT = 400       # larger counts are treated as broken rows
 
 # The Taiwan MND series and the fields compared with it (tracker -> MND daily.csv).
 COMPARE = {"aircraft_total": "aircraft", "median_line_cross": "median_line_or_adiz", "ships_total": "plan_vessels"}
+# Extra pairs reported in compare.json but not in the "all three equal" count.
+COMPARE_EXTRA = {"ships_total_vs_plan_plus_official": ("ships_total", "plan_plus_official")}
 
 # Repeated in daily.json so the data carries its credit wherever it is copied (same as meta.json).
 ATTRIBUTION = {
@@ -177,7 +179,11 @@ def read_mnd(path: Path) -> dict[str, dict]:
         for r in csv.DictReader(f):
             if r.get("format") != "around-taiwan":
                 continue
-            out[r["report_date"]] = {k: (int(r[k]) if r.get(k, "") != "" else None) for k in COMPARE.values()}
+            rec = {k: (int(r[k]) if r.get(k, "") != "" else None) for k in list(COMPARE.values()) + ["official_ships"]}
+            # ships_total of the tracker includes the official ships from about 2026-03 (see meta.json)
+            rec["plan_plus_official"] = (None if rec["plan_vessels"] is None
+                                         else rec["plan_vessels"] + (rec["official_ships"] or 0))
+            out[r["report_date"]] = rec
     return out
 
 
@@ -205,35 +211,45 @@ def compare(rows: dict[str, dict], mnd: dict[str, dict], examples: int = 15) -> 
                     eq += rec[t] == m[k]
         res["offsets"][str(n)] = {"pairs": tot, "equal": eq, "rate": round(eq / tot, 4) if tot else None}
     all_equal = 0
-    for t, k in COMPARE.items():
-        pairs = [(d, rows[d][t], mnd[d][k]) for d in both]
+    pairs_to_check = [(t, t, k) for t, k in COMPARE.items()] + [(name, t, k) for name, (t, k) in COMPARE_EXTRA.items()]
+    for name, t, k in pairs_to_check:
+        pairs = [(d, rows[d][t], mnd[d].get(k)) for d in both]
         comparable = [(d, a, b) for d, a, b in pairs if a is not None and b is not None]
         diff = [(d, a, b) for d, a, b in comparable if a != b]
         only_t = sum(1 for _, a, b in pairs if a is not None and b is None)
         only_m = sum(1 for _, a, b in pairs if a is None and b is not None)
         big = sorted(diff, key=lambda x: (-abs(x[1] - x[2]), x[0]))[:examples]
-        res["fields"][t] = {
-            "mnd_field": k, "comparable": len(comparable), "equal": len(comparable) - len(diff),
+        by_month: dict[str, list[int]] = {}
+        for d, a, b in comparable:
+            by_month.setdefault(d[:7], [0, 0])
+            by_month[d[:7]][0] += a == b
+            by_month[d[:7]][1] += 1
+        res["fields"][name] = {
+            "tracker_field": t, "mnd_field": k,
+            "by_month": {mo: f"{e}/{n}" for mo, (e, n) in sorted(by_month.items())}, "comparable": len(comparable), "equal": len(comparable) - len(diff),
             "rate": round((len(comparable) - len(diff)) / len(comparable), 4) if comparable else None,
             "tracker_only": only_t, "mnd_only": only_m,
             "mean_abs_diff": round(sum(abs(a - b) for _, a, b in diff) / len(comparable), 3) if comparable else None,
             "examples_latest": [{"date": d, "tracker": a, "mnd": b} for d, a, b in diff[-examples:]],
             "examples_largest": [{"date": d, "tracker": a, "mnd": b} for d, a, b in big],
         }
+    # Headline: the two counts whose definitions match (median_line_cross is narrower, see meta.json).
     for d in both:
-        if all(rows[d][t] == mnd[d][k] for t, k in COMPARE.items()):
+        if (rows[d]["aircraft_total"] == mnd[d]["aircraft"]
+                and rows[d]["ships_total"] == mnd[d]["plan_plus_official"]):
             all_equal += 1
-    res["days_all_three_equal"] = all_equal
-    res["days_all_three_rate"] = round(all_equal / len(both), 4) if both else None
+    res["days_aircraft_and_ships_equal"] = all_equal
+    res["days_aircraft_and_ships_rate"] = round(all_equal / len(both), 4) if both else None
     return res
 
 
 def compare_text(c: dict) -> str:
-    lines = [f"重なり {c['overlap_days']} 日 {c['range']}、3項目とも一致 {c['days_all_three_equal']} 日（{c['days_all_three_rate']}）",
+    lines = [f"重なり {c['overlap_days']} 日 {c['range']}、機数と艦艇（国防部は海軍艦艇＋公務船）がともに一致 "
+             f"{c['days_aircraft_and_ships_equal']} 日（{c['days_aircraft_and_ships_rate']}）",
              "日付のずれ（tracker の日付+n と国防部の報告日）：" + "、".join(
                  f"n={n} {v['equal']}/{v['pairs']}={v['rate']}" for n, v in c["offsets"].items())]
     for t, f in c["fields"].items():
-        lines.append(f"{t}↔{f['mnd_field']}：一致 {f['equal']}/{f['comparable']}={f['rate']}、平均絶対差 {f['mean_abs_diff']}、"
+        lines.append(f"{f['tracker_field']}↔{f['mnd_field']}：一致 {f['equal']}/{f['comparable']}={f['rate']}、平均絶対差 {f['mean_abs_diff']}、"
                      f"tracker のみ {f['tracker_only']}・国防部のみ {f['mnd_only']}")
         lines.append("  差の大きい例：" + "; ".join(f"{e['date']} {e['tracker']}/{e['mnd']}" for e in f["examples_largest"][:8]))
         lines.append("  最近の例：" + "; ".join(f"{e['date']} {e['tracker']}/{e['mnd']}" for e in f["examples_latest"][-6:]))
@@ -291,18 +307,14 @@ def fetch_csv() -> tuple[str, dict, str]:
     return text, info, robots.reason
 
 
-def about_excerpt() -> str:
-    """Probe only: the about page once, cut down to the licence / citation parts."""
+def about_text() -> list[str]:
+    """Probe only: the about page once, as plain text in annotation-sized parts."""
     resp = polite.get(ABOUT_URL, UA, TIMEOUT)
     body = resp.body.decode("utf-8", errors="replace")
     body = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", " ", body)
     text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body)).strip()
-    parts = [f"HTTP {resp.status}, {len(resp.body)} bytes"]
-    for m in re.finditer(r"(?i)(attribution|cite|citation|credit|licen[cs]e|CC BY|source|國防部|Ministry of National Defense)", text):
-        parts.append(text[max(0, m.start() - 200):m.end() + 400])
-        if len(parts) > 6:
-            break
-    return "\n---\n".join(parts) if len(parts) > 1 else parts[0] + "\n" + text[:3000]
+    text = f"HTTP {resp.status}, {len(resp.body)} bytes\n" + text
+    return [text[i:i + 3800] for i in range(0, min(len(text), 5 * 3800), 3800)]
 
 
 def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -> int:
@@ -365,20 +377,29 @@ META = {
            "（collectors/taiwan_mnd.py SUSPENDED）。2026-10-31 以降の日ごとの数はこのデータで補う。",
     "precedence": "同じ日に国防部の日報（docs/data/taiwan-mnd/、around-taiwan 書式）とこのデータの両方がある場合は、原典に近い国防部の日報の値を使う。"
                   "このデータは国防部の日報の行が無い日（主に 2026-10-31 以降）だけに使い、使った日は出典をこのデータとして区別する。"
-                  "食い違いは compare.json に毎回記録する。",
-    "window": "date は国防部の日報の報告日と同じとみなす（台湾時間。前日 06:00〜当日 06:00 の集計）。compare.json の offsets で日付のずれを確かめている",
+                  "つなぐときは aircraft_total→aircraft はそのまま、ships_total は海軍艦艇＋公務船（plan_vessels とは別の量）、"
+                  "median_line_cross は median_line_or_adiz より狭い量として扱い、同じ列として続けない。食い違いは compare.json に毎回記録する。",
+    "window": "date は国防部の日報の報告日と同じとみなす（台湾時間。前日 06:00〜当日 06:00 の集計）。集約者は国防部の公表（台湾時間の正午〜14 時ごろ）の後に自動で取り込む（about ページ）。compare.json の offsets で日付のずれを確かめている",
     "fields": {
-        "date": "日付（国防部の報告日、台湾時間）",
-        "aircraft_total": "中国軍機の延べ機数（国防部 aircraft に相当）",
-        "median_line_cross": "そのうち中間線を越えた、または北部・西南・東部の空域に入った機数（国防部 median_line_or_adiz に相当）",
-        "cross_rate": "median_line_cross / aircraft_total（集約者の計算、文字列のまま）",
-        "aircraft_type": "機種（集約者の表記のまま）",
-        "ships_total": "艦艇の数（国防部 plan_vessels に相当。公務船を含むかは compare.json で確かめる）",
-        "activity_start": "活動の始まり（集約者の表記のまま）",
-        "activity_end": "活動の終わり（集約者の表記のまま）",
-        "special_event": "特記事項（集約者の表記のまま）",
+        "date": "日付（国防部の報告日、台湾時間とみなす）。2026-03-05〜03-19 と 03-31〜04-02 には、国防部の報告日より 1 日早い日付で載っているとみられる行がある（compare.json）",
+        "aircraft_total": "中国軍機の延べ機数（国防部 aircraft に相当。定義は同じ）",
+        "median_line_cross": "中間線を越えた機数。国防部 median_line_or_adiz（中間線越え＋北部・中部・西南・東部空域への進入）より狭く、"
+                             "空域への進入だけの日は 0 になることが多い（例：2026-10-27 は 0、国防部 3「進入北部及西南空域(3架次)」）。"
+                             "ただし進入の機数を入れた日もあり一定しない（2026-10-29 は 5「進入北部、中部及西南空域(5架次)」）。"
+                             "国防部の原文に記載のない日も 0 になっている（国防部の側では null）",
+        "cross_rate": "median_line_cross / aircraft_total の百分率（集約者の計算、文字列のまま。0.0〜100）",
+        "aircraft_type": "機の種類の区分（Manned・Zero・Mixed・UAV・Helicopter。大文字小文字の揺れは原文のまま）。機種名ではない",
+        "ships_total": "艦艇の数。2026-01〜02 は中国海軍艦艇だけ（国防部 plan_vessels と同じ）、2026-03 下旬（03-23 ごろ）以降は"
+                       "海軍艦艇＋公務船（国防部 plan_vessels + official_ships）。集約者の定義変更とみられ、内訳は分からない",
+        "activity_start": "活動の始まり（台湾時間の時刻、集約者の表記のまま。記載はまれ）",
+        "activity_end": "活動の終わり（同上）",
+        "special_event": "国防部の原文（中国語）の一部の写し：空域・中間線越えの記述、気球など（集約者の表記のまま）",
         "retrieved_utc": "その行を取り込んだ（または値が変わった）時刻（UTC）。公表時刻ではない",
     },
+    "comparison_2026": "国防部の日報（around-taiwan 書式）と重なる 2026-01-01〜2026-10-30 の 299 日（2026-10-30 取得の CSV）："
+                       "機数 285/299 一致（95.3%、食い違い 14 日は 2026-02-01・03-05〜03-19・03-31〜04-02・08-05 で、多くは 1 日のずれ）、"
+                       "艦艇は国防部の海軍艦艇＋公務船と 261/299 一致（87.3%。2026-05 以降は 147/149）、海軍艦艇だけとは 92/299、"
+                       "中間線越えは国防部に値のある 221 日で 144 一致（65.2%、定義が狭いため）。毎回の結果は compare.json",
     "missing_values": "空欄は不明（null）で、0 とはみなさない。集約者が空欄にした理由は分からない",
     "merge": "日付ごとに取り込み、集約者が値を変えた日は新しい値で置き換えて status.json の last_run.revised に記録する。"
              "元の CSV から消えた日は残す。保存済みの 80% より行が少ない CSV、列の足りない CSV は使わない",
@@ -413,7 +434,9 @@ def main(argv=None) -> int:
         rc = run(a.out, from_file=a.from_file)
     if a.about:
         try:
-            notice(about_excerpt(), title="pla-tracker about")
+            parts = about_text()
+            for i, part in enumerate(parts, 1):
+                notice(part, title=f"pla-tracker about {i}/{len(parts)}")
         except Exception as e:  # noqa: BLE001 - probe output only
             notice(f"about: {type(e).__name__}: {e}", "warning", title="pla-tracker about")
     return rc

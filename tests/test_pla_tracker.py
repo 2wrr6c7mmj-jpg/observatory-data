@@ -15,11 +15,11 @@ SAMPLE = HEADER + (
     "2026-10-30,6,3,0.5,,8,,,\n"
     "2026-10-31,12,10,0.83,J-10;J-16,9,2026-10-30 06:00,2026-10-31 06:00,\"Joint, combat readiness patrol\"\n"
 )
-MND = ("report_date,format,aircraft,median_line_or_adiz,plan_vessels\n"
-       "2020-11-01,sw-adiz,,,\n"
-       "2026-10-28,around-taiwan,6,,7\n"
-       "2026-10-29,around-taiwan,6,5,7\n"
-       "2026-10-30,around-taiwan,6,3,7\n")
+MND = ("report_date,format,aircraft,median_line_or_adiz,plan_vessels,official_ships\n"
+       "2020-11-01,sw-adiz,,,,\n"
+       "2026-10-28,around-taiwan,6,,7,\n"
+       "2026-10-29,around-taiwan,6,5,7,\n"
+       "2026-10-30,around-taiwan,6,3,7,1\n")
 
 
 class ParseTest(unittest.TestCase):
@@ -75,7 +75,9 @@ class CompareTest(unittest.TestCase):
         self.assertEqual(c["fields"]["ships_total"]["equal"], 2)
         self.assertEqual(c["fields"]["ships_total"]["examples_largest"], [{"date": "2026-10-30", "tracker": 8, "mnd": 7}])
         self.assertEqual(c["fields"]["median_line_cross"]["comparable"], 2)
-        self.assertEqual(c["days_all_three_equal"], 2)
+        self.assertEqual(c["days_aircraft_and_ships_equal"], 3)
+        self.assertEqual(c["fields"]["ships_total_vs_plan_plus_official"]["rate"], 1.0)
+        self.assertEqual(c["fields"]["ships_total"]["by_month"], {"2026-10": "2/3"})
         self.assertEqual(c["offsets"]["0"]["equal"], 7)
         self.assertIn("一致", P.compare_text(c))
 
