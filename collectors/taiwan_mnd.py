@@ -94,6 +94,11 @@ def notice(message: str) -> None:
     print("::notice::" + message.replace("%", "%25").replace("\n", "%0A")[:4000])
 
 
+def warning(message: str) -> None:
+    """Like notice(), but shown as a warning so a cut-short run stands out."""
+    print("::warning::" + message.replace("%", "%25").replace("\n", "%0A")[:4000])
+
+
 def load() -> dict:
     path = OUT / "reports.json"
     if path.exists():
@@ -131,12 +136,53 @@ def page_base(raw_html: str, page_url: str) -> str:
     return urljoin(page_url, m[1]) if m else page_url
 
 
+LIST_RETRY_WAITS = (30, 120)  # seconds before the 2nd and 3rd attempt
+RETRY_AFTER_CAP = 300
+
+
+class ListPageUnavailable(Exception):
+    """A list page kept failing with a temporary error; end this run, resume next time."""
+
+
+def transient(e: Exception) -> bool:
+    if isinstance(e, urllib.error.HTTPError):
+        return e.code == 429 or e.code >= 500
+    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError))
+
+
+def retry_wait(e: Exception, default: float) -> float:
+    after = getattr(e, "headers", None) and e.headers.get("Retry-After")
+    if after and str(after).strip().isdigit():
+        # never wait less than our own pace, never longer than the cap
+        return max(min(float(after), RETRY_AFTER_CAP), default)
+    return default
+
+
+def fetch_list(url: str) -> str:
+    """fetch() with a few slow retries on 429 / 5xx / network errors."""
+    for attempt in range(len(LIST_RETRY_WAITS) + 1):
+        try:
+            return fetch(url)
+        except Exception as e:  # noqa: BLE001 - classified below
+            if not transient(e):
+                raise
+            if attempt == len(LIST_RETRY_WAITS):
+                raise ListPageUnavailable(f"{url}: {e}") from e
+            wait = retry_wait(e, LIST_RETRY_WAITS[attempt])
+            notice(f"{url}: {e}; retrying in {wait:.0f}s")
+            _sleep(wait)
+    raise AssertionError("unreachable")
+
+
+_sleep = time.sleep
+
+
 def list_page(page: int) -> list[tuple[str, int]]:
     """Absolute report URLs and ids on one list page."""
     for template in LIST_URLS:
         url = template.format(page=page)
         try:
-            raw = fetch(url)
+            raw = fetch_list(url)
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 continue
@@ -152,8 +198,14 @@ def collect(pages: int, stop_when_known: bool) -> int:
     store = load()
     reports = store["reports"]
     added = 0
+    aborted = False
     for page in range(1, pages + 1):
-        links = list_page(page)
+        try:
+            links = list_page(page)
+        except ListPageUnavailable as e:
+            warning(f"list page {page}: still failing after retries ({e}); ending this run, next run resumes")
+            aborted = True
+            break
         if not links:
             notice(f"list page {page}: no report links; stopping")
             break
@@ -179,7 +231,9 @@ def collect(pages: int, stop_when_known: bool) -> int:
     save(store)
     bad = [rid for rid, r in reports.items() if not r.get("parsed")]
     notice(f"taiwan-mnd: {added} fetched, {len(reports)} stored, {len(bad)} unparsed")
-    return 0
+    # Non-zero marks the run as cut short; the publish step (always()) still
+    # commits what was saved. 75 = EX_TEMPFAIL.
+    return 75 if aborted else 0
 
 
 def probe() -> int:
