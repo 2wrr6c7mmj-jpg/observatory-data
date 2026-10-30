@@ -861,9 +861,14 @@ def main(argv=None) -> int:
 
     if args.cmd == "plan":
         month = now.strftime("%Y-%m")
-        other_pu, other_req = month_usage(args.usage, month)
+        # copies of one usage file on several branches (other-<key>--<n>.csv): count the largest copy only
+        groups: dict = {}
+        for u in args.usage:
+            groups.setdefault(u.name.split("--")[0] if "--" in u.name else u.name, []).append(u)
+        best = {k: max(v, key=lambda u: month_usage([u], month)[0]) for k, v in groups.items()}
+        other_pu, other_req = month_usage(list(best.values()), month)
         if args.ocean_cap is not None:
-            ocean_pu, _r = month_usage([u for u in args.usage if u.name.startswith("other-")], month)
+            ocean_pu, _r = month_usage([u for k, u in best.items() if k.startswith("other-")], month)
             args.reserve = max(args.reserve, round(args.ocean_cap - ocean_pu, 1))
         done_pu, done_req = month_usage(args.ports_usage, month)
         cap = min(args.cap - done_pu, args.global_cap - args.global_margin - other_pu - args.reserve - done_pu)

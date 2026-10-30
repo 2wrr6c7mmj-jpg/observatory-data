@@ -97,8 +97,9 @@ jobs:
             for f in $(git ls-tree -r --name-only "$ref" docs/data | grep -E 'usage[^/]*\.csv$' | grep -v -E '^docs/data/sat/(usage|ports_usage)\.csv$|^docs/data/sat/ports/'); do
               echo "$ref $f $(git log -1 --format=%ct "$ref")"
             done
-          done | sort -k2,2 -k3,3nr | awk '!seen[$2]++' > "$RUNNER_TEMP/usage/list.txt"
-          while read ref f t; do git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
+          done | sort -k2,2 > "$RUNNER_TEMP/usage/list.txt"
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
+          while read ref f t; do k=$(echo "$f" | tr '/' '_'); git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$k--$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
           rm "$RUNNER_TEMP/usage/list.txt"
       - name: Cap (guard 9,000 with the ocean's 4,600, the ports' 4,000, this run 800)
         id: cap
@@ -192,12 +193,13 @@ jobs:
               for f in files:
                   if "usage" in f.split("/")[-1] and f.endswith(".csv") and f not in ("docs/data/sat/usage.csv", "docs/data/sat/ports_usage.csv") \
                      and not f.startswith("docs/data/sat/ports/"):
-                      if f not in best or int(t) > best[f][1]:
-                          best[f] = (ref, int(t))
-          for i, (f, (ref, _t)) in enumerate(sorted(best.items())):
-              data = subprocess.run(["git", "show", f"{ref}:{f}"], capture_output=True, text=True).stdout
-              open(f"{out}/other-{i}.csv", "w").write(data)
-              print("other usage:", ref, f)
+                      best.setdefault(f, []).append(ref)
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
+          for i, (f, refs) in enumerate(sorted(best.items())):
+              for j, ref in enumerate(refs):
+                  data = subprocess.run(["git", "show", f"{ref}:{f}"], capture_output=True, text=True).stdout
+                  open(f"{out}/other-{i}--{j}.csv", "w").write(data)
+                  print("other usage:", ref, f)
           EOF
           ls -l "$RUNNER_TEMP/usage"
       - name: OSM land masks (Overpass, one port at a time)
