@@ -42,7 +42,16 @@ jobs:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
           DAYS: ${{ inputs.days || '30' }}
-        run: python -m sat.run --probe "$RUNNER_TEMP/sat" --days "$DAYS"
+        run: |
+          set -o pipefail
+          python -m sat.run --probe "$RUNNER_TEMP/sat" --days "$DAYS" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+      - name: Probe report (annotations)
+        # Logs and artifacts are on blob storage; annotations can be read through the REST API.
+        if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
+        run: |
+          python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
+          python -m sat.annotate b64 mask-ZJG "$RUNNER_TEMP/sat/masks/ZJG-land-v1.png"
+          python -m sat.annotate text mask-ZJG-meta "$RUNNER_TEMP/sat/masks/ZJG-land-v1.json"
       - name: Upload probe output
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         uses: actions/upload-artifact@v4
