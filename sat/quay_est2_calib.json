@@ -1,5 +1,5 @@
 {
- "version": "est-2-cal1",
+ "version": "est-2-cal2",
  "site_id": "ZJG",
  "labels": {
   "answered": 119,
@@ -36,6 +36,16 @@
   },
   "depth_sd": 10.8,
   "smear_p_real": 0.68,
+  "db_line": {
+   "form": "lognormal",
+   "mean_m": [
+    9.9,
+    26.4,
+    50.7
+   ],
+   "sd_log": 0.45,
+   "weight": 0.0
+  },
   "s2_lr_auto": {
    "grey": 1.35,
    "colour": 0.82,
@@ -203,6 +213,92 @@
     "owner_blank": 1
    }
   },
+  "db_line": {
+   "form": "lognormal",
+   "n": 34,
+   "sd_log": 0.45,
+   "pooled_sd_log_obs": 0.44,
+   "table": [
+    {
+     "c": 1,
+     "n": 17,
+     "min_m": 7.0,
+     "median_m": 9.0,
+     "max_m": 12.0,
+     "mean_m": 9.2,
+     "geo_mean_m": 9.0,
+     "sd_log_obs": 0.18,
+     "placeholder_m": 22.0,
+     "calibrated_m": 9.9
+    },
+    {
+     "c": 2,
+     "n": 12,
+     "min_m": 10.0,
+     "median_m": 26.0,
+     "max_m": 54.0,
+     "mean_m": 28.6,
+     "geo_mean_m": 24.4,
+     "sd_log_obs": 0.61,
+     "placeholder_m": 42.0,
+     "calibrated_m": 26.4
+    },
+    {
+     "c": 3,
+     "n": 5,
+     "min_m": 21.0,
+     "median_m": 70.0,
+     "max_m": 70.0,
+     "mean_m": 52.4,
+     "geo_mean_m": 46.7,
+     "sd_log_obs": 0.57,
+     "placeholder_m": 62.0,
+     "calibrated_m": 50.7
+    }
+   ],
+   "corr_depth_all": 0.84,
+   "corr_depth_within_c": 0.45,
+   "max_weight": 0.5,
+   "used": "レーダー向きの面（両軌道。軌道 84 は 1 件）で、人の列数 1〜3・S1 占有・db_line_m のある行",
+   "by_face": {
+    "along": {
+     "1": {
+      "n": 2,
+      "min_m": 9.0,
+      "median_m": 11.5,
+      "max_m": 14.0
+     }
+    },
+    "away": {
+     "1": {
+      "n": 9,
+      "min_m": 5.0,
+      "median_m": 7.0,
+      "max_m": 11.0
+     }
+    },
+    "toward": {
+     "1": {
+      "n": 17,
+      "min_m": 7.0,
+      "median_m": 9.0,
+      "max_m": 12.0
+     },
+     "2": {
+      "n": 12,
+      "min_m": 10.0,
+      "median_m": 26.0,
+      "max_m": 54.0
+     },
+     "3": {
+      "n": 5,
+      "min_m": 21.0,
+      "median_m": 70.0,
+      "max_m": 70.0
+     }
+    }
+   }
+  },
   "hard_ways": {
    "13977070": {
     "answered": 49,
@@ -230,6 +326,23 @@
   "hard": {
    "min_answers": 5,
    "cannot_share": 0.5
+  },
+  "db_line": {
+   "mean_log_pseudo_n": 2.0,
+   "sd_log_placeholder": 0.5,
+   "sd_log_pseudo_df": 5.0,
+   "min_gap_log": 0.1,
+   "weights": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+   ],
+   "corr_cap": {
+    "within_c_r": 0.3,
+    "max_weight": 0.5
+   }
   }
  },
  "evaluation": {
@@ -250,7 +363,8 @@
     "mean_p_true": 0.792,
     "sum_c_owner": 67,
     "sum_c_expected": 62.6,
-    "log_score": -0.332
+    "log_score": -0.332,
+    "brier": 0.214
    },
    "occupied": {
     "n": 81,
@@ -279,7 +393,8 @@
     "mean_p_true": 0.785,
     "sum_c_owner": 67,
     "sum_c_expected": 69.3,
-    "log_score": -0.335
+    "log_score": -0.335,
+    "brier": 0.218
    },
    "occupied": {
     "n": 81,
@@ -308,7 +423,8 @@
     "mean_p_true": 0.802,
     "sum_c_owner": 67,
     "sum_c_expected": 68.9,
-    "log_score": -0.285
+    "log_score": -0.285,
+    "brier": 0.182
    },
    "occupied": {
     "n": 81,
@@ -330,6 +446,172 @@
     "2->1": 12,
     "3->1": 5
    }
+  },
+  "db_line": {
+   "method": "日付ごとの leave-one-out。各回、外した日以外で奥行き・にじみ・二回反射の線（平均・σ）を較正し直し、nested は重みも外した日以外の中の leave-one-out（対数スコア最大、同点は小さい方）で選んで外した日を評価",
+   "rows": 34,
+   "weight_0": {
+    "n": 45,
+    "agree": 38,
+    "share": 0.844,
+    "confusion": {
+     "1->1": 23,
+     "1->2": 5,
+     "2->1": 1,
+     "2->2": 10,
+     "2->3": 1,
+     "3->3": 5
+    },
+    "mean_p_true": 0.785,
+    "sum_c_owner": 67,
+    "sum_c_expected": 69.3,
+    "log_score": -0.335,
+    "brier": 0.218
+   },
+   "nested": {
+    "n": 45,
+    "agree": 36,
+    "share": 0.8,
+    "confusion": {
+     "1->1": 24,
+     "1->2": 4,
+     "2->1": 2,
+     "2->2": 8,
+     "2->3": 2,
+     "3->2": 1,
+     "3->3": 4
+    },
+    "mean_p_true": 0.778,
+    "sum_c_owner": 67,
+    "sum_c_expected": 68.8,
+    "log_score": -0.373,
+    "brier": 0.237
+   },
+   "nested_weights": {
+    "2025-11-12": 0.25,
+    "2025-11-22": 0.0,
+    "2025-12-07": 0.0,
+    "2025-12-17": 0.0,
+    "2026-01-03": 0.0,
+    "2026-01-11": 0.0,
+    "2026-02-20": 0.0,
+    "2026-04-03": 0.0,
+    "2026-04-06": 0.0,
+    "2026-04-11": 0.25,
+    "2026-05-26": 0.0,
+    "2026-06-02": 0.25,
+    "2026-06-22": 0.0,
+    "2026-08-09": 0.0,
+    "2026-09-03": 0.0,
+    "2026-10-23": 0.25
+   },
+   "fixed": {
+    "0": {
+     "n": 45,
+     "agree": 38,
+     "share": 0.844,
+     "confusion": {
+      "1->1": 23,
+      "1->2": 5,
+      "2->1": 1,
+      "2->2": 10,
+      "2->3": 1,
+      "3->3": 5
+     },
+     "mean_p_true": 0.785,
+     "sum_c_owner": 67,
+     "sum_c_expected": 69.3,
+     "log_score": -0.335,
+     "brier": 0.218
+    },
+    "0.25": {
+     "n": 45,
+     "agree": 36,
+     "share": 0.8,
+     "confusion": {
+      "1->1": 25,
+      "1->2": 3,
+      "2->1": 3,
+      "2->2": 7,
+      "2->3": 2,
+      "3->2": 1,
+      "3->3": 4
+     },
+     "mean_p_true": 0.801,
+     "sum_c_owner": 67,
+     "sum_c_expected": 68.3,
+     "log_score": -0.336,
+     "brier": 0.209
+    },
+    "0.5": {
+     "n": 45,
+     "agree": 38,
+     "share": 0.844,
+     "confusion": {
+      "1->1": 27,
+      "1->2": 1,
+      "2->1": 3,
+      "2->2": 7,
+      "2->3": 2,
+      "3->2": 1,
+      "3->3": 4
+     },
+     "mean_p_true": 0.811,
+     "sum_c_owner": 67,
+     "sum_c_expected": 67.3,
+     "log_score": -0.368,
+     "brier": 0.221
+    },
+    "0.75": {
+     "n": 45,
+     "agree": 37,
+     "share": 0.822,
+     "confusion": {
+      "1->1": 27,
+      "1->2": 1,
+      "2->1": 3,
+      "2->2": 7,
+      "2->3": 2,
+      "3->2": 2,
+      "3->3": 3
+     },
+     "mean_p_true": 0.816,
+     "sum_c_owner": 67,
+     "sum_c_expected": 66.6,
+     "log_score": -0.421,
+     "brier": 0.238
+    },
+    "1": {
+     "n": 45,
+     "agree": 37,
+     "share": 0.822,
+     "confusion": {
+      "1->1": 27,
+      "1->2": 1,
+      "2->1": 3,
+      "2->2": 7,
+      "2->3": 2,
+      "3->2": 2,
+      "3->3": 3
+     },
+     "mean_p_true": 0.818,
+     "sum_c_owner": 67,
+     "sum_c_expected": 66.2,
+     "log_score": -0.485,
+     "brier": 0.255
+    }
+   },
+   "all_days_choice": {
+    "weight": 0.0,
+    "log_score_by_weight": {
+     "0": -0.335,
+     "0.25": -0.336,
+     "0.5": -0.368
+    }
+   },
+   "rule": "nested が重み 0 より対数スコア・ブライア（列数）ともによく、一致件数が下がらないときだけ重みを採る（上限 1、奥行きとの列内相関 ≥ 0.3 なら 0.5）",
+   "improved": false,
+   "adopted_weight": 0.0
   },
   "note": "列数は人の c（S2 の時刻）と S1 の奥行き（−40.5〜+79.4 時間ずれる）の組で 45 件と少ない。占有は S1 の占有×本当に船である確率（にじみ）が 0.5 以上を「いる」として人と比べた。mean_p_true＝人の c に付けた事後確率の平均、log_score＝その対数の平均（0 に近いほどよい）。sum_c_owner／sum_c_expected＝人の列数の合計と、事後の列数の期待値の合計（隻数の偏りの目安）"
  },

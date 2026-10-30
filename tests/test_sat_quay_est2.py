@@ -58,7 +58,7 @@ class PartsTest(unittest.TestCase):
             self.assertAlmostEqual(m, (a + b) / 2)
 
     def test_db_line_recorded_only(self):
-        # weight 0 until #7: even on a face toward the radar the likelihood is flat, but the clue is counted
+        # weight 0 (#8 kept it: the cross-validation did not improve on 0): even on a face toward the radar the likelihood is flat, but the clue is counted
         self.assertEqual(e2.DB_WEIGHT, 0.0)
         self.assertEqual(e2.db_like(42, "away")[1], "")
         for x in (7, 22, 42, 62):
@@ -70,6 +70,37 @@ class PartsTest(unittest.TestCase):
         self.assertEqual(r1["stretches"][0]["p_c"], r2["stretches"][0]["p_c"])
         self.assertEqual(r1["stretches"][0]["db_line_m"], 7)
         self.assertIn("db_line", r1["stretches"][0]["clues"])
+
+    def test_db_line_lognormal_when_weighted(self):
+        """With a weight the line orders the columns (log-normal); the weight is capped at 1; away is no clue."""
+        p = {"form": "lognormal", "mean_m": [10.0, 26.0, 51.0], "sd_log": 0.45, "weight": 0.5}
+        for c, x in zip((1, 2, 3), (10, 26, 51)):
+            lk, cl = e2.db_like(x, "toward", p)
+            self.assertEqual(cl, "db_line")
+            self.assertEqual(int(np.argmax(lk)) + 1, c)
+        full = e2.db_like(30, "toward", {**p, "weight": 1.0})[0]
+        np.testing.assert_allclose(e2.db_like(30, "toward", {**p, "weight": 0.5})[0] ** 2, full)
+        np.testing.assert_allclose(e2.db_like(30, "toward", {**p, "weight": 3.0})[0], full)
+        np.testing.assert_allclose(e2.db_like(30, "toward", {**p, "weight": 0.0})[0], np.ones(3))
+        self.assertEqual(e2.db_like(30, "away", p)[1], "")
+
+    def test_db_line_calibration_record(self):
+        """#8: the line is fitted and cross-validated, and weight 0 is kept unless the nested CV improves."""
+        if e2.CALIB is None or "db_line" not in e2.CALIB.get("params", {}):
+            self.skipTest("no calibration of the line")
+        from sat import quay_est2_calib as cal
+        f = e2.CALIB["fit"]["db_line"]
+        ev = e2.CALIB["evaluation"]["db_line"]
+        self.assertEqual(sum(x["n"] for x in f["table"]), f["n"])
+        m = e2.CALIB["params"]["db_line"]["mean_m"]
+        self.assertTrue(m[0] < m[1] < m[2])
+        self.assertLessEqual(e2.CALIB["params"]["db_line"]["weight"], f["max_weight"])
+        self.assertLessEqual(e2.DB_WEIGHT, 1.0)
+        if not ev["improved"]:
+            self.assertEqual(e2.DB_WEIGHT, 0.0)
+        # the weight-0 fold is the calibration of #7 as it was (the line changes nothing at weight 0)
+        self.assertEqual(ev["weight_0"], e2.CALIB["evaluation"]["after_cv"]["columns"])
+        self.assertEqual(set(ev["fixed"]), {f"{w:g}" for w in cal.DB_WEIGHTS})
 
     def test_kappa_and_colour(self):
         self.assertEqual(e2.kappa(None), 0.0)
