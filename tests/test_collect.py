@@ -55,3 +55,54 @@ class Daily(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def http_error(code, retry_after=None):
+    import email.message
+    import urllib.error
+    h = email.message.Message()
+    if retry_after is not None:
+        h["Retry-After"] = str(retry_after)
+    return urllib.error.HTTPError("https://x", code, "err", h, None)
+
+
+class ListPageRetry(unittest.TestCase):
+    def test_temporary_errors_are_retried_then_succeed(self):
+        calls = {"n": 0}
+
+        def flaky(url):
+            if "plaactlist" in url and url.endswith("/1") and calls["n"] < 2:
+                calls["n"] += 1
+                raise http_error(503) if calls["n"] == 1 else http_error(429, retry_after=7)
+            return fake_fetch(url)
+
+        waits = []
+        with mock.patch.object(taiwan_mnd, "fetch", side_effect=flaky), \
+                mock.patch.object(taiwan_mnd, "_sleep", side_effect=waits.append), \
+                mock.patch.object(taiwan_mnd, "notice"):
+            links = taiwan_mnd.list_page(1)
+        self.assertEqual(len(links), 2)
+        self.assertEqual(waits, [taiwan_mnd.LIST_RETRY_WAITS[0], 7])
+
+    def test_persistent_failure_ends_the_run_and_keeps_progress(self):
+        def failing_page2(url):
+            if "plaactlist" in url and url.endswith("/2"):
+                raise http_error(502)
+            return fake_fetch(url)
+
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
+                mock.patch.object(taiwan_mnd, "fetch", side_effect=failing_page2), \
+                mock.patch.object(taiwan_mnd, "_sleep") as sl, \
+                mock.patch.object(taiwan_mnd, "notice") as note:
+            self.assertEqual(taiwan_mnd.collect(5, stop_when_known=False), 0)
+            stored = json.loads((Path(d) / "reports.json").read_text(encoding="utf-8"))["reports"]
+        self.assertEqual(set(stored), {"1", "2"})
+        self.assertEqual(sl.call_count, len(taiwan_mnd.LIST_RETRY_WAITS))
+        self.assertTrue(any("ending this run" in c.args[0] for c in note.call_args_list))
+
+    def test_other_errors_are_not_retried(self):
+        with mock.patch.object(taiwan_mnd, "fetch", side_effect=http_error(403)), \
+                mock.patch.object(taiwan_mnd, "_sleep") as sl:
+            with self.assertRaises(Exception):
+                taiwan_mnd.list_page(1)
+        sl.assert_not_called()

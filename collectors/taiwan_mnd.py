@@ -131,12 +131,52 @@ def page_base(raw_html: str, page_url: str) -> str:
     return urljoin(page_url, m[1]) if m else page_url
 
 
+LIST_RETRY_WAITS = (30, 120)  # seconds before the 2nd and 3rd attempt
+RETRY_AFTER_CAP = 300
+
+
+class ListPageUnavailable(Exception):
+    """A list page kept failing with a temporary error; end this run, resume next time."""
+
+
+def transient(e: Exception) -> bool:
+    if isinstance(e, urllib.error.HTTPError):
+        return e.code == 429 or e.code >= 500
+    return isinstance(e, (urllib.error.URLError, TimeoutError, ConnectionError))
+
+
+def retry_wait(e: Exception, default: float) -> float:
+    after = getattr(e, "headers", None) and e.headers.get("Retry-After")
+    if after and str(after).strip().isdigit():
+        return min(float(after), RETRY_AFTER_CAP)
+    return default
+
+
+def fetch_list(url: str) -> str:
+    """fetch() with a few slow retries on 429 / 5xx / network errors."""
+    for attempt in range(len(LIST_RETRY_WAITS) + 1):
+        try:
+            return fetch(url)
+        except Exception as e:  # noqa: BLE001 - classified below
+            if not transient(e):
+                raise
+            if attempt == len(LIST_RETRY_WAITS):
+                raise ListPageUnavailable(f"{url}: {e}") from e
+            wait = retry_wait(e, LIST_RETRY_WAITS[attempt])
+            notice(f"{url}: {e}; retrying in {wait:.0f}s")
+            _sleep(wait)
+    raise AssertionError("unreachable")
+
+
+_sleep = time.sleep
+
+
 def list_page(page: int) -> list[tuple[str, int]]:
     """Absolute report URLs and ids on one list page."""
     for template in LIST_URLS:
         url = template.format(page=page)
         try:
-            raw = fetch(url)
+            raw = fetch_list(url)
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 continue
@@ -153,7 +193,11 @@ def collect(pages: int, stop_when_known: bool) -> int:
     reports = store["reports"]
     added = 0
     for page in range(1, pages + 1):
-        links = list_page(page)
+        try:
+            links = list_page(page)
+        except ListPageUnavailable as e:
+            notice(f"list page {page}: still failing after retries ({e}); ending this run, next run resumes")
+            break
         if not links:
             notice(f"list page {page}: no report links; stopping")
             break
