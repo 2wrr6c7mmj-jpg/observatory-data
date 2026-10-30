@@ -1,3 +1,4 @@
 run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s1_processing_units,s2_processing_units,cap_pu,archive_version
 2026-10-30T19:28:25Z,XSN,119,83.928,header,28,85,17,50.44,33.486,122.0,ports-1
 2026-10-30T19:38:28Z,XSN,31,54.043,header,30,0,0,54.043,0,67.5,ports-1
+2026-10-30T20:18:26Z,XSN,25,28.823,header,,,,28.823,,635.5489999999986,baseline-bl-1

@@ -1,0 +1,282 @@
+{
+ "version": "bl-1",
+ "site": "XSN",
+ "mask_version": "XSN-land-v1",
+ "relative_orbit": 171,
+ "built_utc": "2026-10-30T20:18:26Z",
+ "bbox": [
+  121.745,
+  29.515,
+  121.8,
+  29.555
+ ],
+ "width": 533,
+ "height": 443,
+ "scenes": 24,
+ "first_utc": "2025-12-18T09:54:32Z",
+ "last_utc": "2026-10-21T09:54:02Z",
+ "credibility": "3",
+ "credibility_note": "24 シーン（24 以上）",
+ "method": {
+  "smooth": "3x3 の平均（線形の σ0、有効画素のみ）を取ってから dB",
+  "percentiles": [
+   10,
+   90
+  ],
+  "layers": {
+   "vv_p10": "VV の 10 パーセンタイル（船のいない岸壁の基準）",
+   "vv_p90": "VV の 90 パーセンタイル",
+   "vh_p10": "VH の 10 パーセンタイル（岸壁の数の ΔVH の基準）"
+  },
+  "always_occupied": "vv_p10 > -8 dB かつ vv_p90 − vv_p10 < 3 dB",
+  "min_valid": 10,
+  "min_coverage": 0.9,
+  "lookback_days": 365,
+  "max_scenes": 24
+ },
+ "encoding": {
+  "format": "PNG 8 bit grey",
+  "db": "q × 0.25 + (-45.25)（q = 1〜255、−45.0〜+18.5 dB）",
+  "no_data": "q = 0",
+  "kept": "水域・構造物から 200 m 以内の画素のみ（それより内陸は 0）"
+ },
+ "files": {
+  "vv_p10": "ro171-bl-1.vv_p10.png",
+  "vv_p90": "ro171-bl-1.vv_p90.png",
+  "vh_p10": "ro171-bl-1.vh_p10.png"
+ },
+ "png_bytes": {
+  "vv_p10": 83395,
+  "vv_p90": 77823,
+  "vh_p10": 92616
+ },
+ "stats": {
+  "kept_fraction": 0.6521,
+  "water_vv_p10_median_db": -22.3,
+  "water_vh_p10_median_db": -29.61,
+  "always_occupied_px": 955,
+  "always_occupied_on_water_px": 0,
+  "min_valid_scenes_in_kept": 19
+ },
+ "always_occupied_on_water": [],
+ "scene_list": [
+  {
+   "acquired_utc": "2025-12-18T09:54:32Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.994,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -19.21,
+   "used": true
+  },
+  {
+   "acquired_utc": "2025-12-30T09:54:31Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.997,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -17.63,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-01-11T09:54:30Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.994,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.66,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-01-23T09:54:28Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.97,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -21.38,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-02-04T09:54:28Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.986,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -19.43,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-02-16T09:54:28Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.995,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.42,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-02-28T09:54:27Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.974,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -21.2,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-03-12T09:54:28Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.994,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.57,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-03-24T09:54:28Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.991,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -19.45,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-04-17T09:54:28Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.986,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -19.29,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-04-29T09:54:27Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.996,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.01,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-05-11T09:54:27Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.997,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -17.97,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-05-23T09:54:27Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.995,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -16.77,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-06-04T09:54:26Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.993,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.75,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-06-16T09:54:25Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.983,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -20.4,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-06-28T09:54:25Z",
+   "platform": "sentinel-1a",
+   "orbit_direction": "ascending",
+   "coverage": 0.996,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.13,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-07-29T09:53:46Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 0.999,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -19.0,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-08-10T09:54:01Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 1.0,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -11.12,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-08-22T09:54:01Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 1.0,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -16.72,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-09-03T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 1.0,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -16.79,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-09-15T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 0.999,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.62,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-09-27T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 0.985,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -22.78,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-10-09T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 0.999,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -18.82,
+   "used": true
+  },
+  {
+   "acquired_utc": "2026-10-21T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "coverage": 0.998,
+   "processing_units": 1.2009633740076424,
+   "water_vv_median_db": -19.37,
+   "used": true
+  }
+ ],
+ "source": "Copernicus Sentinel-1 IW GRD（CDSE Sentinel Hub Process API、σ0 楕円体基準、COPERNICUS_30 で地形補正、10 m）",
+ "credit": "Contains modified Copernicus Sentinel data 2026"
+}
