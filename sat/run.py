@@ -341,12 +341,10 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     now = datetime.now(timezone.utc)
     probe = None
+    mask_dir = args.mask_dir
     if args.probe:
         args.out = args.probe / "out"
-        mask_dir = args.probe / "masks"
         probe = {}
-    else:
-        mask_dir = args.mask_dir
     store = Store(args.out)
     month = now.strftime("%Y-%m")
     used_pu, used_req = month_usage(store.usage, month)
@@ -366,10 +364,12 @@ def main(argv=None) -> int:
             except FileNotFoundError:
                 if probe is None:
                     raise
+                # Probe only: build the missing mask from OSM into the probe directory
+                # (to be checked and committed by hand).
                 grid = Grid.for_site(site)
                 osm = fetch_osm(grid)
                 mask, info = build_mask(grid, osm)
-                mmeta = save_mask(site, grid, mask, info, osm, MASK_VERSION, mask_dir)
+                mmeta = save_mask(site, grid, mask, info, osm, MASK_VERSION, args.probe / "masks")
                 print("陸マスクを OSM から作成:", json.dumps({k: mmeta[k] for k in mmeta if k != "query"}, ensure_ascii=False))
             if budget <= 0:
                 run["sites"].append({"site_id": site["id"], "deferred_budget": True})

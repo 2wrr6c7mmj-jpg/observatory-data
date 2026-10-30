@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentinel-1 港内の艦船候補数（試行）</title>
+<style>
+body{font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:1000px;margin:1.5rem auto;padding:0 1rem;line-height:1.6;color:#222}
+.trial{background:#fff3cd;border:1px solid #e0c060;padding:.6rem .9rem;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border-bottom:1px solid #ddd;padding:.3rem .4rem;text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr.sel{background:#eef5ff}
+tr{cursor:pointer}
+#chip{max-width:100%;image-rendering:pixelated;border:1px solid #999}
+.legend span{display:inline-block;margin-right:1rem}
+.sw{display:inline-block;width:.9em;height:.9em;vertical-align:-.1em;margin-right:.3em;border:1px solid #555}
+small,.note{color:#555}
+</style>
+</head>
+<body>
+<h1>Sentinel-1 港内の艦船候補数（試行）</h1>
+<p class="trial"><b>試行</b>：湛江（ZJG）の 1 地点のみ。陸マスクだけで数えています（固定物マスクは 20 シーン蓄積後）。地点の範囲は概略で、港の形を確かめるまで公開画面の地図には出しません。数は自動検出の<b>候補数</b>で、在泊艦数ではありません。</p>
+
+<h2>言えること・言えないこと</h2>
+<ul>
+<li>言えること：目標の有無・数・位置・長さの目安（±20〜30 m）</li>
+<li>言えないこと：艦種・国籍・所属。民間船・作業船・ブイなども候補に入る</li>
+<li>岸壁に横付けされた艦は数え落とす前提です（岸壁から 50 m 以内の「岸壁帯」は別に数える）</li>
+<li>情報源の評価 A（Copernicus 公式）、候補の確度 3（未確認）</li>
+</ul>
+
+<h2>地点</h2>
+<p id="site">湛江 ZJG：中心 21.20°N 110.41°E、8×8 km（概略）。<a href="https://www.openstreetmap.org/?mlat=21.20&mlon=110.41#map=13/21.20/110.41">OpenStreetMap で見る</a></p>
+
+<h2>撮影ごとの候補数</h2>
+<p id="empty" class="note">読み込み中…</p>
+<table id="tbl" hidden>
+<thead><tr><th>撮影時刻（UTC）</th><th>衛星</th><th>軌道</th><th>相対軌道</th><th>入射角</th><th>港内候補</th><th>岸壁帯候補</th><th>確認数</th><th>〜50</th><th>50〜100</th><th>100〜200</th><th>200 m〜</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<h2>切り出し画像</h2>
+<p class="legend"><span><i class="sw" style="background:#ff2828"></i>港内水域の候補</span><span><i class="sw" style="background:#ffdc00"></i>岸壁帯の候補</span><span><i class="sw" style="background:#00c8ff"></i>陸マスクの縁</span><span><i class="sw" style="background:#ff8c00"></i>桟橋・橋など</span></p>
+<p id="caption" class="note"></p>
+<img id="chip" alt="選んだ撮影の VV 画像と候補の位置" hidden>
+
+<h2>データ</h2>
+<p><a href="../data/sat/ship_counts.csv">ship_counts.csv</a> ・ <a href="../data/sat/meta.json">定義と限界</a> ・ <a href="../data/sat/status.json">処理状況</a> ・ <a href="../data/sat/usage.csv">処理単位の記録</a> ・ <a href="../data/sat/CHANGES.md">定義変更の記録</a> ・ 候補の位置：<code>../data/sat/detections/YYYY-MM.geojson</code></p>
+
+<p><small id="credit">Contains modified Copernicus Sentinel data 2026.</small><br>
+<small>陸マスク：© OpenStreetMap contributors（ODbL 1.0）。数は observatory-data が自動で数えたもので、ESA・欧州委員会が作成したものではありません。</small></p>
+
+<script>
+const base = '../data/sat/';
+function parseCSV(t){const L=t.trim().split('\n');const h=L.shift().split(',');return L.map(l=>{const v=l.split(',');const o={};h.forEach((k,i)=>o[k]=v[i]??'');return o;});}
+function show(r,tr){document.querySelectorAll('tr.sel').forEach(x=>x.classList.remove('sel'));tr.classList.add('sel');
+ const img=document.getElementById('chip');img.src=base+r.image;img.hidden=false;
+ document.getElementById('caption').textContent=`${r.acquired_utc} ${r.platform} ${r.orbit_direction} 相対軌道 ${r.relative_orbit||'不明'}：港内候補 ${r.harbour_candidates}、岸壁帯候補 ${r.quay_candidates}`;}
+fetch(base+'ship_counts.csv',{cache:'no-cache'}).then(r=>r.ok?r.text():'').then(t=>{
+ const rows=t?parseCSV(t).filter(r=>r.site_id==='ZJG').reverse():[];
+ if(!rows.length){document.getElementById('empty').textContent='まだ撮影の記録がありません。';return;}
+ document.getElementById('empty').hidden=true;const tb=document.querySelector('#tbl tbody');document.getElementById('tbl').hidden=false;
+ rows.forEach((r,i)=>{const tr=document.createElement('tr');
+  [r.acquired_utc,r.platform,r.orbit_direction,r.relative_orbit,r.incidence_deg,r.harbour_candidates,r.quay_candidates,r.confirmed,r.len_lt50,r.len_50_100,r.len_100_200,r.len_ge200].forEach(v=>{const td=document.createElement('td');td.textContent=v===''?'—':v;tr.appendChild(td);});
+  tr.onclick=()=>show(r,tr);tb.appendChild(tr);if(i===0)show(r,tr);});
+}).catch(()=>{document.getElementById('empty').textContent='読み込めませんでした。';});
+fetch(base+'meta.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(m=>{if(m&&m.attribution)document.getElementById('credit').textContent=m.attribution.credit+'.';}).catch(()=>{});
+</script>
+</body>
+</html>
