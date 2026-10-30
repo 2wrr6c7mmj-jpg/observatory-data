@@ -1,1 +1,1 @@
---mode raw --max-pu 600 --pu-per-min 100
+--mode wide --lookback-days 7 --pu-per-min 100
