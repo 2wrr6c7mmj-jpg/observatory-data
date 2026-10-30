@@ -137,9 +137,10 @@ class Client:
             raise CDSEError(f"Sentinel Hub がリクエストを受け付けません（HTTP {status}）: {_short(data)}")
         raise CDSEError(f"Sentinel Hub への要求が繰り返し失敗しました（HTTP {status}）: {_short(data)}")
 
-    def catalog(self, bbox: list[float], start: datetime, end: datetime, limit: int = 100) -> list[dict]:
+    def catalog(self, bbox: list[float], start: datetime, end: datetime, limit: int = 100,
+                collection: str = "sentinel-1-grd") -> list[dict]:
         payload = {
-            "collections": ["sentinel-1-grd"],
+            "collections": [collection],
             "bbox": bbox,
             "datetime": f"{iso(start)}/{iso(end)}",
             "limit": limit,
@@ -185,6 +186,24 @@ class Client:
         if pu is None:
             self.pu_reported = False
             pu = estimate_pu(width, height, 3 if with_lia else 2)
+        self.processing_units += pu
+        return data, pu
+
+
+    def process_raw(self, payload: dict, accept: str, input_bands: int) -> tuple[bytes, float]:
+        """Any Process API request (Sentinel-2 in sat/s2.py); PU from the response header, else estimated
+        (no orthorectification factor)."""
+        h, data = self._post_sh(PROCESS_URL, payload, accept)
+        self.last_headers = sorted(h)
+        pu = h.get("x-processingunits-spent")
+        try:
+            pu = float(pu) if pu is not None else None
+        except ValueError:
+            pu = None
+        if pu is None:
+            self.pu_reported = False
+            out = payload.get("output", {})
+            pu = round(max(0.005, out.get("width", 0) * out.get("height", 0) / 512 ** 2 * max(input_bands / 3, 1)), 3)
         self.processing_units += pu
         return data, pu
 

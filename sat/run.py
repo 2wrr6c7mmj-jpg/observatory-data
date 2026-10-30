@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import cdse, png, quay, quay_est, quay_lines, render
+from . import cdse, png, quay, quay_est, quay_lines, render, s2
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
@@ -52,7 +52,8 @@ CSV_FIELDS = [
 ]
 SECTOR_COLUMNS = ("a", "b")  # the first sector of a site is "a"; the rest of the chip is "b"
 
-USAGE_FIELDS = ["run_utc", "requests", "processing_units", "pu_source", "scenes"]
+USAGE_FIELDS = ["run_utc", "requests", "processing_units", "pu_source", "scenes",
+                "s2_requests", "s2_processing_units"]  # the Sentinel-2 part of the run (s2nc-1), included in the totals
 
 # Quay count (quay-v1, trial): one row per scene x site x mask version, only where a baseline
 # of the scene's relative orbit exists. Separate from ship_counts.csv (the CFAR count stays as it is).
@@ -328,7 +329,7 @@ class Store:
         self.status["updated_utc"] = run["run_utc"]
         self.status["series_breaks"] = series_breaks(self.sites)
         (self.out / "status.json").write_text(json.dumps(self.status, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows, self.sites), ensure_ascii=False, indent=1) + "\n",
+        (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n",
                                             encoding="utf-8")
 
 
@@ -338,6 +339,12 @@ def attribution(rows: list[dict]) -> str:
         years = [str(datetime.now(timezone.utc).year)]
     span = years[0] if len(years) == 1 else f"{years[0]}-{years[-1]}"
     return f"Contains modified Copernicus Sentinel data {span}"
+
+
+def s2_attribution(out: Path | None = None) -> str:
+    """Credit of the Sentinel-2 images: the years of the clear days on record."""
+    rows = [r for r in s2.read_rows((out or OUT_DIR) / "s2_scenes.csv") if r.get("image")]
+    return attribution(rows) if rows else ""  # no image yet: no credit
 
 
 def series_breaks(sites: list[dict]) -> list[dict]:
@@ -438,7 +445,7 @@ def site_meta(site: dict) -> dict:
     return m
 
 
-def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
+def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | None = None) -> dict:
     sites = sites if sites is not None else load_sites()
     return {
         "dataset": "sat",
@@ -456,6 +463,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
         },
         "attribution": {
             "credit": attribution(rows),
+            "sentinel2": (s2_attribution(out) + "（s2/ の自然色。画像の下の帯にも描く）") if s2_attribution(out) else "",
             "land_mask": "陸マスク：(c) OpenStreetMap contributors, ODbL 1.0",
             "quay_lines": "岸壁の数に使う桟橋・岸壁・海岸線の線（sat/masks/<地点>-quay-v<版>.json）と、それに沿う quay/*.geojson の線：(c) OpenStreetMap contributors, ODbL 1.0",
             "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。",
@@ -467,7 +475,9 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）",
             "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",
-            "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）",
+            "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）。s2_requests・s2_processing_units＝そのうち Sentinel-2（s2nc-1）の分",
+            "s2_scenes.csv": "Sentinel-2 L2A の撮影日ごとの雲の判定（1 行＝1 日×1 地点×1 範囲版。result・雲の割合・PU）。clear の日だけ画像あり（s2）",
+            "s2/<地点>/v<版>/<撮影時刻>.webp": "Sentinel-2 の自然色（試行、表示だけ）と縮小版 .thumb.webp",
             "CHANGES.md": "定義変更の記録",
             "quay_counts.csv": "岸壁の占有数（quay-v1、試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ",
             "quay/YYYY-MM.geojson": "撮影月ごとの岸壁の占有区間（線、水際から 15 m 沖に描く。長さ・数の幅・横抱きの可能性つき）。線は OSM 由来（attribution・license）",
@@ -499,6 +509,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "sector_b_harbour / sector_b_quay": "区画 B（切り出しの残り。湛江は水道）の港内水域・岸壁帯の候補数。A と B の合計は harbour_candidates / quay_candidates と同じ",
         },
         "display": fcolor.settings(),
+        "s2": {**s2.settings(), "credit": s2_attribution(out)},
         "quay": {
             "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
             "method": quay.settings(),
@@ -981,6 +992,28 @@ def main(argv=None, client=None, sites=None) -> int:
             budget = MONTHLY_PU_CAP - used_pu - client.processing_units
             s["budget_left_pu"] = round(budget, 2)
             run["sites"].append(s)
+        # Sentinel-2 natural colour on clear days (s2nc-1, display only): new days only, after Sentinel-1.
+        # Not in a probe (--probe): the Sentinel-1 probe must not spend PU on Sentinel-2 (its backfill has a probe of its own).
+        if probe is None:
+            req0, pu0 = client.requests, client.processing_units
+            for site in all_sites:
+                if not site.get("enabled") or not (site.get("s2") or {}).get("enabled"):
+                    continue
+                if budget < s2.EST_PRE_PU + s2.EST_FULL_PU:
+                    run.setdefault("s2", []).append({"site_id": site["id"], "deferred_budget": True})
+                    continue
+                try:
+                    r2 = s2.update_site(client, args.out, site, now, s2.LOOKBACK_DAYS, budget,
+                                        log=lambda m: print(m, file=sys.stderr))
+                except cdse.CredentialError:
+                    raise
+                except Exception as e:  # never stops the Sentinel-1 record
+                    print(f"{site['id']}: Sentinel-2 で失敗 {str(e)[:200]}", file=sys.stderr)
+                    r2 = {"site_id": site["id"], "error": str(e)[:300]}
+                budget = MONTHLY_PU_CAP - used_pu - client.processing_units
+                run.setdefault("s2", []).append(r2)
+            run["s2_requests"] = client.requests - req0
+            run["s2_processing_units"] = round(client.processing_units - pu0, 3)
     except cdse.CredentialError as e:
         print(f"エラー: {e}", file=sys.stderr)
         run["error"] = str(e)
