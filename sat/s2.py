@@ -62,7 +62,8 @@ EST_FULL_PU = 1.6             # budget check before a full request
 EST_PRE_PU = 0.05
 FIELDS = ["site_id", "mask_version", "date", "acquired_utc", "platform", "tile_cloud_pct",
           "pre_cloud", "pre_cloud_a", "cloud", "cloud_a", "valid", "result", "image", "thumb",
-          "processing_units", "s2_version", "retrieved_utc"]
+          "processing_units", "s2_version", "retrieved_utc", "attempts"]
+MAX_ERROR_ATTEMPTS = 2        # a day that failed this many times is not tried again
 RESULTS = ("clear", "cloudy", "pre_cloudy", "tile_cloudy", "partial", "no_data", "error")
 
 PRE_EVALSCRIPT = """//VERSION=3
@@ -261,7 +262,8 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
     tag = mask_tag(site)
     path = out / "s2_scenes.csv"
     rows = read_rows(path)
-    done = {r["date"] for r in rows if r["site_id"] == site["id"] and r["mask_version"] == tag and r["result"] != "error"}
+    mine = {r["date"]: r for r in rows if r["site_id"] == site["id"] and r["mask_version"] == tag}
+    done = {k for k, r in mine.items() if r["result"] != "error" or int(r.get("attempts") or 1) >= MAX_ERROR_ATTEMPTS}
     pu0 = client.processing_units
     req0 = client.requests
     feats = client.catalog(grid.bbox, now - timedelta(days=days), now, collection=COLLECTION)
@@ -318,6 +320,9 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
             row["result"] = "error"
             log(f"{site['id']} S2 {d['date']}: 失敗 {str(e)[:200]}")
         row["processing_units"] = round(pu_day, 3)
+        if row["result"] == "error":
+            prev = mine.get(d["date"])
+            row["attempts"] = (int(prev.get("attempts") or 1) if prev and prev.get("result") == "error" else 0) + 1
         rows = [r for r in rows if not (r["site_id"] == site["id"] and r["mask_version"] == tag and r["date"] == d["date"])]
         rows.append(row)
         summary["days"] += 1
@@ -344,11 +349,11 @@ def settings() -> dict:
                      f"それ以外はまず SCL だけを {PRE_M} m で取得し（約 0.03 PU）、範囲 > {PRE_MAX_CLOUD:.0%} か区画 A > {PRE_MAX_CLOUD_A:.0%} なら 10 m は取らない（pre_cloudy）"),
         "display": (f"自然色：R＝B4、G＝B3、B＝B2、反射率 0〜{REFL_MAX:g} を 0〜1 に、γ 1/{GAMMA:g}。範囲は全日で固定。WebP（品質 {WEBP_QUALITY}、"
                     f"下に撮影・雲量・出典の帯）と縮小版（{THUMB_MAX}×{THUMB_MAX} に収める、品質 {THUMB_QUALITY}）"),
-        "daily": f"毎日の実行で直近 {LOOKBACK_DAYS} 日の新しい撮影日だけを処理する（同じ日は 1 回だけ。error は取り直す）",
+        "daily": f"毎日の実行で直近 {LOOKBACK_DAYS} 日の新しい撮影日だけを処理する（同じ日は 1 回だけ。error は {MAX_ERROR_ATTEMPTS} 回まで取り直す、列 attempts）。probe（--probe）では取らない",
         "credit": "画像と meta に「Contains modified Copernicus Sentinel data <撮影の年>」",
         "results": {"clear": "晴れ（画像あり）", "cloudy": "10 m の SCL で雲が多い", "pre_cloudy": "60 m の SCL で雲が多い",
                     "tile_cloudy": "タイル全体の雲量が多く取得しなかった", "partial": "範囲の一部しか写っていない", "no_data": "データなし",
-                    "error": "取得・処理の失敗（次の実行で取り直す）"},
+                    "error": f"取得・処理の失敗（{MAX_ERROR_ATTEMPTS} 回まで次の実行で取り直す）"},
         "limits": ["雲の判定は SCL に頼る（薄い雲・霞・雲の縁の見落とし、明るい屋根・船の雲への誤分類がある）",
                    "10 m の画素で艦の形や艦種は分からない。色（灰色の度合い）の手がかりは別の変更で記録する",
                    "Sentinel-1 との組は時刻が違う（同じ日でも数時間ずれる）：入出港で船が違うことがある"],

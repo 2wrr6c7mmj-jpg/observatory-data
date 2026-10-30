@@ -180,6 +180,57 @@ class S2Test(unittest.TestCase):
             self.assertIn("Contains modified Copernicus Sentinel data 2026", meta["s2"]["credit"])
             self.assertEqual(s2.read_rows(d / "out" / "s2_scenes.csv")[0]["result"], "clear")
 
+    def _s1_none(self, cli):
+        cli.process = lambda *a, **k: (_ for _ in ()).throw(AssertionError("no S1 scene"))
+        orig = cli.catalog
+        seen = []
+
+        def catalog(bbox, start, end, limit=100, collection="sentinel-1-grd"):
+            seen.append(collection)
+            if collection == "sentinel-1-grd":
+                cli.requests += 1
+                return []
+            return orig(bbox, start, end, limit, collection)
+        cli.catalog = catalog
+        return seen
+
+    def _masks(self, d):
+        masks = d / "masks"
+        masks.mkdir()
+        g = Grid.for_site(SITE)
+        from sat.osm_mask import save_mask
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, :5] = 1
+        save_mask(SITE, g, mask, {}, {"elements": []}, 2, masks)
+        return masks
+
+    def test_probe_does_not_fetch_s2(self):
+        cli = FakeS2({"2026-10-21": (5.0, 0.0)})
+        seen = self._s1_none(cli)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            masks = self._masks(d)
+            (d / "data").mkdir()
+            rc = run.main(["--out", str(d / "data"), "--mask-dir", str(masks), "--probe", str(d / "probe")],
+                          client=cli, sites=[SITE])
+            self.assertEqual(rc, 0)
+            self.assertEqual(cli.calls, [])
+            self.assertNotIn("sentinel-2-l2a", seen)
+            self.assertFalse((d / "probe" / "out" / "s2_scenes.csv").exists())
+
+    def test_errors_are_retried_at_most_twice(self):
+        cli = FakeS2({"2026-10-21": (5.0, 0.0)})
+        cli.process_raw = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("broken response"))
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            for n in (1, 2):
+                r = s2.update_site(cli, out, SITE, self.NOW, 10, log=lambda *a: None)
+                self.assertEqual(r["errors"], 1)
+                row = s2.read_rows(out / "s2_scenes.csv")[0]
+                self.assertEqual((row["result"], row["attempts"]), ("error", str(n)))
+            r = s2.update_site(cli, out, SITE, self.NOW, 10, log=lambda *a: None)
+            self.assertEqual(r["days"], 0)  # not tried a third time
+
 
 if __name__ == "__main__":
     unittest.main()

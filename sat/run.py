@@ -327,7 +327,7 @@ def attribution(rows: list[dict]) -> str:
 def s2_attribution(out: Path | None = None) -> str:
     """Credit of the Sentinel-2 images: the years of the clear days on record."""
     rows = [r for r in s2.read_rows((out or OUT_DIR) / "s2_scenes.csv") if r.get("image")]
-    return attribution(rows) if rows else attribution([{"acquired_utc": str(datetime.now(timezone.utc).year)}])
+    return attribution(rows) if rows else ""  # no image yet: no credit
 
 
 def series_breaks(sites: list[dict]) -> list[dict]:
@@ -446,7 +446,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
         },
         "attribution": {
             "credit": attribution(rows),
-            "sentinel2": s2_attribution(out) + "（s2/ の自然色。画像の下の帯にも描く）",
+            "sentinel2": (s2_attribution(out) + "（s2/ の自然色。画像の下の帯にも描く）") if s2_attribution(out) else "",
             "land_mask": "陸マスク：(c) OpenStreetMap contributors, ODbL 1.0",
             "quay_lines": "岸壁の数に使う桟橋・岸壁・海岸線の線（sat/masks/<地点>-quay-v<版>.json）と、それに沿う quay/*.geojson の線：(c) OpenStreetMap contributors, ODbL 1.0",
             "processing": "observatory-data が σ0（地形補正済み、10 m）の切り出しから自動で数えた。数値は ESA・欧州委員会が作成したものではない。",
@@ -933,26 +933,28 @@ def main(argv=None, client=None, sites=None) -> int:
             budget = MONTHLY_PU_CAP - used_pu - client.processing_units
             s["budget_left_pu"] = round(budget, 2)
             run["sites"].append(s)
-        # Sentinel-2 natural colour on clear days (s2nc-1, display only): new days only, after Sentinel-1
-        req0, pu0 = client.requests, client.processing_units
-        for site in all_sites:
-            if not site.get("enabled") or not (site.get("s2") or {}).get("enabled"):
-                continue
-            if budget < s2.EST_PRE_PU + s2.EST_FULL_PU:
-                run.setdefault("s2", []).append({"site_id": site["id"], "deferred_budget": True})
-                continue
-            try:
-                r2 = s2.update_site(client, args.out, site, now, s2.LOOKBACK_DAYS, budget,
-                                    log=lambda m: print(m, file=sys.stderr))
-            except cdse.CredentialError:
-                raise
-            except Exception as e:  # never stops the Sentinel-1 record
-                print(f"{site['id']}: Sentinel-2 で失敗 {str(e)[:200]}", file=sys.stderr)
-                r2 = {"site_id": site["id"], "error": str(e)[:300]}
-            budget = MONTHLY_PU_CAP - used_pu - client.processing_units
-            run.setdefault("s2", []).append(r2)
-        run["s2_requests"] = client.requests - req0
-        run["s2_processing_units"] = round(client.processing_units - pu0, 3)
+        # Sentinel-2 natural colour on clear days (s2nc-1, display only): new days only, after Sentinel-1.
+        # Not in a probe (--probe): the Sentinel-1 probe must not spend PU on Sentinel-2 (its backfill has a probe of its own).
+        if probe is None:
+            req0, pu0 = client.requests, client.processing_units
+            for site in all_sites:
+                if not site.get("enabled") or not (site.get("s2") or {}).get("enabled"):
+                    continue
+                if budget < s2.EST_PRE_PU + s2.EST_FULL_PU:
+                    run.setdefault("s2", []).append({"site_id": site["id"], "deferred_budget": True})
+                    continue
+                try:
+                    r2 = s2.update_site(client, args.out, site, now, s2.LOOKBACK_DAYS, budget,
+                                        log=lambda m: print(m, file=sys.stderr))
+                except cdse.CredentialError:
+                    raise
+                except Exception as e:  # never stops the Sentinel-1 record
+                    print(f"{site['id']}: Sentinel-2 で失敗 {str(e)[:200]}", file=sys.stderr)
+                    r2 = {"site_id": site["id"], "error": str(e)[:300]}
+                budget = MONTHLY_PU_CAP - used_pu - client.processing_units
+                run.setdefault("s2", []).append(r2)
+            run["s2_requests"] = client.requests - req0
+            run["s2_processing_units"] = round(client.processing_units - pu0, 3)
     except cdse.CredentialError as e:
         print(f"エラー: {e}", file=sys.stderr)
         run["error"] = str(e)
