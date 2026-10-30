@@ -1,0 +1,30 @@
+# Temporary: read-only probe of NOTAM Watch's static files (not merged).
+name: NOTAM probe
+on:
+  push:
+    branches: ['probe/notam-launches']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Manifest summary
+        run: |
+          curl -sS -A 'observatory-data/1 (probe)' https://notam-watch.pages.dev/data/manifest.json -o /tmp/m.json -w '%{http_code}\n'
+          S=$(jq -c '{file, keys: keys, transport_parts: (.transport.parts|length?), transport_bytes: .transport.byteLength, compressed: (.compressed|if . then {file, byteLength, decodedByteLength} else null end)}' /tmp/m.json)
+          echo "::notice title=manifest::$S"
+          F=$(jq -r .file /tmp/m.json)
+          echo "::notice title=logical json::$(curl -sS -o /tmp/s.bin -w '%{http_code} %{content_type} %{size_download}' https://notam-watch.pages.dev/data/$F) head=$(head -c 40 /tmp/s.bin | tr -dc '[:print:]')"
+      - name: Old extract (main)
+        continue-on-error: true
+        run: |
+          git show origin/main:notam/extract.mjs > notam/extract-old.mjs
+          node notam/extract-old.mjs /tmp/old.json 2>/tmp/old.err || { echo "::warning title=old extract::$(head -c 600 /tmp/old.err | tr '\n' ' ')"; exit 1; }
+      - name: New extract
+        run: |
+          node --version
+          node notam/extract.mjs /tmp/new.json
+          echo "::notice title=new output::$(jq -c '{snapshot, snapshot_built, n: (.notices|length), keys: [.notices[].key][:10]}' /tmp/new.json)"
