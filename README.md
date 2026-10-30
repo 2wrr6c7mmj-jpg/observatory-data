@@ -35,6 +35,8 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 
 `sat` の出典：Contains modified Copernicus Sentinel data 2026（年は撮影年。meta.json の credit は自動で年が入るが、この README と docs/index.html・docs/sat/index.html の表記は手書きなので、撮影年が変わったら（2027 年の撮影が入ったら「2026-2027」に）直す）。Copernicus Data Space Ecosystem の Sentinel Hub Process API で σ0 の切り出しを取得し、このリポジトリが自動で数えています。陸マスクと岸壁の数に使う桟橋・岸壁・海岸線の線（`sat/masks/`、`quay/*.geojson` の区間の線）は © OpenStreetMap contributors（ODbL 1.0）。数は「候補数」で在泊艦数ではなく、艦種・国籍は分かりません。試行ページは [docs/sat/](docs/sat/index.html)（Pages では `sat/`）。
 
+`sat/cfar2.py`（cfar-v2 PR1、**実験中**）は外洋向けの検出器の統計部分（ln σ0 の二回通しリング統計で標準化した z、2.56 km のタイルごとの分布の当てはめ・AIC と上側部分 Q-Q によるモデル選択、モデル別の閾値 z_t）です。合成クラッタの単体試験（`tests/test_sat_cfar2.py`）だけで使い、毎日の実行・湛江の数（cfar-v1、`sat/detect.py`）・公開データには使っていません。
+
 ## 取得の作法
 
 - 取得の前に robots.txt を確かめる（`collectors/polite.py`）。拒否されている、または確かめられない場合は、その回はその源を飛ばして警告を出す
