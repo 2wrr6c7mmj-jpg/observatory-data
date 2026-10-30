@@ -161,7 +161,8 @@ def change_legend(width: int, label: str, credit: str):
     from PIL import Image, ImageDraw
     font = _font(10)
     lh = 14
-    h = 6 + lh * 3 + 4 + lh * 2 + 4
+    text = label.split("\n") + [credit]
+    h = 6 + lh * 3 + 4 + lh * len(text) + 4
     im = Image.new("RGB", (width, h), BG)
     d = ImageDraw.Draw(im)
     x0, x1 = 88, width - 50
@@ -181,8 +182,8 @@ def change_legend(width: int, label: str, credit: str):
     d.rectangle((150, y + 2, 160, y + 11), fill=(40, 220, 220))
     d.text((164, y), "darker now", fill=FG, font=font)
     y = 6 + lh * 3 + 2
-    d.text((4, y), label, fill=FG, font=font)
-    d.text((4, y + lh), credit, fill=FG, font=font)
+    for i, t in enumerate(text):
+        d.text((4, y + i * lh), t, fill=FG, font=font)
     return im
 
 

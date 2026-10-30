@@ -540,7 +540,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         extra = {}
         try:
             cpath, tpath = change_paths(site, acq["acquired_utc"])
-            full, thumb = fcolor.render_change(vv, layers["vv_p10"], color_label(site, acq) + f"  base {bver} n={bmeta['scenes']}",
+            full, thumb = fcolor.render_change(vv, layers["vv_p10"], color_label(site, acq) + f"\nbase {bver} (VV p10, n={bmeta['scenes']})",
                                                f"Contains modified Copernicus Sentinel data {acq['acquired_utc'][:4]}")
             extra = {cpath: full, tpath: thumb}
             row.update(change_image=cpath, change_thumb=tpath)
