@@ -400,6 +400,7 @@ class Site:
         self.sector_ids = [x["id"] for x in secs]
         self.roles = {x["id"]: x.get("role") for x in secs}
         self.rest_id = self.sector_ids[-1]
+        self.shared = True   # the old A / B columns only for a shared-layout site (Zhanjiang)
         self.sections = sections
         for s in sections:
             s["xy"] = _xy(s["coords"], lat0)
@@ -609,8 +610,10 @@ def site_context(out: Path, sid: str, cfg: dict | None) -> "Site":
     explicit = any(sc.get("role") for sc in (cfg.get("sectors") or [])) or (cfg.get("sector_rest") or {}).get("role")
     # Zhanjiang (no explicit role): None = the old rule (A naval, the rest other)
     sectors = [{"id": x["id"], "role": x["role"] if explicit else None} for x in secs] or None
-    return Site(sid, load_sections(out, sid), load_colours(out, sid, q.get("label_freeze_utc")),
-                float(lat0) if lat0 is not None else 21.2, sectors)
+    st = Site(sid, load_sections(out, sid), load_colours(out, sid, q.get("label_freeze_utc")),
+              float(lat0) if lat0 is not None else 21.2, sectors)
+    st.shared = (cfg.get("layout") or "shared") == "shared"
+    return st
 
 
 def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] | None = None,
@@ -654,7 +657,7 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
         e = estimate_scene(r, segs, sites[sid], partner, inc)
         cl = e["clues"]
         st = [d for d in e["stretches"]]
-        ab = sites[sid].sector_ids if len(sites[sid].sector_ids) == 2 else []   # the old A / B columns
+        ab = sites[sid].sector_ids if (sites[sid].shared and len(sites[sid].sector_ids) == 2) else []  # old A / B
         sa = e["by_sector"][ab[0]] if ab else {"warship": {}, "warship_all": {}}
         sb = e["by_sector"][ab[1]] if ab else {"warship": {}, "warship_all": {}}
         out_rows.append({

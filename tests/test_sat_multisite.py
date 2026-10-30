@@ -315,6 +315,54 @@ class MainOrderTest(unittest.TestCase):
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
+class ReviewFixesTest(unittest.TestCase):
+    """1部審査（PR #30）の修正：title は毎日取る地点だけ、横持ちの列は shared の地点だけ、設定の誤りの扱い。"""
+
+    def test_title_lists_daily_sites_only(self):
+        sites = run.load_sites()
+        m = run.build_meta([], sites)
+        self.assertIn("湛江", m["title"])
+        self.assertNotIn("楡林", m["title"])
+        self.assertNotIn("亜龍湾", m["title"])
+        modes = {x["id"]: x["mode"] for x in m["sites"]}
+        self.assertEqual(modes["SYL"], "設定のみ（毎日の取得なし）")
+        self.assertEqual(modes["ZJG"], "毎日の取得")
+
+    def test_wide_columns_only_for_shared_layout(self):
+        one = {**NEW, "sectors": [{"id": "A", "bbox": [110.0, 21.004, 110.005, 21.008]}], "sector_rest": {"id": "B"}}
+        secs = run.site_sectors(one)
+        self.assertEqual(run.wide_sectors(secs, one), [])                      # per_site: empty
+        self.assertEqual(run.wide_sectors(secs, {**one, "layout": "shared"}), secs)
+        self.assertNotIn("column", run.site_meta(one)["sectors"][0])
+
+    def test_bad_trial_site_is_skipped_zjg_stops(self):
+        bad = {**NEW, "id": "BAD", "sectors": [{"id": "X", "role": "harbour", "bbox": [110.0, 21.0, 110.005, 21.004]}]}
+        ok, errors = run.usable_sites([NEW, bad], log=lambda m: None)
+        self.assertEqual([s["id"] for s in ok], ["TNS"])
+        self.assertEqual([e["site_id"] for e in errors], ["BAD"])
+        with self.assertRaises(ValueError):
+            run.usable_sites([{**bad, "layout": "shared"}], log=lambda m: None)
+        far = {**NEW, "id": "FAR", "sectors": [{"id": "X", "bbox": [111.0, 22.0, 111.1, 22.1]}]}
+        self.assertEqual(run.usable_sites([far], log=lambda m: None)[1][0]["site_id"], "FAR")
+        # meta.json goes on with an error entry for the bad site
+        with contextlib.redirect_stderr(io.StringIO()):
+            m = run.build_meta([], [NEW, bad])
+        self.assertIn("error", next(x for x in m["sites"] if x["id"] == "BAD"))
+        self.assertNotIn("error", next(x for x in m["sites"] if x["id"] == "TNS"))
+
+    def test_bad_trial_site_recorded_in_status(self):
+        bad = {**NEW, "id": "BAD", "sectors": [{"id": "X", "role": "harbour", "bbox": [110.0, 21.0, 110.005, 21.004]}]}
+        good = {k: v for k, v in NEW.items() if k not in ("sectors", "sector_rest")}
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "out"
+            rc = MainOrderTest()._main([good, bad], out, FakeClient(MainOrderTest()._chip()))
+            self.assertEqual(rc, 0)
+            st = json.loads((out / "status.json").read_text())
+            self.assertEqual([e["site_id"] for e in st["last_run"]["site_errors"]], ["BAD"])
+            self.assertEqual([s["site_id"] for s in st["last_run"]["sites"]], ["TNS"])
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
 class SanyaSitesTest(unittest.TestCase):
     """楡林 SYL・亜龍湾 SLP（PR-1 の 2 つ目のコミット）：設定・マスク・仮置きの重みと桟橋の型。"""
 

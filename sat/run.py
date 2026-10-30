@@ -119,10 +119,12 @@ def sector_raster(grid: Grid, sectors: list[dict]) -> np.ndarray | None:
     return fsectors.sector_raster(grid, sectors)
 
 
-def wide_sectors(sectors: list[dict]) -> list[dict]:
+def wide_sectors(sectors: list[dict], site: dict | None = None) -> list[dict]:
     """The sectors of the old wide columns (sector_a_* = the listed sector, sector_b_* = the rest):
-    only for a site with one listed sector (Zhanjiang). Other sites leave them empty; every sector
-    of every site is in quay_sectors.csv."""
+    only for a site of the shared layout (Zhanjiang) with one listed sector. Other sites leave them
+    empty; every sector of every site is in quay_sectors.csv."""
+    if site is not None and layout(site) != "shared":
+        return []
     return sectors if len(sectors) == 2 else []
 
 
@@ -413,7 +415,7 @@ class Store:
                 if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) in have:
                     continue
                 site = self.site(r["site_id"])
-                secs = wide_sectors(site_sectors(site)) if site else []
+                secs = wide_sectors(site_sectors(site), site) if site else []
                 for col, sc in zip(SECTOR_COLUMNS, secs):
                     if r.get(f"sector_{col}_min") in (None, ""):
                         continue
@@ -555,10 +557,53 @@ def site_meta(site: dict) -> dict:
          "provisional": bool(site.get("provisional")), "note": site.get("note")}
     sec = site_sectors(site)
     if sec:
-        wide = wide_sectors(sec)
+        wide = wide_sectors(sec, site)
         m["sectors"] = [({"column": f"sector_{SECTOR_COLUMNS[i]}"} if wide else {}) | sc for i, sc in enumerate(sec)]
     m.update(site_status(site))
     return m
+
+
+def safe_site_meta(site: dict) -> dict:
+    """site_meta, or a short error entry: one site's bad settings never stop meta.json."""
+    try:
+        return site_meta(site)
+    except Exception as e:  # noqa: BLE001
+        print(f"{site.get('id')}: meta.json の地点の項を作れなかった {type(e).__name__}: {str(e)[:200]}", file=sys.stderr)
+        return {"id": site.get("id"), "name": site.get("name"), "error": f"{type(e).__name__}: {str(e)[:300]}",
+                "daily": runs_daily(site), "publish": site.get("publish", "trial")}
+
+
+def validate_site(site: dict) -> None:
+    """Raises ValueError on settings the run cannot use: sectors (ids, roles, overlap, outside the site)."""
+    if not site.get("id"):
+        raise ValueError("地点の id が無い")
+    fsectors.site_sectors(site)
+    ov = fsectors.overlaps(site)
+    if ov:
+        raise ValueError(f"{site['id']}: 区画が重なっている {ov}")
+    out = fsectors.outside(site)
+    if out:
+        raise ValueError(f"{site['id']}: 範囲の外の区画 {out}")
+
+
+def usable_sites(sites: list[dict], log=lambda m: print(m, file=sys.stderr)) -> tuple[list[dict], list[dict]]:
+    """(sites to use, errors). A site of its own folders (layout per_site: a new trial port) with bad
+    settings is left out of this run and recorded; a shared-layout site (Zhanjiang) stops the run as before."""
+    ok, errors = [], []
+    for s in sites:
+        if not s.get("enabled"):
+            ok.append(s)
+            continue
+        try:
+            validate_site(s)
+        except Exception as e:  # noqa: BLE001
+            if layout(s) == "shared":
+                raise
+            errors.append({"site_id": s.get("id"), "error": f"{type(e).__name__}: {str(e)[:300]}"})
+            log(f"{s.get('id')}: 設定の誤りのため、この地点だけ飛ばす {str(e)[:200]}")
+            continue
+        ok.append(s)
+    return ok, errors
 
 
 def site_status(site: dict) -> dict:
@@ -577,6 +622,7 @@ def site_status(site: dict) -> dict:
     out = {
         "kind": site.get("kind", "naval"), "group": site.get("group"), "priority": int(site.get("priority", 1)),
         "daily": runs_daily(site), "publish": site.get("publish", "trial"),
+        "mode": "毎日の取得" if runs_daily(site) else "設定のみ（毎日の取得なし）",
         "layout": layout(site), "png": makes_png(site), "pu_month_cap": site.get("pu_month_cap"),
         "quay": {
             "ready": not lacks, "lacks": lacks, "baseline_orbits": orbits, "baselines_present": have_bl,
@@ -596,10 +642,10 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
     return {
         "dataset": "sat",
         "title": "Sentinel-1 による港内の艦船候補数（試行：" + "・".join(
-            f"{s.get('name') or s['id']}" for s in sites if s.get("enabled")) + "）",
+            f"{s.get('name') or s['id']}" for s in sites if runs_daily(s)) + "）",
         "status": ("試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）。湛江（ZJG）は 2026-10-30 に監視範囲を v2（東岸の軍港を中心とする矩形）"
                    "に変えた。ZJG-land-v1 の行と ZJG-land-v2 の行は範囲が違うため直接比べない（series_breaks）"),
-        "sites": [site_meta(s) for s in sites if s.get("enabled")],
+        "sites": [safe_site_meta(s) for s in sites if s.get("enabled")],
         "sites_note": ("複数港の土台（multi-site PR-1）。publish＝trial の地点は試行ページだけで扱い、公開の地図には出さない。"
                        "daily＝false の地点は設定だけで毎日の取得をしない（岸壁線・基準がそろってから有効にする）。"
                        "kind・priority・pu_month_cap・区画の role は sat/sites.json。湛江（ZJG）のファイルの場所と列は従来どおり"),
@@ -914,7 +960,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
             "in_sample": in_sample(site, acq["acquired_utc"], bmeta),
             "features_version": quay.FEATURES_VERSION, "look_az_deg": look,
         }
-        for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors)):
+        for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
             mn, mx = q["by_sector"].get(sc["id"], [0, 0])
             row[f"sector_{col}_min"], row[f"sector_{col}_max"] = mn, mx
         est = None
@@ -928,7 +974,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
                        est_warship_mode=est["warship"]["mode"], est_warship_p10=est["warship"]["p10"],
                        est_warship_p90=est["warship"]["p90"], est_conflicts=est["conflicts"],
                        est_capped=est["capped"], est_prior_hash=est["prior_hash"])
-            for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors)):
+            for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 st = est["by_sector"].get(sc["id"])
                 if st:
                     row[f"est_{col}_mode"], row[f"est_{col}_p10"], row[f"est_{col}_p90"] = st["mode"], st["p10"], st["p90"]
@@ -1070,7 +1116,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
                 "processing_units": pu, "image": image,
             }
-            for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors)):
+            for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 for zone in ("harbour", "quay"):
                     row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
@@ -1130,11 +1176,14 @@ def main(argv=None, client=None, sites=None) -> int:
         args.out = args.probe / "out"
         probe = {}
     all_sites = sites if sites is not None else load_sites()
+    all_sites, site_errors = usable_sites(all_sites)
     store = Store(args.out, all_sites)
     month = now.strftime("%Y-%m")
     used_pu, used_req = month_usage(store.usage + published_usage, month)
     budget = MONTHLY_PU_CAP - used_pu
     run = {"run_utc": cdse.iso(now), "sites": []}
+    if site_errors:  # recorded in status.json (last_run); absent when there is none (Zhanjiang's status as before)
+        run["site_errors"] = site_errors
     if used_req >= MONTHLY_REQUEST_CAP:
         print(f"今月のリクエスト数が上限（{MONTHLY_REQUEST_CAP}）に達したため取得しない", file=sys.stderr)
         budget = 0

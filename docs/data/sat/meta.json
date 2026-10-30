@@ -1,6 +1,6 @@
 {
  "dataset": "sat",
- "title": "Sentinel-1 による港内の艦船候補数（試行：湛江・三亜・楡林（楡林海軍基地）・三亜・亜龍湾（龍坡、潜水艦基地））",
+ "title": "Sentinel-1 による港内の艦船候補数（試行：湛江）",
  "status": "試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）。湛江（ZJG）は 2026-10-30 に監視範囲を v2（東岸の軍港を中心とする矩形）に変えた。ZJG-land-v1 の行と ZJG-land-v2 の行は範囲が違うため直接比べない（series_breaks）",
  "sites": [
   {
@@ -44,6 +44,7 @@
    "priority": 1,
    "daily": true,
    "publish": "trial",
+   "mode": "毎日の取得",
    "layout": "shared",
    "png": true,
    "pu_month_cap": null,
@@ -142,6 +143,7 @@
    "priority": 1,
    "daily": false,
    "publish": "trial",
+   "mode": "設定のみ（毎日の取得なし）",
    "layout": "per_site",
    "png": false,
    "pu_month_cap": 40,
@@ -239,7 +241,6 @@
    "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SLP-land-v1 は港のアーカイブ（PR #29、2026-10-30）のまま（亜龍湾の西側の基地の桟橋と潜水艦トンネルの入口の周り、約 5.3×5.0 km）。陸マスクは 2部の確認がまだ。岸壁線 SLP-quay-v1 と軌道 157 の 365 日の基準がそろうまで quay-v1・est-1・est-2 は動かない。区画 A1 は座標だけからの仮の矩形、空母の桟橋（型 carrier）は位置を確かめていないので置いていない。潜水艦トンネルに入った艦は見えない（設計 §7-2）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
    "sectors": [
     {
-     "column": "sector_a",
      "id": "A1",
      "name": "基地の桟橋（ORF の座標の周りの仮の矩形、約 1.8×1.6 km）",
      "bbox": [
@@ -251,7 +252,6 @@
      "role": "naval"
     },
     {
-     "column": "sector_b",
      "id": "B",
      "name": "それ以外（亜龍湾）",
      "bbox": null,
@@ -263,6 +263,7 @@
    "priority": 1,
    "daily": false,
    "publish": "trial",
+   "mode": "設定のみ（毎日の取得なし）",
    "layout": "per_site",
    "png": false,
    "pu_month_cap": 30,
