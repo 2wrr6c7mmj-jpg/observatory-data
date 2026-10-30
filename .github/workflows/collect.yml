@@ -30,6 +30,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Tests
+        id: tests
         run: |
           python -m unittest discover -s tests -t .
           node --test notam/*.test.mjs
@@ -44,17 +45,19 @@ jobs:
         env:
           MND_PAUSE_SECONDS: '1.5'
         run: python -m collectors.taiwan_mnd --pages "${{ inputs.pages || '3' }}"
+      # The steps below run even when the Taiwan MND collection fails, but never
+      # when the tests failed, so a broken build cannot publish data.
       - name: Launch-related notices from NOTAM Watch (static files; no Worker requests)
-        if: ${{ always() && !inputs.probe }}
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
         run: |
           python -m collectors.ll2
           node notam/extract.mjs /tmp/launch-extract.json
           python -m notam.launches /tmp/launch-extract.json
       - name: Rebuild JSO transit datasets (joins the Taiwan MND counts)
-        if: ${{ always() && !inputs.probe }}
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
         run: python -m jso.build
       - name: Publish changed data
-        if: ${{ always() && !inputs.probe }}
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
         run: |
           git add docs/data
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
