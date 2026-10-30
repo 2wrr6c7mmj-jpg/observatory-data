@@ -69,6 +69,8 @@ jobs:
           python -m sat.annotate text candidates "$RUNNER_TEMP/preview/candidates.txt"
           python -m sat.annotate b64 preview "$RUNNER_TEMP/preview/preview.png"
           python -m sat.annotate b64 color-thumb "$RUNNER_TEMP/preview/color_thumb.webp"
+          python -m sat.annotate text quay "$RUNNER_TEMP/preview/quay.txt"
+          python -m sat.annotate b64 change-thumb "$RUNNER_TEMP/preview/change_thumb.webp"
       - name: Upload probe output
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         uses: actions/upload-artifact@v4

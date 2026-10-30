@@ -138,6 +138,85 @@ def render(vv_db: np.ndarray, vh_db: np.ndarray, label: str, credit: str) -> tup
     return buf.getvalue(), tbuf.getvalue()
 
 
+CHANGE_VERSION = "s1chg-1"
+
+
+def change_color(vv_now_db: np.ndarray, vv_base_db: np.ndarray) -> np.ndarray:
+    """uint8 RGB: R = this scene's VV, G = B = the baseline VV (both 3x3 means, VV_RANGE).
+
+    Brighter now than in the baseline (a ship arrived) is red; darker (gone) is cyan;
+    unchanged is grey. Where the baseline has no data (inland), G = B = R (grey)."""
+    from .baseline import smooth_db
+    now = smooth_db(vv_now_db)
+    base = np.where(np.isfinite(vv_base_db), vv_base_db, now)
+    ok = np.isfinite(now)
+    r = scale(np.where(ok, now, VV_RANGE[0]), VV_RANGE)
+    g = scale(np.where(np.isfinite(base), base, VV_RANGE[0]), VV_RANGE)
+    rgb = np.round(np.stack([r, g, g], axis=-1) * 255).astype(np.uint8)
+    rgb[~ok] = NODATA_RGB
+    return rgb
+
+
+def change_legend(width: int, label: str, credit: str):
+    from PIL import Image, ImageDraw
+    font = _font(10)
+    lh = 14
+    h = 6 + lh * 3 + 4 + lh * 2 + 4
+    im = Image.new("RGB", (width, h), BG)
+    d = ImageDraw.Draw(im)
+    x0, x1 = 88, width - 50
+    n = np.linspace(0.0, 1.0, max(2, x1 - x0))
+    for i, (name, ch) in enumerate((("R  VV now", (0,)), ("G,B VV base", (1, 2)))):
+        y = 6 + i * lh
+        d.text((4, y), name, fill=FG, font=font)
+        bar = np.zeros((lh - 4, n.size, 3), np.uint8)
+        for c in ch:
+            bar[..., c] = np.round(n * 255).astype(np.uint8)
+        im.paste(Image.fromarray(bar, "RGB"), (x0, y + 1))
+        d.text((x0 - 26, y), _fmt(VV_RANGE[0]), fill=FG, font=font)
+        d.text((x1 + 4, y), _fmt(VV_RANGE[1]) + " dB", fill=FG, font=font)
+    y = 6 + 2 * lh
+    d.rectangle((4, y + 2, 14, y + 11), fill=(255, 40, 40))
+    d.text((18, y), "brighter now (arrived)", fill=FG, font=font)
+    d.rectangle((150, y + 2, 160, y + 11), fill=(40, 220, 220))
+    d.text((164, y), "darker now", fill=FG, font=font)
+    y = 6 + lh * 3 + 2
+    d.text((4, y), label, fill=FG, font=font)
+    d.text((4, y + lh), credit, fill=FG, font=font)
+    return im
+
+
+def render_change(vv_now_db: np.ndarray, vv_base_db: np.ndarray, label: str, credit: str) -> tuple[bytes, bytes]:
+    """(WebP of the change image with legend below, WebP thumbnail)."""
+    from PIL import Image
+    chip = Image.fromarray(change_color(vv_now_db, vv_base_db), "RGB")
+    w, h = chip.size
+    lg = change_legend(max(w, LEGEND_MIN_WIDTH), label, credit)
+    full = Image.new("RGB", (lg.width, h + lg.height), BG)
+    full.paste(chip, (0, 0))
+    full.paste(lg, (0, h))
+    buf = io.BytesIO()
+    full.save(buf, "WEBP", quality=WEBP_QUALITY, method=WEBP_METHOD)
+    th = chip.copy()
+    th.thumbnail((THUMB_MAX, THUMB_MAX), Image.Resampling.LANCZOS)
+    tbuf = io.BytesIO()
+    th.save(tbuf, "WEBP", quality=THUMB_QUALITY, method=WEBP_METHOD)
+    return buf.getvalue(), tbuf.getvalue()
+
+
+def change_settings() -> dict:
+    return {
+        "version": CHANGE_VERSION,
+        "channels": {"R": "今回の VV", "G": "基準の VV（同じ相対軌道の 10 パーセンタイル）", "B": "G と同じ"},
+        "range_db": list(VV_RANGE),
+        "filter": "両方とも 3×3 の平均（線形の σ0）。基準と同じ処理",
+        "reading": "赤＝今回の方が明るい（入港・新しい物）、水色＝今回の方が暗い（出港）、灰＝変化なし。"
+                   "基準が 10 パーセンタイル（船のいない状態）なので水色は出にくく、全体がわずかに赤みを帯びる",
+        "no_baseline": "基準のない画素（内陸）は今回の VV の灰",
+        "format": f"WebP（品質 {WEBP_QUALITY}）、凡例は画像の下。縮小版は {THUMB_MAX}×{THUMB_MAX} に収める",
+    }
+
+
 def settings() -> dict:
     """Description of the display for meta.json."""
     return {
