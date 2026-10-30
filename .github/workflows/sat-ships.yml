@@ -34,8 +34,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install numpy
-        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Tests
         id: tests
         run: python -m unittest discover -s tests -t .
@@ -68,6 +68,7 @@ jobs:
           python -m sat.preview "$RUNNER_TEMP/sat/out" "$RUNNER_TEMP/preview" 4
           python -m sat.annotate text candidates "$RUNNER_TEMP/preview/candidates.txt"
           python -m sat.annotate b64 preview "$RUNNER_TEMP/preview/preview.png"
+          python -m sat.annotate b64 color-thumb "$RUNNER_TEMP/preview/color_thumb.webp"
       - name: Upload probe output
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         uses: actions/upload-artifact@v4

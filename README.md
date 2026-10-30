@@ -21,10 +21,12 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 | `jcg-senkaku` | 海上保安庁：尖閣諸島周辺の中国海警局に所属する船舶等（接続水域入域・領海侵入の隻数、日ごと、2012年9月から） | [daily.csv](docs/data/jcg-senkaku/daily.csv)・[daily.json](docs/data/jcg-senkaku/daily.json)・[meta.json](docs/data/jcg-senkaku/meta.json)・[status.json](docs/data/jcg-senkaku/status.json) |
 | `jso` | 統合幕僚監部の公表資料（中国・ロシア艦艇の海峡通過、往復、演習・政治イベントとの対応） | [passages.csv](docs/data/jso/passages.csv)・[round_trips.csv](docs/data/jso/round_trips.csv)・[context.csv](docs/data/jso/context.csv)・[summary.json](docs/data/jso/summary.json)・[meta.json](docs/data/jso/meta.json) |
 | `launches` | ロケット・ミサイル発射に関わる NOTAM・航行警報（NOTAM Watch のデータから）、発射場・方位の推定、Launch Library 2 の打上げ記録との照合 | [events.json](docs/data/launches/events.json)・[notices.json](docs/data/launches/notices.json)・[ll2.json](docs/data/launches/ll2.json)・[meta.json](docs/data/launches/meta.json) |
-| `sat`（試行） | Sentinel-1 による港内の艦船候補数（湛江 ZJG の 1 地点）。撮影ごとの港内水域・岸壁帯の候補数、候補の位置と長さの目安、切り出し画像 | [ship_counts.csv](docs/data/sat/ship_counts.csv)・`detections/YYYY-MM.geojson`・[meta.json](docs/data/sat/meta.json)・[status.json](docs/data/sat/status.json)・[usage.csv](docs/data/sat/usage.csv)・[CHANGES.md](docs/data/sat/CHANGES.md) |
+| `sat`（試行） | Sentinel-1 による港内の艦船候補数（湛江 ZJG の 1 地点）。撮影ごとの港内水域・岸壁帯の候補数、候補の位置と長さの目安、切り出し画像（VV の灰 PNG と、疑似カラーの WebP `color/`） | [ship_counts.csv](docs/data/sat/ship_counts.csv)・`detections/YYYY-MM.geojson`・[meta.json](docs/data/sat/meta.json)・[status.json](docs/data/sat/status.json)・[usage.csv](docs/data/sat/usage.csv)・[CHANGES.md](docs/data/sat/CHANGES.md) |
 | `ocean`（実測のみ） | 外洋（台湾周辺 T・東シナ海 E・南西諸島 R）の Sentinel-1 の撮影頻度（0.25° 格子ごとの IW 通過数、相対軌道・向き・時刻、IW 以外のモード）と公開の遅れ。CDSE の OData カタログを probe（`probe/ocean-coverage` への push、ワークフロー ocean-probe.yml）で 1 回読んだ結果で、定期更新はしない | [coverage_probe.json](docs/data/ocean/coverage_probe.json) |
 
-各データの定義、情報源の評価、定義変更の履歴、限界は `meta.json` に書いています。
+各データの定義、情報源の評価、定義変更の履歴、限界は `meta.json` に書いています（`ocean` は 1 回だけの実測で meta.json が無く、出典・方法・注記は coverage_probe.json の中の `source`・`method`・`attribution`・`notes` にあります）。
+
+`ocean` の公開の遅れは、窓の終わり近くに撮影されてまだ公開されていない製品が数に入らない（右側の打ち切り）ため、実際より短めに出ている可能性があります。
 
 `jcg-senkaku` の出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）。公共データ利用規約 第1.0版（PDL1.0）に基づき、このリポジトリが PDF から数値を抜き出して日ごとの表に加工しています。加工したデータは海上保安庁が作成したものではありません。
 
@@ -69,7 +71,7 @@ pip install pdfplumber==0.11.10            # jcg-senkaku の PDF の読み取り
 python -m collectors.jcg_senkaku           # 海上保安庁 尖閣周辺（新しい PDF と当月分だけ）
 python -m collectors.jcg_senkaku --probe /tmp/jcg  # ページと見本の PDF を取得して表示するだけ
 python -m jso.build                        # 統幕データの公開用ファイルを作る
-pip install numpy==2.2.6                   # sat に使う
+pip install numpy==2.2.6 pillow==12.3.0    # sat に使う（Pillow はカラー画像の WebP と凡例）
 python -m sat.run                          # Sentinel-1 の新しい撮影を数える（CDSE_SH_CLIENT_ID / CDSE_SH_CLIENT_SECRET が要る）
 python -m sat.run --probe /tmp/sat         # /tmp/sat の下にだけ書く確認用
 python -m sat.osm_mask ZJG --version 2     # 陸マスクを OSM から作り直す（版を上げ、CHANGES.md に書く）
