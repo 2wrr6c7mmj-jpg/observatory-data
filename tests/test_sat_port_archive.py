@@ -347,6 +347,22 @@ class RunPortTest(unittest.TestCase):
             self.assertEqual(meta["period"]["lookback_days"], 730)
             self.assertEqual(meta["period"]["older_than_12_months"], 1)  # 2026-01 < 2026-03-01
 
+    def test_baseline_orbit_max_and_top(self):
+        g = Grid.for_site(SITE)
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, : g.width // 4] = 1
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        for kw, calls in (({"only_orbits": [11], "orbit_max": {11: 3}, "max_scenes": 2}, 3),
+                          ({"top": 1, "max_scenes": 24}, 3)):
+            clock = Clock()
+            fake = Fake(g)
+            c = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i",
+                                 client_secret="s", opener=fake)
+            with tempfile.TemporaryDirectory() as d:
+                s = pa.baseline_port(c, SITE, mask, Path(d), now, log=lambda t: None, **kw)
+                self.assertEqual(list(s["orbits"]), ["11"])
+                self.assertEqual(fake.process_calls, calls)
+
     def test_footprint_share(self):
         g = Grid.for_site(SITE)
         water = np.ones((g.height, g.width), bool)

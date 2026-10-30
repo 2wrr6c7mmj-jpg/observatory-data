@@ -636,7 +636,7 @@ class _CatalogView:
 
 def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir: Path, now: datetime,
                   log=print, lookback: int = BASELINE_LOOKBACK, max_scenes: int = BASELINE_MAX_SCENES,
-                  only_orbits: list[int] | None = None) -> dict:
+                  only_orbits: list[int] | None = None, orbit_max: dict | None = None, top: int | None = None) -> dict:
     """Per-orbit baselines of a port with sat/baseline.py: scenes of the last ``lookback`` days whose catalog
     footprint covers at least the baseline's min_coverage of the water (others are not fetched); every orbit with
     at least 3 such scenes; the newest ``max_scenes`` per orbit, fewer if the cap would be exceeded. Nothing
@@ -656,13 +656,18 @@ def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir:
         by_orbit.setdefault(a["relative_orbit"], []).append(a)
     orbits = sorted(o for o, v in by_orbit.items() if o is not None and len(v) >= 3
                     and (only_orbits is None or int(o) in only_orbits))
+    if top:  # the ``top`` orbits with the most scenes (main orbits)
+        orbits = sorted(sorted(orbits, key=lambda o: (-len(by_orbit[o]), o))[:top])
+    orbit_max = {int(k): int(v) for k, v in (orbit_max or {}).items()}
+    # per-orbit number of newest scenes (orbit_max overrides max_scenes); lowered with n when the cap is short
+    cap_of = lambda o, n: max(3, orbit_max.get(int(o), max_scenes) - (max_scenes - n))
     per = cdse.estimate_pu(grid.width, grid.height, 2)
     left = client.cap_pu - client.processing_units
     n = max_scenes
-    while n > 3 and per * sum(min(len(by_orbit[o]), n) for o in orbits) > left:
+    while n > 3 and per * sum(min(len(by_orbit[o]), cap_of(o, n)) for o in orbits) > left:
         n -= 1
     for o in orbits:
-        for a in sorted(by_orbit[o], key=lambda a: a["acquired_utc"])[-n:]:
+        for a in sorted(by_orbit[o], key=lambda a: a["acquired_utc"])[-cap_of(o, n):]:
             keep_ids.update(a["ids"])
     counts = {str(o): len(v) for o, v in sorted(by_orbit.items(), key=lambda kv: str(kv[0]))}
     log(f"{site['id']}: 撮影 {len(acqs)}（足跡で除く {dropped}）、軌道別 {counts}、基準に使う軌道 {orbits}、"
@@ -673,7 +678,8 @@ def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir:
     if not orbits:
         summary["note"] = "3 撮影以上の軌道がないため基準を作らない"
         return summary
-    bsite = {**site, "baseline": {"orbits": orbits, "lookback_days": lookback, "max_scenes": n,
+    bsite = {**site, "baseline": {"orbits": orbits, "lookback_days": lookback,
+                                  "max_scenes": max([n] + [cap_of(o, n) for o in orbits]),
                                   "min_scenes": BASELINE_MIN_SCENES}}
     view = _CatalogView(client, [f for f in feats if f.get("id") in keep_ids])
     res = fbase.build(view, bsite, mask, base_dir, now, max(0.0, client.cap_pu - client.processing_units) + 0.5, log=log)
@@ -730,6 +736,8 @@ def main(argv=None) -> int:
                    help="usage CSVs of earlier runs of this archive (docs/data/sat/ports/*/usage.csv)")
     p.add_argument("--ocean-cap", type=float,
                    help="ocean's monthly cap: reserve = cap - the ocean usage already in --usage files named other-*")
+    p.add_argument("--global-cap", type=float, default=GLOBAL_CAP)
+    p.add_argument("--global-margin", type=float, default=GLOBAL_MARGIN)
     p.add_argument("--reserve", type=float, default=0.0,
                    help="PU announced by other jobs but not in their usage CSV yet (counted in the 9,000 PU guard)")
     p.add_argument("--out-root", type=Path, default=OUT_DIR, help="earlier results (only new work is planned)")
@@ -790,10 +798,20 @@ def main(argv=None) -> int:
                 mask, _m = load_mask(site["id"], int(site.get("mask_version", 1)), args.mask_dir)
                 spec = {x.split(":")[0]: x.split(":")[1:] for x in args.orbits}
                 sp = spec.get(pid)
+                only, omax, top = None, {}, None
+                if sp and sp[0].startswith("top"):
+                    top = int(sp[0][3:] or 1)
+                elif sp:
+                    only = []
+                    for item in sp[0].split(","):  # orbit or orbit/max scenes
+                        o, _sl, m = item.partition("/")
+                        only.append(int(o))
+                        if m:
+                            omax[int(o)] = int(m)
                 s = baseline_port(client, site, mask, args.base_dir, now, log=lambda t: print(t, file=sys.stderr, flush=True),
                                   lookback=args.lookback,
                                   max_scenes=int(sp[1]) if sp and len(sp) > 1 else BASELINE_MAX_SCENES,
-                                  only_orbits=[int(o) for o in sp[0].split(",")] if sp else None)
+                                  only_orbits=only, orbit_max=omax, top=top)
             except (BudgetStop, FileNotFoundError, cdse.CDSEError) as e:
                 if isinstance(e, cdse.CredentialError) and not isinstance(e, BudgetStop):
                     raise
@@ -845,7 +863,7 @@ def main(argv=None) -> int:
             ocean_pu, _r = month_usage([u for u in args.usage if u.name.startswith("other-")], month)
             args.reserve = max(args.reserve, round(args.ocean_cap - ocean_pu, 1))
         done_pu, done_req = month_usage(args.ports_usage, month)
-        cap = min(args.cap - done_pu, GLOBAL_CAP - GLOBAL_MARGIN - other_pu - args.reserve - done_pu)
+        cap = min(args.cap - done_pu, args.global_cap - args.global_margin - other_pu - args.reserve - done_pu)
         if args.max_pu is not None:
             cap = min(cap, args.max_pu)
         if args.only:
@@ -857,7 +875,7 @@ def main(argv=None) -> int:
                    log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir,
                    days_from=args.days_from, days_to=args.days_to, s2_on=not args.s1_only, ordered=bool(args.only) and not args.proportional)
         res.update(other_usage_pu=round(other_pu, 1), reserve_pu=args.reserve, other_usage_requests=other_req,
-                   ports_done_pu=round(done_pu, 1), global_cap=GLOBAL_CAP, ports_cap=args.cap, max_pu=args.max_pu,
+                   ports_done_pu=round(done_pu, 1), global_cap=args.global_cap, global_margin=args.global_margin, ports_cap=args.cap, max_pu=args.max_pu,
                    window_days=[args.days_from, args.days_to], s1_only=args.s1_only, order=args.only)
         args.out.write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
         print(json.dumps({k: v for k, v in res.items() if k != "ports"}, ensure_ascii=False))
