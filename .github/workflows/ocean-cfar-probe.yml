@@ -49,10 +49,14 @@ jobs:
           echo "RUN_DIR=$RUN" >> "$GITHUB_ENV"
           DRY=""
           case "$GITHUB_REF_NAME" in *-plan*) DRY="--dry-run" ;; esac
+          # Run-specific options (e.g. --lookback-days 90) from a file committed on the probe branch only.
+          EXTRA=""
+          [ -e ocean/cfar_probe.args ] && EXTRA="$(head -c 200 ocean/cfar_probe.args | tr -cd 'a-z0-9 .-')"
+          echo "extra args: $EXTRA"
           python -m ocean.cfar_probe --out "$RUN" --usage docs/data/ocean/usage.csv \
             --sat-usage "$RUNNER_TEMP/usage/sat.csv" \
             --ocean-usage $(ls "$RUNNER_TEMP"/usage/ocean-*.csv 2>/dev/null) \
-            --max-minutes 300 $DRY 2>&1 | tee "$RUNNER_TEMP/probe.log"
+            --max-minutes 300 $DRY $EXTRA 2>&1 | tee "$RUNNER_TEMP/probe.log"
       - name: Report (annotations)
         if: always()
         run: |

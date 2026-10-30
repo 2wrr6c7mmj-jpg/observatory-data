@@ -556,6 +556,12 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
         f"外洋の上限 {bud['cap_ocean_pu']}・合計のガード {bud['cap_total_pu']}・この実行の上限 {args.max_pu} → 使える {bud['pu_left']} PU")
 
     # ---- catalog and plan (no PU)
+    if getattr(args, "lookback_days", None):
+        cfg["lookback_days"] = args.lookback_days
+    if getattr(args, "min_coverage", None) is not None:
+        cfg["min_footprint_coverage"] = args.min_coverage
+    summary["lookback_days"] = cfg["lookback_days"]
+    summary["min_footprint_coverage"] = cfg["min_footprint_coverage"]
     start = now - timedelta(days=int(cfg["lookback_days"]))
     per_area: dict[str, list] = {}
     for area in cfg["areas"]:
@@ -749,6 +755,8 @@ def main(argv=None) -> int:
     ap.add_argument("--ocean-usage", nargs="*", default=[], help="ocean usage.csv of other probe branches")
     ap.add_argument("--max-pu", type=float, default=DEFAULT_MAX_PU)
     ap.add_argument("--max-minutes", type=float, default=200)
+    ap.add_argument("--lookback-days", type=int, help="override areas.json lookback_days")
+    ap.add_argument("--min-coverage", type=float, help="override areas.json min_footprint_coverage")
     ap.add_argument("--dry-run", action="store_true", help="catalog and plan only (no PU)")
     ap.add_argument("--no-check", action="store_true", help="skip the interpolation check chips")
     args = ap.parse_args(argv)
