@@ -76,6 +76,7 @@ jobs:
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}
         run: |
           python -m sat.annotate text quay "$RUNNER_TEMP/preview/quay.txt"
+          python -m sat.annotate b64 quay-segs "$RUNNER_TEMP/preview/quay_segs.json"
           python -m sat.annotate b64 change-thumb "$RUNNER_TEMP/preview/change_thumb.webp"
       - name: Upload probe output
         if: ${{ always() && (inputs.probe || github.event_name == 'push') }}

@@ -25,6 +25,7 @@ than 24 scenes).
 from __future__ import annotations
 
 import math
+import warnings
 
 import numpy as np
 
@@ -53,6 +54,8 @@ DEFAULTS = {
     "raft_min_m": 30.0,
     "length_trim_m": 20.0,
     "cluster_m": 60.0,                  # stretches this close (other side of a pier, a corner) may be one ship
+    "depth_step_m": 5.0,                # est-1: occupied depth off the water's edge, 5-90 m every 5 m
+    "depth_max_m": 90.0,
 }
 
 
@@ -120,6 +123,7 @@ class Geometry:
         outer = np.array(cfg["outer_m"])
         offs = np.concatenate([inner, outer])
         side_offs = offs[offs >= 15.0]
+        self.depth_offs = np.arange(cfg["depth_step_m"], cfg["depth_max_m"] + 0.1, cfg["depth_step_m"])
         self.profiles = []  # one per (way, side) with at least one valid sample
         for k, (way, x, y) in enumerate(ways):
             pts, tan = _resample(x, y, cfg["step_m"])
@@ -157,6 +161,17 @@ class Geometry:
                 valid = inside & owned & allowed[rr_c, cc_c] & ok_side[:, None]
                 if not valid.any():
                     continue
+                # depth profile (est-1): 0-90 m off the water's edge every 5 m, same ownership rule
+                dq = pts[:, None, :] + side * (edge[:, None] + self.depth_offs[None, :])[..., None] * nrm[:, None, :]
+                drr = np.floor(dq[..., 1] / ry).astype(int)
+                dcc = np.floor(dq[..., 0] / rx).astype(int)
+                dinside = (drr >= 0) & (drr < h) & (dcc >= 0) & (dcc < w)
+                drr, dcc = np.clip(drr, 0, h - 1), np.clip(dcc, 0, w - 1)
+                ddist = _seg_dist(dq.reshape(-1, 2), self.seg_a, self.seg_b)
+                down = ddist[:, self.seg_way == k].min(1)
+                dothers = ddist[:, self.seg_way != k]
+                dother = dothers.min(1) if dothers.shape[1] else np.full(len(down), np.inf)
+                dvalid = dinside & (down <= dother + cfg["own_tolerance_m"]).reshape(dq.shape[:2]) & allowed[drr, dcc]
                 # display line: the middle of the inner band (15 m off the water's edge)
                 mid = pts + side * (edge + 15.0)[:, None] * nrm
                 lon, lat = grid.to_lonlat(mid[:, 1] / ry, mid[:, 0] / rx)
@@ -165,6 +180,7 @@ class Geometry:
                     "rr": rr_c, "cc": cc_c, "valid": valid,
                     "n_inner": len(inner), "ok": ok_side, "edge_m": edge,
                     "raft_cols": np.flatnonzero(offs >= cfg["raft_from_m"]),
+                    "drr": drr, "dcc": dcc, "dvalid": dvalid,
                     "lon": np.asarray(lon), "lat": np.asarray(lat),
                 })
 
@@ -199,6 +215,19 @@ def runs(flags: np.ndarray, step: float, max_gap: float, min_run: float, closed:
     if shift:
         out = [((a + shift) % n, (a + shift) % n + (b - a)) for a, b in out]
     return out
+
+
+def _depth(pr: dict, dvv, dvh, svv, cfg: dict, offs: np.ndarray) -> np.ndarray:
+    """Per sample: how far off the water's edge the occupation reaches without a break (m),
+    NaN where the first depth pixel is not occupied."""
+    if "drr" not in pr:
+        return np.full(len(pr["ok"]), np.nan)
+    rr, cc, v = pr["drr"], pr["dcc"], pr["dvalid"]
+    with np.errstate(invalid="ignore"):
+        hit = v & (dvv[rr, cc] >= cfg["dvv_db"]) & (dvh[rr, cc] >= cfg["dvh_db"]) & (svv[rr, cc] >= cfg["vv_min_db"])
+    n_run = np.where(hit.all(1), hit.shape[1], np.argmin(hit, 1))  # leading occupied pixels
+    out = np.where(n_run > 0, offs[np.maximum(n_run - 1, 0)] + cfg["depth_step_m"] / 2, np.nan)
+    return out.astype(float)
 
 
 def pieces(profile: np.ndarray, valley_db: float, min_piece_n: int) -> int:
@@ -247,11 +276,12 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
         a_abs = np.where(valid, svv[rr, cc], np.nan)
         hit = (a_vv >= cfg["dvv_db"]) & (a_vh >= cfg["dvh_db"]) & (a_abs >= cfg["vv_min_db"])
         with np.errstate(invalid="ignore"):
-            import warnings
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 prof = np.nanmax(a_vv[:, :ni], 1)
+                prof_vh = np.nanmax(a_vh[:, :ni], 1)
         inner_hit = hit[:, :ni].any(1)
+        depth = _depth(pr, dvv, dvh, svv, cfg, geom.depth_offs)
         # outboard ship: the outer band (beyond the spread of the inner ship) also reaches the seed level,
         # so that side lobes and the spread of a bright inner ship do not count as a second ship
         rc = pr["raft_cols"]
@@ -269,8 +299,13 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
             k = pieces(prof[idx], cfg["valley_db"], int(math.ceil(cfg["min_piece_m"] / step)))
             mx = max(k, int(length // cfg["ship_min_m"]))
             covered = set(idx.tolist())
-            rafted = any(len(covered & set((np.arange(oa, ob) % n).tolist())) * step >= cfg["raft_min_m"]
-                         for oa, ob in outer_runs)
+            overlaps = [len(covered & set((np.arange(oa, ob) % n).tolist())) * step for oa, ob in outer_runs]
+            rafted = any(o >= cfg["raft_min_m"] for o in overlaps)
+            outer_len = int(sum(o for o in overlaps if o >= cfg["raft_min_m"]))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)
+                dmed = np.nanmedian(depth[idx]) if np.isfinite(depth[idx]).any() else np.nan
+                pvh = np.nanmax(prof_vh[idx]) if np.isfinite(prof_vh[idx]).any() else np.nan
             mid = idx[len(idx) // 2]
             lon, lat = float(pr["lon"][mid]), float(pr["lat"][mid])
             segs.append({
@@ -278,6 +313,9 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
                 "length_m": int(length), "est_length_m": int(max(length - cfg["length_trim_m"], step)),
                 "min": k, "max": mx + (1 if rafted else 0), "rafted": rafted,
                 "peak_dvv_db": round(float(np.nanmax(prof[idx])), 1),
+                "peak_dvh_db": round(float(pvh), 1) if np.isfinite(pvh) else None,
+                "outer_len_m": outer_len,
+                "depth_m": int(round(float(dmed) / 5.0) * 5) if np.isfinite(dmed) else None,
                 "lon": lon, "lat": lat,
                 "sector": sector_of(lon, lat) if sector_of else None,
                 "line": [[round(float(pr["lon"][i]), 6), round(float(pr["lat"][i]), 6)] for i in idx],

@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import cdse, png, quay, quay_lines, render
+from . import cdse, png, quay, quay_est, quay_lines, render
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
@@ -61,6 +61,10 @@ QUAY_FIELDS = [
     "quay_version", "lines_version", "baseline_version", "baseline_scenes", "credibility",
     "occupied_min", "occupied_max", "sector_a_min", "sector_a_max", "sector_b_min", "sector_b_max",
     "segments", "rafted", "quay_coverage", "change_image", "change_thumb", "in_sample",
+    # est-1 (trial): the number as a distribution (sat/quay_est.py); occupied_min/max stay as they are
+    "est_version", "est_mode", "est_p10", "est_p90", "est_mean",
+    "est_warship_mode", "est_warship_p10", "est_warship_p90",
+    "est_a_mode", "est_a_p10", "est_a_p90", "est_b_mode", "est_b_p10", "est_b_p90", "est_conflicts",
 ]
 
 # Scenes the quay-v1 thresholds were tuned on (CHANGES.md, 2026-10-30): their counts are
@@ -200,6 +204,15 @@ class Store:
         self.new_features: dict[str, list[dict]] = {}
         self.quay_rows = read_csv(out / "quay_counts.csv")
         self.new_quay: dict[str, list] = {}
+        self.zone_priors: dict[str, quay_est.ZonePrior] = {}
+
+    def zone_prior_path(self, site_id: str) -> Path:
+        return self.out / "quay" / f"{site_id}-zone-prior.json"
+
+    def zone_prior(self, site_id: str, model: quay_est.Model) -> quay_est.ZonePrior:
+        if site_id not in self.zone_priors:
+            self.zone_priors[site_id] = quay_est.ZonePrior.load(model, site_id, self.zone_prior_path(site_id))
+        return self.zone_priors[site_id]
 
     # Rows and scenes are kept per mask version: a new version (a new site extent) starts
     # its own series and re-reads recent scenes; rows of the old version stay as they were.
@@ -283,6 +296,8 @@ class Store:
             fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4]), "features": feats}
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        for sid, zp in self.zone_priors.items():
+            zp.save(self.zone_prior_path(sid))
         blind_feats = [f for b in blind_summary(self.sites) for f in b["features"]]
         if blind_feats:
             p = self.out / "quay" / "blind.geojson"
@@ -439,6 +454,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
             "CHANGES.md": "定義変更の記録",
             "quay_counts.csv": "岸壁の占有数（quay-v1、試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ",
             "quay/YYYY-MM.geojson": "撮影月ごとの岸壁の占有区間（線、水際から 15 m 沖に描く。長さ・数の幅・横抱きの可能性つき）。線は OSM 由来（attribution・license）",
+            "quay/<地点>-zone-prior.json": "推定 est-1 の区画ごとの長さ 6 階級のディリクレ（初期値 alpha0 と更新後の alpha、更新に使った撮影）",
             "quay/blind.geojson": "数えられない可能性が高い区間（軌道ごと。内側の帯で基準の VV p10 が −8 dB を超える所。1 点だけの区間は Point）",
             "change/<地点>/v<版>/<撮影時刻>.webp": "変化カラー（R＝今回の VV、G・B＝同じ相対軌道の基準の VV）の WebP と縮小版 .thumb.webp。基準がある撮影だけ",
         },
@@ -469,6 +485,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
         "quay": {
             "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
             "method": quay.settings(),
+            "estimate": quay_est.settings(),
             "baselines": baseline_meta(sites),
             "change_image": fcolor.change_settings(),
             "credibility": "基準が 24 シーン以上なら 3、未満なら 4（一段下げる）",
@@ -481,6 +498,11 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None) -> dict:
                 "quay_version / lines_version": "数え方の版・OSM の線の版",
                 "change_image / change_thumb": "変化カラー画像と縮小版",
                 "in_sample": "tuning＝閾値の調整に使った撮影（標本内の値。基準の期間にも含まれる）、baseline＝基準の期間に含まれる撮影、空＝どちらでもない（精度の評価に使える）",
+                "est_version / est_mode / est_p10 / est_p90 / est_mean": ("推定 est-1（試行・精度未測定）：艦種の長さの分布と桟橋別の事前分布から求めた隻数（全船）の最頻値・80% 区間（p10〜p90）・平均。"
+                                                                          "旧来の occupied_min / occupied_max（幅）はそのまま残す。前提（艦種表・重み・桟橋の倍率）はすべて推定を含む"),
+                "est_warship_mode / est_warship_p10 / est_warship_p90": "同じく、艦艇（全長 60 m 以上）だけの隻数",
+                "est_a_* / est_b_*": "区画 A・B ごとの推定（区間の中央の位置で判定）",
+                "est_conflicts": "前提と合わない印（prior_conflict）が付いた区間の数",
             },
             "can_say": "岸壁・桟橋に横付けされた物の有無・おおよその数の幅・占有の長さの目安（未検証）。同じ相対軌道どうしの撮影の比較",
             "cannot_say": ("艦種・国籍・所属。民間船・作業船・荷役機械・建設中の構造物も数に入る。基準期間の約 9 割以上同じ場所に居た船"
@@ -538,6 +560,12 @@ class QuayContext:
         self.lines = quay_lines.load(site["id"], self.lines_version, lines_dir)
         self._geom = None
         self._bl: dict = {}
+        self._model = None
+
+    def model(self) -> quay_est.Model:
+        if self._model is None:
+            self._model = quay_est.Model()
+        return self._model
 
     def baseline(self, orbit):
         if self.lines is None:
@@ -579,6 +607,13 @@ def quay_features(site: dict, acq: dict, q: dict, credibility: str, bver: str, s
                 "length_m": sg["length_m"], "est_length_m": sg["est_length_m"],
                 "min": sg["min"], "max": sg["max"], "rafted": sg["rafted"], "peak_dvv_db": sg["peak_dvv_db"],
                 "cluster": sg.get("cluster"), "cluster_lead": sg.get("cluster_lead"),
+                "peak_dvh_db": sg.get("peak_dvh_db"), "outer_len_m": sg.get("outer_len_m"),
+                "depth_m": sg.get("depth_m"), "cols_hint": quay_est.cols_hint(sg.get("depth_m")),
+                "zone": sg.get("zone"), "face": sg.get("face"),
+                "est_version": quay_est.EST_VERSION if "n_mode" in sg else None,
+                "n_mode": sg.get("n_mode"), "n_p10": sg.get("n_p10"), "n_p90": sg.get("n_p90"), "n_mean": sg.get("n_mean"),
+                "warship_mode": sg.get("warship_mode"), "prior_conflict": sg.get("prior_conflict"),
+                "prior_update": sg.get("clean"),
                 "status": "trial", "reliability": SOURCE_RELIABILITY, "credibility": credibility,
                 "mask_version": mask_tag(site), "quay_version": quay.QUAY_VERSION, "baseline_version": bver,
                 "in_sample": sample,
@@ -639,6 +674,22 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         for col, sc in zip(SECTOR_COLUMNS, sectors):
             mn, mx = q["by_sector"].get(sc["id"], [0, 0])
             row[f"sector_{col}_min"], row[f"sector_{col}_max"] = mn, mx
+        est = None
+        try:  # est-1 never stops the quay-v1 count
+            zp = store.zone_prior(site["id"], qctx.model())
+            est = quay_est.estimate(q["segments"], site["id"], qctx.model(), zp, tuple(sc["id"] for sc in sectors))
+            row.update(est_version=quay_est.EST_VERSION, est_mode=est["all"]["mode"], est_p10=est["all"]["p10"],
+                       est_p90=est["all"]["p90"], est_mean=est["all"]["mean"],
+                       est_warship_mode=est["warship"]["mode"], est_warship_p10=est["warship"]["p10"],
+                       est_warship_p90=est["warship"]["p90"], est_conflicts=est["conflicts"])
+            for col, sc in zip(SECTOR_COLUMNS, sectors):
+                st = est["by_sector"].get(sc["id"])
+                if st:
+                    row[f"est_{col}_mode"], row[f"est_{col}_p10"], row[f"est_{col}_p90"] = st["mode"], st["p10"], st["p90"]
+            zp.update(acq["acquired_utc"], est["soft"])  # after the estimate: a scene never informs its own prior
+        except Exception as e:
+            est = None
+            log(f"{site['id']} {acq['acquired_utc']}: 推定 est-1 で失敗 {str(e)[:200]}")
         extra = {}
         try:
             cpath, tpath = change_paths(site, acq["acquired_utc"])
@@ -655,13 +706,17 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         return "、岸壁の数：失敗"
     entry["quay_result"] = "counted"
     by = "".join(f" {sc['id']} {row.get(f'sector_{c}_min')}〜{row.get(f'sector_{c}_max')}" for c, sc in zip(SECTOR_COLUMNS, sectors))
-    return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}、基準 {bver} n={bmeta['scenes']}）"
+    et = ""
+    if est is not None:
+        et = (f"、推定 est-1 最頻 {est['all']['mode']}（80% {est['all']['p10']}〜{est['all']['p90']}、平均 {est['all']['mean']}、"
+              f"艦艇 {est['warship']['mode']}）" + "".join(f" {k} {v['mode']}（{v['p10']}〜{v['p90']}）" for k, v in est["by_sector"].items()))
+    return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}、基準 {bver} n={bmeta['scenes']}）{et}"
 
 
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
                  budget_left: float, max_scenes: int, log=print, probe: dict | None = None,
                  raw_dir: Path | None = None, lines_dir: Path = MASK_DIR,
-                 baseline_dir: Path = fbase.BASELINE_DIR) -> dict:
+                 baseline_dir: Path = fbase.BASELINE_DIR, only: str | None = None) -> dict:
     grid = Grid.for_site(site)
     tag = mask_tag(site)
     sectors = site_sectors(site)
@@ -683,6 +738,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
     # Also a counted scene without a quay count, once a baseline of its orbit exists (re-fetched once).
     new = [a for a in acqs if a["acquired_utc"] not in done
            or (a["acquired_utc"] not in qdone and qctx.baseline(a["relative_orbit"]) is not None)]
+    if only:
+        new = [a for a in new if a["acquired_utc"].startswith(only)]
     log(f"{site['id']}: カタログ {len(feats)} 件 → 撮影 {len(acqs)} 回（過去 {days} 日）、新着 {len(new)}")
     summary = {"site_id": site["id"], "lookback_days": days, "catalog_items": len(feats),
                "acquisitions": len(acqs), "new": len(new), "counted": 0, "skipped": 0, "errors": 0}
@@ -799,7 +856,10 @@ def main(argv=None, client=None, sites=None) -> int:
     ap.add_argument("--probe", type=Path, help="write everything under this directory only; build missing masks from OSM")
     ap.add_argument("--days", type=int, help=f"look back this many days (max {MAX_LOOKBACK_DAYS})")
     ap.add_argument("--max-scenes", type=int, default=MAX_SCENES_PER_RUN)
+    ap.add_argument("--only", help="probe only: process only the scenes whose acquired_utc starts with this")
     args = ap.parse_args(argv)
+    if args.only and not args.probe:
+        ap.error("--only is for --probe")
     now = datetime.now(timezone.utc)
     probe = None
     mask_dir = args.mask_dir
@@ -843,7 +903,7 @@ def main(argv=None, client=None, sites=None) -> int:
                 continue
             try:
                 s = process_site(client, store, site, mask, now, args.days, budget, args.max_scenes, probe=probe,
-                                 raw_dir=args.probe / "raw" if probe is not None else None)
+                                 raw_dir=args.probe / "raw" if probe is not None else None, only=args.only)
             except cdse.CredentialError:
                 raise
             except cdse.CDSEError as e:  # e.g. catalog 429/5xx: record it, go on to the next site

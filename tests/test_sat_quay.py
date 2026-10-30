@@ -208,6 +208,16 @@ class RunQuayTest(unittest.TestCase):
             self.assertEqual(len(gj["features"]), 2)
             self.assertEqual(gj["features"][0]["geometry"]["type"], "LineString")
             self.assertEqual(gj["features"][0]["properties"]["status"], "trial")
+            # est-1: the distribution next to the old range, per stretch and in the zone prior
+            self.assertEqual(r["est_version"], "est-1")
+            self.assertLessEqual(int(r["est_p10"]), int(r["est_mode"]))
+            self.assertLessEqual(int(r["est_mode"]), int(r["est_p90"]))
+            self.assertNotEqual(r["est_a_mode"], "")
+            p0 = gj["features"][0]["properties"]
+            for k in ("n_mode", "n_p10", "n_p90", "prior_conflict", "zone", "face", "outer_len_m", "depth_m"):
+                self.assertIn(k, p0)
+            zp = json.loads((out / "quay" / "TQY-zone-prior.json").read_text())
+            self.assertEqual(zp["applied"], [r["acquired_utc"]])
             st = {x["relative_orbit"]: x for x in json.loads((out / "status.json").read_text())["scenes"]}
             self.assertEqual(st[157]["quay_result"], "counted")
             self.assertEqual(st[84]["quay_result"], "no_baseline")
