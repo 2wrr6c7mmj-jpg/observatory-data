@@ -4,3 +4,4 @@ run_utc,requests,processing_units,pu_source,scenes,units,probe_version,note
 2026-10-30T19:21:28Z,21,429.153,header,9,9,ocean-raw-cut-1,raw tiles
 2026-10-30T19:36:00Z,3,143.052,estimate-max,0,0,ocean-raw-cut-1,cancelled run (TS 3 scenes; PU unknown
 2026-10-30T20:00:18Z,76,1158.082,header,4,71,ocean-wide-1,wide 40 m
+2026-10-30T22:08:47Z,75,804.12,header,9,70,ocean-wide-1,wide 40 m
