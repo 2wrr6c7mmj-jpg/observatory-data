@@ -41,10 +41,6 @@ class HullPairs(unittest.TestCase):
         self.assertEqual(build.hull_pairs(ps, [{"out_sighting": 1, "in_sighting": 3}]), [])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 def row(sid, rid, date, strait, inferred=0, hulls="101", to="太平洋", dir="SE", pub="2025-03-01", nation="CN"):
     return dict(sighting_id=sid, release_id=rid, pub_date=pub, date=date, strait=strait, inferred=inferred, hulls=hulls,
                 waters_to=to, dir=dir, nation=nation)
@@ -58,6 +54,13 @@ class Dedupe(unittest.TestCase):
         self.assertEqual([r["sighting_id"] for r in kept], [2, 3])
         self.assertEqual(n["inferred_near_stated"], 1)
 
+    def test_inferred_row_far_from_stated_passages_is_kept(self):
+        rows = [row(1, "r1", "2025-03-01", "yonaguni_taiwan", inferred=1), row(2, "r1", "2025-03-04", "yonaguni_iriomote"),
+                row(3, "r2", "2025-03-01", "miyako")]  # another release does not count for A1
+        kept, alias, n = build.dedupe(rows)
+        self.assertEqual(sorted(r["sighting_id"] for r in kept), [1, 2, 3])
+        self.assertEqual(n["inferred_near_stated"], 0)
+
     def test_repeat_in_a_later_release_keeps_the_earliest(self):
         rows = [row(5, "r9", "2025-03-02", "miyako", dir="E", pub="2025-03-20"),   # return release re-reports it
                 row(4, "r8", "2025-03-01", "miyako", dir="SE", pub="2025-03-02"),
@@ -66,6 +69,22 @@ class Dedupe(unittest.TestCase):
         self.assertEqual(sorted(r["sighting_id"] for r in kept), [4, 6])
         self.assertEqual(alias, {5: 4})
 
+    def test_repeat_beyond_two_days_or_through_another_strait_is_kept(self):
+        rows = [row(4, "r8", "2025-03-01", "miyako", pub="2025-03-02"), row(5, "r9", "2025-03-04", "miyako", pub="2025-03-20"),
+                row(6, "r9", "2025-03-01", "osumi", pub="2025-03-20")]
+        kept, alias, n = build.dedupe(rows)
+        self.assertEqual(sorted(r["sighting_id"] for r in kept), [4, 5, 6])
+        self.assertEqual(n["repeated_in_later_release"], 0)
+
+    def test_joint_release_repeat_is_removed_but_cn_and_ru_hulls_never_match(self):
+        rows = [row(1, "r1", "2025-03-01", "tsushima", hulls="101 172", pub="2025-03-02", nation="CN"),
+                row(2, "r2", "2025-03-01", "tsushima", hulls="101 172 548", pub="2025-03-10", nation="CNRU"),
+                row(3, "r3", "2025-05-01", "tsushima", hulls="548", pub="2025-05-02", nation="RU"),
+                row(4, "r4", "2025-05-02", "tsushima", hulls="548", pub="2025-05-03", nation="CN")]
+        kept, alias, n = build.dedupe(rows)
+        self.assertEqual(sorted(r["sighting_id"] for r in kept), [1, 3, 4])
+        self.assertEqual(alias, {2: 1})
+
 
 class Direction(unittest.TestCase):
     def test_outbound_leg_heading_home_is_a_return_first(self):
@@ -73,3 +92,19 @@ class Direction(unittest.TestCase):
         self.assertEqual(build.direction("CN", "東シナ海"), "帰投→再進出")
         self.assertEqual(build.direction("RU", "日本海"), "帰投→再進出")
         self.assertEqual(build.direction("RU", "オホーツク海"), "進出→帰投")
+
+
+class ReferencePoints(unittest.TestCase):
+    def test_shiretoko_is_not_mapped_to_soya(self):
+        import ast
+        from pathlib import Path
+        src = (Path(build.__file__).parent / "pipeline" / "jsoparse.py").read_text(encoding="utf-8")
+        node = next(n for n in ast.parse(src).body if isinstance(n, ast.Assign)
+                    and getattr(n.targets[0], "id", "") == "NEAR_STRAIT")
+        near = ast.literal_eval(node.value)
+        self.assertNotIn("知床岬", near)
+        self.assertEqual(near["宗谷岬"], "soya")
+
+
+if __name__ == "__main__":
+    unittest.main()

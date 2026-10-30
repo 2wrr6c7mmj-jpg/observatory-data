@@ -118,6 +118,11 @@ def same_way(a: dict, b: dict) -> bool:
     return a["dir"] == b["dir"]
 
 
+def same_navy(a: str, b: str) -> bool:
+    """CN and RU never match (hull numbers overlap, e.g. 548); a joint CNRU release matches either."""
+    return a == b or "CNRU" in (a, b)
+
+
 def dedupe(passages: list[dict]) -> tuple[list[dict], dict[int, int], dict[str, int]]:
     """Drop passages counted twice (2部 検品 A1, A2).
 
@@ -125,6 +130,7 @@ def dedupe(passages: list[dict]) -> tuple[list[dict], dict[int, int], dict[str, 
         when the same release states a passage within +-DUP_DAYS days.
     A2  A later release repeating an earlier passage: same hulls, strait and
         direction (same_way) within +-DUP_DAYS days -> keep the earliest release's row.
+        A joint CN-RU release repeating a CN or RU release counts (same_navy).
     Returns the kept rows, {dropped sighting -> kept sighting} for A2 (the same
     passage, so round trips stated on the repeat still apply) and counts.
     """
@@ -138,7 +144,7 @@ def dedupe(passages: list[dict]) -> tuple[list[dict], dict[int, int], dict[str, 
     kept.sort(key=lambda p: (p["pub_date"] or "", p["release_id"], p["date"]))
     out, alias = [], {}
     for p in kept:
-        twin = next((q for q in out if p["hulls"] and q["release_id"] != p["release_id"] and q["nation"] == p["nation"]
+        twin = next((q for q in out if p["hulls"] and q["release_id"] != p["release_id"] and same_navy(q["nation"], p["nation"])
                      and q["strait"] == p["strait"] and same_way(q, p)
                      and abs((D(q["date"]) - D(p["date"])).days) <= DUP_DAYS and hulls_match(q["hulls"], p["hulls"])), None)
         if twin:
