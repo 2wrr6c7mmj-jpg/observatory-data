@@ -1,78 +1,108 @@
 {
- "plan_utc": "2026-10-30T21:31:17Z",
- "cap_pu": 610.1850000000004,
- "cap_req": 3024,
- "estimate_pu": 232.5,
- "chosen_estimate_pu": 232.5,
- "catalog_requests": 6,
+ "plan_utc": "2026-10-30T21:41:36Z",
+ "cap_pu": 334.64500000000044,
+ "cap_req": 2608,
+ "estimate_pu": 173.7,
+ "chosen_estimate_pu": 173.7,
+ "catalog_requests": 11,
  "ports": [
   {
-   "site_id": "HDZ",
-   "width": 429,
-   "height": 499,
-   "area_km2": 21.4,
-   "s1_scenes": 26,
-   "s1_pu_per_scene": 1.633,
-   "s1_pu": 42.5,
-   "s2_days": 158,
-   "s2_pu": 80.0,
-   "pu": 122.5,
-   "s1_requests": 26,
-   "s2_requests": 226,
+   "site_id": "SLP",
+   "width": 529,
+   "height": 498,
+   "area_km2": 26.3,
+   "s1_scenes": 0,
+   "s1_pu_per_scene": 2.01,
+   "s1_pu": 0.0,
+   "s2_days": 83,
+   "s2_pu": 51.1,
+   "pu": 51.1,
+   "s1_requests": 0,
+   "s2_requests": 125,
    "priority": 1,
-   "s1_done": 0,
-   "s2_done": 0,
+   "s1_done": 52,
+   "s2_done": 88,
    "s1_footprint_skip": 0,
-   "mask_version": "HDZ-land-v1",
-   "s1_catalog_items": 26,
+   "mask_version": "SLP-land-v1",
+   "s1_catalog_items": 33,
    "s1_catalog_modes": {
-    "IW/VV+VH": 26
+    "IW/VV+VH": 33
    },
-   "cap_pu": 153.1,
-   "cap_req": 335
+   "cap_pu": 63.9,
+   "cap_req": 176
   },
   {
-   "site_id": "WCS",
-   "width": 383,
+   "site_id": "XSN",
+   "width": 533,
    "height": 443,
-   "area_km2": 17.0,
-   "s1_scenes": 57,
-   "s1_pu_per_scene": 1.294,
-   "s1_pu": 73.8,
-   "s2_days": 89,
-   "s2_pu": 36.3,
-   "pu": 110.0,
-   "s1_requests": 57,
-   "s2_requests": 133,
+   "area_km2": 23.6,
+   "s1_scenes": 0,
+   "s1_pu_per_scene": 1.801,
+   "s1_pu": 0.0,
+   "s2_days": 82,
+   "s2_pu": 45.5,
+   "pu": 45.5,
+   "s1_requests": 0,
+   "s2_requests": 123,
    "priority": 1,
-   "s1_done": 0,
-   "s2_done": 0,
+   "s1_done": 58,
+   "s2_done": 85,
    "s1_footprint_skip": 0,
-   "mask_version": "WCS-land-v1",
-   "s1_catalog_items": 57,
+   "mask_version": "XSN-land-v1",
+   "s1_catalog_items": 28,
    "s1_catalog_modes": {
-    "IW/VV+VH": 57
+    "IW/VV+VH": 28
    },
-   "cap_pu": 137.5,
-   "cap_req": 257
+   "cap_pu": 56.9,
+   "cap_req": 173
+  },
+  {
+   "site_id": "ZDH",
+   "width": 820,
+   "height": 499,
+   "area_km2": 40.9,
+   "s1_scenes": 0,
+   "s1_pu_per_scene": 3.122,
+   "s1_pu": 0.0,
+   "s2_days": 82,
+   "s2_pu": 77.1,
+   "pu": 77.1,
+   "s1_requests": 0,
+   "s2_requests": 123,
+   "priority": 1,
+   "s1_done": 58,
+   "s2_done": 85,
+   "s1_footprint_skip": 0,
+   "mask_version": "ZDH-land-v2",
+   "s1_catalog_items": 28,
+   "s1_catalog_modes": {
+    "IW/VV+VH": 28
+   },
+   "cap_pu": 96.4,
+   "cap_req": 173
   }
  ],
  "matrix": [
   {
-   "port": "HDZ",
-   "cap": 153.1,
-   "req": 335
+   "port": "SLP",
+   "cap": 63.9,
+   "req": 176
   },
   {
-   "port": "WCS",
-   "cap": 137.5,
-   "req": 257
+   "port": "XSN",
+   "cap": 56.9,
+   "req": 173
+  },
+  {
+   "port": "ZDH",
+   "cap": 96.4,
+   "req": 173
   }
  ],
  "other_usage_pu": 2839.7,
  "reserve_pu": 1926.8,
  "other_usage_requests": 264,
- "ports_done_pu": 4139.8,
+ "ports_done_pu": 4415.4,
  "global_cap": 9995.0,
  "global_margin": 50.0,
  "ports_cap": 4750.0,
@@ -83,7 +113,8 @@
  ],
  "s1_only": false,
  "order": [
-  "HDZ",
-  "WCS"
+  "SLP",
+  "XSN",
+  "ZDH"
  ]
 }
