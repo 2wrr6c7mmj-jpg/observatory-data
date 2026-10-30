@@ -361,11 +361,13 @@ def pieces(profile: np.ndarray, valley_db: float, min_piece_n: int) -> int:
 
 
 def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sector_of=None,
-          presmoothed: bool = False, look_az_deg: float | None = None) -> dict:
+          presmoothed: bool = False, look_az_deg: float | None = None, samples_out: list | None = None) -> dict:
     """Occupied stretches of one scene against the baseline of its orbit.
 
     ``base``: {"vv_p10", "vh_p10"} in dB (NaN = no data). ``sector_of(lon, lat)`` -> sector id.
     ``look_az_deg``: the radar's look azimuth (``look_azimuth``) for the face features (feat-1; record only).
+    ``samples_out``: when a list, gets one dict per profile (same order as ``geom.profiles``) with the
+    per-sample arrays (inner_hit, depth, depth13, cos_phi) for the Sentinel-2 labels (sat/s2_labels.py).
     Returns {"min", "max", "segments": [...], "rafted", "coverage", "by_sector": {id: [min, max]}}.
     """
     cfg = geom.cfg
@@ -397,6 +399,9 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
         has = np.isfinite(a_vv[:, :ni]).any(1) & pr["ok"]
         n_ok += int(pr["ok"].sum())
         n_data += int(has.sum())
+        if samples_out is not None:
+            samples_out.append({"way_id": pr["way_id"], "side": pr["side"], "inner_hit": inner_hit & pr["ok"],
+                                "has": has, "depth": depth, "depth13": depth13, "cos_phi": cphi})
         outer_runs = runs(outer_hit & inner_hit, step, cfg["max_gap_m"], cfg["raft_min_m"], pr["closed"])
         n = len(inner_hit)
         for a, b in runs(inner_hit, step, cfg["max_gap_m"], cfg["min_run_m"], pr["closed"]):
@@ -437,7 +442,7 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
                 feat.update(cos_phi=round(float(np.median(cs)), 2), face_look=max(shares, key=lambda k: (shares[k], k == "along")),
                             face_shares=shares)
             segs.append({**feat,
-                "way_id": pr["way_id"], "kind": pr["kind"], "side": pr["side"],
+                "way_id": pr["way_id"], "kind": pr["kind"], "side": pr["side"], "idx": [int(a), int(b)],
                 "length_m": int(length), "est_length_m": int(max(length - cfg["length_trim_m"], step)),
                 "min": k, "max": mx + (1 if rafted else 0), "rafted": rafted,
                 "peak_dvv_db": round(float(np.nanmax(prof[idx])), 1),
