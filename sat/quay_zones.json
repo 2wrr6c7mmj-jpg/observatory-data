@@ -1,6 +1,6 @@
 {
  "version": "est-1",
- "note": "岸壁の数の推定（est-1）の桟橋別の事前分布。区画（zone）は OSM の線（ZJG-quay-v1）の way_id で決め、面（face）は way_id と線の側（+／−）。倍率は長さの群（sat/ship_classes.json の group）ごとで、すべて推定（2部の設計、2026-10-30）。carrier・submarine の型と SYL・SLP（multi-site PR-1、2026-10-31）は設計 §1.4 の仮置き・要出典：岸壁線（OSM）がまだ無いので way_id でなく区画（sites.json の sectors）ごとに型を決めた（sector_override）。2部が線と S2 で桟橋ごとに直す",
+ "note": "岸壁の数の推定（est-1）の桟橋別の事前分布。区画（zone）は OSM の線（ZJG-quay-v1）の way_id で決め、面（face）は way_id と線の側（+／−）。倍率は長さの群（sat/ship_classes.json の group）ごとで、すべて推定（2部の設計、2026-10-30）。carrier・submarine の型の倍率は設計 §1.4 の仮置き・要出典。SYL・SLP（multi-site PR-1c、2026-10-31）は 2部の調査（class-weights-4ports.md §5.2）で way ごとに型を決めた（OSM の線の無い SYL の旧港だけ区画 A1 で）",
  "types": {
   "large": {
    "name": "大型艦向き",
@@ -125,9 +125,59 @@
    }
   },
   "SYL": {
-   "lines_version": "SYL-quay-v1",
-   "status": "placeholder",
-   "zones": [],
+   "lines_version": "SYL-quay-v2",
+   "status": "provisional",
+   "zones": [
+    {
+     "id": "FIT",
+     "name": "艤装岸壁（修理施設、乾ドックの横）",
+     "ways": [
+      1565266188
+     ],
+     "type": "large",
+     "conf": "確認寄りの推定",
+     "note": "fitout の型ができたら置き換える（修理中の船は配備の数に入れないのが本来）"
+    },
+    {
+     "id": "XQ",
+     "name": "西岸の杭の岸壁（用途不明、XLUUV の可能性）",
+     "ways": [
+      1366235102
+     ],
+     "type": "medium",
+     "conf": "推定"
+    },
+    {
+     "id": "F",
+     "name": "新しい櫛形桟橋 F1〜F5（約 600〜650 m）",
+     "ways": [
+      1565266175,
+      1565266174,
+      1565266176,
+      1565313922,
+      1565313937,
+      -1,
+      -2,
+      -3,
+      -4,
+      -5
+     ],
+     "type": "large",
+     "conf": "形は確認寄りの推定、用途は未確認",
+     "note": "OSM は根元の面だけ（1565266175＝F1、1565266174＝F2、1565266176＝F3、1565313922＝F4、1565313937＝F5。2部の表は 1565313922・1565313937 を E に入れていたが、位置は F4・F5 の根元なので F に置いた）。先の側は手書きの線（id −1〜−5、sat/masks/SYL-manual.geojson、S2 2026-10-18 の目測 ±30 m）"
+    },
+    {
+     "id": "E",
+     "name": "東岸の短い桟橋 E1〜E3（約 250 m）",
+     "ways": [
+      839204443,
+      839204444
+     ],
+     "type": "medium",
+     "conf": "未確認",
+     "note": "原潜用の可能性（NMF の推測）。確かめられたら submarine にする"
+    }
+   ],
    "default": {
     "id": "SH",
     "name": "海岸線・その他",
@@ -135,43 +185,69 @@
    },
    "sector_override": {
     "A1": {
-     "id": "SUB",
-     "name": "第 32 潜水艦支隊の区画（OSM way/299398880 の外形の外接矩形を 150 m 広げたもの）",
+     "id": "OLD",
+     "name": "旧港の小桟橋（通常潜水艦・小型艦、OSM の線なしのため区画 A1 の線をすべてここに）",
      "type": "submarine"
-    },
-    "A2": {
-     "id": "SN",
-     "name": "南の海軍区画（OSM way/894654960、用途未確認）",
-     "type": "medium"
     },
     "B": {
      "id": "SH",
      "type": "shore"
     }
    },
-   "note": "仮置き・要出典。区画 A1 は OSM の名前（南部战区海军第32潜艇支队）から submarine、A2 は用途が分からないので medium（湛江の櫛形と同じ）。水上艦の桟橋の位置・型は未確認"
+   "note": "2部の調査（class-weights-4ports.md §5.2、2026-10-31）。way ごとの桟橋の型。区画 A1（旧港）は OSM に桟橋の線が無いので区画で submarine。型の倍率（carrier・submarine）は変えていない（根拠を公開情報から作れない。2部 §7 の S2 の数えで直す）"
   },
   "SLP": {
-   "lines_version": "SLP-quay-v1",
-   "status": "placeholder",
-   "zones": [],
+   "lines_version": "SLP-quay-v2",
+   "status": "provisional",
+   "zones": [
+    {
+     "id": "CV",
+     "name": "大型艦・空母の桟橋（約 960 m×2 本）",
+     "ways": [
+      158981836,
+      158981837
+     ],
+     "type": "carrier",
+     "conf": "確認寄りの推定（位置）、面は未確認",
+     "note": "空母の着く面だけ carrier、ほかの面は large に分けるかは S2 で決める（2部 §5.2）。今は 2 本とも全面 carrier"
+    },
+    {
+     "id": "SUB",
+     "name": "潜水艦の桟橋 6 本（094・093）",
+     "ways": [
+      230360733,
+      230360735,
+      230360737,
+      230360738,
+      1185822323,
+      1366235753
+     ],
+     "type": "submarine",
+     "conf": "確認寄りの推定"
+    },
+    {
+     "id": "DG",
+     "name": "南の小桟橋（消磁施設の可能性）",
+     "ways": [
+      230360728,
+      1112325436
+     ],
+     "type": "shore",
+     "conf": "推定"
+    }
+   ],
    "default": {
     "id": "SH",
-    "name": "海岸線・その他",
+    "name": "海岸線",
     "type": "shore"
    },
    "sector_override": {
-    "A1": {
-     "id": "SUB",
-     "name": "基地の桟橋（ORF の座標の周りの仮の矩形）",
-     "type": "submarine"
-    },
     "B": {
      "id": "SH",
      "type": "shore"
     }
    },
-   "note": "仮置き・要出典。空母の桟橋（型 carrier）は位置を確かめていないので置いていない（2部が S2 で桟橋を特定してから足す）。潜水艦トンネルの入口は見えない所として後で blind に書く（設計 §7-2）"
+   "note": "2部の調査（class-weights-4ports.md §5.2、2026-10-31）。way ごとの桟橋の型。潜水艦トンネルの入口は座標の公開の出典が無く、見えない所として後で blind に書く（設計 §7-2）。型の倍率は変えていない"
   }
  }
 }

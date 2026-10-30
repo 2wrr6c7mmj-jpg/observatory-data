@@ -1,0 +1,127 @@
+{
+ "type": "FeatureCollection",
+ "name": "SYL-manual",
+ "note": "OSM に無い桟橋の線（手書き）。楡林の新しい櫛形桟橋 F1〜F5 の先の側。OSM には根元の面だけがある。位置は S2 10 m の目測で ±30 m 程度。岸壁線 SYL-quay-v2 に id −1〜−5 で入れる。陸マスク（SYL-land-v2）には入っていない（桟橋の甲板は水として扱われる）",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -1,
+    "name": "新しい櫛形桟橋 F1（根元→先）",
+    "kind": "pier",
+    "osm_root_way": 1565266175,
+    "source": "S2 L2A 自然色 2026-10-18T03:22:55Z（probe/ports-archive-ops3 docs/data/sat/ports/SYL/s2/SYL/v2/）の目測、2部（class-weights-4ports.md §4.1、2026-10-31）",
+    "accuracy_m": 30
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      109.5564,
+      18.2102
+     ],
+     [
+      109.5526,
+      18.2052
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -2,
+    "name": "新しい櫛形桟橋 F2（根元→先）",
+    "kind": "pier",
+    "osm_root_way": 1565266174,
+    "source": "S2 L2A 自然色 2026-10-18T03:22:55Z（probe/ports-archive-ops3 docs/data/sat/ports/SYL/s2/SYL/v2/）の目測、2部（class-weights-4ports.md §4.1、2026-10-31）",
+    "accuracy_m": 30
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      109.5593,
+      18.2091
+     ],
+     [
+      109.5555,
+      18.2043
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -3,
+    "name": "新しい櫛形桟橋 F3（根元→先）",
+    "kind": "pier",
+    "osm_root_way": 1565266176,
+    "source": "S2 L2A 自然色 2026-10-18T03:22:55Z（probe/ports-archive-ops3 docs/data/sat/ports/SYL/s2/SYL/v2/）の目測、2部（class-weights-4ports.md §4.1、2026-10-31）",
+    "accuracy_m": 30
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      109.5619,
+      18.2081
+     ],
+     [
+      109.5581,
+      18.2031
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -4,
+    "name": "新しい櫛形桟橋 F4（根元→先）",
+    "kind": "pier",
+    "osm_root_way": 1565313922,
+    "source": "S2 L2A 自然色 2026-10-18T03:22:55Z（probe/ports-archive-ops3 docs/data/sat/ports/SYL/s2/SYL/v2/）の目測、2部（class-weights-4ports.md §4.1、2026-10-31）",
+    "accuracy_m": 30
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      109.5645,
+      18.2068
+     ],
+     [
+      109.5607,
+      18.202
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -5,
+    "name": "新しい櫛形桟橋 F5（根元→先）",
+    "kind": "pier",
+    "osm_root_way": 1565313937,
+    "source": "S2 L2A 自然色 2026-10-18T03:22:55Z（probe/ports-archive-ops3 docs/data/sat/ports/SYL/s2/SYL/v2/）の目測、2部（class-weights-4ports.md §4.1、2026-10-31）",
+    "accuracy_m": 30
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      109.5671,
+      18.2054
+     ],
+     [
+      109.5635,
+      18.2009
+     ]
+    ]
+   }
+  }
+ ]
+}
