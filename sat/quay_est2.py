@@ -9,8 +9,9 @@ For every occupied stretch of quay-v1 in a scene:
 1. Columns abreast c in {1, 2, 3} (hidden). Prior by place: sector A pier 0.5/0.35/0.15, sector A
    coastline and sector B 0.85/0.13/0.02.
 2. The occupied depth (depth_m) is N(mu[face, orbit][c], 12 m); a depth at the depth limit of the
-   profile (120 m, 90 m before feat-1) is censored (P(D >= limit)). On a face toward the radar the
-   outer double-bounce line (db_line_m) is N(22 / 42 / 62 m, 10 m) when it is there. The face
+   profile (120 m, 90 m before feat-1) is censored (P(D >= limit)). The outer double-bounce line
+   (db_line_m) is recorded only (weight 0 until the calibration of #7: the S1 values of #5, mostly
+   5-14 m, do not fit the placeholder means 22 / 42 / 62 m). The face
    (toward / along / away) is the stretch's face_look (feat-1), or else it is worked out from the
    normal of the Sentinel-2 sections (labels/<site>-s2-sections.geojson, the same OSM lines) and the
    look azimuth of the orbit. The toward means depend on the incidence angle (45 deg: orbit 157,
@@ -24,7 +25,9 @@ For every occupied stretch of quay-v1 in a scene:
    LR_S2 from the hull colour of the nearest clear Sentinel-2 day (grey 3, colour or contrast 0.2,
    mixed 1), weakened by kappa from the time difference (<=8 h 0.85, <=24 h 0.6, <=48 h 0.4, more 0.25).
    No Sentinel-2 day: 0. SAR features (dVV, dVH) are recorded only. AIS: not used (m_AIS = 0).
-6. Per stretch: ships = c x k, warships ~ Binomial(c x k, P); a sector and the site are the
+6. Per stretch: ships = c x k, each drawn as a warship of 60 m or more with P60 (the headline) and as a
+   warship of any length with P (the breakdown, e.g. the Type 022 missile boats of about 43 m):
+   Binomial(c x k, .), a distribution of draws, not a threshold on P. A sector and the site are the
    convolution (stretches independent). Median and the model's 80 % interval (p10-p90).
 
 All numbers above are placeholders (HQ's 1-D simulation and settings, 2026-10-30), not calibrated.
@@ -57,6 +60,7 @@ TOWARD_MU = {45.0: (45.0, 65.0, 95.0), 32.0: (55.0, 75.0, 95.0)}  # by incidence
 INCIDENCE_BY_ORBIT = {"ZJG": {"157": 45.0, "84": 32.0}}
 DB_MU = (22.0, 42.0, 62.0)  # outer double-bounce line off the water's edge (toward faces only)
 DB_SD_M = 10.0
+DB_WEIGHT = 0.0             # recorded only until #7 (the likelihood is raised to this power)
 DEPTH_LIMIT_M = 120.0       # feat-1 profile (0-120 m)
 DEPTH_LIMIT_OLD_M = 90.0    # before feat-1
 FACE_COS = 0.5
@@ -83,7 +87,7 @@ FACE_NAMES = {"toward": "レーダー向き", "along": "沿う", "away": "反対
 CLUE_NAMES = {
     "depth": "占有の奥行き（S1）",
     "depth_censored": "奥行きが上限に達した（以上として扱う）",
-    "db_line": "外側の二回反射の線（S1、レーダー向きの面）",
+    "db_line": "外側の二回反射の線（S1、レーダー向きの面。記録だけ・重み 0）",
     "pair": "軌道の組のもう一方の撮影",
     "face_feature": "面の向き（feat-1 の記録）",
     "face_sections": "面の向き（S2 区間の法線から計算）",
@@ -96,6 +100,8 @@ CSV_FIELDS = [
     "site_id", "acquired_utc", "relative_orbit", "mask_version", "est2_version", "in_sample", "pair_id",
     "segments", "warship_median", "warship_p10", "warship_p90", "warship_mean",
     "a_median", "a_p10", "a_p90", "b_median", "b_p10", "b_p90",
+    "warship_all_median", "warship_all_p10", "warship_all_p90",
+    "a_all_median", "a_all_p10", "a_all_p90", "b_all_median", "b_all_p10", "b_all_p90",
     "ships_median", "ships_p10", "ships_p90", "c_mean",
     "used_depth", "used_db_line", "used_pair", "used_s2_colour", "smear_discounted", "face_from_sections", "no_face",
     "est1_warship_mode", "est1_warship_p10", "est1_warship_p90",
@@ -192,18 +198,23 @@ def depth_like(depth, face: str, incidence, limit: float) -> tuple[np.ndarray, s
 
 
 def db_like(db_line, face: str) -> tuple[np.ndarray, str]:
+    """The outer double-bounce line: recorded only (weight DB_WEIGHT = 0, a flat likelihood) until the
+    calibration of #7; the clue is still returned so that its use can be counted."""
     if face != "toward" or db_line in (None, ""):
         return np.ones(3), ""
+    if DB_WEIGHT == 0:
+        return np.ones(3), "db_line"
     x = float(db_line)
-    return np.array([_npdf(x, m, DB_SD_M) for m in DB_MU]) + 1e-300, "db_line"
+    return (np.array([_npdf(x, m, DB_SD_M) for m in DB_MU]) + 1e-300) ** DB_WEIGHT, "db_line"
 
 
-def warship_p(place: str, length_m: float, ln_lr: float, kap: float) -> float:
-    """P(warship) of one ship: logit pi(place, length) + 0.5 kappa ln LR, mixed over the length bins."""
+def warship_p(place: str, length_m: float, ln_lr: float, kap: float, min_bin: int = 0) -> float:
+    """P(warship) of one ship: logit pi(place, length) + 0.5 kappa ln LR, mixed over the length bins.
+    ``min_bin`` 1: only a warship of 60 m or more (the length bins from 60 m)."""
     pis = PI[place]
     edges = (-math.inf,) + LEN_BINS + (math.inf,)
     out = 0.0
-    for b in range(3):
+    for b in range(min_bin, 3):
         lo, hi = edges[b], edges[b + 1]
         m = (_ncdf((hi - length_m) / LEN_SD_M) if hi < math.inf else 1.0) - (_ncdf((lo - length_m) / LEN_SD_M) if lo > -math.inf else 0.0)
         z = math.log(pis[b] / (1 - pis[b])) + S2_WEIGHT * kap * ln_lr
@@ -224,7 +235,7 @@ def _binom(n: int, p: float) -> np.ndarray:
 
 
 def stretch_dists(pc: np.ndarray, k: int, p_war: float, p_real: float) -> tuple[np.ndarray, np.ndarray]:
-    """(P(ships), P(warships)) of one stretch: c x k ships, each a warship with p_war."""
+    """(P(ships), P(warships)) of one stretch: c x k ships, each drawn as a warship with p_war."""
     n_max = 3 * k
     ships, war = np.zeros(n_max + 1), np.zeros(n_max + 1)
     for c, w in zip(C_VALUES, pc):
@@ -350,8 +361,8 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         pl = float(pl) if pl not in (None, "") else look_azimuth(prow.get("orbit_direction") or "ascending", lat0)
         pitems = prep(pfs, pl)
         p_inc = INCIDENCE_BY_ORBIT.get(prow["site_id"], {}).get(str(prow.get("relative_orbit")))
-    sectors: dict = {"A": [np.ones(1), np.ones(1)], "B": [np.ones(1), np.ones(1)]}
-    tot_s, tot_w = np.ones(1), np.ones(1)
+    sectors: dict = {"A": [np.ones(1), np.ones(1), np.ones(1)], "B": [np.ones(1), np.ones(1), np.ones(1)]}
+    tot_s, tot_w, tot_wa = np.ones(1), np.ones(1), np.ones(1)
     details = []
     clues_count: dict = {}
     for it in items:
@@ -386,7 +397,7 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
             pface = pi["face"] or face
             l1, c1 = depth_like(pf.get("depth_m"), pface, p_inc, plim)
             l2, c2 = db_like(pf.get("db_line_m"), pface)
-            if c1 or c2:
+            if c1:
                 likes += [l1, l2]
                 clues.append("pair")
         pc = c_posterior(place, likes)
@@ -408,12 +419,15 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         ln_lr, kap, t2, ccls, dt = site.colour(it["secs"], row["acquired_utc"])
         if t2 is not None:
             clues.append("s2_colour")
-        pw = warship_p(place, length, ln_lr, kap)
+        pw = warship_p(place, length, ln_lr, kap, min_bin=1)     # 60 m or more (the headline)
+        pwa = warship_p(place, length, ln_lr, kap)               # any length (the breakdown)
         ps, pwar = stretch_dists(pc, k, pw, p_real)
-        tot_s, tot_w = np.convolve(tot_s, ps), np.convolve(tot_w, pwar)
+        _ps, pwall = stretch_dists(pc, k, pwa, p_real)
+        tot_s, tot_w, tot_wa = np.convolve(tot_s, ps), np.convolve(tot_w, pwar), np.convolve(tot_wa, pwall)
         sec = f.get("sector") if f.get("sector") in sectors else "B"
         sectors[sec][0] = np.convolve(sectors[sec][0], ps)
         sectors[sec][1] = np.convolve(sectors[sec][1], pwar)
+        sectors[sec][2] = np.convolve(sectors[sec][2], pwall)
         for c in set(clues):
             clues_count[c] = clues_count.get(c, 0) + 1
         sw = dist_stats(pwar)
@@ -424,7 +438,7 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
             "db_line_m": f.get("db_line_m"),
             "p_c": [round(float(x), 3) for x in pc], "c_map": int(np.argmax(pc)) + 1,
             "c_mean": round(float((pc * np.array(C_VALUES)).sum()), 2),
-            "p_real": p_real, "p_warship": round(pw, 3),
+            "p_real": p_real, "p_warship_60": round(pw, 3), "p_warship_all": round(pwa, 3),
             "s2": ({"acquired_utc": t2, "colour": ccls, "dt_h": dt, "kappa": kap} if t2 else None),
             "warship_median": sw["median"], "warship_p10": sw["p10"], "warship_p90": sw["p90"],
             "sar_recorded": {"peak_dvv_db": f.get("peak_dvv_db"), "peak_dvh_db": f.get("peak_dvh_db")},
@@ -432,8 +446,9 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
             "est1_n_mode": f.get("n_mode"), "est1_warship_mode": f.get("warship_mode"),
         })
     return {
-        "warship": dist_stats(tot_w), "ships": dist_stats(tot_s),
-        "by_sector": {s: {"warship": dist_stats(v[1]), "ships": dist_stats(v[0])} for s, v in sectors.items()},
+        "warship": dist_stats(tot_w), "warship_all": dist_stats(tot_wa), "ships": dist_stats(tot_s),
+        "by_sector": {s: {"warship": dist_stats(v[1]), "warship_all": dist_stats(v[2]), "ships": dist_stats(v[0])}
+                      for s, v in sectors.items()},
         "c_mean": round(float(np.mean([d["c_mean"] for d in details])), 2) if details else None,
         "clues": clues_count, "stretches": details,
         "warship_dist": [round(float(x), 4) for x in tot_w / tot_w.sum()],
@@ -500,6 +515,12 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
             "a_p90": e["by_sector"]["A"]["warship"]["p90"],
             "b_median": e["by_sector"]["B"]["warship"]["median"], "b_p10": e["by_sector"]["B"]["warship"]["p10"],
             "b_p90": e["by_sector"]["B"]["warship"]["p90"],
+            "warship_all_median": e["warship_all"]["median"], "warship_all_p10": e["warship_all"]["p10"],
+            "warship_all_p90": e["warship_all"]["p90"],
+            "a_all_median": e["by_sector"]["A"]["warship_all"]["median"], "a_all_p10": e["by_sector"]["A"]["warship_all"]["p10"],
+            "a_all_p90": e["by_sector"]["A"]["warship_all"]["p90"],
+            "b_all_median": e["by_sector"]["B"]["warship_all"]["median"], "b_all_p10": e["by_sector"]["B"]["warship_all"]["p10"],
+            "b_all_p90": e["by_sector"]["B"]["warship_all"]["p90"],
             "ships_median": e["ships"]["median"], "ships_p10": e["ships"]["p10"], "ships_p90": e["ships"]["p90"],
             "c_mean": e["c_mean"] if e["c_mean"] is not None else "",
             "used_depth": cl.get("depth", 0) + cl.get("depth_censored", 0), "used_db_line": cl.get("db_line", 0),
@@ -510,7 +531,7 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
         })
         scenes.append({"site_id": sid, "acquired_utc": r["acquired_utc"], "relative_orbit": r.get("relative_orbit"),
                        "pair_id": pid or None, "incidence_deg": inc, "in_sample": r.get("in_sample", ""),
-                       "warship": e["warship"], "ships": e["ships"], "by_sector": e["by_sector"],
+                       "warship": e["warship"], "warship_all": e["warship_all"], "ships": e["ships"], "by_sector": e["by_sector"],
                        "warship_dist": e["warship_dist"],
                        "clues": {CLUE_NAMES.get(k, k): v for k, v in sorted(cl.items())},
                        "est1": {"all_mode": r.get("est_mode"), "warship_mode": r.get("est_warship_mode"),
@@ -593,13 +614,18 @@ def label_check(out: Path, site_id: str = "ZJG") -> dict:
 LIMITS = [
     "値はすべて仮置き・較正前（司令部の 1 次元模擬と仮置きの値）。正解データ（人の目で確認したラベル）での較正は #7 で行う",
     "隻数の 80% 区間はモデル内の区間（このモデルと仮置き値が正しいとしたときの p10〜p90）で、実数がこの区間に入る確率ではない",
-    "「軍艦の可能性が高い船」は区画・長さ・S2 の色から引いた隻数のモデル上の分布で、艦種・所属は分からない。民間船・作業船も確率つきで入る",
+    ("「軍艦の可能性が高い船」は、各隻を区画・長さ・S2 の色から求めた確率 P で軍艦として引いた数の分布（P の閾値で数えたものではない）。"
+     "見出しの数は 60 m 以上の船に限り、60 m 未満（022 型ミサイル艇など）を含む全長の数は内訳として別の列（*_all_*）に出す。艦種・所属は分からない。民間船・作業船も確率つきで入る"),
     "AIS は使っていない（m_AIS＝0）：湛江の軍港は aisstream の受信網の外で、試行で 0 隻だった。軍艦は AIS を出さないことも多い",
-    "S2 の色は自動判定（#5、未確認）の船体の色だけを使い、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影・2026-10-27 以降の S2 の日の色は 0（使わない）",
+    "S2 の色は自動判定（#5、未確認）の船体の色だけを使い、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影の色は 0（使わない）",
+    "2026-10-27 以降の S2 の日の色は入力に使わない（標本外として凍結。#7 まで現状維持）",
+    "外側の二回反射の線は #7 の較正まで重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わないため",
     "S2 ラベルの占有・列数（#5、自動・未確認）は推定の入力にも正解にも使っていない（列数の一致表は確認のためだけ）",
     "SAR の明るさ（ΔVV・ΔVH）は記録だけで判定に使っていない",
     "軌道の組（36 時間以内）の間の入出港は無いものとしている",
-    "区間どうしは独立と仮定。est-1 の「60 m 以内のまとまり」のにじみの割り引きは入れていない（反対向きの面のにじみだけ割り引く）",
+    ("区間どうしは独立と仮定（同じ桟橋の区間の相関を入れていない）ので、合計の 80% 区間は実際より狭く出やすい。"
+     "est-1 の「60 m 以内のまとまり」のにじみの割り引きは入れていない（反対向きの面のにじみだけ割り引く）"),
+    "2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値",
     "数えられない区間（常時占有・OSM に無い岸壁）は est-1 と同じく入らない",
 ]
 
@@ -618,7 +644,9 @@ def settings() -> dict:
             "depth_sd_m": DEPTH_SD_M,
             "depth_limit_m": f"{DEPTH_LIMIT_M:g}（feat-1 の前の記録は {DEPTH_LIMIT_OLD_M:g}）。上限に達した奥行きは「以上」として扱う",
             "db_line_mean_m": list(DB_MU), "db_line_sd_m": DB_SD_M,
-            "db_line_note": "外側の二回反射の線はレーダー向きの面だけ使う。無ければ使わない",
+            "db_line_weight": DB_WEIGHT,
+            "db_line_note": ("#7 の較正まで重み 0・記録だけ（区間ごとの値は quay_est2.json の db_line_m、使えた区間の数は used_db_line）。"
+                             "#5 の S1 の実測は大半が 5〜14 m で、仮置きの平均 22／42／62 m と合わない。平均・σ は将来の較正用の仮置き"),
             "pair": "軌道の組（pair_id）があれば、同じ面のもう一方の撮影の尤度も掛ける",
             "smear": (f"反対向きの面の占有で、同じ桟橋（同じ OSM の線）のレーダー向きの面が {SMEAR_MAX_M:g} m 以内で同じ撮影で占有のとき、"
                       f"本当に船である確率を {SMEAR_P_REAL:g} とする（それ以外は 0 隻）"),
@@ -633,7 +661,10 @@ def settings() -> dict:
             "s2_window": f"S1 の撮影の前後 {S2_MAX_H:g} 時間（#5 の突き合わせと同じ 4 日）以内の最も近い S2 の晴れの日。それより離れた日の色は使わない",
             "sar": "記録だけ", "ais": "使わない（m_AIS＝0）",
         },
-        "count": "区間ごとに c×k 隻、各隻が確率 P で軍艦。区画・地点は畳み込み。中央値とモデル内 80% 区間（p10〜p90）",
+        "count": ("区間ごとに c×k 隻を置き、各隻を確率 P で軍艦として引いた数の分布（P の閾値で数えたものではない）。"
+                  "見出しの数（warship_*、a_*、b_*）は 60 m 以上の軍艦として引いた数（P60＝60〜100 m と 100 m 以上の階級だけの確率）、"
+                  "内訳の warship_all_*・a_all_*・b_all_* は 60 m 未満を含む全長の軍艦（湛江には 022 型ミサイル艇（約 43 m）など 60 m 未満の軍艦もいる）。"
+                  "区画・地点は畳み込み。中央値とモデル内 80% 区間（p10〜p90）"),
         "limits": LIMITS,
         "accuracy": "2026-10-27 以降の撮影を標本外として凍結。列数の混同行列・80% 区間の的中率・ブライアスコアは #7（人の目で確認したラベル約 100 区間）",
     }

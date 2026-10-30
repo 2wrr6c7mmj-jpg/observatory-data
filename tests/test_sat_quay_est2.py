@@ -53,10 +53,19 @@ class PartsTest(unittest.TestCase):
         self.assertEqual(e2.toward_mu(32.0), (55.0, 75.0, 95.0))
         self.assertEqual(e2.toward_mu(38.5), (50.0, 70.0, 95.0))
 
-    def test_db_line_only_toward(self):
+    def test_db_line_recorded_only(self):
+        # weight 0 until #7: even on a face toward the radar the likelihood is flat, but the clue is counted
+        self.assertEqual(e2.DB_WEIGHT, 0.0)
         self.assertEqual(e2.db_like(42, "away")[1], "")
-        lk, cl = e2.db_like(42, "toward")
-        self.assertEqual((cl, int(np.argmax(lk))), ("db_line", 1))
+        for x in (7, 22, 42, 62):
+            lk, cl = e2.db_like(x, "toward")
+            self.assertEqual(cl, "db_line")
+            np.testing.assert_allclose(lk, np.ones(3))
+        r1 = e2.estimate_scene(ROW, [feat(1, depth=60, db=7)], e2.Site("ZJG", [], {}))
+        r2 = e2.estimate_scene(ROW, [feat(1, depth=60, db=62)], e2.Site("ZJG", [], {}))
+        self.assertEqual(r1["stretches"][0]["p_c"], r2["stretches"][0]["p_c"])
+        self.assertEqual(r1["stretches"][0]["db_line_m"], 7)
+        self.assertIn("db_line", r1["stretches"][0]["clues"])
 
     def test_kappa_and_colour(self):
         self.assertEqual(e2.kappa(None), 0.0)
@@ -72,6 +81,19 @@ class PartsTest(unittest.TestCase):
         self.assertGreater(base, e2.warship_p("B", 130, 0.0, 0.0))
         self.assertGreater(base, e2.warship_p("A_pier", 40, 0.0, 0.0))
         self.assertAlmostEqual(e2.warship_p("A_pier", 400, 0.0, 0.0), 0.9, places=3)
+        # 60 m or more (the headline) never above any length; a 43 m boat counts only in the breakdown
+        for L in (40, 43, 70, 130):
+            self.assertLessEqual(e2.warship_p("A_pier", L, 0.0, 0.0, min_bin=1), e2.warship_p("A_pier", L, 0.0, 0.0))
+        self.assertLess(e2.warship_p("A_pier", 43, 0.0, 0.0, min_bin=1), 0.25)
+        self.assertGreater(e2.warship_p("A_pier", 43, 0.0, 0.0), 0.35)
+        self.assertAlmostEqual(e2.warship_p("A_pier", 400, 0.0, 0.0, min_bin=1), 0.9, places=3)
+
+    def test_headline_and_breakdown(self):
+        r = e2.estimate_scene(ROW, [feat(1, length=60, depth=40), feat(2, length=200, depth=40,
+                              coords=[[110.45, 21.23 + i * 0.0001] for i in range(5)])], e2.Site("ZJG", [], {}))
+        self.assertLessEqual(r["warship"]["mean"], r["warship_all"]["mean"])
+        d = r["stretches"][0]
+        self.assertLess(d["p_warship_60"], d["p_warship_all"])
 
     def test_stretch_distribution(self):
         pc = np.array([0.5, 0.3, 0.2])
@@ -146,6 +168,7 @@ class Est1UnchangedTest(unittest.TestCase):
                 self.assertEqual(a["est_warship_mode"], b["est1_warship_mode"])
                 self.assertLessEqual(int(b["warship_p10"]), int(b["warship_median"]))
                 self.assertLessEqual(int(b["warship_median"]), int(b["warship_p90"]))
+                self.assertLessEqual(int(b["warship_median"]), int(b["warship_all_median"]))
             doc = json.loads((out / "quay_est2.json").read_text())
             self.assertEqual(doc["version"], "est-2")
             self.assertIn("較正前", doc["status"])
