@@ -1,0 +1,12 @@
+ocean-raw-cut-1 2026-10-30T19:21:28Z
+使える 600.0 PU、計画 12 件 572.208 PU、実績 21 リクエスト・429.153 PU
+HK 2026-09-04T10:32:46Z ascending: 切り出し 12（未当てはめ 11）593614 B {"vv_zero": 0.0002, "vh_zero": 0.204, "sea_tiles": 395, "sea_tiles_unfitted": 394, "sea_tiles_no_model": 349}
+HK 2026-09-16T10:32:47Z ascending: 切り出し 12（未当てはめ 8）643195 B {"vv_zero": 0.0, "vh_zero": 0.0451, "sea_tiles": 395, "sea_tiles_unfitted": 213, "sea_tiles_no_model": 39}
+ECS 2026-10-09T09:53:33Z ascending: 切り出し 12（未当てはめ 12）673512 B {"vv_zero": 0.0, "vh_zero": 0.0947, "sea_tiles": 283, "sea_tiles_unfitted": 283, "sea_tiles_no_model": 283}
+ECS 2026-08-10T09:53:32Z ascending: 切り出し 12（未当てはめ 2）618854 B {"vv_zero": 0.0, "vh_zero": 0.0022, "sea_tiles": 282, "sea_tiles_unfitted": 2, "sea_tiles_no_model": 0}
+TE 2026-08-27T10:00:28Z ascending: 切り出し 12（未当てはめ 12）641735 B {"vv_zero": 0.0021, "vh_zero": 0.1402, "sea_tiles": 400, "sea_tiles_unfitted": 400, "sea_tiles_no_model": 400}
+TE 2026-10-22T21:51:23Z descending: 切り出し 12（未当てはめ 0）693679 B {"vv_zero": 0.0, "vh_zero": 0.0, "sea_tiles": 262, "sea_tiles_unfitted": 0, "sea_tiles_no_model": 0}
+TE 2026-10-14T10:00:29Z ascending: 切り出し 12（未当てはめ 0）671664 B {"vv_zero": 0.0, "vh_zero": 0.005, "sea_tiles": 400, "sea_tiles_unfitted": 0, "sea_tiles_no_model": 0}
+TE 2026-10-03T09:52:09Z ascending: 切り出し 12（未当てはめ 12）634229 B {"vv_zero": 0.0, "vh_zero": 0.1009, "sea_tiles": 211, "sea_tiles_unfitted": 211, "sea_tiles_no_model": 211}
+TE 2026-08-16T09:52:07Z ascending: 切り出し 12（未当てはめ 12）657929 B {"vv_zero": 0.0, "vh_zero": 0.1333, "sea_tiles": 208, "sea_tiles_unfitted": 208, "sea_tiles_no_model": 208}
+エラー: {"area": "TS", "stage": "overpass", "error": "HTTPError: HTTP Error 502: Bad Gateway"}
