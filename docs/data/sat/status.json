@@ -1,0 +1,177 @@
+{
+ "scenes": [
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-02T10:48:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261002T104845_20261002T104919_009705_013542_FC6E_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T05:47:20Z",
+   "processing_units": 4.8828125,
+   "coverage": 0.994,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9787,
+    "water_fraction": 0.2522,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1625,
+    "clusters": 267,
+    "dropped_small": 136,
+    "dropped_vh": 27
+   }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-03T10:41:00Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 84,
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261003T104100_20261003T104125_004850_0091D9_DA7B_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T05:47:23Z",
+   "processing_units": 4.8828125,
+   "coverage": 0.963,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9302,
+    "water_fraction": 0.2083,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1520,
+    "clusters": 245,
+    "dropped_small": 112,
+    "dropped_vh": 33
+   }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-08T10:49:01Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261008T104901_20261008T104926_004923_009468_6C21_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T05:47:26Z",
+   "processing_units": 4.8828125,
+   "coverage": 0.998,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9815,
+    "water_fraction": 0.2554,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1586,
+    "clusters": 243,
+    "dropped_small": 95,
+    "dropped_vh": 35
+   }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-14T10:48:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261014T104845_20261014T104919_009880_013B2F_A896_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T05:47:29Z",
+   "processing_units": 4.8828125,
+   "coverage": 0.998,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9816,
+    "water_fraction": 0.2551,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1722,
+    "clusters": 270,
+    "dropped_small": 118,
+    "dropped_vh": 34
+   }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-15T10:41:00Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 84,
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261015T104100_20261015T104125_005025_0097F5_8E72_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T05:47:32Z",
+   "processing_units": 4.8828125,
+   "coverage": 0.998,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9366,
+    "water_fraction": 0.2151,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1185,
+    "clusters": 231,
+    "dropped_small": 118,
+    "dropped_vh": 25
+   }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-26T10:48:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261026T104845_20261026T104919_010055_01411E_2FC0_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T05:47:36Z",
+   "processing_units": 4.8828125,
+   "coverage": 0.996,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9783,
+    "water_fraction": 0.2522,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1699,
+    "clusters": 243,
+    "dropped_small": 100,
+    "dropped_vh": 33
+   }
+  }
+ ],
+ "last_run": {
+  "run_utc": "2026-10-30T05:47:18Z",
+  "sites": [
+   {
+    "site_id": "ZJG",
+    "lookback_days": 30,
+    "catalog_items": 6,
+    "acquisitions": 6,
+    "new": 6,
+    "counted": 6,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 970.7
+   }
+  ],
+  "requests": 7,
+  "processing_units": 29.297,
+  "pu_source": "header",
+  "scenes": 6,
+  "month_pu_before": 0,
+  "month_pu_cap": 1000.0
+ },
+ "updated_utc": "2026-10-30T05:47:18Z"
+}
