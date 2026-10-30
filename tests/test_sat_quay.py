@@ -214,8 +214,13 @@ class RunQuayTest(unittest.TestCase):
             self.assertLessEqual(int(r["est_mode"]), int(r["est_p90"]))
             self.assertNotEqual(r["est_a_mode"], "")
             p0 = gj["features"][0]["properties"]
-            for k in ("n_mode", "n_p10", "n_p90", "prior_conflict", "zone", "face", "outer_len_m", "depth_m"):
+            for k in ("n_mode", "n_p10", "n_p90", "prior_conflict", "zone", "face", "outer_len_m", "depth_m",
+                      "depth_1x3_m", "db_line_m", "cos_phi", "face_look", "pair_id"):
                 self.assertIn(k, p0)
+            # feat-1: the look azimuth from the orbit (TQY at 21.0N, ascending)
+            self.assertEqual(r["features_version"], "feat-1")
+            self.assertAlmostEqual(float(r["look_az_deg"]), 77.6, delta=0.5)
+            self.assertEqual(r["pair_id"], "")       # orbit 84 has no quay row here
             zp = json.loads((out / "quay" / "TQY-zone-prior.json").read_text())
             self.assertEqual(zp["applied"], [r["acquired_utc"]])
             st = {x["relative_orbit"]: x for x in json.loads((out / "status.json").read_text())["scenes"]}
@@ -334,3 +339,76 @@ class RunQuayTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class FeaturesTest(unittest.TestCase):
+    """feat-1: records only; the counts and the estimate stay as they were."""
+    CORE = ("way_id", "kind", "side", "length_m", "est_length_m", "min", "max", "rafted", "peak_dvv_db",
+            "peak_dvh_db", "outer_len_m", "lon", "lat", "sector", "line", "cluster", "cluster_lead")
+
+    def setUp(self):
+        self.g, self.mask, self.lines, self.cvv, self.cvh, self.base = scene_parts()
+        self.geo = quay.Geometry(self.g, self.mask, self.lines)
+
+    def test_look_azimuth_from_the_orbit(self):
+        self.assertAlmostEqual(quay.look_azimuth("ascending", 21.23), 77.6, delta=0.5)   # ENE at Zhanjiang
+        self.assertAlmostEqual(quay.look_azimuth("descending", 21.23), 282.4, delta=0.5)
+        self.assertIsNone(quay.look_azimuth(None, 21.23))
+
+    def test_faces_against_the_radar(self):
+        vv, vh = ships(self.cvv, self.cvh)
+        q = quay.count(self.geo, vv, vh, self.base, look_az_deg=78.0)
+        by = {s["kind"]: s for s in q["segments"]}
+        # the coast faces east, the radar is to the WSW: the water side looks away from it
+        self.assertEqual(by["coastline"]["face_look"], "away")
+        self.assertLess(by["coastline"]["cos_phi"], -0.9)
+        self.assertEqual(by["pier"]["face_look"], "along")      # the pier's north side
+        q2 = quay.count(self.geo, vv, vh, self.base, look_az_deg=282.4)
+        self.assertEqual({s["kind"]: s["face_look"] for s in q2["segments"]}["coastline"], "toward")
+        self.assertEqual(quay.face_class(0.6), "toward")
+        self.assertEqual(quay.face_class(-0.6), "away")
+        self.assertEqual(quay.face_class(0.2), "along")
+
+    def test_depth_and_outer_line(self):
+        self.assertEqual(float(self.geo.depth_offs.max()), 120.0)
+        vv, vh = ships(self.cvv, self.cvh, raft=True)
+        q = quay.count(self.geo, vv, vh, self.base, look_az_deg=78.0)
+        by = {s["kind"]: s for s in q["segments"]}
+        pier = by["pier"]
+        self.assertLess(pier["depth_1x3_m"], pier["depth_m"])     # no spread across the line
+        coast = by["coastline"]
+        self.assertEqual(coast["db_peaks"], 2)                     # the inner and the outboard ship
+        self.assertTrue(40 <= coast["db_line_m"] <= 55)            # the outboard ship: 40-60 m off the edge
+
+    def test_counts_and_estimate_do_not_change(self):
+        from sat import quay_est
+        vv, vh = ships(self.cvv, self.cvh, raft=True, weak=True)
+        old = quay.Geometry(self.g, self.mask, self.lines, {"depth_max_m": 90.0})
+        a = quay.count(old, vv, vh, self.base)
+        b = quay.count(self.geo, vv, vh, self.base, look_az_deg=78.0)
+        for k in ("min", "max", "clusters", "rafted", "coverage", "by_sector"):
+            self.assertEqual(a[k], b[k], k)
+        self.assertEqual([{k: s.get(k) for k in self.CORE} for s in a["segments"]],
+                         [{k: s.get(k) for k in self.CORE} for s in b["segments"]])
+        m = quay_est.Model()
+        ea = quay_est.estimate([dict(s, way_id=218405149) for s in a["segments"]], "ZJG", m)
+        eb = quay_est.estimate([dict(s, way_id=218405149) for s in b["segments"]], "ZJG", m)
+        self.assertEqual(ea["all"], eb["all"])
+        self.assertEqual(ea["warship"], eb["warship"])
+
+    def test_orbit_pairs(self):
+        rows = [{"site_id": "ZJG", "mask_version": "2", "acquired_utc": t, "relative_orbit": o} for t, o in [
+            ("2026-10-02T10:48:45Z", "157"), ("2026-10-03T10:41:00Z", "84"), ("2026-10-08T10:49:01Z", "157"),
+            ("2026-10-14T10:48:45Z", "157"), ("2026-10-15T10:41:00Z", "84"), ("2026-10-20T10:48:45Z", "157")]]
+        p = run.orbit_pairs(rows)
+        k = lambda t: ("ZJG", t, run.row_mask_tag(rows[0]))
+        self.assertEqual(p[k("2026-10-02T10:48:45Z")], p[k("2026-10-03T10:41:00Z")])
+        self.assertEqual(p[k("2026-10-14T10:48:45Z")], p[k("2026-10-15T10:41:00Z")])
+        self.assertTrue(p[k("2026-10-02T10:48:45Z")].endswith("ro157+ro84"))
+        self.assertNotIn(k("2026-10-08T10:49:01Z"), p)               # no other orbit within 36 h
+        self.assertNotIn(k("2026-10-20T10:48:45Z"), p)
+        rows.append({"site_id": "ZJG", "mask_version": "2", "acquired_utc": "2026-10-21T10:41:00Z", "relative_orbit": "84"})
+        p2 = run.orbit_pairs(rows)
+        self.assertEqual({kk: v for kk, v in p2.items() if kk in p}, p)  # a later scene never breaks a pair
+        self.assertIn(k("2026-10-20T10:48:45Z"), p2)

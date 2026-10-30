@@ -27,6 +27,33 @@
   },
   {
    "site_id": "ZJG",
+   "acquired_utc": "2026-10-02T10:48:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261002T104845_20261002T104919_009705_013542_FC6E_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T11:28:46Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.992,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9693,
+    "water_fraction": 0.2924,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 717,
+    "clusters": 123,
+    "dropped_small": 62,
+    "dropped_vh": 17
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "ZJG",
    "acquired_utc": "2026-10-03T10:41:00Z",
    "platform": "sentinel-1d",
    "orbit_direction": "ascending",
@@ -49,6 +76,33 @@
     "dropped_small": 112,
     "dropped_vh": 33
    }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-03T10:41:00Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 84,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261003T104100_20261003T104125_004850_0091D9_DA7B_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T11:29:02Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.984,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9281,
+    "water_fraction": 0.2555,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 551,
+    "clusters": 119,
+    "dropped_small": 64,
+    "dropped_vh": 17
+   },
+   "quay_result": "counted"
   },
   {
    "site_id": "ZJG",
@@ -77,6 +131,33 @@
   },
   {
    "site_id": "ZJG",
+   "acquired_utc": "2026-10-08T10:49:01Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261008T104901_20261008T104926_004923_009468_6C21_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T11:29:05Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.995,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9793,
+    "water_fraction": 0.3024,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 756,
+    "clusters": 110,
+    "dropped_small": 47,
+    "dropped_vh": 21
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "ZJG",
    "acquired_utc": "2026-10-14T10:48:45Z",
    "platform": "sentinel-1c",
    "orbit_direction": "ascending",
@@ -99,6 +180,33 @@
     "dropped_small": 118,
     "dropped_vh": 34
    }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-14T10:48:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261014T104845_20261014T104919_009880_013B2F_A896_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T11:29:07Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.998,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9766,
+    "water_fraction": 0.2998,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 747,
+    "clusters": 96,
+    "dropped_small": 47,
+    "dropped_vh": 11
+   },
+   "quay_result": "counted"
   },
   {
    "site_id": "ZJG",
@@ -127,6 +235,33 @@
   },
   {
    "site_id": "ZJG",
+   "acquired_utc": "2026-10-15T10:41:00Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 84,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261015T104100_20261015T104125_005025_0097F5_8E72_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T11:29:10Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.997,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9349,
+    "water_fraction": 0.2622,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 501,
+    "clusters": 104,
+    "dropped_small": 65,
+    "dropped_vh": 9
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "ZJG",
    "acquired_utc": "2026-10-26T10:48:45Z",
    "platform": "sentinel-1c",
    "orbit_direction": "ascending",
@@ -149,10 +284,37 @@
     "dropped_small": 100,
     "dropped_vh": 33
    }
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-10-26T10:48:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261026T104845_20261026T104919_010055_01411E_2FC0_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-10-30T11:29:13Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.994,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9704,
+    "water_fraction": 0.2937,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 760,
+    "clusters": 115,
+    "dropped_small": 65,
+    "dropped_vh": 13
+   },
+   "quay_result": "counted"
   }
  ],
  "last_run": {
-  "run_utc": "2026-10-30T05:47:18Z",
+  "run_utc": "2026-10-30T11:28:44Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -163,17 +325,17 @@
     "counted": 6,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 970.7
+    "budget_left_pu": 904.5
    }
   ],
   "requests": 7,
-  "processing_units": 29.297,
+  "processing_units": 11.033,
   "pu_source": "header",
   "scenes": 6,
-  "month_pu_before": 0,
+  "month_pu_before": 84.463,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-10-30T05:47:18Z",
+ "updated_utc": "2026-10-30T11:28:44Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
