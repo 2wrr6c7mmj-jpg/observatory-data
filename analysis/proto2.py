@@ -5,7 +5,7 @@
     python -m analysis.proto2           # docs/proto/data/{heatmap,stay,joint,grayzone,iw}.json を作り直す
 
 6. heatmap  海峡×月の件数（中国・ロシア別、推定の通過を区別）と年ごとの率の比
-7. stay     進出→帰投の往復の滞在日数の年ごとの分布（Kaplan-Meier）
+7. stay     進出→帰投の往復の滞在日数の年ごとの分布（Kaplan-Meier、往路の行先：太平洋／その他）
 8. joint    中露の共同行動の候補（明記・同じ記述・時期の重なり）
 9. grayzone 尖閣の中国海警（海保）と台湾周辺の公務船（台湾国防部）を日ごとに並べる
 10. iw      シナリオごとの、複数の指標の同時の上振れ（各指標の過去365日でのパーセンタイル）
@@ -30,6 +30,13 @@ CLASSES = os.path.join(ROOT, 'jso', 'ref', 'vessel_classes.csv')
 ALGO_VERSION = 1
 
 HOME = {'CN': '東シナ海', 'RU': '日本海'}  # meta.json の direction の定義と同じ
+# 往路の行先（waters_to）での絞り込み。自国側の海の外＝太平洋とは限らない
+# （ロシア艦の宗谷経由のオホーツク海行きは自国の海域どうしの移動、中国艦の対馬経由は日本海行き）
+DESTS = ('all', 'pacific', 'other')
+
+
+def dest_of(to):
+    return 'pacific' if to == '太平洋' else 'other'
 NATION_JP = {'CN': '中国', 'RU': 'ロシア'}
 
 
@@ -138,7 +145,9 @@ def load_classes(path=None):
 
 
 def unit_nations(units, nation, classes):
-    """1行の艦艇の国の集合。中露の資料（CNRU）は艦級名で判定し、判定できなければ両国とする。"""
+    """1行の艦艇の国の集合。中露の資料（CNRU）は艦級名で判定する。
+
+    判定できない行は「両国」とせず空の集合を返す（どちらの国にも数えず、「判定できない」として別に数える）。"""
     if nation in ('CN', 'RU'):
         return {nation}
     found = set()
@@ -148,7 +157,7 @@ def unit_nations(units, nation, classes):
             if name.startswith(nm) or (len(name) >= 3 and nm.startswith(name)):
                 found.add(nat)
                 break
-    return found or {'CN', 'RU'}
+    return found
 
 
 def load_jso(src=None, classes=None):
@@ -270,6 +279,7 @@ def build_heatmap(J):
         'n_inferred': sum(1 for p in J['passages'] if p['inferred']),
         'n_cnru_rows': sum(1 for p in J['passages'] if p['nation'] == 'CNRU'),
         'n_cnru_both': sum(1 for p in J['passages'] if p['nation'] == 'CNRU' and len(p['nations']) == 2),
+        'n_cnru_unknown': sum(1 for p in J['passages'] if p['nation'] == 'CNRU' and not p['nations']),
     }
 
 
@@ -314,7 +324,7 @@ def build_stay(J, horizon=90):
         trips.append({'year': int(t['out_date'][:4]), 'nation': t['nation'], 'method': t['method'],
                       'days': int(t['days_away']), 'out_date': t['out_date'], 'in_date': t['in_date'],
                       'out_strait': t['out_strait_jp'], 'in_strait': t['in_strait_jp'],
-                      'to': op['waters_to'] if op else None, 'units': t['units'],
+                      'to': (op['waters_to'] or None) if op else None, 'units': t['units'],
                       'cv': t['has_cv'] == '1', 'aor': t['with_aor'] == '1'})
     # 帰りが確認されていない往路：自国側の海から外へ出た通過で、どの往復にも入っていないもの
     open_out = []
@@ -332,23 +342,28 @@ def build_stay(J, horizon=90):
                          'inferred': p['inferred']})
     curves = []
     years = sorted({t['year'] for t in trips} | {o['year'] for o in open_out})
-    for nat in ('ALL', 'CN', 'RU'):
-        for meth in ('all', 'stated', 'hull-match'):
-            for y in ['all'] + years:
-                sel = [t for t in trips if (nat == 'ALL' or t['nation'] == nat) and (meth == 'all' or t['method'] == meth)
-                       and (y == 'all' or t['year'] == y)]
-                cen = [o for o in open_out if o['recent'] and (nat == 'ALL' or o['nation'] == nat)
-                       and (y == 'all' or o['year'] == y)]
-                # 打ち切り（最近の、帰りがまだ確認されていない往路）は、どちらの方法で組になるか分からないので
-                # 明記・推定のどちらの曲線にも入れる
-                tm = [(t['days'], 1) for t in sel] + [(o['age'], 0) for o in cen]
-                if not tm:
-                    continue
-                km = kaplan_meier(tm)
-                curves.append({'nation': nat, 'method': meth, 'year': y, **km,
-                               'empirical_median': median([t['days'] for t in sel])})
+    combos = [(nat, dst, meth, y) for nat in ('ALL', 'CN', 'RU') for dst in DESTS
+              for meth in ('all', 'stated', 'hull-match') for y in ['all'] + years]
+    for nat, dst, meth, y in combos:
+        sel = [t for t in trips if (nat == 'ALL' or t['nation'] == nat) and (meth == 'all' or t['method'] == meth)
+               and (y == 'all' or t['year'] == y) and (dst == 'all' or dest_of(t['to']) == dst)]
+        cen = [o for o in open_out if o['recent'] and (nat == 'ALL' or o['nation'] == nat)
+               and (y == 'all' or o['year'] == y) and (dst == 'all' or dest_of(o['to']) == dst)]
+        # 打ち切り（最近の、帰りがまだ確認されていない往路）は、どちらの方法で組になるか分からないので
+        # 明記・推定のどちらの曲線にも入れる（ページの手法に明記）
+        tm = [(t['days'], 1) for t in sel] + [(o['age'], 0) for o in cen]
+        if not tm:
+            continue
+        km = kaplan_meier(tm)
+        curves.append({'nation': nat, 'dest': dst, 'method': meth, 'year': y, **km,
+                       'empirical_median': median([t['days'] for t in sel])})
+    dest_counts = {}  # 「国:行先」→ 組の数（行先の記載がない組は「不明」）
+    for t in trips:
+        k = f"{t['nation']}:{t['to'] or '不明'}"
+        dest_counts[k] = dest_counts.get(k, 0) + 1
     return {'last_release': st['last_release'], 'horizon': horizon, 'trips': trips, 'open_out': open_out,
             'curves': curves, 'years': years,
+            'dest_counts': dict(sorted(dest_counts.items())),
             'counts': {'trips': len(trips), 'stated': sum(1 for t in trips if t['method'] == 'stated'),
                        'hull_match': sum(1 for t in trips if t['method'] == 'hull-match'),
                        'open_out': len(open_out), 'open_recent': sum(1 for o in open_out if o['recent'])}}

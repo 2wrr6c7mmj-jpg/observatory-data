@@ -6,6 +6,11 @@ on:
     workflows: ['Collect public data', 'Collect JCG Senkaku']
     types: [completed]
     branches: [main]
+  # 統幕の資料（手作業で追加）が main に入ったときも作り直す。このワークフロー自身の書き込み（docs/proto/data/）は
+  # paths に含まれないので再起動しない（GITHUB_TOKEN による push はそもそも次のワークフローを起動しない）
+  push:
+    branches: [main]
+    paths: ['docs/data/jso/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -26,10 +31,13 @@ jobs:
           python-version: '3.12'
       - name: Tests
         run: python -m unittest discover -s tests -t .
-      - name: Build
-        run: |
-          python -m analysis.proto
-          python -m analysis.proto2
+      - name: Build (1-5)
+        run: python -m analysis.proto
+      # 第2弾（6〜10）が失敗しても、第1弾の結果は公開する（失敗はジョブの最後で赤にする）
+      - name: Build (6-10)
+        id: proto2
+        continue-on-error: true
+        run: python -m analysis.proto2
       - name: Publish changed results
         run: |
           git add docs/proto/data
@@ -42,4 +50,9 @@ jobs:
             git pull -q --rebase && git push && exit 0
             sleep 20
           done
+          exit 1
+      - name: Report proto2 failure
+        if: steps.proto2.outcome == 'failure'
+        run: |
+          echo "::error::analysis.proto2 が失敗しました（第1弾の結果だけ公開）"
           exit 1

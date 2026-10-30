@@ -59,7 +59,7 @@ class Nations(unittest.TestCase):
         cls = [('ルーヤンⅢ級ミサイル駆逐艦', 'CN'), ('ウダロイⅠ級駆逐艦', 'RU')]
         self.assertEqual(proto2.unit_nations('ウダロイⅠ級駆逐艦(564) / アルタイ改級補給艦', 'CNRU', cls), {'RU'})
         self.assertEqual(proto2.unit_nations('ルーヤンⅢ級ミサイル駆逐艦(134) / ウダロイⅠ級駆逐艦(564)', 'CNRU', cls), {'CN', 'RU'})
-        self.assertEqual(proto2.unit_nations('不明な艦', 'CNRU', cls), {'CN', 'RU'})  # 判定できなければ両国
+        self.assertEqual(proto2.unit_nations('不明な艦', 'CNRU', cls), set())  # 判定できなければ両国とせず空
         self.assertEqual(proto2.unit_nations('', 'CN', cls), {'CN'})
 
     def test_real_class_table_covers_cnru_rows(self):
@@ -109,8 +109,13 @@ class Stay(unittest.TestCase):
         self.assertEqual(S['trips'][0]['days'], 10)
         self.assertEqual(S['trips'][0]['to'], '太平洋')
         self.assertEqual(sorted((o['date'], o['recent']) for o in S['open_out']), [('2020-02-01', False), ('2020-12-20', True)])
-        c = next(c for c in S['curves'] if c['nation'] == 'CN' and c['method'] == 'all' and c['year'] == 2020)
+        c = next(c for c in S['curves'] if c['nation'] == 'CN' and c['dest'] == 'all' and c['method'] == 'all' and c['year'] == 2020)
         self.assertEqual((c['events'], c['censored']), (1, 1))
+        # 行先で絞る：組（太平洋行き）と打ち切り（太平洋行き）は「太平洋」に入り、「太平洋以外」には無い
+        c = next(c for c in S['curves'] if c['nation'] == 'CN' and c['dest'] == 'pacific' and c['method'] == 'all' and c['year'] == 2020)
+        self.assertEqual((c['events'], c['censored']), (1, 1))
+        self.assertFalse(any(c['dest'] == 'other' and c['nation'] == 'CN' and c['year'] == 2020 for c in S['curves']))
+        self.assertEqual(S['dest_counts'], {'CN:太平洋': 1})
 
 
 class Joint(unittest.TestCase):
