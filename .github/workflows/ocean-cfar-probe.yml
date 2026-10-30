@@ -1,6 +1,6 @@
 name: Ocean CFAR v1/v2 probe
 # cfar-v2 PR3（実験中）：外洋（香港の南・台湾海峡・東シナ海・南シナ海北部・台湾東方）の Sentinel-1 を 20 m で取り、
-# cfar-v1（sat/detect.py）と cfar-v2（sat/detect2.py）を同じ配列に通して比べる（ocean/cfar_probe.py）。
+# cfar-v1 と cfar-v2 の検出を同じ配列に通して比べる（ocean/cfar_probe.py）。
 # probe 用ブランチへの push でだけ動く（workflow_dispatch・定期実行なし）。ブランチ名に -plan を含むと
 # カタログと PU の見込みだけ（PU を使わない）。本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）と別の
 # concurrency group で、外洋の probe どうしは 1 つの group（同時に走って上限を二重に使わない）。

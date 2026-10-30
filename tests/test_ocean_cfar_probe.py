@@ -248,5 +248,21 @@ class RunTest(unittest.TestCase):
             self.assertEqual(s["plan"]["requests"], 0)
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
+class ProductionUnchangedTest(unittest.TestCase):
+    def test_only_the_probe_workflow_runs_the_ocean_probe(self):
+        root = Path(__file__).resolve().parent.parent
+        for wf in (root / ".github" / "workflows").glob("*.yml"):
+            text = wf.read_text(encoding="utf-8")
+            if wf.name == "ocean-cfar-probe.yml":
+                on = text.split("\non:\n", 1)[1].split("\npermissions:", 1)[0]
+                self.assertNotIn("workflow_dispatch", on)
+                self.assertNotIn("schedule", on)
+                self.assertIn("probe/ocean-cfar", on)
+                continue
+            self.assertNotIn("cfar_probe", text, wf.name)
+        self.assertNotIn("ocean", (root / "sat" / "run.py").read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     unittest.main()
