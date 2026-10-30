@@ -1,0 +1,503 @@
+"""cfar-v2 PR3 probe, mode ``wide``: one wide-area snapshot of large-ship candidates (probe only).
+
+    python -m ocean.cfar_probe --mode wide --out DIR ...
+
+East China Sea to south of the Sakishima islands (``REGION``: 23.5-31.5 N, 121.5-129.5 E), Sentinel-1 IW
+scenes of the last ``LOOKBACK_DAYS`` (7) days, fetched at 40 m (1/4 of the PU of 20 m) with BILINEAR.
+
+1. Catalog (no PU) over the region; passes grouped into acquisitions (``cdse.acquisitions``).
+2. Plan on a 0.2 x 0.2 deg cell grid: share of each cell inside each acquisition footprint, and the
+   sea share of each cell from coarse land polygons (mainland China coast incl. Zhoushan, north-east
+   Taiwan; small islands are left to the OSM mask). Greedy: rectangles of whole cells, at most 2,500 px
+   (100 km at 40 m) per side, chosen by new sea cells covered (cells already covered count as zero),
+   rectangles with at least 80% useful cells first (then 60%, 40%), newer acquisitions preferred on
+   ties, until the PU budget is used. Overlap between requests is avoided this way.
+3. Per request: OSM land/fixed objects (Overpass, one query per request, 10 s apart), Process API
+   (VV, VH, LIA, 40 m), cfar-v1 (``sat.detect``) as the detector of record, with the guard and ring
+   scaled to keep the pixel counts of 20 m (guard 160 m = 4 px, ring 320 m = 8 px), and cfar-v2
+   (recorded only: counts and the match with v1 within 100 m).
+4. Output (no sigma0 is written): ``candidates.geojson`` (v1 candidates with length >= 80 m, position,
+   time, length estimate, confidence, near_coast, static (fixed object), edge, v2 match),
+   ``coverage.geojson`` (requests), ``holes.geojson`` (sea cells not seen: no scene in 7 days, not
+   fetched within the budget, no data in the fetched image, or no OSM mask), ``summary.json`` and
+   ``report.txt``. Candidates within 1 km of the Chinese mainland coast and Zhoushan (west of 123 E,
+   north of 27 N, near_coast) are left out.
+
+Limits: at 40 m a ship of 80 m is 2 pixels; the length is a rough estimate (footprint incl. one pixel,
+BILINEAR blur), and fishing vessels of 40-60 m can pass the 80 m cut. Candidates are unconfirmed.
+"""
+from __future__ import annotations
+
+import json
+import math
+import time
+from datetime import timedelta
+from pathlib import Path
+
+import numpy as np
+
+from sat import cdse
+from sat import detect as v1
+from sat import detect2 as v2
+from sat.grid import Grid, dilate, m_per_deg
+
+WIDE_VERSION = "ocean-wide-1"
+REGION = (121.5, 23.5, 129.5, 31.5)          # west, south, east, north
+CELL_DEG = 0.2
+PIXEL_M = 40.0
+MAX_PX = 2500
+LOOKBACK_DAYS = 7
+MIN_LENGTH_M = 80.0
+V1_CFG_40M = {"guard_m": 160.0, "background_m": 320.0}
+CN_EXCLUDE = {"west_of": 123.0, "north_of": 27.0}
+ATTRIBUTION = "Contains modified Copernicus Sentinel data 2026"
+# coarse land for planning only (lon, lat); detection uses the OSM mask
+LAND_POLYS = {
+    "cn_shanghai": [(121.4, 31.6), (121.98, 31.6), (121.98, 30.85), (121.8, 30.62), (121.4, 30.62)],
+    "cn_zhejiang": [(121.4, 30.32), (121.9, 30.32), (122.3, 30.12), (122.05, 29.62), (121.97, 29.0),
+                    (121.72, 28.6), (121.55, 28.25), (121.4, 28.1)],
+    "tw_northeast": [(121.4, 23.4), (121.4, 25.32), (121.6, 25.32), (121.75, 25.17), (121.93, 25.06),
+                     (122.0, 25.0), (121.86, 24.85), (121.86, 24.6), (121.76, 24.3), (121.63, 24.0),
+                     (121.52, 23.6), (121.48, 23.4)],
+}
+SUBREGIONS = [  # (id, name, west, south, east, north) -- first match wins
+    ("ECS-N", "東シナ海北部（28.5–31.5N、121.5–126E）", 121.5, 28.5, 126.0, 31.5),
+    ("ECS-S", "東シナ海南部・台湾北方（25.5–28.5N、121.5–126E）", 121.5, 25.5, 126.0, 28.5),
+    ("NANSEI", "沖縄トラフ・南西諸島（奄美〜沖縄）周辺（25.5–31.5N、126–129.5E）", 126.0, 25.5, 129.5, 31.5),
+    ("SAKI", "先島諸島周辺・台湾東方（23.5–25.5N、121.5–126E）", 121.5, 23.5, 126.0, 25.5),
+    ("SOUTH", "沖縄本島〜先島の南方の太平洋（23.5–25.5N、126–129.5E）", 126.0, 23.5, 129.5, 25.5),
+]
+
+
+def subregion(lon: float, lat: float) -> str:
+    for sid, _n, w, s, e, n in SUBREGIONS:
+        if w <= lon <= e and s <= lat <= n:
+            return sid
+    return "OUT"
+
+
+def _inside_ring(x, y, ring) -> np.ndarray:
+    ring = np.asarray(ring, float)
+    if not np.allclose(ring[0], ring[-1]):
+        ring = np.vstack([ring, ring[:1]])
+    xs, ys = ring[:, 0], ring[:, 1]
+    res = np.zeros(np.shape(x), bool)
+    for k in range(len(ring) - 1):
+        x0, y0, x1, y1 = xs[k], ys[k], xs[k + 1], ys[k + 1]
+        if y0 == y1:
+            continue
+        c = ((y0 <= y) & (y1 > y)) | ((y1 <= y) & (y0 > y))
+        xc = x0 + (y - y0) * (x1 - x0) / (y1 - y0)
+        res ^= c & (x < xc)
+    return res
+
+
+class Cells:
+    """0.2 deg cell grid of the region; sample points (k x k per cell) for shares."""
+
+    def __init__(self, region=None, cell=CELL_DEG, k: int = 4):
+        self.w, self.s, self.e, self.n = region or REGION
+        self.cell = cell
+        self.nx = int(round((self.e - self.w) / cell))
+        self.ny = int(round((self.n - self.s) / cell))
+        off = (np.arange(k) + 0.5) / k * cell
+        cx = self.w + np.arange(self.nx) * cell
+        cy = self.s + np.arange(self.ny) * cell
+        # sample points shape (ny, nx, k*k)
+        sx = (cx[None, :, None] + np.tile(off, k)[None, None, :]) * np.ones((self.ny, 1, 1))
+        sy = (cy[:, None, None] + np.repeat(off, k)[None, None, :]) * np.ones((1, self.nx, 1))
+        self.sx, self.sy = sx, sy
+        land = np.zeros(sx.shape, bool)
+        for ring in LAND_POLYS.values():
+            land |= _inside_ring(sx, sy, ring)
+        self.sea = 1.0 - land.mean(axis=2)
+
+    def bounds(self, j: int, i: int, h: int = 1, w: int = 1) -> tuple[float, float, float, float]:
+        """(west, south, east, north) of rows j..j+h-1 (south to north) and cols i..i+w-1."""
+        return (round(self.w + i * self.cell, 6), round(self.s + j * self.cell, 6),
+                round(self.w + (i + w) * self.cell, 6), round(self.s + (j + h) * self.cell, 6))
+
+    def area_km2(self, j: int) -> float:
+        lat = self.s + (j + 0.5) * self.cell
+        my, mx = m_per_deg(lat)
+        return self.cell * my * self.cell * mx / 1e6
+
+    def footprint_share(self, geoms: list[dict]) -> np.ndarray:
+        rings = []
+        for g in geoms:
+            if not g:
+                continue
+            if g.get("type") == "Polygon":
+                rings.append(g["coordinates"][0])
+            elif g.get("type") == "MultiPolygon":
+                rings.extend(p[0] for p in g["coordinates"])
+        hit = np.zeros(self.sx.shape, bool)
+        for r in rings:
+            hit |= _inside_ring(self.sx, self.sy, r)
+        return hit.mean(axis=2)
+
+
+def rect_px(b: tuple[float, float, float, float], pixel_m: float | None = None) -> tuple[int, int]:
+    pixel_m = pixel_m or PIXEL_M
+    w, s, e, n = b
+    my, mx = m_per_deg((s + n) / 2)
+    return int(round((e - w) * mx / pixel_m)), int(round((n - s) * my / pixel_m))
+
+
+def _rect_sums(v: np.ndarray, h: int, w: int) -> np.ndarray:
+    ii = np.zeros((v.shape[0] + 1, v.shape[1] + 1))
+    ii[1:, 1:] = v.cumsum(0).cumsum(1)
+    return ii[h:, w:] - ii[:-h, w:] - ii[h:, :-w] + ii[:-h, :-w]
+
+
+def greedy_plan(cells: Cells, fp: list[np.ndarray], recency: list[float], pu_left: float,
+                max_requests: int = 200, thresholds=(0.8, 0.6, 0.4), max_cells: int = 5) -> tuple[list[dict], np.ndarray]:
+    """Rectangles (acquisition index, j, i, h, w) chosen greedily; returns (plan, covered share per cell)."""
+    cov = np.zeros((cells.ny, cells.nx))
+    plan, spent = [], 0.0
+    sizes = [(h, w) for h in range(1, max_cells + 1) for w in range(1, max_cells + 1)]
+    while len(plan) < max_requests:
+        best = None
+        for thr in thresholds:
+            for a, f in enumerate(fp):
+                val = cells.sea * np.minimum(f, 1.0 - cov).clip(0)
+                for h, w in sizes:
+                    if h > cells.ny or w > cells.nx:
+                        continue
+                    sums = _rect_sums(val, h, w)
+                    if sums.max() <= 0:
+                        continue
+                    # px of a rect depends on latitude: check the widest (southern) row of the grid
+                    for j in np.unique(np.argwhere(sums > 0)[:, 0]):
+                        b = cells.bounds(j, 0, h, w)
+                        wp, hp = rect_px(b)
+                        if wp > MAX_PX or hp > MAX_PX:
+                            continue
+                        cost = cdse.estimate_pu(wp, hp, 3)
+                        if spent + cost > pu_left + 1e-9:
+                            continue
+                        row = sums[j]
+                        eff = row / (h * w)
+                        ok = eff >= thr
+                        if not ok.any():
+                            continue
+                        i = int(np.argmax(np.where(ok, row, -1)))
+                        score = row[i] * (1 + 0.1 * recency[a])
+                        if best is None or score > best[0] + 1e-9:
+                            best = (score, a, int(j), i, h, w, cost, float(row[i]), float(eff[i]))
+            if best is not None:
+                break
+        if best is None:
+            break
+        _s, a, j, i, h, w, cost, value, eff = best
+        cov[j:j + h, i:i + w] = np.maximum(cov[j:j + h, i:i + w], fp[a][j:j + h, i:i + w])
+        spent += cost
+        plan.append({"acq_index": a, "j": j, "i": i, "h": h, "w": w, "est_pu": cost,
+                     "value_cells": round(value, 3), "efficiency": round(eff, 3)})
+    return plan, cov
+
+
+def confidence(d: dict) -> str:
+    c = d.get("contrast_vv_db") or 0.0
+    r = d.get("vh_ratio_db") or 0.0
+    level = "high" if (c >= 10 and r >= 6 and d["pixels"] >= 4) else "medium" if c >= 6 else "low"
+    if d.get("edge") or d.get("static"):
+        level = {"high": "medium", "medium": "low", "low": "low"}[level]
+    return level
+
+
+def detect_rect(vv, vh, lia, land, static, grid: Grid, acq: dict) -> tuple[list[dict], dict]:
+    """cfar-v1 (record) + cfar-v2 (counts and match only) on one 40 m request."""
+    px = float(np.mean(grid.pixel_m))
+    valid = np.isfinite(vv) & np.isfinite(vh)
+    t0 = time.perf_counter()
+    d1, i1 = v1.detect(vv, vh, land, grid.pixel_m, V1_CFG_40M)
+    s1 = round(time.perf_counter() - t0, 2)
+    edge = dilate(~valid, 3) if (~valid).any() else np.zeros_like(valid)
+    near = dilate(land, 1000.0 / px) & ~land if land.any() else np.zeros_like(land)
+    lat = (grid.south + grid.north) / 2
+    heading = v2.platform_heading((acq.get("orbit_direction") or "").lower(), lat) if acq.get("orbit_direction") else None
+    t0 = time.perf_counter()
+    try:
+        d2, i2 = v2.detect_v2(vv, vh, land, grid.pixel_m, lia=lia, heading_deg=heading, static=static)
+        k2 = v2.kept(d2)
+        v2err = None
+    except Exception as e:  # v2 is recorded only; a failure must not stop v1
+        k2, i2, v2err = [], {}, f"{type(e).__name__}: {str(e)[:200]}"
+    s2 = round(time.perf_counter() - t0, 2)
+    pts2 = np.array([[d["row"], d["col"]] for d in k2]) if k2 else np.zeros((0, 2))
+    out = []
+    for d in d1:
+        r, c = int(round(d["row"])), int(round(d["col"]))
+        r, c = min(max(r, 0), grid.height - 1), min(max(c, 0), grid.width - 1)
+        d["static"], d["edge"], d["near_coast"] = bool(static[r, c]), bool(edge[r, c]), bool(near[r, c])
+        if d["length_m"] < MIN_LENGTH_M:
+            continue
+        lon, la = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
+        lon, la = float(lon), float(la)
+        if d["near_coast"] and lon < CN_EXCLUDE["west_of"] and la > CN_EXCLUDE["north_of"]:
+            continue
+        m = None
+        if len(pts2):
+            dist = np.hypot(pts2[:, 0] - d["row"], pts2[:, 1] - d["col"]) * px
+            k = int(np.argmin(dist))
+            if dist[k] <= 100.0:
+                m = k2[k]
+        out.append({
+            "lon": round(lon, 5), "lat": round(la, 5), "acquired_utc": acq["acquired_utc"],
+            "platform": acq.get("platform"), "orbit_direction": acq.get("orbit_direction"),
+            "relative_orbit": acq.get("relative_orbit"),
+            "length_m_est": d["length_m"], "width_m_est": d["width_m"], "length_class": d["length_class"],
+            "pixels_40m": d["pixels"], "peak_vv_db": d["peak_vv_db"], "contrast_vv_db": d["contrast_vv_db"],
+            "vh_ratio_db": d["vh_ratio_db"], "near_coast": d["near_coast"], "static": d["static"], "edge": d["edge"],
+            "confidence": confidence(d), "subregion": subregion(lon, la), "detector": "cfar-v1 (40 m, guard 160 m, ring 320 m)",
+            "v2_match": m is not None, "v2_confidence": m.get("confidence") if m else None,
+            "v2_length_m": m.get("length_m") if m else None,
+        })
+    water = valid & ~land
+    km2 = float(water.sum()) * grid.pixel_m[0] * grid.pixel_m[1] / 1e6
+    info = {"valid_fraction": round(float(valid.mean()), 4), "water_km2": round(km2, 1),
+            "vv_median_db": round(float(np.nanmedian(vv)), 2) if valid.any() else None,
+            "v1": {"candidates": len(d1), "large_kept": len(out), "seconds": s1,
+                   "per_1000km2": round(len(d1) / km2 * 1000, 2) if km2 else None,
+                   **{k: i1[k] for k in ("hit_pixels", "clusters", "dropped_small", "dropped_vh")}},
+            "v2": {"candidates": len(k2), "confidence_A": sum(1 for d in k2 if d.get("confidence") == "A"),
+                   "large": sum(1 for d in k2 if d.get("large")), "seconds": s2, "error": v2err,
+                   "tiles": i2.get("tiles"), "tiles_untested": i2.get("tiles_untested"),
+                   "model_counts": i2.get("model_counts"),
+                   "matched_v1_large": sum(1 for o in out if o["v2_match"])}}
+    return out, info
+
+
+def cell_valid(valid: np.ndarray, h: int, w: int) -> np.ndarray:
+    """Share of valid pixels per cell (h x w cells, row 0 = north) -> (h, w) with row 0 = south."""
+    rows = np.array_split(np.arange(valid.shape[0]), h)
+    cols = np.array_split(np.arange(valid.shape[1]), w)
+    out = np.zeros((h, w))
+    for a, rr in enumerate(rows):
+        for b, cc in enumerate(cols):
+            out[h - 1 - a, b] = valid[rr[0]:rr[-1] + 1, cc[0]:cc[-1] + 1].mean() if len(rr) and len(cc) else 0
+    return out
+
+
+def dedupe(cands: list[dict], tol_m: float = 200.0) -> list[dict]:
+    out = []
+    for c in cands:
+        dup = False
+        for o in out:
+            if o["acquired_utc"] != c["acquired_utc"]:
+                continue
+            my, mx = m_per_deg(c["lat"])
+            if math.hypot((o["lat"] - c["lat"]) * my, (o["lon"] - c["lon"]) * mx) <= tol_m:
+                dup = True
+                break
+        if not dup:
+            out.append(c)
+    return out
+
+
+def _poly(w, s, e, n):
+    return {"type": "Polygon", "coordinates": [[[w, s], [e, s], [e, n], [w, n], [w, s]]]}
+
+
+def holes_features(cells: Cells, reason: np.ndarray) -> list[dict]:
+    """Merge runs of cells with the same reason along each row into rectangles."""
+    feats = []
+    for j in range(cells.ny):
+        i = 0
+        while i < cells.nx:
+            r = reason[j, i]
+            if not r:
+                i += 1
+                continue
+            k = i
+            while k + 1 < cells.nx and reason[j, k + 1] == r:
+                k += 1
+            w, s, e, n = cells.bounds(j, i, 1, k - i + 1)
+            km2 = sum(cells.area_km2(j) * cells.sea[j, x] for x in range(i, k + 1))
+            feats.append({"type": "Feature", "geometry": _poly(w, s, e, n),
+                          "properties": {"reason": r, "sea_km2_approx": round(km2, 1)}})
+            i = k + 1
+    return feats
+
+
+HOLE_REASON = {"no_scene": "7 日以内に撮影なし", "budget": "撮影はあるが PU の上限で取得せず",
+               "no_data": "取得したが画像にデータなし（撮影の端など）", "osm_failed": "陸地マスク（OSM）を取れず取得せず"}
+
+
+def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
+    month = now.strftime("%Y-%m")
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    sat_rows = [r for f in args.sat_usage for r in cp.read_csv(Path(f))]
+    ocean_rows = [r for f in [args.usage, *args.ocean_usage] for r in cp.read_csv(Path(f))]
+    bud = cp.budget(month, sat_rows, ocean_rows, args.max_pu)
+    lookback = int(args.lookback_days or LOOKBACK_DAYS)
+    summary = {"probe_version": WIDE_VERSION, "mode": "wide", "run_utc": cdse.iso(now), "region": REGION,
+               "pixel_m": PIXEL_M, "interpolation": cp.INTERPOLATION, "lookback_days": lookback,
+               "dry_run": bool(args.dry_run), "budget": bud, "attribution": ATTRIBUTION,
+               "min_length_m": MIN_LENGTH_M, "v1_cfg": V1_CFG_40M, "subregions": SUBREGIONS,
+               "hole_reasons": HOLE_REASON, "acquisitions": [], "plan": {}, "results": [], "errors": []}
+    log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → 使える {bud['pu_left']} PU")
+    w, s, e, n = REGION
+    summary["region"] = REGION
+    try:
+        feats = client.catalog([w, s, e, n], now - timedelta(days=lookback), now)
+    except cdse.CredentialError:
+        raise
+    except cdse.CDSEError as ex:
+        summary["errors"].append({"stage": "catalog", "error": str(ex)[:300]})
+        feats = []
+    by_id = {f.get("id"): f for f in feats}
+    acqs = [a for a in cdse.acquisitions(feats)]
+    cells = Cells()
+    fp = [cells.footprint_share([(by_id.get(i) or {}).get("geometry") for i in a["ids"]]) for a in acqs]
+    ages = [(now - a["time"]).total_seconds() / 86400 for a in acqs]
+    recency = [max(0.0, 1 - g / lookback) for g in ages]
+    for a, f in zip(acqs, fp):
+        summary["acquisitions"].append({**cp._acq_meta(a), "absolute_orbit": a.get("absolute_orbit"), "slices": len(a["ids"]),
+                                        "region_sea_share": round(float((f * cells.sea).sum() / cells.sea.sum()), 4)})
+    plan, cov = greedy_plan(cells, fp, recency, max(0.0, bud["pu_left"] - 2.0), max_requests=min(200, bud["requests_left"]))
+    any_fp = np.max(np.stack(fp), axis=0) if fp else np.zeros((cells.ny, cells.nx))
+    sea_km2 = float(sum(cells.area_km2(j) * cells.sea[j].sum() for j in range(cells.ny)))
+    plan_km2 = float(sum(cells.area_km2(j) * (cells.sea[j] * cov[j]).sum() for j in range(cells.ny)))
+    seen_km2 = float(sum(cells.area_km2(j) * (cells.sea[j] * any_fp[j]).sum() for j in range(cells.ny)))
+    for p in plan:
+        a = acqs[p["acq_index"]]
+        p["bbox"] = list(cells.bounds(p["j"], p["i"], p["h"], p["w"]))
+        p["width"], p["height"] = rect_px(tuple(p["bbox"]))
+        p["acquired_utc"] = a["acquired_utc"]
+    summary["plan"] = {"requests": len(plan), "est_pu": round(sum(p["est_pu"] for p in plan), 3),
+                       "region_sea_km2": round(sea_km2), "imaged_in_lookback_sea_km2": round(seen_km2),
+                       "planned_sea_km2": round(plan_km2), "items": plan}
+    log(f"計画: {len(plan)} 件 {summary['plan']['est_pu']} PU、海域 {sea_km2:.0f} km² のうち 7 日以内の撮影 {seen_km2:.0f}・取得予定 {plan_km2:.0f} km²")
+    observed = np.zeros((cells.ny, cells.nx))
+    osm_fail = np.zeros((cells.ny, cells.nx), bool)
+    cands = []
+    if not args.dry_run and plan:
+        cfg = cp.load_areas(args.areas)
+        seamark_re = cfg["osm_static"]["seamark_types"]
+        deadline = time.monotonic() + args.max_minutes * 60
+        for k, p in enumerate(plan):
+            a = acqs[p["acq_index"]]
+            g = Grid(p["bbox"][0], p["bbox"][1], p["bbox"][2], p["bbox"][3], p["width"], p["height"])
+            sl = (slice(p["j"], p["j"] + p["h"]), slice(p["i"], p["i"] + p["w"]))
+            if clock().strftime("%Y-%m") != month:
+                summary["errors"].append({"stage": "stop", "error": "月が替わったため以降の取得をしない"})
+                break
+            if time.monotonic() > deadline:
+                summary["errors"].append({"stage": "stop", "error": f"{args.max_minutes} 分を過ぎたため止めた"})
+                break
+            if client.processing_units + p["est_pu"] > bud["pu_left"] + 1e-9:
+                summary["errors"].append({"stage": "stop", "error": "実際の PU が上限に届くため止めた"})
+                break
+            if k:
+                sleep(10)
+            try:
+                osm = overpass(cp.overpass_query(g, seamark_re))
+            except Exception as ex:
+                osm_fail[sl] = True
+                summary["errors"].append({"request": k, "stage": "overpass", "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
+                continue
+            pacer.wait(p["est_pu"])
+            try:
+                t0 = time.perf_counter()
+                data, pu = client.process(g.bbox, g.width, g.height, a["t_from"], a["t_to"], with_lia=True,
+                                          upsampling=cp.INTERPOLATION)
+                pacer.spent(pu)
+                tf = round(time.perf_counter() - t0, 1)
+                vv, vh, lia = cp.decode(data)
+                del data
+                land, static, minfo = cp.masks(g, osm, seamark_re, float(cfg["static_dilate_m"]))
+                c, info = detect_rect(vv, vh, lia, land, static, g, a)
+                valid = np.isfinite(vv) & np.isfinite(vh)
+                observed[sl] = np.maximum(observed[sl], cell_valid(valid, p["h"], p["w"]))
+                cands.extend(c)
+                row = {"request": k, **cp._acq_meta(a), "bbox": g.bbox, "width": g.width, "height": g.height,
+                       "pu": pu, "fetch_seconds": tf, **info,
+                       "mask": {kk: minfo.get(kk) for kk in ("land_fraction", "static_objects", "static_fraction", "osm_base")}}
+                summary["results"].append(row)
+                log(f"#{k} {a['acquired_utc']} {g.bbox}: PU {pu}、有効 {info['valid_fraction']}、VV {info['vv_median_db']} dB、"
+                    f"v1 {info['v1']['candidates']}（80 m 以上 {info['v1']['large_kept']}）、v2 {info['v2']['candidates']}")
+            except cdse.CredentialError:
+                raise
+            except cdse.CDSEError as ex:
+                summary["errors"].append({"request": k, "acquired_utc": a["acquired_utc"], "stage": "fetch", "error": str(ex)[:300]})
+            cp._write_summary(out, summary, client, pacer)
+    cands = dedupe(cands)
+    # holes
+    reason = np.full((cells.ny, cells.nx), "", dtype=object)
+    sea_cell = cells.sea > 0.05
+    fetched_any = np.zeros((cells.ny, cells.nx), bool)
+    for r in summary["results"]:
+        p = plan[r["request"]]
+        fetched_any[p["j"]:p["j"] + p["h"], p["i"]:p["i"] + p["w"]] = True
+    for j in range(cells.ny):
+        for i in range(cells.nx):
+            if not sea_cell[j, i] or observed[j, i] >= 0.5:
+                continue
+            if osm_fail[j, i] and not fetched_any[j, i]:
+                reason[j, i] = "osm_failed"
+            elif fetched_any[j, i]:
+                reason[j, i] = "no_data"
+            elif any_fp[j, i] >= 0.5:
+                reason[j, i] = "budget"
+            else:
+                reason[j, i] = "no_scene"
+    hf = holes_features(cells, reason)
+    obs_km2 = float(sum(cells.area_km2(j) * (cells.sea[j] * (observed[j] >= 0.5)).sum() for j in range(cells.ny)))
+    hole_km2 = {r: round(sum(f["properties"]["sea_km2_approx"] for f in hf if f["properties"]["reason"] == r)) for r in HOLE_REASON}
+    by_sub = {}
+    for c in cands:
+        d = by_sub.setdefault(c["subregion"], {"all": 0, "high": 0, "medium": 0, "low": 0, "static": 0,
+                                               "near_coast": 0, "v2_match": 0, "ge_150m_est": 0})
+        d["all"] += 1
+        d[c["confidence"]] += 1
+        d["static"] += c["static"]
+        d["near_coast"] += c["near_coast"]
+        d["v2_match"] += c["v2_match"]
+        d["ge_150m_est"] += c["length_m_est"] >= 150
+    summary["coverage"] = {"observed_sea_km2": round(obs_km2), "region_sea_km2": round(sea_km2), "holes_sea_km2": hole_km2,
+                           "observed_share": round(obs_km2 / sea_km2, 3) if sea_km2 else None}
+    summary["candidates"] = {"total": len(cands), "by_subregion": by_sub}
+    cand_fc = {"type": "FeatureCollection", "name": "大型船の候補（長さ約 80 m 以上、未確認）",
+               "attribution": ATTRIBUTION + "; land and fixed objects (c) OpenStreetMap contributors, ODbL 1.0",
+               "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
+                             "properties": {k: v for k, v in c.items() if k not in ("lon", "lat")}} for c in cands]}
+    cov_fc = {"type": "FeatureCollection", "attribution": ATTRIBUTION, "features": [
+        {"type": "Feature", "geometry": _poly(*r["bbox"]),
+         "properties": {"acquired_utc": r["acquired_utc"], "platform": r.get("platform"), "orbit_direction": r.get("orbit_direction"),
+                        "relative_orbit": r.get("relative_orbit"), "valid_fraction": r["valid_fraction"], "pu": r["pu"],
+                        "v1_large": r["v1"]["large_kept"]}} for r in summary["results"]]}
+    hole_fc = {"type": "FeatureCollection", "reasons": HOLE_REASON, "features": hf}
+    for name, fc in (("candidates.geojson", cand_fc), ("coverage.geojson", cov_fc), ("holes.geojson", hole_fc)):
+        (out / name).write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":"), default=cp._jsonable), encoding="utf-8")
+    cp._write_summary(out, summary, client, pacer)
+    cp.write_usage(Path(args.usage), {"run_utc": cdse.iso(now), "requests": client.requests,
+                                      "processing_units": round(client.processing_units, 3),
+                                      "pu_source": "header" if getattr(client, "pu_reported", True) else "estimate",
+                                      "scenes": len({r["acquired_utc"] for r in summary["results"]}),
+                                      "units": len(summary["results"]), "probe_version": WIDE_VERSION,
+                                      "note": "dry-run" if args.dry_run else "wide 40 m"})
+    rep = report(summary, client)
+    (out / "report.txt").write_text(rep, encoding="utf-8")
+    log(rep)
+    return summary
+
+
+def report(s: dict, client) -> str:
+    b, p = s["budget"], s["plan"]
+    L = [f"{WIDE_VERSION} {s['run_utc']}{'（dry-run）' if s['dry_run'] else ''} 範囲 {s['region']} 40 m、直近 {s['lookback_days']} 日",
+         f"使える {b['pu_left']} PU、計画 {p['requests']} 件 {p['est_pu']} PU、実績 {client.requests} リクエスト・{round(client.processing_units, 3)} PU",
+         f"海域 {p['region_sea_km2']} km²、7 日以内の撮影 {p['imaged_in_lookback_sea_km2']}、取得予定 {p['planned_sea_km2']}、"
+         f"実際に見た {s.get('coverage', {}).get('observed_sea_km2')} km²、穴 {s.get('coverage', {}).get('holes_sea_km2')}",
+         "撮影（カタログ）:"]
+    for a in s["acquisitions"]:
+        L.append(f"  {a['acquired_utc']} {a.get('platform')} {a.get('orbit_direction')} 軌道 {a.get('relative_orbit')} 範囲内の海の {a['region_sea_share']}")
+    for r in s["results"]:
+        L.append(f"#{r['request']} {r['acquired_utc']} {r['bbox']} PU {r['pu']} 有効 {r['valid_fraction']} VV {r['vv_median_db']} "
+                 f"v1 {r['v1']['candidates']}（80 m 以上 {r['v1']['large_kept']}、{r['v1']['per_1000km2']}/1000km²）v2 {r['v2']['candidates']}")
+    L.append("候補（範囲別）: " + json.dumps(s.get("candidates", {}), ensure_ascii=False))
+    for e in s["errors"]:
+        L.append("エラー: " + json.dumps(e, ensure_ascii=False, default=str))
+    return "\n".join(L) + "\n"

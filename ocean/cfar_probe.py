@@ -745,6 +745,20 @@ def report(s: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def run_mode(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep, log=None, clock=None) -> dict:
+    """``--mode raw`` (ocean/raw_cut.py) or ``--mode wide`` (ocean/wide.py), with this module's caps and pacing."""
+    from ocean import raw_cut, wide
+    log = log or (lambda m: print(m, file=sys.stderr))
+    clock = clock or (lambda: datetime.now(timezone.utc))
+    now = now or clock()
+    client = client if client is not None else cdse.Client()
+    overpass = overpass or fetch_overpass
+    lim = min(getattr(args, "pu_per_min", PU_PER_MIN) or PU_PER_MIN, PU_PER_MIN)
+    pacer = pacer or Pacer(lim, int(min(lim, REQ_PER_MIN)), sleep=sleep)
+    fn = raw_cut.run_raw if args.mode == "raw" else wide.run_wide
+    return fn(args, sys.modules[__name__], client, overpass, now, pacer, sleep, log, clock)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="cfar-v1 / cfar-v2 on open-sea Sentinel-1 chips (probe)")
     ap.add_argument("--out", type=Path, required=True)
@@ -759,9 +773,18 @@ def main(argv=None) -> int:
     ap.add_argument("--min-coverage", type=float, help="override areas.json min_footprint_coverage")
     ap.add_argument("--dry-run", action="store_true", help="catalog and plan only (no PU)")
     ap.add_argument("--no-check", action="store_true", help="skip the interpolation check chips")
+    ap.add_argument("--mode", choices=("compare", "raw", "wide"), default="compare",
+                    help="compare: v1/v2 on the areas (default); raw: raw sigma0 tiles of selected scenes "
+                         "(ocean/raw_cut.py); wide: 40 m wide-area snapshot (ocean/wide.py)")
+    ap.add_argument("--raw-out", type=Path, help="raw mode: directory for the .npz tiles (probe branch only)")
+    ap.add_argument("--targets", type=Path, help="raw mode: targets file (default ocean/raw_targets.json)")
+    ap.add_argument("--pu-per-min", type=float, default=PU_PER_MIN, help="pacer limit (PU and requests per minute)")
     args = ap.parse_args(argv)
     try:
-        s = run(args)
+        if args.mode != "compare":
+            s = run_mode(args)
+        else:
+            s = run(args, pacer=Pacer(min(args.pu_per_min, PU_PER_MIN), int(min(args.pu_per_min, REQ_PER_MIN))))
     except cdse.CredentialError as e:
         print(f"エラー: {e}", file=sys.stderr)
         return 2
