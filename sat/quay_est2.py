@@ -1,4 +1,4 @@
-"""Warship-likely ships alongside (est-2, trial, not calibrated): ships abreast and the warship odds.
+"""Warship-likely ships alongside (est-2, trial, first calibration #7): ships abreast and the warship odds.
 
 Runs after the quay count on what is already stored (quay_counts.csv, quay/YYYY-MM.geojson and the
 Sentinel-2 files under labels/); it fetches nothing (no PU). est-1 (sat/quay_est.py) stays as it is;
@@ -30,7 +30,12 @@ For every occupied stretch of quay-v1 in a scene:
    Binomial(c x k, .), a distribution of draws, not a threshold on P. A sector and the site are the
    convolution (stretches independent). Median and the model's 80 % interval (p10-p90).
 
-All numbers above are placeholders (HQ's 1-D simulation and settings, 2026-10-30), not calibrated.
+The numbers above are HQ's placeholders (1-D simulation and settings, 2026-10-30). #7 (first round,
+sat/quay_est2_calib.py -> sat/quay_est2_calib.json) re-fits on the owner's checked S2 labels: the depth
+means and sd, the smear P(real) and the S2 colour LR (grey and white merged as achromatic, capped);
+OSM ways mostly not judgeable by eye are noted (hard_to_judge), not down-weighted. pi, kappa, the
+column prior and the double-bounce line stay placeholders. Without the calibration file the
+placeholders are used.
 The Sentinel-2 labels (#5, automatic, unverified) are not an input for the counts (occupied, c) and
 not a truth either; only their hull colour class is used as the colour clue.
 """
@@ -47,24 +52,51 @@ from pathlib import Path
 import numpy as np
 
 EST2_VERSION = "est-2"
-STATUS = "仮置き・較正前（司令部の 1 次元模擬と仮置き値。正解データでの較正は #7）"
+CALIB_FILE = Path(__file__).with_name("quay_est2_calib.json")   # #7 (sat/quay_est2_calib.py); absent: placeholders
 
 C_VALUES = (1, 2, 3)
 PRIOR_C = {"A_pier": (0.5, 0.35, 0.15), "A_shore": (0.85, 0.13, 0.02), "B": (0.85, 0.13, 0.02)}
-DEPTH_SD_M = 12.0
+# placeholders of the design (HQ's 1-D simulation, 2026-10-30), the starting point of the calibration
+PH_DEPTH_SD_M = 12.0
+PH_DEPTH_MU = {"away": (35.0, 55.0, 75.0), "along": (40.0, 60.0, 80.0)}
+PH_TOWARD_MU = {45.0: (45.0, 65.0, 95.0), 32.0: (55.0, 75.0, 95.0)}  # by incidence angle (deg)
+PH_SMEAR_P_REAL = 0.3
+PH_S2_LR = {"grey": 3.0, "colour": 0.2, "contrast": 0.2, "mixed": 1.0}
+
+
+def load_calibration(path: Path = CALIB_FILE) -> dict | None:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+CALIB = load_calibration()
+_P = (CALIB or {}).get("params") or {}
+DEPTH_SD_M = float(_P.get("depth_sd", PH_DEPTH_SD_M))
 DEPTH_MU = {  # mean occupied depth (m) for c = 1, 2, 3
-    "away": (35.0, 55.0, 75.0),
-    "along": (40.0, 60.0, 80.0),
+    "away": tuple(_P["depth_mu"]["away"]) if _P else PH_DEPTH_MU["away"],
+    "along": tuple(_P["depth_mu"]["along"]) if _P else PH_DEPTH_MU["along"],
 }
-TOWARD_MU = {45.0: (45.0, 65.0, 95.0), 32.0: (55.0, 75.0, 95.0)}  # by incidence angle (deg)
+TOWARD_MU = ({45.0: tuple(_P["depth_mu"]["toward_157"]), 32.0: tuple(_P["depth_mu"]["toward_84"])} if _P
+             else dict(PH_TOWARD_MU))
+SMEAR_P_REAL = float(_P.get("smear_p_real", PH_SMEAR_P_REAL))
+S2_LR = dict(_P.get("s2_lr_auto") or PH_S2_LR)            # the automatic colour class of #5
+S2_LR_OWNER = dict(_P.get("s2_lr_owner") or {})           # a row checked by eye: achromatic / strong / blank
+HARD_WAYS = {str(w) for w in _P.get("hard_ways", [])}     # OSM ways mostly not judgeable by eye at 10 m
+STATUS = ("較正 1 回目（人の目で確かめた S2 ラベル 81 区間×日、目視は所有者 1 人。列数の較正に使えたのは 45 件で少ない）。"
+          "較正していない値（π・κ・列数の事前分布・二回反射の線）は仮置きのまま" if _P else
+          "仮置き・較正前（司令部の 1 次元模擬と仮置き値。正解データでの較正は #7）")
+if _P and CALIB.get("labels", {}).get("verified") is not None:
+    STATUS = STATUS.replace("81 区間×日", f"{CALIB['labels']['verified']} 区間×日").replace("45 件", f"{CALIB['labels']['column_rows']} 件")
+
 INCIDENCE_BY_ORBIT = {"ZJG": {"157": 45.0, "84": 32.0}}
 DB_MU = (22.0, 42.0, 62.0)  # outer double-bounce line off the water's edge (toward faces only)
 DB_SD_M = 10.0
-DB_WEIGHT = 0.0             # recorded only until #7 (the likelihood is raised to this power)
+DB_WEIGHT = 0.0             # recorded only (the likelihood is raised to this power); not calibrated in #7
 DEPTH_LIMIT_M = 120.0       # feat-1 profile (0-120 m)
 DEPTH_LIMIT_OLD_M = 90.0    # before feat-1
 FACE_COS = 0.5
-SMEAR_P_REAL = 0.3
 SMEAR_MAX_M = 120.0         # opposite side of the pier: display lines this close
 PAIR_MATCH_M = 30.0         # the same face in the partner scene: points this close
 SECTION_MATCH_M = 20.0
@@ -77,7 +109,6 @@ PI = {  # warship share by place and length (<60, 60-100, >=100 m)
     "A_shore": (0.3, 0.5, 0.7),
     "B": (0.1, 0.2, 0.3),
 }
-S2_LR = {"grey": 3.0, "colour": 0.2, "contrast": 0.2, "mixed": 1.0}
 S2_WEIGHT = 0.5
 KAPPA_STEPS = ((8.0, 0.85), (24.0, 0.6), (48.0, 0.4))
 KAPPA_FAR = 0.25
@@ -93,6 +124,8 @@ CLUE_NAMES = {
     "face_sections": "面の向き（S2 区間の法線から計算）",
     "smear": "反対側の占有によるにじみの割り引き",
     "s2_colour": "S2 の船体の色",
+    "s2_colour_owner": "S2 の船体の色（所有者が目視で確かめた）",
+    "hard": "人の目でも判断しにくい区間（注記だけ）",
     "place": "区画と岸壁の種類",
     "length": "占有の長さ",
 }
@@ -104,6 +137,7 @@ CSV_FIELDS = [
     "a_all_median", "a_all_p10", "a_all_p90", "b_all_median", "b_all_p10", "b_all_p90",
     "ships_median", "ships_p10", "ships_p90", "c_mean",
     "used_depth", "used_db_line", "used_pair", "used_s2_colour", "smear_discounted", "face_from_sections", "no_face",
+    "hard_stretches", "hard_warship_mean",
     "est1_warship_mode", "est1_warship_p10", "est1_warship_p90",
 ]
 FREEZE_UTC = "2026-10-27"   # the S2 labels before this day only (later scenes are frozen as out-of-sample)
@@ -186,15 +220,18 @@ def look_azimuth(orbit_direction, lat):
 
 
 # --- likelihoods ----------------------------------------------------------------------------------
-def depth_like(depth, face: str, incidence, limit: float) -> tuple[np.ndarray, str]:
-    """Likelihood of the occupied depth for c = 1, 2, 3 and the clue used ("" when none)."""
-    mu = depth_mu(face, incidence)
+def depth_like(depth, face: str, incidence, limit: float, mu: tuple | None = None,
+               sd: float | None = None) -> tuple[np.ndarray, str]:
+    """Likelihood of the occupied depth for c = 1, 2, 3 and the clue used ("" when none).
+    ``mu``/``sd`` override the means of the face and the spread (used by the calibration)."""
+    mu = mu if mu is not None else depth_mu(face, incidence)
+    sd = sd if sd is not None else DEPTH_SD_M
     if depth is None or mu is None:
         return np.ones(3), ""
     d = float(depth)
     if d >= limit - 2.5:  # reached the end of the profile: D >= limit
-        return np.array([1 - _ncdf((limit - m) / DEPTH_SD_M) for m in mu]) + 1e-12, "depth_censored"
-    return np.array([_npdf(d, m, DEPTH_SD_M) for m in mu]) + 1e-300, "depth"
+        return np.array([1 - _ncdf((limit - m) / sd) for m in mu]) + 1e-12, "depth_censored"
+    return np.array([_npdf(d, m, sd) for m in mu]) + 1e-300, "depth"
 
 
 def db_like(db_line, face: str) -> tuple[np.ndarray, str]:
@@ -262,13 +299,34 @@ def load_sections(out: Path, site_id: str) -> list[dict]:
     return [{**f["properties"], "coords": f["geometry"]["coordinates"]} for f in json.loads(p.read_text(encoding="utf-8"))["features"]]
 
 
+OWNER_CLASS = {"grey": "owner:achromatic", "bw": "owner:achromatic", "vivid": "owner:strong", "": "owner:blank"}
+
+
+def colour_lr(cls: str) -> float:
+    """LR of a colour class: the automatic class of #5, or ``owner:*`` for a row checked by eye."""
+    if cls.startswith("owner:"):
+        return float(S2_LR_OWNER.get(cls[6:], 1.0))
+    return float(S2_LR.get(cls, 1.0))
+
+
 def load_colours(out: Path, site_id: str) -> dict[str, list[tuple[str, str]]]:
-    """{section_id: [(S2 time, colour class)]} from the S2 labels: the hull colour only (status ok)."""
+    """{section_id: [(S2 time, colour class)]} from the S2 labels: the hull colour only (status ok).
+    A row checked by eye (verified 1) uses the owner's colour when the calibration is loaded
+    (blank: the owner saw no colour to judge, LR 1); a row the owner could not judge (verified 0)
+    keeps the automatic class."""
     out_: dict = {}
     for r in read_csv(out / "labels" / f"{site_id}-s2-labels.csv"):
-        if r.get("status") != "ok" or not r.get("color_class") or r.get("date", "") >= FREEZE_UTC:
+        if r.get("status") != "ok" or r.get("date", "") >= FREEZE_UTC:
             continue
-        out_.setdefault(r["section_id"], []).append((r["acquired_utc"], r["color_class"]))
+        if S2_LR_OWNER and r.get("verified") == "1":
+            if r.get("verified_occupied") != "1":
+                continue
+            cls = OWNER_CLASS.get(r.get("verified_color") or "", "owner:blank")
+        elif r.get("color_class"):
+            cls = r["color_class"]
+        else:
+            continue
+        out_.setdefault(r["section_id"], []).append((r["acquired_utc"], cls))
     return out_
 
 
@@ -320,7 +378,7 @@ class Site:
         if best is None:
             return 0.0, 0.0, None, None, None
         dt, t2, cls = best
-        return math.log(S2_LR.get(cls, 1.0)), kappa(dt), t2, cls, round(dt, 1)
+        return math.log(colour_lr(cls)), kappa(dt), t2, cls, round(dt, 1)
 
 
 def face_of(seg: dict, site: Site, xy: np.ndarray, look_az) -> tuple[str, str, list]:
@@ -363,6 +421,7 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         p_inc = INCIDENCE_BY_ORBIT.get(prow["site_id"], {}).get(str(prow.get("relative_orbit")))
     sectors: dict = {"A": [np.ones(1), np.ones(1), np.ones(1)], "B": [np.ones(1), np.ones(1), np.ones(1)]}
     tot_s, tot_w, tot_wa = np.ones(1), np.ones(1), np.ones(1)
+    hard_n, hard_mean = 0, 0.0
     details = []
     clues_count: dict = {}
     for it in items:
@@ -418,7 +477,10 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         length = max(20.0, (float(f.get("length_m") or 0) - LENGTH_TRIM_M - (k - 1) * GAP_M) / k)
         ln_lr, kap, t2, ccls, dt = site.colour(it["secs"], row["acquired_utc"])
         if t2 is not None:
-            clues.append("s2_colour")
+            clues.append("s2_colour_owner" if str(ccls).startswith("owner:") else "s2_colour")
+        hard = str(f.get("osm_way")) in HARD_WAYS
+        if hard:
+            clues.append("hard")
         pw = warship_p(place, length, ln_lr, kap, min_bin=1)     # 60 m or more (the headline)
         pwa = warship_p(place, length, ln_lr, kap)               # any length (the breakdown)
         ps, pwar = stretch_dists(pc, k, pw, p_real)
@@ -431,6 +493,9 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
         for c in set(clues):
             clues_count[c] = clues_count.get(c, 0) + 1
         sw = dist_stats(pwar)
+        if hard:
+            hard_n += 1
+            hard_mean += float((np.arange(len(pwar)) * pwar).sum() / pwar.sum())
         details.append({
             "n": f.get("n"), "sector": f.get("sector"), "line_kind": f.get("line_kind"), "osm_way": f.get("osm_way"),
             "side": _side(f), "place": place, "face": face or None, "face_from": it["how"] or None,
@@ -442,7 +507,7 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
             "s2": ({"acquired_utc": t2, "colour": ccls, "dt_h": dt, "kappa": kap} if t2 else None),
             "warship_median": sw["median"], "warship_p10": sw["p10"], "warship_p90": sw["p90"],
             "sar_recorded": {"peak_dvv_db": f.get("peak_dvv_db"), "peak_dvh_db": f.get("peak_dvh_db")},
-            "clues": sorted(set(clues)),
+            "clues": sorted(set(clues)), "hard_to_judge": hard,
             "est1_n_mode": f.get("n_mode"), "est1_warship_mode": f.get("warship_mode"),
         })
     return {
@@ -451,6 +516,7 @@ def estimate_scene(row: dict, segs: list[dict], site: Site, partner: tuple[dict,
                       for s, v in sectors.items()},
         "c_mean": round(float(np.mean([d["c_mean"] for d in details])), 2) if details else None,
         "clues": clues_count, "stretches": details,
+        "hard": {"stretches": hard_n, "warship_mean": round(hard_mean, 1)},
         "warship_dist": [round(float(x), 4) for x in tot_w / tot_w.sum()],
     }
 
@@ -524,15 +590,16 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
             "ships_median": e["ships"]["median"], "ships_p10": e["ships"]["p10"], "ships_p90": e["ships"]["p90"],
             "c_mean": e["c_mean"] if e["c_mean"] is not None else "",
             "used_depth": cl.get("depth", 0) + cl.get("depth_censored", 0), "used_db_line": cl.get("db_line", 0),
-            "used_pair": cl.get("pair", 0), "used_s2_colour": cl.get("s2_colour", 0), "smear_discounted": cl.get("smear", 0),
+            "used_pair": cl.get("pair", 0), "used_s2_colour": cl.get("s2_colour", 0) + cl.get("s2_colour_owner", 0), "smear_discounted": cl.get("smear", 0),
             "face_from_sections": cl.get("face_sections", 0), "no_face": sum(1 for d in st if not d["face"]),
+            "hard_stretches": e["hard"]["stretches"], "hard_warship_mean": e["hard"]["warship_mean"],
             "est1_warship_mode": r.get("est_warship_mode", ""), "est1_warship_p10": r.get("est_warship_p10", ""),
             "est1_warship_p90": r.get("est_warship_p90", ""),
         })
         scenes.append({"site_id": sid, "acquired_utc": r["acquired_utc"], "relative_orbit": r.get("relative_orbit"),
                        "pair_id": pid or None, "incidence_deg": inc, "in_sample": r.get("in_sample", ""),
                        "warship": e["warship"], "warship_all": e["warship_all"], "ships": e["ships"], "by_sector": e["by_sector"],
-                       "warship_dist": e["warship_dist"],
+                       "warship_dist": e["warship_dist"], "hard": e["hard"],
                        "clues": {CLUE_NAMES.get(k, k): v for k, v in sorted(cl.items())},
                        "est1": {"all_mode": r.get("est_mode"), "warship_mode": r.get("est_warship_mode"),
                                 "warship_p10": r.get("est_warship_p10"), "warship_p90": r.get("est_warship_p90"),
@@ -611,21 +678,63 @@ def label_check(out: Path, site_id: str = "ZJG") -> dict:
 
 
 # --- description ----------------------------------------------------------------------------------
-LIMITS = [
+def _limits_calib(c: dict) -> list[str]:
+    lab, ev, fit = c.get("labels", {}), c.get("evaluation", {}), c.get("fit", {})
+    bc, ac = ev.get("before", {}).get("columns", {}), ev.get("after_cv", {}).get("columns", {})
+    bo, ao = ev.get("before", {}).get("occupied", {}), ev.get("after_cv", {}).get("occupied", {})
+    hw = fit.get("hard_ways", {})
+    sm, sh = fit.get("smear", {}), c.get("shrinkage", {})
+    hw_counts = "・".join(f"{v['cannot_judge']}／{v['answered']}" for v in hw.values())
+
+    def pct(k, n):  # from the counts (the shares in the file are already rounded)
+        return f"{100 * k / n:.0f}%" if k is not None and n else "—"
+
+    return [
+        (f"較正 1 回目（#7）：所有者 1 人が Sentinel-2 の 10 m 自然色で目で確かめたラベル（判断できた {lab.get('verified')} 区間×日、"
+         f"判断できない {lab.get('cannot_judge')}）で、列数の奥行きの平均・σ、にじみの割り引き、S2 の色の LR を見直した。"
+         "目視の正しさ自体は確かめておらず、10 m 画素では 1 列か 2 列か・灰か白かを誤り得る"),
+        ("較正したのは奥行きの平均・σ・にじみ・色の LR だけ。π（区画・長さごとの軍艦の割合）・κ・列数の事前分布・二回反射の線（重み 0）・長さの分け方は仮置きのまま。"
+         "軍艦かどうかの正解は無く、π と色の LR は確かめられていない"),
+        (f"列数の較正に使えたのは {lab.get('column_rows')} 件（人の列数と S1 の奥行きの組、大半が軌道 157 のレーダー向きの面）と少ない。"
+         "反対向き・沿う面の 2・3 列と軌道 84 は 0〜1 件で、全体のずれ"
+         f"（{fit.get('depth', {}).get('offset')} m）を足した仮置き値に近いまま。日付ごとの交差検証で、列数の一致率は "
+         f"{pct(bc.get('agree'), bc.get('n'))}→{pct(ac.get('agree'), ac.get('n'))}（{bc.get('n')} 件）、占有の一致率は "
+         f"{pct(bo.get('agree'), bo.get('n'))}→{pct(ao.get('agree'), ao.get('n'))}（{bo.get('n')} 件。上がった分はにじみの割り引きの "
+         f"{sm.get('n')} 行から来ており、それ以外の行の判定は較正の前後で同じ）"),
+        (f"にじみの割り引き（本当に船である確率）{SMEAR_P_REAL:g} は、該当する S1 占有 {sm.get('n')} 件のうち人が船を見た {sm.get('seen')} 件に基づき、"
+         f"擬似件数 {sh.get('smear_pseudo_n', 5):g} で仮置き {PH_SMEAR_P_REAL:g} 側へ縮めた値。件数が少なく、確かな値ではない"),
+        ("人の判定は S2 の時刻（03 時台 UTC）のもので、S1 とは −40.5〜+79.4 時間ずれる。その間の入出港を含んだまま較正しており、"
+         "奥行き・にじみ・占有の値はどちら向きにも偏り得る（S2 の後に入港すれば人は「いない」・S1 は「いる」、出港すればその逆）"),
+        ("S2 の色は 10 m では灰と白（海警・白い船体）を分けられないとみなし「無彩色」にまとめた。LR は上限（無彩色 1.5、強い色 0.3）を置き、"
+         "自動の判定は人との一致の割合で 1 に近づけた。所有者が確かめた行は人の色を使う"),
+        (f"OSM の線 {'・'.join(hw)} は人の目でも判断できない区間×日が多い（{hw_counts}）。"
+         f"規則：人が答えた行が {sh.get('hard', {}).get('min_answers', 5)} 件以上で、その {100 * sh.get('hard', {}).get('cannot_share', 0.5):.0f}% 以上が「判断できない」の線"
+         "（971239820 は 5 件でちょうど下限。件数が増えれば外れることがある）。"
+         "est-2 の値は変えず、区間に hard_to_judge、撮影ごとに hard_stretches（区間の数）・hard_warship_mean（その区間の 60 m 以上の軍艦の期待値）として注記する"),
+    ]
+
+
+LIMITS_PH = [
     "値はすべて仮置き・較正前（司令部の 1 次元模擬と仮置きの値）。正解データ（人の目で確認したラベル）での較正は #7 で行う",
-    "隻数の 80% 区間はモデル内の区間（このモデルと仮置き値が正しいとしたときの p10〜p90）で、実数がこの区間に入る確率ではない",
+]
+LIMITS = (_limits_calib(CALIB) if _P else LIMITS_PH) + [
+    "隻数の 80% 区間はモデル内の区間（このモデルと設定値が正しいとしたときの p10〜p90）で、実数がこの区間に入る確率ではない",
     ("「軍艦の可能性が高い船」は、各隻を区画・長さ・S2 の色から求めた確率 P で軍艦として引いた数の分布（P の閾値で数えたものではない）。"
      "見出しの数は 60 m 以上の船に限り、60 m 未満（022 型ミサイル艇など）を含む全長の数は内訳として別の列（*_all_*）に出す。艦種・所属は分からない。民間船・作業船も確率つきで入る"),
     "AIS は使っていない（m_AIS＝0）：湛江の軍港は aisstream の受信網の外で、試行で 0 隻だった。軍艦は AIS を出さないことも多い",
-    "S2 の色は自動判定（#5、未確認）の船体の色だけを使い、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影の色は 0（使わない）",
-    "2026-10-27 以降の S2 の日の色は入力に使わない（標本外として凍結。#7 まで現状維持）",
-    "外側の二回反射の線は #7 の較正まで重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わないため",
-    "S2 ラベルの占有・列数（#5、自動・未確認）は推定の入力にも正解にも使っていない（列数の一致表は確認のためだけ）",
+    ("S2 の色は船体の色だけを使い（所有者が確かめた行は人の色、それ以外は自動判定）、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影の色は 0（使わない）"
+     if _P else "S2 の色は自動判定（#5、未確認）の船体の色だけを使い、時刻差に応じて κ で弱める。前後 96 時間以内に S2 の晴れの日が無い撮影の色は 0（使わない）"),
+    "2026-10-27 以降の S2 の日の色・ラベルは入力にも較正にも使わない（標本外として凍結）",
+    ("外側の二回反射の線は重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わない。#7 でも較正していない"
+     if _P else "外側の二回反射の線は #7 の較正まで重み 0（記録だけ）。#5 の S1 の実測（大半 5〜14 m）が仮置きの平均（22／42／62 m）と合わないため"),
+    ("S2 の自動ラベルの占有・列数（#5）は推定の入力に使っていない。所有者が確かめたラベルは較正（奥行き・にじみ・色）に使い、同じラベルでの評価は日付ごとの交差検証で出した"
+     if _P else "S2 ラベルの占有・列数（#5、自動・未確認）は推定の入力にも正解にも使っていない（列数の一致表は確認のためだけ）"),
     "SAR の明るさ（ΔVV・ΔVH）は記録だけで判定に使っていない",
     "軌道の組（36 時間以内）の間の入出港は無いものとしている",
     ("区間どうしは独立と仮定（同じ桟橋の区間の相関を入れていない）ので、合計の 80% 区間は実際より狭く出やすい。"
      "est-1 の「60 m 以内のまとまり」のにじみの割り引きは入れていない（反対向きの面のにじみだけ割り引く）"),
-    "2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値",
+    ("2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値。10-26 の S1 は S2 の 10-23 と組んで #7 の較正データ（奥行き・にじみ）にも入っている"
+     if _P else "2026-10-26 以前の撮影は quay-v1 の閾値の調整に使った標本内の値"),
     "数えられない区間（常時占有・OSM に無い岸壁）は est-1 と同じく入らない",
 ]
 
@@ -645,7 +754,11 @@ def settings() -> dict:
             "depth_limit_m": f"{DEPTH_LIMIT_M:g}（feat-1 の前の記録は {DEPTH_LIMIT_OLD_M:g}）。上限に達した奥行きは「以上」として扱う",
             "db_line_mean_m": list(DB_MU), "db_line_sd_m": DB_SD_M,
             "db_line_weight": DB_WEIGHT,
-            "db_line_note": ("#7 の較正まで重み 0・記録だけ（区間ごとの値は quay_est2.json の db_line_m、使えた区間の数は used_db_line）。"
+            "placeholder_depth_mean_m": {"反対向き": list(PH_DEPTH_MU["away"]), "沿う": list(PH_DEPTH_MU["along"]),
+                                         "レーダー向き・軌道 157（入射約 45°）": list(PH_TOWARD_MU[45.0]),
+                                         "レーダー向き・軌道 84（入射約 32°）": list(PH_TOWARD_MU[32.0])},
+            "placeholder_depth_sd_m": PH_DEPTH_SD_M,
+            "db_line_note": ("重み 0・記録だけ（#7 でも較正していない。区間ごとの値は quay_est2.json の db_line_m、使えた区間の数は used_db_line）。"
                              "#5 の S1 の実測は大半が 5〜14 m で、仮置きの平均 22／42／62 m と合わない。平均・σ は将来の較正用の仮置き"),
             "pair": "軌道の組（pair_id）があれば、同じ面のもう一方の撮影の尤度も掛ける",
             "smear": (f"反対向きの面の占有で、同じ桟橋（同じ OSM の線）のレーダー向きの面が {SMEAR_MAX_M:g} m 以内で同じ撮影で占有のとき、"
@@ -657,6 +770,8 @@ def settings() -> dict:
             "pi": {PLACE_NAMES[k]: dict(zip(("60 m 未満", "60〜100 m", "100 m 以上"), v)) for k, v in PI.items()},
             "length": f"1 隻の長さ＝(区間長−{LENGTH_TRIM_M:g} m−(k−1)×{GAP_M:g} m)／k（k＝quay-v1 の片の数）、N(・, {LEN_SD_M:g} m) で 3 階級に分ける",
             "s2_lr": S2_LR,
+            "s2_lr_owner": S2_LR_OWNER or None,
+            "s2_lr_placeholder": PH_S2_LR,
             "kappa": {"8 時間以内": 0.85, "24 時間以内": 0.6, "48 時間以内": 0.4, f"それ以上（{S2_MAX_H:g} 時間まで）": KAPPA_FAR},
             "s2_window": f"S1 の撮影の前後 {S2_MAX_H:g} 時間（#5 の突き合わせと同じ 4 日）以内の最も近い S2 の晴れの日。それより離れた日の色は使わない",
             "sar": "記録だけ", "ais": "使わない（m_AIS＝0）",
@@ -666,7 +781,14 @@ def settings() -> dict:
                   "内訳の warship_all_*・a_all_*・b_all_* は 60 m 未満を含む全長の軍艦（湛江には 022 型ミサイル艇（約 43 m）など 60 m 未満の軍艦もいる）。"
                   "区画・地点は畳み込み。中央値とモデル内 80% 区間（p10〜p90）"),
         "limits": LIMITS,
-        "accuracy": "2026-10-27 以降の撮影を標本外として凍結。列数の混同行列・80% 区間の的中率・ブライアスコアは #7（人の目で確認したラベル約 100 区間）",
+        "accuracy": ("2026-10-27 以降の撮影を標本外として凍結。較正 1 回目の評価（同じラベルでの日付ごとの交差検証）は calibration.evaluation。"
+                     "80% 区間の的中率は軍艦の正解が無く、まだ出せない" if _P else
+                     "2026-10-27 以降の撮影を標本外として凍結。列数の混同行列・80% 区間の的中率・ブライアスコアは #7（人の目で確認したラベル約 100 区間）"),
+        "calibration": ({"version": CALIB.get("version"), "file": "sat/quay_est2_calib.json", "labels": CALIB.get("labels"),
+                         "params": CALIB.get("params"), "depth_table": CALIB.get("fit", {}).get("depth", {}).get("table"),
+                         "smear": CALIB.get("fit", {}).get("smear"), "colour": CALIB.get("fit", {}).get("colour"),
+                         "hard_ways": CALIB.get("fit", {}).get("hard_ways"), "shrinkage": CALIB.get("shrinkage"),
+                         "evaluation": CALIB.get("evaluation"), "auto_vs_owner": CALIB.get("auto_vs_owner")} if _P else None),
     }
 
 

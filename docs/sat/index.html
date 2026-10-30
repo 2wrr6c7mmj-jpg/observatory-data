@@ -88,19 +88,22 @@ small,.note{color:#555}
 <p id="qcaption" class="note"></p>
 <div id="qbox" style="position:relative;display:inline-block;max-width:100%"><img id="qimg" alt="選んだ撮影の変化カラー画像（凡例つき）" hidden style="display:block;max-width:100%;image-rendering:pixelated;border:1px solid #999"><svg id="qsvg" xmlns="http://www.w3.org/2000/svg" hidden style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none"></svg></div>
 
-<h3>est-1 と est-2 を並べて見る（どちらも試行。est-2 は仮置き・較正前）</h3>
-<p class="trial"><b>est-2（仮置き・較正前）</b>：同じ占有区間から、<b>軍艦の可能性が高い船</b>の隻数を数え直した別の推定です。est-1 の値は変えずに、横に並べて出します。新しい衛星データは取らず、取得済みの記録だけから毎日計算し直します。</p>
+<h3>est-1 と est-2 を並べて見る（どちらも試行。est-2 は較正 1 回目、一部は仮置き）</h3>
+<p class="trial"><b>est-2（試行・較正 1 回目）</b>：同じ占有区間から、<b>軍艦の可能性が高い船</b>の隻数を数え直した別の推定です。est-1 の値は変えずに、横に並べて出します。新しい衛星データは取らず、取得済みの記録だけから毎日計算し直します。</p>
 <ul>
-<li>横に何隻並んでいるか（1〜3 列）を、占有の奥行きから見積もります（外側の二回反射の線の位置は記録だけで、較正まで使いません。実測が仮置きの値と合わないためです）。2 つの軌道（157・84）で同じ岸壁を見た組があれば両方を使います。桟橋の反対側の船が回り込んで写ったとみられる占有（レーダーと反対向きの面）は割り引きます</li>
-<li>1 隻ごとの「軍艦らしさ」は、区画（A の桟橋・A の海岸線・B）と船の長さの目安から決め、近い日の Sentinel-2 で船体が灰色（色は自動判定で、人が確かめていません）なら少し上げ、色が付いていれば少し下げます（撮影の時刻差が大きいほど弱めます。4 日より離れた日は使いません）。レーダーの明るさは記録だけで使っていません</li>
+<li>横に何隻並んでいるか（1〜3 列）を、占有の奥行きから見積もります（外側の二回反射の線の位置は記録だけで使っていません。実測が仮置きの値と合わないためです）。2 つの軌道（157・84）で同じ岸壁を見た組があれば両方を使います。桟橋の反対側の船が回り込んで写ったとみられる占有（レーダーと反対向きの面）は割り引きます</li>
+<li>1 隻ごとの「軍艦らしさ」は、区画（A の桟橋・A の海岸線・B）と船の長さの目安から決め、近い日の Sentinel-2 で船体が灰色・白（10 m 画素では灰と白を見分けられないため「無彩色」としてまとめます。海警の白い船も入ります）ならわずかに上げ、強い色が付いていればわずかに下げます（所有者が目で確かめた日は人の判定、それ以外は自動判定。撮影の時刻差が大きいほど弱めます。4 日より離れた日は使いません）。レーダーの明るさは記録だけで使っていません</li>
 <li>隻数は、1 隻ごとにこの確率で「軍艦かどうか」をくじのように引いたときの数の分布です（確率がある値を超えた船を数えたものではありません）。<b>見出しの数は 60 m 以上の船に限ります</b>。60 m 未満の軍艦（湛江には約 43 m の 022 型ミサイル艇などがいます）を含めた数は、表の右の「内訳」に別に出します</li>
-<li><b>使っている値はすべて仮置きで、正解データでの較正はまだです</b>。区間は<b>モデル内の 80% 区間</b>（このモデルと仮置き値が正しければの区間）で、実数がこの範囲に入る確率ではありません。艦種・所属は分からず、民間船も確率つきで入ります</li>
+<li><b>較正 1 回目</b>：所有者 1 人が Sentinel-2 の 10 m 自然色を目で見て確かめた岸壁区間×日のラベル（判断できた 81 件、判断できない 38 件）で、奥行きと列数の対応、桟橋の反対側のにじみの割り引き（本当に船である確率 0.3→0.68）、色の重みを見直しました。0.68 は該当する 12 件（人が船を見たのは 10 件）に基づき、件数が少ないため仮置きの 0.3 の側へ縮めた値です。列数の対応に使えたのは 45 件と少なく、日付ごとの交差検証で<b>列数の一致率は較正の前後で変わりません（84%）</b>。占有の一致率は 81% から 91% に上がりましたが、上がった分はすべてこのにじみの 12 行から来ています（それ以外の行の判定は変わりません）。目視そのものも 10 m 画素では誤り得ます</li>
+<li>人の判定は Sentinel-2 の時刻（昼前）のもので、Sentinel-1 とは −40.5〜+79.4 時間ずれます。その間に入出港があれば、較正した値はどちら向きにも偏り得ます</li>
+<li><b>軍艦かどうかの正解はまだ無く</b>、区画・長さごとの軍艦の割合（π）、時刻差の弱め方、列数の事前分布は仮置きのままです。区間は<b>モデル内の 80% 区間</b>（このモデルと設定値が正しければの区間）で、実数がこの範囲に入る確率ではありません。艦種・所属は分からず、民間船も確率つきで入ります</li>
+<li>OSM の海岸線 13977070 などは、人の目でも船の有無を判断できない日が多い区間です。est-2 の値は変えず、表の「判断しにくい区間」にその区間の数と、そのうちの 60 m 以上の軍艦の期待値を出します</li>
 <li>AIS（船の位置の自動発信）は使っていません。湛江の軍港は受信網の外で試行では 0 隻で、軍艦は AIS を出さないことも多いためです</li>
-<li>est-1 の「60 m 以上の船」は長さだけで分けた数、est-2 の「軍艦の可能性が高い船」は区画・長さ・色で確率をつけて数えた数で、定義が違います。表の A・B の est-1 は全船の数です。区間どうしを独立とみなしているため、合計の 80% 区間は実際より狭く出やすいです。2026-10-26 以前の撮影は数え方の調整に使った撮影です</li>
+<li>est-1 の「60 m 以上の船」は長さだけで分けた数、est-2 の「軍艦の可能性が高い船」は区画・長さ・色で確率をつけて数えた数で、定義が違います。表の A・B の est-1 は全船の数です。区間どうしを独立とみなしているため、合計の 80% 区間は実際より狭く出やすいです。2026-10-26 以前の撮影は数え方の調整に使った撮影です。10-26 の撮影は Sentinel-2 の 10-23 と組んで較正のデータにも入っています</li>
 </ul>
 <p id="e2empty" class="note">読み込み中…</p>
 <table id="e2tbl" hidden>
-<thead><tr><th>撮影時刻（UTC）</th><th>相対軌道</th><th>est-1：全船のうち 60 m 以上（軍艦かどうかは問わない）最頻値（80% 区間）</th><th>est-1：A 全船</th><th>est-1：B 全船</th><th>est-2：軍艦の可能性が高い船（60 m 以上）合計 推定（80% 区間）</th><th>est-2：同 A 軍港区画</th><th>est-2：同 B 水道</th><th>内訳：60 m 未満を含む軍艦の可能性が高い船 合計（A／B）</th><th>標本</th></tr></thead>
+<thead><tr><th>撮影時刻（UTC）</th><th>相対軌道</th><th>est-1：全船のうち 60 m 以上（軍艦かどうかは問わない）最頻値（80% 区間）</th><th>est-1：A 全船</th><th>est-1：B 全船</th><th>est-2：軍艦の可能性が高い船（60 m 以上）合計 推定（80% 区間）</th><th>est-2：同 A 軍港区画</th><th>est-2：同 B 水道</th><th>内訳：60 m 未満を含む軍艦の可能性が高い船 合計（A／B）</th><th>判断しにくい区間（数／期待値）</th><th>標本</th></tr></thead>
 <tbody></tbody>
 </table>
 <p id="e2clues" class="note"></p>
@@ -219,11 +222,11 @@ Promise.all([txt0('quay_counts.csv'),txt0('quay_est2.csv'),fetch(base+'quay_est2
  const qi={};q.forEach(r=>qi[r.acquired_utc+'|'+r.mask_version]=r);
  e.forEach(r=>{const o=qi[r.acquired_utc+'|'+r.mask_version]||{};const tr=document.createElement('tr');
   [r.acquired_utc,r.relative_orbit,o.est_version?`${o.est_warship_mode}（${o.est_warship_p10}〜${o.est_warship_p90}）`:'',o.est_version?`${o.est_a_mode}（${o.est_a_p10}〜${o.est_a_p90}）`:'',o.est_version?`${o.est_b_mode}（${o.est_b_p10}〜${o.est_b_p90}）`:'',
-   `${r.warship_median}（${r.warship_p10}〜${r.warship_p90}）`,`${r.a_median}（${r.a_p10}〜${r.a_p90}）`,`${r.b_median}（${r.b_p10}〜${r.b_p90}）`,r.warship_all_median!==''&&r.warship_all_median!==undefined?`${r.warship_all_median}（${r.warship_all_p10}〜${r.warship_all_p90}）（A ${r.a_all_median}／B ${r.b_all_median}）`:'',SAMPLE[r.in_sample]||''].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
+   `${r.warship_median}（${r.warship_p10}〜${r.warship_p90}）`,`${r.a_median}（${r.a_p10}〜${r.a_p90}）`,`${r.b_median}（${r.b_p10}〜${r.b_p90}）`,r.warship_all_median!==''&&r.warship_all_median!==undefined?`${r.warship_all_median}（${r.warship_all_p10}〜${r.warship_all_p90}）（A ${r.a_all_median}／B ${r.b_all_median}）`:'',r.hard_stretches!==''&&r.hard_stretches!==undefined?`${r.hard_stretches}／${r.hard_warship_mean}`:'',SAMPLE[r.in_sample]||''].forEach(v=>{const td=document.createElement('td');td.textContent=v===''||v===undefined?'—':v;tr.appendChild(td);});
   tb.appendChild(tr);});
  const sc=j&&j.scenes?j.scenes.filter(s=>s.site_id==='ZJG').sort((x,y)=>y.acquired_utc.localeCompare(x.acquired_utc))[0]:null;
  if(sc){const n=sc.stretches.length;const cl=Object.entries(sc.clues||{}).map(([k,v])=>`${k} ${v}`).join('、');
-  document.getElementById('e2clues').textContent=`直近の撮影 ${sc.acquired_utc}（相対軌道 ${sc.relative_orbit}${sc.pair_id?'、軌道の組あり':''}）の est-2 で使えた手がかり（${n} 区間のうち使えた区間の数）：${cl||'なし'}。値は仮置き・較正前です。`;}
+  document.getElementById('e2clues').textContent=`直近の撮影 ${sc.acquired_utc}（相対軌道 ${sc.relative_orbit}${sc.pair_id?'、軌道の組あり':''}）の est-2 で使えた手がかり（${n} 区間のうち使えた区間の数）：${cl||'なし'}。較正 1 回目（一部は仮置き）の値です。`;}
 }).catch(()=>{document.getElementById('e2empty').textContent='読み込めませんでした。';});
 // Sentinel-2 natural colour (s2nc-1, display only): clear days, each next to the nearest Sentinel-1 colour / change image (within 4 days).
 const S2_PAIR_DAYS=4;

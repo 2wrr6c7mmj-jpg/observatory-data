@@ -380,6 +380,37 @@ def nearest_s1(acqs: list[dict], t: datetime, orbits: set, window_days: float = 
 
 # ---------------------------------------------------------------- I/O
 
+VERIFIED_FIELDS = ("verified", "verified_occupied", "verified_c", "verified_color", "verified_by", "verified_note")
+
+
+def verified_summary(labels: list[dict]) -> dict:
+    """Counts of the rows checked by eye (verified 1 / 0) and who / how (no personal ids)."""
+    v = [r for r in labels if str(r.get("verified", "")) in ("0", "1")]
+    return {"answered": len(v), "verified": sum(1 for r in v if str(r["verified"]) == "1"),
+            "cannot_judge": sum(1 for r in v if str(r["verified"]) == "0"),
+            "by": sorted({r.get("verified_by") or "" for r in v}),
+            "notes": sorted({r.get("verified_note") or "" for r in v}),
+            "dates": sorted({r.get("date") for r in v}),
+            "use": "est-2 の較正（#7、sat/quay_est2_calib.py）は status＝ok かつ verified＝1 の行だけを使う"}
+
+
+def carry_verified(path: Path, labels: list[dict]) -> int:
+    """Keep the human checks (verified_*) of an existing labels file when the labels are made again
+    (same section_id and date). Returns the number of rows carried over."""
+    if not path.exists():
+        return 0
+    with path.open(encoding="utf-8", newline="") as f:
+        old = {(r["section_id"], r["date"]): r for r in csv.DictReader(f) if r.get("verified") not in (None, "")}
+    n = 0
+    for r in labels:
+        o = old.get((r.get("section_id"), r.get("date")))
+        if o is not None:
+            for k in VERIFIED_FIELDS:
+                r[k] = o.get(k, "")
+            n += 1
+    return n
+
+
 def _write(path: Path, rows: list[dict], fields: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     buf = io.StringIO()
@@ -417,7 +448,7 @@ def load_raw(raw: Path, name: str) -> dict | None:
 def settings() -> dict:
     return {
         "version": LABELS_VERSION,
-        "status": "自動・未確認（人の目で確かめるまで正解として使わない。verified の列は空）",
+        "status": "自動（人の目で確かめるまで正解として使わない。確かめた行は verified の列に記入。集計は meta.json の verified）",
         "days": f"s2_scenes.csv の clear の日のうち {FREEZE_FROM} より前（それ以降の撮影は標本外として凍結し、ここでは使わない）",
         "sections": (f"岸壁の線（OSM、quay-v1 と同じ Geometry）の水側を、有効な点の続く所ごとに約 {SECTION_M:g} m の等しい長さに切った区間"
                      f"（{SECTION_MIN_M:g} m 未満は捨てる）。id＝<OSM way>:<L|R>:<番号>（L＝線の左側）。線と区間の表は ZJG-s2-sections.geojson"),
@@ -600,6 +631,7 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
                         m["d_depth_m"] = f["s1_depth_m"] - r["depth_m"]
                 match.append(m)
     ldir = out / "labels"
+    carry_verified(ldir / f"{site['id']}-s2-labels.csv", labels)
     _write(ldir / f"{site['id']}-s2-labels.csv", labels, LABEL_FIELDS)
     _write(ldir / f"{site['id']}-s2-s1-match.csv", match, MATCH_FIELDS)
     fc = {"type": "FeatureCollection",
@@ -621,6 +653,7 @@ def build(site: dict, out: Path, raw: Path, client=None, max_pu: float = 120.0, 
             "water_reference": {d["date"]: {k: round(v, 4) if isinstance(v, float) else v for k, v in ref.items()} for d, *_, ref, _v in loaded},
             "summary": summ["stats"],
             "summary_note": "summary の c・color_class・S1 との比較は status＝ok の行だけで数える",
+            "verified": verified_summary(labels),
             "match_dt": match_dt,
             "files": {f"{site['id']}-s2-labels.csv": "区間×晴れの日の自動ラベル（自動・未確認。verified_* は人が確かめて埋める）",
                       f"{site['id']}-s2-s1-match.csv": "同じ区間×晴れの日の S2 ラベルと、近い S1 の撮影の岸壁の特徴の突き合わせ",

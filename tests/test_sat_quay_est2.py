@@ -36,7 +36,9 @@ ROW = {"site_id": "ZJG", "acquired_utc": "2026-10-26T10:48:45Z", "relative_orbit
 class PartsTest(unittest.TestCase):
     def test_depth_likelihood_orders_columns(self):
         for face in ("toward", "along", "away"):
-            for d, c in ((35, 1), (60, 2), (95, 3)):
+            mu = e2.depth_mu(face, 45.0)
+            self.assertTrue(mu[0] < mu[1] < mu[2])
+            for c, d in zip((1, 2, 3), mu):
                 lk, cl = e2.depth_like(d, face, 45.0, 120.0)
                 self.assertEqual(int(np.argmax(lk)) + 1, c, (face, d))
                 self.assertEqual(cl, "depth")
@@ -49,9 +51,11 @@ class PartsTest(unittest.TestCase):
         self.assertEqual(e2.depth_like(50, "", 45.0, 120.0)[1], "")
 
     def test_toward_means_by_incidence(self):
-        self.assertEqual(e2.toward_mu(45.0), (45.0, 65.0, 95.0))
-        self.assertEqual(e2.toward_mu(32.0), (55.0, 75.0, 95.0))
-        self.assertEqual(e2.toward_mu(38.5), (50.0, 70.0, 95.0))
+        self.assertEqual(e2.toward_mu(45.0), e2.TOWARD_MU[45.0])
+        self.assertEqual(e2.toward_mu(32.0), e2.TOWARD_MU[32.0])
+        mid = e2.toward_mu(38.5)
+        for a, b, m in zip(e2.TOWARD_MU[45.0], e2.TOWARD_MU[32.0], mid):
+            self.assertAlmostEqual(m, (a + b) / 2)
 
     def test_db_line_recorded_only(self):
         # weight 0 until #7: even on a face toward the radar the likelihood is flat, but the clue is counted
@@ -111,11 +115,12 @@ class SceneTest(unittest.TestCase):
 
     def test_pair_and_smear(self):
         a = feat(1, depth=60, face="toward")
-        # the opposite face of the same pier (away), occupied in the same scene: a smear with p 0.3
+        # the opposite face of the same pier (away), occupied in the same scene: a smear (P(real) < 1)
         b = feat(2, side=-1, depth=30, face="away", coords=[[110.4405, 21.22 + i * 0.0001] for i in range(5)])
         r = e2.estimate_scene(ROW, [a, b], self.site())
         st = {d["n"]: d for d in r["stretches"]}
-        self.assertEqual(st[2]["p_real"], 0.3)
+        self.assertEqual(st[2]["p_real"], e2.SMEAR_P_REAL)
+        self.assertLess(e2.SMEAR_P_REAL, 1.0)
         self.assertIn("smear", st[2]["clues"])
         self.assertEqual(st[1]["p_real"], 1.0)
         # orbit pair: the partner's deeper view of the same face moves c up
@@ -171,7 +176,7 @@ class Est1UnchangedTest(unittest.TestCase):
                 self.assertLessEqual(int(b["warship_median"]), int(b["warship_all_median"]))
             doc = json.loads((out / "quay_est2.json").read_text())
             self.assertEqual(doc["version"], "est-2")
-            self.assertIn("較正前", doc["status"])
+            self.assertIn("較正" if e2.CALIB else "較正前", doc["status"])
             self.assertEqual(len(res["scenes"]), len(q))
 
     def test_run_store_est1_same_with_and_without_est2(self):
@@ -202,6 +207,86 @@ class Est1UnchangedTest(unittest.TestCase):
         self.assertFalse(outs[False]["e2"])
         self.assertTrue(outs[True]["e2"])
         self.assertEqual(outs[True]["meta"], "est-2")
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class CalibrationTest(unittest.TestCase):
+    def test_hard_way_noted_not_changed(self):
+        """A stretch on a way that is hard to judge by eye is noted; its numbers stay the same."""
+        f = feat(1, way=13977070, kind="coastline", depth=40)
+        with mock.patch.object(e2, "HARD_WAYS", set()):
+            r0 = e2.estimate_scene(ROW, [f], e2.Site("ZJG", [], {}))
+        with mock.patch.object(e2, "HARD_WAYS", {"13977070"}):
+            r1 = e2.estimate_scene(ROW, [f], e2.Site("ZJG", [], {}))
+        self.assertFalse(r0["stretches"][0]["hard_to_judge"])
+        self.assertTrue(r1["stretches"][0]["hard_to_judge"])
+        self.assertEqual(r1["hard"]["stretches"], 1)
+        self.assertEqual(r0["warship_dist"], r1["warship_dist"])
+
+    def test_owner_colour_lr(self):
+        with mock.patch.object(e2, "S2_LR_OWNER", {"achromatic": 1.5, "strong": 0.3, "blank": 1.0}):
+            self.assertEqual(e2.colour_lr("owner:achromatic"), 1.5)
+            self.assertEqual(e2.colour_lr("owner:strong"), 0.3)
+            self.assertEqual(e2.colour_lr("owner:blank"), 1.0)
+        self.assertEqual(e2.colour_lr("unknown"), 1.0)
+
+    def test_calibration_file_matches_labels(self):
+        """sat/quay_est2_calib.json is what the calibration gives on the published labels (no fetch)."""
+        if not (DATA / "labels" / "ZJG-s2-s1-match.csv").exists() or e2.CALIB is None:
+            self.skipTest("no labels or no calibration")
+        from sat import quay_est2_calib as cal
+        res = json.loads(json.dumps(cal.calibrate(DATA, "ZJG")))
+        self.assertEqual(res["params"], e2.CALIB["params"])
+        self.assertEqual(res["evaluation"], e2.CALIB["evaluation"])
+        # only verified 1, status ok, before the freeze
+        self.assertEqual(res["labels"]["verified"] + res["labels"]["cannot_judge"], res["labels"]["answered"])
+        ev = res["evaluation"]
+        self.assertEqual(ev["before"]["columns"]["n"], ev["after_cv"]["columns"]["n"])
+        # LR caps: no warship truth, so they stay mild
+        for v in res["params"]["s2_lr_auto"].values():
+            self.assertTrue(cal.LR_STRONG <= v <= cal.LR_ACHROMATIC)
+
+    def test_placeholders_without_calibration_file(self):
+        """No sat/quay_est2_calib.json (or unreadable): est-2 falls back to the design's placeholders."""
+        import importlib
+        try:
+            with mock.patch.object(e2, "load_calibration", lambda path=None: None), \
+                    mock.patch("pathlib.Path.read_text", side_effect=OSError("absent")):
+                m = importlib.reload(e2)
+            self.assertIsNone(m.CALIB)
+            self.assertEqual(m.DEPTH_MU["away"], m.PH_DEPTH_MU["away"])
+            self.assertEqual(m.TOWARD_MU, m.PH_TOWARD_MU)
+            self.assertEqual(m.DEPTH_SD_M, m.PH_DEPTH_SD_M)
+            self.assertEqual(m.SMEAR_P_REAL, m.PH_SMEAR_P_REAL)
+            self.assertEqual(m.S2_LR, m.PH_S2_LR)
+            self.assertEqual(m.S2_LR_OWNER, {})
+            self.assertEqual(m.HARD_WAYS, set())
+            self.assertIn("較正前", m.STATUS)
+            self.assertIsNone(m.settings()["calibration"])
+        finally:
+            importlib.reload(e2)
+        self.assertIsNotNone(e2.CALIB)
+
+    def test_shrink_to_placeholder_without_data(self):
+        from sat import quay_est2_calib as cal
+        d = cal.fit_depth([])
+        self.assertEqual(d["offset"], 0.0)
+        ph = cal.placeholder()
+        for g in cal.GROUPS:
+            self.assertEqual(d["depth_mu"][g], [round(x, 1) for x in ph["depth_mu"][g]])
+        self.assertEqual(d["depth_sd"], ph["depth_sd"])
+        self.assertAlmostEqual(cal.fit_smear([])["smear_p_real"], e2.PH_SMEAR_P_REAL)
+
+    def test_relabel_keeps_verified(self):
+        from sat import s2_labels
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "x.csv"
+            p.write_text("section_id,date,verified,verified_occupied,verified_c,verified_color,verified_by,verified_note\n"
+                         "a,2026-01-01,1,1,2,grey,owner,n\nb,2026-01-01,,,,,,\n", encoding="utf-8")
+            labels = [{"section_id": "a", "date": "2026-01-01"}, {"section_id": "b", "date": "2026-01-01"}]
+            self.assertEqual(s2_labels.carry_verified(p, labels), 1)
+            self.assertEqual(labels[0]["verified_c"], "2")
+            self.assertNotIn("verified", labels[1])
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
