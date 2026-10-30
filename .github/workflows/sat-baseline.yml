@@ -1,0 +1,92 @@
+name: Sentinel-1 quay baseline probe
+# 岸壁の数（quay-v1）の基準（相対軌道ごとの「船のいない岸壁」）を作る probe。過去約 6 か月の撮影をまとめて 1 回だけ取得する
+# （sat/baseline.py。湛江で約 50 シーン・約 90 PU）。OSM の桟橋・岸壁・海岸線も取る（sat/quay_lines.py）。
+# データは commit しない：結果は注釈（xz の tar を base64 で分割）に出し、確かめてから手で commit する（陸マスクと同じ流儀）。
+# 本番の定期実行はない。probe 用ブランチへの push でだけ動き、本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）と別の concurrency group。
+on:
+  push:
+    branches: ['probe/sat-baseline', 'probe/sat-baseline-*']
+permissions:
+  contents: read
+concurrency:
+  group: probe-sat-baseline-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      parts: ${{ steps.pack.outputs.parts }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Quay lines from OSM
+        run: python -m sat.quay_lines ZJG --out "$RUNNER_TEMP/bundle/masks"
+      - name: Baseline (one batch; temporary directory only)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          set -o pipefail
+          python -m sat.baseline ZJG --out "$RUNNER_TEMP/bundle/baselines" --export-scenes 3 \
+            --summary "$RUNNER_TEMP/bundle/summary.json" 2>&1 | tee "$RUNNER_TEMP/baseline.log"
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text baseline-log "$RUNNER_TEMP/baseline.log"
+          python -m sat.annotate text summary "$RUNNER_TEMP/bundle/summary.json"
+      - name: Pack
+        id: pack
+        if: always()
+        run: |
+          [ -d "$RUNNER_TEMP/bundle" ] || exit 0
+          tar -C "$RUNNER_TEMP/bundle" -cf - . | xz -9e > "$RUNNER_TEMP/bundle.tar.xz"
+          ls -lR "$RUNNER_TEMP/bundle"
+          ls -l "$RUNNER_TEMP/bundle.tar.xz"
+          n=$(( ($(base64 -w0 "$RUNNER_TEMP/bundle.tar.xz" | wc -c) + 3999) / 4000 ))
+          echo "parts=$n" >> "$GITHUB_OUTPUT"
+          echo "::notice title=bundle::$(stat -c %s "$RUNNER_TEMP/bundle.tar.xz") B, $n parts, sha256 $(sha256sum "$RUNNER_TEMP/bundle.tar.xz" | cut -c1-64)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sat-baseline
+          path: ${{ runner.temp }}/bundle.tar.xz
+          retention-days: 5
+          if-no-files-found: warn
+  export:
+    # A job keeps at most 50 annotations: 45 parts of 4000 characters per job (30 + 15 in two steps).
+    needs: build
+    if: ${{ always() && needs.build.outputs.parts != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: sat-baseline
+          path: ${{ runner.temp }}/a
+      - name: Parts 1-30 of this job
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: ${{ needs.build.outputs.parts }}
+        run: |
+          s=$(( PART * 45 ))
+          [ "$s" -lt "$PARTS" ] || exit 0
+          python3 -m sat.annotate b64 bundle "$RUNNER_TEMP/a/bundle.tar.xz" 4000 "$s" 30
+      - name: Parts 31-45 of this job
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: ${{ needs.build.outputs.parts }}
+        run: |
+          s=$(( PART * 45 + 30 ))
+          [ "$s" -lt "$PARTS" ] || exit 0
+          python3 -m sat.annotate b64 bundle "$RUNNER_TEMP/a/bundle.tar.xz" 4000 "$s" 15
