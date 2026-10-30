@@ -1,0 +1,36 @@
+name: Quay lines probe (OSM only, PU 0)
+# 岸壁線（OSM の桟橋・岸壁・海岸線、sat/quay_lines.py）だけを Overpass から取る probe。Copernicus は使わない（PU 0、秘密情報なし）。
+# probe/quaylines-* ブランチへの push でだけ動く。結果は注釈（xz の tar を base64 で分割）に出し、確かめてから手で commit する。
+on:
+  push:
+    branches: ['probe/quaylines-*']
+permissions:
+  contents: read
+concurrency:
+  group: probe-quaylines-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  lines:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Quay lines from OSM (one query per site, 60 s apart)
+        run: |
+          set -e
+          python -m sat.quay_lines SYL --out "$RUNNER_TEMP/bundle/masks" | tee "$RUNNER_TEMP/lines.log"
+          sleep 60
+          python -m sat.quay_lines SLP --out "$RUNNER_TEMP/bundle/masks" | tee -a "$RUNNER_TEMP/lines.log"
+      - name: Report and export (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text lines-log "$RUNNER_TEMP/lines.log"
+          [ -d "$RUNNER_TEMP/bundle" ] || exit 0
+          tar -C "$RUNNER_TEMP/bundle" -cf - . | xz -9e > "$RUNNER_TEMP/bundle.tar.xz"
+          echo "::notice title=bundle::$(stat -c %s "$RUNNER_TEMP/bundle.tar.xz") B, sha256 $(sha256sum "$RUNNER_TEMP/bundle.tar.xz" | cut -c1-64)"
+          python -m sat.annotate b64 bundle "$RUNNER_TEMP/bundle.tar.xz" 4000 0 30
