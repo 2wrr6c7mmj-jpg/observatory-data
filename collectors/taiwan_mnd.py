@@ -94,6 +94,11 @@ def notice(message: str) -> None:
     print("::notice::" + message.replace("%", "%25").replace("\n", "%0A")[:4000])
 
 
+def warning(message: str) -> None:
+    """Like notice(), but shown as a warning so a cut-short run stands out."""
+    print("::warning::" + message.replace("%", "%25").replace("\n", "%0A")[:4000])
+
+
 def load() -> dict:
     path = OUT / "reports.json"
     if path.exists():
@@ -148,7 +153,8 @@ def transient(e: Exception) -> bool:
 def retry_wait(e: Exception, default: float) -> float:
     after = getattr(e, "headers", None) and e.headers.get("Retry-After")
     if after and str(after).strip().isdigit():
-        return min(float(after), RETRY_AFTER_CAP)
+        # never wait less than our own pace, never longer than the cap
+        return max(min(float(after), RETRY_AFTER_CAP), default)
     return default
 
 
@@ -192,11 +198,13 @@ def collect(pages: int, stop_when_known: bool) -> int:
     store = load()
     reports = store["reports"]
     added = 0
+    aborted = False
     for page in range(1, pages + 1):
         try:
             links = list_page(page)
         except ListPageUnavailable as e:
-            notice(f"list page {page}: still failing after retries ({e}); ending this run, next run resumes")
+            warning(f"list page {page}: still failing after retries ({e}); ending this run, next run resumes")
+            aborted = True
             break
         if not links:
             notice(f"list page {page}: no report links; stopping")
@@ -223,7 +231,9 @@ def collect(pages: int, stop_when_known: bool) -> int:
     save(store)
     bad = [rid for rid, r in reports.items() if not r.get("parsed")]
     notice(f"taiwan-mnd: {added} fetched, {len(reports)} stored, {len(bad)} unparsed")
-    return 0
+    # Non-zero marks the run as cut short; the publish step (always()) still
+    # commits what was saved. 75 = EX_TEMPFAIL.
+    return 75 if aborted else 0
 
 
 def probe() -> int:

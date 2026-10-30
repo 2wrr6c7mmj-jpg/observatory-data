@@ -23,7 +23,7 @@ class Collect(unittest.TestCase):
     def test_collect_writes_dataset_and_skips_known_reports(self):
         with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
                 mock.patch.object(taiwan_mnd, "fetch", side_effect=fake_fetch) as f:
-            taiwan_mnd.collect(pages=3, stop_when_known=True)
+            self.assertEqual(taiwan_mnd.collect(pages=3, stop_when_known=True), 0)
             daily = json.loads((Path(d) / "daily.json").read_text())
             self.assertEqual(len(daily["rows"]), 1)
             row = dict(zip(daily["fields"], daily["rows"][0]))
@@ -53,10 +53,6 @@ class Daily(unittest.TestCase):
         self.assertEqual(rows["2023-01-01"]["aircraft"], 6)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 def http_error(code, retry_after=None):
     import email.message
     import urllib.error
@@ -73,7 +69,7 @@ class ListPageRetry(unittest.TestCase):
         def flaky(url):
             if "plaactlist" in url and url.endswith("/1") and calls["n"] < 2:
                 calls["n"] += 1
-                raise http_error(503) if calls["n"] == 1 else http_error(429, retry_after=7)
+                raise http_error(503) if calls["n"] == 1 else http_error(429, retry_after=200)
             return fake_fetch(url)
 
         waits = []
@@ -82,7 +78,14 @@ class ListPageRetry(unittest.TestCase):
                 mock.patch.object(taiwan_mnd, "notice"):
             links = taiwan_mnd.list_page(1)
         self.assertEqual(len(links), 2)
-        self.assertEqual(waits, [taiwan_mnd.LIST_RETRY_WAITS[0], 7])
+        self.assertEqual(waits, [taiwan_mnd.LIST_RETRY_WAITS[0], 200])
+
+    def test_retry_after_is_clamped_between_default_and_cap(self):
+        wait = taiwan_mnd.retry_wait
+        self.assertEqual(wait(http_error(429, retry_after=1), 30), 30)
+        self.assertEqual(wait(http_error(429, retry_after=90), 30), 90)
+        self.assertEqual(wait(http_error(429, retry_after=99999), 30), taiwan_mnd.RETRY_AFTER_CAP)
+        self.assertEqual(wait(http_error(503), 30), 30)
 
     def test_persistent_failure_ends_the_run_and_keeps_progress(self):
         def failing_page2(url):
@@ -93,12 +96,13 @@ class ListPageRetry(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d, mock.patch.object(taiwan_mnd, "OUT", Path(d)), \
                 mock.patch.object(taiwan_mnd, "fetch", side_effect=failing_page2), \
                 mock.patch.object(taiwan_mnd, "_sleep") as sl, \
-                mock.patch.object(taiwan_mnd, "notice") as note:
-            self.assertEqual(taiwan_mnd.collect(5, stop_when_known=False), 0)
+                mock.patch.object(taiwan_mnd, "notice"), \
+                mock.patch.object(taiwan_mnd, "warning") as warn:
+            self.assertNotEqual(taiwan_mnd.collect(5, stop_when_known=False), 0)
             stored = json.loads((Path(d) / "reports.json").read_text(encoding="utf-8"))["reports"]
         self.assertEqual(set(stored), {"1", "2"})
         self.assertEqual(sl.call_count, len(taiwan_mnd.LIST_RETRY_WAITS))
-        self.assertTrue(any("ending this run" in c.args[0] for c in note.call_args_list))
+        self.assertTrue(any("ending this run" in c.args[0] for c in warn.call_args_list))
 
     def test_other_errors_are_not_retried(self):
         with mock.patch.object(taiwan_mnd, "fetch", side_effect=http_error(403)), \
@@ -106,3 +110,7 @@ class ListPageRetry(unittest.TestCase):
             with self.assertRaises(Exception):
                 taiwan_mnd.list_page(1)
         sl.assert_not_called()
+
+
+if __name__ == "__main__":
+    unittest.main()
