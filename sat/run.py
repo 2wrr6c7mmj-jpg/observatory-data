@@ -387,9 +387,16 @@ class Store:
             except Exception as e:  # noqa: BLE001
                 print(f"est-2: {type(e).__name__}: {e}", file=sys.stderr)
         self.save_sectors(est2)
-        blind_feats = [f for b in blind_summary(self.sites) for f in b["features"]]
-        if blind_feats:
-            p = self.out / "quay" / "blind.geojson"
+        # quay/blind.geojson: the shared-layout sites (Zhanjiang) as before; a per_site site in quay/<site>/blind.geojson
+        groups: dict[str, list] = {}
+        for b in blind_summary(self.sites):
+            site = self.site(b["site_id"])
+            rel = f"quay/{b['site_id']}/blind.geojson" if site and layout(site) == "per_site" else "quay/blind.geojson"
+            groups.setdefault(rel, []).extend(b["features"])
+        for rel, blind_feats in groups.items():
+            if not blind_feats:
+                continue
+            p = self.out / rel
             p.parent.mkdir(parents=True, exist_ok=True)
             fc = {"type": "FeatureCollection", **quay_fc_attribution(None), "features": blind_feats}
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -486,6 +493,7 @@ def quay_fc_attribution(year: str | None) -> dict:
 
 _BLIND_CACHE: dict = {}
 _GEOM_CACHE: dict = {}
+GEOM_CACHE_MAX = 4
 
 
 def blind_summary(sites: list[dict]) -> list[dict]:
@@ -493,7 +501,9 @@ def blind_summary(sites: list[dict]) -> list[dict]:
     Fixed by the baseline, the lines and the mask; computed once per process."""
     out = []
     for site in sites:
-        if not site.get("enabled"):
+        # only sites fetched daily: a site with settings only (daily false) is left out (its geometry costs
+        # 10-40 s per run for nothing; turn daily on and the next run writes it)
+        if not runs_daily(site):
             continue
         orbits = fbase.site_config(site)["orbits"]
         lv = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
@@ -687,7 +697,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                               "全船の隻数、使えた手がかりの区間数（used_*）、人の目でも判断しにくい区間の数とその期待値（hard_*、注記だけ）、"
                               "並べて見るための est-1 の 60 m 以上の値。取得済みのデータだけから毎回計算し直す"),
             "quay_est2.json": "est-2 の設定（較正した値と仮置き値）と撮影ごと・区間ごとの詳細（列数の事後確率 p_c、軍艦の確率、使った手がかり、hard_to_judge）",
-            "quay/blind.geojson": "数えられない可能性が高い区間（軌道ごと。内側の帯で基準の VV p10 が −8 dB を超える所。1 点だけの区間は Point）",
+            "quay/blind.geojson": "数えられない可能性が高い区間（軌道ごと。内側の帯で基準の VV p10 が −8 dB を超える所。1 点だけの区間は Point）。湛江以外の地点（layout＝per_site）は quay/<地点>/blind.geojson",
             "change/<地点>/v<版>/<撮影時刻>.webp": "変化カラー（R＝今回の VV、G・B＝同じ相対軌道の基準の VV）の WebP と縮小版 .thumb.webp。基準がある撮影だけ",
         },
         "columns": {
@@ -826,7 +836,8 @@ class QuayContext:
                    hashlib.sha256(np.ascontiguousarray(self.mask).tobytes()).hexdigest(),
                    hashlib.sha256(json.dumps(self.lines, sort_keys=True).encode()).hexdigest())
             if key not in _GEOM_CACHE:
-                _GEOM_CACHE.clear()  # keep one (a geometry holds large arrays)
+                while len(_GEOM_CACHE) >= GEOM_CACHE_MAX:  # a geometry holds large arrays: keep a few sites
+                    _GEOM_CACHE.pop(next(iter(_GEOM_CACHE)))
                 _GEOM_CACHE[key] = quay.Geometry(self.grid, self.mask, self.lines)
             self._geom = _GEOM_CACHE[key]
         return self._geom
