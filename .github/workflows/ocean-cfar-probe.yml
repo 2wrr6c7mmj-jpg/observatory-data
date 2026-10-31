@@ -1,4 +1,4 @@
-name: Ocean CFAR v1/v2 probe
+name: Ocean CFAR v1/v2 probe (monitor plan M0)
 # cfar-v2 PR3（実験中）：外洋（香港の南・台湾海峡・東シナ海・南シナ海北部・台湾東方）の Sentinel-1 を 20 m で取り、
 # cfar-v1 と cfar-v2 の検出を同じ配列に通して比べる（ocean/cfar_probe.py）。
 # probe 用ブランチへの push でだけ動く（workflow_dispatch・定期実行なし）。ブランチ名に -plan を含むと
@@ -76,13 +76,9 @@ jobs:
           echo "extra args: $EXTRA"
           case "$EXTRA" in *--budget-month*|*--ocean-cap*|*--global-cap*|*--global-margin*|*-usage*)
             echo "::error title=budget::月の上限と usage は yml の env だけで指定する（ocean/cfar_probe.args では不可）"; exit 1;; esac
-          python -m ocean.cfar_probe --out "$RUN" --usage docs/data/ocean/usage.csv \
-            --budget-month "$BUDGET_MONTH" --ocean-cap "$OCEAN_CAP" --global-cap "$GLOBAL_CAP" --global-margin "$GLOBAL_MARGIN" \
-            --sat-usage "$RUNNER_TEMP/sat.csv" \
-            --other-usage $(ls "$RUNNER_TEMP"/usage/*.csv 2>/dev/null) \
-            --ports-usage $(ls "$RUNNER_TEMP"/ports-usage/*.csv 2>/dev/null) \
-            --raw-out "probe-raw/ocean/$TS" \
-            --max-minutes 300 $DRY $EXTRA 2>&1 | tee "$RUNNER_TEMP/probe.log"
+          # probe/ocean-cfar-monitor-plan only (M0): the OData catalogue of 2026-10 per monitoring area, no PU,
+          # no Sentinel Hub request (ocean/monitor.py plan).
+          python -m ocean.monitor plan --month 2026-10 --out "$RUN" 2>&1 | tee "$RUNNER_TEMP/probe.log"
       - name: Report (annotations)
         if: always()
         run: |
