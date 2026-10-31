@@ -11,7 +11,11 @@ name: Ocean CFAR v1/v2 probe
 # PU：上限はすべて BUDGET_MONTH の月の値（外洋 OCEAN_CAP・全体の自主上限 GLOBAL_CAP・湛江の毎日用の余裕 GLOBAL_MARGIN）。既定値はない。
 # 実行月（UTC）が BUDGET_MONTH と違えば CDSE に何も送らず止める（python の終了コード 2）。実行中に月が変わったら次の要求の前に止める。
 # 使用量は sat.port_archive gather で origin の全ブランチから集め（港・外洋・その他の usage の写し）、main の sat usage と合わせて
-# 重複を除いた和で数える（港のアーカイブと同じ guard）。ports-archive.yml の OCEAN_CAP は外洋の予約に使われるので同じ値にする。
+# 重複を除いた和で数える（港のアーカイブと同じ guard）。ports-archive.yml の OCEAN_CAP は外洋の予約に使われるので同じ値にする
+# （OCEAN_CAP・BUDGET_MONTH・GLOBAL_CAP・GLOBAL_MARGIN が ports-archive.yml と違えば tests/test_ocean_cfar_probe.py が落ちる）。
+# 使った PU は撮影ごとに usage に書き足し、例外・timeout（SIGTERM）で終わっても書く。終了コード 2＝月違い、3＝認証の失敗。
+# 限界：cdse.Client 内部の 429・5xx の送り直し（最大 3 回、各最大 120 秒）は月の確認を通らず、月の境目を数分越えて送りうる。
+# 港のアーカイブ（80 PU/分×最大 3 ジョブ）と同時に走ると合わせて 300 PU/分を超えうる（429 で送り直し）。リクエスト数の上限も同時実行では保証しない。
 # 11 月以降は、司令部がその月の枠を決めてから BUDGET_MONTH・OCEAN_CAP・GLOBAL_CAP・GLOBAL_MARGIN を別コミットで書き直す。
 on:
   push:
@@ -22,9 +26,10 @@ concurrency:
   group: probe-ocean-cfar
   cancel-in-progress: false
 env:
-  # 2026-10 の値（10-30 司令部：外洋 5,000、全体 9,995、湛江の 10-31 の毎日の分 50）。10 月はもう取得しない。
+  # 2026-10 の値（10-31 司令部：外洋 4,600＝ports-archive.yml と同じ、全体 9,995、湛江の 10-31 の毎日の分 50）。
+  # 10 月の外洋は既に 4,993 PU 使っているので、10 月中の外洋の残りは 0（10 月はもう取得しない）。
   BUDGET_MONTH: '2026-10'
-  OCEAN_CAP: '5000'
+  OCEAN_CAP: '4600'
   GLOBAL_CAP: '9995'
   GLOBAL_MARGIN: '50'
 jobs:
@@ -81,7 +86,11 @@ jobs:
       - name: Report (annotations)
         if: always()
         run: |
-          [ -n "$RUN_DIR" ] && [ -e "$RUN_DIR/report.txt" ] || { python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"; exit 0; }
+          if [ -z "$RUN_DIR" ] || [ ! -e "$RUN_DIR/report.txt" ]; then
+            if [ -s "$RUNNER_TEMP/probe.log" ]; then python -m sat.annotate text probe-log "$RUNNER_TEMP/probe.log"
+            else echo "::notice title=ocean-cfar::probe を実行していない（report.txt・probe.log なし。前の段で止まった）"; fi
+            exit 0
+          fi
           python - "$RUN_DIR/report.txt" <<'EOF'
           import sys
           text = open(sys.argv[1], encoding="utf-8").read()

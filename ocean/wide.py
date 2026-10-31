@@ -61,7 +61,7 @@ LOOKBACK_DAYS = 7
 MIN_LENGTH_M = 80.0
 V1_CFG_40M = {"guard_m": 160.0, "background_m": 320.0}
 CN_EXCLUDE = {"west_of": 123.0, "north_of": 27.0}
-ATTRIBUTION = "Contains modified Copernicus Sentinel data 2026"
+# Credit: ``cfar_probe.attribution`` with the years of the acquisitions fetched (``summary["attribution"]``).
 # coarse land for planning only (lon, lat); detection uses the OSM mask
 LAND_POLYS = {
     "cn_shanghai": [(121.4, 31.6), (121.98, 31.6), (121.98, 30.85), (121.8, 30.62), (121.4, 30.62)],
@@ -447,10 +447,19 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     lookback = int(args.lookback_days or LOOKBACK_DAYS)
     summary = {"probe_version": WIDE_VERSION, "mode": "wide", "run_utc": cdse.iso(now), "region": REGION,
                "pixel_m": PIXEL_M, "interpolation": cp.INTERPOLATION, "lookback_days": lookback,
-               "dry_run": bool(args.dry_run), "budget": bud, "attribution": ATTRIBUTION,
+               "dry_run": bool(args.dry_run), "budget": bud, "attribution": cp.attribution([], now),
                "min_length_m": MIN_LENGTH_M, "v1_cfg": V1_CFG_40M, "subregions": SUBREGIONS,
                "hole_reasons": HOLE_REASON, "acquisitions": [], "plan": {}, "results": [], "errors": []}
     log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・港 {bud['ports_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → 使える {bud['pu_left']} PU")
+    rec = cp.UsageRecorder(Path(args.usage), now, client, WIDE_VERSION, "dry-run" if args.dry_run else "wide 40 m",
+                           counts=lambda s: (len({r["acquired_utc"] for r in s["results"]}), len(s["results"])))
+    ctx = {"summary": summary, "report": lambda s: report(s, client)}
+    return cp.guarded(rec, ctx, out, client, pacer, log,
+                      lambda: _run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock, bud, out,
+                                        lookback, summary, rec))
+
+
+def _run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock, bud, out, lookback, summary, rec) -> dict:
     summary["region"] = regions_bbox()
     summary["regions"] = REGIONS
     extend = bool(getattr(args, "extend", False))
@@ -546,6 +555,7 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     summary["plan"] = {"requests": len(plan), "est_pu": round(sum(p["est_pu"] for p in plan), 3),
                        "region_sea_km2": round(sea_km2), "imaged_in_lookback_sea_km2": round(seen_km2),
                        "planned_sea_km2": round(plan_km2), "items": plan}
+    rec.write(summary)  # the catalog requests
     log(f"計画: {len(plan)} 件 {summary['plan']['est_pu']} PU、海域 {sea_km2:.0f} km² のうち 7 日以内の撮影 {seen_km2:.0f}・取得予定 {plan_km2:.0f} km²")
     osm_fail = np.zeros((cells.ny, cells.nx), bool)
     cands = []
@@ -613,6 +623,7 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             except cdse.CDSEError as ex:
                 summary["errors"].append({"request": k, "acquired_utc": a["acquired_utc"], "stage": "fetch", "error": str(ex)[:300]})
             cp._write_summary(out, summary, client, pacer)
+            rec.write(summary)  # the PU spent so far are in --usage
     cands = dedupe(cands)
     # holes
     reason = np.full((cells.ny, cells.nx), "", dtype=object)
@@ -674,25 +685,22 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     summary["coverage"] = {"observed_sea_km2": round(obs_km2), "region_sea_km2": round(sea_km2), "holes_sea_km2": hole_km2,
                            "observed_share": round(obs_km2 / sea_km2, 3) if sea_km2 else None}
     summary["candidates"] = {"total": len(cands), "by_subregion": by_sub}
+    times = [r["acquired_utc"] for r in summary["results"]]
+    summary["attribution"] = cp.attribution(times, now)
     cand_fc = {"type": "FeatureCollection", "name": "大型船の候補（長さ約 80 m 以上、未確認）",
-               "attribution": ATTRIBUTION + "; land and fixed objects (c) OpenStreetMap contributors, ODbL 1.0",
+               "attribution": summary["attribution"],
                "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
                              "properties": {k: v for k, v in c.items() if k not in ("lon", "lat")}} for c in cands]}
-    cov_fc = {"type": "FeatureCollection", "attribution": ATTRIBUTION, "features": [
+    cov_fc = {"type": "FeatureCollection", "attribution": cp.attribution(times, now, osm=False), "features": [
         {"type": "Feature", "geometry": _poly(*r["bbox"]),
          "properties": {"acquired_utc": r["acquired_utc"], "platform": r.get("platform"), "orbit_direction": r.get("orbit_direction"),
                         "relative_orbit": r.get("relative_orbit"), "valid_fraction": r["valid_fraction"], "pu": r["pu"],
                         "v1_large": r["v1"]["large_kept"]}} for r in summary["results"]]}
     hole_fc = {"type": "FeatureCollection", "reasons": HOLE_REASON, "features": hf}
     for name, fc in (("candidates.geojson", cand_fc), ("coverage.geojson", cov_fc), ("holes.geojson", hole_fc)):
-        (out / name).write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":"), default=cp._jsonable), encoding="utf-8")
+        (out / name).write_text(cp.dumps(fc), encoding="utf-8")
     cp._write_summary(out, summary, client, pacer)
-    cp.write_usage(Path(args.usage), {"run_utc": cdse.iso(now), "requests": client.requests,
-                                      "processing_units": round(client.processing_units, 3),
-                                      "pu_source": "header" if getattr(client, "pu_reported", True) else "estimate",
-                                      "scenes": len({r["acquired_utc"] for r in summary["results"]}),
-                                      "units": len(summary["results"]), "probe_version": WIDE_VERSION,
-                                      "note": "dry-run" if args.dry_run else "wide 40 m"})
+    rec.write(summary)
     rep = report(summary, client)
     (out / "report.txt").write_text(rep, encoding="utf-8")
     log(rep)
@@ -700,8 +708,11 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
 
 
 def report(s: dict, client) -> str:
-    b, p = s["budget"], s["plan"]
+    b = s["budget"]
+    p = {"requests": 0, "est_pu": 0.0, "region_sea_km2": None, "imaged_in_lookback_sea_km2": None,
+         "planned_sea_km2": None, **(s.get("plan") or {})}
     L = [f"{WIDE_VERSION} {s['run_utc']}{'（dry-run）' if s['dry_run'] else ''} 範囲 {s['region']} 40 m、直近 {s['lookback_days']} 日",
+         f"出典: {s.get('attribution')}",
          f"使える {b['pu_left']} PU、計画 {p['requests']} 件 {p['est_pu']} PU、実績 {client.requests} リクエスト・{round(client.processing_units, 3)} PU",
          f"海域 {p['region_sea_km2']} km²、7 日以内の撮影 {p['imaged_in_lookback_sea_km2']}、取得予定 {p['planned_sea_km2']}、"
          f"実際に見た {s.get('coverage', {}).get('observed_sea_km2')} km²、穴 {s.get('coverage', {}).get('holes_sea_km2')}",

@@ -8,7 +8,22 @@ Nothing in the daily run (``sat/run.py``), the Zhanjiang counts or the public da
                                [--ports-usage FILE ...] [--ocean-usage FILE ...] [--max-pu PU] [--dry-run]
 
 The caps have no defaults and are given with the month they were set for (``--budget-month``). In any
-other UTC month nothing is sent to CDSE (not even the catalog) and the exit code is 2.
+other UTC month nothing is sent to CDSE (not even the catalog) and the exit code is 2. Exit codes: 0 no
+error, 1 errors of single requests (or an unexpected exception, with its traceback), 2 the month, 3 CDSE
+refused the credentials (``exit_code``).
+
+Usage record: the run's row in ``--usage`` is written after the catalog and after every request (rewritten
+in place, one row per run), and once more however the run ends -- an exception of any kind (URLError,
+TimeoutError, IncompleteRead, a PNG or detector error, CredentialError, a 403 when the quota is used up)
+or SIGTERM from a cancelled / timed-out job -- before the exception is raised again (``guarded``).
+
+Limits: ``cdse.Client._post_sh`` retries 429 and 5xx inside one call (up to 3 more sends, waits of up to
+120 s each) without the month check of ``MonthClient`` and without the pacer: a call started just before
+the end of the month can send a few minutes into the next month, and the per-minute rate and the request
+count can be passed by up to 3 requests per call. The pacer keeps this run under 200 PU and 200 requests
+a minute, but the port archive (ports-archive.yml, up to 3 jobs at 80 PU/min) may run at the same time
+and together they can pass CDSE's 300 PU/min (429, retried as above); the request cap is not guaranteed
+across jobs running at the same time either (each reads the others' usage only when it starts).
 
 Steps
 -----
@@ -57,7 +72,9 @@ import csv
 import io
 import json
 import math
+import os
 import re
+import signal
 import sys
 import time
 import urllib.parse
@@ -503,7 +520,7 @@ def compare(vv, vh, lia, land, static, grid: Grid, acq: dict, datamask=None) -> 
         "water_fraction": round(float((valid & ~land).mean()), 4),
         "incidence_median_deg": round(lia_med, 2) if lia_med is not None else None,
         "vv_median_db": round(float(np.nanmedian(vv)), 2) if valid.any() else None,
-        "vh_median_db": round(float(np.nanmedian(vh)), 2) if valid.any() else None,
+        "vh_median_db": _median_db(vh, valid),
         "platform_heading_deg": round(heading, 2) if heading is not None else None,
         "v1": {"candidates": len(d1), "open_sea": len(open_v1),
                "static": sum(d["static"] for d in d1), "near_coast": sum(d["near_coast"] for d in d1),
@@ -541,6 +558,13 @@ def compare(vv, vh, lia, land, static, grid: Grid, acq: dict, datamask=None) -> 
     return res, feats
 
 
+def _median_db(x: np.ndarray, valid: np.ndarray):
+    """Median dB over the valid pixels with a finite value; None (JSON null) when there is none (e.g. VH
+    sigma0 <= 0 everywhere at very low wind: VH code 0 is data but has no dB value)."""
+    v = x[valid & np.isfinite(x)]
+    return round(float(np.median(v)), 2) if v.size else None
+
+
 def _point(lon, lat, props):
     return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [round(float(lon), 6), round(float(lat), 6)]},
             "properties": {k: _jsonable(v) for k, v in props.items()}}
@@ -575,16 +599,112 @@ def stamp(s: str) -> str:
     return s.replace(":", "-")
 
 
-def write_usage(path: Path, row: dict) -> None:
+def write_usage(path: Path, row: dict, replace: bool = False) -> None:
+    """Add ``row`` to the usage CSV. ``replace``: the last row with the same run_utc and probe_version is
+    replaced instead (the running record of one run, see ``UsageRecorder``). Written atomically."""
+    path = Path(path)
     rows = read_csv(path)
-    rows.append(row)
+    key = (row.get("run_utc"), row.get("probe_version"))
+    k = next((i for i in range(len(rows) - 1, -1, -1)
+              if (rows[i].get("run_utc"), rows[i].get("probe_version")) == key), None) if replace else None
+    if k is None:
+        rows.append(row)
+    else:
+        rows[k] = row
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=USAGE_FIELDS, lineterminator="\n", extrasaction="ignore")
     w.writeheader()
     for r in rows:
         w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in USAGE_FIELDS})
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(buf.getvalue(), encoding="utf-8")
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(buf.getvalue(), encoding="utf-8")
+    os.replace(tmp, path)
+
+
+class UsageRecorder:
+    """The usage row of one run, written as the run goes (after the catalog and after every request) and
+    once more however the run ends (normal end, an exception of any kind, SIGTERM): the PU spent are in
+    ``--usage`` even if the job is cut off by its timeout. One row per run (rewritten in place, key
+    run_utc + probe_version), so the sum over the branches (``port_archive.union_usage``) counts it once."""
+
+    def __init__(self, path: Path, now: datetime, client, version: str, note: str, counts=None):
+        self.path, self.now, self.client, self.version, self.note = Path(path), now, client, version, note
+        self.counts = counts or (lambda s: (len(s["results"]), len(s["results"])))
+
+    def write(self, summary: dict | None, note: str | None = None) -> None:
+        scenes, units = self.counts(summary) if summary else (0, 0)
+        write_usage(self.path, {"run_utc": cdse.iso(self.now), "requests": self.client.requests,
+                                "processing_units": round(self.client.processing_units, 3),
+                                "pu_source": "header" if getattr(self.client, "pu_reported", True) else "estimate",
+                                "scenes": scenes, "units": units, "probe_version": self.version,
+                                "note": self.note if note is None else note}, replace=True)
+
+
+def guarded(rec: UsageRecorder, ctx: dict, out: Path, client, pacer, log, body):
+    """Run ``body()``; whatever it raises (URLError, TimeoutError, IncompleteRead, a PNG or detector error,
+    CredentialError, SystemExit from SIGTERM, ...) the usage row is written first, then summary.json and
+    report.txt as far as they go, and the exception is raised again."""
+    try:
+        return body()
+    except BaseException as e:
+        s = ctx.get("summary")
+        why = f"{type(e).__name__}: {str(e)[:200]}"
+        try:
+            rec.write(s, note=f"aborted ({type(e).__name__})")
+        except Exception as e2:  # pragma: no cover - the disk itself failed
+            log(f"usage を書けなかった: {e2}")
+        if s is not None:
+            try:
+                s["errors"].append({"stage": "abort", "error": why})
+                _write_summary(out, s, client, pacer)
+                if ctx.get("report"):
+                    (out / "report.txt").write_text(ctx["report"](s), encoding="utf-8")
+            except Exception:
+                pass
+        log(f"中断: {why}（使った {client.requests} リクエスト・{round(client.processing_units, 3)} PU は usage に記録）")
+        raise
+
+
+def attribution(times, now: datetime | None = None, osm: bool = True) -> str:
+    """Credit with the years of the acquisitions (``times``: acquired_utc strings or datetimes), e.g.
+    "Contains modified Copernicus Sentinel data 2026" or "... 2025–2026" across a year; the year of
+    ``now`` when there is no acquisition. ``osm``: add the OpenStreetMap credit (land, fixed objects)."""
+    years = sorted({(cdse.parse_time(t) if isinstance(t, str) else t).year for t in times if t})
+    if not years and now is not None:
+        years = [now.year]
+    y = "" if not years else str(years[0]) if years[0] == years[-1] else f"{years[0]}–{years[-1]}"
+    text = f"Contains modified Copernicus Sentinel data {y}".rstrip()
+    return text + ("; " + OSM_CREDIT if osm else "")
+
+
+OSM_CREDIT = "land and fixed objects © OpenStreetMap contributors, ODbL 1.0"
+
+
+def clean(v):
+    """JSON-safe copy: numpy scalars to Python, NaN/Inf to None (no NaN in any JSON written here)."""
+    if isinstance(v, dict):
+        return {k: clean(x) for k, x in v.items()}
+    if isinstance(v, (list, tuple)):
+        return [clean(x) for x in v]
+    if isinstance(v, np.ndarray):
+        return [clean(x) for x in v.tolist()]
+    if isinstance(v, np.bool_):
+        return bool(v)
+    if isinstance(v, np.integer):
+        return int(v)
+    if isinstance(v, np.floating):  # as ``_jsonable`` (4 decimals)
+        return round(float(v), 4) if math.isfinite(v) else None
+    if isinstance(v, float):
+        return v if math.isfinite(v) else None
+    return v
+
+
+def dumps(obj, **kw) -> str:
+    """json.dumps of ``clean(obj)`` with ``allow_nan=False`` (fails rather than writing NaN)."""
+    kw.setdefault("ensure_ascii", False)
+    kw.setdefault("separators", (",", ":"))
+    return json.dumps(clean(obj), allow_nan=False, default=_jsonable, **kw)
 
 
 def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep, log=None, clock=None) -> dict:
@@ -602,11 +722,18 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
     out.mkdir(parents=True, exist_ok=True)
     summary = {"probe_version": PROBE_VERSION, "run_utc": cdse.iso(now), "areas_version": cfg["version"],
                "pixel_m": pixel_m, "interpolation": INTERPOLATION, "dry_run": bool(args.dry_run),
-               "budget": bud, "areas": {}, "results": [], "errors": []}
+               "attribution": attribution([], now), "budget": bud, "areas": {}, "results": [], "errors": []}
     log(f"今月 {month}：sat {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み、"
         f"港 {bud['ports_month_pu']} PU、外洋の上限 {bud['cap_ocean_pu']}・合計 {bud['cap_total_pu']}（余裕 {bud['global_margin']}）・"
         f"この実行の上限 {bud['max_pu_run']} → 使える {bud['pu_left']} PU")
+    rec = UsageRecorder(Path(args.usage), now, client, PROBE_VERSION, "dry-run" if args.dry_run else "")
+    ctx = {"summary": summary, "report": report}
+    return guarded(rec, ctx, out, client, pacer, log,
+                   lambda: _run_compare(args, cfg, pixel_m, client, overpass, now, pacer, sleep, log, clock,
+                                        bud, out, summary, rec))
 
+
+def _run_compare(args, cfg, pixel_m, client, overpass, now, pacer, sleep, log, clock, bud, out, summary, rec) -> dict:
     # ---- catalog and plan (no PU)
     if getattr(args, "lookback_days", None):
         cfg["lookback_days"] = args.lookback_days
@@ -622,11 +749,11 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
         for u in units(area, pixel_m):
             g = u["grid"]
             if month_changed(args, clock):
-                return _month_stop(args, summary, client, now, out, log, MONTH_STOP)
+                return _month_stop(args, summary, client, now, out, log, MONTH_STOP, rec)
             try:
                 feats = client.catalog(g.bbox, start, now)
             except MonthStop as e:
-                return _month_stop(args, summary, client, now, out, log, str(e))
+                return _month_stop(args, summary, client, now, out, log, str(e), rec)
             except cdse.CredentialError:
                 raise
             except cdse.CDSEError as e:
@@ -664,8 +791,10 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                        "per_area_scenes": {aid: sum(1 for p in plan if p["area"] == aid and p["kind"] == "scene") for aid in per_area},
                        "check_est_pu": round(sum(p["est_pu"] for p in plan if p["kind"] == "check"), 3)}
     log("計画: " + json.dumps(summary["plan"], ensure_ascii=False))
+    summary["attribution"] = attribution([p["acq"]["acquired_utc"] for p in plan], now)
+    rec.write(summary)  # the catalog requests
     if args.dry_run or not plan:
-        _finish(args, summary, client, now, out, log)
+        _finish(args, summary, client, now, out, log, rec=rec)
         return summary
 
     # ---- OSM masks (one Overpass query per area that has a planned scene)
@@ -680,7 +809,7 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
             osm_cache[aid] = overpass(overpass_query(area_grid(area, pixel_m), seamark_re))
         except Exception as e:  # land unknown: the area is skipped (no PU spent on it)
             summary["errors"].append({"area": aid, "stage": "overpass", "error": f"{type(e).__name__}: {str(e)[:200]}"})
-    summary["osm"] = {"source": "OpenStreetMap via Overpass API", "license": "(c) OpenStreetMap contributors, ODbL 1.0"}
+    summary["osm"] = {"source": "OpenStreetMap via Overpass API", "license": "© OpenStreetMap contributors, ODbL 1.0"}
 
     # ---- fetch and compare
     deadline = time.monotonic() + args.max_minutes * 60
@@ -709,6 +838,8 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                     "interp": item["interp"], "pixel_m": item["pixel_m"], "px": item["px"], "bbox": item["bbox"],
                     "acquired_utc": a["acquired_utc"], "pu": pu, "valid_fraction": round(float(data_valid(vv, dm).mean()), 4),
                     **enl(vv, 25 if item["pixel_m"] == 20 else 50)})
+                _write_summary(out, summary, client, pacer)
+                rec.write(summary)
                 continue
             g = item["grid"]
             key = (item["area"], item["unit"])
@@ -732,8 +863,9 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                 res, feats = compare(vv, vh, lia, land, static, g, a, datamask=dm)
                 row.update(res)
                 name = f"{item['area']}-{item['unit']}-{stamp(a['acquired_utc'])}.geojson"
-                (out / name).write_text(json.dumps({"type": "FeatureCollection", "features": feats},
-                                                   ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+                (out / name).write_text(dumps({"type": "FeatureCollection",
+                                               "attribution": attribution([a["acquired_utc"]], now),
+                                               "features": feats}), encoding="utf-8")
                 row["geojson"] = name
             summary["results"].append(row)
             log(_line(row))
@@ -747,16 +879,17 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                                       "error": str(e)[:300]})
             log(f"{item['area']} {a['acquired_utc']}: 失敗 {str(e)[:200]}")
         _write_summary(out, summary, client, pacer)  # after every scene: a timeout keeps what was done
-    _finish(args, summary, client, now, out, log, pacer)
+        rec.write(summary)                            # and the PU spent so far are in --usage
+    _finish(args, summary, client, now, out, log, pacer, rec=rec)
     return summary
 
 
-def _month_stop(args, summary, client, now, out, log, why: str) -> dict:
+def _month_stop(args, summary, client, now, out, log, why: str, rec=None) -> dict:
     """Stop during the catalog (no PU spent): the usage row (requests) is still written."""
     summary["errors"].append({"stage": "stop", "reason": "month", "error": why})
     summary["plan"] = {"requests": 0, "est_pu": 0.0, "deferred": 0, "deferred_est_pu": 0.0,
                        "per_area_est_pu": {}, "per_area_scenes": {}, "check_est_pu": 0.0}
-    _finish(args, summary, client, now, out, log)
+    _finish(args, summary, client, now, out, log, rec=rec)
     return summary
 
 
@@ -780,25 +913,24 @@ def _write_summary(out: Path, summary: dict, client, pacer=None) -> None:
     summary["pu_source"] = "header" if getattr(client, "pu_reported", True) else "estimate"
     if pacer is not None:
         summary["pacer_wait_seconds"] = round(pacer.waited, 1)
-    (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, separators=(",", ":"), default=_jsonable),
-                                      encoding="utf-8")
+    (out / "summary.json").write_text(dumps(summary), encoding="utf-8")
 
 
-def _finish(args, summary, client, now, out, log, pacer=None) -> None:
+def _finish(args, summary, client, now, out, log, pacer=None, rec=None) -> None:
     _write_summary(out, summary, client, pacer)
-    scenes = len(summary["results"])
-    write_usage(Path(args.usage), {"run_utc": cdse.iso(now), "requests": client.requests,
-                                   "processing_units": round(client.processing_units, 3),
-                                   "pu_source": "header" if getattr(client, "pu_reported", True) else "estimate",
-                                   "scenes": scenes, "units": scenes, "probe_version": PROBE_VERSION,
-                                   "note": "dry-run" if args.dry_run else ""})
+    rec = rec or UsageRecorder(Path(args.usage), now, client, PROBE_VERSION, "dry-run" if args.dry_run else "")
+    rec.write(summary)
     (out / "report.txt").write_text(report(summary), encoding="utf-8")
     log(report(summary))
 
 
 def report(s: dict) -> str:
     b = s["budget"]
+    pl = {"requests": 0, "est_pu": 0.0, "per_area_est_pu": {}, "per_area_scenes": {}, "deferred": 0,
+          "deferred_est_pu": 0.0, **(s.get("plan") or {})}
+    s = {**s, "plan": pl}
     lines = [f"{s['probe_version']} {s['run_utc']} 補間 {s['interpolation']}{'（dry-run）' if s['dry_run'] else ''}",
+             f"出典: {s.get('attribution')}",
              f"今月 {b['month']}：sat 等 {b['sat_month_pu']} PU + 港 {b['ports_month_pu']} PU + 外洋 {b['ocean_month_pu']} PU（実行前）。"
              f"上限 外洋 {b['cap_ocean_pu']}・合計 {b['cap_total_pu']}（余裕 {b['global_margin']}）・実行 {b['max_pu_run']} → 使える {b['pu_left']} PU",
              f"計画 {s['plan']['requests']} 件 見込み {s['plan']['est_pu']} PU（範囲別 {s['plan']['per_area_est_pu']}、"
@@ -865,23 +997,39 @@ def main(argv=None) -> int:
     if args.budget_month != now_month:
         print(f"上限は {args.budget_month} の値（今は {now_month}）。その月の上限（--budget-month・--ocean-cap・"
               f"--global-cap・--global-margin）を書き直すまで取得しない", file=sys.stderr)
-        return 2
+        return EXIT_MONTH
+    # A cancelled or timed-out job ends with SIGTERM: raise SystemExit so that the usage row is written
+    # (``guarded``) before the process ends.
+    signal.signal(signal.SIGTERM, _on_sigterm)
     try:
         if args.mode != "compare":
             s = run_mode(args)
         else:
             s = run(args, pacer=Pacer(min(args.pu_per_min, PU_PER_MIN), int(min(args.pu_per_min, REQ_PER_MIN))))
-    except cdse.CredentialError as e:
-        print(f"エラー: {e}", file=sys.stderr)
-        return 2
+    except MonthStop as e:  # the month changed between the check above and budget(): nothing was sent
+        print(f"停止: {e}", file=sys.stderr)
+        return EXIT_MONTH
+    except cdse.CredentialError as e:  # the usage row is already written (guarded)
+        print(f"エラー（認証）: {e}", file=sys.stderr)
+        return EXIT_CREDENTIAL
     return exit_code(s)
 
 
+EXIT_ERRORS, EXIT_MONTH, EXIT_CREDENTIAL = 1, 2, 3
+
+
+def _on_sigterm(signum, frame):
+    raise SystemExit(128 + signum)
+
+
 def exit_code(s: dict) -> int:
-    """2 if the run stopped because the UTC month changed, 1 on other errors, else 0."""
+    """Exit code of ``main``: 0 no error; 1 errors of single requests (catalog, fetch, Overpass) recorded in
+    the summary; 2 (``EXIT_MONTH``) the UTC month is not / is no longer ``--budget-month`` (nothing more was
+    sent); 3 (``EXIT_CREDENTIAL``, from ``main``) CDSE refused the credentials. Any other exception ends the
+    run with Python's traceback (exit 1) after the usage row is written."""
     if any(e.get("reason") == "month" for e in s["errors"]):
-        return 2
-    return 1 if any(e.get("stage") not in ("stop",) for e in s["errors"]) else 0
+        return EXIT_MONTH
+    return EXIT_ERRORS if any(e.get("stage") not in ("stop",) for e in s["errors"]) else 0
 
 
 if __name__ == "__main__":

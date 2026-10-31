@@ -32,7 +32,7 @@ RAW_VERSION = "ocean-raw-cut-1"
 TILE_PX = 128
 MAX_TILES = 12
 N_FAILED = 8          # up to this many unfitted tiles, the rest normal (or fixed-object) tiles
-ATTRIBUTION = "Contains modified Copernicus Sentinel data 2026"
+# Credit: ``cfar_probe.attribution`` with the year(s) of the acquisitions (per scene in its meta file).
 ENCODING = {
     "vv": "dB = code / 800 - 50 (code > 0); code 0 with datamask 1 = sigma0 <= 0 or NaN in the source",
     "vh": "same as vv",
@@ -73,11 +73,17 @@ def to_db(code: np.ndarray, dm: np.ndarray) -> np.ndarray:
 def tile_diagnostics(raw: np.ndarray, land: np.ndarray, static: np.ndarray, v2_tiles: list[dict],
                      edge_px: int = 3, tile: int = TILE_PX) -> list[dict]:
     """Per tile: shares of dataMask, zero VV/VH codes (inside dataMask), the no-data band that cfar-v2
-    removes (``dilate(~valid, edge_px)``), land, and the cfar-v2 fit (model, usable, n_fit)."""
+    removes (``dilate(~valid, edge_px)``), land, and the cfar-v2 fit (model, usable, n_fit).
+
+    No data as in ``detect2.detect_v2`` (cfar2-pr2.1): dataMask 0 or VV code 0. A VH code 0 inside the
+    dataMask is VH sigma0 <= 0, i.e. data (it does not widen ``nodata_band``, which is the band cfar-v2
+    leaves out). ``vv_med_db``: median over the valid pixels. ``vh_med_db`` / ``vh_p05_db``: over the valid
+    pixels with VH code > 0 only (VH code 0 has no dB value; as in detect2's log statistics), their share
+    of the data being 1 - ``vh_zero``; None when there is no such pixel."""
     dm = raw[..., 3] > 0
     vv0 = dm & (raw[..., 0] == 0)
     vh0 = dm & (raw[..., 1] == 0)
-    valid = dm & ~vv0 & ~vh0
+    valid = dm & ~vv0
     band = dilate(~valid, edge_px) if (~valid).any() else np.zeros_like(valid)
     by = {(t["ty"], t["tx"]): t for t in v2_tiles}
     h, w = dm.shape
@@ -89,7 +95,7 @@ def tile_diagnostics(raw: np.ndarray, land: np.ndarray, static: np.ndarray, v2_t
             ndm = int(dm[sl].sum())
             t = by.get((ty, tx), {})
             vvc = raw[..., 0][sl][valid[sl]]
-            vhc = raw[..., 1][sl][valid[sl]]
+            vhc = raw[..., 1][sl][valid[sl] & ~vh0[sl]]
             lia = raw[..., 2][sl][dm[sl]]
             out.append({
                 "ty": ty, "tx": tx,
@@ -173,9 +179,19 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     raw_out = Path(args.raw_out) if args.raw_out else None
     summary = {"probe_version": RAW_VERSION, "mode": "raw", "run_utc": cdse.iso(now), "targets_version": tg["version"],
                "pixel_m": pixel_m, "interpolation": cp.INTERPOLATION, "dry_run": bool(args.dry_run), "budget": bud,
-               "raw_dir": str(raw_out) if raw_out else None, "attribution": ATTRIBUTION,
+               "raw_dir": str(raw_out) if raw_out else None,
+               "attribution": cp.attribution([t["acquired_utc"] for t in tg["targets"]], now),
                "plan": {}, "results": [], "errors": []}
     log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・港 {bud['ports_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → この実行で使える {bud['pu_left']} PU")
+    rec = cp.UsageRecorder(Path(args.usage), now, client, RAW_VERSION, "dry-run" if args.dry_run else "raw tiles")
+    ctx = {"summary": summary, "report": lambda s: _report(s, client)}
+    return cp.guarded(rec, ctx, out, client, pacer, log,
+                      lambda: _run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock, cfg, pixel_m, tg,
+                                       out, raw_out, bud, summary, rec))
+
+
+def _run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock, cfg, pixel_m, tg, out, raw_out, bud,
+             summary, rec) -> dict:
     areas = {a["id"]: a for a in cfg["areas"]}
     plan = []
     for t in tg["targets"]:
@@ -215,8 +231,10 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     summary["plan"] = {"requests": len(kept_plan), "est_pu": round(total, 3),
                        "scenes": [{"area": p["target"]["area"], **cp._acq_meta(p["acq"])} for p in kept_plan]}
     log("計画: " + json.dumps(summary["plan"], ensure_ascii=False))
+    summary["attribution"] = cp.attribution([p["acq"]["acquired_utc"] for p in kept_plan], now)
+    rec.write(summary)  # the catalog requests
     if args.dry_run or not kept_plan:
-        _finish(args, cp, summary, client, now, out, log, pacer)
+        _finish(args, cp, summary, client, now, out, log, pacer, rec)
         return summary
 
     seamark_re = cfg["osm_static"]["seamark_types"]
@@ -270,7 +288,7 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                    "scene": _scene_stats(raw, land, diag)}
             if raw_out:
                 np.savez_compressed(raw_out / f"{name}.npz", **arrs)
-                meta = {"version": RAW_VERSION, "attribution": ATTRIBUTION,
+                meta = {"version": RAW_VERSION, "attribution": cp.attribution([a["acquired_utc"]], now),
                         "source": "Copernicus Data Space Ecosystem, Sentinel Hub Process API, collection sentinel-1-grd",
                         "acquisition": {**cp._acq_meta(a), "absolute_orbit": a.get("absolute_orbit"),
                                         "catalog_ids": a["ids_"], "t_from": cdse.iso(a["t_from"]), "t_to": cdse.iso(a["t_to"])},
@@ -287,8 +305,7 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                                                            "tiles_untested", "exceedance", "z_t_seed")},
                         "all_tiles_cols": list(diag[0].keys()) if diag else [],
                         "all_tiles": [list(d.values()) for d in diag]}
-                (raw_out / f"{name}.json").write_text(json.dumps(meta, ensure_ascii=False, separators=(",", ":"),
-                                                                 default=cp._jsonable), encoding="utf-8")
+                (raw_out / f"{name}.json").write_text(cp.dumps(meta), encoding="utf-8")
                 row["npz_bytes"] = (raw_out / f"{name}.npz").stat().st_size
                 row["files"] = [f"{name}.npz", f"{name}.json"]
             summary["results"].append(row)
@@ -302,7 +319,8 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
         except cdse.CDSEError as e:
             summary["errors"].append({"area": aid, "acquired_utc": a["acquired_utc"], "stage": "fetch", "error": str(e)[:300]})
         cp._write_summary(out, summary, client, pacer)
-    _finish(args, cp, summary, client, now, out, log, pacer)
+        rec.write(summary)  # the PU spent so far are in --usage
+    _finish(args, cp, summary, client, now, out, log, pacer, rec)
     return summary
 
 
@@ -316,20 +334,24 @@ def _scene_stats(raw, land, diag) -> dict:
             "sea_tiles_no_model": sum(1 for d in sea_tiles if d["model"] is None)}
 
 
-def _finish(args, cp, summary, client, now, out, log, pacer=None) -> None:
+def _finish(args, cp, summary, client, now, out, log, pacer=None, rec=None) -> None:
     cp._write_summary(out, summary, client, pacer)
-    cp.write_usage(Path(args.usage), {"run_utc": cdse.iso(now), "requests": client.requests,
-                                      "processing_units": round(client.processing_units, 3),
-                                      "pu_source": "header" if getattr(client, "pu_reported", True) else "estimate",
-                                      "scenes": len(summary["results"]), "units": len(summary["results"]),
-                                      "probe_version": RAW_VERSION, "note": "dry-run" if args.dry_run else "raw tiles"})
+    rec = rec or cp.UsageRecorder(Path(args.usage), now, client, RAW_VERSION, "dry-run" if args.dry_run else "raw tiles")
+    rec.write(summary)
+    text = _report(summary, client)
+    (out / "report.txt").write_text(text, encoding="utf-8")
+    log(text.rstrip("\n"))
+
+
+def _report(summary: dict, client) -> str:
+    plan = summary.get("plan") or {}
     lines = [f"{RAW_VERSION} {summary['run_utc']}{'（dry-run）' if summary['dry_run'] else ''}",
-             f"使える {summary['budget']['pu_left']} PU、計画 {summary['plan'].get('requests')} 件 {summary['plan'].get('est_pu')} PU、"
+             f"出典: {summary.get('attribution')}",
+             f"使える {summary['budget']['pu_left']} PU、計画 {plan.get('requests')} 件 {plan.get('est_pu')} PU、"
              f"実績 {client.requests} リクエスト・{round(client.processing_units, 3)} PU"]
     for r in summary["results"]:
         lines.append(f"{r['area']} {r['acquired_utc']} {r.get('orbit_direction')}: 切り出し {r['tiles_cut']}"
                      f"（未当てはめ {r['tiles_cut_unfitted']}）{r.get('npz_bytes')} B {json.dumps(r['scene'], ensure_ascii=False)}")
     for e in summary["errors"]:
         lines.append("エラー: " + json.dumps(e, ensure_ascii=False, default=str))
-    (out / "report.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    log("\n".join(lines))
+    return "\n".join(lines) + "\n"

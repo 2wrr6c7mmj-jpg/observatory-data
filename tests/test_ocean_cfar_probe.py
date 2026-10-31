@@ -396,5 +396,227 @@ class ProductionUnchangedTest(unittest.TestCase):
         self.assertNotIn("ocean", (root / "sat" / "run.py").read_text(encoding="utf-8"))
 
 
+class Boom:
+    """FakeClient whose process call number ``at`` (1-based) raises ``exc`` after the earlier calls were spent.
+    Each call checks that the usage file already holds the PU of the earlier calls (written as the run goes)."""
+
+    def __init__(self, base, exc, at=2, usage=None, test=None):
+        self.base, self.exc, self.at, self.usage, self.test = base, exc, at, usage, test
+        self.seen_in_usage = []
+
+    def __getattr__(self, k):
+        return getattr(self.base, k)
+
+    def catalog(self, *a, **kw):
+        return self.base.catalog(*a, **kw)
+
+    def process(self, *a, **kw):
+        if self.usage is not None and self.usage.exists():
+            rows = op.read_csv(self.usage)
+            self.seen_in_usage.append(float(rows[-1]["processing_units"]))
+        if len(self.base.calls) + 1 == self.at:
+            self.base.requests += 1  # the request was sent; no PU reported
+            raise self.exc
+        return self.base.process(*a, **kw)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class UsageOnAnyEndTest(unittest.TestCase):
+    """The PU spent are written to --usage however the run ends (1部 指摘 1)."""
+
+    def run_boom(self, exc, at=2):
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        tmp = Path(d.name)
+        base = FakeClient(n_scenes=3)
+        a = args(tmp)
+        c = Boom(base, exc, at=at, usage=a.usage)
+        with self.assertRaises(type(exc)):
+            op.run(a, client=c, overpass=fake_overpass, now=NOW, pacer=FakePacer(), sleep=lambda x: None,
+                   log=lambda m: None, clock=lambda: NOW)
+        rows = op.read_csv(a.usage)
+        self.assertEqual(len(rows), 1)                                   # one row per run
+        self.assertAlmostEqual(float(rows[0]["processing_units"]), base.processing_units, places=2)
+        self.assertEqual(int(rows[0]["requests"]), base.requests)
+        self.assertEqual(int(rows[0]["scenes"]), at - 1)
+        self.assertIn(type(exc).__name__, rows[0]["note"])
+        s = json.loads((a.out / "summary.json").read_text(encoding="utf-8"))
+        self.assertEqual(s["errors"][-1]["stage"], "abort")
+        self.assertTrue((a.out / "report.txt").exists())
+        return base, c
+
+    def test_urlerror_keeps_the_pu_spent(self):
+        import urllib.error
+        base, c = self.run_boom(urllib.error.URLError("reset"), at=3)
+        self.assertGreater(base.processing_units, 0)
+        # written as the run goes: before the 2nd and 3rd call the usage already held the earlier PU
+        self.assertEqual(len(c.seen_in_usage), 3)
+        self.assertEqual(c.seen_in_usage[0], 0.0)
+        self.assertAlmostEqual(c.seen_in_usage[2], base.processing_units, places=2)
+
+    def test_credential_error_keeps_the_pu_spent(self):
+        base, _c = self.run_boom(cdse.CredentialError("401"), at=2)
+        self.assertGreater(base.processing_units, 0)
+
+    def test_other_exceptions(self):
+        import http.client
+        for exc in (TimeoutError("t"), ConnectionResetError("r"), http.client.IncompleteRead(b"x"),
+                    ValueError("png decode"), __import__("zlib").error("png inflate"), KeyError("k")):
+            with self.subTest(exc=type(exc).__name__):
+                self.run_boom(exc, at=2)
+
+    def test_detector_error_keeps_the_pu_spent(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            c = FakeClient(n_scenes=3)
+            a = args(tmp)
+            with mock.patch.object(op, "compare", side_effect=RuntimeError("detector")), \
+                    self.assertRaises(RuntimeError):
+                op.run(a, client=c, overpass=fake_overpass, now=NOW, pacer=FakePacer(), sleep=lambda x: None,
+                       log=lambda m: None, clock=lambda: NOW)
+            rows = op.read_csv(a.usage)
+            self.assertAlmostEqual(float(rows[0]["processing_units"]), c.processing_units, places=2)
+            self.assertGreater(c.processing_units, 0)
+
+    def test_quota_403_keeps_the_pu_spent(self):
+        # cdse.Client raises CredentialError on HTTP 403 (no rights or the free quota used up)
+        base, _c = self.run_boom(cdse.CredentialError("HTTP 403 quota"), at=3)
+        self.assertGreater(base.processing_units, 0)
+
+    def test_single_cdse_error_is_recorded_and_the_run_goes_on(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            base = FakeClient(n_scenes=3)
+            a = args(tmp)
+            c = Boom(base, cdse.CDSEError("HTTP 400"), at=2)
+            s = op.run(a, client=c, overpass=fake_overpass, now=NOW, pacer=FakePacer(), sleep=lambda x: None,
+                       log=lambda m: None, clock=lambda: NOW)
+            self.assertEqual(op.exit_code(s), 1)
+            rows = op.read_csv(a.usage)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(int(rows[0]["requests"]), base.requests)
+
+    def test_main_exit_codes(self):
+        import contextlib
+        import io
+        from unittest import mock
+        month = datetime.now(timezone.utc).strftime("%Y-%m")
+        with tempfile.TemporaryDirectory() as d:
+            base = ["--out", str(Path(d) / "o"), "--budget-month", month, "--ocean-cap", "10",
+                    "--global-cap", "10", "--global-margin", "1"]
+            import signal
+            old = signal.getsignal(signal.SIGTERM)
+            try:
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with mock.patch.object(op, "run", side_effect=cdse.CredentialError("401")):
+                        self.assertEqual(op.main(base), 3)
+                    # the month changes between main's check and budget(): MonthStop -> 2
+                    with mock.patch.object(op, "run", side_effect=op.MonthStop("month")):
+                        self.assertEqual(op.main(base), 2)
+                    with mock.patch.object(op, "run_mode", side_effect=op.MonthStop("month")):
+                        self.assertEqual(op.main(base + ["--mode", "wide"]), 2)
+            finally:
+                signal.signal(signal.SIGTERM, old)
+        self.assertEqual(op.EXIT_CREDENTIAL, 3)
+        self.assertNotEqual(op.EXIT_CREDENTIAL, op.EXIT_MONTH)
+        self.assertIn("3", op.exit_code.__doc__)
+
+    def test_sigterm_handler_raises_systemexit(self):
+        import signal
+        with self.assertRaises(SystemExit):
+            op._on_sigterm(signal.SIGTERM, None)
+
+    def test_usage_row_is_replaced_not_added(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "u.csv"
+            op.write_usage(p, {"run_utc": "2026-10-01T00:00:00Z", "probe_version": "x", "processing_units": 1})
+            op.write_usage(p, {"run_utc": "2026-10-02T00:00:00Z", "probe_version": "x", "processing_units": 2}, replace=True)
+            op.write_usage(p, {"run_utc": "2026-10-02T00:00:00Z", "probe_version": "x", "processing_units": 3}, replace=True)
+            rows = op.read_csv(p)
+            self.assertEqual([r["processing_units"] for r in rows], ["1", "3"])
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class CapsAgreeTest(unittest.TestCase):
+    """ports-archive.yml reserves the ocean's unused cap: both files must hold the same month and caps (1部 指摘 2)."""
+
+    def env(self, name: str) -> dict:
+        import re
+        root = Path(__file__).resolve().parent.parent
+        text = (root / ".github" / "workflows" / name).read_text(encoding="utf-8")
+        block = text.split("\nenv:\n", 1)[1].split("\njobs:", 1)[0]
+        return dict(re.findall(r"^  ([A-Z_]+): '([^']*)'", block, re.M))
+
+    def test_ocean_and_ports_caps_are_the_same(self):
+        import re
+        oc, po = self.env("ocean-cfar-probe.yml"), self.env("ports-archive.yml")
+        guard = dict(re.findall(r"--([a-z-]+) (\S+)", po["GUARD_ARGS"]))
+        self.assertEqual(oc["BUDGET_MONTH"], po["BUDGET_MONTH"])
+        self.assertEqual(oc["BUDGET_MONTH"], guard["budget-month"])
+        self.assertEqual(float(oc["OCEAN_CAP"]), float(po["OCEAN_CAP"]))
+        self.assertEqual(float(oc["GLOBAL_CAP"]), float(guard["global-cap"]))
+        self.assertEqual(float(oc["GLOBAL_MARGIN"]), float(guard["global-margin"]))
+
+    def test_report_step_without_probe_log(self):
+        root = Path(__file__).resolve().parent.parent
+        text = (root / ".github" / "workflows" / "ocean-cfar-probe.yml").read_text(encoding="utf-8")
+        step = text.split("name: Report (annotations)", 1)[1].split("- name:", 1)[0]
+        self.assertIn('[ -s "$RUNNER_TEMP/probe.log" ]', step)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class AttributionAndJsonTest(unittest.TestCase):
+    def test_years_from_acquisitions(self):
+        self.assertEqual(op.attribution(["2026-10-16T21:51:39Z"], NOW, osm=False),
+                         "Contains modified Copernicus Sentinel data 2026")
+        self.assertEqual(op.attribution(["2025-12-30T21:00:00Z", "2026-01-02T10:00:00Z"], NOW, osm=False),
+                         "Contains modified Copernicus Sentinel data 2025–2026")
+        self.assertEqual(op.attribution([], datetime(2027, 1, 1, tzinfo=timezone.utc), osm=False),
+                         "Contains modified Copernicus Sentinel data 2027")
+        self.assertIn("© OpenStreetMap contributors, ODbL", op.attribution(["2026-10-16T21:51:39Z"]))
+
+    def test_compare_outputs_carry_the_credits(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            c = FakeClient(n_scenes=2)
+            a = args(tmp)
+            s = op.run(a, client=c, overpass=fake_overpass, now=NOW, pacer=FakePacer(), sleep=lambda x: None,
+                       log=lambda m: None, clock=lambda: NOW)
+            want = "Contains modified Copernicus Sentinel data 2026"
+            summ = json.loads((a.out / "summary.json").read_text(encoding="utf-8"))
+            for text in (summ["attribution"], (a.out / "report.txt").read_text(encoding="utf-8"),
+                         json.loads((a.out / s["results"][0]["geojson"]).read_text(encoding="utf-8"))["attribution"]):
+                self.assertIn(want, text)
+                self.assertIn("© OpenStreetMap contributors, ODbL", text)
+
+    def test_vh_median_nan_is_null(self):
+        g = Grid(120.0, 24.0, 120.02, 24.02, 120, 120)
+        rng = np.random.default_rng(1)
+        vv = 10 * np.log10(rng.gamma(4.4, 1 / 4.4, (120, 120)) * 10 ** (-1.8))
+        vh = np.full(vv.shape, np.nan)                      # VH sigma0 <= 0 everywhere (code 0, data)
+        land = np.zeros(vv.shape, bool)
+        res, _f = op.compare(vv, vh, None, land, land.copy(), g, {"acquired_utc": "2026-10-16T21:51:39Z"},
+                             datamask=np.ones(vv.shape, bool))
+        self.assertIsNone(res["vh_median_db"])
+        text = op.dumps({"res": res, "x": float("nan"), "y": np.float64("inf"), "z": [np.float32("nan")]})
+        self.assertNotIn("NaN", text)
+        self.assertNotIn("Infinity", text)
+        back = json.loads(text)
+        self.assertIsNone(back["res"]["vh_median_db"])
+        self.assertIsNone(back["x"])
+        self.assertIsNone(back["y"])
+        self.assertEqual(back["z"], [None])
+
+    def test_summary_json_has_no_nan(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            s = {"results": [{"vh_median_db": float("nan")}], "errors": []}
+            op._write_summary(out, s, FakeClient())
+            text = (out / "summary.json").read_text(encoding="utf-8")
+            self.assertNotIn("NaN", text)
+            self.assertIsNone(json.loads(text)["results"][0]["vh_median_db"])
+
+
 if __name__ == "__main__":
     unittest.main()

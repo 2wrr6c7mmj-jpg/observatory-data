@@ -327,5 +327,116 @@ class WideModeTest(unittest.TestCase):
         self.assertEqual(wide.subregion(123.0, 30.0), "ECS-N")
 
 
+class Raising(Fake):
+    """Fake whose process call number ``at`` raises ``exc`` (the request was sent, no PU reported)."""
+
+    def __init__(self, *a, exc=None, at=2, **kw):
+        super().__init__(*a, **kw)
+        self.exc, self.at = exc, at
+
+    def process(self, *a, **kw):
+        if len(self.calls) + 1 == self.at:
+            self.requests += 1
+            raise self.exc
+        return super().process(*a, **kw)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class ModesUsageOnAnyEndTest(unittest.TestCase):
+    """raw and wide write the PU spent to --usage however they end (1部 指摘 1)."""
+
+    def setUp(self):
+        self._saved = (wide.REGION, wide.PIXEL_M, wide.MIN_LENGTH_M, wide.REGIONS)
+        wide.REGION = (124.0, 25.0, 124.8, 25.6)
+        wide.REGIONS = [{"id": "T", "name": "t", "bbox": (124.0, 25.0, 124.8, 25.6), "min_eff": 0.4}]
+        wide.PIXEL_M = 400.0
+
+    def tearDown(self):
+        wide.REGION, wide.PIXEL_M, wide.MIN_LENGTH_M, wide.REGIONS = self._saved
+
+    def check(self, tmp, c, exc, version):
+        rows = op.read_csv(tmp / "usage.csv")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["probe_version"], version)
+        self.assertAlmostEqual(float(rows[0]["processing_units"]), c.processing_units, places=2)
+        self.assertGreater(c.processing_units, 0)
+        self.assertEqual(int(rows[0]["requests"]), c.requests)
+        self.assertIn(type(exc).__name__, rows[0]["note"])
+        self.assertTrue((tmp / "out" / "report.txt").exists())
+
+    def test_raw_urlerror_and_credential_error(self):
+        import urllib.error
+        for exc in (urllib.error.URLError("reset"), cdse.CredentialError("HTTP 403")):
+            with self.subTest(exc=type(exc).__name__), tempfile.TemporaryDirectory() as d:
+                tmp = Path(d)
+                tg = {"version": "t", "targets": [{"area": "TS", "acquired_utc": "2026-10-16T21:51:39Z", "why": "a"},
+                                                  {"area": "HK", "acquired_utc": "2026-10-16T21:51:39Z", "why": "b"}]}
+                (tmp / "t.json").write_text(json.dumps(tg), encoding="utf-8")
+                c = Raising(["2026-10-16T21:51:39Z"], exc=exc, at=2)
+                with self.assertRaises(type(exc)):
+                    op.run_mode(args(tmp, "raw", targets=tmp / "t.json", max_pu=None), client=c, overpass=overpass,
+                                now=NOW, pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+                self.check(tmp, c, exc, raw_cut.RAW_VERSION)
+
+    def test_wide_urlerror_and_credential_error(self):
+        import urllib.error
+        from unittest import mock
+        for exc in (urllib.error.URLError("reset"), cdse.CredentialError("401")):
+            with self.subTest(exc=type(exc).__name__), tempfile.TemporaryDirectory() as d:
+                tmp = Path(d)
+                c = Raising(["2026-10-28T09:50:00Z"], exc=exc, at=2)
+                with mock.patch.object(wide, "MAX_PX", 60), self.assertRaises(type(exc)):  # one cell per request
+                    op.run_mode(args(tmp, "wide", max_pu=500.0), client=c, overpass=overpass, now=NOW, pacer=Pacer(),
+                                sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+                self.check(tmp, c, exc, wide.WIDE_VERSION)
+
+    def test_wide_credits_from_the_acquisitions(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            c = Fake(["2026-10-28T09:50:00Z"])
+            op.run_mode(args(tmp, "wide", max_pu=500.0), client=c, overpass=overpass, now=NOW, pacer=Pacer(),
+                        sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            cand = json.loads((tmp / "out" / "candidates.geojson").read_text(encoding="utf-8"))
+            cov = json.loads((tmp / "out" / "coverage.geojson").read_text(encoding="utf-8"))
+            self.assertEqual(cov["attribution"], "Contains modified Copernicus Sentinel data 2026")
+            self.assertIn("© OpenStreetMap contributors, ODbL", cand["attribution"])
+            self.assertIn("出典: Contains modified Copernicus Sentinel data 2026",
+                          (tmp / "out" / "report.txt").read_text(encoding="utf-8"))
+            self.assertFalse(hasattr(wide, "ATTRIBUTION"))
+            self.assertFalse(hasattr(raw_cut, "ATTRIBUTION"))
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class RawDiagnosticsTest(unittest.TestCase):
+    """tile_diagnostics: no data as in cfar2-pr2.1 (VH code 0 inside the dataMask is data) (1部 指摘 5)."""
+
+    def test_vh_zero_is_data_and_not_in_the_nodata_band(self):
+        h = w = 256
+        rng = np.random.default_rng(0)
+        raw = np.zeros((h, w, 4), np.uint16)
+        raw[..., 0] = 32000
+        raw[..., 1] = rng.integers(25000, 27000, (h, w))
+        raw[..., 2] = 3500
+        raw[..., 3] = 1
+        raw[..., 1][rng.random((h, w)) < 0.3] = 0       # VH sigma0 <= 0 inside the data
+        raw[:, :20, 3] = 0                               # no data: dataMask 0
+        raw[:, :20, :3] = 0
+        raw[200:, 200:, 0] = 0                           # no data: VV code 0
+        land = np.zeros((h, w), bool)
+        diag = {(d["ty"], d["tx"]): d for d in raw_cut.tile_diagnostics(raw, land, land.copy(), [])}
+        # the band is that of dataMask 0 / VV 0 only, as in detect_v2 (dilate(~valid, 3))
+        from sat.grid import dilate
+        valid = (raw[..., 3] > 0) & (raw[..., 0] > 0)
+        band = dilate(~valid, 3)
+        for (ty, tx), d in diag.items():
+            sl = (slice(ty * 128, (ty + 1) * 128), slice(tx * 128, (tx + 1) * 128))
+            self.assertAlmostEqual(d["nodata_band"], round(float(band[sl].mean()), 4))
+        self.assertLess(diag[(0, 1)]["nodata_band"], 0.01)   # VH zeros alone add no band
+        self.assertGreater(diag[(0, 1)]["vh_zero"], 0.25)
+        # the VH median is over VH code > 0 only (not pulled down to -50 dB by the zeros)
+        self.assertGreater(diag[(0, 1)]["vh_med_db"], 25000 / cdse.DB_SCALE - cdse.DB_OFFSET)
+        self.assertGreater(diag[(0, 1)]["vh_p05_db"], 24000 / cdse.DB_SCALE - cdse.DB_OFFSET)
+
+
 if __name__ == "__main__":
     unittest.main()
