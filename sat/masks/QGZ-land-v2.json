@@ -1,0 +1,40 @@
+{
+ "version": "QGZ-land-v2",
+ "site": "QGZ",
+ "built_utc": "2026-10-31T09:36:32Z",
+ "bbox": [
+  119.955,
+  35.7,
+  120.01,
+  35.745
+ ],
+ "width": 498,
+ "height": 499,
+ "values": {
+  "0": "water",
+  "1": "land",
+  "2": "structure (pier/breakwater/groyne/quay/bridge)"
+ },
+ "source": "OpenStreetMap via Overpass API (= QGZ-land-v1) + land_fix (QGZ-land-fix.geojson)",
+ "osm_base": "2026-10-30T17:42:58Z",
+ "query": "[out:json][timeout:90];(way[\"natural\"=\"coastline\"](35.7,119.955,35.745,120.01);way[\"man_made\"~\"^(pier|breakwater|groyne|quay)$\"](35.7,119.955,35.745,120.01);way[\"bridge\"][\"highway\"](35.7,119.955,35.745,120.01);way[\"bridge\"][\"railway\"](35.7,119.955,35.745,120.01););out geom;",
+ "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
+ "coastline_ways": 6,
+ "structure_ways": 19,
+ "regions": 3,
+ "regions_without_votes": 0,
+ "water_fraction": 0.6855,
+ "land_fraction": 0.2848,
+ "structure_fraction": 0.0298,
+ "base_version": "QGZ-land-v1",
+ "land_fix": [
+  {
+   "id": "Q1",
+   "pixels": 169
+  },
+  {
+   "id": "Q5",
+   "pixels": 90
+  }
+ ]
+}

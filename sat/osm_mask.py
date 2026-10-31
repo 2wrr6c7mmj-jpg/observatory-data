@@ -8,6 +8,14 @@ Piers, breakwaters, groynes and road/rail bridges are added as structures.
 
 Mask values: 0 water, 1 land, 2 structure (pier / breakwater / bridge).
 Data (c) OpenStreetMap contributors, ODbL 1.0.
+
+Land fixes (``sat/masks/<site>-land-fix.geojson``, optional): polygons made land after the OSM
+classification, for places where the OSM coastline misses reclaimed land (checked against
+Sentinel-2). Each feature has ``id``, ``since_mask_version`` (applied to that mask version and
+later ones only) and ``source``; ``whole_regions`` makes land the whole 4-connected water regions
+the polygon touches (a small pocket cut off by the coastline), up to ``max_pixels``. Only water
+pixels change (structures stay). ``--from-version N`` applies the fixes of the new version to the
+committed mask N without a new Overpass request (the OSM data stay those of mask N).
 """
 from __future__ import annotations
 
@@ -63,7 +71,59 @@ def _way_pixels(grid: Grid, way: dict):
     return grid.to_pixel(lon, lat)
 
 
-def build_mask(grid: Grid, osm: dict) -> tuple[np.ndarray, dict]:
+def fix_path(site_id: str, mask_dir: Path = MASK_DIR) -> Path:
+    return mask_dir / f"{site_id}-land-fix.geojson"
+
+
+def load_land_fix(site_id: str, version: int, mask_dir: Path = MASK_DIR) -> list[dict]:
+    """The land fixes of a site that apply to mask ``version`` ([] without a fix file)."""
+    p = fix_path(site_id, mask_dir)
+    if not p.exists():
+        return []
+    out = []
+    for f in json.loads(p.read_text(encoding="utf-8"))["features"]:
+        pr, geom = f["properties"], f["geometry"]
+        if geom["type"] != "Polygon":
+            raise ValueError(f"{p.name}: {pr.get('id')} は Polygon でない")
+        if int(pr["since_mask_version"]) > version:
+            continue
+        out.append({"id": pr["id"], "polygon": [[float(x), float(y)] for x, y in geom["coordinates"][0]],
+                    "whole_regions": bool(pr.get("whole_regions")), "max_pixels": int(pr.get("max_pixels", 500))})
+    return out
+
+
+def apply_land_fix(grid: Grid, mask: np.ndarray, fixes: list[dict]) -> tuple[np.ndarray, list[dict]]:
+    """Water pixels whose centre is in a fix polygon (or, with whole_regions, the water regions the
+    polygon touches) made land. Returns (new mask, [{id, pixels}])."""
+    from .sectors import _in_polygon
+    out = mask.copy()
+    if not fixes:
+        return out, []
+    lon, lat = grid.to_lonlat(np.arange(grid.height)[:, None] + 0.5, np.arange(grid.width)[None, :] + 0.5)
+    lon, lat = np.broadcast_to(lon, out.shape), np.broadcast_to(lat, out.shape)
+    report = []
+    for fx in fixes:
+        target = _in_polygon(lon, lat, fx["polygon"]) & (out == WATER)
+        if fx.get("whole_regions") and target.any():
+            labels, _ = label(out == WATER, connectivity=4)
+            ids = np.unique(labels[target])
+            target = np.isin(labels, ids[ids > 0])
+            if int(target.sum()) > fx.get("max_pixels", 500):
+                raise ValueError(f"land_fix {fx['id']}: 水の領域が {int(target.sum())} 画素で max_pixels を超える（海につながっている）")
+        out[target] = LAND
+        report.append({"id": fx["id"], "pixels": int(target.sum())})
+    return out, report
+
+
+def _fractions(mask: np.ndarray) -> dict:
+    return {
+        "water_fraction": round(float((mask == WATER).mean()), 4),
+        "land_fraction": round(float((mask == LAND).mean()), 4),
+        "structure_fraction": round(float((mask == STRUCTURE).mean()), 4),
+    }
+
+
+def build_mask(grid: Grid, osm: dict, land_fix: list[dict] | None = None) -> tuple[np.ndarray, dict]:
     h, w = grid.height, grid.width
     coast = np.zeros((h, w), bool)
     coast_ways = []
@@ -117,15 +177,18 @@ def build_mask(grid: Grid, osm: dict) -> tuple[np.ndarray, dict]:
     mask = np.where(land_comp[labels], LAND, WATER).astype(np.uint8)
     mask[coast] = LAND
     mask[struct & (mask == WATER)] = STRUCTURE
+    fixed = None
+    if land_fix:
+        mask, fixed = apply_land_fix(grid, mask, land_fix)
     info = {
         "coastline_ways": len(coast_ways),
         "structure_ways": n_struct,
         "regions": int(n),
         "regions_without_votes": unvoted,
-        "water_fraction": round(float((mask == WATER).mean()), 4),
-        "land_fraction": round(float((mask == LAND).mean()), 4),
-        "structure_fraction": round(float((mask == STRUCTURE).mean()), 4),
+        **_fractions(mask),
     }
+    if fixed is not None:
+        info["land_fix"] = fixed
     return mask, info
 
 
@@ -164,19 +227,49 @@ def load_mask(site_id: str, version: int, mask_dir: Path = MASK_DIR) -> tuple[np
     return png.decode(p_png.read_bytes()), json.loads(p_json.read_text(encoding="utf-8"))
 
 
+def fix_from_version(site: dict, grid: Grid, base: int, version: int, mask_dir: Path = MASK_DIR) -> dict:
+    """Mask ``version`` = the committed mask ``base`` + the land fixes of ``version`` (no Overpass)."""
+    if version <= base:
+        raise ValueError("--version は --from-version より大きいこと")
+    mask, bmeta = load_mask(site["id"], base, mask_dir)
+    if list(bmeta["bbox"]) != grid.bbox or mask.shape != (grid.height, grid.width):
+        raise ValueError(f"{bmeta['version']} の範囲が sites.json と違う")
+    fixes = load_land_fix(site["id"], version, mask_dir)
+    if not fixes:
+        raise ValueError(f"{fix_path(site['id'], mask_dir).name} に版 {version} の修正が無い")
+    new, report = apply_land_fix(grid, mask, fixes)
+    p_png, p_json = mask_paths(site["id"], version, mask_dir)
+    p_png.write_bytes(png.encode(new))
+    meta = {**bmeta,
+            "version": f"{site['id']}-land-v{version}",
+            "built_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "source": f"{bmeta['source']} (= {bmeta['version']}) + land_fix ({fix_path(site['id'], mask_dir).name})",
+            "base_version": bmeta["version"],
+            **_fractions(new),
+            "land_fix": report}
+    p_json.write_text(json.dumps(meta, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return meta
+
+
 def main(argv=None) -> int:
     from .run import load_sites
     ap = argparse.ArgumentParser(description="Build a site's land mask from OpenStreetMap")
     ap.add_argument("site")
     ap.add_argument("--version", type=int, help="mask version (default: the site's mask_version in sites.json)")
+    ap.add_argument("--from-version", type=int,
+                    help="apply the land fixes of --version to this committed mask instead of asking Overpass")
     ap.add_argument("--mask-dir", type=Path, default=MASK_DIR)
     args = ap.parse_args(argv)
     site = next(s for s in load_sites() if s["id"] == args.site)
     grid = Grid.for_site(site)
-    osm = fetch_osm(grid)
-    mask, info = build_mask(grid, osm)
     from .run import mask_version
-    meta = save_mask(site, grid, mask, info, osm, args.version or mask_version(site), args.mask_dir)
+    version = args.version or mask_version(site)
+    if args.from_version:
+        print(json.dumps(fix_from_version(site, grid, args.from_version, version, args.mask_dir), ensure_ascii=False, indent=1))
+        return 0
+    osm = fetch_osm(grid)
+    mask, info = build_mask(grid, osm, load_land_fix(site["id"], version, args.mask_dir))
+    meta = save_mask(site, grid, mask, info, osm, version, args.mask_dir)
     print(json.dumps(meta, ensure_ascii=False, indent=1))
     return 0
 
