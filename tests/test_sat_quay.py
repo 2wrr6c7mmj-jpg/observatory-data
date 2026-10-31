@@ -327,7 +327,13 @@ class RunQuayTest(unittest.TestCase):
         m = run.build_meta([], run.load_sites())
         self.assertIn("quay", m)
         self.assertEqual(m["quay"]["method"]["version"], quay.QUAY_VERSION)
-        self.assertEqual({b["relative_orbit"] for b in m["quay"]["baselines"]}, {157, 84})
+        orbits = {}
+        for b in m["quay"]["baselines"]:
+            orbits.setdefault(b["site_id"], set()).add(b["relative_orbit"])
+        self.assertEqual(orbits["ZJG"], {157, 84})
+        # the other ports (settings only, daily false) list their own orbits (PR-3a: QGZ 69 and 171, ZDH 171)
+        self.assertEqual({k: v for k, v in orbits.items() if k != "ZJG"},
+                         {"SYL": {157}, "SLP": {157}, "QGZ": {69, 171}, "ZDH": {171}})
         self.assertIn("quay_counts.csv", m["files"])
         self.assertIn("quay_lines", m["attribution"])
         self.assertEqual(sorted(m["quay"]["tuning"]["scenes"]["ZJG"])[0], "2026-10-02T10:48:45Z")
