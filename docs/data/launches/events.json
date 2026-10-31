@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-10-30T07:21:44Z",
+ "generated_utc": "2026-10-31T08:30:43Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -506,24 +506,32 @@
     [
      9.14,
      119.21
+    ],
+    [
+     19.598,
+     110.936
     ]
    ],
    "notices": [
-    "aviation:B5731/26"
+    "aviation:B5731/26",
+    "maritime:琼航警221/2026",
+    "aviation:B5826/26"
    ],
-   "method": "nearest-only",
-   "site": "文昌",
+   "method": "aligned",
+   "site": "西昌",
    "country": "CN",
-   "distance_km": 1464,
+   "azimuth_deg": 135.6,
+   "bearing_spread_deg": 1.6,
+   "inclination_deg": 52.0,
    "recorded_launches": [
     {
-     "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
-     "name": "Long March 12 | SatNet LEO Group TBD?",
-     "status": "TBC",
-     "net_utc": "2026-11-05T20:00:00Z",
-     "rocket": "Long March 12",
-     "orbit": "LEO",
-     "pad": "Commercial LC-2"
+     "ll2_id": "711de6bc-f755-475b-a12f-ec5240da3a11",
+     "name": "Long March 2C | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-05T16:00:00Z",
+     "rocket": "Long March 2C",
+     "orbit": "N/A",
+     "pad": "Launch Complex 3 (LC-3/LA-1)"
     }
    ]
   },
@@ -543,6 +551,69 @@
    "site": "内之浦",
    "country": "JP",
    "distance_km": 0
+  },
+  {
+   "window_start_utc": "2026-11-20T11:00Z",
+   "window_end_utc": "2026-11-23T14:00Z",
+   "areas": [
+    [
+     12.81,
+     116.057
+    ],
+    [
+     8.338,
+     119.26
+    ]
+   ],
+   "notices": [
+    "aviation:B5829/26",
+    "aviation:B5830/26"
+   ],
+   "method": "aligned",
+   "site": "文昌",
+   "country": "CN",
+   "azimuth_deg": 143.4,
+   "bearing_spread_deg": 0.1,
+   "inclination_deg": 55.8,
+   "recorded_launches": [
+    {
+     "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
+     "name": "Long March 8A | SatNet LEO Group TBD?",
+     "status": "TBC",
+     "net_utc": "2026-11-20T11:00:00Z",
+     "rocket": "Long March 8A",
+     "orbit": "LEO",
+     "pad": "Commercial LC-1"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-24T07:00Z",
+   "window_end_utc": "2026-11-27T10:00Z",
+   "areas": [
+    [
+     9.14,
+     119.21
+    ]
+   ],
+   "notices": [
+    "aviation:B5831/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 1464,
+   "recorded_launches": [
+    {
+     "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
+     "name": "Long March 12 | SatNet LEO Group TBD?",
+     "status": "TBC",
+     "net_utc": "2026-11-24T07:00:00Z",
+     "rocket": "Long March 12",
+     "orbit": "LEO",
+     "pad": "Commercial LC-2"
+    }
+   ]
   }
  ],
  "recorded_launches": [
@@ -734,10 +805,27 @@
    "event_index": null
   },
   {
+   "ll2_id": "711de6bc-f755-475b-a12f-ec5240da3a11",
+   "name": "Long March 2C | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-05T16:00:00Z",
+   "rocket": "Long March 2C",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Complex 3 (LC-3/LA-1)",
+   "location": "Xichang Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 28.247059,
+   "lon": 102.029008,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/711de6bc-f755-475b-a12f-ec5240da3a11/",
+   "event_index": 22
+  },
+  {
    "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
    "name": "Long March 12 | SatNet LEO Group TBD?",
-   "status": "TBC",
-   "net_utc": "2026-11-05T20:00:00Z",
+   "status": "Go",
+   "net_utc": "2026-11-05T21:15:00Z",
    "rocket": "Long March 12",
    "provider": "China Aerospace Science and Technology Corporation",
    "orbit": "LEO",
@@ -748,7 +836,41 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a2423132-f965-423f-8b03-6891b775dc54/",
-   "event_index": 22
+   "event_index": null
+  },
+  {
+   "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
+   "name": "Long March 8A | SatNet LEO Group TBD?",
+   "status": "TBC",
+   "net_utc": "2026-11-20T11:00:00Z",
+   "rocket": "Long March 8A",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-1",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.597275,
+   "lon": 110.930753,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a2975167-7c6f-4403-99e1-b40df17c8140/",
+   "event_index": 24
+  },
+  {
+   "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
+   "name": "Long March 12 | SatNet LEO Group TBD?",
+   "status": "TBC",
+   "net_utc": "2026-11-24T07:00:00Z",
+   "rocket": "Long March 12",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-2",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.59755,
+   "lon": 110.936481,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
+   "event_index": 25
   },
   {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",

@@ -33,5 +33,6 @@
   "afc-around-roc": 87,
   "around-taiwan": 1418,
   "sw-adiz": 414
- }
+ },
+ "collection": "robots.txt（2026-10-30 確認）が User-agent: * に Disallow: / を指定しているため、台湾国防部の取得を停止中（保存済みのデータはそのまま）"
 }
