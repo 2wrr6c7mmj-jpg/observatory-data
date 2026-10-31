@@ -7,7 +7,7 @@ docs/data/sat/ports_usage.csv (the PU of this archive; not counted in the 1,000 
     python -m sat.port_archive gather --other DIR --ports DIR                       # usage CSVs of every origin branch (git only)
     python -m sat.port_archive plan  --out plan.json --cap PU --global-cap PU --ocean-cap PU --budget-month YYYY-MM \
                                      [--usage CSV ...] [--ports-usage CSV ...]       # catalog only (no PU)
-    python -m sat.port_archive mask  --mask-dir DIR [--port ID ...]                 # OSM land masks
+    python -m sat.port_archive mask  --mask-dir DIR [--port ID ...]                 # land masks (sat/masks first, then OSM)
     python -m sat.port_archive run   --port ID --cap PU --budget-month YYYY-MM --out DIR --raw-dir DIR --mask-dir DIR
     python -m sat.port_archive baseline --only ID ... --cap PU --budget-month YYYY-MM
 
@@ -23,8 +23,9 @@ Per port (``run``):
 Budget: the PU of every response header are summed; a request is not sent if the port's cap would be
 exceeded (the estimate of the next request is checked first), nor once the UTC month is no longer
 ``--budget-month`` (the month the caps were set for). The usage of earlier runs is read from every origin
-branch (``gather``); when one file has copies on several branches the largest copy is counted (as the ocean
-usage). Rate: at most ``--pu-per-min`` PU and ``--req-per-min`` requests in any 60 s (the account limit is
+branch (``gather``, including docs/data/sat/ports_usage.csv): the rows of all copies are summed, each record
+once (``row_key``: run_utc, site_id, use, requests, PU), so rows added on different branches all count and
+rows copied to several branches or files count once. Rate: at most ``--pu-per-min`` PU and ``--req-per-min`` requests in any 60 s (the account limit is
 300 / 300 shared by all jobs); HTTP 429 is waited for and retried.
 
 Limits: cdse.Client retries HTTP 429 / 5xx by itself (up to 4 sends per call, 20-120 s apart) inside one
@@ -255,29 +256,76 @@ def usage_key(path: Path) -> str:
     return path.name
 
 
-def largest_copies(paths: list[Path], month: str) -> dict:
-    """One path per usage file: the copy with the most PU of ``month`` (copies of one file on several branches)."""
-    groups: dict = {}
-    for u in paths:
-        groups.setdefault(usage_key(Path(u)), []).append(Path(u))
-    return {k: max(v, key=lambda u: month_usage([u], month)[0]) for k, v in groups.items()}
+def row_key(r: dict) -> tuple:
+    """The record a usage row stands for, the same on every copy of it.
+
+    A row is written once per run and per site (sat/port_archive.py ``run``/``baseline``, the locate job, ocean)
+    and then copied unchanged: to other branches (a probe branch cut from another) and, for the archive, from
+    docs/data/sat/ports/<site>/usage.csv into the summed docs/data/sat/ports_usage.csv. ``run_utc`` alone is
+    not unique (the ports of one plan or baseline run start in the same second, e.g. XSN and ZDH at
+    2026-10-30T21:42:13Z), so the key is run_utc + site_id + the use (archive_version, or probe_version in the
+    ocean CSV) + requests + PU. Two different records with all five equal (same second, same site, same use,
+    same PU and requests) are not expected; the other columns (s1_scenes, cap_pu, ...) only describe the record.
+    PU and requests are normalised so that "40.7470" and "40.747" are the same record."""
+    def num(v, cast):
+        try:
+            return cast(round(float(v or 0), 6))
+        except ValueError:
+            return v
+    return ((r.get("run_utc") or "").strip(), (r.get("site_id") or "").strip(),
+            (r.get("archive_version") or r.get("probe_version") or "").strip(),
+            num(r.get("requests"), int), num(r.get("processing_units"), float))
+
+
+def union_rows(paths: list[Path]) -> list[dict]:
+    """Every row of every path, each record once (``row_key``): rows added on different branches are all
+    counted, rows copied to several branches or files are counted once."""
+    seen, out = set(), []
+    for p in paths:
+        for r in read_csv(Path(p)):
+            k = row_key(r)
+            if k not in seen:
+                seen.add(k)
+                out.append(r)
+    return out
+
+
+def rows_usage(rows: list[dict], month: str) -> tuple[float, int]:
+    pu, req = 0.0, 0
+    for r in rows:
+        if (r.get("run_utc") or "").startswith(month):
+            pu += float(r.get("processing_units") or 0)
+            req += int(float(r.get("requests") or 0))
+    return pu, req
+
+
+def union_usage(paths: list[Path], month: str) -> tuple[float, int]:
+    """PU and requests of ``month`` over all ``paths`` without double counting (see ``row_key``)."""
+    return rows_usage(union_rows(paths), month)
 
 
 def guard(month: str, now: datetime, cap: float, global_cap: float, global_margin: float, ocean_cap: float | None,
           usage: list[Path], ports_usage: list[Path], reserve: float = 0.0, max_pu: float | None = None) -> dict:
     """The PU and requests left for the port archive in ``month`` (the same guard for plan and port_locate).
     Raises ValueError outside ``month``. ``usage``: other usage CSVs (sat, and other-* copies from the branches);
-    ``ports_usage``: the archive's own usage (every branch's copies and the working tree; largest copy counted)."""
+    ``ports_usage``: the archive's own usage (every branch's docs/data/sat/ports/*/usage.csv and ports_usage.csv,
+    and the working tree). Rows are summed over all copies with duplicates removed (``union_usage``): the other
+    usage per file (so the ocean files can be told apart), the archive's usage as one pool, because
+    ports_usage.csv repeats the rows of ports/<site>/usage.csv and may hold rows that are nowhere else."""
     now_month = now.strftime("%Y-%m")
     if month != now_month:
         raise ValueError(f"上限は {month} の値（今は {now_month}）。その月の自主上限（--cap・--global-cap・"
                          f"--ocean-cap・--budget-month）を書き直すまで取得しない")
-    best = largest_copies(usage, month)
-    other_pu, other_req = month_usage(list(best.values()), month)
+    groups: dict = {}
+    for u in usage:
+        groups.setdefault(usage_key(Path(u)), []).append(Path(u))
+    per_file = {k: union_usage(v, month) for k, v in groups.items()}
+    other_pu = sum(v[0] for v in per_file.values())
+    other_req = sum(v[1] for v in per_file.values())
     if ocean_cap is not None:
-        ocean_pu, _r = month_usage([u for k, u in best.items() if k.startswith("other-")], month)
+        ocean_pu = sum(v[0] for k, v in per_file.items() if k.startswith("other-"))
         reserve = max(reserve, round(ocean_cap - ocean_pu, 1))
-    done_pu, done_req = month_usage(list(largest_copies(ports_usage, month).values()), month)
+    done_pu, done_req = union_usage(ports_usage, month)
     left = min(cap - done_pu, global_cap - global_margin - other_pu - reserve - done_pu)
     if max_pu is not None:
         left = min(left, max_pu)
@@ -308,9 +356,11 @@ def _git(*args: str) -> str:
 
 def gather_usage(other_dir: Path, ports_dir: Path, git=_git, log=print) -> dict:
     """Copy every origin branch's usage CSVs: the archive's own (docs/data/sat/ports/<site>/usage.csv) to
-    ``ports_dir/ports-<site>--<n>.csv``, the others under docs/data (ocean, etc.; not main's
-    docs/data/sat/usage.csv, read separately, nor the summed ports_usage.csv) to
-    ``other_dir/other-<path>--<n>.csv``. plan counts the largest copy of each file."""
+    ``ports_dir/ports-<site>--<n>.csv`` and its summed docs/data/sat/ports_usage.csv to
+    ``ports_dir/ports-all--<n>.csv`` (it can hold rows that are in no ports/<site>/usage.csv, e.g. the SLP v2
+    baseline of probe/ports-slp2-ops3), the others under docs/data (ocean, etc.; not main's
+    docs/data/sat/usage.csv, read separately) to ``other_dir/other-<path>--<n>.csv``. plan sums the rows of
+    all copies, each record once (``union_usage``)."""
     other_dir.mkdir(parents=True, exist_ok=True)
     ports_dir.mkdir(parents=True, exist_ok=True)
     refs = [r for r in git("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin").split()
@@ -328,7 +378,10 @@ def gather_usage(other_dir: Path, ports_dir: Path, git=_git, log=print) -> dict:
                     continue
                 dst = ports_dir / f"ports-{parts[4]}--{n['ports']}.csv"
                 n["ports"] += 1
-            elif f in ("docs/data/sat/usage.csv", "docs/data/sat/ports_usage.csv"):
+            elif f == "docs/data/sat/ports_usage.csv":
+                dst = ports_dir / f"ports-all--{n['ports']}.csv"
+                n["ports"] += 1
+            elif f == "docs/data/sat/usage.csv":
                 continue
             else:
                 dst = other_dir / f"other-{f.replace('/', '_')}--{n['other']}.csv"
@@ -336,6 +389,32 @@ def gather_usage(other_dir: Path, ports_dir: Path, git=_git, log=print) -> dict:
             dst.write_text(git("show", f"{ref}:{f}"), encoding="utf-8")
             log(f"usage: {ref} {f} -> {dst.name}")
     return n
+
+
+def mask_from_sat(site: dict, mask_dir: Path, sat_dir: Path | None = None, log=print) -> bool:
+    """Copy the daily run's land mask (sat/masks/<ID>-land-v<n>.png/.json) into the archive's ``mask_dir`` when
+    the archive has none of that version yet, so that both use the same mask (e.g. SLP-land-v2). Only if the
+    mask's grid (bbox, width, height) is the port's grid; otherwise the mask is built from Overpass. True if
+    the archive has the mask afterwards from this copy."""
+    from .osm_mask import MASK_DIR, mask_paths
+    v = int(site.get("mask_version", 1))
+    src_png, src_json = mask_paths(site["id"], v, sat_dir or MASK_DIR)
+    dst_png, dst_json = mask_paths(site["id"], v, mask_dir)
+    if dst_png.exists() or not (src_png.exists() and src_json.exists()):
+        return False
+    meta = json.loads(src_json.read_text(encoding="utf-8"))
+    grid = Grid.for_site(site)
+    same = (meta.get("width"), meta.get("height")) == (grid.width, grid.height) and \
+        all(abs(float(a) - float(b)) < 1e-9 for a, b in zip(meta.get("bbox") or [], grid.bbox)) and \
+        len(meta.get("bbox") or []) == len(grid.bbox)
+    if not same:
+        log(f"{site['id']}: sat/masks の {src_png.name} は港の範囲と格子が違うため使わない（Overpass から作る）")
+        return False
+    mask_dir.mkdir(parents=True, exist_ok=True)
+    dst_png.write_bytes(src_png.read_bytes())
+    dst_json.write_bytes(src_json.read_bytes())
+    log(f"{site['id']}: sat/masks の {src_png.name} を写した（毎日の処理と同じマスク）")
+    return True
 
 
 # ---------- catalog footprints ----------
@@ -990,6 +1069,8 @@ def main(argv=None) -> int:
             from .osm_mask import mask_paths
             if mask_paths(site["id"], int(site.get("mask_version", 1)), args.mask_dir)[0].exists():
                 continue  # keep the mask of the earlier run (the series stays on one mask)
+            if mask_from_sat(site, args.mask_dir, log=lambda t: print(t, file=sys.stderr)):
+                continue  # the daily run's mask of this version (sat/masks) before Overpass
             grid = Grid.for_site(site)
             for attempt in range(3):
                 try:

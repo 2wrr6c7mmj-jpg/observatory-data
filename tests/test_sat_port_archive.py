@@ -194,8 +194,8 @@ USAGE_HEAD = "run_utc,site_id,requests,processing_units\n"
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class PortsUsageTest(unittest.TestCase):
-    """The archive's own usage is read from every branch (largest copy of each file), so a new probe branch cut
-    from main does not start again from 0 PU."""
+    """The archive's own usage is read from every branch (all rows of all copies, each record once), so a new
+    probe branch cut from main does not start again from 0 PU."""
 
     def trees(self):
         syl_old = USAGE_HEAD + "2026-10-20T00:00:00Z,SYL,10,60\n"
@@ -216,26 +216,74 @@ class PortsUsageTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             d = Path(d)
             n = pa.gather_usage(d / "other", d / "ports", git=fake_git(self.trees()), log=lambda s: None)
-            self.assertEqual(n, {"other": 2, "ports": 3})
+            self.assertEqual(n, {"other": 2, "ports": 5})
             self.assertEqual(sorted(p.name.split("--")[0] for p in (d / "ports").iterdir()),
-                             ["ports-QGZ", "ports-SYL", "ports-SYL"])
+                             ["ports-QGZ", "ports-SYL", "ports-SYL", "ports-all", "ports-all"])
             # a new probe branch cut from main: no ports usage in its own tree
             empty = d / "tree" / "docs" / "data" / "sat" / "ports" / "SYL" / "usage.csv"
             now = datetime(2026, 10, 31, tzinfo=timezone.utc)
             g = pa.guard("2026-10", now, 4750, 9995, 50, 4600, sorted((d / "other").iterdir()),
                          sorted((d / "ports").iterdir()) + [empty])
-            self.assertEqual(g["done_pu"], 100 + 25)       # SYL: largest copy (60 + 40), not 60 + 100; QGZ 25
+            self.assertEqual(g["done_pu"], 100 + 25)       # SYL: 60 + 40 (the 60 copied to two branches counted once); QGZ 25
             self.assertEqual(g["done_req"], 20 + 3)
-            self.assertEqual(g["other_pu"], 50)            # ocean: largest copy (30 + 20)
+            self.assertEqual(g["other_pu"], 50)            # ocean: 30 (on two branches, once) + 20
             self.assertEqual(g["reserve"], 4550)           # 4,600 - 50
             self.assertEqual(g["cap"], min(4750 - 125, 9995 - 50 - 50 - 4550 - 125))
-            # the working tree's copy is the same file as the branch copies (largest counted, not summed)
+            # the working tree's copy: its new row (70) is added, the row also on the branches (60) is not
             empty.parent.mkdir(parents=True)
             empty.write_text(USAGE_HEAD + "2026-10-20T00:00:00Z,SYL,10,60\n2026-10-30T00:00:00Z,SYL,10,70\n")
             g2 = pa.guard("2026-10", now, 4750, 9995, 50, 4600, [], sorted((d / "ports").iterdir()) + [empty])
-            self.assertEqual(g2["done_pu"], 130 + 25)
+            self.assertEqual(g2["done_pu"], 60 + 40 + 70 + 25)
             with self.assertRaises(ValueError):
                 pa.guard("2026-09", now, 4750, 9995, 50, 4600, [], [])
+
+    def test_diverged_branches_and_ports_usage_csv(self):
+        """Two branches cut from one, each adding its own rows; a row only in ports_usage.csv (the SLP v2
+        baseline of probe/ports-slp2-ops3); a row in both ports_usage.csv and ports/<site>/usage.csv."""
+        head = ",".join(pa.USAGE_FIELDS) + "\n"
+        def row(t, site, req, pu, ver="ports-1", s1="0"):
+            return f"{t},{site},{req},{pu},header,{s1},,,,,60.0,{ver}\n"
+        base = row("2026-10-20T00:00:00Z", "locate", 10, "20.0", "locate-1")
+        a_new = row("2026-10-29T00:00:00Z", "locate", 5, "19.1", "locate-1")
+        b_new = row("2026-10-30T00:00:00Z", "locate", 4, "5.3", "locate-1")
+        slp = row("2026-10-30T22:29:13Z", "SLP", 25, "40.747", "slp2-baseline-1", "24")
+        xsn = row("2026-10-30T21:42:13Z", "XSN", 98, "31.952")
+        zdh = row("2026-10-30T21:42:13Z", "ZDH", 115, "73.724")   # same second as XSN, another port
+        trees = {
+            "origin/main": {"docs/data/sat/usage.csv": USAGE_HEAD},
+            "origin/probe/a": {"docs/data/sat/ports/locate/usage.csv": head + base + a_new,
+                               "docs/data/sat/ports_usage.csv": head + base + a_new},
+            "origin/probe/b": {"docs/data/sat/ports/locate/usage.csv": head + base + b_new,
+                               "docs/data/sat/ports/XSN/usage.csv": head + xsn,
+                               "docs/data/sat/ports/ZDH/usage.csv": head + zdh,
+                               "docs/data/sat/ports_usage.csv": head + base + b_new + xsn + zdh},
+            "origin/probe/slp2": {"docs/data/sat/ports_usage.csv": head + xsn + slp.replace("40.747", "40.7470")},
+        }
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            n = pa.gather_usage(d / "other", d / "ports", git=fake_git(trees), log=lambda s: None)
+            self.assertEqual(n, {"other": 0, "ports": 7})
+            paths = sorted((d / "ports").iterdir())
+            now = datetime(2026, 10, 31, tzinfo=timezone.utc)
+            g = pa.guard("2026-10", now, 4750, 9995, 50, None, [], paths)
+            # locate: 20 + 19.1 + 5.3 (largest copy would be 39.1); SLP v2 only in ports_usage.csv; XSN and ZDH
+            # once though in both ports_usage.csv and ports/<site>/usage.csv (and XSN on two branches)
+            self.assertAlmostEqual(g["done_pu"], 20 + 19.1 + 5.3 + 40.747 + 31.952 + 73.724, places=6)
+            self.assertEqual(g["done_req"], 10 + 5 + 4 + 25 + 98 + 115)
+            # the largest single copy of locate's usage (the old way) was 39.1, short of 44.4
+            largest = max(pa.union_usage([p], "2026-10")[0] for p in paths if p.name.startswith("ports-locate"))
+            self.assertAlmostEqual(largest, 39.1, places=6)
+            self.assertEqual(len(pa.union_rows(paths)), 6)
+
+    def test_row_key(self):
+        a = {"run_utc": "2026-10-30T21:42:13Z", "site_id": "XSN", "requests": "98", "processing_units": "31.952",
+             "archive_version": "ports-1", "cap_pu": "56.9"}
+        self.assertEqual(pa.row_key(a), pa.row_key(dict(a, processing_units="31.9520", cap_pu="")))
+        self.assertNotEqual(pa.row_key(a), pa.row_key(dict(a, site_id="ZDH")))
+        self.assertNotEqual(pa.row_key(a), pa.row_key(dict(a, archive_version="baseline-bl-1")))
+        ocean = {"run_utc": "2026-10-30T17:44:27Z", "requests": "52", "processing_units": "2100.945",
+                 "probe_version": "ocean-cfar-probe-1"}
+        self.assertEqual(pa.row_key(ocean)[2], "ocean-cfar-probe-1")
 
     def test_plan_counts_other_branches(self):
         with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()), \
@@ -294,6 +342,42 @@ class PortsUsageTest(unittest.TestCase):
             r = json.loads((d / "o" / "locate.json").read_text())
             self.assertEqual((r["pu"], r["requests"]), (0, 0))
             self.assertEqual([x["id"] for x in r["regions"]], ["R1"])  # stopped after the first refusal
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class MaskFromSatTest(unittest.TestCase):
+    """The archive takes the daily run's mask (sat/masks) before building one from Overpass (SLP-land-v2)."""
+
+    def test_mask_command_copies_sat_masks_first(self):
+        from sat import osm_mask
+        site = next(p for p in pa.load_ports() if p["id"] == "SLP")
+        self.assertEqual(int(site.get("mask_version", 1)), 2)
+        src_png, src_json = osm_mask.mask_paths("SLP", 2)
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()), \
+                mock.patch.object(osm_mask, "fetch_osm", side_effect=AssertionError("no Overpass")), \
+                mock.patch.object(pa.time, "sleep"):
+            d = Path(d)
+            self.assertEqual(pa.main(["mask", "--mask-dir", str(d), "--port", "SLP"]), 0)
+            self.assertEqual((d / "SLP-land-v2.png").read_bytes(), src_png.read_bytes())
+            self.assertEqual((d / "SLP-land-v2.json").read_bytes(), src_json.read_bytes())
+            self.assertFalse((d / "SLP-land-v1.png").exists())
+            # an archive mask already there is kept (the series stays on one mask)
+            (d / "SLP-land-v2.png").write_bytes(b"old")
+            self.assertEqual(pa.main(["mask", "--mask-dir", str(d), "--port", "SLP"]), 0)
+            self.assertEqual((d / "SLP-land-v2.png").read_bytes(), b"old")
+
+    def test_other_grid_is_not_copied(self):
+        site = next(p for p in pa.load_ports() if p["id"] == "SLP")
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            (d / "sat").mkdir()
+            meta = json.loads((Path(pa.__file__).parent / "masks" / "SLP-land-v2.json").read_text())
+            meta["bbox"] = [109.665, 18.185, 109.715, 18.230]  # the v1 range
+            (d / "sat" / "SLP-land-v2.json").write_text(json.dumps(meta))
+            (d / "sat" / "SLP-land-v2.png").write_bytes(b"png")
+            self.assertFalse(pa.mask_from_sat(site, d / "arch", d / "sat", log=lambda s: None))
+            self.assertFalse((d / "arch" / "SLP-land-v2.png").exists())
+            self.assertFalse(pa.mask_from_sat(site, d / "arch", d / "none", log=lambda s: None))
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

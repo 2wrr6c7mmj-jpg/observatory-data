@@ -10,8 +10,8 @@ For each region of sat/port_regions.json (a wide box, about 15-40 km):
         [--global-margin PU] [--usage CSV ...] [--ports-usage CSV ...] [--m 30]
 
 The overview requests go through the same monthly guard as ``sat.port_archive plan`` (the month the caps were
-set for, the ports cap, the global cap with its margin, the ocean reserve; the usage of every branch, largest
-copy counted) and the same capped client (sat.port_archive.LimitedClient), and the PU are recorded in the
+set for, the ports cap, the global cap with its margin, the ocean reserve; the rows of every branch's usage
+CSVs summed, each record once) and the same capped client (sat.port_archive.LimitedClient), and the PU are recorded in the
 archive's usage (docs/data/sat/ports/locate/usage.csv, by the workflow).
 """
 from __future__ import annotations

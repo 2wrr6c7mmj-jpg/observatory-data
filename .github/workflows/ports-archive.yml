@@ -6,7 +6,12 @@ name: PLAN ports archive probe
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
 # PU：上限はすべて BUDGET_MONTH の月の値（港 --cap・全体の自主上限 --global-cap・外洋 OCEAN_CAP）。plan が他の usage を読み、
 # 外洋の上限から外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。港の usage（docs/data/sat/ports/*/usage.csv）も
-# origin の全ブランチから集め（sat.port_archive gather）、同じファイルの写しが複数あれば一番大きいものを数える。
+# docs/data/sat/ports_usage.csv も含めて origin の全ブランチから集め（sat.port_archive gather）、全部の写しの行を合わせ、
+# 同じ記録（run_utc・site_id・用途・リクエスト数・PU が同じ行）は 1 回だけ数える（別々のブランチが足した行はどれも数える）。
+# 次の港の probe は、アーカイブのデータがある最新の probe ブランチ（現時点では probe/ports-s2ext-ops3）から切る。
+# 取得済みの判定（plan）は作業ツリーの docs/data/sat/ports/ しか見ないため、main から切ると全港を取り直そうとする。
+# 陸マスク：アーカイブのマスクの置き場（docs/data/sat/ports/masks/）に無い版は、まず sat/masks の同じ版（毎日の処理用、
+# 格子が同じもの。例 SLP-land-v2）を写し、それも無ければ Overpass から作る。
 # 月が BUDGET_MONTH と違えば plan・locate・run・baseline は要求の前に止まり、実行中に UTC の月が変わっても次の要求の前に止まる。
 # 翌月に動かすには、その月の自主上限と BUDGET_MONTH をこのファイルに明示して書き直す（sat/port_archive.py にも上限の既定値はない）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
@@ -56,7 +61,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
           git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
-          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv, ports-<site>--<n>.csv)
+          # every branch's copy (other-<file>--<n>.csv, ports-<site>--<n>.csv, ports-all--<n>.csv = ports_usage.csv); plan sums all rows, each record once
           python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
           ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
       - name: Locate (the same guard as plan)
@@ -119,7 +124,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
           git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
-          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv, ports-<site>--<n>.csv)
+          # every branch's copy (other-<file>--<n>.csv, ports-<site>--<n>.csv, ports-all--<n>.csv = ports_usage.csv); plan sums all rows, each record once
           python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
           ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
       - name: Cap (the month's own caps in GUARD_ARGS and OCEAN_CAP, this run BASELINE_MAX)
@@ -132,7 +137,7 @@ jobs:
           python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" $GUARD_ARGS --usage "$RUNNER_TEMP"/usage/*.csv \
             --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
           echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
-      - name: OSM land masks (missing only)
+      - name: Land masks (missing only; sat/masks first, then OSM)
         run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || true
       - name: Baselines
         env:
@@ -205,10 +210,10 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
           git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
-          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv, ports-<site>--<n>.csv)
+          # every branch's copy (other-<file>--<n>.csv, ports-<site>--<n>.csv, ports-all--<n>.csv = ports_usage.csv); plan sums all rows, each record once
           python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
           ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
-      - name: OSM land masks (Overpass, one port at a time)
+      - name: Land masks (sat/masks first, then Overpass, one port at a time)
         run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || echo "::warning title=mask::一部の港の陸マスクを作れなかった（その港は検出なしで画像だけ）"
       - name: Plan (catalog only, no PU)
         id: plan
