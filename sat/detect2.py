@@ -50,6 +50,22 @@ Steps (design ``cfar-v2`` 3.4-3.6):
 11. ``large`` flag: ``length_m >= 80 and width_m >= 12 and lw_ratio >= 2.5 and confidence == "A"
     and not static`` (provisional numbers; lengths are blurred by about +20 m by the resolution).
 
+Limits (VH and low wind, ``cfar2-pr2.1``)
+-----------------------------------------
+* VH sigma0 <= 0 (noise-subtracted; code 0, NaN in dB) is *not* no data. No data is ``datamask``
+  False or VV NaN only, and only that border is dilated by ``edge_px``. VH <= 0 pixels are left out
+  of the VH log statistics only (ring background, tile fit, ``z_vh``); in the linear VH means (the
+  +3 dB rule for ``A``) they count as 0, for the candidate and for the ring. VV is not affected.
+* The VH threshold is too conservative on noise-subtracted VH: on synthetic scenes the measured VH
+  exceedance at 1e-3 is about 0.4-0.5x nominal and ``z_vh`` about 60% of its noise-free value. ``A``
+  is therefore decided mostly by the +3 dB ratio, and that ratio comes out somewhat low because the
+  background's values <= 0 are raised to 0 (errs towards fewer ``A``).
+* Real tiles (probe-raw/ocean 2026-10-30, 9 scenes x 108 tiles): with ships masked, the VV
+  exceedance at 1e-4 is 2-3.5x nominal, sometimes outside the design's 1/3..3x (1e-3: about 1.6x).
+* VV sigma0 <= 0 (VV code 0) is still no data and dilated (a limit in very low wind).
+* ``info["nodata_band_fraction"]`` is over all pixels of the image; ``info["vh_zero_fraction"]`` is
+  over sea pixels (data, not land).
+
 Excluded candidates (side lobe, ambiguity) are returned with the reason set and are listed in
 ``info["excluded"]``; use :func:`kept` for the rest. ``lon``, ``lat`` and ``acquired_utc`` are None
 until :func:`add_geo` fills them from a ``grid.Grid``.
