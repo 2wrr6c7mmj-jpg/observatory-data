@@ -321,12 +321,16 @@ class ReviewFixesTest(unittest.TestCase):
     def test_title_lists_daily_sites_only(self):
         sites = run.load_sites()
         m = run.build_meta([], sites)
-        self.assertIn("湛江", m["title"])
-        self.assertNotIn("楡林", m["title"])
-        self.assertNotIn("亜龍湾", m["title"])
+        # from 2026-11-01 the daily sites are ZJG, SYL and SLP; QGZ and ZDH (daily false) stay out of the title
+        for name in ("湛江", "楡林", "龍坡"):
+            self.assertIn(name, m["title"])
+        for name in ("青島", "舟山"):
+            self.assertNotIn(name, m["title"])
         modes = {x["id"]: x["mode"] for x in m["sites"]}
-        self.assertEqual(modes["SYL"], "設定のみ（毎日の取得なし）")
-        self.assertEqual(modes["ZJG"], "毎日の取得")
+        for sid in ("ZJG", "SYL", "SLP"):
+            self.assertEqual(modes[sid], "毎日の取得")
+        for sid in ("QGZ", "ZDH"):
+            self.assertEqual(modes[sid], "設定のみ（毎日の取得なし）")
 
     def test_wide_columns_only_for_shared_layout(self):
         one = {**NEW, "sectors": [{"id": "A", "bbox": [110.0, 21.004, 110.005, 21.008]}], "sector_rest": {"id": "B"}}
@@ -374,7 +378,7 @@ class SanyaSitesTest(unittest.TestCase):
         for sid, mv, lv in (("SYL", 2, 2), ("SLP", 2, 2)):  # PR-1c: SLP range v2 (north 18.242N), SYL lines v2 (OSM + F1-F5)
             x = s[sid]
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]), ("naval", "trial", "per_site", False, mv))
-            self.assertFalse(x["daily"])  # settings only until the quay lines and the baseline are in
+            self.assertTrue(x["daily"])  # fetched daily from 2026-11-01 (quay lines, baseline and mask are in)
             self.assertEqual({k: v for k, v in x["baseline"].items() if k != "note"},
                              {"orbits": [157], "lookback_days": 365, "max_scenes": 30, "min_scenes": 24})
             self.assertTrue(x["pu_month_cap"] > 0)
@@ -396,15 +400,17 @@ class SanyaSitesTest(unittest.TestCase):
             self.assertGreaterEqual(int(bl[1]["scenes"]), 24)
             self.assertEqual(bl[1]["credibility"], "3")
             self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
-        self.assertNotIn("SYL", [y["id"] for y in run.load_sites() if run.runs_daily(y)])
+        self.assertEqual({"SYL": 40, "SLP": 30}, {sid: s[sid]["pu_month_cap"] for sid in ("SYL", "SLP")})
+        self.assertEqual({"ZJG", "SYL", "SLP"}, {y["id"] for y in run.load_sites() if run.runs_daily(y)})
 
     def test_blind_stretches_in_own_folder(self):
         """quay/blind.geojson keeps the shared-layout site (Zhanjiang) only; the new ports get their own file."""
         with tempfile.TemporaryDirectory() as d:
             out = Path(d)
-            # SYL as when the HQ turns daily on (SLP stays settings only: its geometry takes ~35 s)
-            sites = [{**x, "daily": True} if x["id"] == "SYL" else x for x in run.load_sites()]
-            self.assertEqual(run.blind_summary([x for x in run.load_sites() if x["id"] != "ZJG"]), [])  # daily false: none
+            # SYL daily as in sites.json (SLP is daily too but kept out here: its geometry takes ~35 s)
+            sites = [{**x, "daily": False} if x["id"] == "SLP" else x for x in run.load_sites()]
+            # blind stretches are summarised for daily sites only: QGZ and ZDH (daily false) give none
+            self.assertEqual(run.blind_summary([x for x in run.load_sites() if x["id"] in ("QGZ", "ZDH")]), [])
             store = run.Store(out, sites)
             with contextlib.redirect_stderr(io.StringIO()):
                 store.save({"run_utc": "2026-10-31T00:00:00Z"})
@@ -523,9 +529,9 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
             x = s[sid]
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]),
                              ("naval", "trial", "per_site", False, mv))
-            self.assertFalse(x["daily"])  # settings only (no CDSE until the November budget is set)
-            # 1部 review of PR #35 (design §5.1): QGZ 16, ZDH 13 PU a month, set before daily is turned on
-            self.assertEqual(x["pu_month_cap"], {"QGZ": 16, "ZDH": 13}[sid])
+            self.assertFalse(x["daily"])  # settings only (not daily yet)
+            # November 2026: QGZ 30, ZDH 22 PU a month for the first 30-day look-back (back to ~18 / ~14 in December)
+            self.assertEqual(x["pu_month_cap"], {"QGZ": 30, "ZDH": 22}[sid])
             run.validate_site({**x, "daily": True})  # would pass the check of a daily site
             for k in ("bbox", "center_lat", "center_lon", "mask_version"):  # the same range as the archive
                 self.assertEqual(x[k], ports[sid][k], (sid, k))
@@ -550,7 +556,7 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
                 self.assertEqual((int(bl["scenes"]), bl["credibility"]), (24, "3"))
                 self.assertEqual(sum(1 for sc in bl["scene_list"] if sc.get("used")), 24)
                 self.assertIn("Copernicus Sentinel data", bl["credit"])
-        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)], ["ZJG"])
+        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)], ["ZJG", "SYL", "SLP"])
 
     def test_sectors(self):
         s = self.sites()
