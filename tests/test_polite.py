@@ -202,13 +202,13 @@ class PermissionsFile(unittest.TestCase):
 
 class UserAgents(unittest.TestCase):
     """Every collector sends the plain bot name observatory-data/1: no contact details (the user's
-    decision, 2026-10-31) and never a browser-like string. sat/cdse.py (CDSE) is left as it is."""
+    decision, 2026-10-31) and never a browser-like string."""
 
     def test_collectors_use_the_plain_bot_name(self):
         import importlib
         for mod, attr in [("collectors.pla_tracker", "UA"), ("collectors.jcg_senkaku", "UA"),
                           ("collectors.taiwan_mnd", "UA"), ("collectors.ll2", "UA"),
-                          ("sat.osm_mask", "USER_AGENT"), ("ocean.coverage_probe", "USER_AGENT")]:
+                          ("sat.osm_mask", "USER_AGENT"), ("sat.cdse", "USER_AGENT"), ("ocean.coverage_probe", "USER_AGENT")]:
             with self.subTest(mod=mod):
                 self.assertEqual(getattr(importlib.import_module(mod), attr), "observatory-data/1")
 
@@ -219,8 +219,6 @@ class UserAgents(unittest.TestCase):
         pat = re.compile(r"""(UA|USER_AGENT)\s*=\s*['"]([^'"]*)['"]""")
         for p in list(root.glob("collectors/*.py")) + list(root.glob("sat/*.py")) + list(root.glob("ocean/*.py")) \
                 + list(root.glob("notam/*.mjs")):
-            if p.name == "cdse.py":
-                continue
             for m in pat.finditer(p.read_text(encoding="utf-8")):
                 with self.subTest(file=p.name, ua=m.group(2)):
                     self.assertNotIn("github.com", m.group(2))

@@ -18,7 +18,7 @@ TOKEN_URL = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/
 SH_URL = "https://sh.dataspace.copernicus.eu"
 CATALOG_URL = SH_URL + "/api/v1/catalog/1.0.0/search"
 PROCESS_URL = SH_URL + "/api/v1/process"
-USER_AGENT = "observatory-data/1.0 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)"
+USER_AGENT = "observatory-data/1"
 
 # Encoding of the evalscript output (UINT16): dB = value / DB_SCALE - DB_OFFSET, 0 = no data.
 DB_OFFSET = 50.0
