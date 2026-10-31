@@ -6,8 +6,13 @@ name: Ocean CFAR v1/v2 probe
 # concurrency group で、外洋の probe どうしは 1 つの group（同時に走って上限を二重に使わない）。
 # 結果（小さな JSON・GeoJSON・report.txt と docs/data/ocean/usage.csv の 1 行）は同じ probe ブランチにだけ commit する。
 # 生の σ0 は保存しない（例外：--mode raw は原因調べ用に 2.56 km タイルを最大 12 枚／撮影だけ probe-raw/ocean/ に置く）。
-# --mode wide は 40 m の広域スナップショット（ocean/wide.py）。モードと上限は probe ブランチの ocean/cfar_probe.args で指定。
+# --mode wide は 40 m の広域スナップショット（ocean/wide.py）。モードとこの実行の上限（--max-pu）は probe ブランチの ocean/cfar_probe.args で指定（月の上限はここでは変えられない）。
 # main は変えない。
+# PU：上限はすべて BUDGET_MONTH の月の値（外洋 OCEAN_CAP・全体の自主上限 GLOBAL_CAP・湛江の毎日用の余裕 GLOBAL_MARGIN）。既定値はない。
+# 実行月（UTC）が BUDGET_MONTH と違えば CDSE に何も送らず止める（python の終了コード 2）。実行中に月が変わったら次の要求の前に止める。
+# 使用量は sat.port_archive gather で origin の全ブランチから集め（港・外洋・その他の usage の写し）、main の sat usage と合わせて
+# 重複を除いた和で数える（港のアーカイブと同じ guard）。ports-archive.yml の OCEAN_CAP は外洋の予約に使われるので同じ値にする。
+# 11 月以降は、司令部がその月の枠を決めてから BUDGET_MONTH・OCEAN_CAP・GLOBAL_CAP・GLOBAL_MARGIN を別コミットで書き直す。
 on:
   push:
     branches: ['probe/ocean-cfar', 'probe/ocean-cfar*']
@@ -16,6 +21,12 @@ permissions:
 concurrency:
   group: probe-ocean-cfar
   cancel-in-progress: false
+env:
+  # 2026-10 の値（10-30 司令部：外洋 5,000、全体 9,995、湛江の 10-31 の毎日の分 50）。10 月はもう取得しない。
+  BUDGET_MONTH: '2026-10'
+  OCEAN_CAP: '5000'
+  GLOBAL_CAP: '9995'
+  GLOBAL_MARGIN: '50'
 jobs:
   probe:
     if: ${{ !contains(github.event.head_commit.message, '[ocean-cfar-result]') }}
@@ -23,26 +34,26 @@ jobs:
     timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install numpy and Pillow
         run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Tests
-        run: python -m unittest tests.test_ocean_cfar_probe tests.test_sat -v
-      - name: Usage of this month (main's sat usage, the ports probe's usage, ocean usage of every ocean-cfar probe branch)
+        run: python -m unittest tests.test_ocean_cfar_probe tests.test_ocean_modes tests.test_sat -v
+      - name: Budget month
         run: |
-          mkdir -p "$RUNNER_TEMP/usage"
-          git fetch -q origin main '+refs/heads/probe/ocean-cfar*:refs/remotes/origin/probe/ocean-cfar*' || true
-          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv" || true
-          git fetch -q origin '+refs/heads/probe/ports-archive-ops3:refs/remotes/origin/probe/ports-archive-ops3' || true
-          git show origin/probe/ports-archive-ops3:docs/data/sat/ports_usage.csv > "$RUNNER_TEMP/usage/ports.csv" 2>/dev/null || rm -f "$RUNNER_TEMP/usage/ports.csv"
-          i=0
-          for r in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/probe/ocean-cfar*'); do
-            i=$((i+1))
-            git show "$r:docs/data/ocean/usage.csv" > "$RUNNER_TEMP/usage/ocean-$i.csv" 2>/dev/null || rm -f "$RUNNER_TEMP/usage/ocean-$i.csv"
-          done
-          ls -l "$RUNNER_TEMP/usage"
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の上限を書き直すまで取得しない"; exit 2; }
+      - name: Usage of this month (main's sat usage; every branch's ports, ocean and other usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git fetch -q origin '+refs/heads/*:refs/remotes/origin/*'
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/sat.csv"
+          # other-<file>--<n>.csv (the ocean copies among them), ports-<site>--<n>.csv, ports-all--<n>.csv; summed with each record once
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
       - name: Probe
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
@@ -58,10 +69,14 @@ jobs:
           EXTRA=""
           [ -e ocean/cfar_probe.args ] && EXTRA="$(head -c 200 ocean/cfar_probe.args | tr -cd 'a-z0-9 .-')"
           echo "extra args: $EXTRA"
+          case "$EXTRA" in *--budget-month*|*--ocean-cap*|*--global-cap*|*--global-margin*|*-usage*)
+            echo "::error title=budget::月の上限と usage は yml の env だけで指定する（ocean/cfar_probe.args では不可）"; exit 1;; esac
           python -m ocean.cfar_probe --out "$RUN" --usage docs/data/ocean/usage.csv \
-            --sat-usage "$RUNNER_TEMP/usage/sat.csv" $(ls "$RUNNER_TEMP"/usage/ports.csv 2>/dev/null) \
+            --budget-month "$BUDGET_MONTH" --ocean-cap "$OCEAN_CAP" --global-cap "$GLOBAL_CAP" --global-margin "$GLOBAL_MARGIN" \
+            --sat-usage "$RUNNER_TEMP/sat.csv" \
+            --other-usage $(ls "$RUNNER_TEMP"/usage/*.csv 2>/dev/null) \
+            --ports-usage $(ls "$RUNNER_TEMP"/ports-usage/*.csv 2>/dev/null) \
             --raw-out "probe-raw/ocean/$TS" \
-            --ocean-usage $(ls "$RUNNER_TEMP"/usage/ocean-*.csv 2>/dev/null) \
             --max-minutes 300 $DRY $EXTRA 2>&1 | tee "$RUNNER_TEMP/probe.log"
       - name: Report (annotations)
         if: always()

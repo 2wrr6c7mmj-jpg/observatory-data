@@ -83,6 +83,8 @@ def small_areas(tmp: Path) -> Path:
 
 def args(tmp: Path, mode: str, **kw) -> Namespace:
     base = dict(out=tmp / "out", areas=small_areas(tmp), usage=tmp / "usage.csv", sat_usage=[], ocean_usage=[],
+                other_usage=[], ports_usage=[], budget_month="2026-10", ocean_cap=5000.0, global_cap=9995.0,
+                global_margin=50.0,
                 max_pu=600.0, max_minutes=10, lookback_days=None, min_coverage=None, dry_run=False, no_check=True,
                 mode=mode, raw_out=tmp / "raw", targets=None, pu_per_min=100.0, extend=False)
     base.update(kw)
@@ -112,6 +114,47 @@ class RawModeTest(unittest.TestCase):
             # zero VH codes (sigma0 <= 0 after noise removal) are counted per tile
             self.assertGreater(r["scene"]["vh_zero"], 0.3)
             self.assertIn("raw tiles", (tmp / "usage.csv").read_text(encoding="utf-8"))
+
+    def test_datamask_reaches_detect_v2(self):
+        from unittest import mock
+        from sat import detect2
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            tg = {"version": "t", "targets": [{"area": "TS", "acquired_utc": "2026-10-16T21:51:39Z", "why": "low"}]}
+            (tmp / "t.json").write_text(json.dumps(tg), encoding="utf-8")
+            c = Fake(["2026-10-16T21:51:39Z"], zero_share=0.3)
+            orig = detect2.detect_v2
+            with mock.patch.object(detect2, "detect_v2", side_effect=orig) as m:
+                op.run_mode(args(tmp, "raw", targets=tmp / "t.json"), client=c, overpass=overpass, now=NOW,
+                            pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
+            self.assertEqual(m.call_count, 1)
+            self.assertTrue(m.call_args.kwargs["datamask"].all())
+
+    def test_other_month_sends_nothing(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            tg = {"version": "t", "targets": [{"area": "TS", "acquired_utc": "2026-10-16T21:51:39Z", "why": "x"}]}
+            (tmp / "t.json").write_text(json.dumps(tg), encoding="utf-8")
+            for mode in ("raw", "wide"):
+                c = Fake(["2026-10-16T21:51:39Z"])
+                with self.assertRaises(op.MonthStop):
+                    op.run_mode(args(tmp, mode, targets=tmp / "t.json", budget_month="2026-09"), client=c,
+                                overpass=overpass, now=NOW, pacer=Pacer(), sleep=lambda x: None, log=lambda m: None,
+                                clock=lambda: NOW)
+                self.assertEqual(c.requests, 0, mode)
+
+    def test_month_change_stops_raw_before_the_catalog(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            tg = {"version": "t", "targets": [{"area": "TS", "acquired_utc": "2026-10-16T21:51:39Z", "why": "x"}]}
+            (tmp / "t.json").write_text(json.dumps(tg), encoding="utf-8")
+            c = Fake(["2026-10-16T21:51:39Z"])
+            nov = datetime(2026, 11, 1, 0, 0, tzinfo=timezone.utc)
+            s = op.run_mode(args(tmp, "raw", targets=tmp / "t.json"), client=c, overpass=overpass, now=NOW,
+                            pacer=Pacer(), sleep=lambda x: None, log=lambda m: None, clock=lambda: nov)
+            self.assertEqual(c.requests, 0)
+            self.assertEqual(op.exit_code(s), 2)
+            self.assertTrue((tmp / "usage.csv").exists())
 
     def test_missing_scene_is_an_error_not_a_request(self):
         with tempfile.TemporaryDirectory() as d:
@@ -226,6 +269,20 @@ class WideModeTest(unittest.TestCase):
                     self.assertNotIn((p["acquired_utc"], tuple(p["bbox"])), firsts)
             self.assertGreater(s["per_region"]["T"]["seen_twice_sea_km2"], 0)
             self.assertEqual(s["coverage"]["holes_sea_km2"]["no_scene"], 0)
+
+    def test_detect_rect_passes_datamask_and_keeps_vh_zero_as_data(self):
+        from unittest import mock
+        from sat import detect2
+        from sat.grid import Grid
+        vv, vh, lia, dm = op.decode(chip(200, 200, zero_share=0.3))
+        land = np.zeros(vv.shape, bool)
+        g = Grid(122.0, 24.0, 122.08, 24.07, 200, 200)
+        orig = detect2.detect_v2
+        with mock.patch.object(detect2, "detect_v2", side_effect=orig) as m:
+            _c, info = wide.detect_rect(vv, vh, lia, land, land.copy(), g,
+                                        {"acquired_utc": "2026-10-16T21:51:39Z", "orbit_direction": "ASCENDING"}, datamask=dm)
+        self.assertIs(m.call_args.kwargs["datamask"], dm)
+        self.assertEqual(info["valid_fraction"], 1.0)      # 30% VH zeros, no dataMask 0
 
     def test_dry_run_spends_nothing(self):
         with tempfile.TemporaryDirectory() as d:

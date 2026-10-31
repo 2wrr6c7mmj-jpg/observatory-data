@@ -163,21 +163,19 @@ def tile_bbox(grid, r0: int, c0: int, tile: int = TILE_PX) -> list[float]:
 
 def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     """``cp`` is the ocean.cfar_probe module (shared areas, masks, budget and pacing)."""
-    month = now.strftime("%Y-%m")
+    month = args.budget_month
+    bud = cp.budget(args, now)  # MonthStop outside the budget month (sat.port_archive.guard)
     cfg = cp.load_areas(args.areas)
     pixel_m = float(cfg["pixel_m"])
     tg = load_targets(args.targets or TARGETS_FILE)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     raw_out = Path(args.raw_out) if args.raw_out else None
-    sat_rows = [r for f in args.sat_usage for r in cp.read_csv(Path(f))]
-    ocean_rows = [r for f in [args.usage, *args.ocean_usage] for r in cp.read_csv(Path(f))]
-    bud = cp.budget(month, sat_rows, ocean_rows, args.max_pu)
     summary = {"probe_version": RAW_VERSION, "mode": "raw", "run_utc": cdse.iso(now), "targets_version": tg["version"],
                "pixel_m": pixel_m, "interpolation": cp.INTERPOLATION, "dry_run": bool(args.dry_run), "budget": bud,
                "raw_dir": str(raw_out) if raw_out else None, "attribution": ATTRIBUTION,
                "plan": {}, "results": [], "errors": []}
-    log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → この実行で使える {bud['pu_left']} PU")
+    log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・港 {bud['ports_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → この実行で使える {bud['pu_left']} PU")
     areas = {a["id"]: a for a in cfg["areas"]}
     plan = []
     for t in tg["targets"]:
@@ -186,7 +184,13 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
         g = u["grid"]
         tt = cdse.parse_time(t["acquired_utc"])
         try:
+            if cp.month_changed(args, clock):
+                raise cp.MonthStop(cp.MONTH_STOP)
             feats = client.catalog(g.bbox, tt - timedelta(hours=2), tt + timedelta(hours=2))
+        except cp.MonthStop as e:  # nothing more is sent; the plan is dropped
+            summary["errors"].append({"stage": "stop", "reason": "month", "error": str(e)})
+            plan = []
+            break
         except cdse.CredentialError:
             raise
         except cdse.CDSEError as e:
@@ -229,8 +233,8 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     deadline = time.monotonic() + args.max_minutes * 60
     for p in kept_plan:
         aid, g, a = p["area"]["id"], p["grid"], p["acq"]
-        if clock().strftime("%Y-%m") != month:
-            summary["errors"].append({"stage": "stop", "error": "月が替わったため以降の取得をしない"})
+        if cp.month_changed(args, clock):
+            summary["errors"].append({"stage": "stop", "reason": "month", "error": cp.MONTH_STOP})
             break
         if time.monotonic() > deadline:
             summary["errors"].append({"stage": "stop", "error": f"{args.max_minutes} 分を過ぎたため止めた"})
@@ -255,7 +259,7 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             lia = np.where(dm, raw[..., 2] / cdse.LIA_SCALE, np.nan)
             lat = (g.south + g.north) / 2
             heading = v2.platform_heading((a.get("orbit_direction") or "").lower(), lat) if a.get("orbit_direction") else None
-            _d2, i2 = v2.detect_v2(vv, vh, land, g.pixel_m, lia=lia, heading_deg=heading, static=static)
+            _d2, i2 = v2.detect_v2(vv, vh, land, g.pixel_m, lia=lia, heading_deg=heading, static=static, datamask=dm)
             diag = tile_diagnostics(raw, land, static, i2["tile_table"])
             chosen = choose_tiles(diag)
             arrs = cut(raw, land, static, chosen)
@@ -290,6 +294,9 @@ def run_raw(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             summary["results"].append(row)
             log(f"{aid} {a['acquired_utc']}: PU {pu}、切り出し {row['tiles_cut']}（未当てはめ {row['tiles_cut_unfitted']}）"
                 f"、{row.get('npz_bytes')} B、{json.dumps(row['scene'], ensure_ascii=False)}")
+        except cp.MonthStop as e:
+            summary["errors"].append({"stage": "stop", "reason": "month", "error": str(e)})
+            break
         except cdse.CredentialError:
             raise
         except cdse.CDSEError as e:

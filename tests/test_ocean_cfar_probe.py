@@ -91,7 +91,8 @@ def areas_file(tmp: Path, size_m=6000, max_scenes=2) -> Path:
 
 def args(tmp: Path, **kw):
     a = Namespace(out=tmp / "out", areas=areas_file(tmp), usage=tmp / "ocean_usage.csv", sat_usage=[], ocean_usage=[],
-                  max_pu=op.DEFAULT_MAX_PU, max_minutes=60, dry_run=False, no_check=True)
+                  other_usage=[], ports_usage=[], budget_month="2026-10", ocean_cap=5000.0, global_cap=9995.0,
+                  global_margin=50.0, max_pu=None, max_minutes=60, dry_run=False, no_check=True)
     for k, v in kw.items():
         setattr(a, k, v)
     return a
@@ -130,20 +131,96 @@ class AreasTest(unittest.TestCase):
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class BudgetTest(unittest.TestCase):
-    def test_caps_by_month(self):
-        self.assertEqual(op.caps_for("2026-10")["ocean_pu"], 5000.0)
-        self.assertEqual(op.caps_for("2026-11")["ocean_pu"], 400.0)
-        self.assertEqual(op.caps_for("2026-10")["total_pu"], 9945.0)
+    def write(self, path: Path, rows: list[dict]) -> Path:
+        import csv
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fields = sorted({k for r in rows for k in r})
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=fields)
+            w.writeheader()
+            w.writerows(rows)
+        return path
 
-    def test_budget_takes_smallest(self):
-        sat = [{"run_utc": "2026-10-30T05:00:00Z", "processing_units": "8000", "requests": "10"},
-               {"run_utc": "2026-09-30T05:00:00Z", "processing_units": "999", "requests": "10"}]
-        oc = [{"run_utc": "2026-10-30T06:00:00Z", "processing_units": "100", "requests": "5"}]
-        b = op.budget("2026-10", sat, oc + oc, 3900)  # the same row from two branches counts once
-        self.assertEqual(b["ocean_month_pu"], 100)
-        self.assertEqual(b["pu_left"], 1845)      # 9945 - 8000 - 100
-        b = op.budget("2026-11", [], [], 3900)
-        self.assertEqual(b["pu_left"], 400)
+    def test_no_month_caps_in_code(self):
+        for name in ("OCEAN_MONTHLY_PU_CAP", "TOTAL_MONTHLY_PU_GUARD", "MONTHLY_REQUEST_CAP_BY_MONTH",
+                     "DEFAULT_MAX_PU", "caps_for"):
+            self.assertFalse(hasattr(op, name), name)
+        src = (Path(op.__file__).parent / "cfar_probe.py").read_text(encoding="utf-8")
+        self.assertNotIn('"2026-', src)
+
+    def test_budget_sums_every_use_once_with_the_shared_guard(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            sat = self.write(tmp / "sat.csv", [
+                {"run_utc": "2026-10-30T05:00:00Z", "processing_units": "3000", "requests": "10"},
+                {"run_utc": "2026-09-30T05:00:00Z", "processing_units": "999", "requests": "10"}])
+            port_row = {"run_utc": "2026-10-29T01:00:00Z", "site_id": "SYL", "archive_version": "ports-1",
+                        "processing_units": "2000", "requests": "40"}
+            # the same port record in ports/SYL/usage.csv and ports_usage.csv, on two branches: counted once
+            ports = [self.write(tmp / "p" / "ports-SYL--0.csv", [port_row]),
+                     self.write(tmp / "p" / "ports-all--1.csv", [port_row]),
+                     self.write(tmp / "p" / "ports-SYL--2.csv", [port_row])]
+            oc_row = {"run_utc": "2026-10-30T06:00:00Z", "probe_version": "ocean-cfar-probe-1",
+                      "processing_units": "100", "requests": "5"}
+            other = [self.write(tmp / "o" / "other-docs_data_ocean_usage.csv--0.csv", [oc_row]),
+                     self.write(tmp / "o" / "other-docs_data_ocean_usage.csv--1.csv", [oc_row]),
+                     self.write(tmp / "o" / "other-docs_data_x_usage.csv--2.csv",
+                                [{"run_utc": "2026-10-02T00:00:00Z", "processing_units": "10", "requests": "1"}])]
+            a = args(tmp, sat_usage=[sat], ports_usage=ports, other_usage=other)
+            b = op.budget(a, NOW)
+            self.assertEqual(b["ocean_month_pu"], 100)
+            self.assertEqual(b["ports_month_pu"], 2000)
+            self.assertEqual(b["sat_month_pu"], 3010)
+            self.assertEqual(b["pu_left"], 9995 - 50 - 3010 - 2000 - 100)   # the global guard binds
+            self.assertEqual(b["requests_left"], 8500 - 11 - 5 - 40)
+            a.ocean_cap = 1000.0
+            self.assertEqual(op.budget(a, NOW)["pu_left"], 900)             # the ocean cap binds
+            a.max_pu = 300.0
+            self.assertEqual(op.budget(a, NOW)["pu_left"], 300)             # the run's cap binds
+            a.global_cap = 5000.0
+            self.assertEqual(op.budget(a, NOW)["pu_left"], 0)               # never negative
+
+    def test_other_month_is_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            a = args(Path(d))
+            with self.assertRaises(op.MonthStop):
+                op.budget(a, datetime(2026, 11, 1, 0, 0, tzinfo=timezone.utc))
+            c = FakeClient()
+            with self.assertRaises(op.MonthStop):
+                op.run(a, client=c, overpass=fake_overpass, now=datetime(2026, 11, 1, 0, 0, tzinfo=timezone.utc),
+                       pacer=FakePacer(), sleep=lambda x: None, log=lambda m: None,
+                       clock=lambda: datetime(2026, 11, 1, 0, 0, tzinfo=timezone.utc))
+            self.assertEqual(c.requests, 0)
+            self.assertFalse((Path(d) / "ocean_usage.csv").exists())
+
+    def test_main_needs_every_cap_and_exits_2_in_another_month(self):
+        import contextlib
+        import io
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            base = ["--out", str(Path(d) / "o"), "--budget-month", "2000-01", "--ocean-cap", "10",
+                    "--global-cap", "10", "--global-margin", "1"]
+            for k in ("--budget-month", "--ocean-cap", "--global-cap", "--global-margin"):
+                i = base.index(k)
+                with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+                    op.main(base[:i] + base[i + 2:])
+            with mock.patch.object(op.cdse.Client, "_post_sh", side_effect=AssertionError("sent")), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(op.main(base), 2)
+                self.assertEqual(op.main(base + ["--mode", "wide"]), 2)
+                self.assertEqual(op.main(base + ["--dry-run"]), 2)
+            self.assertFalse((Path(d) / "o").exists())
+
+    def test_month_client_sends_nothing_after_the_month(self):
+        from unittest import mock
+        t = [datetime(2026, 10, 31, 23, 59, tzinfo=timezone.utc)]
+        c = op.MonthClient("2026-10", utcnow=lambda: t[0], client_id="x", client_secret="y")
+        with mock.patch.object(op.cdse.Client, "_post_sh", return_value=({}, b"[]")) as sent:
+            c._post_sh(op.cdse.CATALOG_URL, {}, "application/json")
+            t[0] = datetime(2026, 11, 1, 0, 0, tzinfo=timezone.utc)
+            with self.assertRaises(op.MonthStop):
+                c._post_sh(op.cdse.CATALOG_URL, {}, "application/json")
+        self.assertEqual(sent.call_count, 1)
 
     def test_plan_round_robin_and_cut(self):
         per = {"A": [{"area": "A", "k": i, "est_pu": 48} for i in range(3)],
@@ -235,7 +312,24 @@ class RunTest(unittest.TestCase):
             s2 = op.run(args(tmp), client=c2, overpass=fake_overpass, now=NOW, pacer=FakePacer(),
                         sleep=lambda x: None, log=lambda m: None, clock=lambda: later)
             self.assertEqual(c2.calls, [])
+            self.assertEqual(c2.requests, 0)                       # not even the catalog
             self.assertEqual(s2["errors"][0]["stage"], "stop")
+            self.assertEqual(op.exit_code(s2), 2)
+
+    def test_month_change_during_the_run_stops_before_the_next_request(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            c = FakeClient(n_scenes=3)
+            nov = datetime(2026, 11, 1, 0, 0, 5, tzinfo=timezone.utc)
+            clock = lambda: NOW if len(c.calls) < 2 else nov    # the month changes after the 2nd scene
+            s = op.run(args(tmp), client=c, overpass=fake_overpass, now=NOW, pacer=FakePacer(),
+                       sleep=lambda x: None, log=lambda m: None, clock=clock)
+            self.assertEqual(len(c.calls), 2)
+            self.assertEqual(len(s["results"]), 2)
+            self.assertEqual([e["reason"] for e in s["errors"]], ["month"])
+            self.assertEqual(op.exit_code(s), 2)
+            rows = op.read_csv(tmp / "ocean_usage.csv")             # the PU spent are still recorded
+            self.assertAlmostEqual(float(rows[0]["processing_units"]), c.processing_units, places=2)
 
     def test_low_coverage_scene_not_fetched(self):
         with tempfile.TemporaryDirectory() as d:
@@ -246,6 +340,44 @@ class RunTest(unittest.TestCase):
                        sleep=lambda x: None, log=lambda m: None, clock=lambda: NOW)
             self.assertEqual(c.calls, [])
             self.assertEqual(s["plan"]["requests"], 0)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class DatamaskTest(unittest.TestCase):
+    """No data as in detect2 (cfar2-pr2.1): dataMask 0 or VV code 0; VH code 0 with data is data."""
+
+    def scene(self):
+        w = h = 120
+        rng = np.random.default_rng(3)
+        enc = lambda d: np.clip(np.round((d + cdse.DB_OFFSET) * cdse.DB_SCALE), 1, 65535)
+        vv = enc(10 * np.log10(rng.gamma(4.4, 1 / 4.4, (h, w)) * 10 ** (-1.8)))
+        vh = enc(10 * np.log10(rng.gamma(4.4, 1 / 4.4, (h, w)) * 10 ** (-2.6)))
+        dm = np.ones((h, w))
+        dm[:, :10] = 0
+        vv[:, :10] = vh[:, :10] = 0
+        vh[rng.random((h, w)) < 0.2] = 0        # VH sigma0 <= 0 inside the data
+        arr = np.stack([vv, vh, np.full((h, w), 3500.0), dm], axis=-1)
+        return png.encode(arr.astype(np.uint16), depth=16, filters=[1]), dm
+
+    def test_decode_returns_datamask_and_vh_zero_is_data(self):
+        data, dm = self.scene()
+        vv, vh, lia, mask = op.decode(data)
+        self.assertTrue(np.array_equal(mask, dm > 0))
+        self.assertGreater(np.isnan(vh[:, 10:]).mean(), 0.1)
+        self.assertAlmostEqual(float(op.data_valid(vv, mask).mean()), 110 / 120, places=6)
+
+    def test_compare_passes_datamask_to_detect_v2(self):
+        from unittest import mock
+        data, _dm = self.scene()
+        vv, vh, lia, mask = op.decode(data)
+        g = Grid(120.0, 24.0, 120.02, 24.02, 120, 120)
+        land = np.zeros(vv.shape, bool)
+        orig = op.v2.detect_v2
+        with mock.patch.object(op.v2, "detect_v2", side_effect=orig) as m:
+            res, _f = op.compare(vv, vh, lia, land, land.copy(), g, {"acquired_utc": "2026-10-16T21:51:39Z",
+                                                                      "orbit_direction": "ASCENDING"}, datamask=mask)
+        self.assertIs(m.call_args.kwargs["datamask"], mask)
+        self.assertAlmostEqual(res["valid_fraction"], round(110 / 120, 4))   # VH zeros are not no data
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

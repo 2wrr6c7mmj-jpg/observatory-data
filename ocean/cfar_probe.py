@@ -3,8 +3,12 @@
 Experimental, probe only (``.github/workflows/ocean-cfar-probe.yml``, push to ``probe/ocean-cfar*``).
 Nothing in the daily run (``sat/run.py``), the Zhanjiang counts or the public data uses this.
 
-    python -m ocean.cfar_probe --out DIR [--usage docs/data/ocean/usage.csv]
-                               [--sat-usage FILE ...] [--ocean-usage FILE ...] [--dry-run]
+    python -m ocean.cfar_probe --out DIR --budget-month YYYY-MM --ocean-cap PU --global-cap PU --global-margin PU
+                               [--usage docs/data/ocean/usage.csv] [--sat-usage FILE ...] [--other-usage FILE ...]
+                               [--ports-usage FILE ...] [--ocean-usage FILE ...] [--max-pu PU] [--dry-run]
+
+The caps have no defaults and are given with the month they were set for (``--budget-month``). In any
+other UTC month nothing is sent to CDSE (not even the catalog) and the exit code is 2.
 
 Steps
 -----
@@ -13,23 +17,29 @@ Steps
 2. Catalog (Sentinel Hub, no PU): IW scenes with VV+VH of the last ``lookback_days`` whose footprint
    covers at least ``min_footprint_coverage`` of the unit; per area up to ``max_scenes``, spread over
    the period (evenly spaced in time order, so that different sea states/winds come in).
-3. Plan and caps, before any PU is spent: the estimated PU of every request (``cdse.estimate_pu``)
-   must fit (a) the ocean cap of the month (4,000 PU in 2026-10, 400 PU otherwise) with this month's ocean usage (``docs/data/ocean/usage.csv`` of every probe branch),
-   (b) the guard on the whole account (``TOTAL_MONTHLY_PU_GUARD``: 9,000 PU in 2026-10) with this
-   month's ``docs/data/sat/usage.csv`` of main and any other usage file given with ``--sat-usage``, (c) ``--max-pu`` for the run, (d) the
-   monthly request cap. Requests are taken in priority order (the first scene of every area, then
-   the second, ...) and the plan is cut where a cap would be passed. The ocean usage is kept out of
-   ``docs/data/sat/usage.csv``: the daily run's own cap (1,000 PU) is not used up by this probe.
+3. Plan and caps, before any PU is spent (``budget``, the guard of ``sat.port_archive``): the
+   estimated PU of every request (``cdse.estimate_pu``) must fit (a) ``--ocean-cap`` less this month's
+   ocean usage (``docs/data/ocean/usage.csv`` of every branch), (b) ``--global-cap`` less
+   ``--global-margin`` (kept for the daily Zhanjiang run) less this month's usage of everything else:
+   main's ``docs/data/sat/usage.csv`` (``--sat-usage``), the port archive (``--ports-usage``) and any
+   other usage CSV of any branch (``--other-usage``), (c) ``--max-pu`` for the run if given, (d) the
+   account's requests (``port_archive.REQUEST_CAP`` less ``REQUEST_MARGIN``, all uses together).
+   The usage copies of all branches are gathered with ``python -m sat.port_archive gather`` and summed
+   with each record once (``port_archive.union_usage``). Requests are taken in priority order (the
+   first scene of every area, then the second, ...) and the plan is cut where a cap would be passed.
+   The ocean usage is kept out of ``docs/data/sat/usage.csv``: the daily run's own cap is not used up.
 4. Rate: CDSE Sentinel Hub allows 300 requests and 300 PU per minute (HTTP 429 above). A pacer keeps
    the last 60 s under ``PU_PER_MIN`` (200) and ``REQ_PER_MIN`` (200) by waiting; ``cdse.Client``
-   also waits and retries on 429. Months are UTC calendar months; a run stops before starting a
-   request in a month other than the one it was planned in.
+   also waits and retries on 429. Months are UTC calendar months: before every request (catalog
+   included, ``MonthClient``) and before every scene the UTC month is checked against
+   ``--budget-month``; once it differs the run stops (the usage row is still written, exit code 2).
 5. Fetch (Process API): VV, VH, local incidence angle, SIGMA0_ELLIPSOID, orthorectified, 20 m.
    ``downsampling`` is ignored for Sentinel-1 (Sentinel Hub docs, "Not used, use upsampling"):
    ``upsampling`` decides the interpolation "regardless of the resolution". The run uses BILINEAR
    and, once, measures the speckle (ENL) of a 5 km chip fetched with NEAREST and BILINEAR at 20 m
-   and at 10 m (design 7.2 (a)). No-data pixels (dataMask 0) are NaN; a unit with less than
-   ``min_valid_fraction`` valid pixels is recorded and not detected.
+   and at 10 m (design 7.2 (a)). No data = dataMask 0 or VV code 0 (``cfar2-pr2.1``); a VH code 0
+   with data is a VH sigma0 <= 0, not no data. The dataMask is passed to ``detect_v2`` (``datamask``).
+   A unit with less than ``min_valid_fraction`` valid pixels is recorded and not detected.
 6. Masks: land from OSM coastlines (``sat.osm_mask.build_mask``); the 1 km coast band is handled
    by ``detect_v2`` (``near_coast``). Fixed objects (offshore wind turbines, platforms, buoys and
    beacons) from OSM, dilated by 300 m -> ``static``. One Overpass query per area and run.
@@ -59,6 +69,7 @@ from pathlib import Path
 import numpy as np
 
 from sat import cdse, png
+from sat import port_archive as pa
 from sat import detect as v1
 from sat import detect2 as v2
 from sat.grid import Grid, dilate, draw_line, fill_polygon
@@ -67,23 +78,12 @@ from sat.osm_mask import OVERPASS_URL, USER_AGENT, WATER, build_mask
 PROBE_VERSION = "ocean-cfar-probe-1"
 AREAS_FILE = Path(__file__).resolve().parent / "areas.json"
 MAX_PX = 2500
-# Own ocean cap per UTC month; 2026-10: the October free tier is used before it lapses (HQ, 2026-10-30;
-# raised from 4,000 to 4,600 PU on 2026-10-30 when the wide snapshot was extended, then to 5,000 PU when the
-# account guard was raised to 9,995 PU).
-OCEAN_MONTHLY_PU_CAP = {"2026-10": 5000.0}
-OCEAN_DEFAULT_PU_CAP = 400.0
-# Safety guard on the whole CDSE account: Sentinel-1 daily run (docs/data/sat/usage.csv) + other
-# probes passed with --sat-usage (e.g. other harbours) + ocean. 2026-10: 9,000 of the 10,000 PU free tier.
-# 2026-10-30 (HQ): the account guard is 9,995 PU; at least 50 PU are kept for the daily Zhanjiang run -> 9,945.
-TOTAL_MONTHLY_PU_GUARD = {"2026-10": 9945.0}
-TOTAL_DEFAULT_PU_GUARD = 1400.0  # = the daily run's own 1,000 + the ocean 400
-MONTHLY_REQUEST_CAP = 2000       # same number as sat/run.py, counted on sat + ocean together
-# 2026-10: the ports probe's requests (ports_usage.csv, passed with --sat-usage) are counted too, so the cap is
-# the account's 10,000 requests a month less a margin of 1,500 (the same numbers as sat/port_archive.py).
-MONTHLY_REQUEST_CAP_BY_MONTH = {"2026-10": 8500}
+# The monthly caps (ocean, the whole account, the margin kept for the daily run) have no defaults: they are
+# required arguments, set with the month they are for (--budget-month), as in sat/port_archive.py.
+# The ocean usage CSV as named by ``port_archive.gather_usage`` (other-<path with _>--<n>.csv).
+OCEAN_USAGE_KEY = "other-docs_data_ocean_usage.csv"
 PU_PER_MIN = 200.0               # CDSE limit 300 PU/min
 REQ_PER_MIN = 200                # CDSE limit 300 requests/min
-DEFAULT_MAX_PU = 3900.0
 INTERPOLATION = "BILINEAR"
 CHECK_CHIP_M = 5000
 MATCH_M = 100.0
@@ -188,34 +188,70 @@ def read_csv(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def month_totals(rows: list[dict], month: str) -> tuple[float, int]:
-    seen, pu, req = set(), 0.0, 0
-    for r in rows:
-        key = (r.get("run_utc"), r.get("processing_units"), r.get("requests"))
-        if not (r.get("run_utc") or "").startswith(month) or key in seen:
-            continue  # the same row read from several branches counts once
-        seen.add(key)
-        pu += float(r.get("processing_units") or 0)
-        req += int(float(r.get("requests") or 0))
-    return pu, req
+class MonthStop(pa.BudgetStop):
+    """The UTC month is no longer ``--budget-month`` (raised before a request is sent)."""
 
 
-def caps_for(month: str) -> dict:
-    return {"ocean_pu": OCEAN_MONTHLY_PU_CAP.get(month, OCEAN_DEFAULT_PU_CAP),
-            "total_pu": TOTAL_MONTHLY_PU_GUARD.get(month, TOTAL_DEFAULT_PU_GUARD),
-            "requests": MONTHLY_REQUEST_CAP_BY_MONTH.get(month, MONTHLY_REQUEST_CAP)}
+class MonthClient(cdse.Client):
+    """cdse.Client that sends nothing (catalog or process) once the UTC month is not ``budget_month``."""
+
+    def __init__(self, budget_month: str, utcnow=None, **kw):
+        super().__init__(**kw)
+        self.budget_month = budget_month
+        self.utcnow = utcnow or (lambda: datetime.now(timezone.utc))
+
+    def _post_sh(self, url, payload, accept):
+        month = self.utcnow().strftime("%Y-%m")
+        if month != self.budget_month:
+            raise MonthStop(f"上限は {self.budget_month} の値（今は {month}）。月が変わったため止める")
+        return super()._post_sh(url, payload, accept)
 
 
-def budget(month: str, sat_rows: list[dict], ocean_rows: list[dict], max_pu: float) -> dict:
-    caps = caps_for(month)
-    sat_pu, sat_req = month_totals(sat_rows, month)
-    oc_pu, oc_req = month_totals(ocean_rows, month)
-    left = min(caps["ocean_pu"] - oc_pu, caps["total_pu"] - sat_pu - oc_pu, max_pu)
-    return {"month": month, **{f"cap_{k}": v for k, v in caps.items()}, "max_pu_run": max_pu,
-            "sat_month_pu": round(sat_pu, 3), "sat_month_requests": sat_req,
-            "ocean_month_pu": round(oc_pu, 3), "ocean_month_requests": oc_req,
-            "pu_left": round(max(0.0, left), 3),
-            "requests_left": max(0, caps["requests"] - sat_req - oc_req)}
+def split_usage(args) -> tuple[list[Path], list[Path], list[Path]]:
+    """(ocean, ports, other) usage CSVs. Ocean: this run's ``--usage``, ``--ocean-usage`` and the ocean copies
+    among ``--other-usage`` (gather's other-docs_data_ocean_usage.csv--<n>.csv); ports: ``--ports-usage``;
+    other: ``--sat-usage`` and the rest of ``--other-usage``."""
+    other_in = [Path(f) for f in (getattr(args, "other_usage", None) or [])]
+    ocean = [Path(args.usage), *[Path(f) for f in (getattr(args, "ocean_usage", None) or [])],
+             *[f for f in other_in if pa.usage_key(f) == OCEAN_USAGE_KEY]]
+    ports = [Path(f) for f in (getattr(args, "ports_usage", None) or [])]
+    other = [Path(f) for f in (getattr(args, "sat_usage", None) or [])] + \
+            [f for f in other_in if pa.usage_key(f) != OCEAN_USAGE_KEY]
+    return ocean, ports, other
+
+
+def budget(args, now: datetime) -> dict:
+    """PU and requests left for the ocean probe in ``args.budget_month``, with ``sat.port_archive.guard``.
+
+    Roles in the shared guard: the ocean is the job being capped (``cap`` = ``--ocean-cap``, its own usage
+    = the ocean CSVs as one pool), the port archive's usage (all its copies as one pool, ``union_usage``)
+    is passed as ``reserve`` and its requests are taken off the request cap, the rest (main's sat usage,
+    other usage CSVs) as the other usage. So the ocean's left is
+    min(ocean cap - ocean used, global cap - margin - sat/others - ports - ocean used, --max-pu).
+    Raises MonthStop (exit code 2) if ``now`` is not in ``args.budget_month``."""
+    month = args.budget_month
+    ocean, ports, other = split_usage(args)
+    ports_pu, ports_req = pa.union_usage(ports, month) if now.strftime("%Y-%m") == month else (0.0, 0)
+    try:
+        g = pa.guard(month, now, cap=float(args.ocean_cap), global_cap=float(args.global_cap),
+                     global_margin=float(args.global_margin), ocean_cap=None, usage=other, ports_usage=ocean,
+                     reserve=ports_pu, max_pu=getattr(args, "max_pu", None))
+    except ValueError as e:  # guard: ``now`` is not in the budget month
+        raise MonthStop(str(e)) from None
+    return {"month": month, "cap_ocean_pu": float(args.ocean_cap), "cap_total_pu": float(args.global_cap),
+            "global_margin": float(args.global_margin), "cap_requests": pa.REQUEST_CAP - pa.REQUEST_MARGIN,
+            "max_pu_run": getattr(args, "max_pu", None),
+            "sat_month_pu": round(g["other_pu"], 3), "sat_month_requests": g["other_req"],
+            "ports_month_pu": round(ports_pu, 3), "ports_month_requests": ports_req,
+            "ocean_month_pu": round(g["done_pu"], 3), "ocean_month_requests": g["done_req"],
+            "pu_left": round(g["cap"], 3), "requests_left": max(0, g["req_cap"] - ports_req)}
+
+
+def month_changed(args, clock) -> bool:
+    return clock().strftime("%Y-%m") != args.budget_month
+
+
+MONTH_STOP = "月が替わったため以降の取得をしない"
 
 
 def plan_requests(per_area: dict, check: list[dict], pu_left: float, req_left: int) -> tuple[list[dict], list[dict]]:
@@ -339,6 +375,8 @@ def masks(grid: Grid, osm: dict, seamark_re: str, static_m: float) -> tuple[np.n
 # ---------------------------------------------------------------- decoding and statistics
 
 def decode(data: bytes):
+    """(vv dB, vh dB, lia, datamask). Code 0 is NaN in dB; datamask = Sentinel Hub dataMask (last band).
+    No data is datamask False or VV NaN; a VH NaN with data is VH sigma0 <= 0 (``detect2``, cfar2-pr2.1)."""
     arr = png.decode(data).astype(np.float64)
     if arr.ndim != 3 or arr.shape[2] not in (3, 4):
         raise cdse.CDSEError(f"想定外の画像（形 {arr.shape}）")
@@ -347,7 +385,15 @@ def decode(data: bytes):
     def db(ch):
         return np.where(dm & (ch > 0), ch / cdse.DB_SCALE - cdse.DB_OFFSET, np.nan)
     lia = np.where(dm, arr[..., 2] / cdse.LIA_SCALE, np.nan) if arr.shape[2] == 4 else None
-    return db(arr[..., 0]), db(arr[..., 1]), lia
+    return db(arr[..., 0]), db(arr[..., 1]), lia, dm
+
+
+def data_valid(vv: np.ndarray, datamask: np.ndarray | None = None) -> np.ndarray:
+    """Pixels with data, as ``detect2.detect_v2``: datamask (if given) and VV finite. VH is not looked at."""
+    valid = np.isfinite(vv)
+    if datamask is not None:
+        valid &= np.asarray(datamask, bool)
+    return valid
 
 
 def enl(vv_db: np.ndarray, block: int = 25) -> dict:
@@ -425,10 +471,10 @@ def compact_tiles(tt: list[dict]) -> list[list]:
 V1_KEYS = ("row", "col", "pixels", "length_m", "width_m", "length_class", "peak_vv_db", "contrast_vv_db", "vh_ratio_db")
 
 
-def compare(vv, vh, lia, land, static, grid: Grid, acq: dict) -> tuple[dict, list[dict]]:
+def compare(vv, vh, lia, land, static, grid: Grid, acq: dict, datamask=None) -> tuple[dict, list[dict]]:
     pixel_m = grid.pixel_m
     px = float(np.mean(pixel_m))
-    valid = np.isfinite(vv) & np.isfinite(vh)
+    valid = data_valid(vv, datamask)
     lat = (grid.south + grid.north) / 2
     heading = v2.platform_heading((acq.get("orbit_direction") or "").lower(), lat) if acq.get("orbit_direction") else None
     lia_med = float(np.nanmedian(lia)) if lia is not None and np.isfinite(lia).any() else None
@@ -444,7 +490,8 @@ def compare(vv, vh, lia, land, static, grid: Grid, acq: dict) -> tuple[dict, lis
         d["static"], d["edge"], d["near_coast"] = bool(static[r, c]), bool(edge[r, c]), bool(near[r, c])
 
     t0 = time.perf_counter()
-    d2, i2 = v2.detect_v2(vv, vh, land, pixel_m, lia=lia_med if lia is None else lia, heading_deg=heading, static=static)
+    d2, i2 = v2.detect_v2(vv, vh, land, pixel_m, lia=lia_med if lia is None else lia, heading_deg=heading, static=static,
+                         datamask=datamask)
     s2 = round(time.perf_counter() - t0, 2)
     k2 = v2.kept(d2)
     a2 = [d for d in k2 if d["confidence"] == "A"]
@@ -544,22 +591,21 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
     log = log or (lambda m: print(m, file=sys.stderr))
     clock = clock or (lambda: datetime.now(timezone.utc))
     now = now or clock()
-    month = now.strftime("%Y-%m")
+    month = args.budget_month
+    bud = budget(args, now)  # MonthStop outside the budget month, before anything is sent
     cfg = load_areas(args.areas)
     pixel_m = float(cfg["pixel_m"])
-    client = client if client is not None else cdse.Client()
+    client = client if client is not None else MonthClient(month, utcnow=clock)
     overpass = overpass or fetch_overpass
     pacer = pacer or Pacer(sleep=sleep)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    sat_rows = [r for f in args.sat_usage for r in read_csv(Path(f))]
-    ocean_rows = [r for f in [args.usage, *args.ocean_usage] for r in read_csv(Path(f))]
-    bud = budget(month, sat_rows, ocean_rows, args.max_pu)
     summary = {"probe_version": PROBE_VERSION, "run_utc": cdse.iso(now), "areas_version": cfg["version"],
                "pixel_m": pixel_m, "interpolation": INTERPOLATION, "dry_run": bool(args.dry_run),
                "budget": bud, "areas": {}, "results": [], "errors": []}
     log(f"今月 {month}：sat {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み、"
-        f"外洋の上限 {bud['cap_ocean_pu']}・合計のガード {bud['cap_total_pu']}・この実行の上限 {args.max_pu} → 使える {bud['pu_left']} PU")
+        f"港 {bud['ports_month_pu']} PU、外洋の上限 {bud['cap_ocean_pu']}・合計 {bud['cap_total_pu']}（余裕 {bud['global_margin']}）・"
+        f"この実行の上限 {bud['max_pu_run']} → 使える {bud['pu_left']} PU")
 
     # ---- catalog and plan (no PU)
     if getattr(args, "lookback_days", None):
@@ -575,8 +621,12 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
             continue
         for u in units(area, pixel_m):
             g = u["grid"]
+            if month_changed(args, clock):
+                return _month_stop(args, summary, client, now, out, log, MONTH_STOP)
             try:
                 feats = client.catalog(g.bbox, start, now)
+            except MonthStop as e:
+                return _month_stop(args, summary, client, now, out, log, str(e))
             except cdse.CredentialError:
                 raise
             except cdse.CDSEError as e:
@@ -635,8 +685,8 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
     # ---- fetch and compare
     deadline = time.monotonic() + args.max_minutes * 60
     for item in plan:
-        if clock().strftime("%Y-%m") != month:
-            summary["errors"].append({"stage": "stop", "error": "月が替わったため以降の取得をしない"})
+        if month_changed(args, clock):
+            summary["errors"].append({"stage": "stop", "reason": "month", "error": MONTH_STOP})
             break
         if time.monotonic() > deadline:
             summary["errors"].append({"stage": "stop", "error": f"{args.max_minutes} 分を過ぎたため以降の取得をしない"})
@@ -654,10 +704,10 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                 data, pu = client.process(item["bbox"], item["px"], item["px"], a["t_from"], a["t_to"],
                                           with_lia=True, upsampling=item["interp"])
                 pacer.spent(pu)
-                vv, _vh, _lia = decode(data)
+                vv, _vh, _lia, dm = decode(data)
                 summary.setdefault("interpolation_check", []).append({
                     "interp": item["interp"], "pixel_m": item["pixel_m"], "px": item["px"], "bbox": item["bbox"],
-                    "acquired_utc": a["acquired_utc"], "pu": pu, "valid_fraction": round(float(np.isfinite(vv).mean()), 4),
+                    "acquired_utc": a["acquired_utc"], "pu": pu, "valid_fraction": round(float(data_valid(vv, dm).mean()), 4),
                     **enl(vv, 25 if item["pixel_m"] == 20 else 50)})
                 continue
             g = item["grid"]
@@ -670,16 +720,16 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                                       upsampling=INTERPOLATION)
             pacer.spent(pu)
             t_fetch = round(time.perf_counter() - t0, 1)
-            vv, vh, lia = decode(data)
+            vv, vh, lia, dm = decode(data)
             del data
             row = {"area": item["area"], "unit": item["unit"], **_acq_meta(a), "pu": pu, "fetch_seconds": t_fetch,
                    "mask": {k: minfo.get(k) for k in ("water_fraction", "land_fraction", "static_objects",
                                                        "static_fraction", "coastline_ways", "osm_base")}}
-            valid = float((np.isfinite(vv) & np.isfinite(vh)).mean())
+            valid = float(data_valid(vv, dm).mean())
             if valid < float(cfg["min_valid_fraction"]):
                 row.update(valid_fraction=round(valid, 4), skipped="no data")
             else:
-                res, feats = compare(vv, vh, lia, land, static, g, a)
+                res, feats = compare(vv, vh, lia, land, static, g, a, datamask=dm)
                 row.update(res)
                 name = f"{item['area']}-{item['unit']}-{stamp(a['acquired_utc'])}.geojson"
                 (out / name).write_text(json.dumps({"type": "FeatureCollection", "features": feats},
@@ -687,6 +737,9 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
                 row["geojson"] = name
             summary["results"].append(row)
             log(_line(row))
+        except MonthStop as e:
+            summary["errors"].append({"stage": "stop", "reason": "month", "error": str(e)})
+            break
         except cdse.CredentialError:
             raise
         except cdse.CDSEError as e:
@@ -695,6 +748,15 @@ def run(args, client=None, overpass=None, now=None, pacer=None, sleep=time.sleep
             log(f"{item['area']} {a['acquired_utc']}: 失敗 {str(e)[:200]}")
         _write_summary(out, summary, client, pacer)  # after every scene: a timeout keeps what was done
     _finish(args, summary, client, now, out, log, pacer)
+    return summary
+
+
+def _month_stop(args, summary, client, now, out, log, why: str) -> dict:
+    """Stop during the catalog (no PU spent): the usage row (requests) is still written."""
+    summary["errors"].append({"stage": "stop", "reason": "month", "error": why})
+    summary["plan"] = {"requests": 0, "est_pu": 0.0, "deferred": 0, "deferred_est_pu": 0.0,
+                       "per_area_est_pu": {}, "per_area_scenes": {}, "check_est_pu": 0.0}
+    _finish(args, summary, client, now, out, log)
     return summary
 
 
@@ -737,8 +799,8 @@ def _finish(args, summary, client, now, out, log, pacer=None) -> None:
 def report(s: dict) -> str:
     b = s["budget"]
     lines = [f"{s['probe_version']} {s['run_utc']} 補間 {s['interpolation']}{'（dry-run）' if s['dry_run'] else ''}",
-             f"今月 {b['month']}：sat {b['sat_month_pu']} PU + 外洋 {b['ocean_month_pu']} PU（実行前）。上限 外洋 {b['cap_ocean_pu']}・"
-             f"合計 {b['cap_total_pu']}・実行 {b['max_pu_run']} → 使える {b['pu_left']} PU",
+             f"今月 {b['month']}：sat 等 {b['sat_month_pu']} PU + 港 {b['ports_month_pu']} PU + 外洋 {b['ocean_month_pu']} PU（実行前）。"
+             f"上限 外洋 {b['cap_ocean_pu']}・合計 {b['cap_total_pu']}（余裕 {b['global_margin']}）・実行 {b['max_pu_run']} → 使える {b['pu_left']} PU",
              f"計画 {s['plan']['requests']} 件 見込み {s['plan']['est_pu']} PU（範囲別 {s['plan']['per_area_est_pu']}、"
              f"撮影数 {s['plan']['per_area_scenes']}、見送り {s['plan']['deferred']} 件 {s['plan']['deferred_est_pu']} PU）",
              f"実績 {s.get('requests')} リクエスト・{s.get('processing_units')} PU（{s.get('pu_source')}）"]
@@ -757,7 +819,8 @@ def run_mode(args, client=None, overpass=None, now=None, pacer=None, sleep=time.
     log = log or (lambda m: print(m, file=sys.stderr))
     clock = clock or (lambda: datetime.now(timezone.utc))
     now = now or clock()
-    client = client if client is not None else cdse.Client()
+    budget(args, now)  # MonthStop outside the budget month, before anything is sent
+    client = client if client is not None else MonthClient(args.budget_month, utcnow=clock)
     overpass = overpass or fetch_overpass
     lim = min(getattr(args, "pu_per_min", PU_PER_MIN) or PU_PER_MIN, PU_PER_MIN)
     pacer = pacer or Pacer(lim, int(min(lim, REQ_PER_MIN)), sleep=sleep)
@@ -771,9 +834,20 @@ def main(argv=None) -> int:
     ap.add_argument("--areas", type=Path, default=AREAS_FILE)
     ap.add_argument("--usage", type=Path, default=Path("docs/data/ocean/usage.csv"),
                     help="the ocean usage file this run appends to")
+    ap.add_argument("--budget-month", required=True,
+                    help="YYYY-MM the caps were set for; in any other month (UTC) nothing is requested (exit 2)")
+    ap.add_argument("--ocean-cap", type=float, required=True, help="the ocean's own cap of this month (PU)")
+    ap.add_argument("--global-cap", type=float, required=True,
+                    help="the month's own cap of all CDSE use (sat + ports + ocean + others, PU)")
+    ap.add_argument("--global-margin", type=float, required=True,
+                    help="PU kept free under --global-cap for the daily Zhanjiang run to the end of the month")
     ap.add_argument("--sat-usage", nargs="*", default=[], help="usage.csv of the daily Sentinel-1 run (main)")
-    ap.add_argument("--ocean-usage", nargs="*", default=[], help="ocean usage.csv of other probe branches")
-    ap.add_argument("--max-pu", type=float, default=DEFAULT_MAX_PU)
+    ap.add_argument("--other-usage", nargs="*", default=[],
+                    help="other usage CSVs of every branch (sat.port_archive gather --other; ocean copies are told apart)")
+    ap.add_argument("--ports-usage", nargs="*", default=[],
+                    help="the port archive's usage CSVs of every branch (sat.port_archive gather --ports)")
+    ap.add_argument("--ocean-usage", nargs="*", default=[], help="more ocean usage CSVs (summed with the ocean pool)")
+    ap.add_argument("--max-pu", type=float, help="cap of this run (inside the month's caps); none if omitted")
     ap.add_argument("--max-minutes", type=float, default=200)
     ap.add_argument("--lookback-days", type=int, help="override areas.json lookback_days")
     ap.add_argument("--min-coverage", type=float, help="override areas.json min_footprint_coverage")
@@ -787,6 +861,11 @@ def main(argv=None) -> int:
     ap.add_argument("--extend", action="store_true", help="wide mode: fill holes and take second looks after earlier wide runs")
     ap.add_argument("--pu-per-min", type=float, default=PU_PER_MIN, help="pacer limit (PU and requests per minute)")
     args = ap.parse_args(argv)
+    now_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    if args.budget_month != now_month:
+        print(f"上限は {args.budget_month} の値（今は {now_month}）。その月の上限（--budget-month・--ocean-cap・"
+              f"--global-cap・--global-margin）を書き直すまで取得しない", file=sys.stderr)
+        return 2
     try:
         if args.mode != "compare":
             s = run_mode(args)
@@ -794,6 +873,13 @@ def main(argv=None) -> int:
             s = run(args, pacer=Pacer(min(args.pu_per_min, PU_PER_MIN), int(min(args.pu_per_min, REQ_PER_MIN))))
     except cdse.CredentialError as e:
         print(f"エラー: {e}", file=sys.stderr)
+        return 2
+    return exit_code(s)
+
+
+def exit_code(s: dict) -> int:
+    """2 if the run stopped because the UTC month changed, 1 on other errors, else 0."""
+    if any(e.get("reason") == "month" for e in s["errors"]):
         return 2
     return 1 if any(e.get("stage") not in ("stop",) for e in s["errors"]) else 0
 

@@ -294,10 +294,11 @@ def confidence(d: dict) -> str:
     return level
 
 
-def detect_rect(vv, vh, lia, land, static, grid: Grid, acq: dict) -> tuple[list[dict], dict]:
-    """cfar-v1 (record) + cfar-v2 (counts and match only) on one 40 m request."""
+def detect_rect(vv, vh, lia, land, static, grid: Grid, acq: dict, datamask=None) -> tuple[list[dict], dict]:
+    """cfar-v1 (record) + cfar-v2 (counts and match only) on one 40 m request. No data = ``datamask`` False
+    or VV NaN, as ``detect2.detect_v2`` (cfar2-pr2.1); a VH NaN with data (VH sigma0 <= 0) is data."""
     px = float(np.mean(grid.pixel_m))
-    valid = np.isfinite(vv) & np.isfinite(vh)
+    valid = np.isfinite(vv) if datamask is None else np.isfinite(vv) & np.asarray(datamask, bool)
     t0 = time.perf_counter()
     d1, i1 = v1.detect(vv, vh, land, grid.pixel_m, V1_CFG_40M)
     s1 = round(time.perf_counter() - t0, 2)
@@ -307,7 +308,8 @@ def detect_rect(vv, vh, lia, land, static, grid: Grid, acq: dict) -> tuple[list[
     heading = v2.platform_heading((acq.get("orbit_direction") or "").lower(), lat) if acq.get("orbit_direction") else None
     t0 = time.perf_counter()
     try:
-        d2, i2 = v2.detect_v2(vv, vh, land, grid.pixel_m, lia=lia, heading_deg=heading, static=static)
+        d2, i2 = v2.detect_v2(vv, vh, land, grid.pixel_m, lia=lia, heading_deg=heading, static=static,
+                              datamask=datamask)
         k2 = v2.kept(d2)
         v2err = None
     except Exception as e:  # v2 is recorded only; a failure must not stop v1
@@ -438,19 +440,17 @@ HOLE_REASON = {"no_scene": "7 日以内に撮影なし", "budget": "撮影はあ
 
 
 def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
-    month = now.strftime("%Y-%m")
+    month = args.budget_month
+    bud = cp.budget(args, now)  # MonthStop outside the budget month (sat.port_archive.guard)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    sat_rows = [r for f in args.sat_usage for r in cp.read_csv(Path(f))]
-    ocean_rows = [r for f in [args.usage, *args.ocean_usage] for r in cp.read_csv(Path(f))]
-    bud = cp.budget(month, sat_rows, ocean_rows, args.max_pu)
     lookback = int(args.lookback_days or LOOKBACK_DAYS)
     summary = {"probe_version": WIDE_VERSION, "mode": "wide", "run_utc": cdse.iso(now), "region": REGION,
                "pixel_m": PIXEL_M, "interpolation": cp.INTERPOLATION, "lookback_days": lookback,
                "dry_run": bool(args.dry_run), "budget": bud, "attribution": ATTRIBUTION,
                "min_length_m": MIN_LENGTH_M, "v1_cfg": V1_CFG_40M, "subregions": SUBREGIONS,
                "hole_reasons": HOLE_REASON, "acquisitions": [], "plan": {}, "results": [], "errors": []}
-    log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → 使える {bud['pu_left']} PU")
+    log(f"今月 {month}：sat 等 {bud['sat_month_pu']} PU・港 {bud['ports_month_pu']} PU・外洋 {bud['ocean_month_pu']} PU 使用済み → 使える {bud['pu_left']} PU")
     summary["region"] = regions_bbox()
     summary["regions"] = REGIONS
     extend = bool(getattr(args, "extend", False))
@@ -460,8 +460,13 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
     by_id = {}
     for r in REGIONS:
         try:
+            if cp.month_changed(args, clock):
+                raise cp.MonthStop(cp.MONTH_STOP)
             for f in client.catalog(list(r["bbox"]), now - timedelta(days=max_days), now):
                 by_id[f.get("id")] = f
+        except cp.MonthStop as ex:  # nothing more is sent; the fetch loop below stops too
+            summary["errors"].append({"stage": "stop", "reason": "month", "error": str(ex)})
+            break
         except cdse.CredentialError:
             raise
         except cdse.CDSEError as ex:
@@ -556,8 +561,8 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
             a = acqs[p["acq_index"]]
             g = Grid(p["bbox"][0], p["bbox"][1], p["bbox"][2], p["bbox"][3], p["width"], p["height"])
             sl = (slice(p["j"], p["j"] + p["h"]), slice(p["i"], p["i"] + p["w"]))
-            if clock().strftime("%Y-%m") != month:
-                summary["errors"].append({"stage": "stop", "error": "月が替わったため以降の取得をしない"})
+            if cp.month_changed(args, clock):
+                summary["errors"].append({"stage": "stop", "reason": "month", "error": cp.MONTH_STOP})
                 break
             if time.monotonic() > deadline:
                 summary["errors"].append({"stage": "stop", "error": f"{args.max_minutes} 分を過ぎたため止めた"})
@@ -584,11 +589,11 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                                           upsampling=cp.INTERPOLATION)
                 pacer.spent(pu)
                 tf = round(time.perf_counter() - t0, 1)
-                vv, vh, lia = cp.decode(data)
+                vv, vh, lia, dm = cp.decode(data)
                 del data
                 land, static, minfo = cp.masks(g, osm, seamark_re, float(cfg["static_dilate_m"]))
-                c, info = detect_rect(vv, vh, lia, land, static, g, a)
-                valid = np.isfinite(vv) & np.isfinite(vh)
+                c, info = detect_rect(vv, vh, lia, land, static, g, a, datamask=dm)
+                valid = cp.data_valid(vv, dm)
                 cv = cell_valid(valid, p["h"], p["w"])
                 observed[sl] = np.maximum(observed[sl], cv)
                 oa = obs_by_acq.setdefault(a["acquired_utc"], np.zeros((cells.ny, cells.nx)))
@@ -600,6 +605,9 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
                 summary["results"].append(row)
                 log(f"#{k} {a['acquired_utc']} {g.bbox}: PU {pu}、有効 {info['valid_fraction']}、VV {info['vv_median_db']} dB、"
                     f"v1 {info['v1']['candidates']}（80 m 以上 {info['v1']['large_kept']}）、v2 {info['v2']['candidates']}")
+            except cp.MonthStop as ex:
+                summary["errors"].append({"stage": "stop", "reason": "month", "error": str(ex)})
+                break
             except cdse.CredentialError:
                 raise
             except cdse.CDSEError as ex:
