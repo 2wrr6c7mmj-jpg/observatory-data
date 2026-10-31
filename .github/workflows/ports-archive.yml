@@ -34,6 +34,7 @@ env:
   BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
   # 合計ガード（2026-10 だけ有効）：港の上限 4,750、合計 9,995（ユーザー指示）、余裕 50（湛江の 10-31 の毎日の実行の分）、外洋 4,600。
   # 11 月以降は外洋 月 400 PU・全体は自主上限。その月の値を決め、BUDGET_MONTH・GUARD_ARGS・OCEAN_CAP を書き直すまで取得しない
+  # BUDGET_MONTH・OCEAN_CAP・全体の上限と余裕は ocean-cfar-probe.yml・ocean-monitor.yml と同じ値（3 つを同じコミットで替える）
   BUDGET_MONTH: '2026-10'
   OCEAN_CAP: '4600'
   GUARD_ARGS: '--budget-month 2026-10 --cap 4750 --global-cap 9995 --global-margin 50'

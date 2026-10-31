@@ -1,0 +1,114 @@
+name: Ocean monitor
+# 外洋の定期監視（ocean/monitor.py、ocean-monitor-1）。設計：2部 ocean-monitoring-design（2026-10-31）、司令部は案 B を採用
+# （要所は撮影ごと 40 m、沖縄〜奄美は月 1 回。域と域ごとの月の上限は ocean/monitor.json）。
+# 毎日 19:41 UTC（04:41 JST）：テスト → 月の確認 → OData のカタログ（認証なし・PU とリクエスト枠を使わない）で新しい撮影を確かめ、
+# なければ CDSE の Sentinel Hub には何も送らずに終わる。あれば usage を全ブランチから集めて（sat.port_archive gather）外洋の guard
+# （OCEAN_CAP・GLOBAL_CAP・GLOBAL_MARGIN、ocean.cfar_probe.budget と同じ式）と 1 回の上限 MAX_PU の内で取得・検出する。
+# 公開（main への commit）は docs/data/ocean/monitor/ と docs/data/ocean/usage.csv だけ。テストが通ったときだけ。
+# 使った PU は撮影ごとに usage に書き足し、例外・timeout（SIGTERM）で終わっても書く。push 前に git pull --rebase を 3 回までやり直す。
+# concurrency group は外洋の probe（ocean-cfar-probe.yml）と同じ probe-ocean-cfar：外洋の上限を同時に二重に使わない。
+# 同じ group に待ちの実行があるときに probe を push すると古い待ちは取り消される（翌日の実行が 3 日さかのぼって拾う）。
+# PU の上限はすべて BUDGET_MONTH の月の値。既定値はない。実行月（UTC）が BUDGET_MONTH と違えば CDSE に何も送らず止める（終了コード 2）。
+# BUDGET_MONTH・OCEAN_CAP・GLOBAL_CAP・GLOBAL_MARGIN は ports-archive.yml・ocean-cfar-probe.yml と同じ値にし、3 つを同じコミットで替える
+# （違えば tests/test_ocean_cfar_probe.py の CapsAgreeTest が落ちる）。11 月の値は司令部が決めてから別の PR で入れる。
+# workflow_dispatch の dry_run：カタログと計画だけ（PU 0）。何も commit しない（結果は注釈）。
+on:
+  schedule:
+    - cron: '41 19 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'カタログと計画だけ（PU を使わない、何も commit しない）'
+        type: boolean
+        default: true
+permissions:
+  contents: write
+concurrency:
+  group: probe-ocean-cfar
+  cancel-in-progress: false
+env:
+  # 2026-10 の値（ocean-cfar-probe.yml・ports-archive.yml と同じ）。10 月の外洋は上限まで使っているので、このままでは何も取得しない。
+  BUDGET_MONTH: '2026-10'
+  OCEAN_CAP: '4600'
+  GLOBAL_CAP: '9995'
+  GLOBAL_MARGIN: '50'
+  MAX_PU: '400'
+jobs:
+  monitor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        id: tests
+        run: python -m unittest tests.test_ocean_monitor tests.test_ocean_cfar_probe tests.test_ocean_modes tests.test_sat -v
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の上限を書き直すまで取得しない"; exit 2; }
+      - name: Usage of this month (main's sat usage; every branch's ports, ocean and other usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git fetch -q origin '+refs/heads/*:refs/remotes/origin/*'
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/sat.csv"
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+      - name: Monitor
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+        run: |
+          set -o pipefail
+          DRY=""
+          [ "$DRY_RUN" = "true" ] && DRY="--dry-run"
+          python -m ocean.monitor run --out docs/data/ocean/monitor --usage docs/data/ocean/usage.csv \
+            --report-dir "$RUNNER_TEMP/report" \
+            --budget-month "$BUDGET_MONTH" --ocean-cap "$OCEAN_CAP" --global-cap "$GLOBAL_CAP" --global-margin "$GLOBAL_MARGIN" \
+            --max-pu "$MAX_PU" --sat-usage "$RUNNER_TEMP/sat.csv" \
+            --other-usage $(ls "$RUNNER_TEMP"/usage/*.csv 2>/dev/null) \
+            --ports-usage $(ls "$RUNNER_TEMP"/ports-usage/*.csv 2>/dev/null) \
+            --max-minutes 100 $DRY 2>&1 | tee "$RUNNER_TEMP/monitor.log"
+      - name: Report (annotations)
+        if: always()
+        run: |
+          if [ ! -e "$RUNNER_TEMP/report/report.txt" ]; then
+            if [ -s "$RUNNER_TEMP/monitor.log" ]; then python -m sat.annotate text monitor-log "$RUNNER_TEMP/monitor.log"
+            else echo "::notice title=ocean-monitor::監視を実行していない（report.txt・monitor.log なし。前の段で止まった）"; fi
+            exit 0
+          fi
+          python - "$RUNNER_TEMP/report/report.txt" <<'EOF'
+          import sys
+          text = open(sys.argv[1], encoding="utf-8").read()
+          parts = [text[i:i + 3800] for i in range(0, len(text), 3800)]
+          for k, p in enumerate(parts[:30]):
+              level = ("notice", "warning", "error")[k // 10 % 3]
+              p = p.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+              print(f"::{level} title=ocean-monitor {k + 1}/{len(parts)}::{p}")
+          EOF
+      - name: Publish (docs/data/ocean/monitor and docs/data/ocean/usage.csv only)
+        # also after a failed Monitor step (the PU spent are in usage.csv), never after failed tests or a dry run
+        if: ${{ always() && steps.tests.outcome != 'failure' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        run: |
+          git add docs/data/ocean/monitor docs/data/ocean/usage.csv 2>/dev/null || true
+          other="$(git status --porcelain | grep -v -E '^.. docs/data/ocean/(monitor/|usage\.csv$)' || true)"
+          if [ -n "$other" ]; then echo "::error title=ocean-monitor::書き込み先の外が変わった（公開しない）: $other"; exit 1; fi
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: 外洋の定期監視 ($(date -u +%Y-%m-%d)) [ocean-monitor]"
+          for i in 1 2 3; do
+            git push origin HEAD:main && break
+            sleep $((i * 10))
+            git pull -q --rebase origin main
+          done
+          git fetch -q origin main
+          [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || git merge-base --is-ancestor HEAD origin/main || { echo "::error title=ocean-monitor::push できなかった"; exit 1; }
+          echo "::notice title=ocean-monitor-commit::$(git rev-parse HEAD)"
