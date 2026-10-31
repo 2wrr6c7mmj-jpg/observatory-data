@@ -1,6 +1,6 @@
 {
  "version": "est-1",
- "note": "岸壁の数の推定（est-1）の桟橋別の事前分布。区画（zone）は OSM の線（ZJG-quay-v1）の way_id で決め、面（face）は way_id と線の側（+／−）。倍率は長さの群（sat/ship_classes.json の group）ごとで、すべて推定（2部の設計、2026-10-30）。carrier・submarine の型の倍率は設計 §1.4 の仮置き・要出典。SYL・SLP（multi-site PR-1c、2026-10-31）は 2部の調査（class-weights-4ports.md §5.2）で way ごとに型を決めた（OSM の線の無い SYL の旧港だけ区画 A1 で）",
+ "note": "岸壁の数の推定（est-1）の桟橋別の事前分布。区画（zone）は OSM の線（ZJG-quay-v1）の way_id で決め、面（face）は way_id と線の側（+／−）。倍率は長さの群（sat/ship_classes.json の group）ごとで、すべて推定（2部の設計、2026-10-30）。carrier・submarine の型の倍率は設計 §1.4 の仮置き・要出典。SYL・SLP（multi-site PR-1c、2026-10-31）は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §5.2）で way ごとに型を決めた（OSM の線の無い SYL の旧港だけ区画 A1 で）",
  "types": {
   "large": {
    "name": "大型艦向き",
@@ -175,7 +175,7 @@
      ],
      "type": "medium",
      "conf": "未確認",
-     "note": "原潜用の可能性（NMF の推測）。確かめられたら submarine にする"
+     "note": "原潜用の可能性（NMF の推測）。確かめられたら submarine にする。OSM の線は E3 付近の 839204443・839204444 だけで、E1・E2 の OSM の線は無い（数えられない）"
     }
    ],
    "default": {
@@ -194,7 +194,7 @@
      "type": "shore"
     }
    },
-   "note": "2部の調査（class-weights-4ports.md §5.2、2026-10-31）。way ごとの桟橋の型。区画 A1（旧港）は OSM に桟橋の線が無いので区画で submarine。型の倍率（carrier・submarine）は変えていない（根拠を公開情報から作れない。2部 §7 の S2 の数えで直す）"
+   "note": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §5.2、2026-10-31）。way ごとの桟橋の型。区画 A1（旧港）は OSM に桟橋の線が無いので区画で submarine。型の倍率（carrier・submarine）は変えていない（根拠を公開情報から作れない。2部 §7 の S2 の数えで直す）"
   },
   "SLP": {
    "lines_version": "SLP-quay-v2",
@@ -247,7 +247,7 @@
      "type": "shore"
     }
    },
-   "note": "2部の調査（class-weights-4ports.md §5.2、2026-10-31）。way ごとの桟橋の型。潜水艦トンネルの入口は座標の公開の出典が無く、見えない所として後で blind に書く（設計 §7-2）。型の倍率は変えていない"
+   "note": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §5.2、2026-10-31）。way ごとの桟橋の型。潜水艦トンネルの入口は座標の公開の出典が無く、見えない所として後で blind に書く（設計 §7-2）。型の倍率は変えていない"
   }
  }
 }

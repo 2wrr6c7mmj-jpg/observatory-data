@@ -123,5 +123,7 @@
     ]
    }
   }
- ]
+ ],
+ "license": "線の位置は Copernicus Sentinel-2 L2A（2026-10-18）の目測による。Contains modified Copernicus Sentinel data 2026。OSM 由来ではない",
+ "credit": "Contains modified Copernicus Sentinel data 2026"
 }

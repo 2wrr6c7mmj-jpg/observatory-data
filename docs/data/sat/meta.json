@@ -107,7 +107,7 @@
    "height_px": 664,
    "area_km2": 42.1,
    "provisional": true,
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SYL-land-v2 は港のアーカイブ（PR #29、probe/ports-archive-ops3、2026-10-30）のまま（約 6.3×6.6 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。軌道 157 の基準 ro157-bl-1（24 撮影、2026-02-09〜10-26、確度 3。probe/ports-baseline-fill-ops3）。岸壁線は SYL-quay-v2（PR-1c）＝OSM の SYL-quay-v1（probe/quaylines-syl-slp、osm_base 2026-10-30T21:19:47Z）に、OSM に無い新しい櫛形桟橋 F1〜F5 の先の側の手書きの線 5 本（sat/masks/SYL-manual.geojson、S2 2026-10-18 の目測 ±30 m、2部）を足したもの。区画（PR-1c、2部の調査 class-weights-4ports.md §4.1）：A1 旧港の小桟橋（通常潜水艦）、Y1 修理施設（乾ドック・艤装岸壁。本来は fitout だが est-2 に fitout が無いので naval）、A2 新しい櫛形桟橋 F1〜F5（多角形）、A3 東岸の短い桟橋と南の海軍区画、X1 西岸の杭の岸壁、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲と陸マスク SYL-land-v2 は港のアーカイブ（PR #29、probe/ports-archive-ops3、2026-10-30）のまま（約 6.3×6.6 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。軌道 157 の基準 ro157-bl-1（24 撮影、2026-02-09〜10-26、確度 3。probe/ports-baseline-fill-ops3）。岸壁線は SYL-quay-v2（PR-1c）＝OSM の SYL-quay-v1（probe/quaylines-syl-slp、osm_base 2026-10-30T21:19:47Z）に、OSM に無い新しい櫛形桟橋 F1〜F5 の先の側の手書きの線 5 本（sat/masks/SYL-manual.geojson、S2 2026-10-18 の目測 ±30 m、2部）を足したもの。区画（PR-1c、2部の調査 プロジェクト doc『調査_4港の艦種の重みと区画』 §4.1）：A1 旧港の小桟橋（通常潜水艦）、Y1 修理施設（乾ドック・艤装岸壁。本来は fitout だが est-2 に fitout が無いので naval）、A2 新しい櫛形桟橋 F1〜F5（多角形）、A3 東岸の短い桟橋と南の海軍区画、X1 西岸の杭の岸壁、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
    "sectors": [
     {
      "id": "A1",
@@ -230,7 +230,7 @@
      "fleet": "south",
      "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
      "status": "provisional",
-     "basis": "2部の調査（/home/claude/hq/class-weights-4ports.md §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん楡林（三亜側）の岸壁に居る割合に近い数。同じ艦種の SYL＋SLP の w は 1 前後を超えないようにした（湛江 ZJG の w は変えていないので、ZJG と合わせると 1 を超える艦種がある）",
+     "basis": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』§5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん楡林（三亜側）の岸壁に居る割合に近い数。同じ艦種の SYL＋SLP の w は 1 前後を超えないようにした（湛江 ZJG の w は変えていないので、ZJG と合わせると 1 を超える艦種がある）",
      "classes": [
       "055",
       "052D",
@@ -304,7 +304,7 @@
    "height_px": 631,
    "area_km2": 33.4,
    "provisional": true,
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲 v2（PR-1c）：北端を 18.230N から 18.242N へ広げ、大型艦・空母の桟橋 2 本（OSM way 158981836・158981837、約 960 m）を全部入れた（v1 では北側の約 2/3 が切れていた。2部の調査 class-weights-4ports.md §4.2）。約 5.3×6.3 km。陸マスク SLP-land-v2（OSM、osm_base 2026-10-30T22:25:48Z）・岸壁線 SLP-quay-v2（OSM、osm_base 2026-10-30T22:27:51Z、桟橋 10・海岸線 5、v1 と同じ way）・軌道 157 の基準 ro157-bl-1（24 撮影、2026-03-05〜10-26、確度 3、40.7 PU）は probe/ports-slp2-ops3 で作った。陸マスクは 2部の S2 との確認がまだ。区画（2部 §4.2）：A2 大型艦・空母の桟橋、A1 潜水艦の桟橋 6 本、A3 南の小桟橋（消磁施設？）、B 残り。潜水艦トンネルに入った艦は見えない（入口の座標の公開の出典なし、設計 §7-2）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。範囲 v2（PR-1c）：北端を 18.230N から 18.242N へ広げ、大型艦・空母の桟橋 2 本（OSM way 158981836・158981837、約 960 m）を全部入れた（v1 では北側の約 2/3 が切れていた。2部の調査 プロジェクト doc『調査_4港の艦種の重みと区画』 §4.2）。約 5.3×6.3 km。陸マスク SLP-land-v2（OSM、osm_base 2026-10-30T22:25:48Z）・岸壁線 SLP-quay-v2（OSM、osm_base 2026-10-30T22:27:51Z、桟橋 10・海岸線 5、v1 と同じ way）・軌道 157 の基準 ro157-bl-1（24 撮影、2026-03-05〜10-26、確度 3、40.7 PU）は probe/ports-slp2-ops3 で作った。陸マスクは 2部の S2 との確認がまだ。区画（2部 §4.2）：A2 大型艦・空母の桟橋、A1 潜水艦の桟橋 6 本、A3 南の小桟橋（消磁施設？）、B 残り。潜水艦トンネルに入った艦は見えない（入口の座標の公開の出典なし、設計 §7-2）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
    "sectors": [
     {
      "id": "A2",
@@ -371,7 +371,7 @@
      "fleet": "south",
      "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
      "status": "provisional",
-     "basis": "2部の調査（/home/claude/hq/class-weights-4ports.md §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん亜龍湾（龍坡）の岸壁に居る割合に近い数",
+     "basis": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』§5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん亜龍湾（龍坡）の岸壁に居る割合に近い数",
      "classes": [
       "055",
       "052D",
@@ -1078,7 +1078,51 @@
      "fleet": "south",
      "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
      "status": "provisional",
-     "basis": "2部の調査（/home/claude/hq/class-weights-4ports.md §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん楡林（三亜側）の岸壁に居る割合に近い数。同じ艦種の SYL＋SLP の w は 1 前後を超えないようにした（湛江 ZJG の w は変えていないので、ZJG と合わせると 1 を超える艦種がある）",
+     "basis": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』§5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん楡林（三亜側）の岸壁に居る割合に近い数。同じ艦種の SYL＋SLP の w は 1 前後を超えないようにした（湛江 ZJG の w は変えていないので、ZJG と合わせると 1 を超える艦種がある）",
+     "sources": [
+      {
+       "title": "Wikipedia: Yulin Naval Base（三亜側は小型艦と通常動力潜水艦の基地）",
+       "url": "https://en.wikipedia.org/wiki/Yulin_Naval_Base",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "OSM way/299398880「南部战区海军第32潜艇支队」",
+       "url": "https://www.openstreetmap.org/way/299398880",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "South Sea Fleet（Wikipedia 2023 版の写し、艦隊の潜水艦はすべて楡林）",
+       "url": "https://mdwiki.org/wiki/South_Sea_Fleet",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "China Defense Blog: 9th Destroyer Flotilla（2025-11）",
+       "url": "https://china-defense.blogspot.com/2025/11/plan-unit-of-day-9th-destroyer-flotilla.html",
+       "seen": "2026-10-31",
+       "reliability": "E・4"
+      },
+      {
+       "title": "Defence Security Asia: 052DL 177 銅川が第 9 支隊へ（2026-06）",
+       "url": "https://defencesecurityasia.com/en/china-type-052dl-destroyer-tongchuan-south-china-sea-plan-southern-fleet/",
+       "seen": "2026-10-31",
+       "reliability": "D・4"
+      },
+      {
+       "title": "GlobalSecurity: Sanya（2017-03-07 に 173・171・907 が三亜に帰港）",
+       "url": "https://www.globalsecurity.org/military/world/china/sanya.htm",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "NMF Brief No.16（2026-02-06）：海南の修理施設の拡張",
+       "url": "https://maritimeindia.org/wp-content/uploads/2026/02/Brief-No-16-06-Feb-2026-China-Augments-Ship-Repair-Facilities-at-Hainan.pdf",
+       "seen": "2026-10-31",
+       "reliability": "B・2"
+      }
+     ],
      "classes": [
       {
        "id": "055",
@@ -1088,7 +1132,7 @@
        "count": 4,
        "count_conf": "推定",
        "w": 0.3,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_055_destroyer"
       },
@@ -1100,7 +1144,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.3,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
       },
@@ -1112,7 +1156,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.15,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
       },
@@ -1124,7 +1168,7 @@
        "count": 2,
        "count_conf": "推定",
        "w": 0.5,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer"
       },
@@ -1136,7 +1180,7 @@
        "count": 8,
        "count_conf": "推定",
        "w": 0.15,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
       },
@@ -1148,7 +1192,7 @@
        "count": 7,
        "count_conf": "推定",
        "w": 0.15,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
        "note": "全長は未確認（054A と同じと仮定）"
@@ -1161,7 +1205,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 0.2,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_054B_frigate"
       },
@@ -1173,7 +1217,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.2,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_072A_landing_ship"
       },
@@ -1185,7 +1229,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 0.2,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_815_electronic_surveillance_ship"
       },
@@ -1197,7 +1241,7 @@
        "count": 20,
        "count_conf": "推定",
        "w": 0.5,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "S",
        "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
       },
@@ -1209,7 +1253,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 1.0,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "確認寄りの推定",
        "group": "S",
        "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
        "kind": "submarine"
@@ -1222,7 +1266,7 @@
        "count": 6,
        "count_conf": "推定",
        "w": 0.5,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "S",
        "source": "https://en.wikipedia.org/wiki/Type_081_minesweeper",
        "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）"
@@ -1235,7 +1279,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.2,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock"
       },
@@ -1247,7 +1291,7 @@
        "count": 2,
        "count_conf": "推定",
        "w": 0.2,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock"
       },
@@ -1259,7 +1303,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 0.1,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Type_901_replenishment_ship"
       },
@@ -1271,7 +1315,7 @@
        "count": 2,
        "count_conf": "推定",
        "w": 0.3,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship"
       },
@@ -1283,7 +1327,7 @@
        "count": 20,
        "count_conf": "推定",
        "w": 0.4,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "T",
        "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat"
       },
@@ -1295,7 +1339,7 @@
        "count": 15,
        "count_conf": "推定",
        "w": 0.8,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "T",
        "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
        "note": "出典なし（全長・隻数・重みとも推定）"
@@ -1308,7 +1352,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 0.1,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Shandong",
        "kind": "carrier",
@@ -1322,7 +1366,7 @@
        "count": 6,
        "count_conf": "未確認（要出典）",
        "w": 0.1,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "未確認",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_093_submarine",
        "kind": "submarine",
@@ -1336,7 +1380,7 @@
        "count": 1,
        "count_conf": "確認寄りの推定",
        "w": 0.1,
-       "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+       "w_conf": "推定",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian",
        "kind": "carrier",
@@ -1348,7 +1392,45 @@
      "fleet": "south",
      "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
      "status": "provisional",
-     "basis": "2部の調査（/home/claude/hq/class-weights-4ports.md §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん亜龍湾（龍坡）の岸壁に居る割合に近い数",
+     "basis": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』§5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん亜龍湾（龍坡）の岸壁に居る割合に近い数",
+     "sources": [
+      {
+       "title": "ORF: China's Nuclear Submarine Bases: A Stocktaking（2024-10-21）",
+       "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+       "seen": "2026-10-31",
+       "reliability": "B・2"
+      },
+      {
+       "title": "Defense News 2022-09-21：潜水艦基地の拡張の衛星画像",
+       "url": "https://www.defensenews.com/naval/2022/09/21/satellite-images-reveal-chinese-expansion-of-submarine-base/",
+       "seen": "2026-10-31",
+       "reliability": "B・2"
+      },
+      {
+       "title": "Wikipedia: Longpo Naval Base（950 m の桟橋 2 本）",
+       "url": "https://en.wikipedia.org/wiki/Longpo_Naval_Base",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "Newsweek 2025-11-25：山東と福建が楡林基地に",
+       "url": "https://newsweek.com/satellites-two-chinese-aircraft-carriers-home-base-11104565",
+       "seen": "2026-10-31",
+       "reliability": "C・2"
+      },
+      {
+       "title": "Wikipedia: Chinese aircraft carrier Fujian",
+       "url": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian",
+       "seen": "2026-10-31",
+       "reliability": "C・2"
+      },
+      {
+       "title": "Defense News 2021-01-21（CSIS：075 1 番艦が試験中に楡林で撮影）",
+       "url": "https://development.defensenews.com/?p=44960",
+       "seen": "2026-10-31",
+       "reliability": "B・3"
+      }
+     ],
      "classes": [
       {
        "id": "055",
@@ -1358,7 +1440,7 @@
        "count": 4,
        "count_conf": "推定",
        "w": 0.5,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_055_destroyer"
       },
@@ -1370,7 +1452,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.4,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
       },
@@ -1382,7 +1464,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.15,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
       },
@@ -1394,7 +1476,7 @@
        "count": 2,
        "count_conf": "推定",
        "w": 0.5,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer"
       },
@@ -1406,7 +1488,7 @@
        "count": 8,
        "count_conf": "推定",
        "w": 0.15,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
       },
@@ -1418,7 +1500,7 @@
        "count": 7,
        "count_conf": "推定",
        "w": 0.15,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
        "note": "全長は未確認（054A と同じと仮定）"
@@ -1431,7 +1513,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 0.1,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_054B_frigate"
       },
@@ -1443,7 +1525,7 @@
        "count": 20,
        "count_conf": "推定",
        "w": 0.1,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "未確認",
        "group": "S",
        "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
       },
@@ -1455,7 +1537,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.1,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "未確認",
        "group": "S",
        "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
        "kind": "submarine"
@@ -1468,7 +1550,7 @@
        "count": 5,
        "count_conf": "推定",
        "w": 0.2,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "未確認",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock"
       },
@@ -1480,7 +1562,7 @@
        "count": 2,
        "count_conf": "推定",
        "w": 0.3,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock"
       },
@@ -1492,7 +1574,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 0.5,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Type_901_replenishment_ship"
       },
@@ -1504,7 +1586,7 @@
        "count": 2,
        "count_conf": "推定",
        "w": 0.3,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "推定",
        "group": "L",
        "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship"
       },
@@ -1516,7 +1598,7 @@
        "count": 15,
        "count_conf": "推定",
        "w": 0.6,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "未確認",
        "group": "T",
        "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
        "note": "出典なし（全長・隻数・重みとも推定）"
@@ -1529,7 +1611,7 @@
        "count": 1,
        "count_conf": "推定",
        "w": 1.0,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "確認寄りの推定",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Shandong",
        "kind": "carrier",
@@ -1543,7 +1625,7 @@
        "count": 6,
        "count_conf": "未確認（要出典）",
        "w": 1.0,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "確認寄りの推定",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_094_submarine",
        "kind": "submarine",
@@ -1557,7 +1639,7 @@
        "count": 6,
        "count_conf": "未確認（要出典）",
        "w": 0.9,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "確認寄りの推定",
        "group": "M",
        "source": "https://en.wikipedia.org/wiki/Type_093_submarine",
        "kind": "submarine",
@@ -1571,7 +1653,7 @@
        "count": 1,
        "count_conf": "確認寄りの推定",
        "w": 1.0,
-       "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+       "w_conf": "確認寄りの推定",
        "group": "X",
        "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian",
        "kind": "carrier",
@@ -1756,7 +1838,7 @@
         ],
         "type": "medium",
         "conf": "未確認",
-        "note": "原潜用の可能性（NMF の推測）。確かめられたら submarine にする"
+        "note": "原潜用の可能性（NMF の推測）。確かめられたら submarine にする。OSM の線は E3 付近の 839204443・839204444 だけで、E1・E2 の OSM の線は無い（数えられない）"
        }
       ],
       "default": {
@@ -1775,7 +1857,7 @@
         "type": "shore"
        }
       },
-      "note": "2部の調査（class-weights-4ports.md §5.2、2026-10-31）。way ごとの桟橋の型。区画 A1（旧港）は OSM に桟橋の線が無いので区画で submarine。型の倍率（carrier・submarine）は変えていない（根拠を公開情報から作れない。2部 §7 の S2 の数えで直す）"
+      "note": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §5.2、2026-10-31）。way ごとの桟橋の型。区画 A1（旧港）は OSM に桟橋の線が無いので区画で submarine。型の倍率（carrier・submarine）は変えていない（根拠を公開情報から作れない。2部 §7 の S2 の数えで直す）"
      },
      "SLP": {
       "lines_version": "SLP-quay-v2",
@@ -1828,7 +1910,7 @@
         "type": "shore"
        }
       },
-      "note": "2部の調査（class-weights-4ports.md §5.2、2026-10-31）。way ごとの桟橋の型。潜水艦トンネルの入口は座標の公開の出典が無く、見えない所として後で blind に書く（設計 §7-2）。型の倍率は変えていない"
+      "note": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §5.2、2026-10-31）。way ごとの桟橋の型。潜水艦トンネルの入口は座標の公開の出典が無く、見えない所として後で blind に書く（設計 §7-2）。型の倍率は変えていない"
      }
     }
    },

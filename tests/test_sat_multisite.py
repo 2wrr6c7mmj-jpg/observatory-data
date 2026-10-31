@@ -450,6 +450,15 @@ class SanyaSitesTest(unittest.TestCase):
             if c == "TUG":  # the tugs belong to each port, not to the fleet
                 continue
             self.assertLessEqual(w + t["sites"]["SLP"]["w"].get(c, 0.0), 1.1, c)
+        # the credibility of each class (w_detail), not the site's wording, reaches meta.json
+        tabs = quay_est.site_class_tables()
+        conf = {(sid, c["id"]): c["w_conf"] for sid in ("SYL", "SLP") for c in tabs[sid]["classes"]}
+        for k in (("SYL", "093"), ("SYL", "075"), ("SLP", "071"), ("SLP", "039AB")):
+            self.assertEqual(conf[k], "未確認", k)
+        self.assertEqual(conf[("SLP", "094")], "確認寄りの推定")
+        self.assertTrue(tabs["SYL"]["sources"] and tabs["SLP"]["sources"])
+        self.assertNotIn("sources", tabs["ZJG"])
+        self.assertEqual({c["w_conf"] for c in tabs["ZJG"]["classes"]}, {"推定"})
         slp = [c["id"] for c in quay_est.Model(site_id="SLP").classes]
         self.assertIn("094", slp)
         self.assertIn("003", slp)
