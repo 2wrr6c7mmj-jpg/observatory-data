@@ -594,6 +594,12 @@ def validate_site(site: dict) -> None:
     out = fsectors.outside(site)
     if out:
         raise ValueError(f"{site['id']}: 範囲の外の区画 {out}")
+    # A site of its own folders fetched daily must have its own monthly cap (1部 review of PR #35): the shared
+    # CDSE free tier keeps Zhanjiang's reserve. Zhanjiang (layout shared) uses the run's cap as before.
+    if runs_daily(site) and layout(site) != "shared":
+        cap = site.get("pu_month_cap")
+        if cap is None or isinstance(cap, bool) or not isinstance(cap, (int, float)) or cap < 0:
+            raise ValueError(f"{site['id']}: daily＝true の地点には pu_month_cap（PU／月、0 以上の数）が要る")
 
 
 def usable_sites(sites: list[dict], log=lambda m: print(m, file=sys.stderr)) -> tuple[list[dict], list[dict]]:

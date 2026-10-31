@@ -1,7 +1,7 @@
 {
  "version": "est-1b",
  "title": "艦種表（全長）・戦区ごとの在籍（隻数）・港ごとの重み（岸壁の数の推定 est-1 の事前分布）",
- "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す。古鎮口（QGZ）・定海（ZDH）の w と北部・東部の在籍（fleets.north・east）は同じ調査 §5.1・§5.3 の値（provisional、版 est-1b-202610、multi-site PR-3a）。湛江・SYL・SLP の値は変えていない",
+ "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す。古鎮口（QGZ）・定海（ZDH）の w と北部・東部の在籍（fleets.north・east）は同じ調査 §5.1・§5.3 の値（provisional、版 est-1b-202610、multi-site PR-3a）。湛江・SYL・SLP の値は変えていない。fleets.north・east に 056A・039AB・039G・MCM・022・TUG を、classes に 039G（宋級、74.9 m）を、QGZ・ZDH の w に 039G 0.2 を足した（2部 調査_北部・東部戦区の小型艦・作業船、2026-10-31。fleets.south には 039G を入れていないので湛江・SYL・SLP は変わらない）",
  "length_sd_m": 3.0,
  "groups": {
   "X": "210 m 以上（揚陸艦・補給艦・空母）",
@@ -109,6 +109,16 @@
    "group": "S",
    "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
    "kind": "submarine"
+  },
+  {
+   "id": "039G",
+   "name": "039 型潜水艦（宋級、039G/G1）",
+   "length_m": 74.9,
+   "length_conf": "確認",
+   "group": "S",
+   "source": "https://en.wikipedia.org/wiki/Type_039_submarine",
+   "kind": "submarine",
+   "note": "在籍 13 隻（北部 8・東部 3・南部 2、Wikipedia）。湛江の est-1 を変えないため fleets.south には入れていない（南部の 2 隻は est-1b の見直しの候補）"
   },
   {
    "id": "MCM",
@@ -458,6 +468,48 @@
     "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning ; https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
     "as_of": "2026-10",
     "note": "遼寧。母港 楡池（古鎮口）。戦区の正式な所属は頁に無い（2部 §2）"
+   },
+   "056A": {
+    "count": 11,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_056_corvette",
+    "as_of": "2026-10",
+    "note": "600・602〜607・650・654〜656（North Sea）。056（初期型）22 隻は全部が海警へ移ったので数えない（2部 §2.1）"
+   },
+   "039AB": {
+    "count": 2,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
+    "as_of": "2026-10",
+    "note": "340・341（North Sea）。039C（3 隻就役）は番号・所属の記載がなく数えない（2部 §2.1）"
+   },
+   "039G": {
+    "count": 8,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_039_submarine",
+    "as_of": "2026-10",
+    "note": "315・316・320〜323・327・328（North Sea）（2部 §2.1）"
+   },
+   "MCM": {
+    "count": 11,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_081_mine_countermeasure_vessel ; https://en.wikipedia.org/wiki/Type_082_mine_countermeasure_vessel",
+    "as_of": "2026-10",
+    "note": "081A 845〜849（67.8 m）、082I 820〜823（全長の記載なし。082 は 44.8 m）、082II 811・814（55 m）。全長は既存の 1 艦種 60 m のまま（北部の内訳の加重平均は約 57 m）（2部 §2.1）"
+   },
+   "022": {
+    "count": 20,
+    "conf": "未確認",
+    "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat",
+    "as_of": "2026-10",
+    "note": "戦区別の公開出典なし。合計 約 60（Wikipedia の Active 60 approx.）の三等分。南部の 20 と同じ（2部 §2.1）"
+   },
+   "TUG": {
+    "count": 15,
+    "conf": "未確認",
+    "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
+    "as_of": "2026-10",
+    "note": "一覧の艦名から数えると北部 約 42・南部 約 41。南部の est-1 の 15 に比率（42/41）を掛けた値。一覧には所属や艦型が不明な行がある（2部 §2.1）"
    }
   },
   "east": {
@@ -528,6 +580,48 @@
     "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
     "as_of": "2026-10",
     "note": "886・890・904"
+   },
+   "056A": {
+    "count": 19,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_056_corvette",
+    "as_of": "2026-10",
+    "note": "608〜611・615〜619・636〜643・645・664（East Sea）（2部 §2.2）"
+   },
+   "039AB": {
+    "count": 10,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
+    "as_of": "2026-10",
+    "note": "330〜339（039A 330〜333、039B 334〜339）（2部 §2.2）"
+   },
+   "039G": {
+    "count": 3,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_039_submarine",
+    "as_of": "2026-10",
+    "note": "314・324・325（2部 §2.2）"
+   },
+   "MCM": {
+    "count": 14,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_081_mine_countermeasure_vessel ; https://en.wikipedia.org/wiki/Type_082_mine_countermeasure_vessel",
+    "as_of": "2026-10",
+    "note": "081 805・810（65 m）、081A 831（67.8 m）、082 800〜803（44.8 m）、082I 806・807・816・817、082II 804・808・818（55 m）。全長は既存の 1 艦種 60 m のまま（東部の内訳の加重平均は約 52 m）（2部 §2.2）"
+   },
+   "022": {
+    "count": 20,
+    "conf": "未確認",
+    "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat",
+    "as_of": "2026-10",
+    "note": "戦区別の公開出典なし。北部と同じ（合計 約 60 の三等分）（2部 §2.2）"
+   },
+   "TUG": {
+    "count": 14,
+    "conf": "未確認",
+    "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
+    "as_of": "2026-10",
+    "note": "一覧の艦名から数えると東部 約 38。南部の est-1 の 15×38/41（2部 §2.2）"
    }
   }
  },
@@ -894,6 +988,7 @@
     "054B": 0.6,
     "056A": 0.6,
     "039AB": 0.2,
+    "039G": 0.2,
     "001": 1.0,
     "901": 0.2,
     "903": 0.5,
@@ -938,6 +1033,10 @@
      "conf": "推定",
      "basis": "サイト A の双子の桟橋が潜水艦用なら上げる（NMF の筆者の推測）"
     },
+    "039G": {
+     "conf": "未確認",
+     "basis": "039AB と同じ値（2部 調査_北部・東部戦区の小型艦・作業船 §3）。北部の通常潜水艦の母港は公開出典なし。サイト A の双子の桟橋（NMF の推測）が潜水艦用と分かれば上げる"
+    },
     "001": {
      "conf": "確認寄りの推定",
      "basis": "桟橋 5（550×120 m）＝遼寧、2012 から（NMF B・2）。2013 年から楡池の大きな桟橋に係留（Wikipedia C・2）。独立 2 件"
@@ -956,11 +1055,11 @@
     },
     "022": {
      "conf": "未確認",
-     "basis": "出典なし"
+     "basis": "出典なし。北部の隻数も戦区別の公開出典なし（推定、未確認）"
     },
     "TUG": {
      "conf": "未確認",
-     "basis": "出典なし"
+     "basis": "出典なし。北部の隻数も戦区別の公開出典なし（推定、未確認）"
     }
    },
    "w_conf": "確認寄りの推定（空母 001・055）、ほかは推定",
@@ -980,7 +1079,7 @@
     }
    ],
    "status": "provisional",
-   "note": "北部戦区の 056A・039AB・MCM・022・TUG は隻数の出典が無く fleets.north に入れていない（2部 §5.3 の「?」）。そのため w を書いたが事前分布には入らない。旅順 LSN との振り分けは出典なし"
+   "note": "022・TUG は戦区別の公開出典がなく推定（未確認）。北部・東部の小型艦が両港に来る割合（w）は未確認。北部戦区の 056A・039AB・039G・MCM・022・TUG の隻数は 2部の調査（調査_北部・東部戦区の小型艦・作業船、2026-10-31、Wikipedia の艦ごとの表、C・3）で fleets.north に足した（056A・039AB・039G・MCM は推定）。旅順 LSN との振り分けは出典なし"
   },
   "ZDH": {
    "version": "est-1b-202610",
@@ -995,6 +1094,7 @@
     "054A+": 0.4,
     "056A": 0.4,
     "039AB": 0.2,
+    "039G": 0.2,
     "075": 0.1,
     "071": 0.1,
     "903": 0.4,
@@ -1039,6 +1139,10 @@
      "conf": "推定",
      "basis": "舟山に潜水艦の部隊（GlobalSecurity の古い出典、C・5）"
     },
+    "039G": {
+     "conf": "未確認",
+     "basis": "039AB と同じ値（2部 調査_北部・東部戦区の小型艦・作業船 §3）。東部の通常潜水艦の母港の割り振りは公開出典なし"
+    },
     "075": {
      "conf": "未確認",
      "basis": "出典なし"
@@ -1057,11 +1161,11 @@
     },
     "022": {
      "conf": "未確認",
-     "basis": "出典なし"
+     "basis": "出典なし。東部の隻数も戦区別の公開出典なし（推定、未確認）"
     },
     "TUG": {
      "conf": "未確認",
-     "basis": "出典なし"
+     "basis": "出典なし。東部の隻数も戦区別の公開出典なし（推定、未確認）"
     }
    },
    "w_conf": "推定",
@@ -1087,7 +1191,7 @@
     }
    ],
    "status": "provisional",
-   "note": "東部戦区の 056A・039AB・MCM・022・TUG は隻数の出典が無く fleets.east に入れていない（2部 §5.3 の「?」）。そのため w を書いたが事前分布には入らない"
+   "note": "022・TUG は戦区別の公開出典がなく推定（未確認）。北部・東部の小型艦が両港に来る割合（w）は未確認。東部戦区の 056A・039AB・039G・MCM・022・TUG の隻数は 2部の調査（調査_北部・東部戦区の小型艦・作業船、2026-10-31、Wikipedia の艦ごとの表、C・3）で fleets.east に足した（056A・039AB・039G・MCM は推定）。舟山の他の岸壁・寧波・福建との振り分けは出典なし"
   }
  }
 }

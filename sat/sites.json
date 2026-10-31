@@ -452,6 +452,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
+   "pu_month_cap": 16,
    "provisional": true,
    "sources": [
     {
@@ -466,7 +467,7 @@
      "note": "青島の西海岸新区、北海艦隊"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap は未設定＝2部の文書に値なし。毎日を有効にする前に決める）。範囲と陸マスク QGZ-land-v1 は港のアーカイブ（sat/ports.json）のまま（約 5.0×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 QGZ-quay-v1（OSM、osm_base 2026-10-31T07:54:50Z、桟橋 13・海岸線 6）は probe/quaylines-qgz-zdh で取得。基準は軌道 69・171（各 24 撮影、確度 3）。区画（2部 §4.3）：A1 外港の東の桟橋 O1〜O3、A2 内港、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）"
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap 16 PU／月＝1部審査（PR #35）の目安・設計 §5.1。毎日を有効にするまでは S2 のさかのぼりでもこの上限で止まる）。範囲と陸マスク QGZ-land-v1 は港のアーカイブ（sat/ports.json）のまま（約 5.0×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 QGZ-quay-v1（OSM、osm_base 2026-10-31T07:54:50Z、桟橋 13・海岸線 6）は probe/quaylines-qgz-zdh で取得。基準は軌道 69・171（各 24 撮影、確度 3）。区画（2部 §4.3）：A1 外港の東の桟橋 O1〜O3、A2 内港、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）"
   },
   {
    "id": "ZDH",
@@ -538,6 +539,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
+   "pu_month_cap": 13,
    "provisional": true,
    "sources": [
     {
@@ -573,7 +575,7 @@
      "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap は未設定＝2部の文書に値なし。毎日を有効にする前に決める）。範囲 v2 と陸マスク ZDH-land-v2 は港のアーカイブ（sat/ports.json）のまま（約 8.2×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 ZDH-quay-v1（OSM、osm_base 2026-10-31T07:55:55Z、桟橋 39・海岸線 8）は probe/quaylines-qgz-zdh で取得。基準は軌道 171（24 撮影、確度 3）。区画（2部 §4.4）：A1 西岸の横付け岸壁（駆逐艦第 3 支隊）、A2 舟山水警区、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）",
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap 13 PU／月＝1部審査（PR #35）の目安・設計 §5.1。毎日を有効にするまでは S2 のさかのぼりでもこの上限で止まる）。範囲 v2 と陸マスク ZDH-land-v2 は港のアーカイブ（sat/ports.json）のまま（約 8.2×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 ZDH-quay-v1（OSM、osm_base 2026-10-31T07:55:55Z、桟橋 39・海岸線 8）は probe/quaylines-qgz-zdh で取得。基準は軌道 171（24 撮影、確度 3）。区画（2部 §4.4）：A1 西岸の横付け岸壁（駆逐艦第 3 支隊）、A2 舟山水警区、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）",
    "archive_history": [
     {
      "mask_version": 1,

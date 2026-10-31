@@ -218,6 +218,29 @@ class S2Test(unittest.TestCase):
             self.assertNotIn("sentinel-2-l2a", seen)
             self.assertFalse((d / "probe" / "out" / "s2_scenes.csv").exists())
 
+    def test_standalone_skips_settings_only_sites_and_keeps_caps(self):
+        """python -m sat.s2 (the backfill probe): a daily false site only with --site, and at most its pu_month_cap."""
+        days = {"2026-10-21": (5.0, 0.0), "2026-10-23": (5.0, 0.0), "2026-10-25": (5.0, 0.0)}
+        off = {**SITE, "id": "OFF", "daily": False, "pu_month_cap": 2}
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            cli = FakeS2(days)
+            self.assertEqual(s2.main(["--out", str(out), "--days", "365"], client=cli, sites=[off]), 0)
+            self.assertEqual((cli.requests, cli.calls), (0, []))  # not even the catalog
+            self.assertFalse((out / "s2_scenes.csv").exists())
+            # named with --site: fetched, but only up to its own cap (2 PU: one clear day of 1.56 PU)
+            cli = FakeS2(days)
+            self.assertEqual(s2.main(["--out", str(out), "--days", "365", "--site", "OFF"], client=cli, sites=[off]), 0)
+            self.assertEqual([c for c in cli.calls if c[0] == "full"], [("full", "2026-10-21")])
+            # the next run of the same month: the cap is spent, no request at all
+            cli = FakeS2(days)
+            s2.main(["--out", str(out), "--days", "365", "--site", "OFF"], client=cli, sites=[off])
+            self.assertEqual((cli.requests, cli.calls), (0, []))
+            # a daily site without a cap (Zhanjiang) as before: every day within --max-pu
+            cli = FakeS2(days)
+            s2.main(["--out", str(out), "--days", "365"], client=cli, sites=[{**SITE, "daily": True}])
+            self.assertEqual(len([c for c in cli.calls if c[0] == "full"]), 3)
+
     def test_errors_are_retried_at_most_twice(self):
         cli = FakeS2({"2026-10-21": (5.0, 0.0)})
         cli.process_raw = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("broken response"))

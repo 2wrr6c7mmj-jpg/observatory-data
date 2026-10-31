@@ -514,11 +514,14 @@ def class_table(site_id: str | None = None) -> list[dict]:
 
 
 def site_class_tables() -> dict:
-    """Every site with its own weights: {site: {status, basis, sources (if any), classes}} (meta.json).
-    A class's w_conf is its own credibility (w_detail) when the site has one."""
+    """Every site with its own weights: {site: {status, basis, sources (if any), version (if any), note (if any),
+    classes}} (meta.json). A class's w_conf is its own credibility (w_detail) when the site has one.
+    version and note are given only when the site has them (Zhanjiang has neither: its entry is as before)."""
     t = load_classes()
     return {sid: {"fleet": st.get("fleet"), "w_conf": st.get("w_conf"), "status": st.get("status", "estimate"),
                   "basis": st.get("basis"), **({"sources": st["sources"]} if st.get("sources") else {}),
+                  **({"version": st["version"]} if st.get("version") else {}),
+                  **({"note": st["note"]} if st.get("note") else {}),
                   "classes": class_table(sid)} for sid, st in (t.get("sites") or {}).items()}
 
 
