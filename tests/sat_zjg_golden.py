@@ -14,7 +14,11 @@ the real baseline with ships along the real quay lines; no Sentinel-2 day) at a 
 stored, because the bytes depend on the machine (zlib of the Python build, float reductions of the CPU)
 while the comparison of the two codes on one machine does not.
 
-    python -m tests.sat_zjg_golden            # prints the files that differ (none expected)
+    python -m tests.sat_zjg_golden            # prints differ / added / removed; exit 0 only if they are as expected
+
+Same check as tests/test_sat_multisite.py (ZhanjiangUnchangedTest): the files both runs wrote must be
+byte for byte the same (differ empty), the files only the new code writes must be exactly NEW_FILES
+(added), and no file of the old code may be missing (removed empty). Otherwise the exit code is 1.
 """
 from __future__ import annotations
 
@@ -159,9 +163,14 @@ def compare(tmp: Path) -> tuple[dict, dict]:
 def main() -> int:
     with tempfile.TemporaryDirectory() as d:
         old, new = compare(Path(d))
-    diff = sorted(k for k in set(old["files"]) | set(new["files"]) if old["files"].get(k) != new["files"].get(k))
-    print(json.dumps({"files": len(old["files"]), "differ": diff, "quay_results": new["quay_results"]}, ensure_ascii=False))
-    return 0
+    o, n = old["files"], new["files"]
+    differ = sorted(k for k in set(o) & set(n) if o[k] != n[k])
+    added = sorted(set(n) - set(o))
+    removed = sorted(set(o) - set(n))
+    ok = not differ and added == sorted(NEW_FILES) and not removed
+    print(json.dumps({"files": len(o), "differ": differ, "added": added, "expected_added": sorted(NEW_FILES),
+                      "removed": removed, "quay_results": new["quay_results"], "ok": ok}, ensure_ascii=False))
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
