@@ -132,10 +132,18 @@ class ScoreTest(unittest.TestCase):
         self.assertAlmostEqual(s["length_error"]["mean"], (10 / 40 + 20 / 200) / 2, places=4)
         self.assertAlmostEqual(s["false_alarms_per_1000km2"]["rate"], 10.0)
 
-    def test_length_error_capped(self):
+    def test_length_error_as_xview3(self):
+        # per-pair error is not capped at 1: (300 - 100) / 100 = 2, mean (2 + 0) / 2 = 1 -> score 0
         e = ev.length_error([(300.0, 100.0), (100.0, 100.0)])
-        self.assertAlmostEqual(e["mean"], 0.5)
-        self.assertAlmostEqual(e["score"], 0.5)
+        self.assertAlmostEqual(e["mean"], 1.0)
+        self.assertAlmostEqual(e["score"], 0.0)
+        # mean above 1 -> score floored at 0
+        self.assertAlmostEqual(ev.length_error([(400.0, 100.0)])["score"], 0.0)
+        self.assertAlmostEqual(ev.length_error([(400.0, 100.0)])["mean"], 3.0)
+        # lengths capped at 500 m: (800 -> 500) vs 400 = 0.25; (600 -> 500) vs (700 -> 500) = 0
+        e = ev.length_error([(800.0, 400.0), (600.0, 700.0)])
+        self.assertAlmostEqual(e["mean"], 0.125)
+        self.assertAlmostEqual(e["score"], 0.875)
 
     def test_unknown_label_rejected(self):
         with self.assertRaises(ValueError):
@@ -149,6 +157,20 @@ class ScoreTest(unittest.TestCase):
         self.assertEqual((s["1-2"]["tp"], s["1-2"]["fp"]), (0, 1))
         self.assertEqual(s[">5"]["tp"], 1)
         self.assertEqual((s["near_shore_0-2"]["tp"], s["near_shore_0-2"]["fp"], s["near_shore_0-2"]["fn"]), (1, 1, 0))
+
+    def test_near_shore_as_xview3(self):
+        truths = [_pt(0, 0, label="ship", shore_km=1.95),            # scene s: near-shore truth
+                  _pt(0, 0, scene="t", label="ship", shore_km=1.0),  # scene t: no near-shore prediction
+                  _pt(5000, 0, label="ship", shore_km=2.3)]          # beyond 2 km: not near-shore truth
+        preds = [_pt(150, 0, shore_km=2.15),                         # within 2 km + 0.2 km: kept, matches
+                 _pt(5000, 0, shore_km=2.3),                         # beyond 2.2 km: left out
+                 _pt(0, 0, scene="u", shore_km=0.5)]                 # scene u: no near-shore truth
+        n = ev.near_shore(preds, truths, 200.0)
+        self.assertEqual((n["tp"], n["fp"], n["fn"]), (1, 0, 0))
+        self.assertEqual((n["scenes"], n["scenes_left_out"]), (1, 2))
+        # with a 100 m match distance the prediction at 2.15 km is outside 2.1 km and scene s drops out
+        n = ev.near_shore(preds, truths, 100.0)
+        self.assertEqual((n["tp"], n["scenes"]), (0, 0))
 
     def test_bands(self):
         self.assertEqual(ev.band_of(24.9, ev.LENGTH_BANDS), "<25")
@@ -196,6 +218,29 @@ class PoolTest(unittest.TestCase):
             self.assertEqual(len(j), 2)
             self.assertEqual(ev.truth_class(j[0]), "ship")
             self.assertEqual(ev.truth_class(j[1]), "low")
+
+    def test_key_must_be_apart_from_sheet(self):
+        with tempfile.TemporaryDirectory() as d:
+            ev.check_split(Path(d) / "review", Path(d) / "key")
+            for a, b in (("review", "review"), ("review", "review/key"), ("key/review", "key")):
+                with self.assertRaises(SystemExit):
+                    ev.check_split(Path(d) / a, Path(d) / b)
+
+    def test_main_writes_key_apart(self):
+        with tempfile.TemporaryDirectory() as d:
+            raw = Path(d) / "raw" / "run1"
+            raw.mkdir(parents=True)
+            _write_raw_scene(raw)
+            out, key = Path(d) / "review", Path(d) / "key"
+            import contextlib
+            import io
+            with contextlib.redirect_stdout(io.StringIO()):
+                ev.main(["--ocean-raw", str(Path(d) / "raw"), "--out", str(out), "--key-out", str(key)])
+            names = {p.name for p in out.iterdir()}
+            self.assertIn("pool-ocean.csv", names)
+            self.assertFalse(any("key" in n or n.startswith("candidates-") for n in names))
+            self.assertTrue((key / "pool-ocean-key.json").exists())
+            self.assertTrue((key / "candidates-ocean-pr2.1.geojson").exists())
 
     def test_pool_order_does_not_follow_method(self):
         a, _ = ev.pool({"x": [_pt(0, 0)], "y": [_pt(5000, 0)]}, salt="s")

@@ -11,12 +11,16 @@ Step 1, the ground for the comparison:
   path, O(n^2 m)): scipy is not installed in the Tests workflow and the collectors do not need it;
   the unit test compares it with scipy only where scipy happens to be installed;
 * metrics: precision, recall and F1, false alarms per 1,000 km2, by distance from shore
-  (0-1 / 1-2 / 2-5 / > 5 km; "near shore" = 0-2 km, both truth and predictions filtered by their own
-  distance before matching, as the xView3 close-to-shore F1), detection rate by length band
-  (< 25, 25-50, 50-100, 100-150, >= 150 m) and the relative length error (xView3:
-  ``min(|l_pred - l_true| / l_true, 1)``). Every proportion has a Wilson 95% interval;
+  (0-1 / 1-2 / 2-5 / > 5 km, each band filtering truth and predictions by their own distance), the
+  near-shore F1 as xView3's ``reference/metric.py``: truth within 2 km of shore, predictions within
+  2 km + the matching distance, and only the scenes that have both near-shore truth and near-shore
+  predictions; detection rate by length band (< 25, 25-50, 50-100, 100-150, >= 150 m) and the length
+  performance as xView3's ``compute_length_performance`` (lengths capped at 500 m, mean of
+  ``|l_pred - l_true| / l_true`` over the true positives, score ``1 - min(mean, 1)``). Every
+  proportion has a Wilson 95% interval;
 * low-confidence truth (``likely`` / ``unknown``; たぶん船 / 不明) is neither a hit nor a miss: a
-  prediction assigned to it is not counted at all (as xView3);
+  prediction assigned to it is not counted at all. This is the plan's rule (2部 section 3.3), not
+  xView3's: xView3 leaves out only LOW confidence and counts MEDIUM;
 * the blind review sheet for the pooled candidates (all methods, merged within 200 m):
   ``vid, scene, lon, lat, sources, label, note`` with ``sources`` left empty (hidden); the key
   (vid -> methods) is written to a separate file.
@@ -216,7 +220,7 @@ def match(preds: list[dict], truths: list[dict], tol_m: float = 200.0) -> list[t
         if not pi or not ti:
             continue
         d = distances_m([preds[i] for i in pi], [truths[j] for j in ti])
-        big = 1e6 + 10.0 * tol_m
+        big = (min(len(pi), len(ti)) + 1) * tol_m   # one pair beyond tol costs more than all pairs within it
         cost = np.where(d <= tol_m, d, big)
         r, c = linear_sum_assignment(cost)
         for a, b in zip(r, c):
@@ -245,16 +249,22 @@ def truth_class(t: dict) -> str | None:
     return LABELS[lab]
 
 
+LENGTH_CAP_M = 500.0
+
+
 def length_error(pairs: list[tuple[float, float]]) -> dict:
-    """xView3 relative length error min(|p - t| / t, 1) over (pred, true) pairs; mean, median and the
-    xView3 length score 1 - mean, with a percentile bootstrap 95% interval of the mean (seed 0)."""
-    e = np.array([min(abs(p - t) / t, 1.0) for p, t in pairs if t and t > 0 and p is not None], float)
+    """xView3 length performance (``compute_length_performance``) over (pred, true) pairs of true
+    positives: both lengths capped at 500 m, relative error ``|p - t| / t`` (not capped per pair),
+    ``mean``, ``median``, score ``1 - min(mean, 1)``; percentile bootstrap 95% interval of the mean
+    (seed 0; the error is not a proportion, so no Wilson interval)."""
+    e = np.array([abs(min(p, LENGTH_CAP_M) - min(t, LENGTH_CAP_M)) / min(t, LENGTH_CAP_M)
+                  for p, t in pairs if t and t > 0 and p is not None], float)
     if e.size == 0:
         return {"n": 0, "mean": None, "median": None, "score": None, "mean_lo": None, "mean_hi": None}
     rng = np.random.default_rng(0)
     boots = e[rng.integers(0, e.size, (2000, e.size))].mean(axis=1) if e.size > 1 else np.array([e[0]])
     return {"n": int(e.size), "mean": round(float(e.mean()), 4), "median": round(float(np.median(e)), 4),
-            "score": round(1 - float(e.mean()), 4),
+            "score": round(1 - min(float(e.mean()), 1.0), 4),
             "mean_lo": round(float(np.percentile(boots, 2.5)), 4), "mean_hi": round(float(np.percentile(boots, 97.5)), 4)}
 
 
@@ -290,15 +300,32 @@ def score(preds: list[dict], truths: list[dict], tol_m: float = 200.0, area_km2:
     return res
 
 
+def near_shore(preds: list[dict], truths: list[dict], tol_m: float = 200.0, near_km: float = NEAR_SHORE_KM) -> dict:
+    """xView3 close-to-shore score: truth with ``shore_km <= near_km``, predictions with
+    ``shore_km <= near_km + tol_m / 1000`` (a ship just inside may be detected just outside), and only
+    the scenes that have at least one of each (the others are left out of this score)."""
+    def near(p, lim):
+        d = p.get("shore_km")
+        return d is not None and d <= lim
+    tr = [t for t in truths if near(t, near_km) and truth_class(t) in ("ship", "low")]
+    pr = [p for p in preds if near(p, near_km + tol_m / 1000.0)]
+    scenes = {t.get("scene") for t in tr} & {p.get("scene") for p in pr}
+    res = score([p for p in pr if p.get("scene") in scenes], [t for t in tr if t.get("scene") in scenes], tol_m)
+    res["scenes"] = len(scenes)
+    res["scenes_left_out"] = len(({t.get("scene") for t in tr} | {p.get("scene") for p in pr}) - scenes)
+    return res
+
+
 def score_by_shore(preds: list[dict], truths: list[dict], tol_m: float = 200.0) -> dict:
-    """``score`` within each shore band and for the near-shore zone (0-2 km); points carry
-    ``shore_km`` (None = unknown). Truth and predictions are filtered by their own distance first."""
+    """``score`` within each shore band (truth and predictions filtered by their own distance) and the
+    xView3 near-shore score (:func:`near_shore`); points carry ``shore_km`` (None = unknown)."""
     out = {}
-    for lo, hi, name in SHORE_BANDS + ((0.0, NEAR_SHORE_KM, "near_shore_0-2"),):
+    for lo, hi, name in SHORE_BANDS:
         def inb(p):
             d = p.get("shore_km")
             return d is not None and lo <= d < hi
         out[name] = score([p for p in preds if inb(p)], [t for t in truths if inb(t)], tol_m)
+    out["near_shore_0-2"] = near_shore(preds, truths, tol_m)
     unk = [p for p in preds if p.get("shore_km") is None]
     if unk or any(t.get("shore_km") is None for t in truths):
         out["unknown"] = score(unk, [t for t in truths if t.get("shore_km") is None], tol_m)
@@ -771,6 +798,14 @@ def _fc(feats: list[dict], attr: str) -> str:
                       ensure_ascii=False, separators=(",", ":"))
 
 
+def check_split(out: Path, key_out: Path) -> None:
+    """The blind sheet and its key must not end up in one place (one folder, or one folder inside the
+    other): whoever judges the sheet is given ``out`` only."""
+    a, b = Path(out).resolve(), Path(key_out).resolve()
+    if a == b or a in b.parents or b in a.parents:
+        raise SystemExit("--key-out は --out と別の場所に（入れ子も不可）。鍵と手法別の候補は判定が済むまで判定者に渡さない")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--ocean-raw", type=Path, help="probe-raw/ocean (set A)")
@@ -778,9 +813,15 @@ def main(argv=None) -> int:
     ap.add_argument("--labels", type=Path, default=Path("docs/data/sat/labels/ZJG-s2-labels.csv"))
     ap.add_argument("--sections", type=Path, default=Path("docs/data/sat/labels/ZJG-s2-sections.geojson"))
     ap.add_argument("--verified", type=Path, help="verified answers CSV (section_id, date, verified, verified_occupied)")
-    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--out", type=Path, required=True,
+                    help="reviewer side: the blind sheet (pool-*.csv), the tables and summary.json only")
+    ap.add_argument("--key-out", type=Path, required=True,
+                    help="kept from the reviewer until the review is done: the pool key (vid -> methods) and the "
+                         "per-method candidate files; must not be inside --out (or contain it)")
     args = ap.parse_args(argv)
+    check_split(args.out, args.key_out)
     args.out.mkdir(parents=True, exist_ok=True)
+    args.key_out.mkdir(parents=True, exist_ok=True)
     summary = {"version": EVAL_VERSION, "modes": {"pr2.1": "main (VH sigma0 <= 0 has data)",
                                                     "pre33": "before PR #33 (VH code 0 = no data)"}}
     times = []
@@ -802,10 +843,10 @@ def main(argv=None) -> int:
         for m, c in cands.items():
             feats = [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [x["lon"], x["lat"]]},
                       "properties": {k: v for k, v in x.items() if k not in ("lon", "lat")}} for x in c]
-            (args.out / f"candidates-ocean-{m}.geojson").write_text(_fc(feats, attr), encoding="utf-8")
+            (args.key_out / f"candidates-ocean-{m}.geojson").write_text(_fc(feats, attr), encoding="utf-8")
         prow, key = pool({f"cfar-v2/{m}": c for m, c in cands.items()}, salt=EVAL_VERSION)
         write_pool_csv(args.out / "pool-ocean.csv", prow)
-        (args.out / "pool-ocean-key.json").write_text(json.dumps(key, ensure_ascii=False, indent=1), encoding="utf-8")
+        (args.key_out / "pool-ocean-key.json").write_text(json.dumps(key, ensure_ascii=False, indent=1), encoding="utf-8")
         summary["ocean"]["pool_rows"] = len(prow)
     if args.zjg_raw:
         from .osm_mask import WATER, load_mask
@@ -817,7 +858,7 @@ def main(argv=None) -> int:
         truth = zjg_truth(args.labels, args.verified)
         rows, comp, feats = zjg_runs(pairs, site, mask != WATER, load_sections(args.sections), truth)
         _write_csv(args.out / "zjg_scenes.csv", rows)
-        (args.out / "candidates-zjg.geojson").write_text(_fc(feats, attribution(times)), encoding="utf-8")
+        (args.key_out / "candidates-zjg.geojson").write_text(_fc(feats, attribution(times)), encoding="utf-8")
         summary["zjg"] = {"s2_days": len(pairs), "s1_scenes": len({p["s1_file"] for p in pairs}), "occupancy": comp,
                           "truth_sources": {s: sum(1 for k, v in truth.items() if v["source"] == s and k[1] in {p["date"] for p in pairs})
                                             for s in ("verified", "auto", "unknown")}}
