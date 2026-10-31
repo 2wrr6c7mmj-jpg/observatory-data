@@ -64,8 +64,14 @@ THRESHOLDS = {
     "jso_release_days": {"warn": 11, "alert": 25},
     # 発射：NOTAM Watch 側の notices[].last_seen_utc の最大からの時間。>30 h で WARN（NOTAM Watch が古い）
     "notam_seen_h": {"warn": 30},
-    # Actions：定期実行の失敗が続いた回数
+    # 尖閣：最後の実行の結果が ok 以外の回数（前回の health.json から数える。jcg_senkaku.py は停止でも exit 0 のことがある）
+    "jcg_not_ok_runs": {"warn": 1, "alert": 2},
+    # Actions：定期実行の失敗が続いた回数（cancelled は数えない）
     "workflow_failures": {"warn": 1, "alert": 2},
+    # health.json 自体の generated_utc がこれより古ければ、監視（health.yml）自体が止まっている
+    "health_stale_h": 12,
+    # 中身（generated_utc・*_age_h・理由の文を除く）が前回と同じでも、前回からこの時間が経てば書き直す（stale と区別するため）
+    "health_refresh_h": 6,
 }
 
 JST = timezone(timedelta(hours=9))
@@ -80,7 +86,9 @@ WORKFLOWS = [
     {"file": "pla-tracker.yml", "label": "PLA Activity Tracker", "event": "schedule", "sources": ["pla-tracker"]},
     {"file": "proto.yml", "label": "分析の試作", "event": "workflow_run", "sources": ["proto"]},
 ]
-FAILED = {"failure", "timed_out", "cancelled", "startup_failure", "action_required", "stale"}
+FAILED = {"failure", "timed_out", "startup_failure", "action_required", "stale"}
+# 源の取得をやめた（robots の拒否・ボット対策・403）を表す文。PLA・尖閣で共用
+BLOCKED_RE = re.compile(r"robots|disallow|403|challenge|チャレンジ", re.I)
 RANK = {"ok": 0, "info": 0, "halt": 0, "warn": 1, "alert": 2}
 
 
@@ -441,7 +449,20 @@ def changes_latest(path: Path) -> dict | None:
     return {"date": cells[0], "version": what[:160] + ("…" if len(what) > 160 else "")}
 
 
-def check_jcg(now: datetime, data: Path) -> tuple[dict, dict]:
+def robots_allowed(text) -> bool:
+    """polite.py の理由の文が許可か（'…: allowed'・'HTTP 404, no robots.txt (all allowed)'）。"""
+    t = str(text).lower()
+    return "disallow" not in t and "allowed" in t
+
+
+def prev_values(prev: dict | None, sid: str) -> dict:
+    for s in (prev or {}).get("sources") or []:
+        if isinstance(s, dict) and s.get("id") == sid:
+            return s.get("values") or {}
+    return {}
+
+
+def check_jcg(now: datetime, data: Path, prev: dict | None = None) -> tuple[dict, dict]:
     src = Source("jcg-senkaku", "海上保安庁 尖閣周辺", "daily", "jcg-senkaku.yml")
     latest: dict = {}
     th = THRESHOLDS["jcg_lag_days"]
@@ -451,11 +472,32 @@ def check_jcg(now: datetime, data: Path) -> tuple[dict, dict]:
         unreadable(src, e)
         return src.done(), latest
     lr = st.get("last_run") or {}
-    if lr.get("result") == "ok":
-        src.heartbeat(now, parse_utc(lr.get("finished_utc")), "最後に成功した取得")
+    # status には最後の実行しか無いので、最後に成功した時刻と ok 以外の続いた回数は前回の health.json から引き継ぐ
+    pv = prev_values(prev, "jcg-senkaku")
+    result = str(lr.get("result") or "")
+    started = lr.get("started_utc") or lr.get("finished_utc")
+    if result == "ok":
+        last_ok = parse_utc(lr.get("finished_utc"))
+        not_ok = 0
     else:
-        src.d["heartbeat_utc"] = None
-        src.add("warn", "last_run_not_ok", f"最後の実行の結果 {lr.get('result')!r}（{lr.get('reason') or lr.get('error') or '理由の記録なし'}）")
+        last_ok = parse_utc(pv.get("last_ok_utc"))
+        if pv.get("last_run_started_utc") == started:
+            not_ok = int(pv.get("not_ok_runs") or 1)          # 同じ実行を見直しただけ
+        else:
+            not_ok = int(pv.get("not_ok_runs") or 0) + 1
+    src.heartbeat(now, last_ok, "最後に成功した取得")
+    src.d["values"].update({"last_ok_utc": iso(last_ok), "last_run_started_utc": started,
+                            "last_run_result": lr.get("result"), "not_ok_runs": not_ok})
+    if result != "ok":
+        nth = THRESHOLDS["jcg_not_ok_runs"]
+        text = f"最後の実行の結果 {lr.get('result')!r}"
+        if BLOCKED_RE.search(result):
+            # robots の拒否・ボット対策・403。jcg_senkaku.py は exit 0 のことがあり Actions の失敗にもならない
+            src.add("alert", "source_blocked", f"{text}（取得をやめた：収集停止）")
+        elif not_ok >= nth["alert"]:
+            src.add("alert", "last_run_not_ok", f"{text}（ok 以外が {not_ok} 回続いた）")
+        else:
+            src.add("warn", "last_run_not_ok", f"{text}（{not_ok} 回目）")
     src.d["values"].update({"robots": lr.get("robots"), "days": st.get("days"), "fetched": lr.get("fetched"),
                             "not_modified": lr.get("not_modified")})
     today = now.astimezone(JST).date()
@@ -499,14 +541,14 @@ def check_pla(now: datetime, data: Path) -> tuple[dict, dict]:
     src.heartbeat(now, parse_utc(st.get("last_success_utc")), "最後に成功した取得")
     lr = st.get("last_run") or {}
     reason = str(lr.get("reason") or "")
-    blocked = re.search(r"robots|disallow|403|challenge|チャレンジ", reason, re.I)
+    blocked = BLOCKED_RE.search(reason)
     if lr.get("result") == "skipped":
         if blocked:
             src.add("alert", "source_blocked", f"取得をやめた（収集停止）：{reason[:200]}")
         else:
             src.add("warn", "skipped", f"最後の実行で取得をやめた：{reason[:200]}")
     robots = lr.get("robots")
-    if lr.get("result") == "ok" and robots and not str(robots).rstrip().endswith("allowed"):
+    if lr.get("result") == "ok" and robots and not robots_allowed(robots):
         src.add("warn", "robots", f"robots：{robots}")
     http = (st.get("source") or {}).get("http")
     if isinstance(http, int) and http == 403:
@@ -727,7 +769,9 @@ def check_workflow(now: datetime, wf: dict, runs: list[dict], cron: str | None) 
 
     runs = sorted((r for r in runs if isinstance(r, dict)), key=lambda r: r.get("created_at") or "", reverse=True)
     sched = [r for r in runs if r.get("event") == wf["event"]]
-    done = [r for r in sched if r.get("status") == "completed" and r.get("conclusion") not in (None, "skipped", "neutral")]
+    # cancelled（取り消し・concurrency の置き換え）・skipped・neutral は失敗にも成功にも数えない
+    done = [r for r in sched if r.get("status") == "completed"
+            and r.get("conclusion") not in (None, "skipped", "neutral", "cancelled")]
     success_any = next((r for r in runs if r.get("conclusion") == "success"), None)
     out["last_success_started_utc"] = iso(parse_utc((success_any or {}).get("run_started_at")))
     out["last_success_event"] = (success_any or {}).get("event")
@@ -805,11 +849,11 @@ def credits(data: Path, sat_detail: dict) -> list[str]:
     return [c for c in out if c]
 
 
-def build(now: datetime | None = None, data: Path = DATA, repo: Path = ROOT, fetch=None) -> dict:
+def build(now: datetime | None = None, data: Path = DATA, repo: Path = ROOT, fetch=None, prev: dict | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     workflows = check_workflows(now, repo, fetch)
     sat, latest_sat, sat_detail = check_sat(now, data, repo)
-    jcg, latest_jcg = check_jcg(now, data)
+    jcg, latest_jcg = check_jcg(now, data, prev)
     pla, latest_pla = check_pla(now, data)
     mnd = check_mnd(now, data)
     jso = check_jso(now, data)
@@ -828,6 +872,8 @@ def build(now: datetime | None = None, data: Path = DATA, repo: Path = ROOT, fet
         "generated_utc": iso(now),
         "state": worst(states),
         "summary": summary,
+        "stale_after_h": THRESHOLDS["health_stale_h"],
+        "stale_note": f"generated_utc が {THRESHOLDS['health_stale_h']} h より古ければ、監視（health.yml）自体が止まっている",
         "states_note": "ok＝基準内、warn＝遅延・抜け・不一致、alert＝停止と判断、halt＝意図した停止（robots 等）、info＝監視しない、unknown＝確かめていない",
         "thresholds": THRESHOLDS,
         "sources": sources,
@@ -855,6 +901,33 @@ def annotations(h: dict) -> list[str]:
     return lines
 
 
+def comparable(o):
+    """前回と比べる形：generated_utc・*_age_h を除き、理由は (level, code) だけ（文の経過時間で差が出ないように）。"""
+    if isinstance(o, dict):
+        out = {}
+        for k, v in o.items():
+            if k == "generated_utc" or k.endswith("_age_h"):
+                continue
+            if k == "reasons" and isinstance(v, list):
+                out[k] = [(r.get("level"), r.get("code")) if isinstance(r, dict) else r for r in v]
+            else:
+                out[k] = comparable(v)
+        return out
+    if isinstance(o, list):
+        return [comparable(x) for x in o]
+    return o
+
+
+def should_write(prev: dict | None, new: dict) -> bool:
+    """中身が変わったとき、または前回から health_refresh_h 経ったときだけ書く（コミットを減らす）。"""
+    if not prev:
+        return True
+    old_t, new_t = parse_utc(prev.get("generated_utc")), parse_utc(new.get("generated_utc"))
+    if old_t is None or new_t is None or (new_t - old_t) >= timedelta(hours=THRESHOLDS["health_refresh_h"]):
+        return True
+    return comparable(prev) != comparable(new)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", type=Path, default=OUT)
@@ -869,11 +942,20 @@ def main(argv=None) -> int:
                                    os.environ.get("GITHUB_API_URL", "https://api.github.com"))
         else:
             print("GITHUB_TOKEN が無いので Actions の実行記録は見ない", file=sys.stderr)
-    h = build(fetch=fetch)
-    a.out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = a.out.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(h, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    os.replace(tmp, a.out)
+    try:
+        prev = load_json(a.out)
+        if not isinstance(prev, dict):
+            prev = None
+    except Unreadable:
+        prev = None
+    h = build(fetch=fetch, prev=prev)
+    if should_write(prev, h):
+        a.out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = a.out.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(h, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        os.replace(tmp, a.out)
+    else:
+        print("health: 中身が前回と同じなので書き直さない", file=sys.stderr)
     if a.annotate:
         print("\n".join(annotations(h)))
     s = h["summary"]

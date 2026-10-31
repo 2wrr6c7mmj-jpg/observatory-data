@@ -116,8 +116,8 @@ class Fixture:
             raise r
         return copy.deepcopy(r)
 
-    def build(self, fetch=True):
-        return h.build(NOW, self.data, self.repo, self.fetch if fetch else None)
+    def build(self, fetch=True, now=NOW, prev=None):
+        return h.build(now, self.data, self.repo, self.fetch if fetch else None, prev)
 
     def close(self):
         self.tmp.cleanup()
@@ -417,6 +417,124 @@ class OutputTest(Base):
         self.assertEqual(body["generated_utc"], "2026-10-31T10:00:00Z")
         self.assertIn("::notice", so.getvalue())
         self.assertLess(len(out.read_bytes()), 20000)
+
+
+class JcgRunResultTest(Base):
+    def status(self, result, started="2026-10-31T09:00:00Z"):
+        def m(f):
+            f["jcg-senkaku/status.json"]["last_run"] = {"result": result, "started_utc": started,
+                                                        "finished_utc": started, "robots": "x: allowed"}
+        return m
+
+    def test_blocked_is_alert(self):
+        for result in ("skipped: robots.txt disallows", "skipped: robots.txt could not be checked",
+                       "stopped: bot challenge page", "stopped: https://x: HTTP 403"):
+            s = src(self.make(mutate=self.status(result)).build(), "jcg-senkaku")
+            self.assertEqual(s["state"], "alert", result)
+            self.assertIn("source_blocked", codes(s), result)
+
+    def test_not_ok_twice_is_alert(self):
+        fx = self.make(mutate=self.status("stopped: URLError timed out"))
+        first = fx.build()
+        s = src(first, "jcg-senkaku")
+        self.assertEqual(s["values"]["not_ok_runs"], 1)
+        self.assertIn(("warn", "last_run_not_ok"), {(r["level"], r["code"]) for r in s["reasons"]})
+        # 同じ実行を見直しただけなら数を増やさない
+        again = src(fx.build(prev=first), "jcg-senkaku")
+        self.assertEqual(again["values"]["not_ok_runs"], 1)
+        self.assertNotIn("alert", {r["level"] for r in again["reasons"]})
+        # 次の実行も ok 以外 → 2 回で ALERT
+        fx2 = self.make(mutate=self.status("stopped: URLError timed out", started="2026-11-01T09:00:00Z"))
+        s2 = src(fx2.build(prev=first), "jcg-senkaku")
+        self.assertEqual(s2["values"]["not_ok_runs"], 2)
+        self.assertIn(("alert", "last_run_not_ok"), {(r["level"], r["code"]) for r in s2["reasons"]})
+
+    def test_heartbeat_from_previous_ok(self):
+        prev = {"sources": [{"id": "jcg-senkaku", "values": {"last_ok_utc": ago(hours=60), "not_ok_runs": 0,
+                                                             "last_run_started_utc": ago(hours=60)}}]}
+        s = src(self.make(mutate=self.status("stopped: HTTP 500")).build(prev=prev), "jcg-senkaku")
+        self.assertEqual(s["heartbeat_utc"], ago(hours=60))
+        self.assertIn("heartbeat_stopped", codes(s))
+        self.assertEqual(s["state"], "alert")
+
+    def test_ok_resets(self):
+        prev = {"sources": [{"id": "jcg-senkaku", "values": {"not_ok_runs": 3, "last_run_started_utc": "x"}}]}
+        s = src(self.make().build(prev=prev), "jcg-senkaku")
+        self.assertEqual((s["state"], s["values"]["not_ok_runs"]), ("ok", 0))
+
+
+class RobotsTextTest(Base):
+    def test_pla_robots_texts(self):
+        for text, want in (("https://x/robots.txt: HTTP 404, no robots.txt (all allowed)", "ok"),
+                           ("https://x: allowed", "ok"),
+                           ("https://x: disallowed for this URL", "warn")):
+            out = self.make(mutate=lambda f: f["pla-tracker/status.json"]["last_run"].update(robots=text)).build()
+            self.assertEqual(src(out, "pla-tracker")["state"], want, text)
+        self.assertTrue(h.robots_allowed("https://www.kaiho.mlit.go.jp/robots.txt: HTTP 404, no robots.txt (all allowed)"))
+        self.assertFalse(h.robots_allowed("x: disallowed for this URL"))
+
+
+class BoundaryTest(Base):
+    def test_heartbeat_boundaries(self):
+        for hours_, want in ((30.0, "ok"), (30.1, "warn"), (54.0, "warn"), (54.1, "alert")):
+            out = self.make(mutate=lambda f: f["sat/status.json"].update(updated_utc=ago(hours=hours_))).build()
+            self.assertEqual(src(out, "sat")["state"], want, hours_)
+
+    def test_workflow_boundaries(self):
+        for hours_, want in ((30.0, "ok"), (54.0, "warn"), (54.1, "alert")):
+            runs = good_runs()
+            runs["collect.yml"] = [run("schedule", "success", ago(hours=hours_))]
+            self.assertEqual(wf(self.make(runs=runs).build(), "collect.yml")["state"], want, hours_)
+
+    def test_jst_day_change(self):
+        fx = self.make(mutate=lambda f: f["jcg-senkaku/status.json"].update(last_day="2026-10-29"))
+        before = datetime(2026, 10, 31, 14, 59, tzinfo=timezone.utc)   # JST 10-31 23:59 → 今日−2
+        after = datetime(2026, 10, 31, 15, 0, tzinfo=timezone.utc)     # JST 11-01 00:00 → 今日−3
+        self.assertNotIn("data_old", codes(src(fx.build(now=before), "jcg-senkaku")))
+        self.assertIn("data_old", codes(src(fx.build(now=after), "jcg-senkaku")))
+
+    def test_taiwan_day_change(self):
+        fx = self.make(mutate=lambda f: f["pla-tracker/status.json"].update(last_day="2026-10-30"))
+        before = datetime(2026, 10, 31, 15, 59, tzinfo=timezone.utc)   # 台湾 10-31 23:59 → 今日−1
+        after = datetime(2026, 10, 31, 16, 0, tzinfo=timezone.utc)     # 台湾 11-01 00:00 → 今日−2
+        self.assertNotIn("data_old", codes(src(fx.build(now=before), "pla-tracker")))
+        self.assertIn("data_old", codes(src(fx.build(now=after), "pla-tracker")))
+
+    def test_cancelled_not_counted(self):
+        runs = good_runs()
+        runs["collect.yml"] = [run("schedule", "cancelled", ago(hours=3)), run("schedule", "success", ago(hours=27))]
+        self.assertEqual(wf(self.make(runs=runs).build(), "collect.yml")["state"], "ok")
+        runs["collect.yml"] = [run("schedule", "failure", ago(hours=3)), run("schedule", "cancelled", ago(hours=27)),
+                               run("schedule", "success", ago(hours=51))]
+        w = wf(self.make(runs=runs).build(), "collect.yml")
+        self.assertEqual((w["state"], w["consecutive_failures"]), ("warn", 1))
+
+
+class WriteOnlyOnChangeTest(Base):
+    def test_should_write(self):
+        fx = self.make()
+        a = fx.build()
+        b = fx.build(now=NOW + timedelta(hours=1))
+        self.assertNotEqual(a["generated_utc"], b["generated_utc"])
+        self.assertFalse(h.should_write(a, b))                          # 経過時間だけの違い
+        self.assertTrue(h.should_write(None, b))
+        c = fx.build(now=NOW + timedelta(hours=h.THRESHOLDS["health_refresh_h"]))
+        self.assertTrue(h.should_write(a, c))                           # 一定時間ごとに書き直す（stale と区別）
+        changed = copy.deepcopy(b)
+        changed["latest"]["jcg"]["contiguous_zone"] = 5
+        self.assertTrue(h.should_write(a, changed))
+        self.assertEqual(a["stale_after_h"], 12)
+
+    def test_main_skips_unchanged(self):
+        fx = self.make()
+        out = fx.repo / "out" / "health.json"
+        old = h.build
+        self.addCleanup(setattr, h, "build", old)
+        for hours_ in (0, 1):
+            h.build = lambda hours_=hours_, **kw: old(NOW + timedelta(hours=hours_), fx.data, fx.repo, None, kw.get("prev"))
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                h.main(["--out", str(out), "--no-actions"])
+        self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["generated_utc"], "2026-10-31T10:00:00Z")
 
 
 if __name__ == "__main__":

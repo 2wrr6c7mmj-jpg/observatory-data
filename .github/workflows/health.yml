@@ -10,9 +10,11 @@ on:
                 'Collect PLA Activity Tracker', 'Build analysis prototypes']
     types: [completed]
     branches: [main]
-  # 収集が起動しない（テストの失敗以外に、schedule が来ない）ことも拾うため 1 日 3 回。既存の cron（01:23・03:43・05:17・06:37）と重ねない
+  # 収集が起動しない（schedule が来ない）ことも拾うため 4 時間ごと（1 日 6 回。既存の cron 01:23・03:43・05:17・06:37 と重ねない）。
+  # 中身が変わらなければ書き直さないが、6 h ごとには書き直す（schedule の遅れ約 6 h を見込んでも 12 h 以内に更新される）。
+  # health.json の generated_utc が 12 h より古ければ、この監視自体が止まっている
   schedule:
-    - cron: '11 0,8,16 * * *'
+    - cron: '11 0,4,8,12,16,20 * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -31,9 +33,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Tests
+      # 監視自身のテストだけで止める（他のテストの失敗で監視まで止まらないように。全体のテストは各収集と Tests が回す）
+      - name: Tests (health only)
         id: tests
-        run: python -m unittest discover -s tests -t .
+        run: python -m unittest tests.test_health
       - name: Build health.json
         # 公開はテスト成功時だけ
         if: steps.tests.outcome == 'success'
