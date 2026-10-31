@@ -1,9 +1,13 @@
 {
+ "access": "取得の前に robots.txt を確かめる（collectors/polite.py）。2026-10-31 10:22 UTC に収集器の User-Agent で読んだ robots.txt は User-agent: * に Allow: /（全体を許可）。制作者の許可（ユーザー経由、2026-10-31。返信の画面はユーザーが保管、私信のため公開しない）を collectors/permissions.json に記録しており、robots.txt が CSV を拒むようになった場合も、許可の見直し日までは CSV 1 本だけを 1 日 1 回以内・再試行なしで取得する。どちらで取得したかは status.json の last_run.access（robots / permission）に書く",
  "attribution": {
-  "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)",
-  "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net）",
+  "author": "Adam Pan（Skyfaring）, PLA Activity Tracker",
+  "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net), by Adam Pan (Skyfaring), CC BY 4.0. Republished by observatory-data; this does not imply official involvement or endorsement by the PLA Activity Tracker or its maker.",
+  "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net、Adam Pan／Skyfaring、CC BY 4.0）",
+  "disclaimer": "observatory-data による再掲であり、PLA Activity Tracker およびその制作者の公式の関与・承認を示すものではない（制作者の条件）",
   "license": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
-  "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。"
+  "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。",
+  "url": "https://pla-tracker.skyfaring.net/"
  },
  "comparison_2026": "国防部の日報（around-taiwan 書式）と重なる 2026-01-01〜2026-10-30 の 299 日（2026-10-30 取得の CSV）：機数 285/299 一致（95.3%、食い違い 14 日は 2026-02-01・03-05〜03-19・03-31〜04-02・08-05 で、多くは 1 日のずれ）、艦艇は国防部の海軍艦艇＋公務船と 261/299 一致（87.3%。2026-05 以降は 147/149）、海軍艦艇だけとは 92/299、中間線越えは国防部に値のある 221 日で 144 一致（65.2%、定義が狭いため）。毎回の結果は compare.json",
  "dataset": "pla-tracker",
