@@ -12,6 +12,7 @@
   "army_layer_note": "陸軍層（解放軍陸軍、陸軍防空單位、聯勤保障設施）は、情報が極めて少ないため一部の施設が作者の主観的な判読（推定）であり、誤りがありうると作者自身が注記している（層名にも「部分設施為個人推斷」「製作中」とある）。",
   "endorsement": "作者の公式の関与・承認を示すものではない。このデータの誤りは observatory-data の責任で、作者に問い合わせないこと。"
  },
+ "license": "明示のライセンスは無い。作者の説明による利用の歓迎（「歡迎大家取用」）に基づく。作者の申し出があれば取り下げる。",
  "processing": {
   "tool": "tools/wen_map.py（python -m tools.wen_map build）",
   "steps": [
@@ -21,12 +22,18 @@
    "説明文の HTML（タグ・画像）を除いて平文にし、文字参照を戻した。改行は残す",
    "名前・層名の見えない字（左右の向きの印 U+200E など）を除いた",
    "個人の連絡先（メールアドレス、電話、連絡を求める文に付いた SNS の URL など）を除いた。出典の記事・投稿などのリンクは残した",
+   "情報提供者として記された第三者の個人名・SNS のユーザー名は「（作者の記載では第三者の提供による）」に置き換えた（作者名は出典として残す）",
+   "リンクの追跡用の引数（Facebook の fbclid、X/Twitter の t・s、utm_*、spm など）と、URL 末尾に紛れた %3Cbr%3E を除いた。他の引数は変えていない",
+   "名前・層名の改行なし空白（U+00A0）と全角空白は半角空白にし、続く空白は 1 つにした",
    "作者の連絡先（地図の説明にある）は載せていない",
    "地図に付いた画像（gx_media_links）とアイコンの様式は載せていない",
    "地物の id（wen-0001…）は KML の並び順で振った通し番号で、KML を更新すると変わりうる"
   ],
   "contacts_removed": 0,
   "features_with_contacts_removed": 0,
+  "third_party_names_replaced": 4,
+  "features_with_third_party_replaced": 4,
+  "tracking_params_removed": 75,
   "skipped_non_point": 0
  },
  "counts": {
@@ -57,6 +64,15 @@
  ],
  "files": {
   "wen-pla-bases.geojson": "地物（Point）",
-  "wen-port-crosswalk.csv": "うちの監視地点（sat/sites.json・sat/ports.json）と海軍層の対応（中心から 8 km 以内）"
+  "wen-port-crosswalk.csv": "うちの監視地点（sat/sites.json・sat/ports.json）と地図の点の対応（中心から 8 km 以内）"
+ },
+ "crosswalk": {
+  "columns": "site_id, site_name, site_files, wen_layer, wen_id, wen_name, distance_km（地点の中心からの大円距離）",
+  "target_layers": {
+   "すべての地点": "解放軍海軍、海軍陸戰隊基地及設施",
+   "造船所の地点（名前に「造船」「船重工」を含む）": "上記＋中國軍工及航天產業",
+   "人工島の地点（sites.json・ports.json に reef の設定がある：MIS・SUB・FCR・WDY）": "上記＋解放軍空軍、海軍航空兵基地及設施"
+  },
+  "blank": "地点の行の wen_layer・wen_id・wen_name・distance_km が空欄なのは、対象の層に 8 km 以内の点が無いという意味（施設が無いという意味ではない）"
  }
 }
