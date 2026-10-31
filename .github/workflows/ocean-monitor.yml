@@ -115,6 +115,7 @@ jobs:
           git commit -q -m "データ更新: 外洋の定期監視 ($(date -u +%Y-%m-%d)) [ocean-monitor]"
           for i in 1 2 3; do
             git push origin HEAD:main && break
+            [ "$i" = 3 ] && break
             sleep $((i * 10))
             git pull -q --rebase origin main
           done

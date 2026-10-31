@@ -482,6 +482,21 @@ def _read_json(p: Path, default):
         return default
 
 
+def _read_state(p: Path, default):
+    """Like ``_read_json`` for the state files: a missing file is ``default``, but one that exists and cannot be
+    read as a JSON object is an error (the run stops and publishes nothing, instead of going on from empty)."""
+    p = Path(p)
+    if not p.exists():
+        return default
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as ex:
+        raise RuntimeError(f"{p.name} を読めない（壊れている）ため止めた: {type(ex).__name__}: {str(ex)[:120]}") from ex
+    if not isinstance(data, dict):
+        raise RuntimeError(f"{p.name} が JSON のオブジェクトでないため止めた")
+    return data
+
+
 def _write(p: Path, text: str) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_name(p.name + ".tmp")
@@ -497,21 +512,66 @@ def _poly(w, s, e, n):
     return {"type": "Polygon", "coordinates": [[[w, s], [e, s], [e, n], [w, n], [w, s]]]}
 
 
-def merge_day(path: Path, features: list[dict], key, attribution_fn, **extra) -> None:
-    """Replace this pass's features (``key(props)``) in the day file and keep the rest."""
+def merge_day(path: Path, features: list[dict], key, attribution_fn, append: bool = False, **extra) -> None:
+    """Replace this pass's features (``key(props)``) in the day file and keep the rest. ``append``: the features
+    continue a pass fetched in parts by an earlier run, so the earlier features stay and only the new ones are
+    added (a feature identical to one already there, e.g. the same tile again, is not added twice)."""
     old = _read_json(path, {"features": []}).get("features", [])
-    keys = {key(f["properties"]) for f in features}
-    feats = [f for f in old if key(f["properties"]) not in keys] + features
+    if append:
+        have = {json.dumps(f, sort_keys=True) for f in old}
+        feats = old + [f for f in features if json.dumps(f, sort_keys=True) not in have]
+    else:
+        keys = {key(f["properties"]) for f in features}
+        feats = [f for f in old if key(f["properties"]) not in keys] + features
     feats.sort(key=lambda f: (f["properties"].get("acquired_utc") or "", f["properties"].get("area") or ""))
     times = sorted({f["properties"].get("acquired_utc") for f in feats if f["properties"].get("acquired_utc")})
     _write(path, cp.dumps(_fc(feats, attribution_fn(times), **extra)))
 
 
-def series_rows(passes: list[dict]) -> list[dict]:
+def _num(x) -> float:
+    return float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else 0.0
+
+
+def combine_parts(rs: list[dict], min_share: float) -> dict:
+    """One record from the rows of one pass over one area (a pass fetched in parts by several runs has one row per
+    run): areas, counts and PU are added up, and the ``min_share`` rule (null or 0) is applied to the total."""
+    if len(rs) == 1:
+        return rs[0]
+    rs = sorted(rs, key=lambda r: r.get("processed_utc") or "")
+    first, last = rs[0], rs[-1]
+    obs = sum(_num(r.get("observed_sea_km2")) for r in rs)
+    bad = sum(_num(r.get("sea_state_excluded_km2")) for r in rs)
+    sea = first.get("area_sea_km2")
+    share = min(1.0, obs / sea) if sea else 0.0
+
+    def tot(name, shown):
+        return sum(_num((r.get("counts") or {}).get(name, (r.get("counts") or {}).get(shown))) for r in rs)
+    a, b = tot("published_A", "A"), tot("published_B", "B")
+    a_large, cl = tot("published_A_ge120", "A_ge120_unconfirmed"), tot("published_clusters", "clusters")
+    counted = share >= min_share
+    meds = [(_num(r.get("observed_sea_km2")), r["vv_median_db"]) for r in rs if r.get("vv_median_db") is not None]
+    wsum = sum(w for w, _ in meds)
+    med = (sum(w * v for w, v in meds) / wsum if wsum else meds[0][1]) if meds else None
+    status = last["status"]
+    if status == "no_data" and obs + bad > 0:
+        status = "ok"
+    return {**first, "status": status, "observed_sea_km2": round(obs), "sea_state_excluded_km2": round(bad),
+            "observed_share": round(share, 3), "vv_median_db": round(med, 2) if med is not None else None,
+            "pu": round(sum(_num(r.get("pu")) for r in rs), 3),
+            "counts": {"A": int(a) if counted else None, "B": int(b) if counted else None,
+                       "A_ge120_unconfirmed": int(a_large) if counted else None, "A_ge120_confirmed": None,
+                       "clusters": int(cl) if counted else None,
+                       "density_A_per_1000km2": round(a / obs * 1000, 3) if counted and obs else None}}
+
+
+def series_rows(passes: list[dict], min_share: float = 0.3) -> list[dict]:
+    groups: dict = {}
+    for p in passes:
+        if p.get("status") in PUBLISHED:
+            groups.setdefault((p["acquired_utc"], p["area"]), []).append(p)
     rows = []
-    for p in sorted(passes, key=lambda r: (r["acquired_utc"], r["area"])):
-        if p.get("status") not in PUBLISHED:
-            continue
+    for k in sorted(groups):
+        p = combine_parts(groups[k], min_share)
         c = p.get("counts") or {}
         rows.append({"area": p["area"], "acquired_utc": p["acquired_utc"], "date": p["acquired_utc"][:10],
                      "platform": p.get("platform"), "relative_orbit": p.get("relative_orbit"),
@@ -526,8 +586,8 @@ def series_rows(passes: list[dict]) -> list[dict]:
     return rows
 
 
-def write_series(out: Path, passes: list[dict], now: datetime) -> None:
-    rows = series_rows(passes)
+def write_series(out: Path, passes: list[dict], now: datetime, min_share: float = 0.3) -> None:
+    rows = series_rows(passes, min_share)
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=SERIES_FIELDS, lineterminator="\n")
     w.writeheader()
@@ -542,7 +602,9 @@ def write_series(out: Path, passes: list[dict], now: datetime) -> None:
 
 NULL_RULE = ("件数（count_*）は、域の海のうち実際に見た（データがあり海況が普通の）割合が count_min_share（30%）未満の撮影では "
              "null（見ていない）。30% 以上見て候補がないときだけ 0。count_A_ge120_confirmed は 10 m の切り出しによる確認（未実装）が"
-             "済むまで null。海況不良のセル（VV 中央値が low_db 未満か high_db 超）は件数に入れず、見た面積からも除く。")
+             "済むまで null。海況不良のセル（VV 中央値が low_db 未満か high_db 超）は件数に入れず、見た面積からも除く。"
+             "1 回の上限で何回かに分けて取った撮影（part の続き）は、series では同じ撮影×域を 1 行に合算する"
+             "（件数・見た面積・PU は足し、30% の判定は合算後の見た割合で行う）。passes.json は回ごとの記録のまま。")
 
 
 def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: datetime) -> None:
@@ -705,8 +767,8 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
     out = Path(args.out)
     areas = areas_in_order(cfg)
     cells = area_cells(cfg, areas)
-    passes = _read_json(out / "passes.json", {}).get("passes", [])
-    learned = _read_json(out / "static_learned.json", {})
+    passes = _read_state(out / "passes.json", {}).get("passes", [])
+    learned = _read_state(out / "static_learned.json", {})
     learned.setdefault("points", [])
     lookback = summary["lookback_days"]
     acqs, by_id, nreq = catalogue(union_bbox(areas), now - timedelta(days=lookback), now, get=odata_get, log=log, sleep=sleep)
@@ -775,12 +837,14 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                         save()
                     continue
                 items, cut = full, False
+                cont = any(p["area"] == area["id"] and p["acquired_utc"] == a["acquired_utc"] and p.get("status") == "part"
+                           for p in rows)   # the rest of a pass fetched in parts: its earlier features stay
                 if est > run_left - spent + 1e-9 or len(full) > req_left - sent:
                     # the run's cap (--max-pu, the month's caps, the requests) would cut this pass
                     if est <= max_pu_run and len(full) <= max(0, req_left):
                         items = []          # it fits in a run of its own: all of it next time
                     else:                   # larger than any run: the part that fits now, the rest later
-                        items = plan_rects(ac, area, fp, cov0, max(0.0, run_left - spent),
+                        items = plan_rects(ac, area, fp, cov0, max(0.0, min(run_left - spent, area_left)),
                                            int(cfg.get("max_cells", 8)))[:max(0, req_left - sent)]
                     cut = True
                     if not items:
@@ -797,17 +861,22 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                 spent += row.get("pu") or 0.0
                 sent += row.get("requests") or 0
                 task["pu"] = row.get("pu")
-                if cut and row["status"] == "ok":
-                    row["status"] = "part"
+                if cut and row["status"] in ("ok", "partial", "no_data"):
+                    row["status"] = "part"      # the run's cap left cells of the plan: a later run takes them
                 task["status"] = row["status"]
                 if row["status"] != "error" or (row.get("pu") or 0) > 0:
                     add_row(row)
+                cur["row"] = None      # its PU are in rows now: an exception below must not count them twice
                 if row["status"] in DONE:
                     done.add(key)
-                save()                 # the pass is in passes.json before its candidates are written
-                cur["row"] = None
-                if files:
-                    write_day_files(out, now, *files)
+                if files:              # the day files first: passes.json never says "done" without them
+                    try:
+                        write_day_files(out, now, *files, append=cont)
+                    except BaseException:
+                        if row in rows:
+                            row["status"] = "aborted"   # PU stay counted, the pass is fetched again
+                        raise
+                save()
     except BaseException:
         r = cur.get("row")
         if r is not None and not args.dry_run:
@@ -988,12 +1057,13 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
     row.update({
         "observed_sea_km2": round(obs_km2), "observed_share": round(share, 3), "sea_state_excluded_km2": round(bad_km2),
         "vv_median_db": round(float(np.nanmedian(meds)), 2) if np.isfinite(meds).any() else None,
-        "status": "partial" if (errors or stop) else ("ok" if obs_km2 > 0 or bad_km2 > 0 else "no_data"),
+        "status": "part" if stop else "partial" if errors else ("ok" if obs_km2 > 0 or bad_km2 > 0 else "no_data"),
         "counts": {"A": counts["A"] if counted else None, "B": counts["B"] if counted else None,
                    "A_ge120_unconfirmed": a_large if counted else None, "A_ge120_confirmed": None,
                    "clusters": n_clusters if counted else None,
                    "density_A_per_1000km2": round(counts["A"] / obs_km2 * 1000, 3) if counted and obs_km2 else None,
-                   "published_A": counts["A"], "published_B": counts["B"], "reference": counts["ref"]},
+                   "published_A": counts["A"], "published_B": counts["B"], "reference": counts["ref"],
+                   "published_A_ge120": a_large, "published_clusters": n_clusters},
         "excluded": excl,
         "observed_cells": [[round(ac.w + i * ac.cell, 6), round(ac.s + j * ac.cell, 6), round(float(observed[j, i]), 3)]
                            for j in range(ac.ny) for i in range(ac.nx) if observed[j, i] >= 0.5 and ac.own[j, i] > 0],
@@ -1006,12 +1076,13 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
     return row, stop, files
 
 
-def write_day_files(out: Path, now: datetime, day: str, pub: list[dict], cov_feats: list[dict]) -> None:
+def write_day_files(out: Path, now: datetime, day: str, pub: list[dict], cov_feats: list[dict],
+                    append: bool = False) -> None:
     key = lambda q: (q.get("acquired_utc"), q.get("area"))
     merge_day(out / "candidates" / f"{day}.geojson", pub, key, lambda times: cp.attribution(times, now),
-              version=VERSION, name="大型船の候補（AIS 未照合、未確認）", classes=CLASS_LABEL)
+              append=append, version=VERSION, name="大型船の候補（AIS 未照合、未確認）", classes=CLASS_LABEL)
     merge_day(out / "coverage" / f"{day}.geojson", cov_feats, key, lambda times: cp.attribution(times, now, osm=False),
-              version=VERSION, note="見た範囲（0.1° のセル）。state: seen＝件数に入る、sea_state_low/high＝海況不良で件数に入れない")
+              append=append, version=VERSION, note="見た範囲（0.1° のセル）。state: seen＝件数に入る、sea_state_low/high＝海況不良で件数に入れない")
 
 
 def prune_orphans(out: Path, rows: list[dict]) -> int:
@@ -1041,7 +1112,7 @@ def save_state(out: Path, cfg: dict, rows: list[dict], learned: dict, now: datet
                     "review": "2部が月 1 回見直す",
                     "attribution": cp.attribution([p["added_utc"] for p in learned["points"]], now)})
     _write(out / "static_learned.json", cp.dumps(learned, indent=1))
-    write_series(out, rows, now)
+    write_series(out, rows, now, float(cfg["count_min_share"]))
     write_areas(out, cfg, now)
     write_meta(out, cfg, rows, learned, now)
     prune_orphans(out, rows)

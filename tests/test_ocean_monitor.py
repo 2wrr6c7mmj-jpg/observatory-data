@@ -480,6 +480,138 @@ class RunTest(unittest.TestCase):
             s3, c3 = self.go(tmp, prods, config=cfgp)
             self.assertEqual(c3.calls, [])
 
+    def test_parts_keep_earlier_features_and_sum_in_the_series(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            cfgp = small_config(tmp, max_cells=1, count_min_share=0.5)
+            one = cdse.estimate_pu(*wide.rect_px((124.0, 25.0, 124.1, 25.1)), 3)
+
+            def cells(kind):
+                fc = json.loads((tmp / "monitor" / kind / "2026-10-30.geojson").read_text(encoding="utf-8"))
+                out = []
+                for f in fc["features"]:
+                    if f["properties"]["area"] == "T":
+                        ring = f["geometry"]["coordinates"][0]
+                        out.append((ring[0][0], ring[0][1], round((ring[1][0] - ring[0][0]) / 0.1)))
+                return fc, out
+            self.go(tmp, prods, config=cfgp, max_pu=one * 6.5)
+            first = cells("coverage")[1]
+            self.assertTrue(first)
+            self.assertLess(sum(c[2] for c in first), 16)
+            ser = [r for r in csv_rows(tmp / "monitor" / "series.csv") if r["area"] == "T"]
+            self.assertEqual(len(ser), 1)
+            self.assertEqual(ser[0]["status"], "part")
+            self.go(tmp, prods, config=cfgp)
+            fc, second = cells("coverage")
+            self.assertEqual(sum(c[2] for c in second), 16)            # the first run's cells stayed
+            self.assertTrue(set(first) <= set(second))
+            self.assertEqual(len(second), len(set(second)))
+            # one row per pass and area, with the sum of the two runs
+            rows = [p for p in self.passes(tmp) if p["area"] == "T"]
+            ser = [r for r in csv_rows(tmp / "monitor" / "series.csv") if r["area"] == "T"]
+            self.assertEqual(len(ser), 1)
+            self.assertEqual(ser[0]["status"], "ok")
+            self.assertAlmostEqual(float(ser[0]["pu"]), sum(p["pu"] for p in rows), places=2)
+            self.assertAlmostEqual(float(ser[0]["observed_sea_km2"]), sum(p["observed_sea_km2"] for p in rows), delta=2)
+            self.assertIn("合算", json.loads((tmp / "monitor" / "series.json").read_text(encoding="utf-8"))["null_rule"])
+
+    def test_series_applies_the_share_rule_to_the_sum(self):
+        base = {"area": "T", "acquired_utc": "2026-10-30T09:52:08Z", "platform": "S1C", "area_sea_km2": 1000,
+                "pu": 10.0}
+        r1 = {**base, "status": "part", "processed_utc": "2026-10-30T19:41:00Z", "observed_sea_km2": 200,
+              "observed_share": 0.2, "vv_median_db": -20.0,
+              "counts": {"A": None, "B": None, "published_A": 2, "published_B": 1, "published_A_ge120": 1,
+                         "published_clusters": 0}}
+        r2 = {**base, "status": "ok", "processed_utc": "2026-10-31T19:41:00Z", "observed_sea_km2": 200,
+              "observed_share": 0.2, "vv_median_db": -22.0,
+              "counts": {"A": None, "B": None, "published_A": 3, "published_B": 0, "published_A_ge120": 0,
+                         "published_clusters": 1}}
+        # each part is under 30% (null), the sum (40%) is not: counts are added up, density uses the summed area
+        [row] = m.series_rows([r2, r1], 0.3)
+        self.assertEqual((row["count_A"], row["count_B"], row["clusters"], row["count_A_ge120_unconfirmed"]), (5, 1, 1, 1))
+        self.assertEqual(row["observed_share"], 0.4)
+        self.assertEqual(row["status"], "ok")
+        self.assertEqual(row["pu"], 20.0)
+        self.assertAlmostEqual(row["density_A_per_1000km2"], 12.5)
+        # the sum is still under the share: null
+        [row] = m.series_rows([r1, r2], 0.5)
+        self.assertIsNone(row["count_A"])
+        self.assertIsNone(row["density_A_per_1000km2"])
+        # a part alone is one row as it is
+        [row] = m.series_rows([r1], 0.3)
+        self.assertEqual(row["status"], "part")
+
+    def test_merge_day_append_keeps_and_dedupes(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "x.geojson"
+            key = lambda q: (q.get("acquired_utc"), q.get("area"))
+
+            def f(lon):
+                return {"type": "Feature", "geometry": {"type": "Point", "coordinates": [lon, 25.0]},
+                        "properties": {"acquired_utc": "2026-10-30T09:52:08Z", "area": "T"}}
+            at = lambda times: "x"
+            m.merge_day(path, [f(124.0), f(124.1)], key, at)
+            m.merge_day(path, [f(124.1), f(124.2)], key, at, append=True)
+            got = json.loads(path.read_text(encoding="utf-8"))["features"]
+            self.assertEqual(sorted(x["geometry"]["coordinates"][0] for x in got), [124.0, 124.1, 124.2])
+            m.merge_day(path, [f(124.3)], key, at)    # not a continuation: replaced
+            got = json.loads(path.read_text(encoding="utf-8"))["features"]
+            self.assertEqual([x["geometry"]["coordinates"][0] for x in got], [124.3])
+
+    def test_time_stop_makes_a_part(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            cfgp = small_config(tmp, max_cells=1)
+            self.go(tmp, prods, config=cfgp, max_minutes=-1)   # the deadline has passed before the first request
+            self.assertEqual([p for p in self.passes(tmp) if p["area"] == "T"], [])
+            from unittest import mock
+            ticks = iter([0.0, 0.0, 0.0, 10 ** 6, 10 ** 6, 10 ** 6, 10 ** 6, 10 ** 6, 10 ** 6, 10 ** 6, 10 ** 6, 10 ** 6])
+            with mock.patch.object(m.time, "monotonic", side_effect=lambda: next(ticks, 10 ** 6)):
+                c = self.go(tmp, prods, config=cfgp, max_minutes=1)[1]
+            rows = [p for p in self.passes(tmp) if p["area"] == "T"]
+            self.assertEqual([p["status"] for p in rows], ["part"])
+            self.assertGreater(len(c.calls), 0)
+
+    def test_broken_passes_json_stops_the_run(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            out = tmp / "monitor"
+            out.mkdir()
+            (out / "passes.json").write_text("{\"passes\": [", encoding="utf-8")
+            with self.assertRaises(RuntimeError):
+                self.go(tmp, prods)
+            self.assertEqual((out / "passes.json").read_text(encoding="utf-8"), "{\"passes\": [")
+            self.assertFalse((out / "candidates").exists())
+            self.assertFalse((out / "meta.json").exists())
+
+    def test_usage_row_is_not_counted_twice_when_saving_stops(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            client = Client()
+            real = m.save_state
+            n = {"k": 0}
+
+            def flaky(*a, **kw):
+                n["k"] += 1
+                if n["k"] == 2:      # the save after the first pass was added
+                    raise OSError("disk")
+                return real(*a, **kw)
+            with mock.patch.object(m, "save_state", side_effect=flaky):
+                with self.assertRaises(OSError):
+                    self.go(tmp, prods, client=client)
+            rows = [p for p in self.passes(tmp)]
+            self.assertEqual([p["status"] for p in rows if p["area"] == "T"].count("aborted"), 0)
+            self.assertEqual(len([p for p in rows if p["area"] == "T"]), 1)
+
     def test_requests_left_is_a_cap(self):
         from unittest import mock
         orig = cp.budget
