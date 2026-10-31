@@ -403,7 +403,7 @@ def main(argv=None, client=None, sites=None) -> int:
             usage.append({"run_utc": cdse.iso(now), "requests": client.requests,
                           "processing_units": round(client.processing_units, 3),
                           "pu_source": "header" if client.pu_reported else "estimate",
-                          "scenes": sum(s["days"] for s in sums),
+                          "scenes": sum(s.get("days", 0) for s in sums),  # skipped / deferred sites have no days
                           "s2_requests": client.requests, "s2_processing_units": round(client.processing_units, 3)})
             write_csv(args.out / "usage.csv", usage, USAGE_FIELDS)
     print(json.dumps({"run_utc": cdse.iso(now), "month_pu_before": round(used_pu, 3), "sites": sums,

@@ -17,7 +17,8 @@ if np is not None:
     from sat.grid import Grid, box_sum, dilate, fill_polygon, label
     from sat.osm_mask import build_mask
 
-SITE = {"id": "TST", "center_lat": 21.2, "center_lon": 110.41, "size_m": 2000, "pixel_m": 10, "enabled": True}
+SITE = {"id": "TST", "center_lat": 21.2, "center_lon": 110.41, "size_m": 2000, "pixel_m": 10, "enabled": True,
+       "layout": "shared"}  # Zhanjiang's stand-in: the one shared site (no pu_month_cap needed)
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

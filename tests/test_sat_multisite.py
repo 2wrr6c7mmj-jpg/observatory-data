@@ -651,7 +651,7 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
         base = {k: v for k, v in NEW.items() if k != "pu_month_cap"}
         with self.assertRaises(ValueError):
             run.validate_site(base)
-        for bad in (None, "16", True, -1):
+        for bad in (None, "16", True, -1, float("nan"), float("inf")):
             with self.assertRaises(ValueError):
                 run.validate_site({**base, "pu_month_cap": bad})
         run.validate_site({**base, "pu_month_cap": 0})
@@ -661,6 +661,19 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
         run.validate_site(zjg)  # the shared layout (Zhanjiang) uses the run's cap as before
         ok, errors = run.usable_sites([base], log=lambda m: None)
         self.assertEqual((ok, [e["site_id"] for e in errors]), ([], ["TNS"]))
+        # only an explicit layout "shared" is exempt: a daily site without "layout" needs a cap too
+        nolayout = {k: v for k, v in base.items() if k != "layout"}
+        with self.assertRaises(ValueError):
+            run.validate_site(nolayout)
+        run.validate_site({**nolayout, "pu_month_cap": 5})
+        run.validate_site({**base, "layout": "shared"})
+        # and one shared site only (the run stops: two would write into the same files)
+        with self.assertRaises(ValueError):
+            run.usable_sites([zjg, {**base, "id": "TS2", "layout": "shared"}], log=lambda m: None)
+        run.check_shared([zjg, {**base, "id": "TS2", "layout": "shared", "enabled": False}])  # a disabled one is not counted
+        self.assertEqual(sum(1 for x in run.load_sites() if x.get("layout") == "shared"), 1)
+        ok, errors = run.usable_sites(run.load_sites(), log=lambda m: None)
+        self.assertEqual(errors, [])
 
     def test_zone_types(self):
         s = self.sites()
