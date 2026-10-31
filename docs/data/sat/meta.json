@@ -410,6 +410,266 @@
      "note": "亜龍湾の隣。原子力潜水艦と空母の基地（旧称 Yulin-East）（PR #29 の sat/ports.json から）"
     }
    ]
+  },
+  {
+   "id": "QGZ",
+   "name": "青島・古鎮口（楡池海軍基地）",
+   "mask_version": "QGZ-land-v1",
+   "bbox": [
+    119.955,
+    35.7,
+    120.01,
+    35.745
+   ],
+   "width_px": 498,
+   "height_px": 499,
+   "area_km2": 24.8,
+   "provisional": true,
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap 16 PU／月＝1部審査（PR #35）の目安・設計 §5.1。毎日を有効にするまでは S2 のさかのぼりでもこの上限で止まる）。範囲と陸マスク QGZ-land-v1 は港のアーカイブ（sat/ports.json）のまま（約 5.0×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 QGZ-quay-v1（OSM、osm_base 2026-10-31T07:54:50Z、桟橋 13・海岸線 6）は probe/quaylines-qgz-zdh で取得。基準は軌道 69・171（各 24 撮影、確度 3）。区画（2部 §4.3）：A1 外港の東の桟橋 O1〜O3、A2 内港、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）",
+     "bbox": [
+      119.994,
+      35.712,
+      120.01,
+      35.725
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "A2",
+     "name": "内港（防波堤 C の内側の岸壁・斜めの桟橋 4 本）",
+     "bbox": [
+      119.963,
+      35.714,
+      119.994,
+      35.742
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外（古鎮湾の外の泊地・南の防波堤）",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "青島",
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "mode": "設定のみ（毎日の取得なし）",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 16,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     69,
+     171
+    ],
+    "baselines_present": [
+     69,
+     171
+    ],
+    "lines_version": "QGZ-quay-v1",
+    "class_weights": {
+     "site_key": "QGZ",
+     "own": true,
+     "fleet": "north",
+     "w_conf": "確認寄りの推定（空母 001・055）、ほかは推定",
+     "status": "provisional",
+     "basis": "2部の調査（調査_4港の艦種の重みと区画 §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は北部戦区の在籍のうち、ふだん古鎮口（楡池）の岸壁に居る割合に近い数",
+     "classes": [
+      "055",
+      "052D",
+      "052DL",
+      "054A",
+      "054A+",
+      "054B",
+      "056A",
+      "039AB",
+      "039G",
+      "MCM",
+      "901",
+      "903",
+      "022",
+      "TUG",
+      "001",
+      "051C"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "label_freeze_utc": "2026-11-15"
+   },
+   "sources": [
+    {
+     "title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion",
+     "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+     "coord": "35°43.4′N 119°58.9′E（原文の表記 35°43.'4 N, 119°58'.9 E を読み替え）",
+     "note": "古鎮湾、青島の南西約 50 km。内外の泊地と桟橋 1〜7（空母用の桟橋 5 を含む）"
+    },
+    {
+     "title": "Wikipedia: Yuchi Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Yuchi_Naval_Base",
+     "note": "青島の西海岸新区、北海艦隊"
+    }
+   ]
+  },
+  {
+   "id": "ZDH",
+   "name": "舟山・定海（東海艦隊）",
+   "mask_version": "ZDH-land-v2",
+   "bbox": [
+    121.995,
+    29.99,
+    122.08,
+    30.035
+   ],
+   "width_px": 820,
+   "height_px": 499,
+   "area_km2": 40.9,
+   "provisional": true,
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap 13 PU／月＝1部審査（PR #35）の目安・設計 §5.1。毎日を有効にするまでは S2 のさかのぼりでもこの上限で止まる）。範囲 v2 と陸マスク ZDH-land-v2 は港のアーカイブ（sat/ports.json）のまま（約 8.2×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 ZDH-quay-v1（OSM、osm_base 2026-10-31T07:55:55Z、桟橋 39・海岸線 8）は probe/quaylines-qgz-zdh で取得。基準は軌道 171（24 撮影、確度 3）。区画（2部 §4.4）：A1 西岸の横付け岸壁（駆逐艦第 3 支隊）、A2 舟山水警区、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "西岸の横付け岸壁 W1〜W4（駆逐艦第 3 支隊）",
+     "bbox": null,
+     "polygon": [
+      [
+       122.0045,
+       29.9972
+      ],
+      [
+       122.0284,
+       29.9972
+      ],
+      [
+       122.0284,
+       30.0318
+      ],
+      [
+       122.0052,
+       30.0318
+      ],
+      [
+       122.0052,
+       30.0262
+      ],
+      [
+       122.0045,
+       30.0262
+      ]
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "A2",
+     "name": "舟山水警区の岸壁（小型艦）",
+     "bbox": [
+      122.0535,
+      30.0052,
+      122.0767,
+      30.016
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外（定海の商港・北西の工業港の桟橋）",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "寧波・舟山",
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "mode": "設定のみ（毎日の取得なし）",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 13,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     171
+    ],
+    "baselines_present": [
+     171
+    ],
+    "lines_version": "ZDH-quay-v1",
+    "class_weights": {
+     "site_key": "ZDH",
+     "own": true,
+     "fleet": "east",
+     "w_conf": "推定",
+     "status": "provisional",
+     "basis": "2部の調査（調査_4港の艦種の重みと区画 §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は東部戦区の在籍のうち、ふだん定海の岸壁に居る割合に近い数。推定だけなので est-1 の 60 m 以上の内訳は確度 4 と明記して出す（2部 §5.1）",
+     "classes": [
+      "055",
+      "052D",
+      "052DL",
+      "052C",
+      "054A",
+      "054A+",
+      "056A",
+      "039AB",
+      "039G",
+      "MCM",
+      "071",
+      "075",
+      "903",
+      "022",
+      "TUG",
+      "956"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "label_freeze_utc": "2026-11-15"
+   },
+   "sources": [
+    {
+     "title": "GlobalSecurity: Zhoushan Naval Base",
+     "url": "https://www.globalsecurity.org/military/world/china/zhoushan.htm",
+     "coord": "30°01′N 122°06′E",
+     "note": "舟山海軍基地。個々の桟橋の座標は出典になし"
+    },
+    {
+     "title": "GlobalSecurity (CNA 2013): New Chinese Navy vessels pack Zhoushan port",
+     "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm"
+    },
+    {
+     "title": "OpenStreetMap way/482638691「东部战区海军驱逐舰第3支队」",
+     "url": "https://www.openstreetmap.org/way/482638691",
+     "bbox": [
+      122.00677,
+      29.99856,
+      122.02686,
+      30.03043
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/351277058「舟山水警区机关」",
+     "url": "https://www.openstreetmap.org/way/351277058",
+     "bbox": [
+      122.05601,
+      30.00658,
+      122.07517,
+      30.01465
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ]
   }
  ],
  "sites_note": "複数港の土台（multi-site PR-1）。publish＝trial の地点は試行ページだけで扱い、公開の地図には出さない。daily＝false の地点は設定だけで毎日の取得をしない（岸壁線・基準がそろってから有効にする）。kind・priority・pu_month_cap・区画の role は sat/sites.json。湛江（ZJG）のファイルの場所と列は従来どおり",
@@ -1123,6 +1383,7 @@
        "reliability": "B・2"
       }
      ],
+     "note": "確度の低いもの（未確認・推定）は 3 か月ごと、または統幕の発表で艦隊の割り振りが変わったと分かったときに見直す（設計 §2.4）。新しい櫛形桟橋 F1〜F5 の使い始めで 055・052D・075 の w を見直す",
      "classes": [
       {
        "id": "055",
@@ -1431,6 +1692,7 @@
        "reliability": "B・3"
       }
      ],
+     "note": "空母は 950 m の桟橋 2 本に着くと見るのが自然（どの面かは未確認）。潜水艦トンネルに入った艦は見えない",
      "classes": [
       {
        "id": "055",
@@ -1658,6 +1920,460 @@
        "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian",
        "kind": "carrier",
        "note": "全長は Wikipedia 英語版が推定値と明記（約 316 m、2部が 2026-10-31 に確認）。2025-11-05 に三亜で就役"
+      }
+     ]
+    },
+    "QGZ": {
+     "fleet": "north",
+     "w_conf": "確認寄りの推定（空母 001・055）、ほかは推定",
+     "status": "provisional",
+     "basis": "2部の調査（調査_4港の艦種の重みと区画 §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は北部戦区の在籍のうち、ふだん古鎮口（楡池）の岸壁に居る割合に近い数",
+     "sources": [
+      {
+       "title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion（2025-02-06）",
+       "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+       "seen": "2026-10-31",
+       "reliability": "B・2"
+      },
+      {
+       "title": "Wikipedia: Chinese aircraft carrier Liaoning",
+       "url": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning",
+       "seen": "2026-10-31",
+       "reliability": "C・2"
+      }
+     ],
+     "version": "est-1b-202610",
+     "note": "022・TUG は戦区別の公開出典がなく推定（未確認）。北部・東部の小型艦が両港に来る割合（w）は未確認。北部戦区の 056A・039AB・039G・MCM・022・TUG の隻数は 2部の調査（調査_北部・東部戦区の小型艦・作業船、2026-10-31、Wikipedia の艦ごとの表、C・3）で fleets.north に足した（056A・039AB・039G・MCM は推定）。旅順 LSN との振り分けは出典なし",
+     "classes": [
+      {
+       "id": "055",
+       "name": "055 型駆逐艦",
+       "length_m": 180.0,
+       "length_conf": "確認",
+       "count": 4,
+       "count_conf": "推定",
+       "w": 0.9,
+       "w_conf": "確認寄りの推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_055_destroyer"
+      },
+      {
+       "id": "052D",
+       "name": "052D 型駆逐艦",
+       "length_m": 157.0,
+       "length_conf": "確認",
+       "count": 5,
+       "count_conf": "推定",
+       "w": 0.6,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
+      },
+      {
+       "id": "052DL",
+       "name": "052DL 型駆逐艦（延長型）",
+       "length_m": 162.0,
+       "length_conf": "推定",
+       "count": 7,
+       "count_conf": "推定",
+       "w": 0.6,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
+      },
+      {
+       "id": "054A",
+       "name": "054A 型フリゲート",
+       "length_m": 134.0,
+       "length_conf": "確認",
+       "count": 4,
+       "count_conf": "推定",
+       "w": 0.6,
+       "w_conf": "推定",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
+      },
+      {
+       "id": "054A+",
+       "name": "054A 型フリゲート（改良型）",
+       "length_m": 134.0,
+       "length_conf": "未確認",
+       "count": 5,
+       "count_conf": "推定",
+       "w": 0.6,
+       "w_conf": "推定",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+       "note": "全長は未確認（054A と同じと仮定）"
+      },
+      {
+       "id": "054B",
+       "name": "054B 型フリゲート",
+       "length_m": 150.0,
+       "length_conf": "推定",
+       "count": 1,
+       "count_conf": "推定",
+       "w": 0.6,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_054B_frigate"
+      },
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 11,
+       "count_conf": "推定",
+       "w": 0.6,
+       "w_conf": "推定",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "039AB",
+       "name": "039A/B 型潜水艦",
+       "length_m": 78.0,
+       "length_conf": "推定",
+       "count": 2,
+       "count_conf": "推定",
+       "w": 0.2,
+       "w_conf": "推定",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
+       "kind": "submarine"
+      },
+      {
+       "id": "039G",
+       "name": "039 型潜水艦（宋級、039G/G1）",
+       "length_m": 74.9,
+       "length_conf": "確認",
+       "count": 8,
+       "count_conf": "推定",
+       "w": 0.2,
+       "w_conf": "未確認",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_039_submarine",
+       "kind": "submarine",
+       "note": "在籍 13 隻（北部 8・東部 3・南部 2、Wikipedia）。湛江の est-1 を変えないため fleets.south には入れていない（南部の 2 隻は est-1b の見直しの候補）"
+      },
+      {
+       "id": "MCM",
+       "name": "掃海艇",
+       "length_m": 60.0,
+       "length_conf": "未確認",
+       "count": 11,
+       "count_conf": "推定",
+       "w": 0.3,
+       "w_conf": "未確認",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_081_minesweeper",
+       "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）"
+      },
+      {
+       "id": "901",
+       "name": "901 型総合補給艦",
+       "length_m": 240.0,
+       "length_conf": "確認",
+       "count": 1,
+       "count_conf": "未確認",
+       "w": 0.2,
+       "w_conf": "未確認",
+       "group": "X",
+       "source": "https://en.wikipedia.org/wiki/Type_901_replenishment_ship"
+      },
+      {
+       "id": "903",
+       "name": "903/903A 型補給艦",
+       "length_m": 178.5,
+       "length_conf": "確認",
+       "count": 3,
+       "count_conf": "推定",
+       "w": 0.5,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship"
+      },
+      {
+       "id": "022",
+       "name": "022 型ミサイル艇",
+       "length_m": 42.6,
+       "length_conf": "確認",
+       "count": 20,
+       "count_conf": "未確認",
+       "w": 0.3,
+       "w_conf": "未確認",
+       "group": "T",
+       "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 15,
+       "count_conf": "未確認",
+       "w": 0.6,
+       "w_conf": "未確認",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      },
+      {
+       "id": "001",
+       "name": "001 型空母（遼寧）",
+       "length_m": 305.0,
+       "length_conf": "推定",
+       "count": 1,
+       "count_conf": "確認寄りの推定",
+       "w": 1.0,
+       "w_conf": "確認寄りの推定",
+       "group": "X",
+       "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning",
+       "kind": "carrier",
+       "note": "全長 約 305 m（infobox は Varyag の設計値 306.4 m、2部が 2026-10-31 に確認）。北部戦区（古鎮口）。古鎮口 QGZ の重みに入る（PR-3a）"
+      },
+      {
+       "id": "051C",
+       "name": "051C 型駆逐艦",
+       "length_m": 155.0,
+       "length_conf": "未確認",
+       "count": 2,
+       "count_conf": "未確認",
+       "w": 0.3,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_051C_destroyer",
+       "note": "全長は未確認（約 155 m、2部の概数）。北部戦区（115・116）。古鎮口 QGZ の重みに入る（PR-3a）"
+      }
+     ]
+    },
+    "ZDH": {
+     "fleet": "east",
+     "w_conf": "推定",
+     "status": "provisional",
+     "basis": "2部の調査（調査_4港の艦種の重みと区画 §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は東部戦区の在籍のうち、ふだん定海の岸壁に居る割合に近い数。推定だけなので est-1 の 60 m 以上の内訳は確度 4 と明記して出す（2部 §5.1）",
+     "sources": [
+      {
+       "title": "GlobalSecurity (CNA 2013-08-10): New Chinese Navy vessels pack Zhoushan port",
+       "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "OpenStreetMap way/482638691「东部战区海军驱逐舰第3支队」",
+       "url": "https://www.openstreetmap.org/way/482638691",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      },
+      {
+       "title": "Wikipedia: East Sea Fleet",
+       "url": "https://en.wikipedia.org/wiki/East_Sea_Fleet",
+       "seen": "2026-10-31",
+       "reliability": "C・3"
+      }
+     ],
+     "version": "est-1b-202610",
+     "note": "022・TUG は戦区別の公開出典がなく推定（未確認）。北部・東部の小型艦が両港に来る割合（w）は未確認。東部戦区の 056A・039AB・039G・MCM・022・TUG の隻数は 2部の調査（調査_北部・東部戦区の小型艦・作業船、2026-10-31、Wikipedia の艦ごとの表、C・3）で fleets.east に足した（056A・039AB・039G・MCM は推定）。舟山の他の岸壁・寧波・福建との振り分けは出典なし",
+     "classes": [
+      {
+       "id": "055",
+       "name": "055 型駆逐艦",
+       "length_m": 180.0,
+       "length_conf": "確認",
+       "count": 2,
+       "count_conf": "推定",
+       "w": 0.5,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_055_destroyer"
+      },
+      {
+       "id": "052D",
+       "name": "052D 型駆逐艦",
+       "length_m": 157.0,
+       "length_conf": "確認",
+       "count": 3,
+       "count_conf": "推定",
+       "w": 0.7,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
+      },
+      {
+       "id": "052DL",
+       "name": "052DL 型駆逐艦（延長型）",
+       "length_m": 162.0,
+       "length_conf": "推定",
+       "count": 8,
+       "count_conf": "推定",
+       "w": 0.7,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer"
+      },
+      {
+       "id": "052C",
+       "name": "052C 型駆逐艦",
+       "length_m": 155.0,
+       "length_conf": "確認",
+       "count": 4,
+       "count_conf": "推定",
+       "w": 0.8,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer"
+      },
+      {
+       "id": "054A",
+       "name": "054A 型フリゲート",
+       "length_m": 134.0,
+       "length_conf": "確認",
+       "count": 4,
+       "count_conf": "推定",
+       "w": 0.4,
+       "w_conf": "推定",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
+      },
+      {
+       "id": "054A+",
+       "name": "054A 型フリゲート（改良型）",
+       "length_m": 134.0,
+       "length_conf": "未確認",
+       "count": 12,
+       "count_conf": "推定",
+       "w": 0.4,
+       "w_conf": "推定",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+       "note": "全長は未確認（054A と同じと仮定）"
+      },
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 19,
+       "count_conf": "推定",
+       "w": 0.4,
+       "w_conf": "推定",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "039AB",
+       "name": "039A/B 型潜水艦",
+       "length_m": 78.0,
+       "length_conf": "推定",
+       "count": 10,
+       "count_conf": "推定",
+       "w": 0.2,
+       "w_conf": "推定",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
+       "kind": "submarine"
+      },
+      {
+       "id": "039G",
+       "name": "039 型潜水艦（宋級、039G/G1）",
+       "length_m": 74.9,
+       "length_conf": "確認",
+       "count": 3,
+       "count_conf": "推定",
+       "w": 0.2,
+       "w_conf": "未確認",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_039_submarine",
+       "kind": "submarine",
+       "note": "在籍 13 隻（北部 8・東部 3・南部 2、Wikipedia）。湛江の est-1 を変えないため fleets.south には入れていない（南部の 2 隻は est-1b の見直しの候補）"
+      },
+      {
+       "id": "MCM",
+       "name": "掃海艇",
+       "length_m": 60.0,
+       "length_conf": "未確認",
+       "count": 14,
+       "count_conf": "推定",
+       "w": 0.3,
+       "w_conf": "未確認",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_081_minesweeper",
+       "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）"
+      },
+      {
+       "id": "071",
+       "name": "071 型ドック型揚陸艦",
+       "length_m": 210.0,
+       "length_conf": "確認",
+       "count": 3,
+       "count_conf": "推定",
+       "w": 0.1,
+       "w_conf": "未確認",
+       "group": "X",
+       "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock"
+      },
+      {
+       "id": "075",
+       "name": "075 型強襲揚陸艦",
+       "length_m": 232.0,
+       "length_conf": "確認",
+       "count": 2,
+       "count_conf": "推定",
+       "w": 0.1,
+       "w_conf": "未確認",
+       "group": "X",
+       "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock"
+      },
+      {
+       "id": "903",
+       "name": "903/903A 型補給艦",
+       "length_m": 178.5,
+       "length_conf": "確認",
+       "count": 3,
+       "count_conf": "推定",
+       "w": 0.4,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Type_903_replenishment_ship"
+      },
+      {
+       "id": "022",
+       "name": "022 型ミサイル艇",
+       "length_m": 42.6,
+       "length_conf": "確認",
+       "count": 20,
+       "count_conf": "未確認",
+       "w": 0.3,
+       "w_conf": "未確認",
+       "group": "T",
+       "source": "https://en.wikipedia.org/wiki/Type_022_missile_boat"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 14,
+       "count_conf": "未確認",
+       "w": 0.6,
+       "w_conf": "未確認",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      },
+      {
+       "id": "956",
+       "name": "956 型駆逐艦（ソヴレメンヌイ級）",
+       "length_m": 156.0,
+       "length_conf": "未確認",
+       "count": 4,
+       "count_conf": "未確認",
+       "w": 0.7,
+       "w_conf": "推定",
+       "group": "L",
+       "source": "https://en.wikipedia.org/wiki/Sovremenny-class_destroyer",
+       "note": "全長は未確認（約 156 m、2部の概数）。東部戦区（136〜139）。定海 ZDH の重みに入る（PR-3a）"
       }
      ]
     }
@@ -1911,6 +2627,141 @@
        }
       },
       "note": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §5.2、2026-10-31）。way ごとの桟橋の型。潜水艦トンネルの入口は座標の公開の出典が無く、見えない所として後で blind に書く（設計 §7-2）。型の倍率は変えていない"
+     },
+     "QGZ": {
+      "lines_version": "QGZ-quay-v1",
+      "status": "provisional",
+      "zones": [
+       {
+        "id": "O3",
+        "name": "外港の東の幅広桟橋（NMF の桟橋 5＝遼寧と推定）",
+        "ways": [
+         527583619
+        ],
+        "type": "carrier",
+        "conf": "推定",
+        "note": "OSM way 527583619（約 120.0059〜120.0082E・35.7147〜35.7199N の面）が 2部の目測の O3（120.0076,35.7198→120.0067,35.7150）と一致。空母の着く面だけ carrier にするかは S2 の数えで決める。今は全面 carrier"
+       },
+       {
+        "id": "O12",
+        "name": "外港の桟橋 O1・O2（NMF の桟橋 7・6 と推定。O2＝055）",
+        "ways": [
+         1564921460,
+         694211538
+        ],
+        "type": "large",
+        "conf": "推定",
+        "note": "O1＝way 1564921460、O2＝way 694211538。2部 §5.2 の zone id「O1・O2」を 1 つの zone にまとめた"
+       },
+       {
+        "id": "IN",
+        "name": "内港の桟橋・防波堤 C の岸壁",
+        "ways": [
+         15388243,
+         219848836,
+         219848837,
+         219848839,
+         219848841,
+         582517902,
+         1564921419,
+         1564921420,
+         1564921421,
+         1564921456
+        ],
+        "type": "large",
+        "conf": "推定",
+        "note": "2部 §5.2 は区画 A2 で large（桟橋 3＝フリゲート・コルベットが特定できたら medium）。区画 A2 の海岸線も sector_override で同じ型。ways は A2 の中の OSM の桟橋（記録）"
+       }
+      ],
+      "default": {
+       "id": "SH",
+       "name": "海岸線・その他",
+       "type": "shore"
+      },
+      "sector_override": {
+       "A2": {
+        "id": "IN",
+        "name": "内港（区画 A2 の線をすべてここに）",
+        "type": "large"
+       },
+       "B": {
+        "id": "SH",
+        "type": "shore"
+       }
+      },
+      "note": "2部の調査（調査_4港の艦種の重みと区画 §5.2、2026-10-31）。線は OSM（QGZ-quay-v1、probe/quaylines-qgz-zdh）。外港の 3 本は way ごと、内港は区画 A2 ごと。O1〜O3 と NMF の桟橋番号の対応は推定（S2 の数えで確かめる）。型の倍率は変えていない"
+     },
+     "ZDH": {
+      "lines_version": "ZDH-quay-v1",
+      "status": "provisional",
+      "zones": [
+       {
+        "id": "W",
+        "name": "西岸の横付け岸壁 W1〜W4（駆逐艦第 3 支隊）",
+        "ways": [
+         814801323,
+         814801324,
+         814801325,
+         814801326,
+         814805498,
+         814805499,
+         814805500,
+         1237478048,
+         1237478049,
+         1237478050,
+         1446940000,
+         1446940001,
+         1446940002,
+         1446940331
+        ],
+        "type": "large",
+        "conf": "推定",
+        "note": "2部 §5.2 は区画 A1 で large（岸壁の幅が 25 m 未満なら medium。S2 で幅を測るまで large、未確認）。区画 A1 の線を sector_override で W に。ways は A1 の中の OSM の桟橋（記録）"
+       },
+       {
+        "id": "WP",
+        "name": "舟山水警区の岸壁",
+        "ways": [
+         351277051,
+         351277053,
+         351277054,
+         351277055,
+         351277056,
+         351277057,
+         732803274,
+         815971279,
+         815971280,
+         1566634735,
+         1566634738,
+         1566634739
+        ],
+        "type": "medium",
+        "conf": "推定",
+        "note": "2部 §5.2 は区画 A2 で medium。区画 A2 の線を sector_override で WP に。ways は A2 の中の OSM の桟橋（記録）"
+       }
+      ],
+      "default": {
+       "id": "SH",
+       "name": "海岸線・その他",
+       "type": "shore"
+      },
+      "sector_override": {
+       "A1": {
+        "id": "W",
+        "name": "西岸の横付け岸壁（区画 A1 の線をすべてここに）",
+        "type": "large"
+       },
+       "A2": {
+        "id": "WP",
+        "name": "舟山水警区（区画 A2 の線をすべてここに）",
+        "type": "medium"
+       },
+       "B": {
+        "id": "SH",
+        "type": "shore"
+       }
+      },
+      "note": "2部の調査（調査_4港の艦種の重みと区画 §5.2、2026-10-31）。線は OSM（ZDH-quay-v1、probe/quaylines-qgz-zdh）。2部の案どおり区画ごとの型（A1＝large、A2＝medium）。型の倍率は変えていない"
      }
     }
    },
@@ -2758,6 +3609,39 @@
     "last_utc": "2026-10-26T10:48:16Z",
     "credibility": "3",
     "file": "sat/baselines/SLP-land-v2/ro157-bl-1.json"
+   },
+   {
+    "site_id": "QGZ",
+    "mask_version": "QGZ-land-v1",
+    "relative_orbit": 69,
+    "version": "ro69-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-09-30T10:04:43Z",
+    "last_utc": "2026-10-26T10:03:53Z",
+    "credibility": "3",
+    "file": "sat/baselines/QGZ-land-v1/ro69-bl-1.json"
+   },
+   {
+    "site_id": "QGZ",
+    "mask_version": "QGZ-land-v1",
+    "relative_orbit": 171,
+    "version": "ro171-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-08-20T09:56:15Z",
+    "last_utc": "2026-10-21T09:55:42Z",
+    "credibility": "3",
+    "file": "sat/baselines/QGZ-land-v1/ro171-bl-1.json"
+   },
+   {
+    "site_id": "ZDH",
+    "mask_version": "ZDH-land-v2",
+    "relative_orbit": 171,
+    "version": "ro171-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-12-18T09:54:32Z",
+    "last_utc": "2026-10-21T09:54:02Z",
+    "credibility": "3",
+    "file": "sat/baselines/ZDH-land-v2/ro171-bl-1.json"
    }
   ],
   "change_image": {

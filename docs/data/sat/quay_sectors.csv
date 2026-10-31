@@ -1,0 +1,13 @@
+site_id,acquired_utc,relative_orbit,mask_version,sector_id,sector_name,role,occupied_min,occupied_max,est_version,est_mode,est_p10,est_p90,est2_version,est2_median,est2_p10,est2_p90,est2_calib_source,source
+ZJG,2026-10-02T10:48:45Z,157,ZJG-land-v2,A,軍港区画,naval,19,52,est-1,26,22,31,est-2,18,15,20,self,quay_counts（横持ちの列から）
+ZJG,2026-10-02T10:48:45Z,157,ZJG-land-v2,B,水道,other,4,14,est-1,8,6,12,est-2,0,0,1,self,quay_counts（横持ちの列から）
+ZJG,2026-10-03T10:41:00Z,84,ZJG-land-v2,A,軍港区画,naval,15,42,est-1,23,20,28,est-2,16,13,19,self,quay_counts（横持ちの列から）
+ZJG,2026-10-03T10:41:00Z,84,ZJG-land-v2,B,水道,other,5,12,est-1,9,7,11,est-2,0,0,1,self,quay_counts（横持ちの列から）
+ZJG,2026-10-08T10:49:01Z,157,ZJG-land-v2,A,軍港区画,naval,17,58,est-1,28,23,35,est-2,20,17,24,self,quay_counts（横持ちの列から）
+ZJG,2026-10-08T10:49:01Z,157,ZJG-land-v2,B,水道,other,5,18,est-1,11,8,16,est-2,0,0,2,self,quay_counts（横持ちの列から）
+ZJG,2026-10-14T10:48:45Z,157,ZJG-land-v2,A,軍港区画,naval,18,48,est-1,25,21,29,est-2,15,13,17,self,quay_counts（横持ちの列から）
+ZJG,2026-10-14T10:48:45Z,157,ZJG-land-v2,B,水道,other,5,10,est-1,7,5,9,est-2,0,0,1,self,quay_counts（横持ちの列から）
+ZJG,2026-10-15T10:41:00Z,84,ZJG-land-v2,A,軍港区画,naval,19,41,est-1,24,20,29,est-2,10,8,13,self,quay_counts（横持ちの列から）
+ZJG,2026-10-15T10:41:00Z,84,ZJG-land-v2,B,水道,other,4,7,est-1,5,3,6,est-2,0,0,0,self,quay_counts（横持ちの列から）
+ZJG,2026-10-26T10:48:45Z,157,ZJG-land-v2,A,軍港区画,naval,22,61,est-1,30,26,35,est-2,21,18,25,self,quay_counts（横持ちの列から）
+ZJG,2026-10-26T10:48:45Z,157,ZJG-land-v2,B,水道,other,4,7,est-1,5,3,6,est-2,0,0,0,self,quay_counts（横持ちの列から）
