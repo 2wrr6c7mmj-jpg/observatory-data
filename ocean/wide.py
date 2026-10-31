@@ -411,6 +411,8 @@ def holes_features(cells: Cells, reason: np.ndarray) -> list[dict]:
 
 # extend run (--extend): hole filling with older scenes, in days (HQ 2026-10-30: fill the holes, then a
 # second look within 7 days, priority Senkaku -> east of Taiwan -> Mischief -> Paracels -> East China Sea)
+# second look window (days): Senkaku is imaged by one track only (171, every 12 days) -> the previous pass
+SECOND_DAYS = {"SENKAKU": 13}
 EXTEND_HOLE_DAYS = {"SENKAKU": 12, "TWE": 12, "MISCHIEF": 30, "PARACEL": 30, "ECS": 12}
 
 
@@ -512,8 +514,9 @@ def run_wide(args, cp, client, overpass, now, pacer, sleep, log, clock) -> dict:
         hole = lambda rid: {"id": rid, "kind": "first", "weight": cells.frac[rid], "min_eff": byid[rid]["min_eff"],
                             "days": EXTEND_HOLE_DAYS.get(rid, 12),
                             "acqs": [k for k, g in enumerate(ages) if g <= EXTEND_HOLE_DAYS.get(rid, 12)]}
+        win = lambda rid: [k for k, g in enumerate(ages) if g <= SECOND_DAYS.get(rid, lookback)]
         second = lambda rid: {"id": rid, "kind": "second", "weight": cells.frac[rid], "min_eff": byid[rid]["min_eff"],
-                              "days": lookback, "acqs": recent, "other_acqs": recent}
+                              "days": SECOND_DAYS.get(rid, lookback), "acqs": win(rid), "other_acqs": win(rid)}
         ids = [r["id"] for r in REGIONS]
         # holes of the priority regions, a second look at the first two, holes of the last (largest) region,
         # then second looks at the rest
