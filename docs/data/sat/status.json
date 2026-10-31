@@ -314,28 +314,43 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-10-30T11:28:44Z",
+  "run_utc": "2026-10-31T11:02:10Z",
   "sites": [
    {
     "site_id": "ZJG",
-    "lookback_days": 30,
-    "catalog_items": 6,
-    "acquisitions": 6,
-    "new": 6,
-    "counted": 6,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 904.5
+    "budget_left_pu": 833.46
    }
   ],
-  "requests": 7,
-  "processing_units": 11.033,
+  "s2": [
+   {
+    "site_id": "ZJG",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   }
+  ],
+  "s2_requests": 1,
+  "s2_processing_units": 0.0,
+  "requests": 2,
+  "processing_units": 0.0,
   "pu_source": "header",
-  "scenes": 6,
-  "month_pu_before": 84.463,
+  "scenes": 0,
+  "month_pu_before": 166.541,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-10-30T11:28:44Z",
+ "updated_utc": "2026-10-31T11:02:10Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
