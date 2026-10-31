@@ -42,7 +42,7 @@ LIST_URLS = [  # tried in order until one yields report links
     BASE + "/news/plaactlist/{page}",
 ]
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "taiwan-mnd"
-UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
+UA = "observatory-data/1"
 PAUSE = float(os.environ.get("MND_PAUSE_SECONDS", "2.5"))
 FETCH_TIMEOUT = 30  # seconds per connect / read
 # Collection is stopped: on 2026-10-30 https://www.mnd.gov.tw/robots.txt (Last-Modified

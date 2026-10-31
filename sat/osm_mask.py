@@ -34,7 +34,7 @@ from . import png
 from .grid import Grid, dilate, draw_line, fill_polygon, label
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
-USER_AGENT = "observatory-data/1.0 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)"
+USER_AGENT = "observatory-data/1"
 MASK_DIR = Path(__file__).resolve().parent / "masks"
 WATER, LAND, STRUCTURE = 0, 1, 2
 

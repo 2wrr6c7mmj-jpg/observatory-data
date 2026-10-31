@@ -37,7 +37,7 @@ from collectors.jcg_parse import PARSER_VERSION, check, decode_html, lines, page
 
 PAGE_URL = "https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html"
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "jcg-senkaku"
-UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
+UA = "observatory-data/1"
 PAUSE = float(os.environ.get("JCG_PAUSE_SECONDS", "5"))
 TIMEOUT = 60
 JST = timezone(timedelta(hours=9))
