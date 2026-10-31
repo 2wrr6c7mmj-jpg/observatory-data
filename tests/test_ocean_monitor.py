@@ -25,6 +25,8 @@ if np is not None:
     from sat import cdse
     from sat.grid import Grid
     from tests.test_ocean_modes import Fake, Pacer, overpass
+else:  # collection runners have no numpy: the module must still import so the classes below can be skipped
+    Fake = object
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE = ROOT / "tests" / "fixtures" / "ocean_monitor" / "wide-2026-10-31T03-37-19Z.json"

@@ -1,5 +1,6 @@
 import json
 import unittest
+from pathlib import Path
 import unittest.mock
 import urllib.error
 
@@ -214,7 +215,15 @@ class UserAgents(unittest.TestCase):
                           ("collectors.taiwan_mnd", "UA"), ("collectors.ll2", "UA"),
                           ("sat.osm_mask", "USER_AGENT"), ("sat.cdse", "USER_AGENT"), ("ocean.coverage_probe", "USER_AGENT")]:
             with self.subTest(mod=mod):
-                self.assertEqual(getattr(importlib.import_module(mod), attr), "observatory-data/1")
+                try:
+                    value = getattr(importlib.import_module(mod), attr)
+                except ImportError:  # collection runners have no numpy (sat.*, ocean.*): read the constant from the source
+                    import re
+                    src = (Path(__file__).resolve().parent.parent / (mod.replace(".", "/") + ".py")).read_text(encoding="utf-8")
+                    m = re.search(rf'^{attr}\s*=\s*["\']([^"\']*)["\']', src, re.M)
+                    self.assertIsNotNone(m, (mod, attr))
+                    value = m.group(1)
+                self.assertEqual(value, "observatory-data/1")
 
     def test_no_contact_or_browser_string_in_user_agents(self):
         import re
