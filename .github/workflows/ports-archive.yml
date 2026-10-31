@@ -1,0 +1,365 @@
+name: PLAN ports archive probe
+# 湛江以外の中国海軍の主要な港（sat/ports.json）の Sentinel-1・Sentinel-2 の過去 12 か月のアーカイブを取る probe（sat/port_archive.py）。
+# probe 用ブランチへの push でだけ動く（workflow_dispatch なし、定期実行なし）。main は読むだけで変えない。
+# concurrency group は全ブランチで 1 つ（probe-ports-archive）：別の probe ブランチの実行が同時に走って同じ残り枠を二重に割り当てない。
+# 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別。
+# 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
+# PU：上限はすべて BUDGET_MONTH の月の値（港 --cap・全体の自主上限 --global-cap・外洋 OCEAN_CAP）。plan が他の usage を読み、
+# 外洋の上限から外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。港の usage（docs/data/sat/ports/*/usage.csv）も
+# docs/data/sat/ports_usage.csv も含めて origin の全ブランチから集め（sat.port_archive gather）、全部の写しの行を合わせ、
+# 同じ記録（run_utc・site_id・用途・リクエスト数・PU が同じ行）は 1 回だけ数える（別々のブランチが足した行はどれも数える）。
+# 次の港の probe は、アーカイブのデータがある最新の probe ブランチ（現時点では probe/ports-s2ext-ops3）から切る。
+# 取得済みの判定（plan）は作業ツリーの docs/data/sat/ports/ しか見ないため、main から切ると全港を取り直そうとする。
+# 陸マスク：アーカイブのマスクの置き場（docs/data/sat/ports/masks/）に無い版は、まず sat/masks の同じ版（毎日の処理用、
+# 格子が同じもの。例 SLP-land-v2）を写し、それも無ければ Overpass から作る。
+# 月が BUDGET_MONTH と違えば plan・locate・run・baseline は要求の前に止まり、実行中に UTC の月が変わっても次の要求の前に止まる。
+# 翌月に動かすには、その月の自主上限と BUDGET_MONTH をこのファイルに明示して書き直す（sat/port_archive.py にも上限の既定値はない）。
+# 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
+on:
+  push:
+    branches: ['probe/ports-archive-ops3', 'probe/ports-archive-*', 'probe/ports-locate-*', 'probe/ports-backfill-*', 'probe/ports-extra-*', 'probe/ports-baseline-*', 'probe/ports-yards-*', 'probe/ports-s2ext-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-ports-archive
+  cancel-in-progress: false
+env:
+  # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
+  # probe/ports-extra-*: 呉淞と南シナ海の拠点（S1 は 24 か月、S2 は 12 か月）、別枠 300 PU。1 回目（SWS・MIS、165.9 PU）の残り 134 PU を SUB・FCR・WDY に見込みの比で分ける
+  # probe/ports-yards-*: 造船所 2 つの追加（S1＋S2 の 12 か月）。probe/ports-s2ext-*: SLP・XSN・ZDH の S2 を 24 か月に（目視ラベル用）
+  PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-yards-') && '--only HDZ WCS --proportional' || startsWith(github.ref_name, 'probe/ports-s2ext-') && '--only SLP XSN ZDH --proportional --s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
+  # probe/ports-baseline-fill-*: 基準の不足した軌道だけ、さかのぼり 24 か月で 24 撮影まで（この実行 300 PU）
+  # probe/ports-baseline-oct-*: 上限 9,995 への引き上げ分（港 +550 PU）。QGZ 69・171 を 24 枚に、優先 2 の港、造船所の主軌道（この順）
+  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
+  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
+  # 合計ガード（2026-10 だけ有効）：港の上限 4,750、合計 9,995（ユーザー指示）、余裕 50（湛江の 10-31 の毎日の実行の分）、外洋 4,600。
+  # 11 月以降は外洋 月 400 PU・全体は自主上限。その月の値を決め、BUDGET_MONTH・GUARD_ARGS・OCEAN_CAP を書き直すまで取得しない
+  BUDGET_MONTH: '2026-10'
+  OCEAN_CAP: '4600'
+  GUARD_ARGS: '--budget-month 2026-10 --cap 4750 --global-cap 9995 --global-margin 50'
+  RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-s2ext-') && '--s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
+jobs:
+  locate:
+    # probe/ports-locate-*: OSM の軍・造船所の地物と S2 の広域の概観（1 地域 1〜4 PU）だけ。範囲を置くため
+    if: ${{ startsWith(github.ref_name, 'probe/ports-locate-') && !contains(github.event.head_commit.message, '[ports-locate-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          # every branch's copy (other-<file>--<n>.csv, ports-<site>--<n>.csv, ports-all--<n>.csv = ports_usage.csv); plan sums all rows, each record once
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+      - name: Locate (the same guard as plan)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          python -m sat.port_locate --out docs/data/sat/ports/locate $GUARD_ARGS --ocean-cap "$OCEAN_CAP" \
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
+            > "$RUNNER_TEMP/locate.json" 2> "$RUNNER_TEMP/locate.log" || true
+          cat "$RUNNER_TEMP/locate.log" "$RUNNER_TEMP/locate.json"
+          # the PU of the overview goes to the archive's usage (one row)
+          python - <<'EOF'
+          import json
+          from pathlib import Path
+          from datetime import datetime, timezone
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv
+          if not Path("docs/data/sat/ports/locate/locate.json").exists():
+              raise SystemExit(0)  # stopped by the guard before any request
+          r = json.loads(Path("docs/data/sat/ports/locate/locate.json").read_text())
+          p = Path("docs/data/sat/ports/locate/usage.csv")
+          write_csv(p, read_csv(p) + [{"run_utc": r["run_utc"], "site_id": "locate", "requests": r["requests"],
+                                       "processing_units": r["pu"], "pu_source": "header", "archive_version": "locate-1"}], USAGE_FIELDS)
+          EOF
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text locate-log "$RUNNER_TEMP/locate.log"
+      - name: Commit to this probe branch only
+        run: |
+          git add docs/data/sat/ports/locate
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 港の位置の確認（OSM と S2 の概観） [ports-locate-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  baseline:
+    # probe/ports-baseline-*: 主要港の軌道ごとの基準（湛江と同じ sat/baseline.py、bl-1）。直近 12 か月の S1 を取り直し、
+    # 基準の統計（vv_p10・vv_p90・vh_p10）だけを残す（生の σ0 は保存しない）。上限はこの実行 800 PU と合計ガードの小さい方
+    if: ${{ startsWith(github.ref_name, 'probe/ports-baseline-') && !contains(github.event.head_commit.message, '[ports-baseline-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest tests.test_sat_port_archive tests.test_sat_baseline -v
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          # every branch's copy (other-<file>--<n>.csv, ports-<site>--<n>.csv, ports-all--<n>.csv = ports_usage.csv); plan sums all rows, each record once
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+      - name: Cap (the month's own caps in GUARD_ARGS and OCEAN_CAP, this run BASELINE_MAX)
+        id: cap
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          set -o pipefail
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" $GUARD_ARGS --usage "$RUNNER_TEMP"/usage/*.csv \
+            --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
+          echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
+      - name: Land masks (missing only; sat/masks first, then OSM)
+        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || true
+      - name: Baselines
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          rc=0
+          python -m sat.port_archive baseline $BASELINE_ARGS --cap "${{ steps.cap.outputs.cap }}" --budget-month "$BUDGET_MONTH" \
+            --summary "$RUNNER_TEMP/baseline.json" --max-minutes 290 > /dev/null 2> "$RUNNER_TEMP/baseline.log" || rc=$?
+          tail -n 60 "$RUNNER_TEMP/baseline.log"
+          exit $rc
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text cap "$RUNNER_TEMP/cap-summary.json"
+          python - "$RUNNER_TEMP/baseline.json" > "$RUNNER_TEMP/bl-short.txt" <<'EOF' || true
+          import json, sys
+          d = json.load(open(sys.argv[1]))
+          print("total", d["processing_units"], "PU", d["requests"], "req")
+          for p in d["ports"]:
+              o = {k: (v.get("scenes", v.get("used")), v.get("built"), v.get("enough")) for k, v in (p.get("orbits") or {}).items()}
+              print(p["site_id"], p.get("mask_version"), p.get("processing_units"), "PU; catalog", p.get("catalog_by_orbit"),
+                    "fp-drop", p.get("footprint_dropped"), "max", p.get("max_scenes_used"), "orbits(scenes,built,enough)", o, p.get("error", ""))
+          EOF
+          python -m sat.annotate text baseline-summary "$RUNNER_TEMP/bl-short.txt"
+          python -m sat.annotate text baseline-log "$RUNNER_TEMP/baseline.log"
+      - name: Commit to this probe branch only
+        if: always()
+        run: |
+          [ -f "$RUNNER_TEMP/baseline.json" ] && cp "$RUNNER_TEMP/baseline.json" docs/data/sat/ports/baselines/run-summary.json || true
+          python - <<'EOF'
+          import glob
+          from pathlib import Path
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv
+          rows = []
+          for p in sorted(glob.glob("docs/data/sat/ports/*/usage.csv")):
+              rows += read_csv(Path(p))
+          rows.sort(key=lambda r: (r["run_utc"], r["site_id"]))
+          write_csv(Path("docs/data/sat/ports_usage.csv"), rows, USAGE_FIELDS)
+          EOF
+          git add docs/data/sat/ports docs/data/sat/ports_usage.csv
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 主要港の軌道ごとの基準（bl-1） [ports-baseline-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+  plan:
+    if: ${{ (startsWith(github.ref_name, 'probe/ports-archive-') || startsWith(github.ref_name, 'probe/ports-backfill-') || startsWith(github.ref_name, 'probe/ports-extra-') || startsWith(github.ref_name, 'probe/ports-yards-') || startsWith(github.ref_name, 'probe/ports-s2ext-')) && !contains(github.event.head_commit.message, '[ports-archive-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest tests.test_sat_port_archive tests.test_sat_s2 tests.test_sat -v
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          # every branch's copy (other-<file>--<n>.csv, ports-<site>--<n>.csv, ports-all--<n>.csv = ports_usage.csv); plan sums all rows, each record once
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+      - name: Land masks (sat/masks first, then Overpass, one port at a time)
+        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || echo "::warning title=mask::一部の港の陸マスクを作れなかった（その港は検出なしで画像だけ）"
+      - name: Plan (catalog only, no PU)
+        id: plan
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          set -o pipefail
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" $GUARD_ARGS \
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
+            --ocean-cap "$OCEAN_CAP" $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+          cat "$RUNNER_TEMP/plan.log"
+          echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
+          cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text plan-log "$RUNNER_TEMP/plan.log"
+          python -m sat.annotate text plan-summary "$RUNNER_TEMP/plan-summary.json"
+      - name: Pack the plan and masks
+        if: always()
+        run: tar czf "$RUNNER_TEMP/plan.tgz" --ignore-failed-read docs/data/sat/ports/masks docs/data/sat/ports/plan.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ports-plan
+          path: ${{ runner.temp }}/plan.tgz
+          if-no-files-found: ignore
+
+  port:
+    needs: plan
+    if: ${{ needs.plan.outputs.matrix != '' && needs.plan.outputs.matrix != '[]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - uses: actions/download-artifact@v4
+        id: dl
+        continue-on-error: true
+        with:
+          name: ports-plan
+          path: ${{ runner.temp }}/plan
+      - name: Wait before retrying the artifact download
+        if: ${{ steps.dl.outcome == 'failure' }}
+        run: sleep 60
+      - uses: actions/download-artifact@v4
+        # the download failed once (transient) in run 41111485660: retry once, no PU spent before this step
+        if: ${{ steps.dl.outcome == 'failure' }}
+        with:
+          name: ports-plan
+          path: ${{ runner.temp }}/plan
+      - name: Unpack the masks
+        run: tar xzf "$RUNNER_TEMP/plan/plan.tgz"
+      - name: Archive ${{ matrix.port }} (cap ${{ matrix.cap }} PU)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          rc=0
+          python -m sat.port_archive run --port "${{ matrix.port }}" --cap "${{ matrix.cap }}" --req "${{ matrix.req }}" --budget-month "$BUDGET_MONTH" \
+            --out docs/data/sat/ports --raw-dir probe-raw --tmp "$RUNNER_TEMP/raw" --mask-dir docs/data/sat/ports/masks \
+            --pu-per-min 80 --req-per-min 80 --max-minutes 290 --summary "$RUNNER_TEMP/summary.json" $RUN_ARGS \
+            > /dev/null 2> "$RUNNER_TEMP/run.log" || rc=$?
+          tail -n 40 "$RUNNER_TEMP/run.log"
+          exit $rc
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text "summary-${{ matrix.port }}" "$RUNNER_TEMP/summary.json"
+          python -m sat.annotate text "log-${{ matrix.port }}" "$RUNNER_TEMP/run.log"
+      - name: Pack the result
+        if: always()
+        run: |
+          mkdir -p "docs/data/sat/ports/${{ matrix.port }}" "probe-raw/${{ matrix.port }}"
+          tar czf "$RUNNER_TEMP/port-${{ matrix.port }}.tgz" "docs/data/sat/ports/${{ matrix.port }}" "probe-raw/${{ matrix.port }}"
+          ls -l "$RUNNER_TEMP/port-${{ matrix.port }}.tgz"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ports-${{ matrix.port }}
+          path: ${{ runner.temp }}/port-${{ matrix.port }}.tgz
+          compression-level: 0
+
+  collect:
+    needs: [plan, port]
+    if: ${{ always() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ports-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/art
+      - name: Merge the results and the usage
+        run: |
+          [ -d "$RUNNER_TEMP/art" ] || exit 0
+          ls -l "$RUNNER_TEMP/art"
+          for t in "$RUNNER_TEMP"/art/*.tgz; do tar xzf "$t"; done
+          python - <<'EOF' | tee "$RUNNER_TEMP/total.txt"
+          import csv, glob, io, os
+          from sat.port_archive import USAGE_FIELDS, read_csv, write_csv, trend, load_ports, mask_tag
+          tags = {p["id"]: mask_tag(p) for p in load_ports()}
+          from pathlib import Path
+          rows = []
+          for p in sorted(glob.glob("docs/data/sat/ports/*/usage.csv")):  # includes locate/usage.csv
+              rows += read_csv(Path(p))
+          rows.sort(key=lambda r: (r["run_utc"], r["site_id"]))
+          write_csv(Path("docs/data/sat/ports_usage.csv"), rows, USAGE_FIELDS)
+          month = os.environ["BUDGET_MONTH"]  # the month of the caps (this branch's rows only)
+          mrows = [r for r in rows if r["run_utc"].startswith(month)]
+          print(f"ports total ({month}, this branch):", round(sum(float(r["processing_units"] or 0) for r in mrows), 3), "PU,",
+                sum(int(r["requests"] or 0) for r in mrows), "requests")
+          by = {}
+          for r in rows:
+              b = by.setdefault(r["site_id"], [0.0, 0, 0, 0, 0])
+              b[0] += float(r["processing_units"] or 0); b[1] += int(r["requests"] or 0)
+              b[2] += int(r["s1_scenes"] or 0); b[3] += int(r["s2_days"] or 0); b[4] += int(r["s2_clear"] or 0)
+          for k, b in sorted(by.items()):
+              print(f"{k}: {b[0]:.1f} PU, {b[1]} req, S1 {b[2]} scenes, S2 {b[3]} days / clear {b[4]}; {tags.get(k, '')} trend {trend(Path('docs/data/sat/ports') / k, tags.get(k))}")
+          EOF
+      - name: Report (annotations)
+        if: always()
+        run: python -m sat.annotate text ports-total "$RUNNER_TEMP/total.txt"
+      - name: Commit the result to this probe branch only
+        run: |
+          git add docs/data/sat/ports docs/data/sat/ports_usage.csv probe-raw 2>/dev/null || true
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 中国海軍の主要な港の Sentinel-1・2 アーカイブ（過去 12 か月） [ports-archive-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "::notice title=ports-commit::$(git rev-parse HEAD)"
