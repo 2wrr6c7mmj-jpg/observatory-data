@@ -66,6 +66,12 @@ CONFIG_FILE = Path(__file__).resolve().parent / "monitor.json"
 PAGE = 1000
 WINDOW_DAYS = 5
 DONE = ("ok", "partial", "no_data", "skipped_revisit")
+# statuses of passes.json: DONE are not tried again; "part" (cut by the run's cap, the rest is fetched by a later
+# run), "deferred" (left for the next run by the run's cap: --max-pu or the requests), "budget" (the area's month
+# cap), "aborted" (the run ended with an exception or a timeout while fetching; its PU are counted) are tried again
+SEEN = ("ok", "partial", "part")          # passes whose cells were seen (monthly cover, revisit, series)
+PUBLISHED = ("ok", "partial", "no_data", "part")
+RETRY_REPLACED = ("deferred", "budget")   # no PU: the newest such row of a pass replaces the older one
 # coarse land for planning only (lon, lat); detection uses the OSM mask
 LAND_POLYS = {
     **wide.LAND_POLYS,
@@ -266,16 +272,23 @@ def rects_cov(cells: AreaCells, rows: list[dict]) -> np.ndarray:
     return cov
 
 
-def decide(area: dict, cfg: dict, cells: AreaCells, acq: dict, fp: np.ndarray, history: list[dict]):
+def processed_month(row: dict) -> str:
+    """The month a pass record was processed in (the budget month of the run), not the acquisition month."""
+    return (row.get("processed_utc") or row["acquired_utc"])[:7]
+
+
+def decide(area: dict, cfg: dict, cells: AreaCells, acq: dict, fp: np.ndarray, history: list[dict], month: str):
     """Whether this pass is to be taken for this area. ``history``: the area's earlier pass records
-    (passes.json rows and this run's). Returns (verdict, cov0, share): verdict "take", "low_share",
-    "revisit" or "seen_this_month"; ``cov0`` the cells counted as already covered for the planner."""
+    (passes.json rows and this run's); ``month``: the budget month of the run (monthly areas: once per month in
+    which passes are processed). Returns (verdict, cov0, share): verdict "take", "low_share", "revisit" or
+    "seen_this_month"; ``cov0`` the cells counted as already covered for the planner (for every mode, the
+    cells already fetched by "part" rows of this pass)."""
     share = cells.share(fp)
-    cov0 = np.zeros((cells.ny, cells.nx))
+    same = [h for h in history if h["acquired_utc"] == acq["acquired_utc"] and h.get("status") == "part"]
+    cov0 = (rects_cov(cells, same) >= 0.5).astype(float)
     if area["mode"] == "monthly":
-        month = acq["acquired_utc"][:7]
-        rows = [h for h in history if h["acquired_utc"][:7] == month and h.get("status") in ("ok", "partial")]
-        cov0 = (rects_cov(cells, rows) >= 0.5).astype(float)
+        rows = [h for h in history if processed_month(h) == month and h.get("status") in SEEN]
+        cov0 = np.maximum(cov0, (rects_cov(cells, rows) >= 0.5).astype(float))
         new = cells.share((fp - cov0).clip(0))
         if new < float(cfg.get("min_new_share_monthly", 0.1)):
             return "seen_this_month", cov0, share
@@ -286,9 +299,11 @@ def decide(area: dict, cfg: dict, cells: AreaCells, acq: dict, fp: np.ndarray, h
     if days:
         t = cdse.parse_time(acq["acquired_utc"])
         for h in history:
-            if h.get("status") in ("ok", "partial") and h["acquired_utc"] != acq["acquired_utc"] \
+            if h.get("status") in SEEN and h["acquired_utc"] != acq["acquired_utc"] \
                     and abs((cdse.parse_time(h["acquired_utc"]) - t).total_seconds()) < float(days) * 86400:
                 return "revisit", cov0, share
+    if same and cells.share((fp - cov0).clip(0)) < 0.01:
+        return "seen_this_month", cov0, share   # nothing of this pass is left
     return "take", cov0, share
 
 
@@ -441,7 +456,7 @@ def learn_static(cands: list[dict], acq: dict, history: list[dict], prior_points
     rule = cfg["static_learned"]
     key = (acq.get("platform"), acq.get("relative_orbit"))
     same = [h for h in history if (h.get("platform"), h.get("relative_orbit")) == key
-            and h.get("status") in ("ok", "partial") and h["acquired_utc"] < acq["acquired_utc"]]
+            and h.get("status") in SEEN and h["acquired_utc"] < acq["acquired_utc"]]
     added = 0
     for c in cands:
         if c.get("near_coast") or c.get("static") or c.get("static_learned"):
@@ -495,7 +510,7 @@ def merge_day(path: Path, features: list[dict], key, attribution_fn, **extra) ->
 def series_rows(passes: list[dict]) -> list[dict]:
     rows = []
     for p in sorted(passes, key=lambda r: (r["acquired_utc"], r["area"])):
-        if p.get("status") not in ("ok", "partial", "no_data"):
+        if p.get("status") not in PUBLISHED:
             continue
         c = p.get("counts") or {}
         rows.append({"area": p["area"], "acquired_utc": p["acquired_utc"], "date": p["acquired_utc"][:10],
@@ -507,7 +522,7 @@ def series_rows(passes: list[dict]) -> list[dict]:
                      "count_A_ge120_unconfirmed": c.get("A_ge120_unconfirmed"), "count_B": c.get("B"),
                      "clusters": c.get("clusters"), "density_A_per_1000km2": c.get("density_A_per_1000km2"),
                      "sea_state_excluded_km2": p.get("sea_state_excluded_km2"), "vv_median_db": p.get("vv_median_db"),
-                     "pu": p.get("pu"), "source": cp.attribution([p["acquired_utc"]], osm=False)})
+                     "pu": p.get("pu"), "source": cp.attribution([p["acquired_utc"]])})
     return rows
 
 
@@ -531,7 +546,7 @@ NULL_RULE = ("件数（count_*）は、域の海のうち実際に見た（デ�
 
 
 def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: datetime) -> None:
-    times = [p["acquired_utc"] for p in passes if p.get("status") in ("ok", "partial")]
+    times = [p["acquired_utc"] for p in passes if p.get("status") in SEEN]
     meta = {
         "version": VERSION, "config_version": cfg["version"], "generated_utc": cdse.iso(now),
         "attribution": cp.attribution(times, now),
@@ -555,6 +570,16 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
         },
         "ais": "全件 AIS 未照合（ais=unmatched）。AIS の生データ・MMSI は出さない",
         "null_rule": NULL_RULE, "count_min_share": cfg["count_min_share"],
+        "headline": "見出しの数は count_A（確度 A）だけ。count_A_ge120_unconfirmed は 40 m の長さ（40 m 刻みで長めに出る）による"
+                    "参考で、見出しに使わない（10 m の切り出しで確かめた count_A_ge120_confirmed ができるまで）",
+        "static_learned_review": "学習した固定物（static_learned.json）は 2部が月 1 回見直す（誤って学んだ地点を除き、条件を直す）",
+        "statuses": {"ok": "取得した", "partial": "一部の要求が失敗した（取り直さない）", "no_data": "画像にデータがなかった",
+                     "part": "1 回の上限で一部だけ取った（残りは次の実行で取る）",
+                     "skipped_revisit": "同じ域で 4 日以内に見たので取らない",
+                     "deferred": "1 回の上限（PU・リクエスト）で次の実行に回した（未取得）",
+                     "budget": "域の月の上限で取らなかった（未取得）",
+                     "aborted": "取得中に実行が止まった（使った PU は数え、次の実行で取り直す。候補は出さない）"},
+        "months": "域の月の上限と月 1 回の域（OKI）は、撮影の月ではなく処理した月（予算の月）で数える",
         "limits": LIMITS,
         "areas": [{k: a.get(k) for k in ("id", "name", "bbox", "priority", "mode", "orbits", "expected_per_month",
                                           "pu_month_cap", "min_revisit_days", "note")}
@@ -694,62 +719,110 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                                                        for ar in areas if cells[ar["id"]].share(fps[ar["id"]][k]) > 0}})
     month = bud["month"]
     run_left = float(bud["pu_left"])
-    spent = 0.0
+    req_left = int(bud.get("requests_left") or 0)
+    max_pu_run = float(bud.get("max_pu_run") or run_left)
+    spent, sent = 0.0, 0
+    rows = list(passes)          # passes.json as it is written after every pass (and on any exception)
     new_rows: list[dict] = []
+    cur: dict = {"row": None}    # the pass being fetched (saved as "aborted" with its PU if the run ends here)
     deadline = time.monotonic() + float(args.max_minutes) * 60
     stop = None
-    for area in areas:
-        ac = cells[area["id"]]
-        for k in sorted(range(len(acqs)), key=lambda x: acqs[x]["time"]):
-            a = acqs[k]
-            key = pass_key(a["acquired_utc"], area["id"])
-            if key in done:
-                continue
-            fp = fps[area["id"]][k]
-            if ac.share(fp) <= 0.001:
-                continue
-            hist = [p for p in passes + new_rows if p["area"] == area["id"]]
-            verdict, cov0, share = decide(area, cfg, ac, a, fp, hist)
-            task = {"area": area["id"], "acquired_utc": a["acquired_utc"], "share": round(share, 3), "verdict": verdict}
-            summary["tasks"].append(task)
-            if verdict == "revisit":
-                new_rows.append(_pass_row(a, area, ac, "skipped_revisit", share, now))
-                continue
-            if verdict != "take":
-                continue
-            area_used = sum(float(p.get("pu") or 0) for p in passes + new_rows
-                            if p["area"] == area["id"] and p["acquired_utc"][:7] == month)
-            left = min(float(area["pu_month_cap"]) - area_used, run_left - spent)
-            items = plan_rects(ac, area, fp, cov0, max(0.0, left - 0.5), int(cfg.get("max_cells", 8)))
-            task.update(requests=len(items), est_pu=round(sum(i["est_pu"] for i in items), 3))
-            if not items:
-                task["verdict"] = "budget"
-                continue
-            if args.dry_run or stop:
-                task["verdict"] = "planned" if args.dry_run else "stopped"
-                continue
-            row, stop = _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud, summary, rec,
-                                    out, area, ac, a, items, cov0, passes + new_rows, learned, deadline)
-            spent += row.get("pu") or 0.0
-            task["pu"] = row.get("pu")
-            task["status"] = row["status"]
-            if row["status"] != "error":
-                new_rows.append(row)
-                done.add(key)
+
+    def add_row(row):  # a new record of a pass replaces its earlier "deferred"/"budget" record (no PU)
+        k = pass_key(row["acquired_utc"], row["area"])
+        rows[:] = [r for r in rows if not (pass_key(r["acquired_utc"], r["area"]) == k and r.get("status") in RETRY_REPLACED)]
+        rows.append(row)
+        new_rows.append(row)
+
+    def save():
+        if not args.dry_run:
+            save_state(out, cfg, rows, learned, now)
+
+    try:
+        if not args.dry_run:
+            prune_orphans(out, rows)
+        for area in areas:
+            ac = cells[area["id"]]
+            for k in sorted(range(len(acqs)), key=lambda x: acqs[x]["time"]):
+                a = acqs[k]
+                key = pass_key(a["acquired_utc"], area["id"])
+                if key in done:
+                    continue
+                fp = fps[area["id"]][k]
+                if ac.share(fp) <= 0.001:
+                    continue
+                hist = [p for p in rows if p["area"] == area["id"]]
+                verdict, cov0, share = decide(area, cfg, ac, a, fp, hist, month)
+                task = {"area": area["id"], "acquired_utc": a["acquired_utc"], "share": round(share, 3), "verdict": verdict}
+                summary["tasks"].append(task)
+                if verdict == "revisit":
+                    add_row(_pass_row(a, area, ac, "skipped_revisit", share, now))
+                    done.add(key)
+                    save()
+                    continue
+                if verdict != "take":
+                    continue
+                # the area's month cap counts every PU spent on it in the budget month (aborted fetches included)
+                area_used = sum(float(p.get("pu") or 0) for p in rows if p["area"] == area["id"] and processed_month(p) == month)
+                area_left = float(area["pu_month_cap"]) - area_used
+                full = plan_rects(ac, area, fp, cov0, max(0.0, area_left), int(cfg.get("max_cells", 8)))
+                est = sum(i["est_pu"] for i in full)
+                task.update(requests=len(full), est_pu=round(est, 3))
+                if not full:   # the area's month cap: kept as it is (tried again while the pass is in the window)
+                    task["verdict"] = "budget"
+                    if not args.dry_run:
+                        add_row(_pass_row(a, area, ac, "budget", share, now))
+                        save()
+                    continue
+                items, cut = full, False
+                if est > run_left - spent + 1e-9 or len(full) > req_left - sent:
+                    # the run's cap (--max-pu, the month's caps, the requests) would cut this pass
+                    if est <= max_pu_run and len(full) <= max(0, req_left):
+                        items = []          # it fits in a run of its own: all of it next time
+                    else:                   # larger than any run: the part that fits now, the rest later
+                        items = plan_rects(ac, area, fp, cov0, max(0.0, run_left - spent),
+                                           int(cfg.get("max_cells", 8)))[:max(0, req_left - sent)]
+                    cut = True
+                    if not items:
+                        task["verdict"] = "deferred"
+                        if not args.dry_run:
+                            add_row(_pass_row(a, area, ac, "deferred", share, now))
+                            save()
+                        continue
+                if args.dry_run or stop:
+                    task["verdict"] = "planned" if args.dry_run else "stopped"
+                    continue
+                row, stop, files = _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud, summary,
+                                               rec, out, area, ac, a, items, cov0, rows, learned, deadline, cur)
+                spent += row.get("pu") or 0.0
+                sent += row.get("requests") or 0
+                task["pu"] = row.get("pu")
+                if cut and row["status"] == "ok":
+                    row["status"] = "part"
+                task["status"] = row["status"]
+                if row["status"] != "error" or (row.get("pu") or 0) > 0:
+                    add_row(row)
+                if row["status"] in DONE:
+                    done.add(key)
+                save()                 # the pass is in passes.json before its candidates are written
+                cur["row"] = None
+                if files:
+                    write_day_files(out, now, *files)
+    except BaseException:
+        r = cur.get("row")
+        if r is not None and not args.dry_run:
+            r["status"] = "aborted"
+            r["pu"] = round(r.get("pu") or 0.0, 3)
+            add_row(r)
+        try:
+            save()
+        except Exception as e2:  # pragma: no cover - the disk itself failed
+            log(f"passes.json を書けなかった: {e2}")
+        raise
     summary["planned_pu"] = round(sum(t.get("est_pu") or 0 for t in summary["tasks"]
                                       if t["verdict"] in ("take", "planned")), 3)
-    if not args.dry_run:
-        all_passes = passes + [r for r in new_rows if r.get("status") != "error"]
-        all_passes.sort(key=lambda r: (r["acquired_utc"], r["area"]))
-        if new_rows or not (out / "meta.json").exists():
-            _write(out / "passes.json", cp.dumps({"version": VERSION, "attribution": cp.attribution(
-                [p["acquired_utc"] for p in all_passes], now), "passes": all_passes}, indent=None))
-            learned.update({"version": VERSION, "rule": cfg["static_learned"],
-                            "attribution": cp.attribution([p["added_utc"] for p in learned["points"]], now)})
-            _write(out / "static_learned.json", cp.dumps(learned, indent=1))
-            write_series(out, all_passes, now)
-            write_areas(out, cfg, now)
-            write_meta(out, cfg, all_passes, learned, now)
+    if not args.dry_run and (new_rows or not (out / "meta.json").exists()):
+        save()
     summary["new_passes"] = [{k: r.get(k) for k in ("area", "acquired_utc", "status", "observed_share", "counts", "pu")}
                              for r in new_rows]
     cp._write_summary(report_dir, summary, client, pacer)
@@ -769,11 +842,14 @@ def _pass_row(a: dict, area: dict, ac: AreaCells, status: str, share: float, now
 
 
 def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud, summary, rec, out, area, ac, a,
-                items, cov0, history, learned, deadline):
-    """Fetch and detect one pass over one area. Returns (pass record, stop reason or None)."""
+                items, cov0, history, learned, deadline, cur):
+    """Fetch and detect one pass over one area. Returns (pass record, stop reason or None, day files or None).
+    ``cur["row"]`` is the record with the PU spent so far (saved as "aborted" if the run ends inside)."""
     share0 = next((t["share"] for t in reversed(summary["tasks"])
                    if t["area"] == area["id"] and t["acquired_utc"] == a["acquired_utc"]), 0.0)
     row = _pass_row(a, area, ac, "ok", share0, now)
+    row.update(pu=0.0, requests=0)
+    cur["row"] = row
     seamark_re = cfg["osm_static"]["seamark_types"]
     observed = np.zeros((ac.ny, ac.nx))
     state = np.full((ac.ny, ac.nx), "seen", dtype=object)
@@ -785,7 +861,7 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
         summary["errors"].append({"area": area["id"], "acquired_utc": a["acquired_utc"], "stage": "overpass",
                                   "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
         row["status"] = "error"
-        return row, None
+        return row, None, None
     for n, p in enumerate(items):
         if cp.month_changed(args, clock):
             stop = "month"
@@ -840,13 +916,14 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                                       "bbox": p["bbox"], "error": str(ex)[:300]})
         finally:
             pu += client.processing_units - before
+            row["pu"], row["requests"] = pu, nreq
         rec.write(summary)  # the PU spent so far are in --usage
     row["pu"] = round(pu, 3)
     row["requests"] = nreq
     row["rects"] = rects
     if not rects:  # no image came back (fetch errors or a stop): the pass is tried again by the next run
         row["status"] = "error"
-        return row, stop
+        return row, stop, None
     # sea state per cell
     for j in range(ac.ny):
         for i in range(ac.nx):
@@ -921,18 +998,53 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
         "observed_cells": [[round(ac.w + i * ac.cell, 6), round(ac.s + j * ac.cell, 6), round(float(observed[j, i]), 3)]
                            for j in range(ac.ny) for i in range(ac.nx) if observed[j, i] >= 0.5 and ac.own[j, i] > 0],
     })
-    day = a["acquired_utc"][:10]
-    att = lambda times: cp.attribution(times, now)
-    merge_day(out / "candidates" / f"{day}.geojson", pub, lambda q: (q.get("acquired_utc"), q.get("area")), att,
-              version=VERSION, name="大型船の候補（AIS 未照合、未確認）", classes=CLASS_LABEL)
     cov_props = {"area": area["id"], "acquired_utc": a["acquired_utc"], "platform": a.get("platform"),
                  "relative_orbit": a.get("relative_orbit"), "orbit_direction": a.get("orbit_direction")}
-    merge_day(out / "coverage" / f"{day}.geojson", cell_features(ac, observed, cov_props, state),
-              lambda q: (q.get("acquired_utc"), q.get("area")), lambda t: cp.attribution(t, now, osm=False),
-              version=VERSION, note="見た範囲（0.1° のセル）。state: seen＝件数に入る、sea_state_low/high＝海況不良で件数に入れない")
+    files = (a["acquired_utc"][:10], pub, cell_features(ac, observed, cov_props, state))
     log(f"{area['id']} {a['acquired_utc']}: 見た {row['observed_sea_km2']} km²（{row['observed_share']}）、"
         f"A {counts['A']}・B {counts['B']}・参考 {counts['ref']}、群れ {n_clusters}、PU {row['pu']}")
-    return row, stop
+    return row, stop, files
+
+
+def write_day_files(out: Path, now: datetime, day: str, pub: list[dict], cov_feats: list[dict]) -> None:
+    key = lambda q: (q.get("acquired_utc"), q.get("area"))
+    merge_day(out / "candidates" / f"{day}.geojson", pub, key, lambda times: cp.attribution(times, now),
+              version=VERSION, name="大型船の候補（AIS 未照合、未確認）", classes=CLASS_LABEL)
+    merge_day(out / "coverage" / f"{day}.geojson", cov_feats, key, lambda times: cp.attribution(times, now, osm=False),
+              version=VERSION, note="見た範囲（0.1° のセル）。state: seen＝件数に入る、sea_state_low/high＝海況不良で件数に入れない")
+
+
+def prune_orphans(out: Path, rows: list[dict]) -> int:
+    """Drop from candidates/ and coverage/ the features of passes that passes.json does not hold as published
+    (e.g. written just before a run was cut): nothing is published that series and passes do not count."""
+    keep = {(r["acquired_utc"], r["area"]) for r in rows if r.get("status") in PUBLISHED}
+    n = 0
+    for sub in ("candidates", "coverage"):
+        for f in sorted((out / sub).glob("*.geojson")) if (out / sub).exists() else []:
+            fc = _read_json(f, None)
+            if not fc or "features" not in fc:
+                continue
+            feats = [x for x in fc["features"] if (x["properties"].get("acquired_utc"), x["properties"].get("area")) in keep]
+            if len(feats) != len(fc["features"]):
+                n += len(fc["features"]) - len(feats)
+                fc["features"] = feats
+                _write(f, cp.dumps(fc))
+    return n
+
+
+def save_state(out: Path, cfg: dict, rows: list[dict], learned: dict, now: datetime) -> None:
+    """passes.json, static_learned.json, series, areas.geojson and meta.json as of now; orphans pruned."""
+    rows.sort(key=lambda r: (r["acquired_utc"], r["area"]))
+    _write(out / "passes.json", cp.dumps({"version": VERSION, "attribution": cp.attribution(
+        [p["acquired_utc"] for p in rows], now), "passes": rows}, indent=None))
+    learned.update({"version": VERSION, "rule": cfg["static_learned"],
+                    "review": "2部が月 1 回見直す",
+                    "attribution": cp.attribution([p["added_utc"] for p in learned["points"]], now)})
+    _write(out / "static_learned.json", cp.dumps(learned, indent=1))
+    write_series(out, rows, now)
+    write_areas(out, cfg, now)
+    write_meta(out, cfg, rows, learned, now)
+    prune_orphans(out, rows)
 
 
 def report(s: dict) -> str:
@@ -984,7 +1096,7 @@ def plan_month(cfg: dict, month: str, get=covp.http_json, log=print, sleep=time.
             share = ac.share(fp)
             if share <= 0.01:
                 continue
-            verdict, cov0, _s = decide(area, cfg, ac, a, fp, hist)
+            verdict, cov0, _s = decide(area, cfg, ac, a, fp, hist, month)
             items = plan_rects(ac, area, fp, cov0, 1e9, int(cfg.get("max_cells", 8))) if verdict == "take" else []
             est = round(sum(i["est_pu"] for i in items), 2)
             fetched = np.zeros((ac.ny, ac.nx))

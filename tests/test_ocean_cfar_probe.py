@@ -589,10 +589,17 @@ class CapsAgreeTest(unittest.TestCase):
         self.assertLess(text.index("name: Tests"), text.index("name: Budget month"))
         self.assertLess(text.index("name: Budget month"), text.index("name: Monitor"))
         pub = text.split("name: Publish", 1)[1]
-        self.assertIn("steps.tests.outcome != 'failure'", pub)
+        self.assertIn("steps.tests.outcome == 'success'", pub)
+        self.assertIn("steps.month.outputs.ok == 'true'", pub)
+        # another month: a notice and success, nothing sent
+        month = text.split("name: Budget month", 1)[1].split("- name:", 1)[0]
+        self.assertIn("::notice", month)
+        self.assertNotIn("exit 2", month)
+        self.assertIn("if: steps.month.outputs.ok == 'true'", text.split("name: Monitor", 1)[1].split("run:", 1)[0])
         self.assertIn("inputs.dry_run", pub)
         # writes docs/data/ocean/monitor and docs/data/ocean/usage.csv only, pull --rebase before each new push
-        self.assertIn("git add docs/data/ocean/monitor docs/data/ocean/usage.csv", pub)
+        self.assertIn("git add -A -- docs/data/ocean/monitor", pub)
+        self.assertIn("git add -- docs/data/ocean/usage.csv", pub)
         self.assertIn("docs/data/ocean/(monitor/|usage\\.csv$)", pub)
         self.assertIn("git pull -q --rebase origin main", pub)
         self.assertNotIn("--force", text)

@@ -22,6 +22,7 @@ if np is not None:
     from ocean import coverage_probe as covp
     from ocean import monitor as m
     from ocean import wide
+    from sat import cdse
     from sat.grid import Grid
     from tests.test_ocean_modes import Fake, Pacer, overpass
 
@@ -82,6 +83,26 @@ def run_args(tmp: Path, config: Path, **kw) -> Namespace:
 class Client(Fake):
     def __init__(self):
         super().__init__([])
+
+
+class Breaking(Client):
+    """Process call number ``at`` spends its PU, then fails with ``exc`` (connection lost, SIGTERM)."""
+
+    def __init__(self, at, exc):
+        super().__init__()
+        self.at, self.exc = at, exc
+
+    def process(self, bbox, w, h, t0, t1, with_lia=True, upsampling="NEAREST"):
+        if len(self.calls) + 1 == self.at:
+            self.requests += 1
+            self.processing_units += cdse.estimate_pu(w, h, 3)
+            self.calls.append((w, h, upsampling))
+            raise self.exc
+        return super().process(bbox, w, h, t0, t1, with_lia, upsampling)
+
+
+def csv_rows(path: Path) -> list[dict]:
+    return list(csv.DictReader(path.read_text(encoding="utf-8").splitlines())) if path.exists() else []
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -152,27 +173,27 @@ class DecideTest(unittest.TestCase):
         full = np.ones((self.cells.ny, self.cells.nx))
         part = np.zeros_like(full)
         part[:, :1] = 1.0   # a quarter of the area
-        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, part, [])[0], "low_share")
-        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, [])[0], "take")
+        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, part, [], "2026-10")[0], "low_share")
+        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, [], "2026-10")[0], "take")
         hist = [{"acquired_utc": "2026-10-17T21:51:00Z", "status": "ok"}]
-        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, hist)[0], "revisit")
+        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, hist, "2026-10")[0], "revisit")
         hist = [{"acquired_utc": "2026-10-15T21:51:00Z", "status": "ok"}]
-        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, hist)[0], "take")
+        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, hist, "2026-10")[0], "take")
         hist = [{"acquired_utc": "2026-10-18T21:51:00Z", "status": "skipped_revisit"}]
-        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, hist)[0], "take")
+        self.assertEqual(m.decide(self.area, self.cfg, self.cells, self.acq, full, hist, "2026-10")[0], "take")
 
     def test_monthly_takes_unseen_cells_only(self):
         area = {**self.area, "mode": "monthly"}
         full = np.ones((self.cells.ny, self.cells.nx))
         seen = [[124.0 + 0.1 * i, 25.0 + 0.1 * j, 1.0] for j in range(4) for i in range(4)]
         hist = [{"acquired_utc": "2026-10-05T09:28:00Z", "status": "ok", "observed_cells": seen}]
-        self.assertEqual(m.decide(area, self.cfg, self.cells, self.acq, full, hist)[0], "seen_this_month")
-        v, cov0, _ = m.decide(area, self.cfg, self.cells, self.acq, full, hist[:0])
+        self.assertEqual(m.decide(area, self.cfg, self.cells, self.acq, full, hist, "2026-10")[0], "seen_this_month")
+        v, cov0, _ = m.decide(area, self.cfg, self.cells, self.acq, full, hist[:0], "2026-10")
         self.assertEqual(v, "take")
         old = [{**hist[0], "acquired_utc": "2026-09-28T09:28:00Z"}]  # last month's look does not count
-        self.assertEqual(m.decide(area, self.cfg, self.cells, self.acq, full, old)[0], "take")
+        self.assertEqual(m.decide(area, self.cfg, self.cells, self.acq, full, old, "2026-10")[0], "take")
         half = [{**hist[0], "observed_cells": seen[:8]}]
-        v, cov0, _ = m.decide(area, self.cfg, self.cells, self.acq, full, half)
+        v, cov0, _ = m.decide(area, self.cfg, self.cells, self.acq, full, half, "2026-10")
         self.assertEqual(v, "take")
         plan = m.plan_rects(self.cells, {**area, "min_eff": 0.3}, full, cov0, 1e9)
         self.assertTrue(plan)
@@ -351,6 +372,7 @@ class RunTest(unittest.TestCase):
             self.assertIn("OpenStreetMap", json.loads((out / "meta.json").read_text(encoding="utf-8"))["attribution"])
             self.assertIn("ODbL", json.loads((out / "osm/T.json").read_text(encoding="utf-8"))["license"])
             self.assertIn(CREDIT, (out / "series.csv").read_text(encoding="utf-8"))
+            self.assertIn("OpenStreetMap", csv_rows(out / "series.csv")[0]["source"])
             cands = json.loads((out / "candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
             for f in cands:
                 self.assertIn(f["properties"]["class"], ("A", "B"))
@@ -398,28 +420,148 @@ class RunTest(unittest.TestCase):
             row = next(r for r in csv.DictReader((tmp / "monitor" / "series.csv").read_text(encoding="utf-8").splitlines()) if r["area"] == "T")
             self.assertEqual(row["count_A"], "")
 
-    def test_caps(self):
+    def passes(self, tmp):
+        return json.loads((tmp / "monitor" / "passes.json").read_text(encoding="utf-8"))["passes"]
+
+    def test_run_cap_defers_the_pass(self):
         with tempfile.TemporaryDirectory() as d:
             tmp = Path(d)
             t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
             prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
-            s, c = self.go(tmp, prods, max_pu=0.4)
+            # the month's ocean cap is nearly used: each pass fits in a run of its own (--max-pu) but not in what is left
+            s, c = self.go(tmp, prods, ocean_cap=0.01)
             self.assertEqual(c.calls, [])
-            self.assertTrue(all(x["verdict"] == "budget" for x in s["tasks"]))
+            self.assertEqual({x["verdict"] for x in s["tasks"]}, {"deferred"})
             self.assertFalse((tmp / "usage.csv").exists())
-            # a pass that hit the cap is tried again by the next run
-            s2, c2 = self.go(tmp, prods)
-            self.assertGreater(len(c2.calls), 0)
-            # the area's month cap
-            tmp2 = tmp / "b"
-            tmp2.mkdir()
-            cfgp = small_config(tmp2)
+            self.assertEqual({p["status"] for p in self.passes(tmp)}, {"deferred"})   # kept in passes.json
+            self.assertEqual(len(csv_rows(tmp / "monitor" / "series.csv")), 0)         # not in the series
+            # tried again (all of it) by the next run; the deferred record is replaced
+            s2, c2 = self.go(tmp, prods, ocean_cap=0.01)
+            self.assertEqual(len(self.passes(tmp)), 2)
+            s3, c3 = self.go(tmp, prods)
+            self.assertGreater(len(c3.calls), 0)
+            self.assertEqual(sorted(p["status"] for p in self.passes(tmp)), ["ok", "ok"])
+
+    def test_area_month_cap(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            cfgp = small_config(tmp)
             cfg = json.loads(cfgp.read_text(encoding="utf-8"))
             for a in cfg["areas"]:
-                a["pu_month_cap"] = 0.5
+                a["pu_month_cap"] = 0.001
             cfgp.write_text(json.dumps(cfg), encoding="utf-8")
-            s3, c3 = self.go(tmp2, prods, config=cfgp)
+            s, c = self.go(tmp, prods, config=cfgp)
+            self.assertEqual(c.calls, [])
+            self.assertEqual({x["verdict"] for x in s["tasks"]}, {"budget"})
+            self.assertEqual({p["status"] for p in self.passes(tmp)}, {"budget"})
+
+    def test_pass_larger_than_a_run_is_fetched_in_parts(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            cfgp = small_config(tmp, max_cells=1)       # 16 cells of 0.1 deg per area, one request each
+            one = cdse.estimate_pu(*wide.rect_px((124.0, 25.0, 124.1, 25.1)), 3)
+            s, c = self.go(tmp, prods, config=cfgp, max_pu=one * 6.5)
+            self.assertEqual(len(c.calls), 6)
+            st = {p["area"]: p for p in self.passes(tmp)}
+            self.assertEqual(st["T"]["status"], "part")
+            self.assertEqual(st["M"]["status"], "deferred")
+            self.assertLess(st["T"]["observed_share"], 0.5)
+            s2, c2 = self.go(tmp, prods, config=cfgp)
+            self.assertEqual(len(c2.calls), 10 + 16)     # the rest of T, all of M
+            rows = [p for p in self.passes(tmp) if p["area"] == "T"]
+            self.assertEqual(sorted(p["status"] for p in rows), ["ok", "part"])
+            got = sorted(tuple(o[:2]) for p in rows for o in p["observed_cells"])
+            self.assertEqual(len(got), 16)
+            self.assertEqual(len(set(got)), 16)           # no cell fetched twice
+            s3, c3 = self.go(tmp, prods, config=cfgp)
             self.assertEqual(c3.calls, [])
+
+    def test_requests_left_is_a_cap(self):
+        from unittest import mock
+        orig = cp.budget
+        with tempfile.TemporaryDirectory() as d, \
+                mock.patch.object(cp, "budget", side_effect=lambda a, n: {**orig(a, n), "requests_left": 3}):
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            s, c = self.go(tmp, prods, config=small_config(tmp, max_cells=2))
+            self.assertLessEqual(len(c.calls), 3)
+
+    def test_aborted_fetch_is_saved_and_counted(self):
+        import urllib.error
+        for exc in (urllib.error.URLError("connection reset"), SystemExit(143)):
+            with self.subTest(exc=type(exc).__name__), tempfile.TemporaryDirectory() as d:
+                tmp = Path(d)
+                t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+                prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+                # an orphan from an earlier cut run: not in passes.json, so it must not stay published
+                orphan = tmp / "monitor" / "candidates" / "2026-10-29.geojson"
+                orphan.parent.mkdir(parents=True)
+                orphan.write_text(json.dumps({"type": "FeatureCollection", "features": [
+                    {"type": "Feature", "geometry": {"type": "Point", "coordinates": [124.1, 25.1]},
+                     "properties": {"acquired_utc": "2026-10-29T09:00:00Z", "area": "T"}}]}), encoding="utf-8")
+                client = Breaking(at=2, exc=exc)                 # T is fetched, M breaks after its PU were spent
+                with self.assertRaises(type(exc)):
+                    self.go(tmp, prods, client=client)
+                st = {p["area"]: p for p in self.passes(tmp)}
+                self.assertEqual(st["T"]["status"], "ok")
+                self.assertEqual(st["M"]["status"], "aborted")
+                self.assertGreater(st["M"]["pu"], 0)
+                usage = csv_rows(tmp / "usage.csv")
+                self.assertAlmostEqual(float(usage[0]["processing_units"]), client.processing_units, places=2)
+                cands = json.loads((tmp / "monitor" / "candidates" / "2026-10-30.geojson").read_text(encoding="utf-8"))
+                self.assertEqual({f["properties"]["area"] for f in cands["features"]} - {"T"}, set())
+                self.assertEqual(json.loads(orphan.read_text(encoding="utf-8"))["features"], [])
+                self.assertEqual({r["area"] for r in csv_rows(tmp / "monitor" / "series.csv")}, {"T"})
+                # the next run: T is not fetched again, M is (its aborted PU count in its month cap)
+                s2, c2 = self.go(tmp, prods)
+                self.assertEqual(len(c2.calls), 1)
+                self.assertEqual(sorted(p["status"] for p in self.passes(tmp) if p["area"] == "M"), ["aborted", "ok"])
+                (tmp / "x").mkdir()
+                cfgp = small_config(tmp / "x")
+                cfg = json.loads(cfgp.read_text(encoding="utf-8"))
+                cfg["areas"][1]["pu_month_cap"] = st["M"]["pu"] + 0.001   # the aborted PU fill the month cap
+                cfgp.write_text(json.dumps(cfg), encoding="utf-8")
+                rows = [p for p in self.passes(tmp) if not (p["area"] == "M" and p["status"] == "ok")]
+                (tmp / "monitor" / "passes.json").write_text(json.dumps({"passes": rows}), encoding="utf-8")
+                s3, c3 = self.go(tmp, prods, config=cfgp)
+                self.assertEqual(c3.calls, [])
+                self.assertEqual([x["verdict"] for x in s3["tasks"] if x["area"] == "M"], ["budget"])
+
+    def test_months_are_processing_months(self):
+        cfg = m.load_config()
+        area = {"id": "T", "bbox": [124.0, 25.0, 124.4, 25.4], "mode": "monthly"}
+        cells = m.AreaCells(area)
+        full = np.ones((cells.ny, cells.nx))
+        seen = [[124.0 + 0.1 * i, 25.0 + 0.1 * j, 1.0] for j in range(4) for i in range(4)]
+        # an October pass processed on 1 November is November's look
+        hist = [{"acquired_utc": "2026-10-31T21:51:00Z", "processed_utc": "2026-11-01T19:41:00Z", "status": "ok",
+                 "observed_cells": seen}]
+        acq = {"acquired_utc": "2026-11-05T09:28:00Z"}
+        self.assertEqual(m.decide(area, cfg, cells, acq, full, hist, "2026-11")[0], "seen_this_month")
+        self.assertEqual(m.decide(area, cfg, cells, acq, full, hist, "2026-12")[0], "take")
+        self.assertEqual(m.processed_month(hist[0]), "2026-11")
+
+    def test_area_cap_counts_the_processing_month(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            out = tmp / "monitor"
+            out.mkdir()
+            spent = [{"area": "T", "acquired_utc": "2026-09-30T21:51:00Z", "processed_utc": "2026-10-01T19:41:00Z",
+                      "status": "ok", "pu": 500.0},
+                     {"area": "M", "acquired_utc": "2026-10-02T09:52:08Z", "processed_utc": "2026-09-30T19:41:00Z",
+                      "status": "aborted", "pu": 500.0}]
+            (out / "passes.json").write_text(json.dumps({"passes": spent}), encoding="utf-8")
+            s, c = self.go(tmp, prods)
+            v = {x["area"]: x["verdict"] for x in s["tasks"]}
+            self.assertEqual(v["T"], "budget")      # September's pass processed in October counts in October
+            self.assertEqual(v["M"], "take")        # PU of a September run do not
 
     def test_dry_run_writes_nothing(self):
         with tempfile.TemporaryDirectory() as d:
@@ -461,6 +603,10 @@ class RunTest(unittest.TestCase):
             twe = next(a for a in meta["areas"] if a["id"] == "TWE_S")
             self.assertIn("D69・C/D105 の撮影が域の約3割未満しか覆わないため、月の観測は約1.8回", twe["note"])
             self.assertIn("BASHI", [a["id"] for a in meta["areas"]])
+            self.assertIn("2部が月 1 回見直す", meta["static_learned_review"])
+            self.assertIn("count_A_ge120_unconfirmed", meta["headline"])
+            self.assertIn("見出しに使わない", meta["headline"])
+            self.assertIn("処理した月", meta["months"])
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class PlanMonthTest(unittest.TestCase):
