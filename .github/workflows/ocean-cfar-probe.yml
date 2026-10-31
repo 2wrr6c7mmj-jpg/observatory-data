@@ -17,6 +17,7 @@ name: Ocean CFAR v1/v2 probe
 # 限界：cdse.Client 内部の 429・5xx の送り直し（最大 3 回、各最大 120 秒）は月の確認を通らず、月の境目を数分越えて送りうる。
 # 港のアーカイブ（80 PU/分×最大 3 ジョブ）と同時に走ると合わせて 300 PU/分を超えうる（429 で送り直し）。リクエスト数の上限も同時実行では保証しない。
 # 11 月以降は、司令部がその月の枠を決めてから BUDGET_MONTH・OCEAN_CAP・GLOBAL_CAP・GLOBAL_MARGIN を別コミットで書き直す。
+# 外洋の定期監視（ocean-monitor.yml）も同じ 4 つの値を使う。ports-archive.yml・ocean-cfar-probe.yml・ocean-monitor.yml の 3 つを同じコミットで替える。
 on:
   push:
     branches: ['probe/ocean-cfar', 'probe/ocean-cfar*']

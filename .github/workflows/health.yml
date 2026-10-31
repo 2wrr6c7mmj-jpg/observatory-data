@@ -7,7 +7,7 @@ on:
   # 収集・分析の試作が終わるたびに作り直す（main の実行だけ。probe ブランチの実行では動かない）
   workflow_run:
     workflows: ['Collect public data', 'Collect JCG Senkaku', 'Sentinel-1 ship candidates',
-                'Collect PLA Activity Tracker', 'Build analysis prototypes']
+                'Collect PLA Activity Tracker', 'Build analysis prototypes', 'Ocean monitor']
     types: [completed]
     branches: [main]
   # 収集が起動しない（schedule が来ない）ことも拾うため 4 時間ごと（1 日 6 回。既存の cron 01:23・03:43・05:17・06:37 と重ねない）。

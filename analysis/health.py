@@ -85,6 +85,8 @@ WORKFLOWS = [
     {"file": "sat-ships.yml", "label": "Sentinel-1 艦船候補", "event": "schedule", "sources": ["sat"]},
     {"file": "pla-tracker.yml", "label": "PLA Activity Tracker", "event": "schedule", "sources": ["pla-tracker"]},
     {"file": "proto.yml", "label": "分析の試作", "event": "workflow_run", "sources": ["proto"]},
+    # 外洋の定期監視：実行の記録（schedule の起動と結論）だけで判定する（データの鮮度は撮影の有無で変わるので見ない）
+    {"file": "ocean-monitor.yml", "label": "外洋の定期監視（Sentinel-1）", "event": "schedule", "sources": ["ocean"]},
 ]
 FAILED = {"failure", "timed_out", "startup_failure", "action_required", "stale"}
 # 源の取得をやめた（robots の拒否・ボット対策・403）を表す文。PLA・尖閣で共用

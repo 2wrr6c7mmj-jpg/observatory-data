@@ -392,6 +392,10 @@ class ProductionUnchangedTest(unittest.TestCase):
                 self.assertNotIn("schedule", on)
                 self.assertIn("probe/ocean-cfar", on)
                 continue
+            if wf.name == "ocean-monitor.yml":  # the monitor runs ocean.monitor (and the probe's tests), never the probe
+                self.assertNotIn("-m ocean.cfar_probe", text)
+                self.assertIn("python -m ocean.monitor run", text)
+                continue
             self.assertNotIn("cfar_probe", text, wf.name)
         self.assertNotIn("ocean", (root / "sat" / "run.py").read_text(encoding="utf-8"))
 
@@ -557,6 +561,48 @@ class CapsAgreeTest(unittest.TestCase):
         self.assertEqual(float(oc["OCEAN_CAP"]), float(po["OCEAN_CAP"]))
         self.assertEqual(float(oc["GLOBAL_CAP"]), float(guard["global-cap"]))
         self.assertEqual(float(oc["GLOBAL_MARGIN"]), float(guard["global-margin"]))
+
+    def test_monitor_caps_are_the_same(self):
+        """ocean-monitor.yml uses the ocean cap with ocean-cfar-probe.yml and ports-archive.yml: the three files
+        hold the same month and caps (changed in one commit)."""
+        import re
+        mo, oc, po = self.env("ocean-monitor.yml"), self.env("ocean-cfar-probe.yml"), self.env("ports-archive.yml")
+        guard = dict(re.findall(r"--([a-z-]+) (\S+)", po["GUARD_ARGS"]))
+        self.assertEqual(mo["BUDGET_MONTH"], oc["BUDGET_MONTH"])
+        self.assertEqual(mo["BUDGET_MONTH"], po["BUDGET_MONTH"])
+        self.assertEqual(mo["BUDGET_MONTH"], guard["budget-month"])
+        for k in ("OCEAN_CAP", "GLOBAL_CAP", "GLOBAL_MARGIN"):
+            self.assertEqual(float(mo[k]), float(oc[k]), k)
+        self.assertEqual(float(mo["OCEAN_CAP"]), float(po["OCEAN_CAP"]))
+        self.assertEqual(float(mo["GLOBAL_CAP"]), float(guard["global-cap"]))
+        self.assertEqual(float(mo["GLOBAL_MARGIN"]), float(guard["global-margin"]))
+        self.assertEqual(float(mo["MAX_PU"]), 400.0)
+
+    def test_monitor_workflow_shape(self):
+        root = Path(__file__).resolve().parent.parent
+        text = (root / ".github" / "workflows" / "ocean-monitor.yml").read_text(encoding="utf-8")
+        self.assertIn("cron: '41 19 * * *'", text)
+        self.assertIn("group: probe-ocean-cfar\n  cancel-in-progress: false", text)
+        self.assertIn('--max-pu "$MAX_PU"', text)
+        self.assertIn("dry_run:", text)
+        # the tests run before anything is sent, and nothing is published after failed tests or a dry run
+        self.assertLess(text.index("name: Tests"), text.index("name: Budget month"))
+        self.assertLess(text.index("name: Budget month"), text.index("name: Monitor"))
+        pub = text.split("name: Publish", 1)[1]
+        self.assertIn("steps.tests.outcome == 'success'", pub)
+        self.assertIn("steps.month.outputs.ok == 'true'", pub)
+        # another month: a notice and success, nothing sent
+        month = text.split("name: Budget month", 1)[1].split("- name:", 1)[0]
+        self.assertIn("::notice", month)
+        self.assertNotIn("exit 2", month)
+        self.assertIn("if: steps.month.outputs.ok == 'true'", text.split("name: Monitor", 1)[1].split("run:", 1)[0])
+        self.assertIn("inputs.dry_run", pub)
+        # writes docs/data/ocean/monitor and docs/data/ocean/usage.csv only, pull --rebase before each new push
+        self.assertIn("git add -A -- docs/data/ocean/monitor", pub)
+        self.assertIn("git add -- docs/data/ocean/usage.csv", pub)
+        self.assertIn("docs/data/ocean/(monitor/|usage\\.csv$)", pub)
+        self.assertIn("git pull -q --rebase origin main", pub)
+        self.assertNotIn("--force", text)
 
     def test_report_step_without_probe_log(self):
         root = Path(__file__).resolve().parent.parent
