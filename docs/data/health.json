@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-10-31T14:45:05Z",
+ "generated_utc": "2026-10-31T17:13:50Z",
  "state": "warn",
  "summary": {
-  "ok": 8,
-  "warn": 4,
+  "ok": 7,
+  "warn": 5,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-10-31T11:02:10Z",
-   "heartbeat_age_h": 3.7,
+   "heartbeat_age_h": 6.2,
    "data_date": "2026-10-26",
    "data_date_tz": "UTC",
    "data_age_days": 5,
@@ -111,12 +111,18 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-10-31T09:57:23Z",
-   "heartbeat_age_h": 4.8,
+   "heartbeat_age_h": 7.3,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
-   "data_age_days": 2,
-   "state": "ok",
-   "reasons": [],
+   "data_age_days": 3,
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "data_old",
+     "text": "最新の日 2026-10-29（JST 今日−3。週末・祝日の可能性）"
+    }
+   ],
    "values": {
     "last_ok_utc": "2026-10-31T09:57:23Z",
     "last_run_started_utc": "2026-10-31T09:57:11Z",
@@ -134,10 +140,10 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-10-31T14:44:41Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.5,
    "data_date": "2026-10-31",
    "data_date_tz": "TWT",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -157,7 +163,7 @@
    "heartbeat_age_h": null,
    "data_date": "2026-10-30",
    "data_date_tz": "TWT",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "halt",
    "reasons": [
     {
@@ -178,10 +184,10 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-10-31T08:30:49Z",
-   "heartbeat_age_h": 6.2,
+   "heartbeat_age_h": 8.7,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
-   "data_age_days": 4,
+   "data_age_days": 5,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -196,7 +202,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-10-31T08:30:43Z",
-   "heartbeat_age_h": 6.2,
+   "heartbeat_age_h": 8.7,
    "data_date": "2026-10-31",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -214,7 +220,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-10-31T09:57:38Z",
-   "heartbeat_age_h": 4.8,
+   "heartbeat_age_h": 7.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
