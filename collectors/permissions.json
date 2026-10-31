@@ -4,21 +4,26 @@
   "pla-tracker": {
    "site": "https://pla-tracker.skyfaring.net/",
    "granted_by": "Adam Pan（Skyfaring、PLA Activity Tracker の制作者。about ページの記名）",
-   "received": "2026-10-31T19:20+09:00",
-   "channel": "ユーザー経由。ユーザーが制作者とやりとりし、2026-10-31 19:20 JST に「制作者が取得をよいと言っていた」と連絡、19:25 JST に制作者の返信の画面を司令部へ渡し、19:26 JST に robots.txt についての制作者の説明を連絡。司令部が上書きを有効にすると判断（2026-10-31）",
+   "received": "2026-10-31",
+   "channel": "2026-10-31、運営者経由",
    "statement": {
-    "summary": "PLA tracker は幅広い用途で自由に活用してよい。個人・非商用はもちろん商用も原則制限しない。ただし第三者に不利益を与える意図・詐欺・不当な利益目的など悪意ある利用は不可。名称や機能を使って誤解を与える行為、公式に関与・承認しているかのように装う行為も不可（返信の要旨、司令部の要約）",
-    "automated_access": "返信の文面は自動取得や robots.txt に直接触れていない。別途、robots.txt の拒否は悪意ある（軍の）ボット対策で、このような利用を止める意図ではない、との制作者の説明がユーザー経由であった（2026-10-31 19:26 JST）",
-    "conditions": ["悪意ある利用をしない", "公式の関与・承認を装わない（公開データの meta の attribution.disclaimer に明記）", "CC BY 4.0 の出典表示（作者名・URL・ライセンス）"]
+    "conditions": [
+     "悪意ある利用をしない",
+     "公式の関与・承認を装わない（公開データの meta の attribution.disclaimer に明記）",
+     "CC BY 4.0 の出典表示（作者名・URL・ライセンス）"
+    ],
+    "automated_access": "自動取得についても運営者経由で了解を得た（私信のため非公開）"
    },
    "scope": {
-    "urls": ["https://pla-tracker.skyfaring.net/data/records.csv"],
+    "urls": [
+     "https://pla-tracker.skyfaring.net/data/records.csv"
+    ],
     "max_requests_per_day": 1,
     "user_agent": "observatory-data/1",
     "retries": 0,
-    "note": "CSV 1 本だけ、1 日 1 回以内、再試行なし。about などの他のページは対象外。User-Agent は連絡先なしの簡素なボット名（ユーザーの判断）で、ブラウザを装わない"
+    "note": "CSV 1 本だけ、1 日 1 回以内、再試行なし。about などの他のページは対象外。User-Agent は連絡先なしの簡素なボット名で、ブラウザを装わない"
    },
-   "evidence": "受領済み（ユーザー保管の制作者の返信の画面、2026-10-31 19:25 JST に司令部が受領。私信のため公開リポジトリには置かない）",
+   "evidence": "受領済み（運営者が保管。私信のため非公開）",
    "review_by": "2026-11-30",
    "license": "CC BY 4.0（データの利用条件。この許可は取得の方法についてのもの）",
    "note": "2026-10-31 10:22 UTC に GitHub Actions から収集器の判定（urllib.robotparser）で読んだ robots.txt は User-agent: * に Allow: /（全体を許可）で、拒否は無かった。今は上書きを使っておらず、status.json の last_run.access は robots。上書きは robots.txt が CSV を拒むようになったときだけ働く"

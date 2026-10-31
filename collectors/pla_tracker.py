@@ -17,10 +17,14 @@ stops it. One CSV per run, no retries.
 
 Explicit permission: the maker's permission is recorded in
 collectors/permissions.json ("pla-tracker"). It is used only if robots.txt
-disallows the CSV; then the CSV (and nothing else) is fetched at most once per
-UTC day, and status.json says so (``last_run.access`` = "permission" and
+disallows the CSV; then the CSV (and nothing else) is fetched, and status.json says so (``last_run.access`` = "permission" and
 ``last_run.permission``; otherwise ``access`` = "robots"). An expired or
 missing permission means the run is skipped as before.
+
+At most one request for the CSV per UTC day, whichever way it is allowed and
+also on the probe path (--save-raw): ``last_request_utc`` of status.json (the
+output directory's and the published one) is checked before the request. A run
+that stops for this reason leaves status.json untouched.
 
 Rows are merged by date: a value changed by the source replaces the stored
 one (listed in status.json ``last_run.revised``); a date that disappears from
@@ -50,7 +54,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "pla-tracker"
 MND = ROOT / "docs" / "data" / "taiwan-mnd"
 SOURCE_ID = "pla-tracker"  # key in collectors/permissions.json
-# A plain bot name without contact details (the user's decision, 2026-10-31). Never a browser-like string.
+# A plain bot name without contact details (decided 2026-10-31). Never a browser-like string.
 UA = "observatory-data/1"
 TIMEOUT = 60
 
@@ -83,6 +87,10 @@ ATTRIBUTION = {
 
 class Stop(Exception):
     """The source cannot be used in this run."""
+
+
+class AlreadyToday(Stop):
+    """The CSV was already requested this UTC day (no request, status.json untouched)."""
 
 
 def now_utc() -> datetime:
@@ -304,13 +312,24 @@ def _same_utc_day(a: str | None, b: datetime) -> bool:
     return bool(a) and str(a)[:10] == b.strftime("%Y-%m-%d")
 
 
+def last_request(*dirs: Path) -> str | None:
+    """The latest ``last_request_utc`` in the status.json of these directories."""
+    seen = []
+    for d in dirs:
+        try:
+            v = json.loads((d / "status.json").read_text(encoding="utf-8")).get("last_request_utc")
+        except (OSError, ValueError):
+            continue
+        if v:
+            seen.append(str(v))
+    return max(seen) if seen else None
+
+
 def fetch_csv(last_request_utc: str | None = None, trace: dict | None = None) -> tuple[str, dict, polite.RobotsResult]:
-    """One GET of the CSV. ``trace["requested_utc"]`` is set once the request is sent."""
+    """One GET of the CSV, at most once per UTC day. ``trace["requested_utc"]`` is set once the request is sent."""
+    if _same_utc_day(last_request_utc, now_utc()):
+        raise AlreadyToday(f"the CSV was already requested today (UTC) at {last_request_utc}; one request per day")
     robots = polite.require_allowed(CSV_URL, UA, source=SOURCE_ID)
-    if robots.permission:
-        limit = robots.permission.get("max_requests_per_day") or 1
-        if limit <= 1 and _same_utc_day(last_request_utc, now_utc()):
-            raise Stop(f"explicit permission covers {limit} request per day; already requested at {last_request_utc}")
     if trace is not None:
         trace["requested_utc"] = iso(now_utc())
     try:
@@ -355,7 +374,7 @@ def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -
                     "sha256": hashlib.sha256(from_file.read_bytes()).hexdigest()}
             robots = "not checked (rebuilt from a saved file)"
         else:
-            text, info, rr = fetch_csv(old_status.get("last_request_utc"), trace)
+            text, info, rr = fetch_csv(last_request(out, OUT), trace)
             robots = rr.reason
             access = {"access": rr.access, **({"permission": rr.permission} if rr.permission else {})}
             if rr.permission:
@@ -365,6 +384,9 @@ def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -
             raise Stop("no rows")
         retrieved = iso(now_utc())
         rows, changes = merge(stored, fresh, retrieved)
+    except AlreadyToday as e:
+        notice(f"PLA Activity Tracker は今日は取得済み：{e}")
+        return 0
     except (Stop, polite.SourceBlocked) as e:
         notice(f"PLA Activity Tracker を使わない：{e}", "warning")
         last_run = {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "skipped", "reason": str(e),
@@ -409,7 +431,7 @@ META = {
                        "集約者は個人であり、読み取りの誤り・修正の有無は国防部の原文で確かめる必要がある。",
     },
     "access": "取得の前に robots.txt を確かめる（collectors/polite.py）。2026-10-31 10:22 UTC に収集器の User-Agent で読んだ robots.txt は "
-              "User-agent: * に Allow: /（全体を許可）。制作者の許可（ユーザー経由、2026-10-31。返信の画面はユーザーが保管、私信のため公開しない）を "
+              "User-agent: * に Allow: /（全体を許可）。制作者の許可（2026-10-31、運営者経由。私信のため非公開）を "
               "collectors/permissions.json に記録しており、robots.txt が CSV を拒むようになった場合も、許可の見直し日までは CSV 1 本だけを "
               "1 日 1 回以内・再試行なしで取得する。どちらで取得したかは status.json の last_run.access（robots / permission）に書く",
     "use": "台湾国防部の日報の自動取得は robots.txt（User-agent: * に Disallow: /）で拒否されているため 2026-10-30 で止めた"
@@ -468,7 +490,11 @@ def main(argv=None) -> int:
     ap.add_argument("--save-raw", type=Path, help="probe: keep the fetched CSV here")
     a = ap.parse_args(argv)
     if a.save_raw and not a.from_file:
-        text, info, rr = fetch_csv()
+        try:
+            text, info, rr = fetch_csv(last_request(a.out, OUT))
+        except AlreadyToday as e:
+            notice(f"probe: 今日は取得済みのため CSV を取らない：{e}")
+            return 0
         a.save_raw.write_text(text, encoding="utf-8")
         notice(f"{rr.reason}（access: {rr.access}）\n{json.dumps(info, ensure_ascii=False)}", title="pla-tracker fetch")
         rc = run(a.out, from_file=a.save_raw)

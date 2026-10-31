@@ -1,3 +1,4 @@
+import json
 import unittest
 import unittest.mock
 import urllib.error
@@ -88,9 +89,6 @@ class Get(unittest.TestCase):
         self.assertEqual(polite.get("https://ex.jp/a", UA, getter=g).status, 200)
         self.assertEqual(polite.get("https://ex.jp/b.pdf", UA, getter=g).status, 200)
 
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class Permission(unittest.TestCase):
@@ -194,6 +192,12 @@ class PermissionsFile(unittest.TestCase):
         e = polite.load_permissions()["pla-tracker"]
         self.assertEqual(e["scope"]["urls"], [P.CSV_URL])
         self.assertTrue(e["evidence"].startswith("受領済み"))
+        # nothing about the internal set-up or the private message beyond the agreed wording
+        self.assertEqual(e["channel"], "2026-10-31、運営者経由")
+        self.assertEqual(e["received"], "2026-10-31")
+        text = json.dumps(e, ensure_ascii=False)
+        for word in ("ユーザー", "司令部", "19:2", "ボット対策", "軍"):
+            self.assertNotIn(word, text)
         self.assertEqual(e["scope"]["user_agent"], P.UA)
         # a plain bot name (no contact, by the user's decision) and never a browser-like string
         self.assertTrue(P.UA.startswith("observatory-data/"))
@@ -201,8 +205,8 @@ class PermissionsFile(unittest.TestCase):
 
 
 class UserAgents(unittest.TestCase):
-    """Every collector sends the plain bot name observatory-data/1: no contact details (the user's
-    decision, 2026-10-31) and never a browser-like string."""
+    """Every collector sends the plain bot name observatory-data/1: no contact details (decided
+    2026-10-31) and never a browser-like string."""
 
     def test_collectors_use_the_plain_bot_name(self):
         import importlib
@@ -216,10 +220,17 @@ class UserAgents(unittest.TestCase):
         import re
         from pathlib import Path
         root = Path(__file__).resolve().parent.parent
-        pat = re.compile(r"""(UA|USER_AGENT)\s*=\s*['"]([^'"]*)['"]""")
+        pat = re.compile(r"""(?:\bUA|USER_AGENT)\s*=\s*['"]([^'"]*)['"]|['"]User-Agent['"]\s*:\s*['"]([^'"]*)['"]""")
+        found = 0
         for p in list(root.glob("collectors/*.py")) + list(root.glob("sat/*.py")) + list(root.glob("ocean/*.py")) \
-                + list(root.glob("notam/*.mjs")):
+                + list(root.glob("analysis/*.py")) + list(root.glob("notam/*.mjs")):
             for m in pat.finditer(p.read_text(encoding="utf-8")):
-                with self.subTest(file=p.name, ua=m.group(2)):
-                    self.assertNotIn("github.com", m.group(2))
-                    self.assertNotIn("Mozilla", m.group(2))
+                ua = m.group(1) if m.group(1) is not None else m.group(2)
+                found += 1
+                with self.subTest(file=p.name, ua=ua):
+                    self.assertEqual(ua, "observatory-data/1")
+        self.assertGreaterEqual(found, 9)
+
+
+if __name__ == "__main__":
+    unittest.main()

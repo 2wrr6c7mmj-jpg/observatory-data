@@ -9,7 +9,7 @@ Source: 海上保安庁「尖閣諸島周辺海域における中国海警局に
 
 Politeness: robots.txt is checked first (collectors/polite.py) and the source
 is skipped when it disallows us or cannot be checked; a bot-challenge page
-stops the run. One request at a time with a pause, an identifying User-Agent,
+stops the run. One request at a time with a pause, a plain bot User-Agent (observatory-data/1),
 the page once per run, and PDF links taken from the page (URLs are never
 built). A month's PDF is fetched once; only the current month (and the
 previous one until it is complete) is fetched again, with If-None-Match /

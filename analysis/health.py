@@ -548,12 +548,18 @@ def check_pla(now: datetime, data: Path) -> tuple[dict, dict]:
         else:
             src.add("warn", "skipped", f"最後の実行で取得をやめた：{reason[:200]}")
     robots = lr.get("robots")
-    if lr.get("result") == "ok" and robots and not robots_allowed(robots):
+    access = lr.get("access")
+    if lr.get("result") == "ok" and access == "permission":
+        # robots.txt は拒否だが、collectors/permissions.json の制作者の許可で取得した（意図した取得なので warn にしない）
+        perm = lr.get("permission") or {}
+        src.add("info", "permission", f"制作者の許可で取得（robots.txt は拒否。許可の見直し日 {perm.get('review_by')}、"
+                                      f"証拠 {perm.get('evidence')}）")
+    elif lr.get("result") == "ok" and robots and not robots_allowed(robots):
         src.add("warn", "robots", f"robots：{robots}")
     http = (st.get("source") or {}).get("http")
     if isinstance(http, int) and http == 403:
         src.add("alert", "source_blocked", "取得先が HTTP 403")
-    src.d["values"].update({"robots": robots, "days": st.get("days"), "last_run_result": lr.get("result"),
+    src.d["values"].update({"robots": robots, "access": access, "days": st.get("days"), "last_run_result": lr.get("result"),
                             "revised_count": lr.get("revised_count")})
     today = now.astimezone(TWT).date()
     last = day_of(st.get("last_day"))
@@ -747,7 +753,7 @@ def github_fetcher(token: str | None, repo_slug: str, api: str):
         url = f"{api}/repos/{repo_slug}/actions/workflows/{file}/runs?branch=main&per_page=30"
         req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json",
                                                    "X-GitHub-Api-Version": "2022-11-28",
-                                                   "User-Agent": "observatory-data-health"})
+                                                   "User-Agent": "observatory-data/1"})
         if token:
             req.add_header("Authorization", f"Bearer {token}")
         with urllib.request.urlopen(req, timeout=30) as r:

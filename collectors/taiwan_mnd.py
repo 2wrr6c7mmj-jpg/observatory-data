@@ -12,7 +12,7 @@ result is served by GitHub Pages and read by the Observatory site.
 Politeness: robots.txt is checked (collectors/polite.py) before any list or
 report page is fetched; a disallowed or unverifiable answer means nothing is
 fetched and the stored data is kept. One request at a time, a pause between
-requests, an identifying User-Agent, and reports already stored are never
+requests, a plain bot User-Agent (observatory-data/1), and reports already stored are never
 fetched again.
 
 SUSPENDED: collection is stopped while this is set (see the note there).

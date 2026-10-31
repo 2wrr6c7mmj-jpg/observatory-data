@@ -1,5 +1,5 @@
 {
- "access": "取得の前に robots.txt を確かめる（collectors/polite.py）。2026-10-31 10:22 UTC に収集器の User-Agent で読んだ robots.txt は User-agent: * に Allow: /（全体を許可）。制作者の許可（ユーザー経由、2026-10-31。返信の画面はユーザーが保管、私信のため公開しない）を collectors/permissions.json に記録しており、robots.txt が CSV を拒むようになった場合も、許可の見直し日までは CSV 1 本だけを 1 日 1 回以内・再試行なしで取得する。どちらで取得したかは status.json の last_run.access（robots / permission）に書く",
+ "access": "取得の前に robots.txt を確かめる（collectors/polite.py）。2026-10-31 10:22 UTC に収集器の User-Agent で読んだ robots.txt は User-agent: * に Allow: /（全体を許可）。制作者の許可（2026-10-31、運営者経由。私信のため非公開）を collectors/permissions.json に記録しており、robots.txt が CSV を拒むようになった場合も、許可の見直し日までは CSV 1 本だけを 1 日 1 回以内・再試行なしで取得する。どちらで取得したかは status.json の last_run.access（robots / permission）に書く",
  "attribution": {
   "author": "Adam Pan（Skyfaring）, PLA Activity Tracker",
   "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net), by Adam Pan (Skyfaring), CC BY 4.0. Republished by observatory-data; this does not imply official involvement or endorsement by the PLA Activity Tracker or its maker.",

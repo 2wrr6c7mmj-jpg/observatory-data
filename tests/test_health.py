@@ -471,6 +471,23 @@ class RobotsTextTest(Base):
             out = self.make(mutate=lambda f: f["pla-tracker/status.json"]["last_run"].update(robots=text)).build()
             self.assertEqual(src(out, "pla-tracker")["state"], want, text)
         self.assertTrue(h.robots_allowed("https://www.kaiho.mlit.go.jp/robots.txt: HTTP 404, no robots.txt (all allowed)"))
+
+    def test_pla_fetched_under_permission_is_info_not_warn(self):
+        def perm(f):
+            f["pla-tracker/status.json"]["last_run"].update(
+                robots="https://x/robots.txt: disallowed for this URL; overridden by explicit permission (...)",
+                access="permission", permission={"review_by": "2026-11-30", "evidence": "受領済み"})
+        s = src(self.make(mutate=perm).build(), "pla-tracker")
+        self.assertEqual(s["state"], "ok")
+        self.assertIn("permission", codes(s))
+        self.assertNotIn("robots", codes(s))
+        self.assertEqual(s["values"]["access"], "permission")
+        # access robots (or missing) keeps the old rule
+        def robots(f):
+            f["pla-tracker/status.json"]["last_run"].update(robots="x: disallowed for this URL", access="robots")
+        s = src(self.make(mutate=robots).build(), "pla-tracker")
+        self.assertEqual(s["state"], "warn")
+        self.assertIn("robots", codes(s))
         self.assertFalse(h.robots_allowed("x: disallowed for this URL"))
 
 

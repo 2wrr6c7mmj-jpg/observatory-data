@@ -93,6 +93,12 @@ class RunTest(unittest.TestCase):
         self.addCleanup(patcher.stop)
         polite._cache.clear()
         self.addCleanup(polite._cache.clear)
+        # never read the published docs/data/pla-tracker/status.json (its last_request_utc) in tests
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        out_patch = mock.patch.object(P, "OUT", Path(tmp.name) / "published")
+        out_patch.start()
+        self.addCleanup(out_patch.stop)
 
     def test_run_writes_files_once_fetched(self):
         def getter(url, ua, timeout, headers, max_bytes):
@@ -124,8 +130,10 @@ class RunTest(unittest.TestCase):
             daily = json.loads((out / "daily.json").read_text(encoding="utf-8"))
             self.assertEqual(daily["attribution"], meta["attribution"])
             self.assertIn("precedence", meta)
-            # second run: nothing new
-            self.assertEqual(P.run(out, mnd_csv=mnd), 0)
+            # second run on the next UTC day: nothing new
+            from datetime import timedelta
+            with mock.patch.object(P, "now_utc", return_value=P.now_utc() + timedelta(days=1)):
+                self.assertEqual(P.run(out, mnd_csv=mnd), 0)
             st = json.loads((out / "status.json").read_text(encoding="utf-8"))
             self.assertEqual(st["last_run"]["added"], 0)
         polite._cache.clear()
@@ -159,13 +167,14 @@ class RunTest(unittest.TestCase):
         getter.calls = calls
         return getter
 
-    def run_with(self, out, perms, today, now):
-        g = self.disallow_getter()
+    def run_with(self, out, perms, today, now, getter=None):
+        g = getter or self.disallow_getter()
         polite._cache.clear()
         with mock.patch.object(polite, "raw_get", g), \
                 mock.patch.object(polite, "load_permissions", return_value=perms), \
                 mock.patch.object(polite, "_today_utc", return_value=today), \
-                mock.patch.object(P, "now_utc", return_value=now):
+                mock.patch.object(P, "now_utc", return_value=now), \
+                mock.patch.object(P, "OUT", out):
             rc = P.run(out, mnd_csv=out / "none.csv")
         return rc, g.calls
 
@@ -185,16 +194,61 @@ class RunTest(unittest.TestCase):
             self.assertIn("overridden by explicit permission", st["last_run"]["robots"])
             self.assertEqual(st["last_request_utc"], "2026-11-01T06:37:00Z")
             self.assertTrue(any(title == "pla-tracker permission" for _, title, _ in self.notices))
-            # the same UTC day again: no request for the CSV
+            # the same UTC day again: no request at all, status.json untouched
+            before = (out / "status.json").read_text(encoding="utf-8")
             rc, calls = self.run_with(out, self.PERM, date(2026, 11, 1), now.replace(hour=20))
-            self.assertEqual(calls, ["https://pla-tracker.skyfaring.net/robots.txt"])
-            st = json.loads((out / "status.json").read_text(encoding="utf-8"))
-            self.assertEqual(st["last_run"]["result"], "skipped")
-            self.assertIn("per day", st["last_run"]["reason"])
-            self.assertEqual(st["last_request_utc"], "2026-11-01T06:37:00Z")
+            self.assertEqual((rc, calls), (0, []))
+            self.assertEqual((out / "status.json").read_text(encoding="utf-8"), before)
             # the next day: one request again
             rc, calls = self.run_with(out, self.PERM, date(2026, 11, 2), now.replace(day=2))
             self.assertEqual(calls[-1], P.CSV_URL)
+
+    def allow_getter(self):
+        calls = []
+
+        def getter(url, ua, timeout, headers, max_bytes):
+            calls.append(url)
+            if url.endswith("robots.txt"):
+                return polite.Response(url, 200, {"content-type": "text/plain"}, b"User-agent: *\nAllow: /\n")
+            return polite.Response(url, 200, {"content-type": "text/csv"}, SAMPLE.encode())
+        getter.calls = calls
+        return getter
+
+    def test_once_a_day_also_when_robots_allows(self):
+        from datetime import date, datetime, timezone
+        with tempfile.TemporaryDirectory() as t:
+            out = Path(t) / "out"
+            now = datetime(2026, 11, 1, 6, 37, tzinfo=timezone.utc)
+            rc, calls = self.run_with(out, {}, date(2026, 11, 1), now, self.allow_getter())
+            self.assertEqual(calls[-1], P.CSV_URL)
+            st = json.loads((out / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual((st["last_run"]["access"], st["last_request_utc"]), ("robots", "2026-11-01T06:37:00Z"))
+            rc, calls = self.run_with(out, {}, date(2026, 11, 1), now.replace(hour=23), self.allow_getter())
+            self.assertEqual((rc, calls), (0, []))
+            rc, calls = self.run_with(out, {}, date(2026, 11, 2), now.replace(day=2, hour=0), self.allow_getter())
+            self.assertEqual(calls[-1], P.CSV_URL)
+
+    def test_probe_path_respects_the_published_status(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as t:
+            published = Path(t) / "published"
+            published.mkdir()
+            (published / "status.json").write_text(json.dumps({"last_request_utc": "2026-11-01T06:37:00Z"}), encoding="utf-8")
+            g = self.allow_getter()
+            polite._cache.clear()
+            with mock.patch.object(polite, "raw_get", g), mock.patch.object(P, "OUT", published), \
+                    mock.patch.object(P, "now_utc", return_value=datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)):
+                rc = P.main(["--out", str(Path(t) / "probe"), "--save-raw", str(Path(t) / "records.csv")])
+            self.assertEqual((rc, g.calls), (0, []))
+            self.assertFalse((Path(t) / "records.csv").exists())
+            # the next day the probe fetches once
+            g = self.allow_getter()
+            polite._cache.clear()
+            with mock.patch.object(polite, "raw_get", g), mock.patch.object(P, "OUT", published), \
+                    mock.patch.object(P, "now_utc", return_value=datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)):
+                rc = P.main(["--out", str(Path(t) / "probe"), "--save-raw", str(Path(t) / "records.csv")])
+            self.assertEqual(g.calls.count(P.CSV_URL), 1)
+            self.assertTrue((Path(t) / "records.csv").exists())
 
     def test_no_or_expired_permission_skips_without_fetching(self):
         from datetime import date, datetime, timezone
