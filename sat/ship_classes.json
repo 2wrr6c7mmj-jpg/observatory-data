@@ -1,7 +1,7 @@
 {
  "version": "est-1b",
  "title": "艦種表（全長）・戦区ごとの在籍（隻数）・港ごとの重み（岸壁の数の推定 est-1 の事前分布）",
- "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は仮置き・要出典（multi-site PR-1、2026-10-31。2部が直す）。各艦の長さには N(0, 3 m) の揺らぎを足す",
+ "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す",
  "length_sd_m": 3.0,
  "groups": {
   "X": "210 m 以上（揚陸艦・補給艦・空母）",
@@ -17,7 +17,7 @@
  "columns": {
   "classes": "id・名前・全長 length_m・全長の確度 length_conf（確認＝Wikipedia に記載、推定＝概数、未確認＝出典で確かめていない）・長さの群 group・種類 kind・出典",
   "fleets.<戦区>.<艦種>": "count＝その戦区の隻数、conf＝確度、source・as_of＝出典と時点",
-  "sites.<地点>": "fleet＝使う戦区、w＝艦種ごとの重み（0〜1）、w_conf＝重みの確度、basis＝根拠、status＝placeholder（仮置き）なら出典なし"
+  "sites.<地点>": "fleet＝使う戦区、w＝艦種ごとの重み（0〜1）、w_conf＝重みの確度、basis＝根拠、status＝placeholder（仮置き）なら出典なし、provisional＝出典ありの推定、w_detail＝艦種ごとの確度（確認寄りの推定／推定／未確認）と根拠、sources＝出典（URL・見た日・信頼度と確度）"
  },
  "classes": [
   {
@@ -197,6 +197,44 @@
    "kind": "submarine",
    "source": "https://en.wikipedia.org/wiki/Type_093_submarine",
    "note": "Wikipedia 英語版の infobox：093/A 108.5 m、093B 110 m（2026-10-31 に確認）。型の混ざりが分からないので 110 m で代表（推定）。S 群（55〜90 m）と M 群の間で、桟橋の倍率は M 群として扱う（仮置き）"
+  },
+  {
+   "id": "003",
+   "name": "003 型空母（福建）",
+   "length_m": 316.0,
+   "length_conf": "推定",
+   "group": "X",
+   "kind": "carrier",
+   "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian",
+   "note": "全長は Wikipedia 英語版が推定値と明記（約 316 m、2部が 2026-10-31 に確認）。2025-11-05 に三亜で就役"
+  },
+  {
+   "id": "001",
+   "name": "001 型空母（遼寧）",
+   "length_m": 305.0,
+   "length_conf": "推定",
+   "group": "X",
+   "kind": "carrier",
+   "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning",
+   "note": "全長 約 305 m（infobox は Varyag の設計値 306.4 m、2部が 2026-10-31 に確認）。北部戦区（古鎮口）。QGZ を入れるまでどの港の重みにも入らない"
+  },
+  {
+   "id": "956",
+   "name": "956 型駆逐艦（ソヴレメンヌイ級）",
+   "length_m": 156.0,
+   "length_conf": "未確認",
+   "group": "L",
+   "source": "https://en.wikipedia.org/wiki/Sovremenny-class_destroyer",
+   "note": "全長は未確認（約 156 m、2部の概数）。東部戦区（136〜139）。ZDH を入れるまでどの港の重みにも入らない"
+  },
+  {
+   "id": "051C",
+   "name": "051C 型駆逐艦",
+   "length_m": 155.0,
+   "length_conf": "未確認",
+   "group": "L",
+   "source": "https://en.wikipedia.org/wiki/Type_051C_destroyer",
+   "note": "全長は未確認（約 155 m、2部の概数）。北部戦区（115・116）。QGZ を入れるまでどの港の重みにも入らない"
   }
  ],
  "fleets": {
@@ -217,7 +255,14 @@
     "count": 5,
     "conf": "推定",
     "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
-    "as_of": "2026-10"
+    "as_of": "2026-10",
+    "proposed_count": {
+     "count": 7,
+     "conf": "推定",
+     "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer ; https://defencesecurityasia.com/en/china-type-052dl-destroyer-tongchuan-south-china-sea-plan-southern-fleet/",
+     "seen": "2026-10-31",
+     "note": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』 §2）の訂正案：162〜166・176・177。count を変えると湛江の est-1（quay_counts.csv・ZJG-zone-prior.json）が変わるため PR-1c では反映していない（湛江の見直し est-1b-YYYYMM で扱う）"
+    }
    },
    "052C": {
     "count": 2,
@@ -295,7 +340,14 @@
     "count": 2,
     "conf": "推定",
     "source": "ship_classes.json est-1 の南部戦区の隻数（2部の設計、2026-10-30。すべて推定）",
-    "as_of": "2026-10"
+    "as_of": "2026-10",
+    "proposed_count": {
+     "count": 3,
+     "conf": "推定",
+     "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
+     "seen": "2026-10-31",
+     "note": "2部の調査 §2 の訂正案：887・906・907。count を変えると湛江の est-1 が変わるため PR-1c では反映していない"
+    }
    },
    "022": {
     "count": 20,
@@ -329,6 +381,13 @@
     "source": "https://en.wikipedia.org/wiki/Type_093_submarine",
     "as_of": "2026-10",
     "note": "Wikipedia の現役 12〜14 隻のうち南部戦区の数は出典なし。半数の 6 隻を仮置き"
+   },
+   "003": {
+    "count": 1,
+    "conf": "確認寄りの推定",
+    "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian ; https://newsweek.com/satellites-two-chinese-aircraft-carriers-home-base-11104565",
+    "as_of": "2026-10",
+    "note": "2025-11-05 に三亜で就役、2025-12-14 に楡林基地から出港（Wikipedia）、2025-11-24 の画像で山東と楡林基地に横並び（Newsweek）。独立 2 件（2部 §3.2 #5）"
    }
   }
  },
@@ -361,55 +420,326 @@
   "SYL": {
    "fleet": "south",
    "w": {
-    "055": 1.0,
-    "052D": 1.0,
-    "052DL": 1.0,
-    "052C": 1.0,
-    "054A": 1.0,
-    "054A+": 1.0,
-    "054B": 1.0,
+    "055": 0.3,
+    "052D": 0.3,
+    "052DL": 0.15,
+    "052C": 0.5,
+    "054A": 0.15,
+    "054A+": 0.15,
+    "054B": 0.2,
+    "056A": 0.5,
     "039AB": 1.0,
-    "056A": 0.6,
-    "815A": 0.5,
-    "901": 0.5,
-    "903": 0.5,
-    "072A": 0.3,
-    "071": 0.3,
-    "075": 0.3,
-    "MCM": 0.3,
-    "022": 0.3,
-    "TUG": 0.6,
-    "002": 0.3,
-    "093": 0.2,
-    "094": 0.1
+    "093": 0.1,
+    "094": 0.0,
+    "002": 0.1,
+    "003": 0.1,
+    "075": 0.2,
+    "071": 0.2,
+    "072A": 0.2,
+    "901": 0.1,
+    "903": 0.3,
+    "815A": 0.2,
+    "MCM": 0.5,
+    "022": 0.4,
+    "TUG": 0.8
    },
-   "w_conf": "未確認（仮置き・要出典）",
-   "basis": "設計 §2.2-4 の初期の仮説「SYL＝南部戦区の駆逐艦・フリゲートと通常動力潜水艦」をそのまま重みにしたもの（OSM の way/299398880 が「南部战区海军第32潜艇支队」）。数字に出典は無い",
-   "sources": [],
-   "status": "placeholder",
-   "note": "出典の無い仮置き。2部が設計 §2.2 の手順（在籍表・母港の手がかり・S2 の桟橋ごとの長さ）で直す。艦種がここに無いものは重み 0（この港の事前分布に入らない）"
+   "w_detail": {
+    "055": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）。新しい櫛形桟橋の使い始め待ちで半分の手前"
+    },
+    "052D": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）（172〜175 は 5 隻中 4 隻の半分弱）"
+    },
+    "052DL": {
+     "conf": "推定",
+     "basis": "176・177 だけが南部の第 9 支隊（DSA D・4、176 は番号だけ）"
+    },
+    "052C": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）（170・171。2017 年に 171 が三亜に帰港：GS）"
+    },
+    "054A": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）（フリゲート約 5／15 の半分）"
+    },
+    "054A+": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）（フリゲート約 5／15 の半分）"
+    },
+    "054B": {
+     "conf": "推定",
+     "basis": "南部の 555 の母港の出典なし。フリゲートの割合に合わせた"
+    },
+    "056A": {
+     "conf": "推定",
+     "basis": "三亜側は小型艦の基地（Wikipedia Yulin Naval Base）"
+    },
+    "039AB": {
+     "conf": "確認寄りの推定",
+     "basis": "第 32 潜水艦支隊（OSM way/299398880）・三亜側は通常動力潜水艦の基地（Wikipedia）・南部の潜水艦はすべて楡林（MDW）"
+    },
+    "093": {
+     "conf": "未確認",
+     "basis": "東岸の E1〜E3 が原潜用なら上げる（NMF の推測）"
+    },
+    "094": {
+     "conf": "推定",
+     "basis": "原潜は龍坡（SLP）。重みに入れない"
+    },
+    "002": {
+     "conf": "推定",
+     "basis": "2026-01 に新しい乾ドックへ初めて入渠（NMF B・2）。ドックが水面なら"
+    },
+    "003": {
+     "conf": "推定",
+     "basis": "002 と同じく修理で乾ドックに入る可能性"
+    },
+    "075": {
+     "conf": "未確認",
+     "basis": "新しい櫛形桟橋（約 620 m）の候補"
+    },
+    "071": {
+     "conf": "未確認",
+     "basis": "新しい櫛形桟橋の候補"
+    },
+    "072A": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "901": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "903": {
+     "conf": "推定",
+     "basis": "2017-03-07 に 907 が三亜に帰港（GS C・3）"
+    },
+    "815A": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "MCM": {
+     "conf": "未確認",
+     "basis": "出典なし（小型艦の基地）"
+    },
+    "022": {
+     "conf": "未確認",
+     "basis": "出典なし（小型艦の基地）"
+    },
+    "TUG": {
+     "conf": "未確認",
+     "basis": "修理施設がある（NMF）"
+    }
+   },
+   "w_conf": "推定（通常潜水艦 039AB は確認寄りの推定、水上艦の SYL・SLP への割り振りは未確定）",
+   "basis": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』§5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん楡林（三亜側）の岸壁に居る割合に近い数。同じ艦種の SYL＋SLP の w は 1 前後を超えないようにした（湛江 ZJG の w は変えていないので、ZJG と合わせると 1 を超える艦種がある）",
+   "sources": [
+    {
+     "title": "Wikipedia: Yulin Naval Base（三亜側は小型艦と通常動力潜水艦の基地）",
+     "url": "https://en.wikipedia.org/wiki/Yulin_Naval_Base",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "OSM way/299398880「南部战区海军第32潜艇支队」",
+     "url": "https://www.openstreetmap.org/way/299398880",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "South Sea Fleet（Wikipedia 2023 版の写し、艦隊の潜水艦はすべて楡林）",
+     "url": "https://mdwiki.org/wiki/South_Sea_Fleet",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "China Defense Blog: 9th Destroyer Flotilla（2025-11）",
+     "url": "https://china-defense.blogspot.com/2025/11/plan-unit-of-day-9th-destroyer-flotilla.html",
+     "seen": "2026-10-31",
+     "reliability": "E・4"
+    },
+    {
+     "title": "Defence Security Asia: 052DL 177 銅川が第 9 支隊へ（2026-06）",
+     "url": "https://defencesecurityasia.com/en/china-type-052dl-destroyer-tongchuan-south-china-sea-plan-southern-fleet/",
+     "seen": "2026-10-31",
+     "reliability": "D・4"
+    },
+    {
+     "title": "GlobalSecurity: Sanya（2017-03-07 に 173・171・907 が三亜に帰港）",
+     "url": "https://www.globalsecurity.org/military/world/china/sanya.htm",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "NMF Brief No.16（2026-02-06）：海南の修理施設の拡張",
+     "url": "https://maritimeindia.org/wp-content/uploads/2026/02/Brief-No-16-06-Feb-2026-China-Augments-Ship-Repair-Facilities-at-Hainan.pdf",
+     "seen": "2026-10-31",
+     "reliability": "B・2"
+    }
+   ],
+   "status": "provisional",
+   "note": "確度の低いもの（未確認・推定）は 3 か月ごと、または統幕の発表で艦隊の割り振りが変わったと分かったときに見直す（設計 §2.4）。新しい櫛形桟橋 F1〜F5 の使い始めで 055・052D・075 の w を見直す"
   },
   "SLP": {
    "fleet": "south",
    "w": {
+    "055": 0.5,
+    "052D": 0.4,
+    "052DL": 0.15,
+    "052C": 0.5,
+    "054A": 0.15,
+    "054A+": 0.15,
+    "054B": 0.1,
+    "056A": 0.1,
+    "039AB": 0.1,
+    "093": 0.9,
     "094": 1.0,
-    "093": 1.0,
     "002": 1.0,
+    "003": 1.0,
+    "075": 0.3,
+    "071": 0.2,
+    "072A": 0.0,
     "901": 0.5,
-    "039AB": 0.3,
-    "055": 0.3,
-    "052D": 0.3,
-    "052DL": 0.3,
     "903": 0.3,
-    "054A": 0.2,
-    "056A": 0.2,
+    "815A": 0.0,
+    "MCM": 0.0,
+    "022": 0.0,
     "TUG": 0.6
    },
-   "w_conf": "未確認（仮置き・要出典）",
-   "basis": "設計 §2.2-4 の初期の仮説「SLP＝原子力潜水艦と空母」をそのまま重みにしたもの（ORF・Wikipedia が龍坡を原子力潜水艦と空母の基地とする：sites.json の出典）。数字に出典は無い",
-   "sources": [],
-   "status": "placeholder",
-   "note": "出典の無い仮置き。2部が設計 §2.2 の手順（在籍表・母港の手がかり・S2 の桟橋ごとの長さ）で直す。艦種がここに無いものは重み 0（この港の事前分布に入らない）"
+   "w_detail": {
+    "055": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）"
+    },
+    "052D": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）"
+    },
+    "052DL": {
+     "conf": "推定",
+     "basis": "176・177 だけが南部の第 9 支隊（DSA D・4）"
+    },
+    "052C": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）"
+    },
+    "054A": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）"
+    },
+    "054A+": {
+     "conf": "推定",
+     "basis": "第 9 駆逐艦支隊（055×4・052C×2・052D 172〜175・052DL 177・フリゲート約 5）は三亜の楡林・亜龍湾の複合体（CDB E・4、DSA D・4）。SYL と SLP のどちらの桟橋か決められないので半分ずつ（2部 §3.1 の判断）"
+    },
+    "054B": {
+     "conf": "推定",
+     "basis": "出典なし。フリゲートの割合より小さく"
+    },
+    "056A": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "039AB": {
+     "conf": "未確認",
+     "basis": "通常潜水艦は SYL（第 32 支隊）"
+    },
+    "093": {
+     "conf": "確認寄りの推定",
+     "basis": "龍坡は原潜の基地、093 数隻（ORF B・2）、2022-07-31 に 093 らしき 1 隻（Defense News B・2）"
+    },
+    "094": {
+     "conf": "確認寄りの推定",
+     "basis": "094 全数 6〜7 隻が龍坡（ORF B・2）、2022-07-31 に 094×3（Defense News B・2）"
+    },
+    "002": {
+     "conf": "確認寄りの推定",
+     "basis": "空母を含む大型艦の桟橋（Defense News）・950 m の桟橋 2 本（Wikipedia Longpo）・2025-11-24 に楡林基地（Newsweek）"
+    },
+    "003": {
+     "conf": "確認寄りの推定",
+     "basis": "2025-11-05 に三亜で就役・楡林基地から出港（Wikipedia）、2025-11-24 に山東と横並び（Newsweek）"
+    },
+    "075": {
+     "conf": "推定",
+     "basis": "075 1 番艦が試験中に楡林で撮影（CSIS、2021、B・3）"
+    },
+    "071": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "072A": {
+     "conf": "未確認",
+     "basis": "出典なし。重みに入れない"
+    },
+    "901": {
+     "conf": "推定",
+     "basis": "空母の随伴（2部の判断）"
+    },
+    "903": {
+     "conf": "推定",
+     "basis": "補給艦の帰港の記録（GS）を SYL と分けた"
+    },
+    "815A": {
+     "conf": "未確認",
+     "basis": "重みに入れない"
+    },
+    "MCM": {
+     "conf": "未確認",
+     "basis": "重みに入れない"
+    },
+    "022": {
+     "conf": "未確認",
+     "basis": "重みに入れない"
+    },
+    "TUG": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    }
+   },
+   "w_conf": "確認寄りの推定（原潜 094・093、空母 002・003）、水上艦は推定",
+   "basis": "2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』§5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は南部戦区の在籍のうち、ふだん亜龍湾（龍坡）の岸壁に居る割合に近い数",
+   "sources": [
+    {
+     "title": "ORF: China's Nuclear Submarine Bases: A Stocktaking（2024-10-21）",
+     "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+     "seen": "2026-10-31",
+     "reliability": "B・2"
+    },
+    {
+     "title": "Defense News 2022-09-21：潜水艦基地の拡張の衛星画像",
+     "url": "https://www.defensenews.com/naval/2022/09/21/satellite-images-reveal-chinese-expansion-of-submarine-base/",
+     "seen": "2026-10-31",
+     "reliability": "B・2"
+    },
+    {
+     "title": "Wikipedia: Longpo Naval Base（950 m の桟橋 2 本）",
+     "url": "https://en.wikipedia.org/wiki/Longpo_Naval_Base",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "Newsweek 2025-11-25：山東と福建が楡林基地に",
+     "url": "https://newsweek.com/satellites-two-chinese-aircraft-carriers-home-base-11104565",
+     "seen": "2026-10-31",
+     "reliability": "C・2"
+    },
+    {
+     "title": "Wikipedia: Chinese aircraft carrier Fujian",
+     "url": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian",
+     "seen": "2026-10-31",
+     "reliability": "C・2"
+    },
+    {
+     "title": "Defense News 2021-01-21（CSIS：075 1 番艦が試験中に楡林で撮影）",
+     "url": "https://development.defensenews.com/?p=44960",
+     "seen": "2026-10-31",
+     "reliability": "B・3"
+    }
+   ],
+   "status": "provisional",
+   "note": "空母は 950 m の桟橋 2 本に着くと見るのが自然（どの面かは未確認）。潜水艦トンネルに入った艦は見えない"
   }
  }
 }

@@ -101,8 +101,9 @@ def resolve_classes(table: dict, site_id: str | None = None) -> tuple[list[dict]
         f = fleet.get(c["id"])
         if w is None or f is None or not (float(w) > 0 and float(f["count"]) > 0):
             continue
+        det = (st.get("w_detail") or {}).get(c["id"]) or {}  # per-class credibility (2部), else the site's
         out.append({**c, "count": f["count"], "count_conf": f.get("conf", "推定"), "w": w,
-                    "w_conf": st.get("w_conf", "推定")})
+                    "w_conf": det.get("conf") or st.get("w_conf", "推定")})
     return out, key
 
 
@@ -513,10 +514,12 @@ def class_table(site_id: str | None = None) -> list[dict]:
 
 
 def site_class_tables() -> dict:
-    """Every site with its own weights: {site: {status, basis, classes}} (meta.json)."""
+    """Every site with its own weights: {site: {status, basis, sources (if any), classes}} (meta.json).
+    A class's w_conf is its own credibility (w_detail) when the site has one."""
     t = load_classes()
     return {sid: {"fleet": st.get("fleet"), "w_conf": st.get("w_conf"), "status": st.get("status", "estimate"),
-                  "basis": st.get("basis"), "classes": class_table(sid)} for sid, st in (t.get("sites") or {}).items()}
+                  "basis": st.get("basis"), **({"sources": st["sources"]} if st.get("sources") else {}),
+                  "classes": class_table(sid)} for sid, st in (t.get("sites") or {}).items()}
 
 
 def zone_table() -> dict:
