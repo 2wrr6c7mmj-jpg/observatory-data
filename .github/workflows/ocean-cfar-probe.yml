@@ -27,12 +27,12 @@ concurrency:
   group: probe-ocean-cfar
   cancel-in-progress: false
 env:
-  # 2026-10 の値（10-31 司令部：外洋 4,600＝ports-archive.yml と同じ、全体 9,995、湛江の 10-31 の毎日の分 50）。
-  # 10 月の外洋は既に 4,993 PU 使っているので、10 月中の外洋の残りは 0（10 月はもう取得しない）。
-  BUDGET_MONTH: '2026-10'
-  OCEAN_CAP: '4600'
-  GLOBAL_CAP: '9995'
-  GLOBAL_MARGIN: '50'
+  # 2026-11 の値（10-31 司令部：外洋 3,500＝ports-archive.yml・ocean-monitor.yml と同じ、全体 6,000、余裕 450）。
+  # 外洋の 3,500 は定期監視（ocean-monitor.yml）と probe の共用。根拠は ports-archive.yml の注記と同じ。
+  BUDGET_MONTH: '2026-11'
+  OCEAN_CAP: '3500'
+  GLOBAL_CAP: '6000'
+  GLOBAL_MARGIN: '450'
 jobs:
   probe:
     if: ${{ !contains(github.event.head_commit.message, '[ocean-cfar-result]') }}

@@ -32,12 +32,13 @@ env:
   # probe/ports-baseline-oct-*: 上限 9,995 への引き上げ分（港 +550 PU）。QGZ 69・171 を 24 枚に、優先 2 の港、造船所の主軌道（この順）
   BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
   BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
-  # 合計ガード（2026-10 だけ有効）：港の上限 4,750、合計 9,995（ユーザー指示）、余裕 50（湛江の 10-31 の毎日の実行の分）、外洋 4,600。
-  # 11 月以降は外洋 月 400 PU・全体は自主上限。その月の値を決め、BUDGET_MONTH・GUARD_ARGS・OCEAN_CAP を書き直すまで取得しない
-  # BUDGET_MONTH・OCEAN_CAP・全体の上限と余裕は ocean-cfar-probe.yml・ocean-monitor.yml と同じ値（3 つを同じコミットで替える）
-  BUDGET_MONTH: '2026-10'
-  OCEAN_CAP: '4600'
-  GUARD_ARGS: '--budget-month 2026-10 --cap 4750 --global-cap 9995 --global-margin 50'
+  # 合計ガード（2026-11 だけ有効、10-31 司令部）：港の上限 300（SLP v2 の撮り直し 140・QGZ の予備 70・QDH の S2 60・余り 30）、
+  # 全体 6,000、余裕 450（湛江・4 港・造船所の毎日の分と usage に残らない probe）、外洋 3,500（定期監視 案 B、ユーザー決定）。
+  # 根拠：claude/配分案_2026-11 の CDSE.md・claude/設計書_外洋の定期監視（2026-11）.md §6。
+  # BUDGET_MONTH・OCEAN_CAP・全体の上限と余裕は ocean-cfar-probe.yml・ocean-monitor.yml と同じ値（3 つを同じコミットで替える）。12 月は 11 月の実績を見て書き直すまで取得しない
+  BUDGET_MONTH: '2026-11'
+  OCEAN_CAP: '3500'
+  GUARD_ARGS: '--budget-month 2026-11 --cap 300 --global-cap 6000 --global-margin 450'
   RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-s2ext-') && '--s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
