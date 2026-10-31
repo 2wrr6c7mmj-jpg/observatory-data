@@ -556,7 +556,8 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
         "ais": "全件 AIS 未照合（ais=unmatched）。AIS の生データ・MMSI は出さない",
         "null_rule": NULL_RULE, "count_min_share": cfg["count_min_share"],
         "limits": LIMITS,
-        "areas": [{k: a.get(k) for k in ("id", "name", "bbox", "priority", "mode", "orbits", "expected_per_month")}
+        "areas": [{k: a.get(k) for k in ("id", "name", "bbox", "priority", "mode", "orbits", "expected_per_month",
+                                          "pu_month_cap", "min_revisit_days", "note")}
                   for a in areas_in_order(cfg)],
         "files": {"areas.geojson": "監視域", "passes.json": "処理した撮影（域ごと）", "candidates/YYYY-MM-DD.geojson": "撮影日（UTC）ごとの候補（A・B）",
                   "coverage/YYYY-MM-DD.geojson": "その日に実際に見た範囲（0.1° のセル、海況不良のセルは state で区別）",

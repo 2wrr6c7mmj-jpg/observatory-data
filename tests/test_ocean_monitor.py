@@ -89,14 +89,17 @@ class ConfigTest(unittest.TestCase):
     def test_plan_b_areas_and_caps(self):
         cfg = m.load_config()
         on = {a["id"]: a for a in m.areas_in_order(cfg)}
-        self.assertEqual(set(on), {"SENKAKU", "YNG", "MYK", "TWE_S", "SAKI_S", "TSM", "OKI"})
+        self.assertEqual(set(on), {"SENKAKU", "YNG", "MYK", "TWE_S", "SAKI_S", "TSM", "OKI", "BASHI"})
         self.assertEqual({k for k, a in on.items() if a["mode"] == "monthly"}, {"OKI"})
         caps = {k: a["pu_month_cap"] for k, a in on.items()}
-        self.assertEqual(caps, {"SENKAKU": 70, "YNG": 360, "MYK": 350, "TWE_S": 490, "SAKI_S": 310, "TSM": 480, "OKI": 760})
+        self.assertEqual(caps, {"SENKAKU": 70, "YNG": 360, "MYK": 460, "TWE_S": 490, "SAKI_S": 400, "TSM": 480, "OKI": 760,
+                                "BASHI": 300})
         self.assertEqual({k for k, a in on.items() if a.get("min_revisit_days") == 4}, {"YNG", "TWE_S", "TSM"})
         self.assertEqual([a["id"] for a in m.areas_in_order(cfg)][:3], ["SENKAKU", "YNG", "MYK"])
         off = {a["id"] for a in cfg["areas"] if not a.get("enabled")}
-        self.assertEqual(off, {"BASHI", "HKS", "ZSN"})
+        self.assertEqual(off, {"HKS", "ZSN"})
+        self.assertEqual((on["BASHI"]["priority"], on["BASHI"]["mode"]), (2, "every_pass"))
+        self.assertEqual(on["TWE_S"].get("min_area_share", cfg["min_area_share"]), 0.3)
         self.assertLessEqual(sum(caps.values()), 3500)  # the areas' caps fit in OCEAN_CAP of plan B
         self.assertEqual(cfg["pixel_m"], 40)
 
@@ -107,6 +110,10 @@ class ConfigTest(unittest.TestCase):
         self.assertTrue(cells["MYK"].contains(127.1, 25.9))
         self.assertFalse(cells["OKI"].contains(127.1, 25.9))
         self.assertTrue(cells["OKI"].contains(127.3, 25.9))
+        # TWE_S (listed before BASHI) keeps the overlap 121.5-122.0E 21.8-22.0N
+        self.assertTrue(cells["TWE_S"].contains(121.7, 21.9))
+        self.assertFalse(cells["BASHI"].contains(121.7, 21.9))
+        self.assertTrue(cells["BASHI"].contains(121.0, 21.0))
         # Taiwan's west coast (Changhua, Yunlin) is land in the planning cells of TSM
         self.assertLess(cells["TSM"].sea_all[cells["TSM"].cell_of(120.35, 23.45)], 0.5)
 
@@ -445,6 +452,15 @@ class RunTest(unittest.TestCase):
             self.go(tmp, [], now=NOW + timedelta(hours=1))
             self.assertEqual((tmp / "monitor" / "meta.json").read_text(encoding="utf-8"), before)
 
+
+    def test_meta_notes_the_cover_of_east_of_taiwan(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            m.write_meta(out, m.load_config(), [], {"points": []}, NOW)
+            meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
+            twe = next(a for a in meta["areas"] if a["id"] == "TWE_S")
+            self.assertIn("D69・C/D105 の撮影が域の約3割未満しか覆わないため、月の観測は約1.8回", twe["note"])
+            self.assertIn("BASHI", [a["id"] for a in meta["areas"]])
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class PlanMonthTest(unittest.TestCase):
