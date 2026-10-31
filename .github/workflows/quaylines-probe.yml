@@ -35,12 +35,13 @@ jobs:
           doc = quay_lines.save(site, g, quay_lines.fetch(g), out, 1)
           print(json.dumps({k: v for k, v in doc.items() if k != "ways"}, ensure_ascii=False))
           PY
-          python "$RUNNER_TEMP/lines.py" QGZ "$RUNNER_TEMP/bundle/masks" | tee "$RUNNER_TEMP/lines.log"
+          PYTHONPATH="$PWD" python "$RUNNER_TEMP/lines.py" QGZ "$RUNNER_TEMP/bundle/masks" | tee "$RUNNER_TEMP/lines.log"
           sleep 60
-          python "$RUNNER_TEMP/lines.py" ZDH "$RUNNER_TEMP/bundle/masks" | tee -a "$RUNNER_TEMP/lines.log"
+          PYTHONPATH="$PWD" python "$RUNNER_TEMP/lines.py" ZDH "$RUNNER_TEMP/bundle/masks" | tee -a "$RUNNER_TEMP/lines.log"
       - name: Report and export (annotations)
         if: always()
         run: |
+          echo "::notice title=probe-start::report step $(ls -la "$RUNNER_TEMP" | wc -l) entries; bundle: $(ls "$RUNNER_TEMP/bundle/masks" 2>&1 | tr '\n' ' ')"
           python -m sat.annotate text lines-log "$RUNNER_TEMP/lines.log"
           [ -d "$RUNNER_TEMP/bundle" ] || exit 0
           tar -C "$RUNNER_TEMP/bundle" -cf - . | xz -9e > "$RUNNER_TEMP/bundle.tar.xz"
