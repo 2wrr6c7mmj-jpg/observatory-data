@@ -1,1 +1,1 @@
---mode wide --extend --lookback-days 7 --pu-per-min 100
+--mode wide --extend --lookback-days 7 --pu-per-min 100 --max-pu 360
