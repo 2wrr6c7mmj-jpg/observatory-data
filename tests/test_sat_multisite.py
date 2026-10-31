@@ -503,5 +503,130 @@ class SanyaSitesTest(unittest.TestCase):
                     self.assertNotEqual(fsectors.sector_of(secs, c[0], c[1]), "B", (sid, zone["id"], wid))
 
 
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class QingdaoZhoushanSitesTest(unittest.TestCase):
+    """古鎮口 QGZ・定海 ZDH（multi-site PR-3a）：設定・陸マスク・岸壁線・基準・区画・桟橋の型・艦種の重み。"""
+
+    EXPECT = {  # site: (mask version, quay-lines version, baseline orbits)
+        "QGZ": (1, 1, [69, 171]),
+        "ZDH": (2, 1, [171]),
+    }
+
+    def sites(self):
+        return {s["id"]: s for s in run.load_sites()}
+
+    def test_settings_mask_lines_baselines(self):
+        s = self.sites()
+        ports = {p["id"]: p for p in json.loads((Path(__file__).resolve().parents[1] / "sat" / "ports.json").read_text(encoding="utf-8"))["sites"]}
+        for sid, (mv, lv, orbits) in self.EXPECT.items():
+            x = s[sid]
+            self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]),
+                             ("naval", "trial", "per_site", False, mv))
+            self.assertFalse(x["daily"])  # settings only (no CDSE until the November budget is set)
+            self.assertNotIn("pu_month_cap", x)  # not in 2部's paper: to be decided before daily is turned on
+            for k in ("bbox", "center_lat", "center_lon", "mask_version"):  # the same range as the archive
+                self.assertEqual(x[k], ports[sid][k], (sid, k))
+            self.assertEqual(x["baseline"]["orbits"], orbits)
+            mask, info = run.load_mask(sid, mv)
+            g = Grid.for_site(x)
+            self.assertEqual(mask.shape, (g.height, g.width))
+            self.assertEqual(info["bbox"], x["bbox"])
+            self.assertIn("ODbL", info["license"])
+            lines = quay_lines.load(sid, lv)
+            self.assertEqual((lines["bbox"], lines["version"], x["quay_lines_version"]), (x["bbox"], f"{sid}-quay-v{lv}", lv))
+            self.assertIn("ODbL", lines["license"])
+            self.assertGreater(lines["counts"]["pier"], 0)
+            meta = run.site_meta(x)
+            self.assertTrue(meta["quay"]["ready"], meta["quay"]["lacks"])
+            self.assertEqual(meta["quay"]["baselines_present"], orbits)
+            self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
+            for o in orbits:
+                bl = baseline.load(x, o)[1]
+                self.assertEqual((bl["mask_version"], bl["bbox"], bl["width"], bl["height"]),
+                                 (run.mask_tag(x), x["bbox"], g.width, g.height))
+                self.assertEqual((int(bl["scenes"]), bl["credibility"]), (24, "3"))
+                self.assertEqual(sum(1 for sc in bl["scene_list"] if sc.get("used")), 24)
+                self.assertIn("Copernicus Sentinel data", bl["credit"])
+        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)], ["ZJG"])
+
+    def test_sectors(self):
+        s = self.sites()
+        q = run.site_sectors(s["QGZ"])
+        self.assertEqual([(c["id"], c["role"]) for c in q], [("A1", "naval"), ("A2", "naval"), ("B", "other")])
+        lines = {w["id"]: w for w in quay_lines.load("QGZ", 1)["ways"]}
+        # the three outer piers (O3 = NMF pier 5, the carrier pier) lie in A1
+        for wid in (527583619, 694211538, 1564921460):
+            c = np.array(lines[wid]["coords"], float).mean(0)
+            self.assertEqual(fsectors.sector_of(q, c[0], c[1]), "A1", wid)
+        self.assertEqual(fsectors.sector_of(q, *np.array(lines[15388243]["coords"], float).mean(0)), "A2")
+        z = run.site_sectors(s["ZDH"])
+        lines = {w["id"]: w for w in quay_lines.load("ZDH", 1)["ways"]}
+        c = np.array(lines[351277057]["coords"], float).mean(0)  # why A2 starts at 122.0535E (2部: 122.0545E)
+        self.assertEqual(fsectors.sector_of(z, c[0], c[1]), "A2")
+
+    def test_weights(self):
+        t = quay_est.load_classes()
+        ok = {"確認寄りの推定", "推定", "未確認"}
+        ids = {c["id"] for c in t["classes"]}
+        for sid, fleet in (("QGZ", "north"), ("ZDH", "east")):
+            st = t["sites"][sid]
+            self.assertEqual((st["fleet"], st["status"], st["version"]), (fleet, "provisional", "est-1b-202610"))
+            self.assertTrue(st["sources"] and all(x["url"].startswith("https://") and x["seen"] for x in st["sources"]))
+            self.assertEqual(set(st["w"]), set(st["w_detail"]))
+            self.assertTrue(all(d["conf"] in ok and d["basis"] for d in st["w_detail"].values()), sid)
+            self.assertTrue(all(0.0 <= float(w) <= 1.0 for w in st["w"].values()))
+            self.assertTrue(set(st["w"]) <= ids and set(t["fleets"][fleet]) <= ids)
+            self.assertTrue(all(float(f["count"]) > 0 and f["conf"] in ok for f in t["fleets"][fleet].values()))
+            self.assertTrue(quay_est.site_weights_info(sid)["own"])
+            # the classes without a count in 2部's paper ("?") stay out of the fleet, hence out of the prior
+            for c in ("056A", "039AB", "MCM", "022", "TUG"):
+                self.assertNotIn(c, t["fleets"][fleet])
+        q = [c["id"] for c in quay_est.Model(site_id="QGZ").classes]
+        self.assertIn("001", q)
+        self.assertNotIn("052C", q)  # none in the North
+        self.assertNotIn("002", q)
+        d = [c["id"] for c in quay_est.Model(site_id="ZDH").classes]
+        self.assertIn("956", d)
+        self.assertNotIn("001", d)
+        conf = {c["id"]: c["w_conf"] for c in quay_est.site_class_tables()["QGZ"]["classes"]}
+        self.assertEqual((conf["001"], conf["055"], conf["901"]), ("確認寄りの推定", "確認寄りの推定", "未確認"))
+        # Zhanjiang, SYL and SLP still read the southern fleet only (their tables are unchanged)
+        for sid in ("ZJG", "SYL", "SLP"):
+            self.assertEqual(t["sites"][sid]["fleet"], "south")
+        for c in ("001", "956", "051C"):
+            self.assertNotIn(c, [x["id"] for x in quay_est.Model().classes])
+
+    def test_zone_types(self):
+        s = self.sites()
+        z = quay_est.load_zones()
+        m = quay_est.Model(site_id="QGZ", sector_roles=fsectors.sector_roles(run.site_sectors(s["QGZ"])))
+        self.assertEqual(m.zone_of("QGZ", 527583619, "A1"), ("O3", "carrier"))
+        self.assertEqual(m.zone_of("QGZ", 694211538, "A1"), ("O12", "large"))
+        self.assertEqual(m.zone_of("QGZ", 15241280, "A1"), ("SH", "shore"))  # the coast between the outer piers
+        self.assertEqual(m.zone_of("QGZ", 219848835, "A2"), ("IN", "large"))
+        self.assertEqual(m.zone_of("QGZ", 454682366, "B"), ("SH", "shore"))
+        y = quay_est.Model(site_id="ZDH", sector_roles=fsectors.sector_roles(run.site_sectors(s["ZDH"])))
+        self.assertEqual(y.zone_of("ZDH", 1237478050, "A1"), ("W", "large"))
+        self.assertEqual(y.zone_of("ZDH", 351277054, "A2"), ("WP", "medium"))
+        self.assertEqual(y.zone_of("ZDH", 814801319, "B"), ("SH", "shore"))
+        for sid in ("QGZ", "ZDH"):
+            x = s[sid]
+            secs = run.site_sectors(x)
+            lines = {w["id"]: w for w in quay_lines.load(sid, x["quay_lines_version"])["ways"]}
+            self.assertEqual(z["sites"][sid]["lines_version"], f"{sid}-quay-v{x['quay_lines_version']}")
+            self.assertEqual(z["sites"][sid]["status"], "provisional")
+            for zone in z["sites"][sid]["zones"]:
+                self.assertIn(zone["type"], z["types"])
+                for wid in zone["ways"]:
+                    self.assertIn(wid, lines, (sid, zone["id"], wid))
+                    c = np.array(lines[wid]["coords"], float).mean(0)
+                    self.assertNotEqual(fsectors.sector_of(secs, c[0], c[1]), "B", (sid, zone["id"], wid))
+            mm = quay_est.Model(site_id=sid, sector_roles=fsectors.sector_roles(secs))
+            for t in z["types"]:
+                w = mm.zone_weights(t)
+                self.assertTrue(np.isfinite(w).all() and abs(w.sum() - 1) < 1e-9, (sid, t))
+
+
 if __name__ == "__main__":
     unittest.main()

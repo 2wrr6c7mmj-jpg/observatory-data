@@ -1,7 +1,7 @@
 {
  "version": "est-1b",
  "title": "艦種表（全長）・戦区ごとの在籍（隻数）・港ごとの重み（岸壁の数の推定 est-1 の事前分布）",
- "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す",
+ "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す。古鎮口（QGZ）・定海（ZDH）の w と北部・東部の在籍（fleets.north・east）は同じ調査 §5.1・§5.3 の値（provisional、版 est-1b-202610、multi-site PR-3a）。湛江・SYL・SLP の値は変えていない",
  "length_sd_m": 3.0,
  "groups": {
   "X": "210 m 以上（揚陸艦・補給艦・空母）",
@@ -216,7 +216,7 @@
    "group": "X",
    "kind": "carrier",
    "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning",
-   "note": "全長 約 305 m（infobox は Varyag の設計値 306.4 m、2部が 2026-10-31 に確認）。北部戦区（古鎮口）。QGZ を入れるまでどの港の重みにも入らない"
+   "note": "全長 約 305 m（infobox は Varyag の設計値 306.4 m、2部が 2026-10-31 に確認）。北部戦区（古鎮口）。古鎮口 QGZ の重みに入る（PR-3a）"
   },
   {
    "id": "956",
@@ -225,7 +225,7 @@
    "length_conf": "未確認",
    "group": "L",
    "source": "https://en.wikipedia.org/wiki/Sovremenny-class_destroyer",
-   "note": "全長は未確認（約 156 m、2部の概数）。東部戦区（136〜139）。ZDH を入れるまでどの港の重みにも入らない"
+   "note": "全長は未確認（約 156 m、2部の概数）。東部戦区（136〜139）。定海 ZDH の重みに入る（PR-3a）"
   },
   {
    "id": "051C",
@@ -234,7 +234,7 @@
    "length_conf": "未確認",
    "group": "L",
    "source": "https://en.wikipedia.org/wiki/Type_051C_destroyer",
-   "note": "全長は未確認（約 155 m、2部の概数）。北部戦区（115・116）。QGZ を入れるまでどの港の重みにも入らない"
+   "note": "全長は未確認（約 155 m、2部の概数）。北部戦区（115・116）。古鎮口 QGZ の重みに入る（PR-3a）"
   }
  ],
  "fleets": {
@@ -388,6 +388,146 @@
     "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Fujian ; https://newsweek.com/satellites-two-chinese-aircraft-carriers-home-base-11104565",
     "as_of": "2026-10",
     "note": "2025-11-05 に三亜で就役、2025-12-14 に楡林基地から出港（Wikipedia）、2025-11-24 の画像で山東と楡林基地に横並び（Newsweek）。独立 2 件（2部 §3.2 #5）"
+   }
+  },
+  "north": {
+   "055": {
+    "count": 4,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_055_destroyer",
+    "as_of": "2026-10",
+    "note": "101〜104（Wikipedia の表、C・3）"
+   },
+   "052D": {
+    "count": 5,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer",
+    "as_of": "2026-10",
+    "note": "117〜121"
+   },
+   "052DL": {
+    "count": 7,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer",
+    "as_of": "2026-10",
+    "note": "122〜128（126〜128 は所属欄なし、番号から北部）"
+   },
+   "054A": {
+    "count": 4,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+    "as_of": "2026-10"
+   },
+   "054A+": {
+    "count": 5,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+    "as_of": "2026-10"
+   },
+   "054B": {
+    "count": 1,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_054B_frigate",
+    "as_of": "2026-10",
+    "note": "545"
+   },
+   "051C": {
+    "count": 2,
+    "conf": "未確認",
+    "source": "2部の調査（調査_4港の艦種の重みと区画 §5.3、2026-10-31）",
+    "as_of": "2026-10",
+    "note": "115・116。2部 §5.3 で未確認とした"
+   },
+   "903": {
+    "count": 3,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
+    "as_of": "2026-10",
+    "note": "889・902・903"
+   },
+   "901": {
+    "count": 1,
+    "conf": "未確認",
+    "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
+    "as_of": "2026-10",
+    "note": "901 は所属欄なし（所属不明）。2部 §5.3 で北部に仮に置いた"
+   },
+   "001": {
+    "count": 1,
+    "conf": "確認寄りの推定",
+    "source": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning ; https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+    "as_of": "2026-10",
+    "note": "遼寧。母港 楡池（古鎮口）。戦区の正式な所属は頁に無い（2部 §2）"
+   }
+  },
+  "east": {
+   "055": {
+    "count": 2,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_055_destroyer",
+    "as_of": "2026-10",
+    "note": "109・110（2026-03 就役）"
+   },
+   "052D": {
+    "count": 3,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer",
+    "as_of": "2026-10",
+    "note": "154・155・131"
+   },
+   "052DL": {
+    "count": 8,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_052D_destroyer",
+    "as_of": "2026-10",
+    "note": "156・132〜135・157 と、番号から 158・159"
+   },
+   "052C": {
+    "count": 4,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_052C_destroyer",
+    "as_of": "2026-10",
+    "note": "150〜153"
+   },
+   "956": {
+    "count": 4,
+    "conf": "未確認",
+    "source": "2部の調査（調査_4港の艦種の重みと区画 §5.3、2026-10-31）",
+    "as_of": "2026-10",
+    "note": "136〜139。2部はこの調べで出典の頁を見ていない（未確認）"
+   },
+   "054A": {
+    "count": 4,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+    "as_of": "2026-10"
+   },
+   "054A+": {
+    "count": 12,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+    "as_of": "2026-10"
+   },
+   "075": {
+    "count": 2,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock",
+    "as_of": "2026-10",
+    "note": "32・33"
+   },
+   "071": {
+    "count": 3,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock",
+    "as_of": "2026-10",
+    "note": "988・980・986"
+   },
+   "903": {
+    "count": 3,
+    "conf": "推定",
+    "source": "https://en.wikipedia.org/wiki/List_of_active_People%27s_Liberation_Army_Navy_ships",
+    "as_of": "2026-10",
+    "note": "886・890・904"
    }
   }
  },
@@ -740,6 +880,214 @@
    ],
    "status": "provisional",
    "note": "空母は 950 m の桟橋 2 本に着くと見るのが自然（どの面かは未確認）。潜水艦トンネルに入った艦は見えない"
+  },
+  "QGZ": {
+   "version": "est-1b-202610",
+   "fleet": "north",
+   "w": {
+    "055": 0.9,
+    "052D": 0.6,
+    "052DL": 0.6,
+    "051C": 0.3,
+    "054A": 0.6,
+    "054A+": 0.6,
+    "054B": 0.6,
+    "056A": 0.6,
+    "039AB": 0.2,
+    "001": 1.0,
+    "901": 0.2,
+    "903": 0.5,
+    "MCM": 0.3,
+    "022": 0.3,
+    "TUG": 0.6
+   },
+   "w_detail": {
+    "055": {
+     "conf": "確認寄りの推定",
+     "basis": "桟橋 6（575×55 m）＝主に 055（NMF B・2）、055 1 番艦の就役式は桟橋 5（NMF）"
+    },
+    "052D": {
+     "conf": "推定",
+     "basis": "北部の 052D・054A の楡池と旅順 LSN への振り分けは出典なし"
+    },
+    "052DL": {
+     "conf": "推定",
+     "basis": "同上（052D と同じ扱い）"
+    },
+    "051C": {
+     "conf": "推定",
+     "basis": "115・116。旅順の可能性"
+    },
+    "054A": {
+     "conf": "推定",
+     "basis": "桟橋 3（515×30 m）＝フリゲート・コルベット（NMF）"
+    },
+    "054A+": {
+     "conf": "推定",
+     "basis": "桟橋 3（NMF）"
+    },
+    "054B": {
+     "conf": "推定",
+     "basis": "545"
+    },
+    "056A": {
+     "conf": "推定",
+     "basis": "桟橋 3（NMF）"
+    },
+    "039AB": {
+     "conf": "推定",
+     "basis": "サイト A の双子の桟橋が潜水艦用なら上げる（NMF の筆者の推測）"
+    },
+    "001": {
+     "conf": "確認寄りの推定",
+     "basis": "桟橋 5（550×120 m）＝遼寧、2012 から（NMF B・2）。2013 年から楡池の大きな桟橋に係留（Wikipedia C・2）。独立 2 件"
+    },
+    "901": {
+     "conf": "未確認",
+     "basis": "901 の所属不明"
+    },
+    "903": {
+     "conf": "推定",
+     "basis": "出典なし（補給艦の割合）"
+    },
+    "MCM": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "022": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "TUG": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    }
+   },
+   "w_conf": "確認寄りの推定（空母 001・055）、ほかは推定",
+   "basis": "2部の調査（調査_4港の艦種の重みと区画 §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は北部戦区の在籍のうち、ふだん古鎮口（楡池）の岸壁に居る割合に近い数",
+   "sources": [
+    {
+     "title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion（2025-02-06）",
+     "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+     "seen": "2026-10-31",
+     "reliability": "B・2"
+    },
+    {
+     "title": "Wikipedia: Chinese aircraft carrier Liaoning",
+     "url": "https://en.wikipedia.org/wiki/Chinese_aircraft_carrier_Liaoning",
+     "seen": "2026-10-31",
+     "reliability": "C・2"
+    }
+   ],
+   "status": "provisional",
+   "note": "北部戦区の 056A・039AB・MCM・022・TUG は隻数の出典が無く fleets.north に入れていない（2部 §5.3 の「?」）。そのため w を書いたが事前分布には入らない。旅順 LSN との振り分けは出典なし"
+  },
+  "ZDH": {
+   "version": "est-1b-202610",
+   "fleet": "east",
+   "w": {
+    "055": 0.5,
+    "052D": 0.7,
+    "052DL": 0.7,
+    "052C": 0.8,
+    "956": 0.7,
+    "054A": 0.4,
+    "054A+": 0.4,
+    "056A": 0.4,
+    "039AB": 0.2,
+    "075": 0.1,
+    "071": 0.1,
+    "903": 0.4,
+    "MCM": 0.3,
+    "022": 0.3,
+    "TUG": 0.6
+   },
+   "w_detail": {
+    "055": {
+     "conf": "推定",
+     "basis": "109・110 の母港の出典なし"
+    },
+    "052D": {
+     "conf": "推定",
+     "basis": "定海は東海艦隊の主港、2013 年に最新の駆逐艦など 10 隻以上（CNA 2013、C・3）。OSM「东部战区海军驱逐舰第3支队」"
+    },
+    "052DL": {
+     "conf": "推定",
+     "basis": "052D と同じ扱い"
+    },
+    "052C": {
+     "conf": "推定",
+     "basis": "150〜153。定海の駆逐艦の母港の一つと推定"
+    },
+    "956": {
+     "conf": "推定",
+     "basis": "136〜139"
+    },
+    "054A": {
+     "conf": "推定",
+     "basis": "東部の 054A の基地（寧波・福建など）との分け方は出典なし"
+    },
+    "054A+": {
+     "conf": "推定",
+     "basis": "同上"
+    },
+    "056A": {
+     "conf": "推定",
+     "basis": "水警区"
+    },
+    "039AB": {
+     "conf": "推定",
+     "basis": "舟山に潜水艦の部隊（GlobalSecurity の古い出典、C・5）"
+    },
+    "075": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "071": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "903": {
+     "conf": "推定",
+     "basis": "2013 の記事に補給艦（CNA 2013）"
+    },
+    "MCM": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "022": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    },
+    "TUG": {
+     "conf": "未確認",
+     "basis": "出典なし"
+    }
+   },
+   "w_conf": "推定",
+   "basis": "2部の調査（調査_4港の艦種の重みと区画 §5.1、2026-10-31、出典を見た日はすべて 2026-10-31、有料資料なし）。w は東部戦区の在籍のうち、ふだん定海の岸壁に居る割合に近い数。推定だけなので est-1 の 60 m 以上の内訳は確度 4 と明記して出す（2部 §5.1）",
+   "sources": [
+    {
+     "title": "GlobalSecurity (CNA 2013-08-10): New Chinese Navy vessels pack Zhoushan port",
+     "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "OpenStreetMap way/482638691「东部战区海军驱逐舰第3支队」",
+     "url": "https://www.openstreetmap.org/way/482638691",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    },
+    {
+     "title": "Wikipedia: East Sea Fleet",
+     "url": "https://en.wikipedia.org/wiki/East_Sea_Fleet",
+     "seen": "2026-10-31",
+     "reliability": "C・3"
+    }
+   ],
+   "status": "provisional",
+   "note": "東部戦区の 056A・039AB・MCM・022・TUG は隻数の出典が無く fleets.east に入れていない（2部 §5.3 の「?」）。そのため w を書いたが事前分布には入らない"
   }
  }
 }

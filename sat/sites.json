@@ -380,6 +380,213 @@
      "note": "範囲 v1（北端 18.230N、港のアーカイブと PR #31 の基準 SLP-land-v1/ro157-bl-1）。毎日の実行では使っていない（daily＝false）ので series_breaks には入れない。v1 の陸マスク・岸壁線・基準のファイルは記録として残す"
     }
    ]
+  },
+  {
+   "id": "QGZ",
+   "name": "青島・古鎮口（楡池海軍基地）",
+   "group": "青島",
+   "kind": "naval",
+   "bbox": [
+    119.955,
+    35.7,
+    120.01,
+    35.745
+   ],
+   "center_lat": 35.7233,
+   "center_lon": 119.9817,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）",
+     "role": "naval",
+     "bbox": [
+      119.994,
+      35.712,
+      120.01,
+      35.725
+     ],
+     "source": "2部の調査（調査_4港の艦種の重みと区画、2026-10-31） §3.3・§4.3。NMF（2025-02-06）の桟橋 5（550×120 m、遼寧）・桟橋 6（575×55 m、055）・桟橋 7（2024〜建設）と、S2 2026-09-22 の目測の桟橋 3 本の対応は推定。OSM の線（QGZ-quay-v1、osm_base 2026-10-31T07:54:50Z）：O3＝way 527583619、O2＝way 694211538、O1＝way 1564921460 の 3 本とも区画の内側。確度：推定（O3 は確度 3）"
+    },
+    {
+     "id": "A2",
+     "name": "内港（防波堤 C の内側の岸壁・斜めの桟橋 4 本）",
+     "role": "naval",
+     "bbox": [
+      119.963,
+      35.714,
+      119.994,
+      35.742
+     ],
+     "source": "2部の調査（調査_4港の艦種の重みと区画、2026-10-31） §3.3・§4.3。2部の案の東端 119.9950 は A1 の西端 119.9940 と重なるので 119.9940 にした（間は陸と岸で、桟橋は無い。S2 2026-09-22 と OSM で確認）。OSM の線：防波堤 C の内側の岸壁 way 15388243、斜めの桟橋 219848836・219848839・219848841・582517902、北西の防波堤 219848837 ほか。修理岸壁（L 字 945 m）の位置は未特定。確度：推定"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外（古鎮湾の外の泊地・南の防波堤）",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     69,
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro69-bl-1・ro171-bl-1（QGZ-land-v1）は probe/ports-baseline-oct-ops3（49c7e00、probe/ports-s2ext-ops3 4cfa9a5 と同じ中身）で lookback 730 日・最大 26 で作成（各 24 撮影。12 か月より古い撮影 ro69 3 枚・ro171 6 枚）。軌道 3・76 は 13・10 撮影で 24 に届かず使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "QGZ"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "NMF: Yuchi Naval Base, Guzhen Bay in the midst of another round of expansion",
+     "url": "https://maritimeindia.org/yuchi-naval-base-guzhen-bay-in-the-midst-of-another-round-of-expansion/",
+     "coord": "35°43.4′N 119°58.9′E（原文の表記 35°43.'4 N, 119°58'.9 E を読み替え）",
+     "note": "古鎮湾、青島の南西約 50 km。内外の泊地と桟橋 1〜7（空母用の桟橋 5 を含む）"
+    },
+    {
+     "title": "Wikipedia: Yuchi Naval Base",
+     "url": "https://en.wikipedia.org/wiki/Yuchi_Naval_Base",
+     "note": "青島の西海岸新区、北海艦隊"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap は未設定＝2部の文書に値なし。毎日を有効にする前に決める）。範囲と陸マスク QGZ-land-v1 は港のアーカイブ（sat/ports.json）のまま（約 5.0×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 QGZ-quay-v1（OSM、osm_base 2026-10-31T07:54:50Z、桟橋 13・海岸線 6）は probe/quaylines-qgz-zdh で取得。基準は軌道 69・171（各 24 撮影、確度 3）。区画（2部 §4.3）：A1 外港の東の桟橋 O1〜O3、A2 内港、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）"
+  },
+  {
+   "id": "ZDH",
+   "name": "舟山・定海（東海艦隊）",
+   "group": "寧波・舟山",
+   "kind": "naval",
+   "bbox": [
+    121.995,
+    29.99,
+    122.08,
+    30.035
+   ],
+   "center_lat": 30.0125,
+   "center_lon": 122.0375,
+   "pixel_m": 10,
+   "mask_version": 2,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "西岸の横付け岸壁 W1〜W4（駆逐艦第 3 支隊）",
+     "role": "naval",
+     "bbox": [
+      122.0052,
+      29.9972,
+      122.0284,
+      30.0318
+     ],
+     "source": "2部の調査（調査_4港の艦種の重みと区画、2026-10-31） §3.4・§4.4。OSM way/482638691「东部战区海军驱逐舰第3支队」の外接矩形＋150 m。S2 2026-07-23 の沖の平行岸壁 4 区間（計 約 2.5 km）は区画の内側（W1 の根元の目測 122.0051E は西端 122.0052E とほぼ同じ、±30 m の内）。OSM の線（ZDH-quay-v1、osm_base 2026-10-31T07:55:55Z）は 14 本（814801323〜814801326・814805498〜814805500・1237478048〜1237478050・1446940000〜1446940002・1446940331）が区画の内側。北西の角の外の桟橋 814801319・814801322・1566623245・1566623249（工業港側）は B。確度：推定"
+    },
+    {
+     "id": "A2",
+     "name": "舟山水警区の岸壁（小型艦）",
+     "role": "naval",
+     "bbox": [
+      122.0535,
+      30.0052,
+      122.0767,
+      30.016
+     ],
+     "source": "2部の調査（調査_4港の艦種の重みと区画、2026-10-31） §3.4・§4.4。OSM way/351277058「舟山水警区机关」の外接矩形＋150 m。2部の案の西端 122.0545E では水警区の桟橋 OSM way 351277057（122.0540〜122.0546E）の中点が外に出るので、西端を 122.0535E に広げた。S2 2026-07-23 の南岸の小さな岸壁群は区画の内側。確度：推定。OSM の線（ZDH-quay-v1）：桟橋 351277051・351277053〜351277057・732803274・815971279・815971280・1566634735・1566634738・1566634739"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外（定海の商港・北西の工業港の桟橋）",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（ZDH-land-v2）は probe/ports-baseline-oct-ops3（49c7e00、probe/ports-s2ext-ops3 4cfa9a5 と同じ中身）で lookback 365 日・最大 24 で作成（24 撮影、2025-12-18〜2026-10-21）。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZDH"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "GlobalSecurity: Zhoushan Naval Base",
+     "url": "https://www.globalsecurity.org/military/world/china/zhoushan.htm",
+     "coord": "30°01′N 122°06′E",
+     "note": "舟山海軍基地。個々の桟橋の座標は出典になし"
+    },
+    {
+     "title": "GlobalSecurity (CNA 2013): New Chinese Navy vessels pack Zhoushan port",
+     "url": "https://www.globalsecurity.org/wmd/library/news/china/2013/china-130810-cna01.htm"
+    },
+    {
+     "title": "OpenStreetMap way/482638691「东部战区海军驱逐舰第3支队」",
+     "url": "https://www.openstreetmap.org/way/482638691",
+     "bbox": [
+      122.00677,
+      29.99856,
+      122.02686,
+      30.03043
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/351277058「舟山水警区机关」",
+     "url": "https://www.openstreetmap.org/way/351277058",
+     "bbox": [
+      122.05601,
+      30.00658,
+      122.07517,
+      30.01465
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap は未設定＝2部の文書に値なし。毎日を有効にする前に決める）。範囲 v2 と陸マスク ZDH-land-v2 は港のアーカイブ（sat/ports.json）のまま（約 8.2×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 ZDH-quay-v1（OSM、osm_base 2026-10-31T07:55:55Z、桟橋 39・海岸線 8）は probe/quaylines-qgz-zdh で取得。基準は軌道 171（24 撮影、確度 3）。区画（2部 §4.4）：A1 西岸の横付け岸壁（駆逐艦第 3 支隊）、A2 舟山水警区、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）",
+   "archive_history": [
+    {
+     "mask_version": 1,
+     "until_utc": "2026-10-30",
+     "bbox": [
+      122.07,
+      29.99,
+      122.135,
+      30.04
+     ],
+     "note": "港のアーカイブ（probe）だけで使った範囲 v1（定海の港と南の水道（約 6.3×5.6 km）。象山は基地の位置の公開の出典が確かめられず、今回は外した（未解決））。毎日の実行では使っていないので series_breaks には入れない"
+    }
+   ]
   }
  ]
 }
