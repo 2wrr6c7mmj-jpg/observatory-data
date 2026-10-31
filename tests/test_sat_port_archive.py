@@ -162,6 +162,140 @@ class BudgetArgsTest(unittest.TestCase):
             self.assertIn("1999-01", err.getvalue())
 
 
+    def test_run_and_baseline_need_the_month(self):
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()):
+            d = Path(d)
+            run = ["run", "--port", "SYL", "--cap", "1", "--raw-dir", str(d), "--tmp", str(d), "--mask-dir", str(d)]
+            base = ["baseline", "--only", "SYL", "--cap", "1"]
+            for argv in (run, base):
+                with self.assertRaises(SystemExit, msg=argv[0]):
+                    pa.main(argv)
+            with mock.patch.object(pa, "LimitedClient", side_effect=AssertionError("no request")):
+                for argv in (run, base):
+                    self.assertEqual(pa.main(argv + ["--budget-month", "1999-01"]), 2, argv[0])
+
+
+def fake_git(trees):
+    """A git runner over {ref: {path: text}} for gather_usage."""
+    def git(*args):
+        if args[0] == "for-each-ref":
+            return "\n".join(["origin/HEAD"] + list(trees)) + "\n"
+        if args[0] == "ls-tree":
+            return "\n".join(p for p in trees[args[3]] if p.startswith(args[4])) + "\n"
+        if args[0] == "show":
+            ref, path = args[1].split(":", 1)
+            return trees[ref][path]
+        raise AssertionError(args)
+    return git
+
+
+USAGE_HEAD = "run_utc,site_id,requests,processing_units\n"
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class PortsUsageTest(unittest.TestCase):
+    """The archive's own usage is read from every branch (largest copy of each file), so a new probe branch cut
+    from main does not start again from 0 PU."""
+
+    def trees(self):
+        syl_old = USAGE_HEAD + "2026-10-20T00:00:00Z,SYL,10,60\n"
+        syl_new = syl_old + "2026-10-29T00:00:00Z,SYL,10,40\n2026-09-29T00:00:00Z,SYL,10,999\n"
+        return {
+            "origin/main": {"docs/data/sat/usage.csv": USAGE_HEAD + "2026-10-01T00:00:00Z,ZJG,5,7\n"},
+            "origin/ops3/ports-archive": {"docs/data/sat/ports/SYL/usage.csv": syl_old,
+                                          "docs/data/sat/ports_usage.csv": syl_old},
+            "origin/probe/ports-archive-ops3": {"docs/data/sat/ports/SYL/usage.csv": syl_new,
+                                                "docs/data/sat/ports/QGZ/usage.csv": USAGE_HEAD + "2026-10-29T00:00:00Z,QGZ,3,25\n",
+                                                "docs/data/sat/ports/masks/x.json": "{}",
+                                                "docs/data/sat/ports_usage.csv": syl_new,
+                                                "docs/data/ocean/usage.csv": USAGE_HEAD + "2026-10-02T00:00:00Z,ocean,4,30\n"},
+            "origin/ops/ocean-coverage-probe": {"docs/data/ocean/usage.csv": USAGE_HEAD + "2026-10-02T00:00:00Z,ocean,4,30\n2026-10-03T00:00:00Z,ocean,4,20\n"},
+        }
+
+    def test_gather_and_guard(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            n = pa.gather_usage(d / "other", d / "ports", git=fake_git(self.trees()), log=lambda s: None)
+            self.assertEqual(n, {"other": 2, "ports": 3})
+            self.assertEqual(sorted(p.name.split("--")[0] for p in (d / "ports").iterdir()),
+                             ["ports-QGZ", "ports-SYL", "ports-SYL"])
+            # a new probe branch cut from main: no ports usage in its own tree
+            empty = d / "tree" / "docs" / "data" / "sat" / "ports" / "SYL" / "usage.csv"
+            now = datetime(2026, 10, 31, tzinfo=timezone.utc)
+            g = pa.guard("2026-10", now, 4750, 9995, 50, 4600, sorted((d / "other").iterdir()),
+                         sorted((d / "ports").iterdir()) + [empty])
+            self.assertEqual(g["done_pu"], 100 + 25)       # SYL: largest copy (60 + 40), not 60 + 100; QGZ 25
+            self.assertEqual(g["done_req"], 20 + 3)
+            self.assertEqual(g["other_pu"], 50)            # ocean: largest copy (30 + 20)
+            self.assertEqual(g["reserve"], 4550)           # 4,600 - 50
+            self.assertEqual(g["cap"], min(4750 - 125, 9995 - 50 - 50 - 4550 - 125))
+            # the working tree's copy is the same file as the branch copies (largest counted, not summed)
+            empty.parent.mkdir(parents=True)
+            empty.write_text(USAGE_HEAD + "2026-10-20T00:00:00Z,SYL,10,60\n2026-10-30T00:00:00Z,SYL,10,70\n")
+            g2 = pa.guard("2026-10", now, 4750, 9995, 50, 4600, [], sorted((d / "ports").iterdir()) + [empty])
+            self.assertEqual(g2["done_pu"], 130 + 25)
+            with self.assertRaises(ValueError):
+                pa.guard("2026-09", now, 4750, 9995, 50, 4600, [], [])
+
+    def test_plan_counts_other_branches(self):
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()), \
+                contextlib.redirect_stdout(io.StringIO()):
+            d = Path(d)
+            pa.gather_usage(d / "other", d / "ports", git=fake_git(self.trees()), log=lambda s: None)
+            month = datetime.now(timezone.utc).strftime("%Y-%m")
+            for f in list((d / "ports").iterdir()) + list((d / "other").iterdir()):  # move the rows to this month
+                f.write_text(f.read_text().replace("2026-10-", month + "-"))
+            rc = pa.main(["plan", "--out", str(d / "p.json"), "--cap", "4750", "--global-cap", "9995",
+                          "--global-margin", "50", "--ocean-cap", "4600", "--budget-month", month, "--only", "NONE",
+                          "--usage", *map(str, sorted((d / "other").iterdir())),
+                          "--ports-usage", *map(str, sorted((d / "ports").iterdir()))])
+            self.assertEqual(rc, 0)
+            res = json.loads((d / "p.json").read_text())
+            self.assertEqual(res["ports_done_pu"], 125)
+            self.assertEqual(res["cap_pu"], min(4750 - 125, 9995 - 50 - 50 - 4550 - 125))
+            self.assertEqual(res["catalog_requests"], 0)
+
+    def test_credit(self):
+        self.assertEqual(pa.credit(["2026", "2026"]), "Contains modified Copernicus Sentinel data 2026")
+        self.assertEqual(pa.credit([2026, 2025]), "Contains modified Copernicus Sentinel data 2025–2026")
+        from sat import port_locate as pl
+        self.assertEqual(pl.overview_credit(datetime(2026, 2, 1, tzinfo=timezone.utc)),
+                         "Contains modified Copernicus Sentinel data 2025–2026")
+        self.assertEqual(pl.overview_credit(datetime(2026, 10, 31, tzinfo=timezone.utc)),
+                         "Contains modified Copernicus Sentinel data 2026")
+
+    def test_locate_goes_through_the_guard(self):
+        from sat import port_locate as pl
+        month = datetime.now(timezone.utc).strftime("%Y-%m")
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()), \
+                contextlib.redirect_stdout(io.StringIO()):
+            d = Path(d)
+            regions = d / "regions.json"
+            regions.write_text(json.dumps({"regions": [{"id": "R1", "bbox": [120.0, 30.0, 120.1, 30.1]},
+                                                       {"id": "R2", "bbox": [121.0, 30.0, 121.1, 30.1]}]}))
+            guard = ["--cap", "4750", "--global-cap", "9995", "--ocean-cap", "4600"]
+            for drop in ("--cap", "--global-cap", "--ocean-cap"):
+                i = guard.index(drop)
+                with self.assertRaises(SystemExit):
+                    pl.main(["--regions", str(regions), "--out", str(d / "o"), "--budget-month", month] + guard[:i] + guard[i + 2:])
+            with mock.patch.object(pl.cdse, "Client", side_effect=AssertionError("no request")), \
+                    mock.patch.object(pa, "LimitedClient", side_effect=AssertionError("no request")):
+                self.assertEqual(pl.main(["--regions", str(regions), "--out", str(d / "o"), "--budget-month", "1999-01"] + guard), 2)
+            # the ports cap is used up on another branch: no overview request, locate.json says 0 PU
+            used = d / "ports-SYL--0.csv"
+            used.write_text(USAGE_HEAD + f"{month}-01T00:00:00Z,SYL,10,4750\n")
+            fake = Fake(Grid.for_site(SITE))
+            with mock.patch.object(pl, "fetch", return_value={}), mock.patch.object(pl.time, "sleep"), \
+                    mock.patch.object(pl.cdse.urllib.request, "urlopen", fake):
+                rc = pl.main(["--regions", str(regions), "--out", str(d / "o"), "--budget-month", month,
+                              "--ports-usage", str(used)] + guard)
+            self.assertEqual(rc, 0)
+            self.assertEqual(fake.process_calls, 0)
+            r = json.loads((d / "o" / "locate.json").read_text())
+            self.assertEqual((r["pu"], r["requests"]), (0, 0))
+            self.assertEqual([x["id"] for x in r["regions"]], ["R1"])  # stopped after the first refusal
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class PlanTest(unittest.TestCase):
     def test_allocate_priority_and_scale(self):
@@ -235,6 +369,53 @@ class LimitTest(unittest.TestCase):
         self.assertEqual(pu, 0.5)
         self.assertGreaterEqual(c.retries_429, 1)
 
+    def test_internal_resends_in_the_window(self):
+        g = Grid.for_site(SITE)
+        fake = Fake(g, fail_429=2)  # cdse.Client resends twice by itself, then succeeds
+        c, _clock = self.client(fake, pu_min=100)
+        t = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        c.process(g.bbox, g.width, g.height, t, t, True)
+        self.assertEqual(c.requests, 3)
+        self.assertEqual(len(c.window), 3)  # the two resends count in the request rate (0 PU)
+        self.assertAlmostEqual(sum(p for _t, p in c.window), 0.5)
+
+    def test_month_change_stops_before_next_request(self):
+        g = Grid.for_site(SITE)
+        fake = Fake(g)
+        clock = Clock()
+        months = iter([datetime(2026, 10, 31, 23, 59, tzinfo=timezone.utc), datetime(2026, 11, 1, 0, 0, tzinfo=timezone.utc)])
+        c = pa.LimitedClient(100.0, 100, 100, 100, clock=clock, sleep=clock.sleep, client_id="i", client_secret="s",
+                             opener=fake, budget_month="2026-10", utcnow=lambda: next(months))
+        t = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        c.process(g.bbox, g.width, g.height, t, t, True)
+        with self.assertRaises(pa.BudgetStop) as cm:
+            c.process(g.bbox, g.width, g.height, t, t, True)
+        self.assertIn("2026-11", str(cm.exception))
+        self.assertEqual(fake.process_calls, 1)
+
+    def test_one_request_over_the_rate_stops(self):
+        g = Grid.for_site(SITE)
+        fake = Fake(g)
+        c, clock = self.client(fake, pu_min=0.001)  # one S1 chip is estimated above 0.001 PU
+        t = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        with self.assertRaises(pa.BudgetStop):
+            c.process(g.bbox, g.width, g.height, t, t, True)
+        self.assertEqual(fake.process_calls, 0)
+        self.assertEqual(clock.slept, [])
+
+    def test_deadline_checked_while_waiting(self):
+        g = Grid.for_site(SITE)
+        fake = Fake(g)
+        c, clock = self.client(fake, pu_min=1.0)
+        c.deadline = 30.0
+        t = datetime(2026, 1, 1, tzinfo=timezone.utc)
+        for _ in range(2):
+            c.process(g.bbox, g.width, g.height, t, t, True)
+        with self.assertRaises(pa.BudgetStop):  # the window would free at 60 s, after the deadline
+            c.process(g.bbox, g.width, g.height, t, t, True)
+        self.assertEqual(fake.process_calls, 2)
+        self.assertLessEqual(clock.t, 61)
+
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class RunPortTest(unittest.TestCase):
@@ -264,6 +445,9 @@ class RunPortTest(unittest.TestCase):
             fc = json.loads((d / "out" / "TPA" / "detections" / "2026-01.geojson").read_text())
             self.assertTrue(fc["features"])
             self.assertTrue((d / "raw" / "TPA" / "README.json").exists())
+            self.assertEqual(fc["attribution"], "Contains modified Copernicus Sentinel data 2026")
+            self.assertEqual(json.loads((d / "raw" / "TPA" / "README.json").read_text())["credit"],
+                             "Contains modified Copernicus Sentinel data 2026")
             s2rows = pa.read_csv(d / "out" / "TPA" / "s2_scenes.csv")
             self.assertEqual(sorted(r["result"] for r in s2rows), ["clear", "clear"])
             self.assertEqual(res["s2"]["clear"], 2)

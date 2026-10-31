@@ -4,9 +4,12 @@ The sites are in sat/ports.json (same format as sat/sites.json). The daily run (
 read them, and nothing here writes to docs/data/sat outside docs/data/sat/ports/ and
 docs/data/sat/ports_usage.csv (the PU of this archive; not counted in the 1,000 PU cap of the daily run).
 
-    python -m sat.port_archive plan  --out plan.json --cap PU --global-cap PU --ocean-cap PU --budget-month YYYY-MM [--usage CSV ...]  # catalog only (no PU)
+    python -m sat.port_archive gather --other DIR --ports DIR                       # usage CSVs of every origin branch (git only)
+    python -m sat.port_archive plan  --out plan.json --cap PU --global-cap PU --ocean-cap PU --budget-month YYYY-MM \
+                                     [--usage CSV ...] [--ports-usage CSV ...]       # catalog only (no PU)
     python -m sat.port_archive mask  --mask-dir DIR [--port ID ...]                 # OSM land masks
-    python -m sat.port_archive run   --port ID --cap PU --out DIR --raw-dir DIR --mask-dir DIR
+    python -m sat.port_archive run   --port ID --cap PU --budget-month YYYY-MM --out DIR --raw-dir DIR --mask-dir DIR
+    python -m sat.port_archive baseline --only ID ... --cap PU --budget-month YYYY-MM
 
 Per port (``run``):
 1. Sentinel-1 IW GRD, 10 m, VV + VH (+ local incidence angle), every acquisition of the last 12 months
@@ -18,9 +21,16 @@ Per port (``run``):
    and a 60 m SCL pre-check before the 10 m request), in 30-day windows.
 
 Budget: the PU of every response header are summed; a request is not sent if the port's cap would be
-exceeded (the estimate of the next request is checked first). Rate: at most ``--pu-per-min`` PU and
-``--req-per-min`` requests in any 60 s (the account limit is 300 / 300 shared by all jobs); HTTP 429 is
-waited for and retried.
+exceeded (the estimate of the next request is checked first), nor once the UTC month is no longer
+``--budget-month`` (the month the caps were set for). The usage of earlier runs is read from every origin
+branch (``gather``); when one file has copies on several branches the largest copy is counted (as the ocean
+usage). Rate: at most ``--pu-per-min`` PU and ``--req-per-min`` requests in any 60 s (the account limit is
+300 / 300 shared by all jobs); HTTP 429 is waited for and retried.
+
+Limits: cdse.Client retries HTTP 429 / 5xx by itself (up to 4 sends per call, 20-120 s apart) inside one
+gated call. Those extra sends are not checked against the window or the caps before they go out; they are
+added to the 60 s window (0 PU) and to the request count afterwards, so the request cap and the request
+rate can be passed by at most 3 requests per call. Only one job runs at a time (one concurrency group).
 """
 from __future__ import annotations
 
@@ -71,12 +81,29 @@ class BudgetStop(cdse.CredentialError):
     CredentialError so that sat/s2.py does not swallow it as a one-day failure."""
 
 
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def credit(years) -> str:
+    """The Copernicus credit line with the year(s) of the data: one year, or a range such as 2025–2026."""
+    ys = sorted({int(y) for y in years if str(y).strip()})
+    if not ys:
+        return "Contains modified Copernicus Sentinel data"
+    yr = str(ys[0]) if ys[0] == ys[-1] else f"{ys[0]}–{ys[-1]}"
+    return f"Contains modified Copernicus Sentinel data {yr}"
+
+
 class LimitedClient(cdse.Client):
-    """cdse.Client with a PU / request cap, a sliding-window rate limit and patient 429 retries."""
+    """cdse.Client with a PU / request cap, the budget month, a time limit, a sliding-window rate limit and
+    patient 429 retries. Every check is made before each send (and again after each wait for the window)."""
 
     def __init__(self, cap_pu: float, cap_req: int, pu_per_min: float, req_per_min: int,
-                 deadline: float | None = None, clock=time.monotonic, sleep=time.sleep, **kw):
+                 deadline: float | None = None, clock=time.monotonic, sleep=time.sleep,
+                 budget_month: str | None = None, utcnow=_utcnow, **kw):
         super().__init__(**kw)
+        self.budget_month = budget_month
+        self.utcnow = utcnow
         self.cap_pu = cap_pu
         self.cap_req = cap_req
         self.pu_per_min = pu_per_min
@@ -95,14 +122,23 @@ class LimitedClient(cdse.Client):
         while self.window and now - self.window[0][0] >= 60:
             self.window.popleft()
 
-    def _gate(self, est: float) -> None:
+    def _limits(self, est: float) -> None:
         if self.deadline is not None and self.clock() > self.deadline:
             raise BudgetStop("時間の上限に達したため止める")
+        if self.budget_month is not None:
+            month = self.utcnow().strftime("%Y-%m")
+            if month != self.budget_month:
+                raise BudgetStop(f"上限は {self.budget_month} の値（今は {month}）。月が変わったため止める")
         if self.processing_units + est > self.cap_pu:
             raise BudgetStop(f"PU の上限（{self.cap_pu:.1f}）を超えるため止める（使用 {self.processing_units:.1f}、次の見込み {est:.2f}）")
         if self.requests + 1 > self.cap_req:
             raise BudgetStop(f"リクエスト数の上限（{self.cap_req}）に達したため止める")
+
+    def _gate(self, est: float) -> None:
+        if est > self.pu_per_min:  # the window could never take it: stop instead of waiting forever
+            raise BudgetStop(f"1 件の見込み {est:.2f} PU が 1 分あたりの上限（{self.pu_per_min}）を超えるため止める")
         while True:
+            self._limits(est)
             now = self.clock()
             self._trim(now)
             pu = sum(p for _t, p in self.window)
@@ -119,11 +155,14 @@ class LimitedClient(cdse.Client):
         self.next_est, self.next_key = 0.0, None
         for attempt in range(6):
             self._gate(est)
+            req0 = self.requests
             try:
                 h, data = super()._post_sh(url, payload, accept)
             except cdse.CredentialError:
+                self._count_resends(req0, 1)
                 raise
             except cdse.CDSEError as e:
+                self._count_resends(req0, 0)
                 if "429" in str(e) and attempt < 5:
                     self.retries_429 += 1
                     self.sleep(60)
@@ -134,11 +173,18 @@ class LimitedClient(cdse.Client):
                 pu = float(pu) if pu is not None else est
             except ValueError:
                 pu = est
+            self._count_resends(req0, 1)
             self.window.append((self.clock(), pu))
             if key is not None:
                 self.seen_pu[key] = max(self.seen_pu.get(key, 0.0), pu)
             return h, data
         raise cdse.CDSEError("HTTP 429 が続いた")
+
+    def _count_resends(self, req0: int, keep: int) -> None:
+        """Sends made by cdse.Client's own retries (429 / 5xx / expired token) go into the window as 0 PU."""
+        t = self.clock()
+        for _ in range(max(0, self.requests - req0 - keep)):
+            self.window.append((t, 0.0))
 
     def process(self, bbox, width, height, t_from, t_to, with_lia=True):
         self.next_est = cdse.estimate_pu(width, height, 3 if with_lia else 2)
@@ -197,6 +243,99 @@ def month_usage(paths: list[Path], month: str) -> tuple[float, int]:
                 pu += float(r.get("processing_units") or 0)
                 req += int(float(r.get("requests") or 0))
     return pu, req
+
+
+def usage_key(path: Path) -> str:
+    """Which usage file a path is a copy of: ``<key>--<n>.csv`` (copies gathered from the branches) -> key;
+    ``.../<site>/usage.csv`` (a port's usage in the working tree) -> ``ports-<site>``; else the file name."""
+    if "--" in path.name:
+        return path.name.split("--")[0]
+    if path.name == "usage.csv":
+        return f"ports-{path.parent.name}"
+    return path.name
+
+
+def largest_copies(paths: list[Path], month: str) -> dict:
+    """One path per usage file: the copy with the most PU of ``month`` (copies of one file on several branches)."""
+    groups: dict = {}
+    for u in paths:
+        groups.setdefault(usage_key(Path(u)), []).append(Path(u))
+    return {k: max(v, key=lambda u: month_usage([u], month)[0]) for k, v in groups.items()}
+
+
+def guard(month: str, now: datetime, cap: float, global_cap: float, global_margin: float, ocean_cap: float | None,
+          usage: list[Path], ports_usage: list[Path], reserve: float = 0.0, max_pu: float | None = None) -> dict:
+    """The PU and requests left for the port archive in ``month`` (the same guard for plan and port_locate).
+    Raises ValueError outside ``month``. ``usage``: other usage CSVs (sat, and other-* copies from the branches);
+    ``ports_usage``: the archive's own usage (every branch's copies and the working tree; largest copy counted)."""
+    now_month = now.strftime("%Y-%m")
+    if month != now_month:
+        raise ValueError(f"上限は {month} の値（今は {now_month}）。その月の自主上限（--cap・--global-cap・"
+                         f"--ocean-cap・--budget-month）を書き直すまで取得しない")
+    best = largest_copies(usage, month)
+    other_pu, other_req = month_usage(list(best.values()), month)
+    if ocean_cap is not None:
+        ocean_pu, _r = month_usage([u for k, u in best.items() if k.startswith("other-")], month)
+        reserve = max(reserve, round(ocean_cap - ocean_pu, 1))
+    done_pu, done_req = month_usage(list(largest_copies(ports_usage, month).values()), month)
+    left = min(cap - done_pu, global_cap - global_margin - other_pu - reserve - done_pu)
+    if max_pu is not None:
+        left = min(left, max_pu)
+    return {"cap": max(0.0, left), "req_cap": REQUEST_CAP - REQUEST_MARGIN - other_req - done_req,
+            "other_pu": other_pu, "other_req": other_req, "reserve": reserve, "done_pu": done_pu, "done_req": done_req}
+
+
+def add_guard_args(p, ports_cap_help: str = "the port archive's cap of this month (PU)") -> None:
+    p.add_argument("--cap", type=float, required=True, help=ports_cap_help)
+    p.add_argument("--budget-month", required=True,
+                   help="YYYY-MM the caps were set for; in any other month (UTC) nothing is requested")
+    p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
+    p.add_argument("--ports-usage", type=Path, nargs="*", default=[],
+                   help="usage CSVs of this archive: every branch's copies (gather) and docs/data/sat/ports/*/usage.csv")
+    p.add_argument("--ocean-cap", type=float, required=True,
+                   help="ocean's monthly cap: reserve = cap - the ocean usage already in --usage files named other-*")
+    p.add_argument("--global-cap", type=float, required=True,
+                   help="the month's own cap of all CDSE use (sat + ocean + ports + others, PU)")
+    p.add_argument("--global-margin", type=float, default=GLOBAL_MARGIN)
+    p.add_argument("--reserve", type=float, default=0.0,
+                   help="PU announced by other jobs but not in their usage CSV yet (counted in the global guard)")
+
+
+def _git(*args: str) -> str:
+    import subprocess
+    return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
+
+
+def gather_usage(other_dir: Path, ports_dir: Path, git=_git, log=print) -> dict:
+    """Copy every origin branch's usage CSVs: the archive's own (docs/data/sat/ports/<site>/usage.csv) to
+    ``ports_dir/ports-<site>--<n>.csv``, the others under docs/data (ocean, etc.; not main's
+    docs/data/sat/usage.csv, read separately, nor the summed ports_usage.csv) to
+    ``other_dir/other-<path>--<n>.csv``. plan counts the largest copy of each file."""
+    other_dir.mkdir(parents=True, exist_ok=True)
+    ports_dir.mkdir(parents=True, exist_ok=True)
+    refs = [r for r in git("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin").split()
+            if r != "origin/HEAD" and r != "origin"]
+    n = {"other": 0, "ports": 0}
+    for ref in sorted(refs):
+        for f in git("ls-tree", "-r", "--name-only", ref, "docs/data").split("\n"):
+            f = f.strip()
+            name = f.split("/")[-1]
+            if not f.endswith(".csv") or "usage" not in name:
+                continue
+            parts = f.split("/")
+            if f.startswith("docs/data/sat/ports/"):
+                if len(parts) != 6 or name != "usage.csv":
+                    continue
+                dst = ports_dir / f"ports-{parts[4]}--{n['ports']}.csv"
+                n["ports"] += 1
+            elif f in ("docs/data/sat/usage.csv", "docs/data/sat/ports_usage.csv"):
+                continue
+            else:
+                dst = other_dir / f"other-{f.replace('/', '_')}--{n['other']}.csv"
+                n["other"] += 1
+            dst.write_text(git("show", f"{ref}:{f}"), encoding="utf-8")
+            log(f"usage: {ref} {f} -> {dst.name}")
+    return n
 
 
 # ---------- catalog footprints ----------
@@ -411,7 +550,12 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
     rows = [r for r in rows_all if r.get("mask_version") == tag]
     done = {r["acquired_utc"] for r in rows if r.get("result") in DONE_RESULTS}
     rows = [r for r in rows if r["acquired_utc"] in done]
-    acqs = acquisitions_with_footprints(client.catalog(grid.bbox, now - timedelta(days=days), now - timedelta(days=days_to)))
+    try:
+        acqs = acquisitions_with_footprints(client.catalog(grid.bbox, now - timedelta(days=days), now - timedelta(days=days_to)))
+    except BudgetStop as e:
+        log(f"{site['id']} S1: {e}")
+        return {"catalog_acquisitions": 0, "counted": 0, "skipped": 0, "footprint_skipped": 0, "errors": 0,
+                "stopped": str(e), "processing_units": 0.0}
     land = (mask > 0) if mask is not None else np.zeros((grid.height, grid.width), bool)
     if land.shape != (grid.height, grid.width):
         raise ValueError(f"{site['id']}: 陸マスクの大きさ {land.shape} が範囲 {(grid.height, grid.width)} と合わない")
@@ -515,6 +659,7 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
                           if (f["properties"]["acquired_utc"], f["properties"].get("mask_version")) not in keep] + feats
         fc["features"].sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"].get("mask_version") or "",
                                            f["properties"]["n"]))
+        fc["attribution"] = credit(f["properties"]["acquired_utc"][:4] for f in fc["features"])
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     summary["processing_units"] = round(client.processing_units - pu0, 3)
@@ -553,7 +698,7 @@ def keep_raw(site: dict, out: Path, tmp_raw: Path, raw_dir: Path, tag: str | Non
             "site": site["id"], "mask_version": tag, "bbox": grid.bbox, "width": grid.width, "height": grid.height,
             "encoding": "PNG UINT16, 4 bands: VV, VH (dB = v / 800 - 50, 0 = no data), local incidence angle x 100, dataMask",
             "source": "Copernicus Sentinel-1 IW GRDH via CDSE Sentinel Hub Process API (SIGMA0_ELLIPSOID, COPERNICUS_30 DEM, NEAREST)",
-            "credit": "Contains modified Copernicus Sentinel data",
+            "credit": credit(a[:4] for a in picks),
             "chips": kept, "why": "岸壁の数え方を作るための代表 3 撮影（主な軌道ごとに系列の中ほど）",
         }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return kept
@@ -732,24 +877,15 @@ def main(argv=None) -> int:
     p = sub.add_parser("plan")
     p.add_argument("--ports", type=Path, default=PORTS_FILE)
     p.add_argument("--out", type=Path, required=True)
-    p.add_argument("--cap", type=float, required=True, help="the port archive's cap of this month (PU)")
-    p.add_argument("--budget-month", required=True,
-                   help="YYYY-MM the caps were set for; in any other month (UTC) plan stops before any request")
-    p.add_argument("--usage", type=Path, nargs="*", default=[], help="other usage CSVs of this month (sat, ocean)")
-    p.add_argument("--ports-usage", type=Path, nargs="*", default=[],
-                   help="usage CSVs of earlier runs of this archive (docs/data/sat/ports/*/usage.csv)")
-    p.add_argument("--ocean-cap", type=float, required=True,
-                   help="ocean's monthly cap: reserve = cap - the ocean usage already in --usage files named other-*")
-    p.add_argument("--global-cap", type=float, required=True,
-                   help="the month's own cap of all CDSE use (sat + ocean + ports + others, PU)")
-    p.add_argument("--global-margin", type=float, default=GLOBAL_MARGIN)
-    p.add_argument("--reserve", type=float, default=0.0,
-                   help="PU announced by other jobs but not in their usage CSV yet (counted in the 9,000 PU guard)")
+    add_guard_args(p)
     p.add_argument("--out-root", type=Path, default=OUT_DIR, help="earlier results (only new work is planned)")
     p.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
     p.add_argument("--max-pu", type=float, help="cap of this run (e.g. a backfill), inside the ports cap")
     p.add_argument("--only", nargs="*", help="these ports, in this order of priority (ordered allocation)")
     p.add_argument("--proportional", action="store_true", help="with --only: share the cap in proportion to the estimates")
+    g = sub.add_parser("gather")
+    g.add_argument("--other", type=Path, required=True, help="directory for the other usage CSVs (other-*--n.csv)")
+    g.add_argument("--ports", type=Path, required=True, help="directory for the archive's usage CSVs (ports-*--n.csv)")
     m = sub.add_parser("mask")
     m.add_argument("--ports", type=Path, default=PORTS_FILE)
     m.add_argument("--mask-dir", type=Path, required=True)
@@ -758,6 +894,7 @@ def main(argv=None) -> int:
     r.add_argument("--ports", type=Path, default=PORTS_FILE)
     r.add_argument("--port", required=True)
     r.add_argument("--cap", type=float, required=True)
+    r.add_argument("--budget-month", required=True, help="YYYY-MM of the cap; stops before the next request once the month (UTC) changes")
     r.add_argument("--req", type=int, default=2000)
     r.add_argument("--out", type=Path, default=OUT_DIR)
     r.add_argument("--raw-dir", type=Path, required=True)
@@ -776,6 +913,7 @@ def main(argv=None) -> int:
     b.add_argument("--ports", type=Path, default=PORTS_FILE)
     b.add_argument("--only", nargs="+", required=True, help="ports in this order of priority")
     b.add_argument("--cap", type=float, required=True, help="PU of this run (already inside the ports cap and the guard)")
+    b.add_argument("--budget-month", required=True, help="YYYY-MM of the cap; stops before the next request once the month (UTC) changes")
     b.add_argument("--req", type=int, default=1500)
     b.add_argument("--mask-dir", type=Path, default=OUT_DIR / "masks")
     b.add_argument("--base-dir", type=Path, default=OUT_DIR / "baselines")
@@ -788,13 +926,19 @@ def main(argv=None) -> int:
     b.add_argument("--orbits", nargs="*", default=[],
                    help="ID:orbit[,orbit][:max scenes], e.g. SYL:157:26 QGZ:69,171 (only these orbits of these ports)")
     args = ap.parse_args(argv)
-    now = datetime.now(timezone.utc)
+    now = _utcnow()
+    if args.cmd == "gather":
+        print(json.dumps(gather_usage(args.other, args.ports, log=lambda s: print(s, file=sys.stderr))))
+        return 0
     ports = load_ports(args.ports)
+    if args.cmd in ("run", "baseline") and args.budget_month != now.strftime("%Y-%m"):
+        print(f"{args.cmd}: 上限は {args.budget_month} の値（今は {now.strftime('%Y-%m')}）。取得しない", file=sys.stderr)
+        return 2
 
     if args.cmd == "baseline":
         from .osm_mask import load_mask
         client = LimitedClient(args.cap, args.req, args.pu_per_min, args.req_per_min,
-                               deadline=time.monotonic() + args.max_minutes * 60)
+                               deadline=time.monotonic() + args.max_minutes * 60, budget_month=args.budget_month)
         byid = {p["id"]: p for p in ports}
         out = {"run_utc": cdse.iso(now), "cap_pu": args.cap, "ports": []}
         for pid in args.only:
@@ -863,28 +1007,18 @@ def main(argv=None) -> int:
         return rc
 
     if args.cmd == "plan":
-        month = now.strftime("%Y-%m")
-        if args.budget_month != month:
-            print(f"plan: 上限は {args.budget_month} の値（今は {month}）。その月の自主上限（--cap・--global-cap・"
-                  f"--ocean-cap・--budget-month）を書き直すまで取得しない", file=sys.stderr)
+        try:
+            gd = guard(args.budget_month, now, args.cap, args.global_cap, args.global_margin, args.ocean_cap,
+                       args.usage, args.ports_usage, args.reserve, args.max_pu)
+        except ValueError as e:
+            print(f"plan: {e}", file=sys.stderr)
             return 2
-        # copies of one usage file on several branches (other-<key>--<n>.csv): count the largest copy only
-        groups: dict = {}
-        for u in args.usage:
-            groups.setdefault(u.name.split("--")[0] if "--" in u.name else u.name, []).append(u)
-        best = {k: max(v, key=lambda u: month_usage([u], month)[0]) for k, v in groups.items()}
-        other_pu, other_req = month_usage(list(best.values()), month)
-        if args.ocean_cap is not None:
-            ocean_pu, _r = month_usage([u for k, u in best.items() if k.startswith("other-")], month)
-            args.reserve = max(args.reserve, round(args.ocean_cap - ocean_pu, 1))
-        done_pu, done_req = month_usage(args.ports_usage, month)
-        cap = min(args.cap - done_pu, args.global_cap - args.global_margin - other_pu - args.reserve - done_pu)
-        if args.max_pu is not None:
-            cap = min(cap, args.max_pu)
+        cap, req_cap = gd["cap"], gd["req_cap"]
+        other_pu, other_req, done_pu = gd["other_pu"], gd["other_req"], gd["done_pu"]
+        args.reserve = gd["reserve"]
         if args.only:
             order = {pid: i for i, pid in enumerate(args.only)}
             ports = sorted([p for p in ports if p["id"] in order], key=lambda p: order[p["id"]])
-        req_cap = REQUEST_CAP - REQUEST_MARGIN - other_req - done_req
         client = cdse.Client()
         res = plan(client, ports, now, max(0.0, cap), max(0, req_cap - 200),
                    log=lambda s: print(s, file=sys.stderr), out_root=args.out_root, mask_dir=args.mask_dir,
@@ -899,7 +1033,7 @@ def main(argv=None) -> int:
 
     site = next(s for s in ports if s["id"] == args.port)
     client = LimitedClient(args.cap, args.req, args.pu_per_min, args.req_per_min,
-                           deadline=time.monotonic() + args.max_minutes * 60)
+                           deadline=time.monotonic() + args.max_minutes * 60, budget_month=args.budget_month)
     res = run_port(client, site, args.out, args.raw_dir, args.tmp, args.mask_dir, now,
                    log=lambda s: print(s, file=sys.stderr, flush=True), days_from=args.days_from,
                    days_to=args.days_to, s2_on=not args.s1_only, s2_days=args.s2_days)

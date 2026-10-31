@@ -1,12 +1,14 @@
 name: PLAN ports archive probe
 # 湛江以外の中国海軍の主要な港（sat/ports.json）の Sentinel-1・Sentinel-2 の過去 12 か月のアーカイブを取る probe（sat/port_archive.py）。
 # probe 用ブランチへの push でだけ動く（workflow_dispatch なし、定期実行なし）。main は読むだけで変えない。
-# 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別の concurrency group。
+# concurrency group は全ブランチで 1 つ（probe-ports-archive）：別の probe ブランチの実行が同時に走って同じ残り枠を二重に割り当てない。
+# 本番（collect・jcg-senkaku・sat-ships・proto・pla-tracker）とも、外洋の probe（probe-ocean-*）とも別。
 # 結果（docs/data/sat/ports/・docs/data/sat/ports_usage.csv・probe-raw/）は同じ probe ブランチにだけ commit する。
 # PU：上限はすべて BUDGET_MONTH の月の値（港 --cap・全体の自主上限 --global-cap・外洋 OCEAN_CAP）。plan が他の usage を読み、
-# 外洋の上限から外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。
-# 月が BUDGET_MONTH と違えば plan（と locate の前）で止まり、PU は 0。翌月に動かすには、その月の自主上限と BUDGET_MONTH を
-# このファイルに明示して書き直す（sat/port_archive.py の plan にも上限の既定値はない）。
+# 外洋の上限から外洋の usage に出ている分を除いた残りを予約として差し引く（--ocean-cap）。港の usage（docs/data/sat/ports/*/usage.csv）も
+# origin の全ブランチから集め（sat.port_archive gather）、同じファイルの写しが複数あれば一番大きいものを数える。
+# 月が BUDGET_MONTH と違えば plan・locate・run・baseline は要求の前に止まり、実行中に UTC の月が変わっても次の要求の前に止まる。
+# 翌月に動かすには、その月の自主上限と BUDGET_MONTH をこのファイルに明示して書き直す（sat/port_archive.py にも上限の既定値はない）。
 # 速さ：港ごとのジョブ（同時 3）がそれぞれ 80 PU／分・80 リクエスト／分まで（アカウントの上限 300／300 の内側）。
 on:
   push:
@@ -14,7 +16,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: probe-ports-archive-${{ github.ref_name }}
+  group: probe-ports-archive
   cancel-in-progress: false
 env:
   # probe/ports-backfill-*: S1 だけのさかのぼり（13〜24 か月前、730〜365 日前）、司令部の優先順、この実行の上限 1,400 PU
@@ -25,9 +27,8 @@ env:
   # probe/ports-baseline-oct-*: 上限 9,995 への引き上げ分（港 +550 PU）。QGZ 69・171 を 24 枚に、優先 2 の港、造船所の主軌道（この順）
   BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
   BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
-  # 合計ガード：10 月の上限 9,995（ユーザー指示）、湛江の 10-31 の毎日の実行の分として最低 50 PU を残す。港の上限 4,350
-  # 2026-10-30 21:20 以降（港の上限 4,750、合計 9,995、湛江の分 50 PU、外洋 4,600）：すべての実行に。10 月だけ有効
-  # （11 月以降は外洋 月 400 PU・全体は自主上限。値を決めて BUDGET_MONTH とともに書き直すまで取得しない）
+  # 合計ガード（2026-10 だけ有効）：港の上限 4,750、合計 9,995（ユーザー指示）、余裕 50（湛江の 10-31 の毎日の実行の分）、外洋 4,600。
+  # 11 月以降は外洋 月 400 PU・全体は自主上限。その月の値を決め、BUDGET_MONTH・GUARD_ARGS・OCEAN_CAP を書き直すまで取得しない
   BUDGET_MONTH: '2026-10'
   OCEAN_CAP: '4600'
   GUARD_ARGS: '--budget-month 2026-10 --cap 4750 --global-cap 9995 --global-margin 50'
@@ -40,6 +41,8 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -49,12 +52,21 @@ jobs:
         run: |
           [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
           case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
-      - name: Locate
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv, ports-<site>--<n>.csv)
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+      - name: Locate (the same guard as plan)
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
-          python -m sat.port_locate --out docs/data/sat/ports/locate > "$RUNNER_TEMP/locate.json" 2> "$RUNNER_TEMP/locate.log" || true
+          python -m sat.port_locate --out docs/data/sat/ports/locate $GUARD_ARGS --ocean-cap "$OCEAN_CAP" \
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
+            > "$RUNNER_TEMP/locate.json" 2> "$RUNNER_TEMP/locate.log" || true
           cat "$RUNNER_TEMP/locate.log" "$RUNNER_TEMP/locate.json"
           # the PU of the overview goes to the archive's usage (one row)
           python - <<'EOF'
@@ -62,6 +74,8 @@ jobs:
           from pathlib import Path
           from datetime import datetime, timezone
           from sat.port_archive import USAGE_FIELDS, read_csv, write_csv
+          if not Path("docs/data/sat/ports/locate/locate.json").exists():
+              raise SystemExit(0)  # stopped by the guard before any request
           r = json.loads(Path("docs/data/sat/ports/locate/locate.json").read_text())
           p = Path("docs/data/sat/ports/locate/usage.csv")
           write_csv(p, read_csv(p) + [{"run_utc": r["run_utc"], "site_id": "locate", "requests": r["requests"],
@@ -97,19 +111,17 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Tests
         run: python -m unittest tests.test_sat_port_archive tests.test_sat_baseline -v
-      - name: Other CDSE usage of this month
+      - name: Budget month
         run: |
-          mkdir -p "$RUNNER_TEMP/usage"
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
           git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
-          i=0
-          for ref in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin); do
-            for f in $(git ls-tree -r --name-only "$ref" docs/data | grep -E 'usage[^/]*\.csv$' | grep -v -E '^docs/data/sat/(usage|ports_usage)\.csv$|^docs/data/sat/ports/'); do
-              echo "$ref $f $(git log -1 --format=%ct "$ref")"
-            done
-          done | sort -k2,2 > "$RUNNER_TEMP/usage/list.txt"
-          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
-          while read ref f t; do k=$(echo "$f" | tr '/' '_'); git show "$ref:$f" > "$RUNNER_TEMP/usage/other-$k--$i.csv"; i=$((i+1)); echo "other usage: $ref $f"; done < "$RUNNER_TEMP/usage/list.txt"
-          rm "$RUNNER_TEMP/usage/list.txt"
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv, ports-<site>--<n>.csv)
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
       - name: Cap (the month's own caps in GUARD_ARGS and OCEAN_CAP, this run BASELINE_MAX)
         id: cap
         env:
@@ -118,7 +130,7 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/cap.json" $GUARD_ARGS --usage "$RUNNER_TEMP"/usage/*.csv \
-            --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
+            --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
           echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
       - name: OSM land masks (missing only)
         run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || true
@@ -128,7 +140,7 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           rc=0
-          python -m sat.port_archive baseline $BASELINE_ARGS --cap "${{ steps.cap.outputs.cap }}" \
+          python -m sat.port_archive baseline $BASELINE_ARGS --cap "${{ steps.cap.outputs.cap }}" --budget-month "$BUDGET_MONTH" \
             --summary "$RUNNER_TEMP/baseline.json" --max-minutes 290 > /dev/null 2> "$RUNNER_TEMP/baseline.log" || rc=$?
           tail -n 60 "$RUNNER_TEMP/baseline.log"
           exit $rc
@@ -185,33 +197,17 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Tests
         run: python -m unittest tests.test_sat_port_archive tests.test_sat_s2 tests.test_sat -v
-      - name: Other CDSE usage of this month (main's sat, and any other usage CSV on the branches, e.g. ocean)
+      - name: Budget month
         run: |
-          mkdir -p "$RUNNER_TEMP/usage"
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
           git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
-          python - "$RUNNER_TEMP/usage" <<'EOF'
-          import subprocess, sys
-          out = sys.argv[1]
-          refs = subprocess.run(["git", "for-each-ref", "--format=%(refname:short) %(committerdate:unix)", "refs/remotes/origin"],
-                                capture_output=True, text=True).stdout.split("\n")
-          best = {}
-          for line in refs:
-              if not line.strip():
-                  continue
-              ref, t = line.rsplit(" ", 1)
-              files = subprocess.run(["git", "ls-tree", "-r", "--name-only", ref, "docs/data"], capture_output=True, text=True).stdout.split()
-              for f in files:
-                  if "usage" in f.split("/")[-1] and f.endswith(".csv") and f not in ("docs/data/sat/usage.csv", "docs/data/sat/ports_usage.csv") \
-                     and not f.startswith("docs/data/sat/ports/"):
-                      best.setdefault(f, []).append(ref)
-          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv)
-          for i, (f, refs) in enumerate(sorted(best.items())):
-              for j, ref in enumerate(refs):
-                  data = subprocess.run(["git", "show", f"{ref}:{f}"], capture_output=True, text=True).stdout
-                  open(f"{out}/other-{i}--{j}.csv", "w").write(data)
-                  print("other usage:", ref, f)
-          EOF
-          ls -l "$RUNNER_TEMP/usage"
+          # every branch's copy; plan counts the largest copy of each file (other-<file>--<n>.csv, ports-<site>--<n>.csv)
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+          ls -l "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
       - name: OSM land masks (Overpass, one port at a time)
         run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || echo "::warning title=mask::一部の港の陸マスクを作れなかった（その港は検出なしで画像だけ）"
       - name: Plan (catalog only, no PU)
@@ -222,7 +218,8 @@ jobs:
         run: |
           set -o pipefail
           python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" $GUARD_ARGS \
-            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
+            --ocean-cap "$OCEAN_CAP" $PLAN_ARGS 2> "$RUNNER_TEMP/plan.log" | tee "$RUNNER_TEMP/plan-summary.json"
           cat "$RUNNER_TEMP/plan.log"
           echo "matrix=$(python -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1]))['matrix']))" "$RUNNER_TEMP/plan.json")" >> "$GITHUB_OUTPUT"
           cp "$RUNNER_TEMP/plan.json" docs/data/sat/ports/plan.json
@@ -281,7 +278,7 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           rc=0
-          python -m sat.port_archive run --port "${{ matrix.port }}" --cap "${{ matrix.cap }}" --req "${{ matrix.req }}" \
+          python -m sat.port_archive run --port "${{ matrix.port }}" --cap "${{ matrix.cap }}" --req "${{ matrix.req }}" --budget-month "$BUDGET_MONTH" \
             --out docs/data/sat/ports --raw-dir probe-raw --tmp "$RUNNER_TEMP/raw" --mask-dir docs/data/sat/ports/masks \
             --pu-per-min 80 --req-per-min 80 --max-minutes 290 --summary "$RUNNER_TEMP/summary.json" $RUN_ARGS \
             > /dev/null 2> "$RUNNER_TEMP/run.log" || rc=$?
@@ -328,7 +325,7 @@ jobs:
           ls -l "$RUNNER_TEMP/art"
           for t in "$RUNNER_TEMP"/art/*.tgz; do tar xzf "$t"; done
           python - <<'EOF' | tee "$RUNNER_TEMP/total.txt"
-          import csv, glob, io
+          import csv, glob, io, os
           from sat.port_archive import USAGE_FIELDS, read_csv, write_csv, trend, load_ports, mask_tag
           tags = {p["id"]: mask_tag(p) for p in load_ports()}
           from pathlib import Path
@@ -337,9 +334,10 @@ jobs:
               rows += read_csv(Path(p))
           rows.sort(key=lambda r: (r["run_utc"], r["site_id"]))
           write_csv(Path("docs/data/sat/ports_usage.csv"), rows, USAGE_FIELDS)
-          oct_ = [r for r in rows if r["run_utc"].startswith("2026-10")]
-          print("ports total (Oct):", round(sum(float(r["processing_units"] or 0) for r in oct_), 3), "PU,",
-                sum(int(r["requests"] or 0) for r in oct_), "requests")
+          month = os.environ["BUDGET_MONTH"]  # the month of the caps (this branch's rows only)
+          mrows = [r for r in rows if r["run_utc"].startswith(month)]
+          print(f"ports total ({month}, this branch):", round(sum(float(r["processing_units"] or 0) for r in mrows), 3), "PU,",
+                sum(int(r["requests"] or 0) for r in mrows), "requests")
           by = {}
           for r in rows:
               b = by.setdefault(r["site_id"], [0.0, 0, 0, 0, 0])

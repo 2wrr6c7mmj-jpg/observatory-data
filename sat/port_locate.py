@@ -6,7 +6,13 @@ For each region of sat/port_regions.json (a wide box, about 15-40 km):
 - One Sentinel-2 L2A natural-colour overview at ``--m`` metres (least cloudy mosaic of the last 120 days,
   B04/B03/B02, about 1-3 PU) with a 0.01 degree grid, labels every 0.05 degree, and the OSM outlines drawn.
 
-    python -m sat.port_locate --out DIR [--m 30]
+    python -m sat.port_locate --out DIR --budget-month YYYY-MM --cap PU --global-cap PU --ocean-cap PU \
+        [--global-margin PU] [--usage CSV ...] [--ports-usage CSV ...] [--m 30]
+
+The overview requests go through the same monthly guard as ``sat.port_archive plan`` (the month the caps were
+set for, the ports cap, the global cap with its margin, the ocean reserve; the usage of every branch, largest
+copy counted) and the same capped client (sat.port_archive.LimitedClient), and the PU are recorded in the
+archive's usage (docs/data/sat/ports/locate/usage.csv, by the workflow).
 """
 from __future__ import annotations
 
@@ -27,6 +33,7 @@ from .grid import Grid, m_per_deg
 from .osm_mask import OVERPASS_URL, USER_AGENT
 
 REGIONS_FILE = Path(__file__).resolve().parent / "port_regions.json"
+OVERVIEW_DAYS = 120
 
 OV_EVALSCRIPT = """//VERSION=3
 function setup() {
@@ -99,7 +106,7 @@ def overview(client, b: list[float], m: float, now: datetime) -> tuple[np.ndarra
     payload = {
         "input": {"bounds": {"bbox": b, "properties": {"crs": "http://www.opengis.net/def/crs/EPSG/0/4326"}},
                   "data": [{"type": "sentinel-2-l2a",
-                            "dataFilter": {"timeRange": {"from": cdse.iso(now - timedelta(days=120)), "to": cdse.iso(now)},
+                            "dataFilter": {"timeRange": {"from": cdse.iso(now - timedelta(days=OVERVIEW_DAYS)), "to": cdse.iso(now)},
                                            "mosaickingOrder": "leastCC", "maxCloudCoverage": 30}}]},
         "output": {"width": w, "height": h, "responses": [{"identifier": "default", "format": {"type": "image/png"}}]},
         "evalscript": OV_EVALSCRIPT,
@@ -108,7 +115,7 @@ def overview(client, b: list[float], m: float, now: datetime) -> tuple[np.ndarra
     return png.decode(data), pu
 
 
-def draw(rgb: np.ndarray, b: list[float], feats: list[dict], title: str) -> bytes:
+def draw(rgb: np.ndarray, b: list[float], feats: list[dict], title: str, credit: str = "") -> bytes:
     from PIL import Image, ImageDraw
     from .color import _font
     h, w = rgb.shape[:2]
@@ -135,22 +142,45 @@ def draw(rgb: np.ndarray, b: list[float], feats: list[dict], title: str) -> byte
         x0, y0, x1, y1 = X(f["bbox"][0]), Y(f["bbox"][3]), X(f["bbox"][2]), Y(f["bbox"][1])
         d.rectangle([x0, y0, max(x1, x0 + 2), max(y1, y0 + 2)], outline=col, width=2)
         d.text((x0 + 2, y1 + 1), str(i + 1), fill=col, font=font)
-    d.text((4, h - 16), title, fill=(255, 255, 255), font=font)
+    d.text((4, h - 30 if credit else h - 16), title, fill=(255, 255, 255), font=font)
+    if credit:
+        d.text((4, h - 16), credit, fill=(255, 255, 255), font=font)
     buf = io.BytesIO()
     im.save(buf, "WEBP", quality=82, method=6)
     return buf.getvalue()
 
 
+def overview_credit(now: datetime) -> str:
+    """The credit of a least-cloud mosaic of the last OVERVIEW_DAYS days (a year range across the new year)."""
+    from .port_archive import credit
+    return credit([(now - timedelta(days=OVERVIEW_DAYS)).year, now.year])
+
+
 def main(argv=None) -> int:
+    from . import port_archive as pa
     ap = argparse.ArgumentParser()
     ap.add_argument("--regions", type=Path, default=REGIONS_FILE)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--m", type=float, default=30)
     ap.add_argument("--only", nargs="*")
+    pa.add_guard_args(ap)
+    ap.add_argument("--max-pu", type=float, help="cap of this run, inside the guard")
+    ap.add_argument("--pu-per-min", type=float, default=80)
+    ap.add_argument("--req-per-min", type=int, default=80)
+    ap.add_argument("--max-minutes", type=float, default=30)
     args = ap.parse_args(argv)
     regions = json.loads(args.regions.read_text(encoding="utf-8"))["regions"]
-    now = datetime.now(timezone.utc)
-    client = cdse.Client()
+    now = pa._utcnow()
+    try:
+        gd = pa.guard(args.budget_month, now, args.cap, args.global_cap, args.global_margin, args.ocean_cap,
+                      args.usage, args.ports_usage, args.reserve, args.max_pu)
+    except ValueError as e:
+        print(f"locate: {e}", file=sys.stderr)
+        return 2
+    print(f"locate: 残り {gd['cap']:.1f} PU（港の使用 {gd['done_pu']:.1f}、他 {gd['other_pu']:.1f}、予約 {gd['reserve']:.1f}）",
+          file=sys.stderr)
+    client = pa.LimitedClient(gd["cap"], max(0, gd["req_cap"]), args.pu_per_min, args.req_per_min,
+                              deadline=time.monotonic() + args.max_minutes * 60, budget_month=args.budget_month)
     args.out.mkdir(parents=True, exist_ok=True)
     res = []
     for r in regions:
@@ -164,15 +194,22 @@ def main(argv=None) -> int:
             print(f"{r['id']}: OSM 失敗 {str(e)[:200]}", file=sys.stderr)
         time.sleep(10)
         pu = None
+        stop = None
         try:
             rgb, pu = overview(client, b, args.m, now)
-            (args.out / f"{r['id']}.webp").write_bytes(draw(rgb, b, feats, f"{r['id']} {r.get('name', '')} S2 L2A leastCC 120d, Copernicus"))
+            (args.out / f"{r['id']}.webp").write_bytes(draw(rgb, b, feats, f"{r['id']} {r.get('name', '')} S2 L2A leastCC {OVERVIEW_DAYS}d",
+                                                            overview_credit(now)))
+        except pa.BudgetStop as e:
+            stop = str(e)
+            print(f"{r['id']}: {e}", file=sys.stderr)
         except cdse.CredentialError:
             raise
         except Exception as e:
             print(f"{r['id']}: S2 失敗 {str(e)[:200]}", file=sys.stderr)
         res.append({"id": r["id"], "bbox": b, "pu": pu, "features": feats[:60]})
         print(f"{r['id']}: OSM {len(feats)} 件、S2 {pu} PU", file=sys.stderr)
+        if stop:
+            break
     prev = args.out / "locate.json"
     if prev.exists():
         ids = {r["id"] for r in res}
