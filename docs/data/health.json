@@ -1,0 +1,478 @@
+{
+ "schema": 1,
+ "generated_utc": "2026-10-31T11:02:57Z",
+ "state": "warn",
+ "summary": {
+  "ok": 8,
+  "warn": 3,
+  "alert": 0,
+  "halt": 1,
+  "info": 1,
+  "unknown": 0
+ },
+ "stale_after_h": 12,
+ "stale_note": "generated_utc が 12 h より古ければ、監視（health.yml）自体が止まっている",
+ "states_note": "ok＝基準内、warn＝遅延・抜け・不一致、alert＝停止と判断、halt＝意図した停止（robots 等）、info＝監視しない、unknown＝確かめていない",
+ "thresholds": {
+  "version": "provisional-2026-10",
+  "provisional": true,
+  "review_by": "2026-12",
+  "basis": "2部 設計『起動シーケンスと収集の健全性の基準』§2（2026-10-31）。2026-10 の実測からの暫定値",
+  "heartbeat_h": {
+   "warn": 30,
+   "alert": 54
+  },
+  "sat": {
+   "scene_days": {
+    "warn": 8,
+    "alert": 14
+   },
+   "pu_warn_fraction": 0.8,
+   "orbit_interval_days": {
+    "ZJG": {
+     "157": 6,
+     "84": 12
+    }
+   },
+   "gap_grace_h": 39,
+   "gap_match_h": 36,
+   "gap_warn_days": 14
+  },
+  "jcg_lag_days": {
+   "warn": 3,
+   "alert": 5
+  },
+  "pla_lag_days": {
+   "warn": 2,
+   "alert": 3
+  },
+  "jso_release_days": {
+   "warn": 11,
+   "alert": 25
+  },
+  "notam_seen_h": {
+   "warn": 30
+  },
+  "jcg_not_ok_runs": {
+   "warn": 1,
+   "alert": 2
+  },
+  "workflow_failures": {
+   "warn": 1,
+   "alert": 2
+  },
+  "health_stale_h": 12,
+  "health_refresh_h": 6
+ },
+ "sources": [
+  {
+   "id": "sat",
+   "name": "Sentinel-1 艦船候補",
+   "kind": "daily",
+   "workflow": "sat-ships.yml",
+   "heartbeat_utc": "2026-10-31T11:02:10Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-10-26",
+   "data_date_tz": "UTC",
+   "data_age_days": 5,
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "orbit_gap",
+     "text": "ZJG：撮影の抜け ro157 10-20（同じ軌道 6 日ごとの期待に対して）"
+    },
+    {
+     "level": "warn",
+     "code": "orbit_gap",
+     "text": "ZJG：撮影の抜け ro84 10-27（同じ軌道 12 日ごとの期待に対して）"
+    }
+   ],
+   "values": {
+    "latest_acquired_utc": "2026-10-26T10:48:45Z",
+    "last_run_utc": "2026-10-31T11:02:10Z",
+    "last_run_errors": 0,
+    "last_run_scenes": 0
+   }
+  },
+  {
+   "id": "jcg-senkaku",
+   "name": "海上保安庁 尖閣周辺",
+   "kind": "daily",
+   "workflow": "jcg-senkaku.yml",
+   "heartbeat_utc": "2026-10-31T09:57:23Z",
+   "heartbeat_age_h": 1.1,
+   "data_date": "2026-10-29",
+   "data_date_tz": "JST",
+   "data_age_days": 2,
+   "state": "ok",
+   "reasons": [],
+   "values": {
+    "last_ok_utc": "2026-10-31T09:57:23Z",
+    "last_run_started_utc": "2026-10-31T09:57:11Z",
+    "last_run_result": "ok",
+    "not_ok_runs": 0,
+    "robots": "https://www.kaiho.mlit.go.jp/robots.txt: HTTP 404, no robots.txt (all allowed)",
+    "days": 5159,
+    "fetched": 0,
+    "not_modified": 1
+   }
+  },
+  {
+   "id": "pla-tracker",
+   "name": "PLA Activity Tracker",
+   "kind": "daily",
+   "workflow": "pla-tracker.yml",
+   "heartbeat_utc": "2026-10-30T09:31:33Z",
+   "heartbeat_age_h": 25.5,
+   "data_date": "2026-10-30",
+   "data_date_tz": "TWT",
+   "data_age_days": 1,
+   "state": "ok",
+   "reasons": [],
+   "values": {
+    "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
+    "days": 300,
+    "last_run_result": "ok",
+    "revised_count": 0
+   }
+  },
+  {
+   "id": "taiwan-mnd",
+   "name": "台湾国防部",
+   "kind": "halted",
+   "workflow": "collect.yml",
+   "heartbeat_utc": "2026-10-30T08:28:14Z",
+   "heartbeat_age_h": null,
+   "data_date": "2026-10-30",
+   "data_date_tz": "TWT",
+   "data_age_days": 1,
+   "state": "halt",
+   "reasons": [
+    {
+     "level": "halt",
+     "code": "collection_halted",
+     "text": "収集停止：robots.txt（2026-10-30 確認）が User-agent: * に Disallow: / を指定しているため、台湾国防部の取得を停止中（保存済みのデータはそのまま）"
+    }
+   ],
+   "values": {
+    "collection": "robots.txt（2026-10-30 確認）が User-agent: * に Disallow: / を指定しているため、台湾国防部の取得を停止中（保存済みのデータはそのまま）",
+    "reports": 1967,
+    "unparsed": 21
+   }
+  },
+  {
+   "id": "jso",
+   "name": "統合幕僚監部（統幕）",
+   "kind": "manual",
+   "workflow": "collect.yml",
+   "heartbeat_utc": "2026-10-31T08:30:49Z",
+   "heartbeat_age_h": 2.5,
+   "data_date": "2026-10-27",
+   "data_date_tz": "JST",
+   "data_age_days": 4,
+   "state": "ok",
+   "reasons": [],
+   "values": {
+    "passages": 1024,
+    "releases": 1564,
+    "intake": "手動取り込み（mod.go.jp は自動取得できない）"
+   }
+  },
+  {
+   "id": "launches",
+   "name": "発射の予告（NOTAM Watch・LL2）",
+   "kind": "daily",
+   "workflow": "collect.yml",
+   "heartbeat_utc": "2026-10-31T08:30:43Z",
+   "heartbeat_age_h": 2.5,
+   "data_date": "2026-10-31",
+   "data_date_tz": "UTC",
+   "data_age_days": 0,
+   "state": "ok",
+   "reasons": [],
+   "values": {
+    "notices_last_retrieved_utc": "2026-10-31T08:30:43Z",
+    "notam_watch_last_seen_utc": "2026-10-31T08:30:43Z",
+    "ll2_last_retrieved_utc": "2026-10-31T08:30:19Z"
+   }
+  },
+  {
+   "id": "proto",
+   "name": "分析の試作（proto）",
+   "kind": "derived",
+   "workflow": "proto.yml",
+   "heartbeat_utc": "2026-10-31T09:57:38Z",
+   "heartbeat_age_h": 1.1,
+   "data_date": null,
+   "data_date_tz": null,
+   "data_age_days": null,
+   "state": "ok",
+   "reasons": [],
+   "values": {
+    "files": 10,
+    "computed_utc_max": "2026-10-31T09:58:11Z",
+    "newest_input_utc": "2026-10-31T09:57:23Z"
+   }
+  },
+  {
+   "id": "ocean",
+   "name": "Sentinel-1 カタログの公開遅れ調査",
+   "kind": "probe",
+   "workflow": null,
+   "heartbeat_utc": "2026-10-30T09:06:42Z",
+   "heartbeat_age_h": null,
+   "data_date": null,
+   "data_date_tz": null,
+   "data_age_days": null,
+   "state": "info",
+   "reasons": [],
+   "values": {
+    "note": "一回きりの調査。鮮度は監視しない"
+   }
+  }
+ ],
+ "latest": {
+  "sat": [
+   {
+    "site_id": "ZJG",
+    "name": "湛江",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "ZJG-land-v2",
+    "est1": {
+     "acquired_utc": "2026-10-26T10:48:45Z",
+     "version": "est-1",
+     "mode": 35,
+     "p10": 30,
+     "p90": 41,
+     "warship_mode": 22,
+     "warship_p10": 18,
+     "warship_p90": 25,
+     "credibility": 3,
+     "in_sample": "tuning"
+    },
+    "est2": {
+     "acquired_utc": "2026-10-26T10:48:45Z",
+     "version": "est-2",
+     "warship_median": 21,
+     "warship_p10": 18,
+     "warship_p90": 25,
+     "ships_median": 44,
+     "ships_p10": 41,
+     "ships_p90": 48,
+     "in_sample": "tuning"
+    }
+   }
+  ],
+  "jcg": {
+   "date": "2026-10-29",
+   "date_tz": "JST",
+   "contiguous_zone": 4,
+   "territorial_sea": 0,
+   "ts_entries": null,
+   "check": "match",
+   "as_of": "2026-10-29",
+   "source_url": "https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_10.pdf",
+   "note": "null は不明、0 は原文に明記"
+  },
+  "taiwan": {
+   "date": "2026-10-30",
+   "date_tz": "TWT",
+   "aircraft_total": 6,
+   "median_line_cross": 3,
+   "ships_total": 8,
+   "source": "PLA Activity Tracker（元：台湾国防部）"
+  },
+  "launches": {
+   "open_or_upcoming_windows": 6,
+   "open_now": 1,
+   "next_start": {
+    "site": "内之浦",
+    "country": "JP",
+    "window_start_utc": "2026-11-01T23:00Z",
+    "window_end_utc": "2026-11-02T07:00Z"
+   },
+   "active_notices": 23
+  }
+ },
+ "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
+ "workflows": [
+  {
+   "file": "collect.yml",
+   "label": "台湾国防部・発射・統幕の再構築",
+   "event": "schedule",
+   "cron_utc": "23 1 * * *",
+   "sources": [
+    "taiwan-mnd",
+    "launches",
+    "jso"
+   ],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "failed",
+     "text": "schedule の実行 2026-10-31T07:09:45Z が failure（その後の手動等の実行で成功）"
+    }
+   ],
+   "last_success_started_utc": "2026-10-31T08:30:01Z",
+   "last_success_event": "workflow_dispatch",
+   "last_scheduled": {
+    "id": 41179494126,
+    "started_utc": "2026-10-31T07:09:45Z",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41179494126",
+    "delay_h": 5.8
+   },
+   "consecutive_failures": 1
+  },
+  {
+   "file": "jcg-senkaku.yml",
+   "label": "海上保安庁 尖閣",
+   "event": "schedule",
+   "cron_utc": "43 3 * * *",
+   "sources": [
+    "jcg-senkaku"
+   ],
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-10-31T09:56:56Z",
+   "last_success_event": "schedule",
+   "last_scheduled": {
+    "id": 41190732210,
+    "started_utc": "2026-10-31T09:56:56Z",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41190732210",
+    "delay_h": 6.2
+   },
+   "consecutive_failures": 0
+  },
+  {
+   "file": "sat-ships.yml",
+   "label": "Sentinel-1 艦船候補",
+   "event": "schedule",
+   "cron_utc": "17 5 * * *",
+   "sources": [
+    "sat"
+   ],
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-10-31T10:58:18Z",
+   "last_success_event": "schedule",
+   "last_scheduled": {
+    "id": 41194891655,
+    "started_utc": "2026-10-31T10:58:18Z",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41194891655",
+    "delay_h": 5.7
+   },
+   "consecutive_failures": 0
+  },
+  {
+   "file": "pla-tracker.yml",
+   "label": "PLA Activity Tracker",
+   "event": "schedule",
+   "cron_utc": "37 6 * * *",
+   "sources": [
+    "pla-tracker"
+   ],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "never_scheduled",
+     "text": "最近の記録に schedule の実行が無い（未実行）"
+    }
+   ],
+   "last_success_started_utc": "2026-10-30T09:31:19Z",
+   "last_success_event": "workflow_dispatch",
+   "last_scheduled": null,
+   "consecutive_failures": 0
+  },
+  {
+   "file": "proto.yml",
+   "label": "分析の試作",
+   "event": "workflow_run",
+   "cron_utc": null,
+   "sources": [
+    "proto"
+   ],
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-10-31T09:57:38Z",
+   "last_success_event": "workflow_run",
+   "last_scheduled": {
+    "id": 41190775311,
+    "started_utc": "2026-10-31T09:57:38Z",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41190775311"
+   },
+   "consecutive_failures": 0
+  }
+ ],
+ "sat": {
+  "pu": {
+   "month": "2026-10",
+   "code_cap_pu": 1000.0,
+   "usage_csv_pu": 166.541,
+   "usage_csv_requests": 178,
+   "usage_csv_runs": 6,
+   "status_month_pu_before": 166.541,
+   "status_last_run_utc": "2026-10-31T11:02:10Z",
+   "usage_csv_pu_before_last_run": 166.541,
+   "difference_pu": 0.0,
+   "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
+  },
+  "gaps": [
+   {
+    "relative_orbit": 157,
+    "expected_utc": "2026-10-20T10:48:45Z",
+    "interval_days": 6,
+    "site_id": "ZJG",
+    "level": "warn"
+   },
+   {
+    "relative_orbit": 84,
+    "expected_utc": "2026-10-27T10:41:00Z",
+    "interval_days": 12,
+    "site_id": "ZJG",
+    "level": "warn"
+   }
+  ],
+  "latest_scene": {
+   "ZJG": {
+    "acquired_utc": "2026-10-26T10:48:45Z",
+    "platform": "sentinel-1c",
+    "relative_orbit": 157,
+    "coverage": 0.994,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "ZJG-land-v2"
+   }
+  },
+  "sites_daily": [
+   "ZJG"
+  ],
+  "sites_configured_not_daily": [
+   "SYL",
+   "SLP",
+   "QGZ",
+   "ZDH"
+  ],
+  "changes_latest": {
+   "date": "2026-10-31",
+   "version": "ZDH の区画 A1 を多角形に、QGZ-land-v2（置くだけ。QGZ は QGZ-land-v1 のまま。湛江・SYL・SLP は変えない）"
+  }
+ },
+ "credits": [
+  "Contains modified Copernicus Sentinel data 2026",
+  "出典：海上保安庁ホームページ（https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html）／公共データ利用規約 第1.0版（PDL1.0） https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+  "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net）／CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
+  "陸マスク：(c) OpenStreetMap contributors, ODbL 1.0"
+ ]
+}
