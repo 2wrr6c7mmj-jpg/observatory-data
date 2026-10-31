@@ -157,14 +157,16 @@ class QgzLandFixTest(unittest.TestCase):
         self.assertNotIn("land_fix", info)
         _, info = osm_mask.build_mask(g, {"elements": []}, [{"id": "a", "polygon": poly}])
         self.assertEqual(info["land_fix"], [{"id": "a", "pixels": 9}])
-        # --from-version reproduces the committed v2 without Overpass
+        # --from-version reproduces the committed v2 without Overpass (same pixels)
         q = _site("QGZ")
         with tempfile.TemporaryDirectory() as td:
             td = Path(td)
             for name in ("QGZ-land-v1.png", "QGZ-land-v1.json", "QGZ-land-fix.geojson"):
                 (td / name).write_bytes((osm_mask.MASK_DIR / name).read_bytes())
             meta = osm_mask.fix_from_version(q, Grid.for_site(q), 1, 2, td)
-            self.assertEqual((td / "QGZ-land-v2.png").read_bytes(), (osm_mask.MASK_DIR / "QGZ-land-v2.png").read_bytes())
+            # the pixels, not the bytes (the PNG's zlib stream depends on the zlib version)
+            built, _ = osm_mask.load_mask("QGZ", 2, td)
+            self.assertTrue((built == run.load_mask("QGZ", 2)[0]).all())
             self.assertEqual(meta["land_fix"], json.loads((osm_mask.MASK_DIR / "QGZ-land-v2.json").read_text(encoding="utf-8"))["land_fix"])
 
 
