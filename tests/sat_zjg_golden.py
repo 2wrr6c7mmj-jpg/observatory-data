@@ -101,13 +101,19 @@ for r, c in edge[rng.choice(len(edge), size=40, replace=False)]:  # 40 ships alo
 enc = lambda x: np.clip(np.round((x + cdse.DB_OFFSET) * cdse.DB_SCALE), 1, 65535)
 chip = png.encode(np.stack([enc(vv), enc(vh), np.full(vv.shape, 4000.0), np.ones(vv.shape)], -1).astype(np.uint16), depth=16, filters=[1])
 
+def only_zjg_daily(sites):
+    """Zhanjiang is the only daily site this FakeClient (a Zhanjiang-shaped chip) can serve: leave out every other
+    site fetched daily (SYL, SLP from 2026-11-01); sites with daily false stay in, as before."""
+    return [s for s in sites if s["id"] == "ZJG" or s.get("daily", True) is False]
+
+
 out = work / "out"
 for rel in copy:
     (out / rel).parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(src / rel, out / rel)
 with mock.patch.object(run, "datetime", Frozen), mock.patch.object(quay, "Geometry", cached_geometry), \
         contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-    rc = run.main(["--out", str(out)], client=FakeClient(chip), sites=run.load_sites())
+    rc = run.main(["--out", str(out)], client=FakeClient(chip), sites=only_zjg_daily(run.load_sites()))
 files = {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in sorted(out.rglob("*")) if p.is_file() and p != out / "meta.json"}
 m = json.loads((out / "meta.json").read_text(encoding="utf-8"))
