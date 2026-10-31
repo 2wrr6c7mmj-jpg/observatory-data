@@ -1,0 +1,85 @@
+{
+ "type": "FeatureCollection",
+ "name": "QGZ-land-fix",
+ "note": "QGZ の陸マスクで、OSM の海岸線（© OpenStreetMap contributors, ODbL）では水だが S2 では陸の所を陸にする多角形（sat/osm_mask.py の land_fix）。since_mask_version 以上の版だけに使う（QGZ-land-v1 には使わない）。Q2（北東の入り江の干潟、119.9772〜119.9800E・35.7395〜35.7420N）は潮で水・陸が入れ替わり、範囲も外接矩形しか無いので入れていない",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "Q1",
+    "name": "内港 A2 のいちばん北の斜めの桟橋（OSM 219848836 付近）の付け根の埋め立ての台地（約 90×80 m）",
+    "since_mask_version": 2,
+    "source": "2部 情報部の検品（mask-check-qgz-zdh §2.2、2026-10-31）。Sentinel-2 L2A 自然色（主に 2026-09-22・2026-04-05・2025-11-01、probe/ports-s2ext-ops3 4cfa9a5）との重ね合わせ。Contains modified Copernicus Sentinel data 2026。位置 ±10 m。v1 では水で、台地の縁の反射を CFAR が 67 撮影中 40 撮影で検出していた"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       119.9806,
+       35.7317
+      ],
+      [
+       119.9823,
+       35.7317
+      ],
+      [
+       119.9828,
+       35.7311
+      ],
+      [
+       119.9817,
+       35.7302
+      ],
+      [
+       119.9806,
+       35.7309
+      ],
+      [
+       119.9806,
+       35.7317
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "Q5",
+    "name": "範囲の東の端で海岸線の出入りにできた小さな袋（v1 の領域 3、B）",
+    "since_mask_version": 2,
+    "whole_regions": true,
+    "max_pixels": 200,
+    "source": "2部 情報部の検品（mask-check-qgz-zdh §2.2、2026-10-31）。Sentinel-2 L2A 自然色（主に 2026-09-22・2026-04-05・2025-11-01、probe/ports-s2ext-ops3 4cfa9a5）との重ね合わせ。Contains modified Copernicus Sentinel data 2026。v1 では水（行 126〜147・列 491〜497、90 画素）。CFAR の検出は 0"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       120.0092,
+       35.7317
+      ],
+      [
+       120.01,
+       35.7317
+      ],
+      [
+       120.01,
+       35.7336
+      ],
+      [
+       120.0092,
+       35.7336
+      ],
+      [
+       120.0092,
+       35.7317
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}
