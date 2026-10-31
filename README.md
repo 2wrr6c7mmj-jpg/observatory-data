@@ -49,8 +49,9 @@ NOTAM Watch と共有している Cloudflare の無料枠（Pages デプロイ�
 ## 取得の作法
 
 - 取得の前に robots.txt を確かめる（`collectors/polite.py`）。拒否されている、または確かめられない場合は、その回はその源を飛ばして警告を出す
+- 例外は制作者の明示の許可を `collectors/permissions.json` に記録した源だけ（許可した人・受け取った日・経路・範囲・証拠の置き場・見直し日）。robots.txt の規則が拒否していても、範囲内の URL を見直し日まで取得する（今は PLA Activity Tracker の CSV のみ、1 日 1 回以内）。robots.txt が 401/403・読めない・ボット対策のチャレンジのときは上書きしない。許可で取得したかどうかは各 `status.json` の `last_run.access`（`robots` / `permission`）に出る
 - ボット対策のチャレンジページが返ったら、回り込まずにその回を止める
-- 1件ずつ間隔をあけて取得し、User-Agent にこのリポジトリの URL を入れる。取得済みのものは取り直さない
+- 1件ずつ間隔をあけて取得し、User-Agent は連絡先なしの簡素なボット名 `observatory-data/1`（ブラウザを装わない）。取得済みのものは取り直さない
 
 ## 分析の試作
 

@@ -13,7 +13,18 @@ because the Ministry's own site disallows automated access in robots.txt
 
 Politeness: robots.txt is checked first (collectors/polite.py); the run is
 skipped when it disallows us or cannot be checked, and a bot-challenge page
-stops it. One CSV per run.
+stops it. One CSV per run, no retries.
+
+Explicit permission: the maker's permission is recorded in
+collectors/permissions.json ("pla-tracker"). It is used only if robots.txt
+disallows the CSV; then the CSV (and nothing else) is fetched, and status.json says so (``last_run.access`` = "permission" and
+``last_run.permission``; otherwise ``access`` = "robots"). An expired or
+missing permission means the run is skipped as before.
+
+At most one request for the CSV per UTC day, whichever way it is allowed and
+also on the probe path (--save-raw): ``last_request_utc`` of status.json (the
+output directory's and the published one) is checked before the request. A run
+that stops for this reason leaves status.json untouched.
 
 Rows are merged by date: a value changed by the source replaces the stored
 one (listed in status.json ``last_run.revised``); a date that disappears from
@@ -42,7 +53,9 @@ SITE_URL = "https://pla-tracker.skyfaring.net/"
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "pla-tracker"
 MND = ROOT / "docs" / "data" / "taiwan-mnd"
-UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data; public research)"
+SOURCE_ID = "pla-tracker"  # key in collectors/permissions.json
+# A plain bot name without contact details (decided 2026-10-31). Never a browser-like string.
+UA = "observatory-data/1"
 TIMEOUT = 60
 
 SOURCE_COLUMNS = ["date", "aircraft_total", "median_line_cross", "cross_rate", "aircraft_type",
@@ -59,9 +72,13 @@ COMPARE_EXTRA = {"ships_total_vs_plan_plus_official": ("ships_total", "plan_plus
 
 # Repeated in daily.json so the data carries its credit wherever it is copied (same as meta.json).
 ATTRIBUTION = {
+    "author": "Adam Pan（Skyfaring）, PLA Activity Tracker",
+    "url": SITE_URL,
     # The wording the site asks for (about page, "Citation & license", read 2026-10-30).
-    "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)",
-    "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net）",
+    "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net), "
+              "by Adam Pan (Skyfaring), CC BY 4.0. Republished by observatory-data; this does not imply official involvement or endorsement by the PLA Activity Tracker or its maker.",
+    "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net、Adam Pan／Skyfaring、CC BY 4.0）",
+    "disclaimer": "observatory-data による再掲であり、PLA Activity Tracker およびその制作者の公式の関与・承認を示すものではない（制作者の条件）",
     "license": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
     "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、"
                   "数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。",
@@ -70,6 +87,10 @@ ATTRIBUTION = {
 
 class Stop(Exception):
     """The source cannot be used in this run."""
+
+
+class AlreadyToday(Stop):
+    """The CSV was already requested this UTC day (no request, status.json untouched)."""
 
 
 def now_utc() -> datetime:
@@ -287,10 +308,32 @@ def write_all(out: Path, rows: dict[str, dict], status: dict, comparison: dict) 
                                             "last_day": days[-1] if days else None}))
 
 
-def fetch_csv() -> tuple[str, dict, str]:
-    robots = polite.require_allowed(CSV_URL, UA)
+def _same_utc_day(a: str | None, b: datetime) -> bool:
+    return bool(a) and str(a)[:10] == b.strftime("%Y-%m-%d")
+
+
+def last_request(*dirs: Path) -> str | None:
+    """The latest ``last_request_utc`` in the status.json of these directories."""
+    seen = []
+    for d in dirs:
+        try:
+            v = json.loads((d / "status.json").read_text(encoding="utf-8")).get("last_request_utc")
+        except (OSError, ValueError):
+            continue
+        if v:
+            seen.append(str(v))
+    return max(seen) if seen else None
+
+
+def fetch_csv(last_request_utc: str | None = None, trace: dict | None = None) -> tuple[str, dict, polite.RobotsResult]:
+    """One GET of the CSV, at most once per UTC day. ``trace["requested_utc"]`` is set once the request is sent."""
+    if _same_utc_day(last_request_utc, now_utc()):
+        raise AlreadyToday(f"the CSV was already requested today (UTC) at {last_request_utc}; one request per day")
+    robots = polite.require_allowed(CSV_URL, UA, source=SOURCE_ID)
+    if trace is not None:
+        trace["requested_utc"] = iso(now_utc())
     try:
-        resp = polite.get(CSV_URL, UA, TIMEOUT)
+        resp = polite.get(CSV_URL, UA, TIMEOUT, source=SOURCE_ID)
     except polite.SourceBlocked:
         raise
     except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException, OSError) as e:
@@ -304,7 +347,7 @@ def fetch_csv() -> tuple[str, dict, str]:
             "sha256": hashlib.sha256(resp.body).hexdigest(),
             "content_type": resp.headers.get("content-type"),
             "last_modified": resp.headers.get("last-modified"), "etag": resp.headers.get("etag")}
-    return text, info, robots.reason
+    return text, info, robots
 
 
 def about_text() -> list[str]:
@@ -322,6 +365,8 @@ def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -
     status_path = out / "status.json"
     old_status = json.loads(status_path.read_text(encoding="utf-8")) if status_path.exists() else {}
     stored = read_stored(out / "daily.csv")
+    trace: dict = {}
+    access: dict = {}
     try:
         if from_file:
             text = from_file.read_text(encoding="utf-8")
@@ -329,27 +374,38 @@ def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -
                     "sha256": hashlib.sha256(from_file.read_bytes()).hexdigest()}
             robots = "not checked (rebuilt from a saved file)"
         else:
-            text, info, robots = fetch_csv()
+            text, info, rr = fetch_csv(last_request(out, OUT), trace)
+            robots = rr.reason
+            access = {"access": rr.access, **({"permission": rr.permission} if rr.permission else {})}
+            if rr.permission:
+                notice(f"robots.txt は拒否、制作者の明示の許可で取得した（{rr.reason}）", "warning", title="pla-tracker permission")
         fresh, skipped = parse_csv(text)
         if not fresh:
             raise Stop("no rows")
         retrieved = iso(now_utc())
         rows, changes = merge(stored, fresh, retrieved)
+    except AlreadyToday as e:
+        notice(f"PLA Activity Tracker は今日は取得済み：{e}")
+        return 0
     except (Stop, polite.SourceBlocked) as e:
         notice(f"PLA Activity Tracker を使わない：{e}", "warning")
-        last_run = {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "skipped", "reason": str(e)}
+        last_run = {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "skipped", "reason": str(e),
+                    **access}
         if stored:
-            write_atomic(status_path, dump({**old_status, "last_run": last_run}))
+            write_atomic(status_path, dump({**old_status, "last_run": last_run,
+                                            **({"last_request_utc": trace["requested_utc"]} if trace else {})}))
         return 1 if isinstance(e, polite.Challenge) else 0
     comparison = compare(rows, read_mnd(mnd_csv or MND / "daily.csv"))
     src_days = sorted(fresh)
     status = {
         "generated_utc": iso(now_utc()),
         "last_success_utc": iso(now_utc()),
+        **({"last_request_utc": trace["requested_utc"]} if trace
+           else {"last_request_utc": old_status["last_request_utc"]} if old_status.get("last_request_utc") else {}),
         "source": {**info, "rows": len(fresh), "first_day": src_days[0], "last_day": src_days[-1],
                    "skipped_rows": skipped[:30], "skipped_count": len(skipped)},
         "last_run": {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "ok",
-                     "robots": robots, **changes},
+                     "robots": robots, **access, **changes},
     }
     write_all(out, rows, status, comparison)
     notice(f"取得 {len(fresh)} 行（{src_days[0]}〜{src_days[-1]}）、追加 {changes['added']}・改訂 {changes['revised_count']}・"
@@ -374,6 +430,10 @@ META = {
         "rating_note": "暫定評価 B-2 目安（アドミラルティ・コード）。数値の原典は当事者である台湾国防部の発表で、探知範囲・計上基準・公表方針は国防部に依存する。"
                        "集約者は個人であり、読み取りの誤り・修正の有無は国防部の原文で確かめる必要がある。",
     },
+    "access": "取得の前に robots.txt を確かめる（collectors/polite.py）。2026-10-31 10:22 UTC に収集器の User-Agent で読んだ robots.txt は "
+              "User-agent: * に Allow: /（全体を許可）。制作者の許可（2026-10-31、運営者経由。私信のため非公開）を "
+              "collectors/permissions.json に記録しており、robots.txt が CSV を拒むようになった場合も、許可の見直し日までは CSV 1 本だけを "
+              "1 日 1 回以内・再試行なしで取得する。どちらで取得したかは status.json の last_run.access（robots / permission）に書く",
     "use": "台湾国防部の日報の自動取得は robots.txt（User-agent: * に Disallow: /）で拒否されているため 2026-10-30 で止めた"
            "（collectors/taiwan_mnd.py SUSPENDED）。2026-10-31 以降の日ごとの数はこのデータで補う。",
     "precedence": "同じ日に国防部の日報（docs/data/taiwan-mnd/、around-taiwan 書式）とこのデータの両方がある場合は、原典に近い国防部の日報の値を使う。"
@@ -430,9 +490,13 @@ def main(argv=None) -> int:
     ap.add_argument("--save-raw", type=Path, help="probe: keep the fetched CSV here")
     a = ap.parse_args(argv)
     if a.save_raw and not a.from_file:
-        text, info, robots = fetch_csv()
+        try:
+            text, info, rr = fetch_csv(last_request(a.out, OUT))
+        except AlreadyToday as e:
+            notice(f"probe: 今日は取得済みのため CSV を取らない：{e}")
+            return 0
         a.save_raw.write_text(text, encoding="utf-8")
-        notice(f"{robots}\n{json.dumps(info, ensure_ascii=False)}", title="pla-tracker fetch")
+        notice(f"{rr.reason}（access: {rr.access}）\n{json.dumps(info, ensure_ascii=False)}", title="pla-tracker fetch")
         rc = run(a.out, from_file=a.save_raw)
     else:
         rc = run(a.out, from_file=a.from_file)

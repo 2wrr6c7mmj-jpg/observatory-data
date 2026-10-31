@@ -20,7 +20,7 @@ from pathlib import Path
 
 API = "https://ll.thespacedevs.com/2.2.0"
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "launches"
-UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)"
+UA = "observatory-data/1"
 
 
 def get(url: str) -> dict:

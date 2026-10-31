@@ -25,7 +25,7 @@ class Server:
 
     def __call__(self, url, ua, timeout, headers, max_bytes):
         self.calls.append((url, dict(headers or {})))
-        assert "github.com/2wrr6c7mmj-jpg/observatory-data" in ua
+        assert ua == "observatory-data/1", ua
         if url.endswith("/robots.txt"):
             return polite.Response(url, self.robots[0], {"content-type": "text/plain"}, self.robots[1])
         if self.challenge:

@@ -15,16 +15,38 @@ robots.txt is read with our own User-Agent and parsed by
 
 A bot challenge ("Just a moment...", Cloudflare / Incapsula / DDoS-Guard
 interstitials) raises ``Challenge``; collectors must stop, not work around it.
+
+Explicit permission (``collectors/permissions.json``): when the maker of a
+source has allowed our collection, the permission is recorded there per source
+(who allowed it, when it was received, how, the URLs and frequency covered,
+where the evidence is, and a review date). ``require_allowed(url, ua,
+source=ID)`` then lets a URL through even though robots.txt disallows it, but
+only when all of these hold:
+
+- the caller names the source (``source=``) and it has an entry;
+- the URL is listed in that entry's ``scope.urls`` (exact match);
+- the review date (``review_by``, inclusive, UTC) has not passed;
+- robots.txt was read and its *rules* disallow the URL. A robots.txt that
+  answers 401 / 403, cannot be read, or is a challenge is never overridden,
+  and a bot-challenge page on the URL itself still stops the run.
+
+Sources without a valid entry behave exactly as before (disallowed: skipped).
 """
 from __future__ import annotations
 
 import http.client
+import json
 import time
 import urllib.error
 import urllib.request
 import urllib.robotparser
 from dataclasses import dataclass
+from datetime import date, datetime, timezone
+from pathlib import Path
 from urllib.parse import urlsplit
+
+PERMISSIONS_PATH = Path(__file__).resolve().parent / "permissions.json"
+PERMISSION_FIELDS = ("granted_by", "received", "channel", "scope", "evidence", "review_by")
 
 ROBOTS_MAX_BYTES = 512 * 1024
 
@@ -66,6 +88,13 @@ class RobotsResult:
     allowed: bool
     verified: bool  # False: robots.txt could not be checked
     reason: str
+    by_rules: bool = False  # the answer comes from the rules of a robots.txt that was read (200)
+    permission: dict | None = None  # set when allowed only by an explicit permission
+
+    @property
+    def access(self) -> str:
+        """"robots" (robots.txt allows) or "permission" (explicit permission overrides a disallow)."""
+        return "permission" if self.permission else "robots"
 
 
 def _headers(msg) -> dict:
@@ -150,20 +179,79 @@ def check_robots(url: str, user_agent: str, getter=None) -> RobotsResult:
     if isinstance(loaded, RobotsResult):
         return loaded
     if loaded.can_fetch(user_agent, url):
-        return RobotsResult(True, True, f"{origin}: allowed")
-    return RobotsResult(False, True, f"{origin}: disallowed for this URL")
+        return RobotsResult(True, True, f"{origin}: allowed", by_rules=True)
+    return RobotsResult(False, True, f"{origin}: disallowed for this URL", by_rules=True)
 
 
-def require_allowed(url: str, user_agent: str, getter=None) -> RobotsResult:
+# ---------------------------------------------------------------- explicit permissions
+
+def load_permissions(path: Path | None = None) -> dict:
+    """The ``sources`` of permissions.json ({} when the file is missing)."""
+    path = path or PERMISSIONS_PATH
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data.get("sources") or {}
+
+
+def _today_utc() -> date:
+    return datetime.now(timezone.utc).date()
+
+
+def find_permission(source: str | None, url: str, today: date | None = None,
+                    permissions: dict | None = None) -> tuple[dict | None, str]:
+    """(entry, "") when ``source`` has a valid permission covering ``url``; else (None, why not)."""
+    if not source:
+        return None, "no source named"
+    perms = load_permissions() if permissions is None else permissions
+    entry = perms.get(source)
+    if not entry:
+        return None, f"no permission recorded for {source!r}"
+    missing = [k for k in PERMISSION_FIELDS if entry.get(k) in (None, "", {}, [])]
+    if missing:
+        return None, f"permission for {source!r} is incomplete (missing {missing})"
+    urls = (entry.get("scope") or {}).get("urls") or []
+    if url not in urls:
+        return None, f"{url} is outside the permission for {source!r}"
+    try:
+        review_by = date.fromisoformat(str(entry["review_by"]))
+    except ValueError:
+        return None, f"permission for {source!r}: bad review_by {entry['review_by']!r}"
+    today = today or _today_utc()
+    if today > review_by:
+        return None, f"permission for {source!r} expired (review_by {review_by.isoformat()}); review it before relying on it"
+    return entry, ""
+
+
+def permission_summary(source: str, entry: dict) -> dict:
+    """What status.json records about a fetch made under permission."""
+    scope = entry.get("scope") or {}
+    return {"source": source, "file": "collectors/permissions.json", "granted_by": entry.get("granted_by"),
+            "received": entry.get("received"), "channel": entry.get("channel"),
+            "evidence": entry.get("evidence"), "review_by": entry.get("review_by"),
+            "max_requests_per_day": scope.get("max_requests_per_day")}
+
+
+def require_allowed(url: str, user_agent: str, getter=None, source: str | None = None,
+                    today: date | None = None, permissions: dict | None = None) -> RobotsResult:
     r = check_robots(url, user_agent, getter)
-    if not r.allowed:
-        raise SourceBlocked(r.reason)
-    return r
+    if r.allowed:
+        return r
+    if r.verified and r.by_rules and source:
+        entry, why = find_permission(source, url, today, permissions)
+        if entry is not None:
+            return RobotsResult(True, True, f"{r.reason}; overridden by explicit permission "
+                                f"(collectors/permissions.json: {source}, granted by {entry['granted_by']}, "
+                                f"evidence {entry['evidence']}, review by {entry['review_by']})",
+                                by_rules=True, permission=permission_summary(source, entry))
+        raise SourceBlocked(f"{r.reason} ({why})")
+    raise SourceBlocked(r.reason)
 
 
 def get(url: str, user_agent: str, timeout: float = 30, headers: dict | None = None,
-        getter=None) -> Response:
-    """robots.txt check, then GET; raises SourceBlocked / Challenge as described above."""
+        getter=None, source: str | None = None) -> Response:
+    """robots.txt check (and explicit permission for ``source``), then GET;
+    raises SourceBlocked / Challenge as described above."""
     getter = getter or raw_get
-    require_allowed(url, user_agent, getter)
+    require_allowed(url, user_agent, getter, source=source)
     return check_challenge(getter(url, user_agent, timeout, headers, 20_000_000))

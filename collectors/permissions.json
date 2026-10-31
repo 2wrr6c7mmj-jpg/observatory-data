@@ -1,0 +1,32 @@
+{
+ "_doc": "制作者の明示の許可の記録（collectors/polite.py の require_allowed(url, ua, source=ID) が読む）。robots.txt の規則が拒否していても、ここに記録があり、対象 URL が scope.urls に含まれ、review_by（UTC の日付、その日を含む）を過ぎていない源だけ取得を続ける。robots.txt が 401/403・読めない・チャレンジのとき、および取得先がチャレンジや 403 を返したときは上書きしない（回り込まない）。記録の無い源は従来どおり（拒否なら飛ばす）。review_by を過ぎると自動で無効になるので、許可の範囲を確かめてから日付を延ばす。私信の画面など証拠そのものはこの公開リポジトリに置かず、置き場だけを書く。",
+ "sources": {
+  "pla-tracker": {
+   "site": "https://pla-tracker.skyfaring.net/",
+   "granted_by": "Adam Pan（Skyfaring、PLA Activity Tracker の制作者。about ページの記名）",
+   "received": "2026-10-31",
+   "channel": "2026-10-31、運営者経由",
+   "statement": {
+    "conditions": [
+     "悪意ある利用をしない",
+     "公式の関与・承認を装わない（公開データの meta の attribution.disclaimer に明記）",
+     "CC BY 4.0 の出典表示（作者名・URL・ライセンス）"
+    ],
+    "automated_access": "自動取得についても運営者経由で了解を得た（私信のため非公開）"
+   },
+   "scope": {
+    "urls": [
+     "https://pla-tracker.skyfaring.net/data/records.csv"
+    ],
+    "max_requests_per_day": 1,
+    "user_agent": "observatory-data/1",
+    "retries": 0,
+    "note": "CSV 1 本だけ、1 日 1 回以内、再試行なし。about などの他のページは対象外。User-Agent は連絡先なしの簡素なボット名で、ブラウザを装わない"
+   },
+   "evidence": "受領済み（運営者が保管。私信のため非公開）",
+   "review_by": "2026-11-30",
+   "license": "CC BY 4.0（データの利用条件。この許可は取得の方法についてのもの）",
+   "note": "2026-10-31 10:22 UTC に GitHub Actions から収集器の判定（urllib.robotparser）で読んだ robots.txt は User-agent: * に Allow: /（全体を許可）で、拒否は無かった。今は上書きを使っておらず、status.json の last_run.access は robots。上書きは robots.txt が CSV を拒むようになったときだけ働く"
+  }
+ }
+}

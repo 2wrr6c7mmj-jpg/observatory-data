@@ -26,7 +26,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ODATA_URL = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products"
-USER_AGENT = "observatory-data/1.0 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)"
+USER_AGENT = "observatory-data/1"
 STEP = 0.25
 PAGE = 1000
 WINDOW_DAYS = 5

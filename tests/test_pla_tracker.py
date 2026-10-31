@@ -83,6 +83,23 @@ class CompareTest(unittest.TestCase):
 
 
 class RunTest(unittest.TestCase):
+    def setUp(self):
+        # Keep the collector's ::notice/::warning lines out of the CI annotations: a test that
+        # prints "PLA Activity Tracker を使わない：... disallowed" reads like a real skip (2026-10-31).
+        self.notices = []
+        patcher = mock.patch.object(P, "notice", lambda msg, level="notice", title="pla-tracker":
+                                    self.notices.append((level, title, msg)))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        polite._cache.clear()
+        self.addCleanup(polite._cache.clear)
+        # never read the published docs/data/pla-tracker/status.json (its last_request_utc) in tests
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        out_patch = mock.patch.object(P, "OUT", Path(tmp.name) / "published")
+        out_patch.start()
+        self.addCleanup(out_patch.stop)
+
     def test_run_writes_files_once_fetched(self):
         def getter(url, ua, timeout, headers, max_bytes):
             if url.endswith("robots.txt"):
@@ -98,13 +115,25 @@ class RunTest(unittest.TestCase):
             self.assertEqual(st["source"]["last_day"], "2026-10-31")
             self.assertEqual(st["last_run"]["added"], 4)
             self.assertIn("allowed", st["last_run"]["robots"])
+            self.assertEqual(st["last_run"]["access"], "robots")
+            self.assertNotIn("permission", st["last_run"])
+            self.assertTrue(st["last_request_utc"])
             with open(out / "daily.csv", encoding="utf-8") as f:
                 self.assertEqual(len(list(csv.DictReader(f))), 4)
             meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
             self.assertIn("CC BY 4.0", meta["attribution"]["license"])
+            self.assertIn("Adam Pan", meta["attribution"]["author"])
+            self.assertEqual(meta["attribution"]["url"], P.SITE_URL)
+            self.assertIn("permissions.json", meta["access"])
+            self.assertIn("公式の関与・承認を示すものではない", meta["attribution"]["disclaimer"])
+            self.assertIn("official involvement or endorsement", meta["attribution"]["credit"])
+            daily = json.loads((out / "daily.json").read_text(encoding="utf-8"))
+            self.assertEqual(daily["attribution"], meta["attribution"])
             self.assertIn("precedence", meta)
-            # second run: nothing new
-            self.assertEqual(P.run(out, mnd_csv=mnd), 0)
+            # second run on the next UTC day: nothing new
+            from datetime import timedelta
+            with mock.patch.object(P, "now_utc", return_value=P.now_utc() + timedelta(days=1)):
+                self.assertEqual(P.run(out, mnd_csv=mnd), 0)
             st = json.loads((out / "status.json").read_text(encoding="utf-8"))
             self.assertEqual(st["last_run"]["added"], 0)
         polite._cache.clear()
@@ -115,10 +144,123 @@ class RunTest(unittest.TestCase):
                 return polite.Response(url, 200, {"content-type": "text/plain"}, b"User-agent: *\nDisallow: /\n")
             raise AssertionError("CSV must not be fetched")
         polite._cache.clear()
-        with tempfile.TemporaryDirectory() as t, mock.patch.object(polite, "raw_get", getter):
+        # without a permission entry (the real permissions.json has one for pla-tracker)
+        with tempfile.TemporaryDirectory() as t, mock.patch.object(polite, "raw_get", getter), \
+                mock.patch.object(polite, "load_permissions", return_value={}):
             self.assertEqual(P.run(Path(t) / "out"), 0)
             self.assertFalse((Path(t) / "out" / "daily.csv").exists())
         polite._cache.clear()
+
+    # ---- explicit permission (collectors/permissions.json)
+    PERM = {"pla-tracker": {"granted_by": "maker", "received": "2026-10-31T19:20+09:00", "channel": "user report",
+                            "scope": {"urls": [P.CSV_URL], "max_requests_per_day": 1}, "evidence": "pending",
+                            "review_by": "2026-11-30"}}
+
+    def disallow_getter(self):
+        calls = []
+
+        def getter(url, ua, timeout, headers, max_bytes):
+            calls.append(url)
+            if url.endswith("robots.txt"):
+                return polite.Response(url, 200, {"content-type": "text/plain"}, b"User-agent: *\nDisallow: /\n")
+            return polite.Response(url, 200, {"content-type": "text/csv"}, SAMPLE.encode())
+        getter.calls = calls
+        return getter
+
+    def run_with(self, out, perms, today, now, getter=None):
+        g = getter or self.disallow_getter()
+        polite._cache.clear()
+        with mock.patch.object(polite, "raw_get", g), \
+                mock.patch.object(polite, "load_permissions", return_value=perms), \
+                mock.patch.object(polite, "_today_utc", return_value=today), \
+                mock.patch.object(P, "now_utc", return_value=now), \
+                mock.patch.object(P, "OUT", out):
+            rc = P.run(out, mnd_csv=out / "none.csv")
+        return rc, g.calls
+
+    def test_permission_fetches_once_a_day_and_says_so(self):
+        from datetime import date, datetime, timezone
+        with tempfile.TemporaryDirectory() as t:
+            out = Path(t) / "out"
+            now = datetime(2026, 11, 1, 6, 37, tzinfo=timezone.utc)
+            rc, calls = self.run_with(out, self.PERM, date(2026, 11, 1), now)
+            self.assertEqual(rc, 0)
+            self.assertEqual(calls, ["https://pla-tracker.skyfaring.net/robots.txt", P.CSV_URL])
+            st = json.loads((out / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual(st["last_run"]["result"], "ok")
+            self.assertEqual(st["last_run"]["access"], "permission")
+            self.assertEqual(st["last_run"]["permission"]["evidence"], "pending")
+            self.assertEqual(st["last_run"]["permission"]["file"], "collectors/permissions.json")
+            self.assertIn("overridden by explicit permission", st["last_run"]["robots"])
+            self.assertEqual(st["last_request_utc"], "2026-11-01T06:37:00Z")
+            self.assertTrue(any(title == "pla-tracker permission" for _, title, _ in self.notices))
+            # the same UTC day again: no request at all, status.json untouched
+            before = (out / "status.json").read_text(encoding="utf-8")
+            rc, calls = self.run_with(out, self.PERM, date(2026, 11, 1), now.replace(hour=20))
+            self.assertEqual((rc, calls), (0, []))
+            self.assertEqual((out / "status.json").read_text(encoding="utf-8"), before)
+            # the next day: one request again
+            rc, calls = self.run_with(out, self.PERM, date(2026, 11, 2), now.replace(day=2))
+            self.assertEqual(calls[-1], P.CSV_URL)
+
+    def allow_getter(self):
+        calls = []
+
+        def getter(url, ua, timeout, headers, max_bytes):
+            calls.append(url)
+            if url.endswith("robots.txt"):
+                return polite.Response(url, 200, {"content-type": "text/plain"}, b"User-agent: *\nAllow: /\n")
+            return polite.Response(url, 200, {"content-type": "text/csv"}, SAMPLE.encode())
+        getter.calls = calls
+        return getter
+
+    def test_once_a_day_also_when_robots_allows(self):
+        from datetime import date, datetime, timezone
+        with tempfile.TemporaryDirectory() as t:
+            out = Path(t) / "out"
+            now = datetime(2026, 11, 1, 6, 37, tzinfo=timezone.utc)
+            rc, calls = self.run_with(out, {}, date(2026, 11, 1), now, self.allow_getter())
+            self.assertEqual(calls[-1], P.CSV_URL)
+            st = json.loads((out / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual((st["last_run"]["access"], st["last_request_utc"]), ("robots", "2026-11-01T06:37:00Z"))
+            rc, calls = self.run_with(out, {}, date(2026, 11, 1), now.replace(hour=23), self.allow_getter())
+            self.assertEqual((rc, calls), (0, []))
+            rc, calls = self.run_with(out, {}, date(2026, 11, 2), now.replace(day=2, hour=0), self.allow_getter())
+            self.assertEqual(calls[-1], P.CSV_URL)
+
+    def test_probe_path_respects_the_published_status(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as t:
+            published = Path(t) / "published"
+            published.mkdir()
+            (published / "status.json").write_text(json.dumps({"last_request_utc": "2026-11-01T06:37:00Z"}), encoding="utf-8")
+            g = self.allow_getter()
+            polite._cache.clear()
+            with mock.patch.object(polite, "raw_get", g), mock.patch.object(P, "OUT", published), \
+                    mock.patch.object(P, "now_utc", return_value=datetime(2026, 11, 1, 9, 0, tzinfo=timezone.utc)):
+                rc = P.main(["--out", str(Path(t) / "probe"), "--save-raw", str(Path(t) / "records.csv")])
+            self.assertEqual((rc, g.calls), (0, []))
+            self.assertFalse((Path(t) / "records.csv").exists())
+            # the next day the probe fetches once
+            g = self.allow_getter()
+            polite._cache.clear()
+            with mock.patch.object(polite, "raw_get", g), mock.patch.object(P, "OUT", published), \
+                    mock.patch.object(P, "now_utc", return_value=datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)):
+                rc = P.main(["--out", str(Path(t) / "probe"), "--save-raw", str(Path(t) / "records.csv")])
+            self.assertEqual(g.calls.count(P.CSV_URL), 1)
+            self.assertTrue((Path(t) / "records.csv").exists())
+
+    def test_no_or_expired_permission_skips_without_fetching(self):
+        from datetime import date, datetime, timezone
+        for perms, today, why in [({}, date(2026, 11, 1), "no permission recorded"),
+                                  (self.PERM, date(2026, 12, 1), "expired")]:
+            with self.subTest(why=why), tempfile.TemporaryDirectory() as t:
+                out = Path(t) / "out"
+                rc, calls = self.run_with(out, perms, today, datetime(2026, 12, 1, tzinfo=timezone.utc))
+                self.assertEqual(rc, 0)
+                self.assertEqual(calls, ["https://pla-tracker.skyfaring.net/robots.txt"])
+                self.assertFalse((out / "daily.csv").exists())
+                self.assertTrue(any(why in m for _, _, m in self.notices))
 
 
 if __name__ == "__main__":

@@ -1,9 +1,12 @@
 {
  "attribution": {
-  "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net)",
-  "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net）",
+  "author": "Adam Pan（Skyfaring）, PLA Activity Tracker",
+  "credit": "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net), by Adam Pan (Skyfaring), CC BY 4.0. Republished by observatory-data; this does not imply official involvement or endorsement by the PLA Activity Tracker or its maker.",
+  "credit_ja": "出典：中華民國（台湾）國防部。集約：PLA Activity Tracker（https://pla-tracker.skyfaring.net、Adam Pan／Skyfaring、CC BY 4.0）",
+  "disclaimer": "observatory-data による再掲であり、PLA Activity Tracker およびその制作者の公式の関与・承認を示すものではない（制作者の条件）",
   "license": "CC BY 4.0 https://creativecommons.org/licenses/by/4.0/",
-  "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。"
+  "processing": "observatory-data（https://github.com/2wrr6c7mmj-jpg/observatory-data）が records.csv を日ごとに取り込み、数値の列を整数にし、取得時刻を付け、国防部の日報（docs/data/taiwan-mnd/）と突き合わせた。値そのものは変えていない。",
+  "url": "https://pla-tracker.skyfaring.net/"
  },
  "fields": [
   "date",

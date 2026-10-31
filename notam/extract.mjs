@@ -15,7 +15,7 @@ import {classifyMaritimeActivity} from './vendor/maritime-activity.mjs';
 import {readSnapshotBytes, SNAPSHOT_LIMIT} from './vendor/snapshot-transport.mjs';
 
 const ORIGIN = 'https://notam-watch.pages.dev';
-const UA = 'observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)';
+const UA = 'observatory-data/1';
 
 export async function download(url, maxBytes, fetcher = fetch) {
   const response = await fetcher(url, {headers: {'User-Agent': UA}, redirect: 'error', signal: AbortSignal.timeout(60000)});
