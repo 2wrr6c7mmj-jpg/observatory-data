@@ -3,7 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:  # the collect workflows do not install numpy; Tests does
+    raise unittest.SkipTest("numpy not installed")
 
 from sat import quay_est as e
 

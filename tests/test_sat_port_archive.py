@@ -141,6 +141,7 @@ class PortsFileTest(unittest.TestCase):
             self.assertTrue(w <= p["center_lon"] <= e and s <= p["center_lat"] <= n, p["id"])
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
 class BudgetArgsTest(unittest.TestCase):
     """plan has no default caps, and stops before any request outside the month the caps were set for."""
 
