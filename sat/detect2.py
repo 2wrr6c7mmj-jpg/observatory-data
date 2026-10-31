@@ -5,8 +5,14 @@ cfar-v1 (``sat/detect.py``) is unchanged. Depends on numpy, ``sat.grid`` and ``s
 
 Steps (design ``cfar-v2`` 3.4-3.6):
 
-1. ``cfar2.cfar2`` on VV and on VH (same windows). Pixels within ``edge_px`` (3) of no data are
-   not tested.
+1. ``cfar2.cfar2`` on VV and on VH (same windows). No data is ``datamask`` False (if given) or VV
+   NaN; pixels within ``edge_px`` (3) of no data are not tested. A VH NaN where VV has data is
+   *not* no data: it is a VH sigma0 <= 0 after thermal-noise removal (encoded as code 0), common in
+   low wind (VH median below about -36 dB) and in near range. Such pixels are left out of the VH
+   log-domain statistics only (ring background, tile fit, ``z_vh``; ln 0 does not exist), are not
+   dilated, and do not touch VV; in the linear VH means of step 6 they count as 0.
+   (Before ``cfar2-pr2.1`` every VH NaN was no data and dilated by 3 px: a few % of such pixels
+   removed most of a tile and the tile fit failed.)
 2. Hysteresis: seeds ``z >= z_t(pfa_seed=1e-7)``; the 8-connected regions of
    ``z >= z_t(pfa_grow=1e-3)`` that contain a seed are kept.
 3. Binary 3x3 closing, hole filling, area filter (2 px at >= 15 m pixels, 4 px finer). No opening
@@ -15,7 +21,8 @@ Steps (design ``cfar-v2`` 3.4-3.6):
 5. White top-hat (dB image minus a 400 m square opening, separable min/max filters) recorded as
    ``tophat_db``; not used to decide.
 6. Confidence from VH: ``A`` if the component's max ``z_vh >= z_t_vh(1e-3)`` or its mean VH is
-   >= +3 dB over the background; else ``B`` if ``length_m >= 80`` (VV only; recorded, not counted);
+   >= +3 dB over the background (linear means; VH sigma0 <= 0 pixels count as 0 in both the
+   candidate and the ring); else ``B`` if ``length_m >= 80`` (VV only; recorded, not counted);
    else dropped. With no VH background (ratio infinite) a candidate is ``B``, never ``A``.
 7. Shape: length and width along the principal axes (one pixel of footprint included), heading of
    the major axis (degrees from true north, 0-180), area, length/width, fill (pixels / rotated
@@ -42,6 +49,22 @@ Steps (design ``cfar-v2`` 3.4-3.6):
     end, minus the local background (the darker end) -> ``wake_dark_db``.
 11. ``large`` flag: ``length_m >= 80 and width_m >= 12 and lw_ratio >= 2.5 and confidence == "A"
     and not static`` (provisional numbers; lengths are blurred by about +20 m by the resolution).
+
+Limits (VH and low wind, ``cfar2-pr2.1``)
+-----------------------------------------
+* VH sigma0 <= 0 (noise-subtracted; code 0, NaN in dB) is *not* no data. No data is ``datamask``
+  False or VV NaN only, and only that border is dilated by ``edge_px``. VH <= 0 pixels are left out
+  of the VH log statistics only (ring background, tile fit, ``z_vh``); in the linear VH means (the
+  +3 dB rule for ``A``) they count as 0, for the candidate and for the ring. VV is not affected.
+* The VH threshold is too conservative on noise-subtracted VH: on synthetic scenes the measured VH
+  exceedance at 1e-3 is about 0.4-0.5x nominal and ``z_vh`` about 60% of its noise-free value. ``A``
+  is therefore decided mostly by the +3 dB ratio, and that ratio comes out somewhat low because the
+  background's values <= 0 are raised to 0 (errs towards fewer ``A``).
+* Real tiles (probe-raw/ocean 2026-10-30, 9 scenes x 108 tiles): with ships masked, the VV
+  exceedance at 1e-4 is 2-3.5x nominal, sometimes outside the design's 1/3..3x (1e-3: about 1.6x).
+* VV sigma0 <= 0 (VV code 0) is still no data and dilated (a limit in very low wind).
+* ``info["nodata_band_fraction"]`` is over all pixels of the image; ``info["vh_zero_fraction"]`` is
+  over sea pixels (data, not land).
 
 Excluded candidates (side lobe, ambiguity) are returned with the reason set and are listed in
 ``info["excluded"]``; use :func:`kept` for the rest. ``lon``, ``lat`` and ``acquired_utc`` are None
@@ -75,7 +98,7 @@ from . import cfar2 as c2
 from .grid import box_sum, dilate, label
 
 DETECTOR_VERSION = "cfar-v2"
-PROCESSING_VERSION = "cfar2-pr2"
+PROCESSING_VERSION = "cfar2-pr2.1"   # pr2.1: VH sigma0 <= 0 is not no data
 
 # --- nominal Sentinel-1 IW geometry (see module doc: PRF and incidence bounds are provisional)
 WAVELENGTH_M = 299_792_458.0 / 5.405e9
@@ -294,10 +317,12 @@ def _at(a, r: int, c: int):
 # ---------------------------------------------------------------- main entry
 
 def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, cfg: dict | None = None, *,
-              lia=None, heading_deg: float | None = None, static: np.ndarray | None = None):
+              lia=None, heading_deg: float | None = None, static: np.ndarray | None = None,
+              datamask: np.ndarray | None = None):
     """Return (dets, info) like ``detect.detect`` (cfar-v1) with the cfar-v2 fields added.
 
-    ``vv_db``/``vh_db``: dB, NaN = no data. ``land``: True on land. ``pixel_m``: (row m, col m).
+    ``vv_db``/``vh_db``: dB. No data = ``datamask`` False (Sentinel Hub dataMask; optional) or VV NaN.
+    A VH NaN where VV has data is a VH sigma0 <= 0 (see module doc step 1), not no data. ``land``: True on land. ``pixel_m``: (row m, col m).
     ``lia``: incidence angle (deg), scalar or image. ``heading_deg``: platform heading (deg from
     north; see :func:`platform_heading`). ``static``: True on known fixed structures (already dilated).
     """
@@ -308,11 +333,16 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
     vv_db = np.asarray(vv_db, float)
     vh_db = np.asarray(vh_db, float)
     land = np.zeros(vv_db.shape, bool) if land is None else np.asarray(land, bool)
-    valid = np.isfinite(vv_db) & np.isfinite(vh_db)
+    # no data: dataMask (if given) and VV only. VH NaN inside it = VH sigma0 <= 0 (noise-subtracted),
+    # kept out of the VH log statistics only; never dilated, never removed from VV.
+    valid = np.isfinite(vv_db)
+    if datamask is not None:
+        valid &= np.asarray(datamask, bool)
+    vh_pos = valid & np.isfinite(vh_db)
     water = valid & ~land
     nodata_band = dilate(~valid, cfg["edge_px"]) if (~valid).any() else np.zeros_like(valid)
     vv_in = np.where(valid, vv_db, np.nan)
-    vh_in = np.where(valid, vh_db, np.nan)
+    vh_in = np.where(vh_pos, vh_db, np.nan)
 
     rv = c2.cfar2(vv_in, land, (ry, rx), cfg, invalid=nodata_band)
     rh = c2.cfar2(vh_in, land, (ry, rx), cfg, invalid=nodata_band)
@@ -363,7 +393,7 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
         cens_v = water & ~dilate(np.nan_to_num(z, nan=0.0) > cfg["censor_z"], cfg["censor_dilate_px"])
         cens_h = water & ~dilate(np.nan_to_num(zh, nan=0.0) > cfg["censor_z"], cfg["censor_dilate_px"])
     vv_lin = np.where(water, 10 ** (np.nan_to_num(vv_db) / 10), 0.0)
-    vh_lin = np.where(water, 10 ** (np.nan_to_num(vh_db) / 10), 0.0)
+    vh_lin = np.where(water & vh_pos, 10 ** (np.nan_to_num(vh_db) / 10), 0.0)   # sigma0 <= 0 -> 0
     bg_vv, _s, _n = c2.ring_stats(vv_lin, cens_v, guard, outer)
     bg_vh, _s, _n = c2.ring_stats(vh_lin, cens_h, guard, outer)
     bg_db = rv["mean"] / c2.LN10_10            # local background mean of dB (log mean)
@@ -444,7 +474,7 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
             "pixel_m": round(px, 2),
             "detector_version": DETECTOR_VERSION, "processing_version": PROCESSING_VERSION,
             "_peak": (pr, pc), "_axis": sf.get("_axis"), "_pix": (fr, fc),
-            "_peak_vh_db": float(np.nanmax(vh_db[fr, fc])),
+            "_peak_vh_db": (float(np.nanmax(vh_db[fr, fc])) if vh_pos[fr, fc].any() else -math.inf),
             "_peak_db": float(vv_db[fr, fc].max()),
         }
         dets.append(d)
@@ -549,6 +579,8 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
     info = {
         # cfar-v1 fields
         "valid_fraction": round(float(valid.mean()), 4),
+        "vh_zero_fraction": round(float((water & ~vh_pos).sum() / max(water.sum(), 1)), 4),
+        "nodata_band_fraction": round(float((nodata_band & ~land).mean()), 4),
         "water_fraction": round(float(water.mean()), 4),
         "threshold_sigma": (iv["z_t_seed"] or {}).get("median"),
         "guard_px": guard, "outer_px": outer,
@@ -559,6 +591,8 @@ def detect_v2(vv_db: np.ndarray, vh_db: np.ndarray, land: np.ndarray, pixel_m, c
         "grow_pixels": int(grow.sum()), "hysteresis_pixels": int(hyst.sum()),
         "model_counts": iv["model_counts"], "model_counts_vh": rh["info"]["model_counts"],
         "z_t_seed": iv["z_t_seed"], "exceedance": iv["exceedance"],
+        "exceedance_vh": rh["info"]["exceedance"],
+        "tiles_untested_vh": sum(1 for t in rh["tiles"] if t["model"] is None),
         "tiles": iv["tiles"], "tiles_borrowed": iv["tiles_borrowed"],
         "tiles_untested": sum(1 for t in rv["tiles"] if t["model"] is None),
         "excluded": excl,

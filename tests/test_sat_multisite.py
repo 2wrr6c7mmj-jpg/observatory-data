@@ -371,44 +371,136 @@ class SanyaSitesTest(unittest.TestCase):
 
     def test_settings(self):
         s = self.sites()
-        for sid, mv in (("SYL", 2), ("SLP", 1)):
+        for sid, mv, lv in (("SYL", 2, 2), ("SLP", 2, 2)):  # PR-1c: SLP range v2 (north 18.242N), SYL lines v2 (OSM + F1-F5)
             x = s[sid]
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]), ("naval", "trial", "per_site", False, mv))
             self.assertFalse(x["daily"])  # settings only until the quay lines and the baseline are in
-            self.assertEqual(x["baseline"], {"orbits": [157], "lookback_days": 365, "max_scenes": 30, "min_scenes": 24})
+            self.assertEqual({k: v for k, v in x["baseline"].items() if k != "note"},
+                             {"orbits": [157], "lookback_days": 365, "max_scenes": 30, "min_scenes": 24})
             self.assertTrue(x["pu_month_cap"] > 0)
             mask, info = run.load_mask(sid, mv)
             g = Grid.for_site(x)
             self.assertEqual(mask.shape, (g.height, g.width))
             self.assertEqual(info["bbox"], x["bbox"])
             meta = run.site_meta(x)
-            self.assertFalse(meta["quay"]["ready"])
+            # PR-1b: the OSM quay lines (probe/quaylines-syl-slp) and the orbit-157 baseline are in
+            self.assertTrue(meta["quay"]["ready"], meta["quay"]["lacks"])
+            self.assertEqual(meta["quay"]["baselines_present"], [157])
+            self.assertEqual(x["quay_lines_version"], lv)
+            lines = quay_lines.load(sid, lv)
+            self.assertEqual(lines["bbox"], x["bbox"])
+            self.assertIn("ODbL", lines["license"])
+            bl = baseline.load(x, 157)
+            self.assertIsNotNone(bl)
+            self.assertEqual((bl[1]["mask_version"], bl[1]["width"], bl[1]["height"]), (run.mask_tag(x), g.width, g.height))
+            self.assertGreaterEqual(int(bl[1]["scenes"]), 24)
+            self.assertEqual(bl[1]["credibility"], "3")
             self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
         self.assertNotIn("SYL", [y["id"] for y in run.load_sites() if run.runs_daily(y)])
 
-    def test_weights_are_placeholders(self):
+    def test_blind_stretches_in_own_folder(self):
+        """quay/blind.geojson keeps the shared-layout site (Zhanjiang) only; the new ports get their own file."""
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            # SYL as when the HQ turns daily on (SLP stays settings only: its geometry takes ~35 s)
+            sites = [{**x, "daily": True} if x["id"] == "SYL" else x for x in run.load_sites()]
+            self.assertEqual(run.blind_summary([x for x in run.load_sites() if x["id"] != "ZJG"]), [])  # daily false: none
+            store = run.Store(out, sites)
+            with contextlib.redirect_stderr(io.StringIO()):
+                store.save({"run_utc": "2026-10-31T00:00:00Z"})
+            shared = json.loads((out / "quay" / "blind.geojson").read_text())
+            self.assertEqual({f["properties"]["site_id"] for f in shared["features"]}, {"ZJG"})
+            own = json.loads((out / "quay" / "SYL" / "blind.geojson").read_text())
+            self.assertEqual({f["properties"]["site_id"] for f in own["features"]}, {"SYL"})
+            self.assertFalse((out / "quay" / "SLP" / "blind.geojson").exists())
+            meta = json.loads((out / "meta.json").read_text())
+            share = {b["site_id"]: b["share"] for b in meta["quay"]["blind_stretches"]}
+            self.assertEqual(set(share), {"ZJG", "SYL"})
+            self.assertLess(share["SYL"], 0.1)
+
+    def test_slp_range_v2(self):
+        """PR-1c: SLP reaches 18.242N so that the two ~960 m piers of the carriers (OSM 158981836, 158981837) are inside."""
+        x = self.sites()["SLP"]
+        self.assertEqual(x["bbox"][3], 18.242)
+        g = Grid.for_site(x)
+        lines = {w["id"]: w for w in quay_lines.load("SLP", 2)["ways"]}
+        for wid in (158981836, 158981837):
+            for lon, lat in lines[wid]["coords"]:
+                self.assertTrue(g.west <= lon <= g.east and g.south <= lat <= g.north, (wid, lon, lat))
+        bl = baseline.load(x, 157)[1]
+        self.assertEqual((bl["mask_version"], bl["bbox"], bl["scenes"]), ("SLP-land-v2", x["bbox"], 24))
+        self.assertEqual(sum(1 for s in bl["scene_list"] if s.get("used")), 24)
+
+    def test_weights_have_sources(self):
+        """PR-1c: the weights of SYL and SLP are 2部's (class-weights-4ports.md §5.1), with sources and a credibility per class."""
         t = quay_est.load_classes()
+        ok = {"確認寄りの推定", "推定", "未確認"}
         for sid in ("SYL", "SLP"):
             st = t["sites"][sid]
-            self.assertEqual(st["status"], "placeholder")
-            self.assertIn("要出典", st["w_conf"])
+            self.assertEqual(st["status"], "provisional")
+            self.assertTrue(st["sources"] and all(s["url"].startswith("https://") and s["seen"] for s in st["sources"]))
+            self.assertEqual(set(st["w"]), set(st["w_detail"]))
+            self.assertTrue(all(d["conf"] in ok and d["basis"] for d in st["w_detail"].values()), sid)
+            self.assertTrue(all(0.0 <= float(w) <= 1.0 for w in st["w"].values()))
             self.assertTrue(quay_est.site_weights_info(sid)["own"])
+            ids = {c["id"] for c in t["classes"]}
+            self.assertTrue(set(st["w"]) <= ids, set(st["w"]) - ids)
+        # the same class over SYL + SLP stays near 1 (2部 §5.1)
+        for c, w in t["sites"]["SYL"]["w"].items():
+            if c == "TUG":  # the tugs belong to each port, not to the fleet
+                continue
+            self.assertLessEqual(w + t["sites"]["SLP"]["w"].get(c, 0.0), 1.1, c)
+        # the credibility of each class (w_detail), not the site's wording, reaches meta.json
+        tabs = quay_est.site_class_tables()
+        conf = {(sid, c["id"]): c["w_conf"] for sid in ("SYL", "SLP") for c in tabs[sid]["classes"]}
+        for k in (("SYL", "093"), ("SYL", "075"), ("SLP", "071"), ("SLP", "039AB")):
+            self.assertEqual(conf[k], "未確認", k)
+        self.assertEqual(conf[("SLP", "094")], "確認寄りの推定")
+        self.assertTrue(tabs["SYL"]["sources"] and tabs["SLP"]["sources"])
+        self.assertNotIn("sources", tabs["ZJG"])
+        self.assertEqual({c["w_conf"] for c in tabs["ZJG"]["classes"]}, {"推定"})
         slp = [c["id"] for c in quay_est.Model(site_id="SLP").classes]
         self.assertIn("094", slp)
-        self.assertNotIn("022", slp)  # no weight: not in the prior
-        self.assertNotIn("094", [c["id"] for c in quay_est.Model().classes])  # Zhanjiang unchanged
+        self.assertIn("003", slp)
+        self.assertNotIn("022", slp)  # weight 0: not in the prior
+        self.assertNotIn("094", [c["id"] for c in quay_est.Model(site_id="SYL").classes])
+        zjg = [c["id"] for c in quay_est.Model().classes]
+        for c in ("094", "003", "001", "956", "051C"):
+            self.assertNotIn(c, zjg)  # Zhanjiang unchanged
+        # the corrections of the southern counts are recorded but not applied (they would change Zhanjiang's est-1)
+        south = t["fleets"]["south"]
+        self.assertEqual((south["052DL"]["count"], south["052DL"]["proposed_count"]["count"]), (5, 7))
+        self.assertEqual((south["903"]["count"], south["903"]["proposed_count"]["count"]), (2, 3))
 
     def test_zone_types(self):
-        m = quay_est.Model(site_id="SLP", sector_roles=fsectors.sector_roles(run.site_sectors(self.sites()["SLP"])))
-        self.assertEqual(m.zone_of("SLP", 123, "A1"), ("SUB", "submarine"))
+        s = self.sites()
+        m = quay_est.Model(site_id="SLP", sector_roles=fsectors.sector_roles(run.site_sectors(s["SLP"])))
+        self.assertEqual(m.zone_of("SLP", 158981836, "A2"), ("CV", "carrier"))
+        self.assertEqual(m.zone_of("SLP", 230360733, "A1"), ("SUB", "submarine"))
         self.assertEqual(m.zone_of("SLP", 123, "B"), ("SH", "shore"))
         sub = np.array([k == "submarine" for k in m.kinds])
         self.assertGreater(m.zone_weights("submarine")[sub].sum(), m.zone_weights("large")[sub].sum())
-        y = quay_est.Model(site_id="SYL")
-        self.assertEqual(y.zone_of("SYL", 1, "A2"), ("SN", "medium"))
+        cv = np.array([k == "carrier" for k in m.kinds])
+        self.assertGreater(m.zone_weights("carrier")[cv].sum(), m.zone_weights("large")[cv].sum())
+        y = quay_est.Model(site_id="SYL", sector_roles=fsectors.sector_roles(run.site_sectors(s["SYL"])))
+        self.assertEqual(y.zone_of("SYL", 1, "A1"), ("OLD", "submarine"))
+        self.assertEqual(y.zone_of("SYL", -3, "A2"), ("F", "large"))
+        self.assertEqual(y.zone_of("SYL", 1565266188, "Y1"), ("FIT", "large"))
+        self.assertEqual(y.zone_of("SYL", 839204443, "A3"), ("E", "medium"))
         z = quay_est.load_zones()
         for t in ("carrier", "submarine"):
-            self.assertIn("仮置き", z["types"][t]["conf"])
+            self.assertIn("仮置き", z["types"][t]["conf"])  # the multipliers are not changed (2部 §5.2)
+        # every way of a zone is in the site's lines, and its middle lies in a listed (naval) sector
+        for sid in ("SYL", "SLP"):
+            x = s[sid]
+            secs = run.site_sectors(x)
+            lines = {w["id"]: w for w in quay_lines.load(sid, x["quay_lines_version"])["ways"]}
+            self.assertEqual(z["sites"][sid]["lines_version"], f"{sid}-quay-v{x['quay_lines_version']}")
+            for zone in z["sites"][sid]["zones"]:
+                for wid in zone["ways"]:
+                    self.assertIn(wid, lines, (sid, zone["id"], wid))
+                    c = np.array(lines[wid]["coords"], float).mean(0)
+                    self.assertNotEqual(fsectors.sector_of(secs, c[0], c[1]), "B", (sid, zone["id"], wid))
 
 
 if __name__ == "__main__":
