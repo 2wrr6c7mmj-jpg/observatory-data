@@ -1,0 +1,59 @@
+name: Collection health
+# 収集の健全性（docs/data/health.json）を作る。各源の status と Actions の実行記録（REST、読み取り）から
+# 心拍・データの新しさ・状態（OK／WARN／ALERT／HALT）を判定し、WARN・ALERT は注釈（::warning・::error）で出す。
+# 書き込むのは docs/data/health.json だけ（他の収集とは書き込み先が別）。標準ライブラリだけで動く。
+# 設計：2部「起動シーケンスと収集の健全性の基準」（2026-10-31）§4。
+on:
+  # 収集・分析の試作が終わるたびに作り直す（main の実行だけ。probe ブランチの実行では動かない）
+  workflow_run:
+    workflows: ['Collect public data', 'Collect JCG Senkaku', 'Sentinel-1 ship candidates',
+                'Collect PLA Activity Tracker', 'Build analysis prototypes']
+    types: [completed]
+    branches: [main]
+  # 収集が起動しない（schedule が来ない）ことも拾うため 4 時間ごと（1 日 6 回。既存の cron 01:23・03:43・05:17・06:37 と重ねない）。
+  # 中身が変わらなければ書き直さないが、6 h ごとには書き直す（schedule の遅れ約 6 h を見込んでも 12 h 以内に更新される）。
+  # health.json の generated_utc が 12 h より古ければ、この監視自体が止まっている
+  schedule:
+    - cron: '11 0,4,8,12,16,20 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: health
+  cancel-in-progress: false
+jobs:
+  health:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 監視自身のテストだけで止める（他のテストの失敗で監視まで止まらないように。全体のテストは各収集と Tests が回す）
+      - name: Tests (health only)
+        id: tests
+        run: python -m unittest tests.test_health
+      - name: Build health.json
+        # 公開はテスト成功時だけ
+        if: steps.tests.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m analysis.health --annotate
+      - name: Publish health.json
+        if: steps.tests.outcome == 'success'
+        run: |
+          git add docs/data/health.json
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "健全性を更新 ($(date -u +%Y-%m-%dT%H:%MZ))"
+          # 他の収集も main に push する（書き込み先のファイルは別なので競合しない）。取り込んでからやり直す
+          for i in 1 2 3 4; do
+            git pull -q --rebase && git push && exit 0
+            sleep 20
+          done
+          exit 1
