@@ -412,8 +412,8 @@ def holes_features(cells: Cells, reason: np.ndarray) -> list[dict]:
 # extend run (--extend): hole filling with older scenes, in days (HQ 2026-10-30: fill the holes, then a
 # second look within 7 days, priority Senkaku -> east of Taiwan -> Mischief -> Paracels -> East China Sea)
 # second look window (days): Senkaku is imaged by one track only (171, every 12 days) -> the previous pass
-SECOND_DAYS = {"SENKAKU": 13}
-EXTEND_HOLE_DAYS = {"SENKAKU": 12, "TWE": 12, "MISCHIEF": 30, "PARACEL": 30, "ECS": 12}
+SECOND_DAYS = {"SENKAKU": 17, "TWE": 17}
+EXTEND_HOLE_DAYS = {"SENKAKU": 17, "TWE": 17, "MISCHIEF": 30, "PARACEL": 30, "ECS": 12}
 
 
 def load_prior(out: Path) -> list[dict]:
