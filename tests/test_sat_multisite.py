@@ -164,7 +164,7 @@ class Est2FallbackTest(unittest.TestCase):
 
 NEW = {"id": "TNS", "name": "試験港", "kind": "naval", "bbox": [110.0, 21.0, 110.005, 21.008], "pixel_m": 10,
        "mask_version": 1, "enabled": True, "daily": True, "priority": 2, "publish": "trial", "layout": "per_site",
-       "png": False, "center_lat": 21.004,
+       "png": False, "center_lat": 21.004, "pu_month_cap": 1000,
        "sectors": [{"id": "N1", "name": "北の桟橋", "role": "naval",
                     "polygon": [[110.0, 21.004], [110.005, 21.004], [110.005, 21.008], [110.0, 21.008]]},
                    {"id": "N2", "name": "中ほど", "role": "naval", "bbox": [110.0, 21.0025, 110.005, 21.004]}],
@@ -524,7 +524,9 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"]),
                              ("naval", "trial", "per_site", False, mv))
             self.assertFalse(x["daily"])  # settings only (no CDSE until the November budget is set)
-            self.assertNotIn("pu_month_cap", x)  # not in 2部's paper: to be decided before daily is turned on
+            # 1部 review of PR #35 (design §5.1): QGZ 16, ZDH 13 PU a month, set before daily is turned on
+            self.assertEqual(x["pu_month_cap"], {"QGZ": 16, "ZDH": 13}[sid])
+            run.validate_site({**x, "daily": True})  # would pass the check of a daily site
             for k in ("bbox", "center_lat", "center_lon", "mask_version"):  # the same range as the archive
                 self.assertEqual(x[k], ports[sid][k], (sid, k))
             self.assertEqual(x["baseline"]["orbits"], orbits)
@@ -579,9 +581,15 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
             self.assertTrue(set(st["w"]) <= ids and set(t["fleets"][fleet]) <= ids)
             self.assertTrue(all(float(f["count"]) > 0 and f["conf"] in ok for f in t["fleets"][fleet].values()))
             self.assertTrue(quay_est.site_weights_info(sid)["own"])
-            # the classes without a count in 2部's paper ("?") stay out of the fleet, hence out of the prior
-            for c in ("056A", "039AB", "MCM", "022", "TUG"):
-                self.assertNotIn(c, t["fleets"][fleet])
+            # the small ships and craft of 2部's survey (調査_北部・東部戦区の小型艦・作業船 §2.1・2.2)
+            for c in ("056A", "039AB", "039G", "MCM", "022", "TUG"):
+                f = t["fleets"][fleet][c]
+                self.assertEqual(f["as_of"], "2026-10")
+                self.assertTrue(f["source"].startswith("https://") and f["note"], (sid, c))
+                self.assertEqual(f["conf"], "未確認" if c in ("022", "TUG") else "推定", (sid, c))
+            self.assertEqual(st["w"]["039G"], 0.2)
+            self.assertEqual(st["w_detail"]["039G"]["conf"], "未確認")
+            self.assertIn("022・TUG は戦区別の公開出典がなく推定（未確認）", st["note"])
         q = [c["id"] for c in quay_est.Model(site_id="QGZ").classes]
         self.assertIn("001", q)
         self.assertNotIn("052C", q)  # none in the North
@@ -596,6 +604,76 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
             self.assertEqual(t["sites"][sid]["fleet"], "south")
         for c in ("001", "956", "051C"):
             self.assertNotIn(c, [x["id"] for x in quay_est.Model().classes])
+
+    def test_counts_by_fleet(self):
+        t = quay_est.load_classes()
+        exp = {"north": {"056A": 11, "039AB": 2, "039G": 8, "MCM": 11, "022": 20, "TUG": 15},
+               "east": {"056A": 19, "039AB": 10, "039G": 3, "MCM": 14, "022": 20, "TUG": 14}}
+        for fleet, cs in exp.items():
+            self.assertEqual({c: t["fleets"][fleet][c]["count"] for c in cs}, cs)
+        g = next(c for c in t["classes"] if c["id"] == "039G")
+        self.assertEqual((g["group"], g.get("kind"), g["length_m"]), ("S", "submarine", 74.9))
+        self.assertIn("Type_039_submarine", g["source"])
+        self.assertNotIn("039G", t["fleets"]["south"])  # Zhanjiang's est-1 unchanged
+        for sid in ("ZJG", "SYL", "SLP"):
+            self.assertNotIn("039G", [c["id"] for c in quay_est.Model(site_id=sid).classes])
+        # the other weights of §5.1 are as before
+        self.assertEqual({k: v for k, v in t["sites"]["QGZ"]["w"].items() if k in ("056A", "039AB", "MCM", "022", "TUG")},
+                         {"056A": 0.6, "039AB": 0.2, "MCM": 0.3, "022": 0.3, "TUG": 0.6})
+        self.assertEqual({k: v for k, v in t["sites"]["ZDH"]["w"].items() if k in ("056A", "039AB", "MCM", "022", "TUG")},
+                         {"056A": 0.4, "039AB": 0.2, "MCM": 0.3, "022": 0.3, "TUG": 0.6})
+
+    def test_prior_small_ships(self):
+        """The prior of QGZ and ZDH now reaches the tugs (40 m); the mean length is near 2部's report
+        (QGZ about 104 m, ZDH about 102 m; it was 165.5 m and 154.9 m with the shortest ship 134 m),
+        and a 60 m stretch is no longer taken as a false alarm (P(n = 0) about 1.0 before)."""
+        for sid, mean in (("QGZ", 104.0), ("ZDH", 102.0)):
+            m = quay_est.Model(site_id=sid)
+            self.assertEqual(float(m.lengths.min()), 40.0, sid)
+            self.assertEqual(m.classes[int(np.argmin(m.lengths))]["id"], "TUG")
+            avg = float((m.lengths * m.global_w).sum())
+            self.assertLess(abs(avg - mean), 2.0, (sid, avg))
+            for trim in quay_est.TRIMS_M:
+                pn, _ = m.posterior(60.0 - trim, 1, m.global_w, "base")
+                self.assertLess(pn[0], 0.1, (sid, trim, pn[0]))
+                self.assertGreater(pn[1], 0.85, (sid, trim))
+
+    def test_meta_site_note_and_version(self):
+        tabs = quay_est.site_class_tables()
+        for sid in ("QGZ", "ZDH"):
+            self.assertEqual(tabs[sid]["version"], "est-1b-202610")
+            self.assertIn("022・TUG は戦区別の公開出典がなく推定（未確認）", tabs[sid]["note"])
+            self.assertIn("w）は未確認", tabs[sid]["note"])
+        # Zhanjiang's entry has neither (its meta is as before)
+        self.assertEqual(set(tabs["ZJG"]), {"fleet", "w_conf", "status", "basis", "classes"})
+
+    def test_daily_site_needs_cap(self):
+        base = {k: v for k, v in NEW.items() if k != "pu_month_cap"}
+        with self.assertRaises(ValueError):
+            run.validate_site(base)
+        for bad in (None, "16", True, -1, float("nan"), float("inf")):
+            with self.assertRaises(ValueError):
+                run.validate_site({**base, "pu_month_cap": bad})
+        run.validate_site({**base, "pu_month_cap": 0})
+        run.validate_site({**base, "daily": False})  # settings only: no cap needed
+        zjg = next(x for x in run.load_sites() if x["id"] == "ZJG")
+        self.assertNotIn("pu_month_cap", zjg)
+        run.validate_site(zjg)  # the shared layout (Zhanjiang) uses the run's cap as before
+        ok, errors = run.usable_sites([base], log=lambda m: None)
+        self.assertEqual((ok, [e["site_id"] for e in errors]), ([], ["TNS"]))
+        # only an explicit layout "shared" is exempt: a daily site without "layout" needs a cap too
+        nolayout = {k: v for k, v in base.items() if k != "layout"}
+        with self.assertRaises(ValueError):
+            run.validate_site(nolayout)
+        run.validate_site({**nolayout, "pu_month_cap": 5})
+        run.validate_site({**base, "layout": "shared"})
+        # and one shared site only (the run stops: two would write into the same files)
+        with self.assertRaises(ValueError):
+            run.usable_sites([zjg, {**base, "id": "TS2", "layout": "shared"}], log=lambda m: None)
+        run.check_shared([zjg, {**base, "id": "TS2", "layout": "shared", "enabled": False}])  # a disabled one is not counted
+        self.assertEqual(sum(1 for x in run.load_sites() if x.get("layout") == "shared"), 1)
+        ok, errors = run.usable_sites(run.load_sites(), log=lambda m: None)
+        self.assertEqual(errors, [])
 
     def test_zone_types(self):
         s = self.sites()

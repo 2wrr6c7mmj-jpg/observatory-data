@@ -15,7 +15,7 @@ if np is not None:
     from sat import png, run, s2
     from sat.grid import Grid
 
-SITE = {"id": "TS2", "bbox": [110.0, 21.0, 110.005, 21.008], "pixel_m": 10, "mask_version": 2, "enabled": True,
+SITE = {"id": "TS2", "bbox": [110.0, 21.0, 110.005, 21.008], "pixel_m": 10, "mask_version": 2, "enabled": True, "layout": "shared",
         "sectors": [{"id": "A", "name": "北", "bbox": [110.0, 21.004, 110.005, 21.008]}],
         "sector_rest": {"id": "B", "name": "南"}, "s2": {"enabled": True}}
 
@@ -217,6 +217,60 @@ class S2Test(unittest.TestCase):
             self.assertEqual(cli.calls, [])
             self.assertNotIn("sentinel-2-l2a", seen)
             self.assertFalse((d / "probe" / "out" / "s2_scenes.csv").exists())
+
+    def test_standalone_skips_settings_only_sites_and_keeps_caps(self):
+        """python -m sat.s2 (the backfill probe): a daily false site only with --site, and at most its pu_month_cap."""
+        days = {"2026-10-21": (5.0, 0.0), "2026-10-23": (5.0, 0.0), "2026-10-25": (5.0, 0.0)}
+        off = {**SITE, "id": "OFF", "daily": False, "pu_month_cap": 2}
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            cli = FakeS2(days)
+            self.assertEqual(s2.main(["--out", str(out), "--days", "365"], client=cli, sites=[off]), 0)
+            self.assertEqual((cli.requests, cli.calls), (0, []))  # not even the catalog
+            self.assertFalse((out / "s2_scenes.csv").exists())
+            # named with --site: fetched, but only up to its own cap (2 PU: one clear day of 1.56 PU)
+            cli = FakeS2(days)
+            self.assertEqual(s2.main(["--out", str(out), "--days", "365", "--site", "OFF"], client=cli, sites=[off]), 0)
+            self.assertEqual([c for c in cli.calls if c[0] == "full"], [("full", "2026-10-21")])
+            # the next run of the same month: the cap is spent, no request at all
+            cli = FakeS2(days)
+            s2.main(["--out", str(out), "--days", "365", "--site", "OFF"], client=cli, sites=[off])
+            self.assertEqual((cli.requests, cli.calls), (0, []))
+            # a daily site without a cap (Zhanjiang) as before: every day within --max-pu
+            cli = FakeS2(days)
+            s2.main(["--out", str(out), "--days", "365"], client=cli, sites=[{**SITE, "daily": True}])
+            self.assertEqual(len([c for c in cli.calls if c[0] == "full"]), 3)
+
+    def _usage_after(self, sites, argv=()):
+        days = {"2026-10-21": (5.0, 0.0), "2026-10-23": (5.0, 0.0)}
+        cli = FakeS2(days)
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            rc = s2.main(["--out", str(out), "--days", "365", *argv], client=cli, sites=sites)
+            return rc, cli, run.read_csv(out / "usage.csv")
+
+    def test_mixed_daily_and_settings_only_writes_usage(self):
+        """(a) a daily site (Zhanjiang) and a daily false site in one run (the backfill on the real sites.json):
+        the skipped site has no "days", the run still records its PU in usage.csv and ends with 0."""
+        sites = [{**SITE, "daily": True}, {**SITE, "id": "OFF", "layout": "per_site", "daily": False, "pu_month_cap": 16}]
+        rc, cli, usage = self._usage_after(sites)
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(usage), 1)
+        self.assertAlmostEqual(float(usage[0]["s2_processing_units"]), cli.processing_units, places=3)
+        self.assertAlmostEqual(float(usage[0]["processing_units"]), 3.12, places=3)
+        self.assertEqual(usage[0]["scenes"], "2")
+
+    def test_site_cap_deferral_writes_usage(self):
+        """(b) a site deferred by its own cap (pu_month_cap 0) after a site that spent PU: usage.csv as in (a)."""
+        sites = [{**SITE, "daily": True}, {**SITE, "id": "CAP", "layout": "per_site", "daily": True, "pu_month_cap": 0}]
+        rc, cli, usage = self._usage_after(sites)
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(usage), 1)
+        self.assertAlmostEqual(float(usage[0]["processing_units"]), 3.12, places=3)
+        self.assertEqual(usage[0]["scenes"], "2")
+        # the same with --site naming the capped site only: nothing spent, no request, nothing to record
+        rc, cli, usage = self._usage_after(sites, ["--site", "CAP"])
+        self.assertEqual((rc, cli.requests, usage), (0, 0, []))
 
     def test_errors_are_retried_at_most_twice(self):
         cli = FakeS2({"2026-10-21": (5.0, 0.0)})

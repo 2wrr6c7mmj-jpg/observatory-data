@@ -21,6 +21,9 @@ that day), the images under s2/<site>/v<mask>/, and the PU in usage.csv (the run
 standalone run, such as the backfill probe, appends its own row).
 
     python -m sat.s2 --days 365 [--out docs/data/sat] [--max-pu 100]   # backfill (probe)
+
+Sites: enabled with s2.enabled; a site with daily false (settings only) only with --site <id>. Each site
+stops at its own pu_month_cap (sites.json; S1 + S2 PU of the month, as run.site_budget) when it has one.
 """
 from __future__ import annotations
 
@@ -360,31 +363,47 @@ def settings() -> dict:
 
 
 def main(argv=None, client=None, sites=None) -> int:
-    from .run import load_sites, read_csv, write_csv, USAGE_FIELDS, MONTHLY_PU_CAP, month_usage
+    from .run import (load_sites, read_csv, write_csv, USAGE_FIELDS, MONTHLY_PU_CAP, month_usage, runs_daily,
+                      Store, site_budget)
     ap = argparse.ArgumentParser(description="Sentinel-2 L2A natural colour on clear days (trial)")
     ap.add_argument("--out", type=Path, default=Path(__file__).resolve().parent.parent / "docs" / "data" / "sat")
     ap.add_argument("--days", type=int, default=LOOKBACK_DAYS)
     ap.add_argument("--max-pu", type=float, default=100.0)
-    ap.add_argument("--site", default=None)
+    ap.add_argument("--site", default=None,
+                    help="この地点だけ。daily＝false（設定だけ）の地点はこの指定があるときだけ対象になる")
     args = ap.parse_args(argv)
     now = datetime.now(timezone.utc)
     usage = read_csv(args.out / "usage.csv")
     used_pu, _ = month_usage(usage, now.strftime("%Y-%m"))
     budget = MONTHLY_PU_CAP - used_pu
     client = client if client is not None else cdse.Client()
+    all_sites = sites if sites is not None else load_sites()
+    store = Store(args.out, all_sites)  # for each site's PU of the month (pu_month_cap)
+    month = now.strftime("%Y-%m")
     sums = []
     try:
-        for site in (sites if sites is not None else load_sites()):
+        for site in all_sites:
             if not site.get("enabled") or not (site.get("s2") or {}).get("enabled") or (args.site and site["id"] != args.site):
                 continue
+            # A site with settings only (daily false) is fetched only when named with --site: the backfill probe
+            # (--days 365, no --site) would otherwise spend a year of PU on every new trial port.
+            if not runs_daily(site) and not args.site:
+                sums.append({"site_id": site["id"], "skipped_not_daily": True})
+                continue
             left = min(budget, args.max_pu) - client.processing_units
+            # and its own monthly cap (pu_month_cap, sites.json), as in the daily run (run.site_budget)
+            if site.get("pu_month_cap") is not None:
+                left = site_budget(store, site, month, left)
+                if left < EST_PRE_PU + EST_FULL_PU:
+                    sums.append({"site_id": site["id"], "deferred_site_cap": True})
+                    continue
             sums.append(update_site(client, args.out, site, now, args.days, left, log=lambda m: print(m, file=sys.stderr)))
     finally:
         if client.requests:
             usage.append({"run_utc": cdse.iso(now), "requests": client.requests,
                           "processing_units": round(client.processing_units, 3),
                           "pu_source": "header" if client.pu_reported else "estimate",
-                          "scenes": sum(s["days"] for s in sums),
+                          "scenes": sum(s.get("days", 0) for s in sums),  # skipped / deferred sites have no days
                           "s2_requests": client.requests, "s2_processing_units": round(client.processing_units, 3)})
             write_csv(args.out / "usage.csv", usage, USAGE_FIELDS)
     print(json.dumps({"run_utc": cdse.iso(now), "month_pu_before": round(used_pu, 3), "sites": sums,

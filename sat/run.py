@@ -594,11 +594,28 @@ def validate_site(site: dict) -> None:
     out = fsectors.outside(site)
     if out:
         raise ValueError(f"{site['id']}: 範囲の外の区画 {out}")
+    # A site fetched daily must have its own monthly cap (1部 review of PR #35): the shared CDSE free tier keeps
+    # Zhanjiang's reserve. Only a site written explicitly as layout "shared" (Zhanjiang; one only, usable_sites)
+    # uses the run's cap as before; a site without "layout" is not exempt.
+    if runs_daily(site) and site.get("layout") != "shared":
+        cap = site.get("pu_month_cap")
+        if (cap is None or isinstance(cap, bool) or not isinstance(cap, (int, float))
+                or not math.isfinite(cap) or cap < 0):
+            raise ValueError(f"{site['id']}: daily＝true の地点には pu_month_cap（PU／月、0 以上の有限の数）が要る")
+
+
+def check_shared(sites: list[dict]) -> None:
+    """At most one enabled site written as layout "shared" (Zhanjiang): the shared files and the exemption
+    from pu_month_cap are for that one only."""
+    shared = [s.get("id") for s in sites if s.get("enabled") and s.get("layout") == "shared"]
+    if len(shared) > 1:
+        raise ValueError(f"layout＝shared の地点は 1 つだけ（{'・'.join(map(str, shared))}）")
 
 
 def usable_sites(sites: list[dict], log=lambda m: print(m, file=sys.stderr)) -> tuple[list[dict], list[dict]]:
     """(sites to use, errors). A site of its own folders (layout per_site: a new trial port) with bad
     settings is left out of this run and recorded; a shared-layout site (Zhanjiang) stops the run as before."""
+    check_shared(sites)  # two shared sites would write into the same files: stop the run
     ok, errors = [], []
     for s in sites:
         if not s.get("enabled"):
