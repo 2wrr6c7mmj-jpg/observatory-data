@@ -59,8 +59,10 @@ const q = new URLSearchParams(location.search);
 const SITE = (q.get('site') || '').toUpperCase();
 const OOS = q.get('oos') === '1';
 const base = '../../data/sat/labels/';
+// Shown by place name; the code stays only in the URL and the CSV (machine keys).
+const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', ZJG: '湛江'};
 const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH'];
-document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${p}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>';
+document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${NAMES[p]}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>';
 const CH = [['none', 'いない', 'n'], ['1', '1列', ''], ['2', '2列', ''], ['3', '3列+', ''], ['unsure', '判断できない', 'u']];
 let R = null, ans = {}, scene = {}, key = '';
 const $ = id => document.getElementById(id);
@@ -77,7 +79,7 @@ function load() {
 function save() { try { localStorage.setItem(key, JSON.stringify({ans, scene})); } catch (e) {} progress(); }
 function progress() {
   const n = Object.keys(ans).length, N = R.sections.length * R.days.length;
-  $('prog').textContent = `${R.site_id}${OOS ? '（標本外）' : ''}：回答 ${n} / ${N}（約 ${R.minutes_estimate} 分）`;
+  $('prog').textContent = `${NAMES[R.site_id] ?? R.site_id}${OOS ? '（標本外）' : ''}：回答 ${n} / ${N}（約 ${R.minutes_estimate} 分）`;
 }
 const imgs = {};
 function image(d) {
