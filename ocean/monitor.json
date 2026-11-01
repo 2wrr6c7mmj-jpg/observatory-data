@@ -39,9 +39,9 @@
   {"id": "BASHI", "name": "バシー海峡", "bbox": [120.3, 20.5, 122.0, 22.0], "priority": 2, "mode": "every_pass", "enabled": true,
    "min_eff": 0.3, "pu_month_cap": 300, "orbits": "S1C/69（昇）・S1C/S1D 105（降）・S1D/32（降）", "expected_per_month": 1.4, "expected_pu_month": 250,
    "note": "M0（2026-10 のカタログ）で撮影を確かめ、司令部の判断（2026-10-31）で追加。台湾東方（TWE_S）と重なる 121.5–122.0E・21.8–22.0N は TWE_S の海"},
-  {"id": "HKS", "name": "珠江口・香港の南（AIS 照合）", "bbox": [113.7, 21.5, 114.6, 22.3], "priority": 2, "mode": "every_pass", "enabled": false,
-   "min_eff": 0.3, "pu_month_cap": 0, "orbits": "S1D/11", "expected_per_month": 2.5, "expected_pu_month": null,
-   "note": "4部案の香港 AIS 照合（20 m、ocean-cfar-probe 側）に含む。監視では取得しない"},
+  {"id": "HKS", "name": "珠江口・香港の南（AIS 照合）", "bbox": [113.7, 21.5, 114.6, 22.3], "priority": 2, "mode": "every_pass", "enabled": true,
+   "min_eff": 0.3, "pu_month_cap": 180, "orbits": "S1D/11", "expected_per_month": 2.5, "expected_pu_month": 70,
+   "note": "検出率の測定（cfar-v2 設計 5.2・5.3、PR4）：通過のたびに監視の経路で取り、aisstream の AIS と照合する（ocean/ais_eval.py、結果は docs/data/ocean/ais_eval/ の件数・検出率・候補ごとの一致の有無だけ）。月の上限 180 は 4部案の 240 の内で、全域の上限の合計が OCEAN_CAP 3,500 を超えない値（他の域の合計 3,320）。見込みは TSM（1.1°×2.3°で約 100 PU/回）との面積比で約 28 PU/回×2.5 回"},
   {"id": "ZSN", "name": "舟山の東", "bbox": [122.2, 27.8, 123.8, 31.4], "priority": 4, "mode": "monthly", "enabled": false,
    "min_eff": 0.4, "pu_month_cap": 0, "orbits": "S1D/171", "expected_per_month": 2.5, "expected_pu_month": null,
    "note": "案 B では取らない（漁船の群れが多い。案 A でも月 1 回まで）"}

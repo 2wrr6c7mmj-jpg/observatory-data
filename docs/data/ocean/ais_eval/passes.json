@@ -1,0 +1,5 @@
+{
+ "version": "ais-eval-1",
+ "attribution": "Contains modified Copernicus Sentinel data [2026]. AIS: aisstream.io (reception results only: counts, rates and per-candidate match flags; no AIS position, MMSI or name is published).",
+ "passes": []
+}

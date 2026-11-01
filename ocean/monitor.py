@@ -1045,7 +1045,7 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                  "large_120m_est": c["length_m_est"] >= float(cfg["large_length_m"]),
                  "pixels_40m": c["pixels_40m"], "peak_vv_db": c["peak_vv_db"], "contrast_vv_db": c["contrast_vv_db"],
                  "vh_ratio_db": c["vh_ratio_db"], "v1_confidence": c["confidence"], "v2_confidence": c["v2_confidence"],
-                 "v2_match": c["v2_match"], "edge": c["edge"], "ambiguity_suspect": c["ambiguity_suspect"],
+                 "v2_match": c["v2_match"], "v2_length_m": c.get("v2_length_m"), "edge": c["edge"], "ambiguity_suspect": c["ambiguity_suspect"],
                  "ambiguity_parent": c["ambiguity_parent"], "cluster": c["cluster"], "sea_state": c["sea_state"],
                  "chip_checked": False, "length_m_10m": None, "ais": "unmatched"}
         pub.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
