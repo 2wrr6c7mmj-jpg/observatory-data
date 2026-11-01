@@ -547,6 +547,33 @@
    "quay_result": "no_baseline"
   },
   {
+   "site_id": "XSN",
+   "acquired_utc": "2026-10-21T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "XSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095402_20261021T095427_005112_009AE4_17CA_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:03:53Z",
+   "processing_units": 1.801445007324219,
+   "coverage": 0.998,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8565,
+    "water_fraction": 0.3727,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 662,
+    "clusters": 181,
+    "dropped_small": 106,
+    "dropped_vh": 32
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "ZDH",
    "acquired_utc": "2026-10-21T09:54:02Z",
    "platform": "sentinel-1d",
@@ -574,6 +601,60 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "SWS",
+   "acquired_utc": "2026-10-21T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "SWS-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095427_20261021T095452_005112_009AE4_24D0_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:04:04Z",
+   "processing_units": 0.965423583984375,
+   "coverage": 1.0,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9858,
+    "water_fraction": 0.0533,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 54,
+    "clusters": 5,
+    "dropped_small": 3,
+    "dropped_vh": 0
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QDH",
+   "acquired_utc": "2026-10-21T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095542_20261021T095607_005112_009AE4_5E4E_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:03:41Z",
+   "processing_units": 1.5418624877929688,
+   "coverage": 1.0,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9519,
+    "water_fraction": 0.4057,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 587,
+    "clusters": 131,
+    "dropped_small": 83,
+    "dropped_vh": 12
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "QGZ",
    "acquired_utc": "2026-10-21T09:55:42Z",
    "platform": "sentinel-1d",
@@ -597,6 +678,114 @@
     "clusters": 174,
     "dropped_small": 126,
     "dropped_vh": 9
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QJG",
+   "acquired_utc": "2026-10-21T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QJG-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095542_20261021T095607_005112_009AE4_5E4E_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:04:08Z",
+   "processing_units": 0.6591796875,
+   "coverage": 0.999,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8782,
+    "water_fraction": 0.3875,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 458,
+    "clusters": 78,
+    "dropped_small": 44,
+    "dropped_vh": 3
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "LSN",
+   "acquired_utc": "2026-10-21T09:56:32Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "LSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095632_20261021T095657_005112_009AE4_30A6_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:04:12Z",
+   "processing_units": 1.61920166015625,
+   "coverage": 1.0,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.983,
+    "water_fraction": 0.2604,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 502,
+    "clusters": 120,
+    "dropped_small": 78,
+    "dropped_vh": 8
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "STU",
+   "acquired_utc": "2026-10-24T10:16:50Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 40,
+   "mask_version": "STU-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261024T101650_20261024T101720_005156_009C66_76AE_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:04:41Z",
+   "processing_units": 1.66363525390625,
+   "coverage": 0.997,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9187,
+    "water_fraction": 0.2884,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 582,
+    "clusters": 125,
+    "dropped_small": 76,
+    "dropped_vh": 10
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "XMN",
+   "acquired_utc": "2026-10-24T10:16:50Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 40,
+   "mask_version": "XMN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261024T101650_20261024T101720_005156_009C66_76AE_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T10:04:25Z",
+   "processing_units": 1.349853515625,
+   "coverage": 1.0,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9763,
+    "water_fraction": 0.2614,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 563,
+    "clusters": 79,
+    "dropped_small": 47,
+    "dropped_vh": 3
    },
    "quay_result": "counted"
   },
@@ -816,150 +1005,150 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-01T09:52:45Z",
+  "run_utc": "2026-11-01T10:03:35Z",
   "sites": [
    {
     "site_id": "ZJG",
-    "lookback_days": 7,
+    "lookback_days": 13,
     "catalog_items": 1,
     "acquisitions": 1,
     "new": 0,
     "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "SYL",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "SLP",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "QGZ",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "ZDH",
-    "lookback_days": 7,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "QDH",
-    "lookback_days": 7,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "XSN",
-    "lookback_days": 7,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "SWS",
-    "lookback_days": 7,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "QJG",
-    "lookback_days": 7,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 938.1
-   },
-   {
-    "site_id": "LSN",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 936.48
-   },
-   {
-    "site_id": "XMN",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 935.13
-   },
-   {
-    "site_id": "STU",
-    "lookback_days": 7,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 935.13
-   },
-   {
-    "site_id": "MAW",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
     "skipped": 0,
     "errors": 0,
     "budget_left_pu": 934.12
+   },
+   {
+    "site_id": "SYL",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 934.12
+   },
+   {
+    "site_id": "SLP",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 934.12
+   },
+   {
+    "site_id": "QGZ",
+    "lookback_days": 13,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 934.12
+   },
+   {
+    "site_id": "ZDH",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 934.12
+   },
+   {
+    "site_id": "QDH",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 932.58
+   },
+   {
+    "site_id": "XSN",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 930.78
+   },
+   {
+    "site_id": "SWS",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 929.81
+   },
+   {
+    "site_id": "QJG",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 929.15
+   },
+   {
+    "site_id": "LSN",
+    "lookback_days": 13,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 927.53
+   },
+   {
+    "site_id": "XMN",
+    "lookback_days": 13,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 926.18
+   },
+   {
+    "site_id": "STU",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 924.52
+   },
+   {
+    "site_id": "MAW",
+    "lookback_days": 13,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 924.52
    }
   ],
   "s2": [
@@ -1109,14 +1298,14 @@
   ],
   "s2_requests": 13,
   "s2_processing_units": 0.0,
-  "requests": 29,
-  "processing_units": 3.985,
+  "requests": 33,
+  "processing_units": 9.601,
   "pu_source": "header",
-  "scenes": 3,
-  "month_pu_before": 61.896,
+  "scenes": 7,
+  "month_pu_before": 65.881,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-01T09:52:45Z",
+ "updated_utc": "2026-11-01T10:03:35Z",
  "series_breaks": [
   {
    "site_id": "ZJG",

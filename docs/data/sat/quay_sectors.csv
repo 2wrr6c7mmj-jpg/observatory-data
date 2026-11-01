@@ -41,12 +41,27 @@ ZJG,2026-10-14T10:48:45Z,157,ZJG-land-v2,A,軍港区画,naval,18,48,est-1,25,21,
 ZJG,2026-10-14T10:48:45Z,157,ZJG-land-v2,B,水道,other,5,10,est-1,7,5,9,est-2,0,0,1,self,quay_counts（横持ちの列から）
 ZJG,2026-10-15T10:41:00Z,84,ZJG-land-v2,A,軍港区画,naval,19,41,est-1,24,20,29,est-2,10,8,13,self,quay_counts（横持ちの列から）
 ZJG,2026-10-15T10:41:00Z,84,ZJG-land-v2,B,水道,other,4,7,est-1,5,3,6,est-2,0,0,0,self,quay_counts（横持ちの列から）
+XSN,2026-10-21T09:54:02Z,171,XSN-land-v1,A1,潜水艦基地（OSM way/351273275）,naval,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
+XSN,2026-10-21T09:54:02Z,171,XSN-land-v1,B,それ以外,other,1,1,est-1,1,1,2,est-2,0,0,1,ZJG,quay-v1
 ZDH,2026-10-21T09:54:02Z,171,ZDH-land-v2,A1,西岸の横付け岸壁 W1〜W4（駆逐艦第 3 支隊）,naval,17,42,est-1,23,20,27,est-2,12,10,16,ZJG,quay-v1
 ZDH,2026-10-21T09:54:02Z,171,ZDH-land-v2,A2,舟山水警区の岸壁（小型艦）,naval,7,27,est-1,14,10,18,est-2,7,5,9,ZJG,quay-v1
 ZDH,2026-10-21T09:54:02Z,171,ZDH-land-v2,B,それ以外（定海の商港・北西の工業港の桟橋）,other,19,32,est-1,26,22,31,est-2,2,0,4,ZJG,quay-v1
+SWS,2026-10-21T09:54:27Z,171,SWS-land-v1,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
+SWS,2026-10-21T09:54:27Z,171,SWS-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
+QDH,2026-10-21T09:55:42Z,171,QDH-land-v2,A1,海軍基地（OSM way/979396338）,naval,16,26,est-1,19,17,22,est-2,6,4,8,ZJG,quay-v1
+QDH,2026-10-21T09:55:42Z,171,QDH-land-v2,B,それ以外,other,11,30,est-1,23,18,27,est-2,2,1,4,ZJG,quay-v1
 QGZ,2026-10-21T09:55:42Z,171,QGZ-land-v1,A1,外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）,naval,4,6,est-1,4,3,5,est-2,2,1,3,ZJG,quay-v1
 QGZ,2026-10-21T09:55:42Z,171,QGZ-land-v1,A2,内港（防波堤 C の内側の岸壁・斜めの桟橋 4 本）,naval,19,34,est-1,24,20,28,est-2,9,6,11,ZJG,quay-v1
 QGZ,2026-10-21T09:55:42Z,171,QGZ-land-v1,B,それ以外（古鎮湾の外の泊地・南の防波堤）,other,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
+QJG,2026-10-21T09:55:42Z,171,QJG-land-v1,A1,潜水艦の桟橋（姜哥荘、ORF の座標の周り）,naval,2,3,est-1,2,2,3,est-2,0,0,1,ZJG,quay-v1
+QJG,2026-10-21T09:55:42Z,171,QJG-land-v1,B,それ以外,other,2,3,est-1,3,2,4,est-2,0,0,1,ZJG,quay-v1
+LSN,2026-10-21T09:56:32Z,171,LSN-land-v1,A1,旅順の内港（半島先端の湖状の港、港口の内側）,naval,8,13,est-1,11,9,13,est-2,3,2,5,ZJG,quay-v1
+LSN,2026-10-21T09:56:32Z,171,LSN-land-v1,B,それ以外,other,9,17,est-1,13,10,15,est-2,0,0,2,ZJG,quay-v1
+STU,2026-10-24T10:16:50Z,40,STU-land-v1,A1,ミサイル艇大隊（OSM way/1092040603）,naval,5,13,est-1,8,6,10,est-2,3,2,5,ZJG,quay-v1
+STU,2026-10-24T10:16:50Z,40,STU-land-v1,A2,東の基地（OSM way/1429145743、military=base）,naval,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
+STU,2026-10-24T10:16:50Z,40,STU-land-v1,B,それ以外,other,4,9,est-1,6,4,9,est-2,1,0,2,ZJG,quay-v1
+XMN,2026-10-24T10:16:50Z,40,XMN-land-v1,A1,廈門水警区（OSM way/409154029）,naval,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
+XMN,2026-10-24T10:16:50Z,40,XMN-land-v1,B,それ以外,other,4,9,est-1,6,4,8,est-2,0,0,0,ZJG,quay-v1
 QGZ,2026-10-26T10:03:53Z,69,QGZ-land-v1,A1,外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）,naval,5,7,est-1,5,4,6,est-2,3,2,4,ZJG,quay-v1
 QGZ,2026-10-26T10:03:53Z,69,QGZ-land-v1,A2,内港（防波堤 C の内側の岸壁・斜めの桟橋 4 本）,naval,25,61,est-1,39,32,45,est-2,17,13,21,ZJG,quay-v1
 QGZ,2026-10-26T10:03:53Z,69,QGZ-land-v1,B,それ以外（古鎮湾の外の泊地・南の防波堤）,other,0,0,est-1,0,0,0,est-2,0,0,0,ZJG,quay-v1
