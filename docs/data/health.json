@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T20:27:03Z",
+ "generated_utc": "2026-11-01T23:11:51Z",
  "state": "warn",
  "summary": {
-  "ok": 10,
-  "warn": 2,
+  "ok": 9,
+  "warn": 3,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-01T12:01:10Z",
-   "heartbeat_age_h": 8.4,
+   "heartbeat_age_h": 11.2,
    "data_date": "2026-10-31",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -131,7 +131,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-01T10:48:08Z",
-   "heartbeat_age_h": 9.6,
+   "heartbeat_age_h": 12.4,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
    "data_age_days": 4,
@@ -160,7 +160,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-01T13:44:41Z",
-   "heartbeat_age_h": 6.7,
+   "heartbeat_age_h": 9.5,
    "data_date": "2026-11-01",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -204,7 +204,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:31Z",
-   "heartbeat_age_h": 12.7,
+   "heartbeat_age_h": 15.5,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 6,
@@ -222,7 +222,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:28Z",
-   "heartbeat_age_h": 12.7,
+   "heartbeat_age_h": 15.5,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -240,7 +240,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-01T10:48:29Z",
-   "heartbeat_age_h": 9.6,
+   "heartbeat_age_h": 12.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -551,12 +551,12 @@
   },
   "launches": {
    "open_or_upcoming_windows": 6,
-   "open_now": 1,
+   "open_now": 2,
    "next_start": {
-    "site": "内之浦",
-    "country": "JP",
-    "window_start_utc": "2026-11-01T23:00Z",
-    "window_end_utc": "2026-11-02T07:00Z"
+    "site": "西昌",
+    "country": "CN",
+    "window_start_utc": "2026-11-05T20:00Z",
+    "window_end_utc": "2026-11-09T23:00Z"
    },
    "active_notices": 23
   }
@@ -682,19 +682,25 @@
    "sources": [
     "ocean"
    ],
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "failed",
+     "text": "schedule の実行 2026-11-01T23:00:17Z が failure"
+    }
+   ],
    "last_success_started_utc": "2026-10-31T22:46:29Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41249671390,
-    "started_utc": "2026-10-31T22:46:29Z",
+    "id": 41359910016,
+    "started_utc": "2026-11-01T23:00:17Z",
     "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41249671390",
-    "delay_h": 3.1
+    "conclusion": "failure",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41359910016",
+    "delay_h": 3.3
    },
-   "consecutive_failures": 0
+   "consecutive_failures": 1
   }
  ],
  "sat": {
