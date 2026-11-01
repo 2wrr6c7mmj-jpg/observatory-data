@@ -112,15 +112,15 @@ class ConfigTest(unittest.TestCase):
     def test_plan_b_areas_and_caps(self):
         cfg = m.load_config()
         on = {a["id"]: a for a in m.areas_in_order(cfg)}
-        self.assertEqual(set(on), {"SENKAKU", "YNG", "MYK", "TWE_S", "SAKI_S", "TSM", "OKI", "BASHI"})
+        self.assertEqual(set(on), {"SENKAKU", "YNG", "MYK", "TWE_S", "SAKI_S", "TSM", "OKI", "BASHI", "HKS"})
         self.assertEqual({k for k, a in on.items() if a["mode"] == "monthly"}, {"OKI"})
         caps = {k: a["pu_month_cap"] for k, a in on.items()}
         self.assertEqual(caps, {"SENKAKU": 70, "YNG": 360, "MYK": 460, "TWE_S": 490, "SAKI_S": 400, "TSM": 480, "OKI": 760,
-                                "BASHI": 300})
+                                "BASHI": 300, "HKS": 180})
         self.assertEqual({k for k, a in on.items() if a.get("min_revisit_days") == 4}, {"YNG", "TWE_S", "TSM"})
         self.assertEqual([a["id"] for a in m.areas_in_order(cfg)][:3], ["SENKAKU", "YNG", "MYK"])
         off = {a["id"] for a in cfg["areas"] if not a.get("enabled")}
-        self.assertEqual(off, {"HKS", "ZSN"})
+        self.assertEqual(off, {"ZSN"})
         self.assertEqual((on["BASHI"]["priority"], on["BASHI"]["mode"]), (2, "every_pass"))
         self.assertEqual(on["TWE_S"].get("min_area_share", cfg["min_area_share"]), 0.3)
         self.assertLessEqual(sum(caps.values()), 3500)  # the areas' caps fit in OCEAN_CAP of plan B

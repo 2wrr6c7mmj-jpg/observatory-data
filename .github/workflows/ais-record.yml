@@ -1,0 +1,59 @@
+name: AIS record
+# 香港の南（ocean/monitor.json の HKS、113.7–114.6E・21.5–22.3N）の Sentinel-1 の通過に合わせて、aisstream.io の AIS を
+# 撮影の前後 ±20 分だけ受信する（cfar-v2 設計 5.2、検出率の測定）。cron は GitHub Actions だけ。
+# 30 分ごと（:07 と :37）：CDSE の OData カタログ（認証なし、PU・Sentinel Hub のリクエストを使わない）で過去 30 日の HKS の通過を
+# 取り、同じ衛星・同じ軌道の 12 日周期で次の通過を予測する。35 分以内に窓が始まる通過がなければ何もせず成功で終わる。
+# 受信した AIS は、その場で MMSI・船名のない匿名の航跡（位置は 15 秒に間引き、船の長さ付き）に減らして封印（暗号化＋改ざん検出、
+# 鍵は aisstream のキーから導く）し、短命な Actions の artifact（保持 7 日）にだけ置く。commit しない・公開しない。
+# 照合は ais-eval.yml が、監視（ocean-monitor.yml）が HKS の通過を公開したあとに行い、済んだ artifact を消す。
+# secret AISSTREAM_API_KEY が無いとき、::notice を出して何もせず成功で終わる。リポジトリには何も書かない（contents: read）。
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  # 同時に 2 本受信しない（aisstream は 1 アカウント 3 接続まで）。受信中の実行を取り消さない
+  group: ais-record
+  cancel-in-progress: false
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    steps:
+      - name: Key
+        id: key
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          if [ -n "$AISSTREAM_API_KEY" ]; then echo "has=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "has=false" >> "$GITHUB_OUTPUT"
+          echo "::notice title=ais-record::secret AISSTREAM_API_KEY が未登録（または空）。AIS は受信しない（何もせず成功で終わる）"
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.has == 'true'
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        if: steps.key.outputs.has == 'true'
+        with:
+          python-version: '3.12'
+      - name: Install websockets
+        if: steps.key.outputs.has == 'true'
+        run: python -m pip install --disable-pip-version-check -q 'websockets==13.1'
+      - name: Record (only when a pass is due; the sealed file is in the runner temp directory only)
+        id: rec
+        if: steps.key.outputs.has == 'true'
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          set -o pipefail
+          python -m ocean.ais_eval record-due --out-dir "$RUNNER_TEMP/ais" --horizon-min 35 2>&1 | tee "$RUNNER_TEMP/record.log"
+      - name: Sealed tracks (artifact, kept 7 days, deleted by ais-eval after the match)
+        if: steps.rec.outputs.recorded != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ais-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ais/*.bin
+          retention-days: 7
+          if-no-files-found: error

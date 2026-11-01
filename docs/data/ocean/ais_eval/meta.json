@@ -1,0 +1,41 @@
+{
+ "version": "ais-eval-1",
+ "purpose": "Detection rate of cfar-v1 and cfar-v2 (the candidates of the open-sea monitor, ocean-monitor-1) measured against AIS south of Hong Kong (area HKS of ocean/monitor.json), for the confidence shown on open-sea candidates elsewhere.",
+ "files": {
+  "summary.json": "totals: detection rate per detector (v1, v2), match radius (200, 300 m) and AIS length band, with n (reference ships) and a 95 % Wilson interval; length-difference quantiles; counts of candidates by AIS match",
+  "passes.json": "one record per Sentinel-1 pass: counts only",
+  "candidates/YYYY-MM-DD.json": "per candidate of the monitor (join on acquired_utc + lon + lat): AIS matched / unmatched / no_ais_coverage at 200 and 300 m and the length band (ge100, 50_100, lt50) of the longest AIS ship within 300 m"
+ },
+ "method": {
+  "ais_source": "aisstream.io terrestrial AIS, received for +-20 minutes around each pass, inside the HKS box only",
+  "time": "imaging time of each point from the product's start/end and footprint (linear along the track)",
+  "extrapolation": "last report within 2 min (moving) or 10 min (SOG < 0.5 kn) extrapolated with SOG/COG to the imaging time",
+  "azimuth_shift": "a moving ship appears displaced along the heading by -(R/V)*v_away (R/V = 120 s; 107-133 s over the swath; v_away = velocity along the right-looking direction, positive away); the AIS position is moved by it before matching",
+  "radii_m": [
+   200.0,
+   300.0
+  ],
+  "reference_ships": "AIS ships with a known length inside the cells the monitor saw (state seen), not within 1 km of the coast or 300 m of a fixed object of OSM (osm/HKS.json, approximate)",
+  "bands": {
+   "ge100": "AIS length >= 100 m",
+   "50_100": "50 m <= length < 100 m"
+  },
+  "detectors": {
+   "v1": "all published candidates (cfar-v1 medium/high, length estimate >= 80 m; v1 low and the coast band, fixed objects and sea-state exclusions are not published, so they cannot hit)",
+   "v2": "published candidates with v2_match (a cfar-v2 detection within 100 m)"
+  },
+  "match": "a ship is a hit when at least one candidate of the detector lies within the radius (not one-to-one)",
+  "candidate_status": "matched = an AIS ship within the radius; unmatched = none, but an AIS report within 10 km (inside AIS coverage); no_ais_coverage = no AIS report within 10 km"
+ },
+ "limits": [
+  "Terrestrial AIS only: ships far from the receivers (offshore) are missing, so the rate is for ships near the coast of Hong Kong and the Pearl River estuary, and 'unmatched' is not 'dark'.",
+  "A hit does not prove the candidate is that ship (a 40 m pixel, 200-300 m radius, busy waters).",
+  "Ships with no static data in the window have no length and are not in n.",
+  "The v1 length estimate is limited to >= 80 m, so the 50-100 m band is expected to be low by design."
+ ],
+ "rules": [
+  "No AIS position, MMSI, name or call sign is published or committed; ship counts and rates only.",
+  "Per-candidate flags are published for the monitor's own candidates (already public); nothing is published for ships that were not detected."
+ ],
+ "attribution": "Contains modified Copernicus Sentinel data [2026]. AIS: aisstream.io (reception results only: counts, rates and per-candidate match flags; no AIS ship position or identity is published)."
+}
