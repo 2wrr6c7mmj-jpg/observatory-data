@@ -38,7 +38,10 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         if changed:  # visible in the Actions annotations
             print("::error::Zhanjiang outputs differ from 9e86565: " + ", ".join(changed))
         self.assertEqual(changed, [], "湛江の出力が変わった")
-        self.assertEqual(sorted(set(new["files"]) - set(old["files"])), sorted(sat_zjg_golden.NEW_FILES))
+        # chips/ (index and per-scene files for the site) is new; nothing else is added but NEW_FILES
+        added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
+        self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES))
+        self.assertIn("chips/index.json", new["files"])
         # meta.json: Zhanjiang's entry is the same but for the new role of each sector
         for sc in new["meta"]["site"]["sectors"]:
             sc.pop("role")

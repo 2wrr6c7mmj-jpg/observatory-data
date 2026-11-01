@@ -119,7 +119,8 @@ def legend(width: int, label: str, credit: str):
     return im
 
 
-def render(vv_db: np.ndarray, vh_db: np.ndarray, label: str, credit: str) -> tuple[bytes, bytes]:
+def render(vv_db: np.ndarray, vh_db: np.ndarray, label: str, credit: str,
+           quality: int = WEBP_QUALITY) -> tuple[bytes, bytes]:
     """(WebP with legend below, WebP thumbnail without legend)."""
     from PIL import Image
     rgb = false_color(vv_db, vh_db)
@@ -130,12 +131,28 @@ def render(vv_db: np.ndarray, vh_db: np.ndarray, label: str, credit: str) -> tup
     full.paste(chip, (0, 0))
     full.paste(lg, (0, h))
     buf = io.BytesIO()
-    full.save(buf, "WEBP", quality=WEBP_QUALITY, method=WEBP_METHOD)
+    full.save(buf, "WEBP", quality=quality, method=WEBP_METHOD)
     th = chip.copy()
     th.thumbnail((THUMB_MAX, THUMB_MAX), Image.Resampling.LANCZOS)
     tbuf = io.BytesIO()
     th.save(tbuf, "WEBP", quality=THUMB_QUALITY, method=WEBP_METHOD)
     return buf.getvalue(), tbuf.getvalue()
+
+
+MAX_IMAGE_BYTES = 300_000     # target for one image published for the site (a large chip is saved at a lower quality)
+QUALITY_STEPS = (WEBP_QUALITY, 65, 55, 45, 35)
+
+
+def render_capped(vv_db: np.ndarray, vh_db: np.ndarray, label: str, credit: str,
+                  max_bytes: int = MAX_IMAGE_BYTES) -> tuple[bytes, bytes]:
+    """render() at the standard quality; only an image above ``max_bytes`` is saved again at a lower quality
+    (the colours and ranges do not change). An image under the limit is byte for byte render()'s."""
+    full, thumb = render(vv_db, vh_db, label, credit)
+    for q in QUALITY_STEPS[1:]:
+        if len(full) <= max_bytes:
+            break
+        full, thumb = render(vv_db, vh_db, label, credit, quality=q)
+    return full, thumb
 
 
 CHANGE_VERSION = "s1chg-1"
