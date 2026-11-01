@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T13:45:00Z",
+ "generated_utc": "2026-11-01T15:00:07Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-01T12:01:10Z",
-   "heartbeat_age_h": 1.7,
+   "heartbeat_age_h": 3.0,
    "data_date": "2026-10-31",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -131,16 +131,16 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-01T10:48:08Z",
-   "heartbeat_age_h": 2.9,
+   "heartbeat_age_h": 4.2,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
-   "data_age_days": 3,
+   "data_age_days": 4,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "data_old",
-     "text": "最新の日 2026-10-29（JST 今日−3。週末・祝日の可能性）"
+     "text": "最新の日 2026-10-29（JST 今日−4。週末・祝日の可能性）"
     }
    ],
    "values": {
@@ -160,7 +160,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-01T13:44:41Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.3,
    "data_date": "2026-11-01",
    "data_date_tz": "TWT",
    "data_age_days": 0,
@@ -204,10 +204,10 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:31Z",
-   "heartbeat_age_h": 6.0,
+   "heartbeat_age_h": 7.3,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
-   "data_age_days": 5,
+   "data_age_days": 6,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -222,7 +222,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:28Z",
-   "heartbeat_age_h": 6.0,
+   "heartbeat_age_h": 7.3,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -240,7 +240,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-01T10:48:29Z",
-   "heartbeat_age_h": 2.9,
+   "heartbeat_age_h": 4.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -863,7 +863,7 @@
   "sites_configured_not_daily": [],
   "changes_latest": {
    "date": "2026-11-01",
-   "version": "est-2 PR-2（湛江の est-2・較正値・数え方は変えない。港の較正の仕組みと確認の材料を足す）"
+   "version": "quay-v2 / est-2.1 / berth-1（検出・港内水域の候補数は変えない）"
   }
  },
  "credits": [
