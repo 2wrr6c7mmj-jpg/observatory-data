@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T04:09:17Z",
+ "generated_utc": "2026-11-01T04:11:00Z",
  "state": "warn",
  "summary": {
   "ok": 8,
@@ -184,7 +184,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-10-31T08:30:49Z",
-   "heartbeat_age_h": 19.6,
+   "heartbeat_age_h": 19.7,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -202,7 +202,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-10-31T08:30:43Z",
-   "heartbeat_age_h": 19.6,
+   "heartbeat_age_h": 19.7,
    "data_date": "2026-10-31",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -444,11 +444,11 @@
    "last_success_started_utc": "2026-10-31T09:57:38Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 41190775311,
-    "started_utc": "2026-10-31T09:57:38Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41190775311"
+    "id": 41272067191,
+    "started_utc": "2026-11-01T04:10:53Z",
+    "status": "queued",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41272067191"
    },
    "consecutive_failures": 0
   },
