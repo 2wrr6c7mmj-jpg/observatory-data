@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T12:05:08Z",
+ "generated_utc": "2026-11-01T13:45:00Z",
  "state": "warn",
  "summary": {
-  "ok": 9,
-  "warn": 3,
+  "ok": 10,
+  "warn": 2,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-01T12:01:10Z",
-   "heartbeat_age_h": 0.1,
+   "heartbeat_age_h": 1.7,
    "data_date": "2026-10-31",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -131,7 +131,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-01T10:48:08Z",
-   "heartbeat_age_h": 1.3,
+   "heartbeat_age_h": 2.9,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -159,19 +159,19 @@
    "name": "PLA Activity Tracker",
    "kind": "daily",
    "workflow": "pla-tracker.yml",
-   "heartbeat_utc": "2026-10-31T14:44:41Z",
-   "heartbeat_age_h": 21.3,
-   "data_date": "2026-10-31",
+   "heartbeat_utc": "2026-11-01T13:44:41Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-01",
    "data_date_tz": "TWT",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
     "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
     "access": "robots",
-    "days": 301,
+    "days": 302,
     "last_run_result": "ok",
-    "revised_count": 1
+    "revised_count": 0
    }
   },
   {
@@ -204,7 +204,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:31Z",
-   "heartbeat_age_h": 4.4,
+   "heartbeat_age_h": 6.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -222,7 +222,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:28Z",
-   "heartbeat_age_h": 4.4,
+   "heartbeat_age_h": 6.0,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -240,7 +240,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-01T10:48:29Z",
-   "heartbeat_age_h": 1.3,
+   "heartbeat_age_h": 2.9,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -542,10 +542,10 @@
    "note": "null は不明、0 は原文に明記"
   },
   "taiwan": {
-   "date": "2026-10-31",
+   "date": "2026-11-01",
    "date_tz": "TWT",
-   "aircraft_total": 13,
-   "median_line_cross": 6,
+   "aircraft_total": 32,
+   "median_line_cross": 26,
    "ships_total": 9,
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
@@ -639,25 +639,19 @@
    "sources": [
     "pla-tracker"
    ],
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "failed",
-     "text": "schedule の実行 2026-10-31T13:00:09Z が failure（その後の手動等の実行で成功）"
-    }
-   ],
-   "last_success_started_utc": "2026-10-31T14:44:27Z",
-   "last_success_event": "workflow_dispatch",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-01T13:44:29Z",
+   "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41203562481,
-    "started_utc": "2026-10-31T13:00:09Z",
+    "id": 41312710717,
+    "started_utc": "2026-11-01T13:44:29Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41203562481",
-    "delay_h": 6.4
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41312710717",
+    "delay_h": 7.1
    },
-   "consecutive_failures": 1
+   "consecutive_failures": 0
   },
   {
    "file": "proto.yml",
@@ -869,7 +863,7 @@
   "sites_configured_not_daily": [],
   "changes_latest": {
    "date": "2026-11-01",
-   "version": "表示 chips-1（数え方は変えない）"
+   "version": "est-2 PR-2（湛江の est-2・較正値・数え方は変えない。港の較正の仕組みと確認の材料を足す）"
   }
  },
  "credits": [
