@@ -208,7 +208,7 @@ class Est1UnchangedTest(unittest.TestCase):
                 self.assertLessEqual(int(b["warship_median"]), int(b["warship_p90"]))
                 self.assertLessEqual(int(b["warship_median"]), int(b["warship_all_median"]))
             doc = json.loads((out / "quay_est2.json").read_text())
-            self.assertEqual(doc["version"], "est-2")
+            self.assertEqual(doc["version"], e2.EST2_VERSION)
             self.assertIn("較正" if e2.CALIB else "較正前", doc["status"])
             self.assertEqual(len(res["scenes"]), len(q))
 
@@ -239,7 +239,7 @@ class Est1UnchangedTest(unittest.TestCase):
         self.assertEqual(outs[False]["requests"], outs[True]["requests"])  # est-2 fetches nothing
         self.assertFalse(outs[False]["e2"])
         self.assertTrue(outs[True]["e2"])
-        self.assertEqual(outs[True]["meta"], "est-2")
+        self.assertEqual(outs[True]["meta"], run.quay_est2.EST2_VERSION)
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

@@ -17,8 +17,10 @@ while the comparison of the two codes on one machine does not.
     python -m tests.sat_zjg_golden            # prints differ / added / removed; exit 0 only if they are as expected
 
 Same check as tests/test_sat_multisite.py (ZhanjiangUnchangedTest): the files both runs wrote must be
-byte for byte the same (differ empty), the files only the new code writes must be exactly NEW_FILES
-(added), and no file of the old code may be missing (removed empty). Otherwise the exit code is 1.
+byte for byte the same except BERTH_CHANGED (berth-1, 2026-11-01: an intended change; the rows of the past
+scenes in quay_counts.csv and ship_counts.csv must still be the same), the files only the new code writes
+must be exactly NEW_FILES (added), and no file of the old code may be missing (removed empty). Otherwise
+the exit code is 1.
 """
 from __future__ import annotations
 
@@ -35,6 +37,11 @@ SRC = ROOT / "docs" / "data" / "sat"
 OLD_FILES = ROOT / "tests" / "fixtures" / "sat_main_9e86565"
 NEW_ONLY = ("sectors.py",)          # modules that did not exist before PR-1
 NEW_FILES = {"quay_sectors.csv"}    # outputs that did not exist before PR-1
+# berth-1 (2026-11-01, the user's instruction: shores where ships never berth are left out of the counts):
+# an intended change of Zhanjiang's outputs. Only these files may differ from 9e86565; inside them the rows
+# of the past scenes stay the same (never rewritten) except est-2, which is recomputed for every scene.
+BERTH_CHANGED = {"quay/2026-11.geojson", "quay/ZJG-zone-prior.json", "quay_counts.csv", "quay_est2.csv", "quay_est2.json",
+                 "ship_counts.csv", "status.json"}
 COPY = ["ship_counts.csv", "quay_counts.csv", "status.json", "usage.csv", "s2_scenes.csv",
         "quay/2026-10.geojson", "quay/ZJG-zone-prior.json", "quay/blind.geojson", "detections/2026-10.geojson",
         "labels/ZJG-s2-labels.csv", "labels/ZJG-s2-s1-match.csv", "labels/ZJG-s2-sections.geojson", "labels/meta.json",
@@ -129,8 +136,26 @@ if (out / "quay_sectors.csv").exists():
     import csv
     with (out / "quay_sectors.csv").open(encoding="utf-8") as f:
         sectors = list(csv.DictReader(f))
+import csv
+def rows_of(name):
+    with (out / name).open(encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+sha = lambda x: hashlib.sha256(json.dumps(x, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+past = {n: sha([r for r in rows_of(n) if r["acquired_utc"] < "2026-11"]) for n in ("quay_counts.csv", "ship_counts.csv")}
+new_quay = [{k: r.get(k) for k in ("acquired_utc", "relative_orbit", "quay_version", "occupied_min", "occupied_max",
+                                   "sector_a_min", "sector_a_max", "sector_b_min", "sector_b_max", "est_mode", "est_warship_mode")}
+            for r in rows_of("quay_counts.csv") if r["acquired_utc"] >= "2026-11"]
+new_ship = [{k: r.get(k) for k in ("acquired_utc", "harbour_candidates", "quay_candidates", "sector_a_quay", "sector_b_quay")}
+            for r in rows_of("ship_counts.csv") if r["acquired_utc"] >= "2026-11"]
+gj = json.loads((out / "quay/2026-11.geojson").read_text(encoding="utf-8"))["features"]
+new_lines = sorted({(f["properties"]["line_kind"], f["properties"]["osm_way"]) for f in gj})
+e2 = rows_of("quay_est2.csv")
 print(json.dumps({"rc": rc, "files": files, "meta": meta, "sectors": sectors,
-                  "quay_results": [s.get("quay_result") for s in scenes]}, ensure_ascii=False))
+                  "quay_results": [s.get("quay_result") for s in scenes],
+                  "excluded": [{k: s.get(k) for k in ("quay_excluded", "quay_band_excluded")} for s in scenes],
+                  "past": past, "new_quay": new_quay, "new_ship": new_ship, "new_lines": new_lines,
+                  "est2_version": sorted({r["est2_version"] for r in e2}), "est2_rows": len(e2),
+                  "est2_warship": [(r["acquired_utc"], r["warship_median"]) for r in e2]}, ensure_ascii=False))
 '''
 
 
@@ -173,9 +198,13 @@ def main() -> int:
     differ = sorted(k for k in set(o) & set(n) if o[k] != n[k])
     added = sorted(k for k in set(n) - set(o) if not k.startswith("chips/"))  # chips/ = the site's chip index (new)
     removed = sorted(set(o) - set(n))
-    ok = not differ and added == sorted(NEW_FILES) and not removed
-    print(json.dumps({"files": len(o), "differ": differ, "added": added, "expected_added": sorted(NEW_FILES),
-                      "removed": removed, "quay_results": new["quay_results"], "ok": ok}, ensure_ascii=False))
+    unexpected = sorted(set(differ) - BERTH_CHANGED)
+    ok = not unexpected and added == sorted(NEW_FILES) and not removed and old["past"] == new["past"]
+    print(json.dumps({"files": len(o), "differ": differ, "unexpected": unexpected, "added": added,
+                      "expected_added": sorted(NEW_FILES), "removed": removed, "past_rows_same": old["past"] == new["past"],
+                      "quay_results": new["quay_results"], "old_quay": old["new_quay"], "new_quay": new["new_quay"],
+                      "old_ship": old["new_ship"], "new_ship": new["new_ship"], "old_lines": old["new_lines"],
+                      "new_lines": new["new_lines"], "excluded": new["excluded"], "ok": ok}, ensure_ascii=False))
     return 0 if ok else 1
 
 

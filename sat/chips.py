@@ -68,8 +68,9 @@ def candidate_box(grid: Grid, lon: float, lat: float, length_m: float, width_m: 
 
 
 def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px: tuple[int, int],
-              thumb_px: tuple[int, int] | None, tag: str) -> dict:
-    """The chip file of one scene. Candidate order = the GeoJSON's n."""
+              thumb_px: tuple[int, int] | None, tag: str, excluded: dict | None = None) -> dict:
+    """The chip file of one scene. Candidate order = the GeoJSON's n. ``excluded``: counts of the
+    candidates left out (berth-1, by reason), given only when the berth rule was applied."""
     cands = []
     for f in sorted(features, key=lambda f: f["properties"]["n"]):
         p = f["properties"]
@@ -92,6 +93,7 @@ def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px:
         "pixel_m": {"row": round(mr, 2), "col": round(mc, 2)},
         "note": "box_px は画像の左上を原点とする画素（凡例は画像の下で、chip_px の外）。枠は候補の中心に長さの目安で描いた正方形で、船体の輪郭ではない",
         "candidates": cands,
+        **({"excluded_counts": excluded} if excluded is not None else {}),
         "caption": CAPTION,
         "credit": credit(row["acquired_utc"][:4]),
     }
@@ -118,9 +120,14 @@ def chip_rel(site_id: str, stamp: str) -> str:
 
 
 def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callable[[dict, str], list[dict]],
-           mask_tag: Callable[[dict], str], row_tag: Callable[[dict], str], keep: int = KEEP) -> dict:
+           mask_tag: Callable[[dict], str], row_tag: Callable[[dict], str], keep: int = KEEP,
+           classify: Callable[[dict, list], list | None] | None = None) -> dict:
     """Rewrite chips/ from the published rows; delete the colour files of scenes beyond the latest ``keep`` of a site
-    (and blank their colour columns in ``rows``, which the caller saves). Returns {"scenes", "removed", "cleared"}."""
+    (and blank their colour columns in ``rows``, which the caller saves). Returns {"scenes", "removed", "cleared"}.
+
+    ``classify(site, [(lon, lat), ...])`` (berth-1, sat/berths.py): for the quay-band candidates, "" (kept),
+    "coastline" or "off_berth"; the others are left out of ``candidates`` and only counted in
+    ``excluded_counts``. Open-water candidates are always kept. None (or no quay lines): every candidate."""
     index_sites, removed, cleared, n_scenes = [], 0, 0, 0
     for site in sites:
         tag = mask_tag(site)
@@ -154,13 +161,27 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
                 by_month[month] = features_for(site, month)
             feats = [f for f in by_month[month] if f["properties"]["acquired_utc"] == r["acquired_utc"]
                      and f["properties"]["site_id"] == site["id"] and row_tag(f["properties"]) == tag]
-            doc = scene_doc(site, grid, r, feats, image_px, thumb_px if thumb is not None and thumb.exists() else None, tag)
+            excluded = None
+            if classify is not None:
+                band = [f for f in feats if f["properties"].get("zone") == "quay"]
+                why = classify(site, [tuple(f["geometry"]["coordinates"][:2]) for f in band])
+                if why is not None:
+                    excluded = {k: 0 for k in ("off_berth", "coastline")}
+                    drop = set()
+                    for f, w in zip(band, why):
+                        if w:
+                            excluded[w] = excluded.get(w, 0) + 1
+                            drop.add(id(f))
+                    feats = [f for f in feats if id(f) not in drop]
+            doc = scene_doc(site, grid, r, feats, image_px, thumb_px if thumb is not None and thumb.exists() else None, tag,
+                            excluded)
             stamp = r["acquired_utc"].replace(":", "-")
             _write_if_changed(out / chip_rel(site["id"], stamp), _dump(doc))
             scenes.append({"acquired_utc": r["acquired_utc"], "platform": r.get("platform"),
                            "orbit_direction": r.get("orbit_direction"), "relative_orbit": r.get("relative_orbit"),
                            "chip": chip_rel(site["id"], stamp), "image": r["color_image"],
                            "thumb": r.get("color_thumb") or None, "candidates": len(doc["candidates"]),
+                           **({"excluded": sum(doc["excluded_counts"].values())} if "excluded_counts" in doc else {}),
                            "retrieved_utc": r.get("retrieved_utc")})
         # chip files that no row points to any more (a scene deleted by hand)
         keepers = {Path(s["chip"]).name for s in scenes}
