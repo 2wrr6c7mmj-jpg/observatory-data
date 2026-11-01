@@ -118,7 +118,7 @@ class Clock:
         self.t += s
 
 
-GRADUATED_DAILY = {"SYL", "SLP", "QGZ", "ZDH"}  # 日次の地点になった港（sat/ports.json には範囲・マスクの一致のためだけに残る）
+GRADUATED_DAILY = {"SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"}  # 日次の地点になった港（sat/ports.json には範囲・マスクの一致のためだけに残る）
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -133,7 +133,7 @@ class PortsFileTest(unittest.TestCase):
         # （daily が false でないもの）であってはならず、範囲・中心・陸マスクの版は sites.json と同じであること。
         for i in set(ids) & set(sites):
             p, s = next(p for p in ports if p["id"] == i), sites[i]
-            if i not in GRADUATED_DAILY:  # SYL・SLP・QGZ・ZDH は 2026-11-01 から日次に昇格済み（アーカイブは probe 専用の手動実行）
+            if i not in GRADUATED_DAILY:  # SYL・SLP・QGZ・ZDH・QJG・QDH・XSN・LSN・SWS・XMN・STU・MAW は 2026-11-01 から日次に昇格済み（アーカイブは probe 専用の手動実行）
                 self.assertIs(s.get("daily", True), False, i)
             for k in ("bbox", "center_lat", "center_lon", "mask_version"):
                 self.assertEqual(p.get(k), s.get(k), (i, k))

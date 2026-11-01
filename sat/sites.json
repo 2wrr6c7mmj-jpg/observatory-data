@@ -625,6 +625,7 @@
    "center_lon": 120.585,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -663,7 +664,7 @@
    },
    "enabled": true,
    "priority": 2,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -694,6 +695,7 @@
    "center_lon": 120.3125,
    "pixel_m": 10,
    "mask_version": 2,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -732,7 +734,7 @@
    },
    "enabled": true,
    "priority": 1,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -785,6 +787,7 @@
    "center_lon": 121.7725,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -823,7 +826,7 @@
    },
    "enabled": true,
    "priority": 1,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -859,6 +862,7 @@
    "center_lon": 121.252,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -898,7 +902,7 @@
    },
    "enabled": true,
    "priority": 2,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -929,6 +933,7 @@
    "center_lon": 121.5,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -967,7 +972,7 @@
    },
    "enabled": true,
    "priority": 1,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -1014,6 +1019,7 @@
    "center_lon": 118.0775,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -1053,7 +1059,7 @@
    },
    "enabled": true,
    "priority": 2,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -1089,6 +1095,7 @@
    "center_lon": 116.6675,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -1139,7 +1146,7 @@
    },
    "enabled": true,
    "priority": 2,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -1186,6 +1193,7 @@
    "center_lon": 119.445,
    "pixel_m": 10,
    "mask_version": 1,
+   "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
@@ -1224,7 +1232,7 @@
    },
    "enabled": true,
    "priority": 2,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
