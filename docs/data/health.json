@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T07:43:54Z",
+ "generated_utc": "2026-11-01T07:44:40Z",
  "state": "warn",
  "summary": {
-  "ok": 8,
-  "warn": 4,
+  "ok": 9,
+  "warn": 3,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -259,22 +259,16 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-01T04:13:36Z",
-   "heartbeat_age_h": 3.5,
+   "heartbeat_utc": "2026-11-01T07:43:48Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "older_than_input",
-     "text": "最後の成功 2026-11-01T04:13:36Z が入力の更新 2026-11-01T07:43:31Z より前"
-    }
-   ],
+   "state": "ok",
+   "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-01T04:13:57Z",
+    "computed_utc_max": "2026-11-01T07:44:16Z",
     "newest_input_utc": "2026-11-01T07:43:31Z"
    }
   },
@@ -575,13 +569,13 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-01T04:13:36Z",
+   "last_success_started_utc": "2026-11-01T07:43:48Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
     "id": 41285937841,
     "started_utc": "2026-11-01T07:43:48Z",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41285937841"
    },
    "consecutive_failures": 0
