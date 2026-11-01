@@ -40,9 +40,8 @@ jobs:
           [ -d "$RUNNER_TEMP/bundle" ] || exit 0
           tar -C "$RUNNER_TEMP/bundle" -cf - . | xz -9e > "$RUNNER_TEMP/bundle.tar.xz"
           echo "::notice title=bundle::$(stat -c %s "$RUNNER_TEMP/bundle.tar.xz") B, sha256 $(sha256sum "$RUNNER_TEMP/bundle.tar.xz" | cut -c1-64)"
-          python -m sat.annotate b64 bundle "$RUNNER_TEMP/bundle.tar.xz" 4000 0 30
-      - name: Export part 2 (annotations)
+      - name: Export bundle (annotations)
         if: always()
         run: |
           [ -f "$RUNNER_TEMP/bundle.tar.xz" ] || exit 0
-          python -m sat.annotate b64 bundle "$RUNNER_TEMP/bundle.tar.xz" 4000 30 14
+          python -m sat.annotate b64 bundle "$RUNNER_TEMP/bundle.tar.xz" 4000 0 30
