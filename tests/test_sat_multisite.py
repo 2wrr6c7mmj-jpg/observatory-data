@@ -321,17 +321,12 @@ class ReviewFixesTest(unittest.TestCase):
     def test_title_lists_daily_sites_only(self):
         sites = run.load_sites()
         m = run.build_meta([], sites)
-        # from 2026-11-01 the daily sites are ZJG, SYL, SLP, QGZ and ZDH; the ports with daily false (the quay
-        # lines are still missing: QJG, QDH, XSN, LSN, SWS, XMN, STU, MAW) stay out of the title
-        for name in ("湛江", "楡林", "龍坡", "青島", "舟山"):
+        # all 13 sites are daily (the 8 ports got their OSM quay lines on 2026-11-01): all are in the title
+        for name in ("湛江", "楡林", "龍坡", "青島", "舟山", "旅順", "廈門", "汕頭", "象山", "呉淞", "馬尾", "姜哥荘"):
             self.assertIn(name, m["title"])
-        for name in ("旅順", "廈門", "汕頭", "象山", "呉淞", "馬尾", "姜哥荘"):
-            self.assertNotIn(name, m["title"])
         modes = {x["id"]: x["mode"] for x in m["sites"]}
-        for sid in ("ZJG", "SYL", "SLP", "QGZ", "ZDH"):
+        for sid in ("ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"):
             self.assertEqual(modes[sid], "毎日の取得")
-        for sid in ("QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"):
-            self.assertEqual(modes[sid], "設定のみ（毎日の取得なし）")
 
     def test_wide_columns_only_for_shared_layout(self):
         one = {**NEW, "sectors": [{"id": "A", "bbox": [110.0, 21.004, 110.005, 21.008]}], "sector_rest": {"id": "B"}}
@@ -402,16 +397,17 @@ class SanyaSitesTest(unittest.TestCase):
             self.assertEqual(bl[1]["credibility"], "3")
             self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
         self.assertEqual({"SYL": 40, "SLP": 30}, {sid: s[sid]["pu_month_cap"] for sid in ("SYL", "SLP")})
-        self.assertEqual({"ZJG", "SYL", "SLP", "QGZ", "ZDH"}, {y["id"] for y in run.load_sites() if run.runs_daily(y)})
+        self.assertEqual({"ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"}, {y["id"] for y in run.load_sites() if run.runs_daily(y)})
 
     def test_blind_stretches_in_own_folder(self):
         """quay/blind.geojson keeps the shared-layout site (Zhanjiang) only; the new ports get their own file."""
         with tempfile.TemporaryDirectory() as d:
             out = Path(d)
-            # SYL daily as in sites.json (SLP, QGZ, ZDH are daily too but kept out here: each geometry takes ~35 s)
-            sites = [{**x, "daily": False} if x["id"] in ("SLP", "QGZ", "ZDH") else x for x in run.load_sites()]
+            # SYL daily as in sites.json (the other ports are daily too but kept out here: each geometry takes seconds to a minute)
+            out_ids = ("SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW")
+            sites = [{**x, "daily": False} if x["id"] in out_ids else x for x in run.load_sites()]
             # blind stretches are summarised for daily sites only: ports with daily false give none
-            self.assertEqual(run.blind_summary([x for x in sites if x["id"] in ("SLP", "QGZ", "ZDH")]), [])
+            self.assertEqual(run.blind_summary([x for x in sites if x["id"] in out_ids]), [])
             store = run.Store(out, sites)
             with contextlib.redirect_stderr(io.StringIO()):
                 store.save({"run_utc": "2026-10-31T00:00:00Z"})
@@ -557,7 +553,7 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
                 self.assertEqual((int(bl["scenes"]), bl["credibility"]), (24, "3"))
                 self.assertEqual(sum(1 for sc in bl["scene_list"] if sc.get("used")), 24)
                 self.assertIn("Copernicus Sentinel data", bl["credit"])
-        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)], ["ZJG", "SYL", "SLP", "QGZ", "ZDH"])
+        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)], ["ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"])
 
     def test_sectors(self):
         s = self.sites()
@@ -716,7 +712,7 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
 @unittest.skipUnless(np is not None, "numpy not installed")
 class AllPortsTest(unittest.TestCase):
     """全港の展開（2026-11-01）：姜哥荘 QJG・青島港内 QDH・象山 XSN・旅順 LSN・呉淞 SWS・廈門 XMN・汕頭 STU・馬尾 MAW。
-    陸マスクと基準は入っているが岸壁線（OSM、probe で取得）がまだ無いので daily false。"""
+    陸マスク・基準・岸壁線（OSM、probe/quaylines-8ports で 2026-11-01 に取得）がそろい、daily true。"""
 
     EXPECT = {  # site: (mask version, baseline orbits, pu_month_cap, naval sectors)
         "QJG": (1, [171], 13, 1), "QDH": (2, [171], 46, 1), "XSN": (1, [171], 17, 1), "LSN": (1, [171, 98], 40, 1),
@@ -733,10 +729,18 @@ class AllPortsTest(unittest.TestCase):
             x = s[sid]
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"], x["provisional"]),
                              ("naval", "trial", "per_site", False, mv, True), sid)
-            self.assertIs(x["daily"], False, sid)  # the OSM quay lines are not in yet
+            self.assertIs(x["daily"], True, sid)  # mask, baselines and OSM quay lines are all in
+            self.assertEqual(x["quay_lines_version"], 1, sid)
             self.assertEqual(x["pu_month_cap"], cap, sid)
             run.validate_site(x)
-            run.validate_site({**x, "daily": True})  # would pass the check of a daily site
+            run.validate_site(x)  # the check of a daily site
+            lines = quay_lines.load(sid, 1)
+            self.assertIsNotNone(lines, sid)
+            self.assertEqual((lines["version"], lines["bbox"], lines["source"]), (f"{sid}-quay-v1", x["bbox"], "OpenStreetMap via Overpass API"), sid)
+            self.assertIn("ODbL", lines["license"])
+            self.assertRegex(lines["osm_base"], r"^2026-11-01T\d\d:\d\d:\d\dZ$", sid)
+            self.assertEqual(sum(lines["counts"].values()), len(lines["ways"]), sid)
+            self.assertGreater(len(lines["ways"]), 0, sid)
             for k in ("bbox", "center_lat", "center_lon", "mask_version", "sources"):  # the same range and sources as the archive
                 self.assertEqual(x[k], ports[sid][k], (sid, k))
             secs = run.site_sectors(x)
@@ -757,9 +761,10 @@ class AllPortsTest(unittest.TestCase):
                 self.assertIn("Copernicus Sentinel data", bl["credit"])
             meta = run.site_meta(x)
             self.assertEqual(meta["quay"]["baselines_present"], orbits, sid)
-            self.assertEqual(meta["quay"]["lacks"], [f"岸壁線 {sid}-quay-v1（OSM、probe で取得）"], sid)  # the only thing missing
-            self.assertFalse(meta["quay"]["ready"], sid)
-            self.assertEqual(meta["mode"], "設定のみ（毎日の取得なし）")
+            self.assertEqual(meta["quay"]["lacks"], [], sid)  # nothing is missing now
+            self.assertEqual(meta["quay"]["lines_version"], f"{sid}-quay-v1", sid)
+            self.assertTrue(meta["quay"]["ready"], sid)
+            self.assertEqual(meta["mode"], "毎日の取得")
 
     def test_caps_fit_in_the_run_cap(self):
         """Every site's cap together (plus Zhanjiang's ~25 PU a month) stays well inside the run's 1,000 PU (aim: 600)."""
