@@ -1,6 +1,33 @@
 {
  "scenes": [
   {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-02T10:03:53Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 69,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261002T100353_20261002T100418_004835_009159_FE12_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:33:51Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.996,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7623,
+    "water_fraction": 0.452,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 767,
+    "clusters": 183,
+    "dropped_small": 127,
+    "dropped_vh": 9
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "SLP",
    "acquired_utc": "2026-10-02T10:48:16Z",
    "platform": "sentinel-1c",
@@ -227,6 +254,114 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-08T22:05:01Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "relative_orbit": 76,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261008T220501_20261008T220526_009799_013850_E0AE_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:02Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.993,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.735,
+    "water_fraction": 0.4256,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 806,
+    "clusters": 158,
+    "dropped_small": 100,
+    "dropped_vh": 18
+   },
+   "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "ZDH",
+   "acquired_utc": "2026-10-09T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "ZDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261009T095402_20261009T095427_004937_0094DE_069F_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:25Z",
+   "processing_units": 3.1217956542968746,
+   "coverage": 1.0,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9383,
+    "water_fraction": 0.3216,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1025,
+    "clusters": 210,
+    "dropped_small": 127,
+    "dropped_vh": 20
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-09T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261009T095542_20261009T095607_004937_0094DE_DB48_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:05Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.994,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7388,
+    "water_fraction": 0.4293,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 792,
+    "clusters": 174,
+    "dropped_small": 113,
+    "dropped_vh": 15
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-14T10:03:53Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 69,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261014T100353_20261014T100418_005010_009776_02D3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:09Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.999,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7925,
+    "water_fraction": 0.4823,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 786,
+    "clusters": 172,
+    "dropped_small": 115,
+    "dropped_vh": 9
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "SLP",
    "acquired_utc": "2026-10-14T10:48:16Z",
    "platform": "sentinel-1c",
@@ -385,6 +520,114 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-15T21:56:45Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "relative_orbit": 3,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261015T215645_20261015T215710_009901_013BDF_1110_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:13Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.98,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7565,
+    "water_fraction": 0.4457,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 887,
+    "clusters": 204,
+    "dropped_small": 136,
+    "dropped_vh": 14
+   },
+   "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "ZDH",
+   "acquired_utc": "2026-10-21T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "ZDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095402_20261021T095427_005112_009AE4_17CA_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:35:42Z",
+   "processing_units": 3.1217956542968746,
+   "coverage": 1.0,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9547,
+    "water_fraction": 0.338,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1383,
+    "clusters": 197,
+    "dropped_small": 112,
+    "dropped_vh": 23
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-21T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095542_20261021T095607_005112_009AE4_5E4E_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:17Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.995,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7346,
+    "water_fraction": 0.4247,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 719,
+    "clusters": 174,
+    "dropped_small": 126,
+    "dropped_vh": 9
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-10-26T10:03:53Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 69,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261026T100353_20261026T100418_005185_009D7F_25AE_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-01T09:34:20Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.996,
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7611,
+    "water_fraction": 0.4515,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 664,
+    "clusters": 171,
+    "dropped_small": 125,
+    "dropped_vh": 9
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "SLP",
    "acquired_utc": "2026-10-26T10:48:16Z",
    "platform": "sentinel-1c",
@@ -492,7 +735,7 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-01T06:31:50Z",
+  "run_utc": "2026-11-01T09:33:46Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -503,37 +746,51 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 1000.0
+    "budget_left_pu": 959.02
    },
    {
     "site_id": "SYL",
-    "lookback_days": 30,
-    "catalog_items": 4,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 3,
-    "skipped": 1,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 987.13
+    "budget_left_pu": 959.02
    },
    {
     "site_id": "SLP",
-    "lookback_days": 30,
-    "catalog_items": 3,
-    "acquisitions": 3,
-    "new": 3,
-    "counted": 3,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 979.49
+    "budget_left_pu": 959.02
    },
    {
     "site_id": "QGZ",
-    "deferred_first_run": true
+    "lookback_days": 30,
+    "catalog_items": 7,
+    "acquisitions": 7,
+    "new": 7,
+    "counted": 7,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 945.75
    },
    {
     "site_id": "ZDH",
-    "deferred_first_run": true
+    "lookback_days": 30,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 2,
+    "counted": 2,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 939.51
    },
    {
     "site_id": "QDH",
@@ -582,113 +839,113 @@
    },
    {
     "site_id": "SYL",
-    "days": 2,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
-    "skipped": 1,
+    "cloudy": 0,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 2.696,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "SLP",
-    "days": 2,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
-    "skipped": 1,
+    "cloudy": 0,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.012,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "QGZ",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "ZDH",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QDH",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "XSN",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "SWS",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QJG",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "LSN",
     "days": 1,
     "clear": 0,
     "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.009,
+    "processing_units": 0.008,
     "requests": 2
    },
    {
-    "site_id": "ZDH",
-    "days": 3,
-    "clear": 1,
-    "cloudy": 2,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 2.645,
-    "requests": 5
-   },
-   {
-    "site_id": "QDH",
-    "days": 3,
-    "clear": 1,
-    "cloudy": 2,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 1.306,
-    "requests": 5
-   },
-   {
-    "site_id": "XSN",
-    "days": 3,
-    "clear": 2,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 3.028,
-    "requests": 6
-   },
-   {
-    "site_id": "SWS",
-    "days": 5,
-    "clear": 3,
-    "cloudy": 1,
-    "skipped": 1,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 2.434,
-    "requests": 8
-   },
-   {
-    "site_id": "QJG",
-    "days": 3,
-    "clear": 1,
-    "cloudy": 2,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 1.114,
-    "requests": 6
-   },
-   {
-    "site_id": "LSN",
-    "days": 3,
-    "clear": 2,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 2.721,
-    "requests": 6
-   },
-   {
     "site_id": "XMN",
-    "days": 2,
-    "clear": 2,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 2.262,
-    "requests": 5
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "STU",
@@ -703,26 +960,26 @@
    },
    {
     "site_id": "MAW",
-    "days": 2,
-    "clear": 1,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
-    "skipped": 1,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.851,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    }
   ],
-  "s2_requests": 55,
-  "s2_processing_units": 20.471,
-  "requests": 65,
-  "processing_units": 40.979,
+  "s2_requests": 16,
+  "s2_processing_units": 1.402,
+  "requests": 30,
+  "processing_units": 20.917,
   "pu_source": "header",
-  "scenes": 7,
-  "month_pu_before": 0,
+  "scenes": 9,
+  "month_pu_before": 40.979,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-01T06:31:50Z",
+ "updated_utc": "2026-11-01T09:33:46Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
