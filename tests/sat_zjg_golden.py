@@ -171,7 +171,7 @@ def main() -> int:
         old, new = compare(Path(d))
     o, n = old["files"], new["files"]
     differ = sorted(k for k in set(o) & set(n) if o[k] != n[k])
-    added = sorted(set(n) - set(o))
+    added = sorted(k for k in set(n) - set(o) if not k.startswith("chips/"))  # chips/ = the site's chip index (new)
     removed = sorted(set(o) - set(n))
     ok = not differ and added == sorted(NEW_FILES) and not removed
     print(json.dumps({"files": len(o), "differ": differ, "added": added, "expected_added": sorted(NEW_FILES),

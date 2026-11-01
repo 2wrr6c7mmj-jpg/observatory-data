@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import cdse, png, quay, quay_est, quay_est2, quay_lines, render, s2
+from . import cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2
 from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
@@ -347,6 +347,7 @@ class Store:
             fc["features"] = feats
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        self.save_chips()
         pairs = orbit_pairs(self.quay_rows)
         qkey = lambda r: (r["site_id"], r["acquired_utc"], row_mask_tag(r))
         months = dict(self.new_quay)
@@ -410,6 +411,20 @@ class Store:
         (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n",
                                             encoding="utf-8")
 
+
+    def save_chips(self) -> None:
+        """chips/ (index and one file per scene, the latest 10 per site) from the published rows and detections;
+        the colour files of older scenes are deleted and their colour columns blanked. Never stops the run."""
+        try:
+            def features_for(site: dict, month: str) -> list[dict]:
+                p = self.out / detections_rel(site, month)
+                return json.loads(p.read_text(encoding="utf-8"))["features"] if p.exists() else []
+            r = chips.update(self.out, [s for s in self.sites if s.get("enabled")], self.rows, features_for,
+                             mask_tag, row_mask_tag)
+            if r["cleared"]:
+                write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
+        except Exception as e:  # noqa: BLE001
+            print(f"chips: {type(e).__name__}: {e}", file=sys.stderr)
 
     def save_sectors(self, est2: dict | None) -> None:
         """quay_sectors.csv (new, every sector of every site): the rows of this run's scenes, the old
@@ -700,7 +715,10 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "quay_est2/<地点>.csv・quay_est2/<地点>.json": "湛江以外の地点の est-2（列は quay_est2.csv と同じ、区画 A・B の列は空）。湛江は従来の quay_est2.csv・quay_est2.json",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
             "color/<地点>/v<版>/<撮影時刻>.webp": "疑似カラー（R＝VV、G＝VH、B＝VV−VH を逆向き）の WebP。範囲は全地点・全日で固定、表示用だけ 3×3 Lee フィルタ、凡例と出典は画像の下。候補の枠は焼き込まない（detections の GeoJSON から重ねる）。表示の版 s1fc-1 を入れてから処理した撮影のみ（それより前の撮影は VV の PNG のみ。再取得はしない）",
-            "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）",
+            "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）。color/ は各地点の最新 10 撮影だけ残す（古いものは消し、ship_counts.csv の color_image・color_thumb を空にする）。1 枚が 300 KB を超えるときだけ品質を下げて保存する",
+            "chips/index.json・chips/<地点>/<撮影時刻>.json": ("サイトが赤枠を重ねるための索引（chips-1）。index＝地点ごとの最新 10 撮影（新しい順）の画像・縮小版・切り出しファイルの場所と候補数。"
+                                                   "切り出しファイル＝画像の大きさ（image_px、凡例込み）、範囲（bbox）、画素の大きさ、候補ごとの枠（box_px＝画像左上が原点の画素、box_lonlat＝緯度経度）・長さの目安・信頼度（reliability・credibility）。"
+                                                   "出典の文を credit に持つ。枠は画像に焼き込まない。外洋は空"),
             "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",
             "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）。s2_requests・s2_processing_units＝そのうち Sentinel-2（s2nc-1）の分",
@@ -1160,7 +1178,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         extra = {}
         try:  # the display image never stops the count (the PNG quick-look is the record)
             cpath, tpath = color_paths(site, acq["acquired_utc"])
-            full, thumb = fcolor.render(vv, vh, color_label(site, acq),
+            full, thumb = fcolor.render_capped(vv, vh, color_label(site, acq),
                                         f"Contains modified Copernicus Sentinel data {acq['acquired_utc'][:4]}")
             extra = {cpath: full, tpath: thumb}
             row.update(color_image=cpath, color_thumb=tpath)
