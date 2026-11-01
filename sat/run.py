@@ -558,6 +558,18 @@ def blind_summary(sites: list[dict]) -> list[dict]:
     return out
 
 
+def est2_eval_ref(out: Path) -> dict:
+    """meta.json -> the out-of-sample evaluation of est-2 (sat/eval_est2.py, eval_est2.json): file and a one-line status per site."""
+    p = (out or Path(__file__).resolve().parent.parent / "docs" / "data" / "sat") / "eval_est2.json"
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+        return {"file": "eval_est2.json", "version": d.get("version"),
+                "status": {sid: r.get("status") for sid, r in d.get("sites", {}).items()},
+                "note": "凍結（2026-10-27）より後の撮影を所有者の新しい目視ラベルと突き合わせた評価。標本 0＝まだ凍結後の撮影か答えが無い"}
+    except (OSError, ValueError):
+        return {"file": None, "status": "未実行（python -m sat.eval_est2）"}
+
+
 def baseline_meta(sites: list[dict]) -> list[dict]:
     out = []
     for site in sites:
@@ -672,6 +684,8 @@ def site_status(site: dict) -> dict:
             "class_weights": quay_est.site_weights_info(site["id"]), "classes_version": ver,
             "est2_calib_source": quay_est2.calib_source(site["id"]),
             "est2_calib_note": quay_est2.CALIB_SOURCE_NOTE[quay_est2.calib_source(site["id"])],
+            "est2_calib_label": quay_est2.calib_info(site["id"])["calib_label"],
+            "est2_calib_n": quay_est2.calib_info(site["id"])["calib_n"],
             "label_freeze_utc": qc.get("label_freeze_utc"),
         },
     }
@@ -766,6 +780,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "method": quay.settings(),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
+            "estimate2_evaluation": est2_eval_ref(out),
             "baselines": baseline_meta(sites),
             "change_image": fcolor.change_settings(),
             "credibility": "基準が 24 シーン以上なら 3、未満なら 4（一段下げる）",
