@@ -1,0 +1,233 @@
+{
+ "version":"ocean-monitor-1",
+ "config_version":"ocean-monitor-1",
+ "generated_utc":"2026-11-01T23:03:50Z",
+ "attribution":"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0",
+ "credits":[
+  "Contains modified Copernicus Sentinel data (Copernicus Sentinel-1, ESA; CDSE Sentinel Hub)",
+  "land and fixed objects © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)"
+ ],
+ "method":{
+  "data":"Sentinel-1 IW GRD（VV・VH・入射角）、40 m（BILINEAR）、Sentinel Hub Process API。新しい撮影は CDSE OData カタログで確かめる",
+  "detector":"cfar-v1（記録の検出器、40 m、守り帯 160 m・リング 320 m、長さ 80 m 以上）と cfar-v2（100 m 以内の一致）",
+  "masks":"OSM の陸・海岸（海岸から 1 km は near_coast）・洋上の固定物（風車・掘削台・航路標識、300 m 膨張）、学習した固定物",
+  "sea_state":{
+   "low_db":-25.0,
+   "high_db":-8.0,
+   "note":"0.1° セルごとの VV 中央値。low 未満（風の弱い暗い海・雑音床）と high 超（強風・雨）は件数に入れず、見た面積からも除く（仮置き、最初の 1 週間の検品で直す）"
+  },
+  "cluster":{
+   "radius_m":500,
+   "min_n":5,
+   "note":"同じ撮影で 500 m 以内のつながりが 5 件以上の群れ（漁船）は見出しの数に入れず、群れの数だけ数える"
+  },
+  "ambiguity":{
+   "tol_az_m":400,
+   "tol_rg_m":100,
+   "drop_db":15.0,
+   "note":"候補から衛星の進行方向（方位）に ±（λ R PRF / 2V）±400 m・横 ±100 m の楕円に、候補より 15 dB 以上明るい画素（船・港・市街・橋。陸を含む）があれば ambiguity_suspect"
+  },
+  "static_learned":{
+   "radius_m":200,
+   "looks":5,
+   "min_hits":3,
+   "note":"同じ衛星・軌道の直近 5 回（その地点を見た撮影）のうち 3 回以上、±200 m に候補が出た地点（2部が月 1 回見直す）"
+  },
+  "schedule":"毎日 19:41 UTC（04:41 JST）。昇交（09:20–10:32 UTC）は同じ日、降交（21:17–21:51 UTC）は翌日に処理"
+ },
+ "classes":{
+  "A":"cfar-v1 が high かつ cfar-v2 の A と 100 m 以内で一致し、海岸帯・固定物・端・方位アンビギュイティ・海況不良・群れでない。見出しの数に入れる。10 m の切り出しで船の形と長さ 80 m 以上を確認するまで確度は「低〜中」（chip_checked=false）",
+  "B":"cfar-v1 high か cfar-v2 A の片方だけ、または cfar-v1 medium、または端・アンビギュイティ・群れの印あり。確度「低」。GeoJSON に出すが見出しの数に入れない",
+  "reference":"cfar-v1 low・海岸帯・固定物（OSM・学習）・海況不良。出さない（passes.json の内訳だけ）",
+  "high":"「高」は S1 だけでは付けない。統幕の通峡の発表・海保の尖閣の発表・AIS の照合と一致したときだけ分析の文章で付ける"
+ },
+ "ais":"全件 AIS 未照合（ais=unmatched）。AIS の生データ・MMSI は出さない",
+ "null_rule":"件数（count_*）は、域の海のうち実際に見た（データがあり海況が普通の）割合が count_min_share（30%）未満の撮影では null（見ていない）。30% 以上見て候補がないときだけ 0。count_A_ge120_confirmed は 10 m の切り出しによる確認（未実装）が済むまで null。海況不良のセル（VV 中央値が low_db 未満か high_db 超）は件数に入れず、見た面積からも除く。1 回の上限で何回かに分けて取った撮影（part の続き）は、series では同じ撮影×域を 1 行に合算する（件数・見た面積・PU は足し、30% の判定は合算後の見た割合で行う）。passes.json は回ごとの記録のまま。",
+ "count_min_share":0.3,
+ "headline":"見出しの数は count_A（確度 A）だけ。count_A_ge120_unconfirmed は 40 m の長さ（40 m 刻みで長めに出る）による参考で、見出しに使わない（10 m の切り出しで確かめた count_A_ge120_confirmed ができるまで）",
+ "static_learned_review":"学習した固定物（static_learned.json）は 2部が月 1 回見直す（誤って学んだ地点を除き、条件を直す）",
+ "statuses":{
+  "ok":"取得した",
+  "partial":"一部の要求が失敗した（取り直さない）",
+  "no_data":"画像にデータがなかった",
+  "part":"1 回の上限で一部だけ取った（残りは次の実行で取る）",
+  "skipped_revisit":"同じ域で 4 日以内に見たので取らない",
+  "deferred":"1 回の上限（PU・リクエスト）で次の実行に回した（未取得）",
+  "budget":"域の月の上限で取らなかった（未取得）",
+  "aborted":"取得中に実行が止まった（使った PU は数え、次の実行で取り直す。候補は出さない）"
+ },
+ "months":"域の月の上限と月 1 回の域（OKI）は、撮影の月ではなく処理した月（予算の月）で数える",
+ "limits":[
+  "S1 の分解能は約 20 m。40 m の取得では 80 m 未満の船は数えない（見逃す）。艦種・国籍・軍民の区別は S1 だけではできない。",
+  "見えるのは撮影の瞬間（昇交 18:20–19:32 JST・降交 06:17–06:51 JST）だけ。域ごとに月 2〜5 回。撮影の間の動きは分からない。",
+  "動く船は方位方向に最大数百 m ずれて写る（視線速度 5 m/s で約 600 m）。向きは 180° の区別がつかない。",
+  "撮られていない海（監視域の外、撮影の穴）は「いない」ではなく「見ていない」。",
+  "検出の精度は香港の AIS 照合（未実施）で測るまで未検証。40 m の長さは 40 m 刻みで長めに出るので目安にしない。",
+  "AIS は未照合。照合後も外洋（尖閣・宮古・先島南方）は陸上局の受信が届かず「AIS 未確認」としか言えない。"
+ ],
+ "areas":[
+  {
+   "id":"SENKAKU",
+   "name":"尖閣諸島周辺",
+   "bbox":[
+    123.3,
+    25.4,
+    124.0,
+    26.2
+   ],
+   "priority":1,
+   "mode":"every_pass",
+   "orbits":"S1C/171（南半分）",
+   "expected_per_month":1.6,
+   "pu_month_cap":70,
+   "min_revisit_days":null,
+   "note":null
+  },
+  {
+   "id":"YNG",
+   "name":"与那国〜台湾北東（与那国・西表の西）",
+   "bbox":[
+    122.0,
+    23.8,
+    123.3,
+    25.2
+   ],
+   "priority":1,
+   "mode":"every_pass",
+   "orbits":"S1C/171・S1C/S1D 69・105",
+   "expected_per_month":3.2,
+   "pu_month_cap":360,
+   "min_revisit_days":4,
+   "note":null
+  },
+  {
+   "id":"MYK",
+   "name":"宮古海峡",
+   "bbox":[
+    125.4,
+    24.6,
+    127.2,
+    26.2
+   ],
+   "priority":1,
+   "mode":"every_pass",
+   "orbits":"S1C/98（南西）・S1C/25（北）",
+   "expected_per_month":1.8,
+   "pu_month_cap":460,
+   "min_revisit_days":null,
+   "note":null
+  },
+  {
+   "id":"TWE_S",
+   "name":"台湾東方（花蓮〜台東〜蘭嶼の沖）",
+   "bbox":[
+    121.5,
+    21.8,
+    122.6,
+    23.6
+   ],
+   "priority":2,
+   "mode":"every_pass",
+   "orbits":"S1C/S1D 69・105・S1C/171",
+   "expected_per_month":1.8,
+   "pu_month_cap":490,
+   "min_revisit_days":4,
+   "note":"TWE_S は D69・C/D105 の撮影が域の約3割未満しか覆わないため、月の観測は約1.8回（M0：2026-10 のカタログ。覆いの基準 30% は変えない）"
+  },
+  {
+   "id":"SAKI_S",
+   "name":"石垣・宮古の南方",
+   "bbox":[
+    123.3,
+    23.4,
+    125.0,
+    24.6
+   ],
+   "priority":2,
+   "mode":"every_pass",
+   "orbits":"S1C/171・S1C/98",
+   "expected_per_month":2.2,
+   "pu_month_cap":400,
+   "min_revisit_days":null,
+   "note":null
+  },
+  {
+   "id":"TSM",
+   "name":"台湾海峡中部（中間線の両側）",
+   "bbox":[
+    119.3,
+    23.0,
+    120.4,
+    25.3
+   ],
+   "priority":2,
+   "mode":"every_pass",
+   "orbits":"S1C/S1D 69・S1D/142・S1C/S1D 105",
+   "expected_per_month":4,
+   "pu_month_cap":480,
+   "min_revisit_days":4,
+   "note":"彰化沖の洋上風力（約 120.0–120.25E）は OSM の固定物マスクと学習した固定物で除く"
+  },
+  {
+   "id":"BASHI",
+   "name":"バシー海峡",
+   "bbox":[
+    120.3,
+    20.5,
+    122.0,
+    22.0
+   ],
+   "priority":2,
+   "mode":"every_pass",
+   "orbits":"S1C/69（昇）・S1C/S1D 105（降）・S1D/32（降）",
+   "expected_per_month":1.4,
+   "pu_month_cap":300,
+   "min_revisit_days":null,
+   "note":"M0（2026-10 のカタログ）で撮影を確かめ、司令部の判断（2026-10-31）で追加。台湾東方（TWE_S）と重なる 121.5–122.0E・21.8–22.0N は TWE_S の海"
+  },
+  {
+   "id":"HKS",
+   "name":"珠江口・香港の南（AIS 照合）",
+   "bbox":[
+    113.7,
+    21.5,
+    114.6,
+    22.3
+   ],
+   "priority":2,
+   "mode":"every_pass",
+   "orbits":"S1D/11",
+   "expected_per_month":2.5,
+   "pu_month_cap":180,
+   "min_revisit_days":null,
+   "note":"検出率の測定（cfar-v2 設計 5.2・5.3、PR4）：通過のたびに監視の経路で取り、aisstream の AIS と照合する（ocean/ais_eval.py、結果は docs/data/ocean/ais_eval/ の件数・検出率・候補ごとの一致の有無だけ）。月の上限 180 は 4部案の 240 の内で、全域の上限の合計が OCEAN_CAP 3,500 を超えない値（他の域の合計 3,320）。見込みは TSM（1.1°×2.3°で約 100 PU/回）との面積比で約 28 PU/回×2.5 回"
+  },
+  {
+   "id":"OKI",
+   "name":"沖縄〜奄美（沖縄トラフ）",
+   "bbox":[
+    127.0,
+    25.6,
+    129.4,
+    30.2
+   ],
+   "priority":3,
+   "mode":"monthly",
+   "orbits":"S1C/25・S1C/127",
+   "expected_per_month":1,
+   "pu_month_cap":760,
+   "min_revisit_days":null,
+   "note":null
+  }
+ ],
+ "files":{
+  "areas.geojson":"監視域",
+  "passes.json":"処理した撮影（域ごと）",
+  "candidates/YYYY-MM-DD.geojson":"撮影日（UTC）ごとの候補（A・B）",
+  "coverage/YYYY-MM-DD.geojson":"その日に実際に見た範囲（0.1° のセル、海況不良のセルは state で区別）",
+  "series.csv・series.json":"域×撮影ごとの件数の時系列",
+  "static_learned.json":"学習した固定物"
+ },
+ "passes":2,
+ "static_learned_points":0
+}

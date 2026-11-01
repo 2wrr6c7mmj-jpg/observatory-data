@@ -1,0 +1,12 @@
+{
+ "points":[],
+ "version":"ocean-monitor-1",
+ "rule":{
+  "radius_m":200,
+  "looks":5,
+  "min_hits":3,
+  "note":"同じ衛星・軌道の直近 5 回（その地点を見た撮影）のうち 3 回以上、±200 m に候補が出た地点（2部が月 1 回見直す）"
+ },
+ "review":"2部が月 1 回見直す",
+ "attribution":"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0"
+}

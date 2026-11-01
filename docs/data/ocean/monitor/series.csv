@@ -1,0 +1,3 @@
+area,acquired_utc,date,platform,relative_orbit,orbit_direction,status,area_sea_km2,observed_sea_km2,observed_share,count_A,count_A_ge120_confirmed,count_A_ge120_unconfirmed,count_B,clusters,density_A_per_1000km2,sea_state_excluded_km2,vv_median_db,pu,source
+TSM,2026-10-31T10:08:57Z,2026-10-31,sentinel-1d,142,ascending,ok,25600,12457,0.487,112,,112,38,0,8.991,0,-14.26,78.631,"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0"
+BASHI,2026-11-01T09:59:50Z,2026-11-01,sentinel-1c,69,ascending,ok,28160,7359,0.261,,,,,,,0,-14.49,56.299,"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0"
