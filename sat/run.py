@@ -656,6 +656,7 @@ def site_status(site: dict) -> dict:
             "lines_version": f"{site['id']}-quay-v{lv}",
             "class_weights": quay_est.site_weights_info(site["id"]), "classes_version": ver,
             "est2_calib_source": quay_est2.calib_source(site["id"]),
+            "est2_calib_note": quay_est2.CALIB_SOURCE_NOTE[quay_est2.calib_source(site["id"])],
             "label_freeze_utc": qc.get("label_freeze_utc"),
         },
     }
@@ -697,7 +698,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "quay_sectors.csv": ("区画ごとの岸壁の数（縦持ち）：1 行＝1 撮影×1 地点×1 範囲版×1 区画。role（naval＝軍港の桟橋・岸壁、other＝水道・商港 など）、"
                                  "quay-v1 の最小〜最大、est-1 の最頻値・80% 区間、est-2 の中央値・80% 区間と較正の出どころ（est2_calib_source）。"
                                  "source＝quay_counts（横持ちの列から）の行は、このファイルを作る前の撮影を quay_counts.csv の区画 A・B の列から写したもの"),
-            "quay_est2/<地点>.csv・quay_est2/<地点>.json": "湛江以外の地点の est-2（列は quay_est2.csv と同じ、区画 A・B の列は空）。湛江は従来の quay_est2.csv・quay_est2.json",
+            "quay_est2/<地点>.csv・quay_est2/<地点>.json": "湛江以外の地点の est-2（列は quay_est2.csv と同じ、区画 A・B の列は空。あわせて calib_source＝較正の出所、weights_version・weights_status・weights_conf_level・weights_conf＝est-1 の重みの版・状態・確度、incidence_deg・incidence_source・incidence_extrapolated＝使った入射角と出所、較正の範囲外か）。湛江は従来の quay_est2.csv・quay_est2.json",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
             "color/<地点>/v<版>/<撮影時刻>.webp": "疑似カラー（R＝VV、G＝VH、B＝VV−VH を逆向き）の WebP。範囲は全地点・全日で固定、表示用だけ 3×3 Lee フィルタ、凡例と出典は画像の下。候補の枠は焼き込まない（detections の GeoJSON から重ねる）。表示の版 s1fc-1 を入れてから処理した撮影のみ（それより前の撮影は VV の PNG のみ。再取得はしない）",
             "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）",

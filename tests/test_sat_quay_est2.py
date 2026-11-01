@@ -178,7 +178,9 @@ class SceneTest(unittest.TestCase):
 
 
 def _digest(paths):
-    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+    """sha256 of every file; a folder (quay/<site>/ of a per-site layout) stands for the files in it."""
+    files = [f for p in paths for f in (sorted(p.rglob("*")) if p.is_dir() else [p]) if f.is_file()]
+    return {"/".join(f.parts[-3:]): hashlib.sha256(f.read_bytes()).hexdigest() for f in files}
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -200,7 +202,7 @@ class Est1UnchangedTest(unittest.TestCase):
             q = run.read_csv(out / "quay_counts.csv")
             rows = run.read_csv(out / "quay_est2.csv")
             self.assertEqual(len(rows), len(q))
-            for a, b in zip(sorted(q, key=lambda r: r["acquired_utc"]), rows):
+            for a, b in zip(sorted(q, key=lambda r: (r["site_id"], r["acquired_utc"])), rows):
                 self.assertEqual(a["est_warship_mode"], b["est1_warship_mode"])
                 self.assertLessEqual(int(b["warship_p10"]), int(b["warship_median"]))
                 self.assertLessEqual(int(b["warship_median"]), int(b["warship_p90"]))
