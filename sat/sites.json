@@ -448,7 +448,7 @@
    },
    "enabled": true,
    "priority": 1,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -467,7 +467,7 @@
      "note": "青島の西海岸新区、北海艦隊"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap 2026-11 は 30 PU／月（11 月の初回の 30 日さかのぼりを見込む。12 月に定常の約 18 PU へ戻す予定。元は 16＝1部審査（PR #35）の目安・設計 §5.1）。毎日を有効にするまでは S2 のさかのぼりでもこの上限で止まる）。範囲と陸マスク QGZ-land-v1 は港のアーカイブ（sat/ports.json）のまま（約 5.0×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 QGZ-quay-v1（OSM、osm_base 2026-10-31T07:54:50Z、桟橋 13・海岸線 6）は probe/quaylines-qgz-zdh で取得。基準は軌道 69・171（各 24 撮影、確度 3）。区画（2部 §4.3）：A1 外港の東の桟橋 O1〜O3、A2 内港、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）"
+   "note": "試行（publish＝trial、試行ページのみ）・2026-11-01 から毎日取得（daily＝true、pu_month_cap 2026-11 は 30 PU／月（11 月の初回の 30 日さかのぼりを見込む。12 月に定常の約 18 PU へ戻す予定。元は 16＝1部審査（PR #35）の目安・設計 §5.1）。この上限で止まる）。範囲と陸マスク QGZ-land-v1 は港のアーカイブ（sat/ports.json）のまま（約 5.0×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 QGZ-quay-v1（OSM、osm_base 2026-10-31T07:54:50Z、桟橋 13・海岸線 6）は probe/quaylines-qgz-zdh で取得。基準は軌道 69・171（各 24 撮影、確度 3）。区画（2部 §4.3）：A1 外港の東の桟橋 O1〜O3、A2 内港、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）"
   },
   {
    "id": "ZDH",
@@ -555,7 +555,7 @@
    },
    "enabled": true,
    "priority": 1,
-   "daily": false,
+   "daily": true,
    "publish": "trial",
    "layout": "per_site",
    "png": false,
@@ -595,7 +595,7 @@
      "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false、pu_month_cap 2026-11 は 22 PU／月（11 月の初回の 30 日さかのぼりを見込む。12 月に定常の約 14 PU へ戻す予定。元は 13＝1部審査（PR #35）の目安・設計 §5.1）。毎日を有効にするまでは S2 のさかのぼりでもこの上限で止まる）。範囲 v2 と陸マスク ZDH-land-v2 は港のアーカイブ（sat/ports.json）のまま（約 8.2×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 ZDH-quay-v1（OSM、osm_base 2026-10-31T07:55:55Z、桟橋 39・海岸線 8）は probe/quaylines-qgz-zdh で取得。基準は軌道 171（24 撮影、確度 3）。区画（2部 §4.4）：A1 西岸の横付け岸壁（駆逐艦第 3 支隊）、A2 舟山水警区、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）",
+   "note": "試行（publish＝trial、試行ページのみ）・2026-11-01 から毎日取得（daily＝true、pu_month_cap 2026-11 は 22 PU／月（11 月の初回の 30 日さかのぼりを見込む。12 月に定常の約 14 PU へ戻す予定。元は 13＝1部審査（PR #35）の目安・設計 §5.1）。この上限で止まる）。範囲 v2 と陸マスク ZDH-land-v2 は港のアーカイブ（sat/ports.json）のまま（約 8.2×5.0 km）。陸マスクは 2部の S2 との重ね合わせの確認がまだ。岸壁線 ZDH-quay-v1（OSM、osm_base 2026-10-31T07:55:55Z、桟橋 39・海岸線 8）は probe/quaylines-qgz-zdh で取得。基準は軌道 171（24 撮影、確度 3）。区画（2部 §4.4）：A1 西岸の横付け岸壁（駆逐艦第 3 支隊）、A2 舟山水警区、B 残り。桟橋の型と艦種の重みは 2部の調査による推定（provisional）。est-2 は湛江の較正を流用（calib_source＝ZJG）。label_freeze_utc は SYL・SLP と同じ（設計 §1.3 の例）",
    "archive_history": [
     {
      "mask_version": 1,
@@ -609,6 +609,646 @@
      "note": "港のアーカイブ（probe）だけで使った範囲 v1（定海の港と南の水道（約 6.3×5.6 km）。象山は基地の位置の公開の出典が確かめられず、今回は外した（未解決））。毎日の実行では使っていないので series_breaks には入れない"
     }
    ]
+  },
+  {
+   "id": "QJG",
+   "name": "青島・姜哥荘（第 1 潜水艦基地）",
+   "group": "青島",
+   "kind": "naval",
+   "bbox": [
+    120.57,
+    36.095,
+    120.602,
+    36.122
+   ],
+   "center_lat": 36.1083,
+   "center_lon": 120.585,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "潜水艦の桟橋（姜哥荘、ORF の座標の周り）",
+     "role": "naval",
+     "bbox": [
+      120.574,
+      36.0993,
+      120.596,
+      36.1173
+     ],
+     "source": "ORF「China's Nuclear Submarine Bases: A Stocktaking」の座標 36°06.5′N 120°35.1′E の周り（約 ±1 km）。確度：推定（区画は仮。2部の調査はまだ無い）。OSM の軍の地物は未確認"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-09-13〜2026-10-21、確度 3） は QJG-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 13,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "ORF: China's Nuclear Submarine Bases: A Stocktaking",
+     "url": "https://www.orfonline.org/research/china-s-nuclear-submarine-bases-a-stocktaking",
+     "coord": "36°06.5′N 120°35.1′E",
+     "note": "北部戦区海軍の第 1 潜水艦基地、青島の東北東約 18 km の湾"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QJG-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QJG-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 13 PU／月＝毎日の取得の月の見込み（S1 約 5.3 撮影／月×0.66 PU＋S2 約 13.3 日／月×(0.03＋0.35×0.55) PU＝約 6.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "QDH",
+   "name": "青島港内の海軍区域",
+   "group": "青島",
+   "kind": "naval",
+   "bbox": [
+    120.29,
+    36.065,
+    120.335,
+    36.11
+   ],
+   "center_lat": 36.0875,
+   "center_lon": 120.3125,
+   "pixel_m": 10,
+   "mask_version": 2,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "海軍基地（OSM way/979396338）",
+     "role": "naval",
+     "bbox": [
+      120.3011,
+      36.0879,
+      120.3253,
+      36.1037
+     ],
+     "source": "OpenStreetMap way/979396338「中国人民解放军海军基地」 の外形 [120.30273, 36.08921, 120.32365, 36.10232]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）。"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-09-13〜2026-10-21、確度 3） は QDH-land-v2 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 46,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "GlobalSecurity: Qingdao",
+     "url": "https://www.globalsecurity.org/military/world/china/qingdao.htm",
+     "coord": "36°04′N 120°19′E（市の位置）",
+     "note": "主基地は港の大きな防波堤の最奥（岸壁 4）、後湾の補助艦の岸壁、海軍工廠、潜水艦の岸壁などが港内にある。個々の座標は出典になし"
+    },
+    {
+     "title": "OpenStreetMap way/979396338「中国人民解放军海军基地」",
+     "url": "https://www.openstreetmap.org/way/979396338",
+     "bbox": [
+      120.30273,
+      36.08921,
+      120.32365,
+      36.10232
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/545704292「青岛前进船厂」",
+     "url": "https://www.openstreetmap.org/way/545704292",
+     "bbox": [
+      120.29708,
+      36.06805,
+      120.30627,
+      36.07582
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QDH-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QDH-land-v2（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 46 PU／月＝毎日の取得の月の見込み（S1 約 10.7 撮影／月×1.54 PU＋S2 約 13.3 日／月×(0.03＋0.35×1.28) PU＝約 22.8 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "XSN",
+   "name": "象山（潜水艦基地）",
+   "group": "寧波・舟山",
+   "kind": "naval",
+   "bbox": [
+    121.745,
+    29.515,
+    121.8,
+    29.555
+   ],
+   "center_lat": 29.535,
+   "center_lon": 121.7725,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "潜水艦基地（OSM way/351273275）",
+     "role": "naval",
+     "bbox": [
+      121.7606,
+      29.5294,
+      121.7824,
+      29.5395
+     ],
+     "source": "OpenStreetMap way/351273275「Submarine base（military=naval_base）」 の外形 [121.76211, 29.53075, 121.7808, 29.53817]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）。"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-12-18〜2026-10-21、確度 3） は XSN-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 17,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/351273275「Submarine base（military=naval_base）」",
+     "url": "https://www.openstreetmap.org/way/351273275",
+     "bbox": [
+      121.76211,
+      29.53075,
+      121.7808,
+      29.53817
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 XSN-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク XSN-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 17 PU／月＝毎日の取得の月の見込み（S1 約 2.3 撮影／月×1.80 PU＋S2 約 7.7 日／月×(0.03＋0.35×1.50) PU＝約 8.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "LSN",
+   "name": "大連・旅順（旅順港）",
+   "group": "大連",
+   "kind": "naval",
+   "bbox": [
+    121.225,
+    38.785,
+    121.28,
+    38.825
+   ],
+   "center_lat": 38.805,
+   "center_lon": 121.252,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "旅順の内港（半島先端の湖状の港、港口の内側）",
+     "role": "naval",
+     "bbox": [
+      121.237,
+      38.795,
+      121.267,
+      38.815
+     ],
+     "source": "Wikipedia: Lüshunkou District（半島の先端の湖のような内港、軍港区域は立入禁止）と ports.json の範囲の中心 38.805N 121.252E の周り。OSM の軍の地物は未確認。確度：推定（区画は仮。2部の調査はまだ無い）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171,
+     98
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-06-21〜2026-10-21、確度 3）、ro98-bl-1（24 撮影、2026-01-18〜2026-10-28、確度 3） は LSN-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 40,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "Wikipedia: Lüshunkou District",
+     "url": "https://en.wikipedia.org/wiki/L%C3%BCshunkou_District",
+     "coord": "38°51′03″N 121°15′25″E（区の位置）",
+     "note": "半島の先端の湖のような内港。軍港区域は外国人の立入禁止"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 LSN-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク LSN-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 40 PU／月＝毎日の取得の月の見込み（S1 約 8.0 撮影／月×1.62 PU＋S2 約 13.3 日／月×(0.03＋0.35×1.35) PU＝約 19.6 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "SWS",
+   "name": "上海・呉淞（上海水警区）",
+   "group": "上海",
+   "kind": "naval",
+   "bbox": [
+    121.48,
+    31.37,
+    121.52,
+    31.4
+   ],
+   "center_lat": 31.385,
+   "center_lon": 121.5,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "上海水警区と水兵訓練基地（OSM way/653753242・988368515）",
+     "role": "naval",
+     "bbox": [
+      121.4813,
+      31.381,
+      121.5115,
+      31.3956
+     ],
+     "source": "OSM way/653753242 [121.49322, 31.38233, 121.50993, 31.39428]・way/988368515 [121.48286, 31.3849, 121.48904, 31.39119]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-11-24〜2026-10-21、確度 3） は SWS-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 1,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 14,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/653753242「上海水警区（military=naval_base）」",
+     "url": "https://www.openstreetmap.org/way/653753242",
+     "bbox": [
+      121.49322,
+      31.38233,
+      121.50993,
+      31.39428
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/988368515「东海舰队宝山水兵训练基地 91150部队」",
+     "url": "https://www.openstreetmap.org/way/988368515",
+     "bbox": [
+      121.48286,
+      31.3849,
+      121.48904,
+      31.39119
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 SWS-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク SWS-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 14 PU／月＝毎日の取得の月の見込み（S1 約 2.3 撮影／月×0.96 PU＋S2 約 13.7 日／月×(0.03＋0.35×0.81) PU＝約 6.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "XMN",
+   "name": "廈門（廈門水警区）",
+   "group": "廈門",
+   "kind": "naval",
+   "bbox": [
+    118.055,
+    24.435,
+    118.1,
+    24.47
+   ],
+   "center_lat": 24.4525,
+   "center_lon": 118.0775,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "廈門水警区（OSM way/409154029）",
+     "role": "naval",
+     "bbox": [
+      118.0738,
+      24.448,
+      118.0806,
+      24.4541
+     ],
+     "source": "OpenStreetMap way/409154029「厦门水警区」 の外形 [118.07532, 24.44934, 118.07913, 24.45277]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）。"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     40,
+     142
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro40-bl-1（24 撮影、2026-01-02〜2026-10-24、確度 3）、ro142-bl-1（24 撮影、2026-01-09〜2026-10-07、確度 3） は XMN-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 19,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/409154029「厦门水警区」",
+     "url": "https://www.openstreetmap.org/way/409154029",
+     "bbox": [
+      118.07532,
+      24.44934,
+      118.07913,
+      24.45277
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 XMN-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク XMN-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 19 PU／月＝毎日の取得の月の見込み（S1 約 4.7 撮影／月×1.35 PU＋S2 約 7.3 日／月×(0.03＋0.35×1.12) PU＝約 9.4 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "STU",
+   "name": "汕頭（汕頭水警区）",
+   "group": "汕頭",
+   "kind": "naval",
+   "bbox": [
+    116.64,
+    23.32,
+    116.695,
+    23.355
+   ],
+   "center_lat": 23.3375,
+   "center_lon": 116.6675,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "ミサイル艇大隊（OSM way/1092040603）",
+     "role": "naval",
+     "bbox": [
+      116.6501,
+      23.3318,
+      116.6586,
+      23.3408
+     ],
+     "source": "OpenStreetMap way/1092040603「东海舰队福建基地汕头水警区导弹快艇大队92376部队」 の外形 [116.65154, 23.33314, 116.65708, 23.33948]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）。"
+    },
+    {
+     "id": "A2",
+     "name": "東の基地（OSM way/1429145743、military=base）",
+     "role": "naval",
+     "bbox": [
+      116.6751,
+      23.3352,
+      116.6865,
+      23.3439
+     ],
+     "source": "OpenStreetMap way/1429145743「military=base」 の外形 [116.67655, 23.33659, 116.68498, 23.34259]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）。"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     40
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro40-bl-1（24 撮影、2026-01-02〜2026-10-24、確度 3） は STU-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 17,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1092040603「东海舰队福建基地汕头水警区导弹快艇大队92376部队」",
+     "url": "https://www.openstreetmap.org/way/1092040603",
+     "bbox": [
+      116.65154,
+      23.33314,
+      116.65708,
+      23.33948
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/1429145743「military=base」",
+     "url": "https://www.openstreetmap.org/way/1429145743",
+     "bbox": [
+      116.67655,
+      23.33659,
+      116.68498,
+      23.34259
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 STU-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク STU-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 17 PU／月＝毎日の取得の月の見込み（S1 約 2.7 撮影／月×1.66 PU＋S2 約 7.3 日／月×(0.03＋0.35×1.39) PU＝約 8.2 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "MAW",
+   "name": "福州・馬尾（造船所）",
+   "group": "福州",
+   "kind": "naval",
+   "bbox": [
+    119.425,
+    25.975,
+    119.465,
+    26.005
+   ],
+   "center_lat": 25.99,
+   "center_lon": 119.445,
+   "pixel_m": 10,
+   "mask_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "馬尾造船所の岸壁（OSM way/431595199）",
+     "role": "naval",
+     "bbox": [
+      119.4405,
+      25.9855,
+      119.446,
+      25.9915
+     ],
+     "source": "OpenStreetMap way/431595199「马尾造船厂」 の外形 [119.44196, 25.98683, 119.44452, 25.99017]（sat/port_locate.py、2026-10-30 取得）の外接矩形＋150 m。© OpenStreetMap contributors, ODbL 1.0。確度：推定（区画は仮。2部の調査はまだ無い）。造船所の地物。建造・整備中の船を数えうる（kind は naval のまま、造船所の扱いは別の設計）。"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     142
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro142-bl-1（24 撮影、2025-12-28〜2026-10-07、確度 3） は MAW-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-11-15",
+    "class_weights": "ZJG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": false,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 9,
+   "provisional": true,
+   "sources": [
+    {
+     "title": "OpenStreetMap way/431595199「马尾造船厂」",
+     "url": "https://www.openstreetmap.org/way/431595199",
+     "bbox": [
+      119.44196,
+      25.98683,
+      119.44452,
+      25.99017
+     ],
+     "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "Wikipedia: Foochow Arsenal",
+     "url": "https://en.wikipedia.org/wiki/Foochow_Arsenal",
+     "note": "馬尾の旧福州船政局の跡に近代の造船所が再建された。座標は出典になし"
+    }
+   ],
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 MAW-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク MAW-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 9 PU／月＝毎日の取得の月の見込み（S1 約 1.7 撮影／月×1.02 PU＋S2 約 7.3 日／月×(0.03＋0.35×0.85) PU＝約 4.1 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
   }
  ]
 }
