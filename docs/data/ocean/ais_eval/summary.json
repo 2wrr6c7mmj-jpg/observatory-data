@@ -1,0 +1,27 @@
+{
+ "version": "ais-eval-1",
+ "passes_evaluated": 0,
+ "passes_not_evaluated": 0,
+ "detection": {},
+ "length_diff_m": {},
+ "candidates": {
+  "n": 0,
+  "by_ais": {
+   "200": {
+    "matched": 0,
+    "unmatched": 0,
+    "no_ais_coverage": 0
+   },
+   "300": {
+    "matched": 0,
+    "unmatched": 0,
+    "no_ais_coverage": 0
+   }
+  }
+ },
+ "display": {
+  "min_n_to_show": 20,
+  "note": "show 'rate (n)' only when n >= min_n_to_show; the rate is for HKS at 40 m, ocean-monitor-1 candidates, within the radius; ships not covered by the AIS receivers are not in n"
+ },
+ "updated_utc": "2026-11-01T12:41:58Z"
+}

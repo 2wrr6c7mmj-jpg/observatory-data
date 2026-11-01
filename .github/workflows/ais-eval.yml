@@ -1,0 +1,112 @@
+name: AIS eval
+# 香港の南の検出率（cfar-v1・cfar-v2 × AIS、cfar-v2 設計 5.2・5.3）。ais-record.yml が置いた封印済みの AIS の航跡
+# （Actions の artifact、MMSI・船名なし）を、外洋の定期監視（ocean-monitor.yml）が HKS の通過を公開したあとに開いて照合する。
+# 監視の実行が終わるたび（workflow_run）に動き、照合できる通過がなければ何もしない。AIS の位置・MMSI・船名は commit も公開もしない。
+# 公開（main への commit）は docs/data/ocean/ais_eval/ だけ（件数・検出率・長さ帯・候補ごとの一致の有無）。テストが通ったときだけ。
+# 公開できたら、照合の済んだ artifact を消す。push 前に git pull --rebase を 3 回までやり直す。
+# CDSE の Sentinel Hub には接続しない（OData のカタログだけ、認証なし・PU 0）。
+# secret AISSTREAM_API_KEY が無いとき（封印の鍵に使う）、::notice を出して何もせず成功で終わる。
+on:
+  workflow_run:
+    workflows: ['Ocean monitor']
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  # 書き込み先 docs/data/ocean/ais_eval/ は他のどのワークフローとも別
+  group: ais-eval
+  cancel-in-progress: false
+jobs:
+  eval:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'cancelled' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        id: tests
+        run: python -m unittest tests.test_ocean_ais_eval -v
+      - name: Key
+        id: key
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          if [ -n "$AISSTREAM_API_KEY" ]; then echo "has=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "has=false" >> "$GITHUB_OUTPUT"
+          echo "::notice title=ais-eval::secret AISSTREAM_API_KEY が未登録（または空）。照合しない"
+      - name: Sealed AIS tracks (artifacts of ais-record)
+        id: fetch
+        if: steps.key.outputs.has == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/ais/files" "$RUNNER_TEMP/ais/by"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select((.name | startswith("ais-")) and (.expired | not)) | [.id, .name] | @tsv' > "$RUNNER_TEMP/ais/list.tsv"
+          n=0
+          while IFS=$'\t' read -r id name; do
+            [ -n "$id" ] || continue
+            mkdir -p "$RUNNER_TEMP/ais/by/$id"
+            if gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "$RUNNER_TEMP/ais/$id.zip" && \
+               unzip -q -o "$RUNNER_TEMP/ais/$id.zip" -d "$RUNNER_TEMP/ais/by/$id"; then
+              cp "$RUNNER_TEMP/ais/by/$id"/*.bin "$RUNNER_TEMP/ais/files/" 2>/dev/null && n=$((n + 1))
+            else
+              echo "::warning title=ais-eval::artifact $id を取れない"
+            fi
+          done < "$RUNNER_TEMP/ais/list.tsv"
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+          echo "::notice title=ais-eval::封印済みの AIS の artifact $n 件"
+      - name: Match with the monitor candidates (docs/data/ocean/ais_eval only)
+        id: eval
+        if: steps.key.outputs.has == 'true' && steps.fetch.outputs.n != '0'
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+        run: |
+          set -o pipefail
+          python -m ocean.ais_eval evaluate --ais-dir "$RUNNER_TEMP/ais/files" --monitor docs/data/ocean/monitor \
+            --out docs/data/ocean/ais_eval 2>&1 | tee "$RUNNER_TEMP/eval.log"
+      - name: Publish (docs/data/ocean/ais_eval only)
+        id: publish
+        if: ${{ steps.tests.outcome == 'success' && steps.key.outputs.has == 'true' && steps.fetch.outputs.n != '0' }}
+        run: |
+          [ -d docs/data/ocean/ais_eval ] && git add -A -- docs/data/ocean/ais_eval
+          other="$(git status --porcelain | grep -v -E '^.. docs/data/ocean/ais_eval/' || true)"
+          if [ -n "$other" ]; then echo "::error title=ais-eval::書き込み先の外が変わった（公開しない）: $other"; exit 1; fi
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: 香港の南の検出率 (AIS 照合) ($(date -u +%Y-%m-%d)) [ais-eval]"
+          for i in 1 2 3; do
+            git push origin HEAD:main && break
+            [ "$i" = 3 ] && break
+            sleep $((i * 10))
+            git pull -q --rebase origin main
+          done
+          git fetch -q origin main
+          git merge-base --is-ancestor HEAD origin/main || { echo "::error title=ais-eval::push できなかった"; exit 1; }
+          echo "::notice title=ais-eval-commit::$(git rev-parse HEAD)"
+      - name: Delete the artifacts whose tracks are all matched (or cannot be)
+        if: steps.publish.outcome == 'success' && steps.eval.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DONE: ${{ steps.eval.outputs.done }}
+        run: |
+          for d in "$RUNNER_TEMP"/ais/by/*/; do
+            id="$(basename "$d")"; ok=1; any=0
+            for f in "$d"*.bin; do
+              [ -e "$f" ] || continue
+              any=1
+              case " $DONE " in *" $(basename "$f") "*) ;; *) ok=0 ;; esac
+            done
+            if [ "$any" = 1 ] && [ "$ok" = 1 ]; then
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/$id" && echo "::notice title=ais-eval::artifact $id を消した"
+            fi
+          done
