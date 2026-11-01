@@ -108,10 +108,10 @@ function showOriginal(s, d) {
       ov.style.cssText = 'position:fixed;inset:0;background:#000;z-index:1000;display:flex;flex-direction:column;color:#ddd;font-size:13px';
       ov.innerHTML = '<div style="display:flex;gap:8px;align-items:center;background:#000;padding:6px 8px;flex-wrap:wrap;flex:none"><button type="button" id="origClose">閉じる（Esc）</button><label><input type="checkbox" id="origFrame" checked> 区間の枠を表示</label><span id="origCap"></span></div><div id="origSc" style="flex:1;overflow:auto"><canvas id="origCv" style="max-width:none;display:block"></canvas></div>';
       document.body.appendChild(ov);
-      ov.querySelector('#origClose').onclick = () => { ov.hidden = true; };
-      document.addEventListener('keydown', e => { if (e.key === 'Escape') ov.hidden = true; });
+      ov.querySelector('#origClose').onclick = () => { ov.style.display = 'none'; };
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') ov.style.display = 'none'; });
     }
-    ov.hidden = false;
+    ov.style.display = 'flex';
     ov.querySelector('#origCap').textContent = `${d.date} の元の写真（Sentinel-2 自然色、港の全体）。Contains modified Copernicus Sentinel data ${String(d.date).slice(0, 4)}`;
     const cv = ov.querySelector('#origCv'), fb = ov.querySelector('#origFrame');
     const paintO = () => {
