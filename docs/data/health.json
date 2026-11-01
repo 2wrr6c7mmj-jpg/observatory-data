@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T09:55:34Z",
+ "generated_utc": "2026-11-01T10:08:26Z",
  "state": "warn",
  "summary": {
   "ok": 9,
@@ -70,8 +70,8 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-01T09:52:45Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_utc": "2026-11-01T10:03:35Z",
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-10-31",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -94,35 +94,35 @@
     },
     {
      "level": "warn",
-     "code": "no_scene",
-     "text": "QJG：現行の範囲（QJG-land-v1）の撮影の行が無い"
+     "code": "scene_old",
+     "text": "QJG：最新の撮影 2026-10-21 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
-     "code": "no_scene",
-     "text": "QDH：現行の範囲（QDH-land-v2）の撮影の行が無い"
+     "code": "scene_old",
+     "text": "QDH：最新の撮影 2026-10-21 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
-     "code": "no_scene",
-     "text": "XSN：現行の範囲（XSN-land-v1）の撮影の行が無い"
+     "code": "scene_old",
+     "text": "XSN：最新の撮影 2026-10-21 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
-     "code": "no_scene",
-     "text": "SWS：現行の範囲（SWS-land-v1）の撮影の行が無い"
+     "code": "scene_old",
+     "text": "SWS：最新の撮影 2026-10-21 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
-     "code": "no_scene",
-     "text": "STU：現行の範囲（STU-land-v1）の撮影の行が無い"
+     "code": "scene_old",
+     "text": "STU：最新の撮影 2026-10-24 から 8 日（撮影の抜け）"
     }
    ],
    "values": {
     "latest_acquired_utc": "2026-10-31T10:09:26Z",
-    "last_run_utc": "2026-11-01T09:52:45Z",
+    "last_run_utc": "2026-11-01T10:03:35Z",
     "last_run_errors": 0,
-    "last_run_scenes": 3
+    "last_run_scenes": 7
    }
   },
   {
@@ -131,7 +131,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-10-31T09:57:23Z",
-   "heartbeat_age_h": 24.0,
+   "heartbeat_age_h": 24.2,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -160,7 +160,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-10-31T14:44:41Z",
-   "heartbeat_age_h": 19.2,
+   "heartbeat_age_h": 19.4,
    "data_date": "2026-10-31",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -204,7 +204,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:31Z",
-   "heartbeat_age_h": 2.2,
+   "heartbeat_age_h": 2.4,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -222,7 +222,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T07:43:28Z",
-   "heartbeat_age_h": 2.2,
+   "heartbeat_age_h": 2.4,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -240,7 +240,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-01T07:43:48Z",
-   "heartbeat_age_h": 2.2,
+   "heartbeat_age_h": 2.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -382,21 +382,57 @@
     "name": "青島・姜哥荘（第 1 潜水艦基地）",
     "publish": "trial",
     "trial": true,
-    "mask_version": "QJG-land-v1"
+    "mask_version": "QJG-land-v1",
+    "est1": {
+     "acquired_utc": "2026-10-21T09:55:42Z",
+     "version": "est-1",
+     "mode": 5,
+     "p10": 4,
+     "p90": 6,
+     "warship_mode": 1,
+     "warship_p10": 0,
+     "warship_p90": 3,
+     "credibility": 3,
+     "in_sample": "baseline"
+    }
    },
    {
     "site_id": "QDH",
     "name": "青島港内の海軍区域",
     "publish": "trial",
     "trial": true,
-    "mask_version": "QDH-land-v2"
+    "mask_version": "QDH-land-v2",
+    "est1": {
+     "acquired_utc": "2026-10-21T09:55:42Z",
+     "version": "est-1",
+     "mode": 41,
+     "p10": 36,
+     "p90": 48,
+     "warship_mode": 13,
+     "warship_p10": 9,
+     "warship_p90": 17,
+     "credibility": 3,
+     "in_sample": "baseline"
+    }
    },
    {
     "site_id": "XSN",
     "name": "象山（潜水艦基地）",
     "publish": "trial",
     "trial": true,
-    "mask_version": "XSN-land-v1"
+    "mask_version": "XSN-land-v1",
+    "est1": {
+     "acquired_utc": "2026-10-21T09:54:02Z",
+     "version": "est-1",
+     "mode": 1,
+     "p10": 1,
+     "p90": 2,
+     "warship_mode": 0,
+     "warship_p10": 0,
+     "warship_p90": 1,
+     "credibility": 3,
+     "in_sample": "baseline"
+    }
    },
    {
     "site_id": "LSN",
@@ -422,7 +458,19 @@
     "name": "上海・呉淞（上海水警区）",
     "publish": "trial",
     "trial": true,
-    "mask_version": "SWS-land-v1"
+    "mask_version": "SWS-land-v1",
+    "est1": {
+     "acquired_utc": "2026-10-21T09:54:27Z",
+     "version": "est-1",
+     "mode": 0,
+     "p10": 0,
+     "p90": 0,
+     "warship_mode": 0,
+     "warship_p10": 0,
+     "warship_p90": 0,
+     "credibility": 3,
+     "in_sample": "baseline"
+    }
    },
    {
     "site_id": "XMN",
@@ -448,7 +496,19 @@
     "name": "汕頭（汕頭水警区）",
     "publish": "trial",
     "trial": true,
-    "mask_version": "STU-land-v1"
+    "mask_version": "STU-land-v1",
+    "est1": {
+     "acquired_utc": "2026-10-24T10:16:50Z",
+     "version": "est-1",
+     "mode": 14,
+     "p10": 12,
+     "p90": 18,
+     "warship_mode": 6,
+     "warship_p10": 4,
+     "warship_p90": 9,
+     "credibility": 3,
+     "in_sample": "baseline"
+    }
    },
    {
     "site_id": "MAW",
@@ -559,7 +619,7 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-01T09:48:35Z",
+   "last_success_started_utc": "2026-11-01T09:56:24Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
     "id": 41194891655,
@@ -647,12 +707,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 65.881,
-   "usage_csv_requests": 124,
-   "usage_csv_runs": 3,
-   "status_month_pu_before": 61.896,
-   "status_last_run_utc": "2026-11-01T09:52:45Z",
-   "usage_csv_pu_before_last_run": 61.896,
+   "usage_csv_pu": 75.482,
+   "usage_csv_requests": 157,
+   "usage_csv_runs": 4,
+   "status_month_pu_before": 65.881,
+   "status_last_run_utc": "2026-11-01T10:03:35Z",
+   "usage_csv_pu_before_last_run": 65.881,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -718,6 +778,33 @@
     "quay_result": "counted",
     "mask_version": "ZDH-land-v2"
    },
+   "QJG": {
+    "acquired_utc": "2026-10-21T09:55:42Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 171,
+    "coverage": 0.999,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "QJG-land-v1"
+   },
+   "QDH": {
+    "acquired_utc": "2026-10-21T09:55:42Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 171,
+    "coverage": 1.0,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "QDH-land-v2"
+   },
+   "XSN": {
+    "acquired_utc": "2026-10-21T09:54:02Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 171,
+    "coverage": 0.998,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "XSN-land-v1"
+   },
    "LSN": {
     "acquired_utc": "2026-10-28T09:48:11Z",
     "platform": "sentinel-1d",
@@ -727,6 +814,15 @@
     "quay_result": "counted",
     "mask_version": "LSN-land-v1"
    },
+   "SWS": {
+    "acquired_utc": "2026-10-21T09:54:27Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 171,
+    "coverage": 1.0,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "SWS-land-v1"
+   },
    "XMN": {
     "acquired_utc": "2026-10-31T10:08:57Z",
     "platform": "sentinel-1d",
@@ -735,6 +831,15 @@
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "XMN-land-v1"
+   },
+   "STU": {
+    "acquired_utc": "2026-10-24T10:16:50Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 40,
+    "coverage": 0.997,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "STU-land-v1"
    },
    "MAW": {
     "acquired_utc": "2026-10-31T10:09:26Z",
