@@ -93,6 +93,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "self",
     "est2_calib_note": "この地点の較正",
+    "est2_calib_label": "較正済み（81 件）",
+    "est2_calib_n": 81,
     "label_freeze_utc": "2026-10-27"
    }
   },
@@ -263,6 +265,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -404,6 +408,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -517,6 +523,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -649,6 +657,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -769,6 +779,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -863,6 +875,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -980,6 +994,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -1081,6 +1097,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -1176,6 +1194,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -1289,6 +1309,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -1400,6 +1422,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -1511,6 +1535,8 @@
     "classes_version": "est-1b",
     "est2_calib_source": "ZJG",
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
     "label_freeze_utc": "2026-11-15"
    },
    "sources": [
@@ -6070,6 +6096,14 @@
      }
     }
    }
+  },
+  "estimate2_evaluation": {
+   "file": "eval_est2.json",
+   "version": "eval-est2-1",
+   "status": {
+    "ZJG": "標本 0"
+   },
+   "note": "凍結（2026-10-27）より後の撮影を所有者の新しい目視ラベルと突き合わせた評価。標本 0＝まだ凍結後の撮影か答えが無い"
   },
   "baselines": [
    {

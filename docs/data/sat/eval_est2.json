@@ -1,0 +1,45 @@
+{
+ "version": "eval-est2-1",
+ "method": "凍結（2026-10-27）より後の est-2 の出力を、所有者の新しい目視ラベル（S2 の晴れの日）と突き合わせる。標本外：この撮影・ラベルは較正に使っていない。列数の混同行列（人の列数 0〜3 と est-2 の列数）、占有と 4 区分のブライア、軍艦隻数の 80% 区間の的中率",
+ "rules": {
+  "freeze": "2026-10-27（湛江。他の港は sites.json の quay.label_freeze_utc）以降の撮影と、その日以降の S2 の晴れの日の人の答えだけ",
+  "pair": "S2 の日に最も近い est-2 の撮影（前後 96 時間以内）",
+  "interval": "軍艦隻数の 80% 区間の的中率＝人の数が est-2 の p10〜p90 に入った日の割合（目安 80%）。人の軍艦の数は港全体・60 m 以上と思う艦（任意）",
+  "none": "標本 0＝凍結後の撮影か人の答えがまだ無い。計算しない"
+ },
+ "sites": {
+  "ZJG": {
+   "site_id": "ZJG",
+   "freeze_utc": "2026-10-27",
+   "status": "標本 0",
+   "labels": {
+    "answers": 0,
+    "used": 0,
+    "days": 0,
+    "scene_labels": 0
+   },
+   "scenes_out_of_sample": 0,
+   "columns": {
+    "n": 0,
+    "confusion": {},
+    "agree": 0,
+    "share": null,
+    "brier4": null
+   },
+   "occupied": {
+    "n": 0,
+    "agree": 0,
+    "share": null,
+    "brier": null
+   },
+   "warship_interval": {
+    "n": 0,
+    "hit": 0,
+    "nominal": 0.8,
+    "share": null,
+    "rows": []
+   },
+   "rows": []
+  }
+ }
+}
