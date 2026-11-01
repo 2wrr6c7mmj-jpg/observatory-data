@@ -53,6 +53,7 @@ h1{font-size:1.3rem}
 </div>
 
 <script>
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 'use strict';
 const q = new URLSearchParams(location.search);
 const SITE = (q.get('site') || '').toUpperCase();
@@ -105,18 +106,18 @@ function build() {
     $('dl2').hidden = false;
     const sc = $('scene'); sc.innerHTML = '<h3>この日の軍艦（60 m 以上と思う艦）の隻数（任意・港全体）</h3>';
     R.days.forEach(d => { const l = document.createElement('label'); l.style.marginRight = '1rem';
-      l.innerHTML = `${d.date} <input type="number" min="0" step="1" value="${scene[d.date] ?? ''}">`;
+      l.innerHTML = `${esc(d.date)} <input type="number" min="0" step="1">`; l.querySelector('input').value = scene[d.date] ?? '';
       l.querySelector('input').oninput = e => { if (e.target.value === '') delete scene[d.date]; else scene[d.date] = e.target.value; save(); };
       sc.appendChild(l); });
   }
   R.sections.forEach((s, i) => {
     const box = document.createElement('div'); box.className = 'sec';
-    box.innerHTML = `<h3>区間 ${i + 1} / ${R.sections.length} <small>OSM way ${s.way}・長さ ${s.length_m} m・${s.kind === 'pier' ? '桟橋' : '岸壁/海岸線'}・区画 ${s.sector || '-'}</small></h3>
+    box.innerHTML = `<h3>区間 ${i + 1} / ${R.sections.length} <small>OSM way ${esc(s.way)}・長さ ${esc(s.length_m)} m・${s.kind === 'pier' ? '桟橋' : '岸壁/海岸線'}・区画 ${esc(s.sector || '-')}</small></h3>
       <div class="tools"><button type="button" data-all="none">全日いない</button><button type="button" data-all="unsure">全日 判断できない</button><button type="button" data-all="clear">この区間の答えを消す</button></div>`;
     const row = document.createElement('div'); row.className = 'row'; box.appendChild(row);
     R.days.forEach(d => {
       const k = s.id + '|' + d.date; const c = document.createElement('div'); c.className = 'cell';
-      c.innerHTML = `<canvas></canvas><div class="d">${d.date}${d.tile_cloud_pct ? '（タイル雲 ' + Math.round(d.tile_cloud_pct) + '%）' : ''}</div><div class="btns"></div>`;
+      c.innerHTML = `<canvas></canvas><div class="d">${esc(d.date)}${d.tile_cloud_pct ? '（タイル雲 ' + Math.round(Number(d.tile_cloud_pct)) + '%）' : ''}</div><div class="btns"></div>`;
       const b = c.querySelector('.btns');
       CH.forEach(([v, t, cl]) => { const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = t; bt.dataset.v = v;
         if (cl === 'u') bt.classList.add('u');
