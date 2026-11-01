@@ -86,10 +86,24 @@ def group_of(face: str, orbit: str) -> str | None:
 
 
 # --- rows ------------------------------------------------------------------------------------------
-def load_rows(out: Path, site_id: str = "ZJG") -> tuple[list[dict], list[dict]]:
-    """(verified rows joined with the S1 match, all answered rows incl. verified 0)."""
+def load_rows(out: Path, site_id: str = "ZJG", freeze: str | None = None,
+              incidence_of=None) -> tuple[list[dict], list[dict]]:
+    """(verified rows joined with the S1 match, all answered rows incl. verified 0).
+
+    Zhanjiang (and any site with labels/<site>-s2-labels.csv): the label file. A port without it: the owner's
+    answers (labels/<site>-s2-answers.csv, from the review page, sat/s2_answers.py merge), taken as status ok
+    with no automatic label. ``freeze``: answers of this day on are out of sample (default FREEZE_UTC).
+    ``incidence_of(s1_acquired_utc, orbit)`` gives the incidence angle of the S1 scene (ports)."""
     ldir = out / "labels"
-    labels = {(r["section_id"], r["date"]): r for r in e2.read_csv(ldir / f"{site_id}-s2-labels.csv")}
+    freeze = freeze or e2.FREEZE_UTC
+    own = ldir / f"{site_id}-s2-labels.csv"
+    port = not own.exists()
+    src = e2.read_csv(ldir / f"{site_id}-s2-answers.csv") if port else e2.read_csv(own)
+    if port:
+        for r in src:
+            r.setdefault("status", "ok")
+            r["status"] = r.get("status") or "ok"
+    labels = {(r["section_id"], r["date"]): r for r in src}
     match = e2.read_csv(ldir / f"{site_id}-s2-s1-match.csv")
     secs = {x["section_id"]: e2._xy(x["coords"], 21.2) for x in e2.load_sections(out, site_id)}
     toward_occ: dict = {}
@@ -99,7 +113,7 @@ def load_rows(out: Path, site_id: str = "ZJG") -> tuple[list[dict], list[dict]]:
     answered, rows = [], []
     for m in match:
         lab = labels.get((m["section_id"], m["s2_date"]))
-        if lab is None or lab.get("verified") in (None, "") or lab.get("status") != "ok" or m["s2_date"] >= e2.FREEZE_UTC:
+        if lab is None or lab.get("verified") in (None, "") or lab.get("status") != "ok" or m["s2_date"] >= freeze:
             continue
         answered.append(lab)
         if lab["verified"] != "1":
@@ -111,7 +125,9 @@ def load_rows(out: Path, site_id: str = "ZJG") -> tuple[list[dict], list[dict]]:
         rows.append({
             "date": m["s2_date"], "section_id": sid, "way": sid.split(":")[0],
             "place": e2.place_of(m.get("sector"), m.get("kind")), "face": m.get("face_look") or "",
-            "orbit": str(m.get("relative_orbit") or ""), "group": group_of(m.get("face_look") or "", str(m.get("relative_orbit") or "")),
+            "orbit": str(m.get("relative_orbit") or ""),
+            "group": (m.get("face_look") or None) if port else group_of(m.get("face_look") or "", str(m.get("relative_orbit") or "")),
+            "inc": incidence_of(m.get("s1_acquired_utc"), str(m.get("relative_orbit") or "")) if (port and incidence_of) else None,
             "s1_occ": m.get("s1_occupied") if m.get("s1_occupied") in ("0", "1") else None,
             "s1_depth": float(m["s1_depth_m"]) if m.get("s1_depth_m") not in (None, "") else None,
             "s1_db": float(m["s1_db_line_m"]) if m.get("s1_db_line_m") not in (None, "") else None,
@@ -295,7 +311,10 @@ def fit(rows: list[dict], db_weight: float | None = 0.0) -> dict:
 
 # --- evaluate --------------------------------------------------------------------------------------
 def posterior_c(r: dict, params: dict) -> np.ndarray:
-    mu = params["depth_mu"][r["group"]]
+    if r["group"] == "toward":   # a port: Zhanjiang's toward means at the scene's angle, shifted by the port's delta
+        mu = tuple(a + b for a, b in zip(e2.toward_mu(r.get("inc")), params.get("toward_delta") or (0.0, 0.0, 0.0)))
+    else:
+        mu = params["depth_mu"][r["group"]]
     lk, _ = e2.depth_like(r["s1_depth"], "x", None, e2.DEPTH_LIMIT_M, mu=tuple(mu), sd=params["depth_sd"])
     likes = [lk]
     db = params.get("db_line")
@@ -431,12 +450,160 @@ def calibrate(out: Path, site_id: str = "ZJG") -> dict:
     }
 
 
+# --- PR-2: a port's own calibration (design 1.4) ----------------------------------------------------
+PORT_VERSION = "est-2-port-cal1"
+K_PORT = 10.0             # pseudo-count of Zhanjiang's value: port value = (n x port mean + K x Zhanjiang) / (n + K)
+NU_PORT = 10.0            # degrees of freedom of Zhanjiang's sd in the port's sd
+MIN_ADOPT_COLUMN_ROWS = 8 # fewer owner column answers than this: not adopted (the comparison is noise)
+PORT_FACES = ("away", "along", "toward")
+CALIB_DIR = Path(__file__).with_name("calib")
+ANSWER_FIELDS = ["site_id", "section_id", "date", "verified", "verified_occupied", "verified_c", "verified_color",
+                 "verified_by", "verified_note"]
+
+
+def zjg_base() -> dict:
+    """Zhanjiang's values in the port format: away / along means, no shift of the toward means (they come from
+    toward_mu at the scene's angle), sd, smear."""
+    return {"depth_mu": {"away": list(e2.DEPTH_MU["away"]), "along": list(e2.DEPTH_MU["along"])},
+            "toward_delta": [0.0, 0.0, 0.0], "depth_sd": e2.DEPTH_SD_M, "smear_p_real": e2.SMEAR_P_REAL}
+
+
+def fit_port(rows: list[dict], base: dict | None = None, k: float = K_PORT, nu: float = NU_PORT) -> dict:
+    """Shrink the port's observations toward Zhanjiang's values (``base``) with pseudo-count ``k``."""
+    base = base or zjg_base()
+    res: dict = {}
+    cells: dict = {}
+    for r in column_rows(rows):
+        g, c = r["group"], int(r["v_c"])
+        if g not in PORT_FACES:
+            continue
+        ref = e2.toward_mu(r.get("inc"))[c - 1] if g == "toward" else base["depth_mu"][g][c - 1]
+        cells.setdefault((g, c), []).append((r["s1_depth"], ref))
+    mu = {g: list(base["depth_mu"][g]) for g in ("away", "along")}
+    delta = list(base["toward_delta"])
+    table, ss, n_all = [], 0.0, 0
+    for (g, c), v in sorted(cells.items()):
+        d = np.array([x[0] for x in v], float)
+        ref = np.array([x[1] for x in v], float)
+        n = len(v)
+        n_all += n
+        if g == "toward":
+            resid = float(np.mean(d - ref))
+            delta[c - 1] = round(n * resid / (n + k) + base["toward_delta"][c - 1] * k / (n + k), 1)
+            ss += float(((d - ref - resid) ** 2).sum())
+            table.append({"group": g, "c": c, "n": n, "mean_resid_obs": round(resid, 1), "delta": delta[c - 1]})
+        else:
+            m0 = base["depth_mu"][g][c - 1]
+            mu[g][c - 1] = round((n * float(d.mean()) + k * m0) / (n + k), 1)
+            ss += float(((d - d.mean()) ** 2).sum())
+            table.append({"group": g, "c": c, "n": n, "mean_obs": round(float(d.mean()), 1), "zjg": m0, "calibrated": mu[g][c - 1]})
+    for g in ("away", "along"):
+        for i in (1, 2):
+            mu[g][i] = round(max(mu[g][i], mu[g][i - 1] + MIN_GAP_M), 1)
+    df = n_all - len(cells)
+    sd = math.sqrt((ss + nu * base["depth_sd"] ** 2) / (df + nu)) if df > 0 else base["depth_sd"]
+    s = [r for r in occupancy_rows(rows) if r["smear"]]
+    kk = sum(1 for r in s if r["v_occ"] == "1")
+    p = (kk + k * base["smear_p_real"]) / (len(s) + k)
+    res = {"depth_mu": mu, "toward_delta": delta, "depth_sd": round(sd, 1), "smear_p_real": round(p, 2)}
+    res["_fit"] = {"depth": table, "column_rows": n_all, "df": df, "smear": {"n": len(s), "seen": kk}}
+    return res
+
+
+def _clean(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+def score_port(rows: list[dict], params_of) -> dict:
+    return score(rows, params_of)
+
+
+def cross_validate_port(rows: list[dict], base: dict | None = None) -> dict:
+    """Date-wise leave-one-out: the port's own fit (shrunk toward Zhanjiang) against Zhanjiang's values as they are."""
+    base = base or zjg_base()
+    days = sorted({r["date"] for r in rows})
+    folds = {d: fit_port([r for r in rows if r["date"] != d], base) for d in days}
+    before = score(rows, lambda r: base)
+    after = score(rows, lambda r: folds[r["date"]])
+    bc, ac = before["columns"], after["columns"]
+    ok_n = bc["n"] >= MIN_ADOPT_COLUMN_ROWS
+    better = bool(ok_n and bc["log_score"] is not None and ac["log_score"] is not None
+                  and ac["log_score"] > bc["log_score"] and ac["brier"] < bc["brier"]
+                  and (after["occupied"]["brier"] is None or after["occupied"]["brier"] <= (before["occupied"]["brier"] or 0) + 0.005))
+    return {"method": "日付ごとの leave-one-out（S2 の晴れの日 1 日を外し、残りの日で港の値を fit（湛江の値へ k＝10 で縮める）して外した日を評価）。"
+                      "比べる相手は湛江の値そのまま（流用）",
+            "days": len(days), "zjg_borrowed": before, "own_cv": after,
+            "adopt_rule": (f"列数の答え {MIN_ADOPT_COLUMN_ROWS} 件以上で、港の値（cv）が湛江流用より列数の対数スコアが高く・列数のブライアが低く、"
+                           "占有のブライアが +0.005 より悪化しないときだけ採る。それ以外は湛江流用のまま"),
+            "min_column_rows": MIN_ADOPT_COLUMN_ROWS, "column_rows": bc["n"], "adopted": better,
+            "reason": ("採用" if better else ("列数の答えが少ない" if not ok_n else "cv で湛江流用より良くならなかった"))}
+
+
+def incidence_lookup(ship_rows: list[dict], site_id: str):
+    med = e2.site_incidence_medians(ship_rows)
+    exact = {(r["site_id"], r["acquired_utc"]): e2._float(r.get("incidence_deg")) for r in ship_rows}
+
+    def of(acquired_utc, orbit):
+        v = exact.get((site_id, acquired_utc))
+        return v if v is not None else med.get((site_id, str(orbit)))
+    return of
+
+
+def calibrate_port(out: Path, site_id: str, freeze: str | None = None) -> dict | None:
+    """A port's calibration from labels/<site>-s2-answers.csv and labels/<site>-s2-s1-match.csv; None when there
+    are no answers (the port keeps Zhanjiang's values). Writes nothing (``write_port`` does)."""
+    ans = e2.read_csv(out / "labels" / f"{site_id}-s2-answers.csv")
+    if not any(a.get("verified") in ("0", "1") for a in ans):
+        return None
+    ship_rows = e2.read_csv(out / "ship_counts.csv")
+    rows, answered = load_rows(out, site_id, freeze, incidence_lookup(ship_rows, site_id))
+    n_match = len(e2.read_csv(out / "labels" / f"{site_id}-s2-s1-match.csv"))
+    base = zjg_base()
+    fit = fit_port(rows, base)
+    ev = cross_validate_port(rows, base) if rows else {"adopted": False, "reason": "S1 との突き合わせ（-s2-s1-match.csv）がまだ無い", "column_rows": 0}
+    sm = fit_smear(rows)
+    params = _clean(fit)
+    params["hard_ways"] = sorted(hard_ways(answered))
+    return {
+        "version": PORT_VERSION, "site_id": site_id, "adopted": bool(ev["adopted"]), "adoption": ev.get("reason"),
+        "labels": {"answered": len(answered), "verified": len(rows), "cannot_judge": len(answered) - len(rows),
+                   "answers_total": len(ans), "s1_match_rows": n_match, "column_rows": fit["_fit"]["column_rows"],
+                   "occupancy_rows": len(occupancy_rows(rows)), "days": len({r["date"] for r in rows}),
+                   "by": "所有者 1 人の目視（確認ページ docs/sat/label/、Sentinel-2 10 m 自然色）",
+                   "used": f"status＝ok かつ verified＝1、{freeze or e2.FREEZE_UTC} より前の日だけ"},
+        "params": params,
+        "fit": {"depth": fit["_fit"]["depth"], "smear": sm, "hard_ways": hard_ways(answered)},
+        "shrinkage": {"k": K_PORT, "sd_pseudo_df": NU_PORT, "min_gap_m": MIN_GAP_M,
+                      "rule": "港の値＝(n×港の観測＋k×湛江の値)／(n＋k)。σ は港の散らばりを湛江の σ へ自由度 10 で縮める。toward は湛江の入射角ごとの平均からのずれを縮める。色の LR・二回反射の線は湛江のまま"},
+        "evaluation": ev,
+        "zjg_reference": {"file": "sat/quay_est2_calib.json", "version": (e2.CALIB or {}).get("version")},
+    }
+
+
+def write_port(out: Path, site_id: str, freeze: str | None = None) -> dict | None:
+    res = calibrate_port(out, site_id, freeze)
+    if res is None:
+        return None
+    CALIB_DIR.mkdir(parents=True, exist_ok=True)
+    (CALIB_DIR / f"{site_id}-est2.json").write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return res
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="est-2 #7: calibrate on the verified S2 labels (no fetch)")
     ap.add_argument("--out", default="docs/data/sat")
-    ap.add_argument("--site", default="ZJG")
+    ap.add_argument("--site", default="ZJG", help="ZJG, a port id, or 'ports' (every port that has answers)")
     ap.add_argument("--write", default=str(OUT_FILE))
     a = ap.parse_args(argv)
+    if a.site != "ZJG":   # PR-2: a port's own calibration -> sat/calib/<site>-est2.json (nothing for a port without answers)
+        import json as _j
+        sites = _j.loads((Path(__file__).with_name("sites.json")).read_text(encoding="utf-8"))["sites"]
+        ids = [x["id"] for x in sites if x["id"] != "ZJG"] if a.site == "ports" else [a.site]
+        for sid in ids:
+            cfg = next((x for x in sites if x["id"] == sid), {})
+            res = write_port(Path(a.out), sid, (cfg.get("quay") or {}).get("label_freeze_utc"))
+            print(sid, "答え無し：湛江流用のまま" if res is None else f"adopted={res['adopted']} ({res['adoption']}) answers={res['labels']['verified']}", file=sys.stderr)
+        return 0
     res = calibrate(Path(a.out), a.site)
     Path(a.write).write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     ev = res["evaluation"]

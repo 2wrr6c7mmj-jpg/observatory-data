@@ -1,0 +1,91 @@
+{
+ "site_id": "SYL",
+ "version": "s2rev-1",
+ "scenes": [
+  {
+   "acquired_utc": "2025-12-11T10:48:12Z",
+   "relative_orbit": "157",
+   "days": [
+    "2025-12-12"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2025-12-23T10:48:11Z",
+   "relative_orbit": "157",
+   "days": [
+    "2025-12-27"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-01-04T10:48:11Z",
+   "relative_orbit": "157",
+   "days": [
+    "2026-01-03",
+    "2026-01-06"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-05-28T10:48:13Z",
+   "relative_orbit": "157",
+   "days": [
+    "2026-05-26"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-10-14T10:48:16Z",
+   "relative_orbit": "157",
+   "days": [
+    "2026-10-13",
+    "2026-10-18"
+   ],
+   "stored_stretches": true
+  }
+ ],
+ "per_day": [
+  {
+   "date": "2025-12-12",
+   "s1": "2025-12-11T10:48:12Z",
+   "dt_h": -16.6
+  },
+  {
+   "date": "2025-12-27",
+   "s1": "2025-12-23T10:48:11Z",
+   "dt_h": -88.6
+  },
+  {
+   "date": "2026-01-03",
+   "s1": "2026-01-04T10:48:11Z",
+   "dt_h": 31.4
+  },
+  {
+   "date": "2026-01-06",
+   "s1": "2026-01-04T10:48:11Z",
+   "dt_h": -40.6
+  },
+  {
+   "date": "2026-05-26",
+   "s1": "2026-05-28T10:48:13Z",
+   "dt_h": 55.4
+  },
+  {
+   "date": "2026-10-13",
+   "s1": "2026-10-14T10:48:16Z",
+   "dt_h": 31.4
+  },
+  {
+   "date": "2026-10-18",
+   "s1": "2026-10-14T10:48:16Z",
+   "dt_h": -88.6
+  }
+ ],
+ "pu_per_scene": 3.217,
+ "pu_total": 16.09,
+ "pu_if_stored_stretches_used": 12.87,
+ "note": "取り直しは python -m sat.s2_labels 系の S1 だけの取得（この PR にはまだ無い）で、答えの日の前後 4 日以内の撮影を 1 枚ずつ。stored_stretches＝その撮影の岸壁の片（区間の奥行きなど）は quay/<地点>/ に保存済み（取り直さずに突き合わせを組める。組む処理は未実装なので pu_total には含めてある）。S2 の自動ラベルは使わない（人の答えだけを正解にする）ので S2 の取得（約 2.7〜3.2 PU/日）は要らない。PU は cdse.estimate_pu の見積もり（3 帯、LIA なし）",
+ "needs_cdse": true,
+ "fetched": false
+}

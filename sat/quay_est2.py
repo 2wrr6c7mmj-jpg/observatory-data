@@ -82,6 +82,7 @@ DEPTH_MU = {  # mean occupied depth (m) for c = 1, 2, 3
 TOWARD_MU = ({45.0: tuple(_P["depth_mu"]["toward_157"]), 32.0: tuple(_P["depth_mu"]["toward_84"])} if _P
              else dict(PH_TOWARD_MU))
 SMEAR_P_REAL = float(_P.get("smear_p_real", PH_SMEAR_P_REAL))
+TOWARD_DELTA = (0.0, 0.0, 0.0)   # a port's own shift of the toward means (m, c = 1-3) from its calibration (PR-2); Zhanjiang: none
 S2_LR = dict(_P.get("s2_lr_auto") or PH_S2_LR)            # the automatic colour class of #5
 S2_LR_OWNER = dict(_P.get("s2_lr_owner") or {})           # a row checked by eye: achromatic / strong / blank
 HARD_WAYS = {str(w) for w in _P.get("hard_ways", [])}     # OSM ways mostly not judgeable by eye at 10 m
@@ -159,7 +160,7 @@ def weights_info(site_id: str) -> dict:
 
 
 PER_SITE_EXTRA = [
-    "calib_source", "weights_version", "weights_status", "weights_conf_level", "weights_conf",
+    "calib_source", "calib_n", "calib_label", "weights_version", "weights_status", "weights_conf_level", "weights_conf",
     "incidence_deg", "incidence_source", "incidence_extrapolated",
 ]
 FREEZE_UTC = "2026-10-27"   # the S2 labels before this day only (later scenes are frozen as out-of-sample)
@@ -226,22 +227,81 @@ def place_of(sector, kind, role: str | None = None) -> str:
 CALIB_DIR = Path(__file__).with_name("calib")
 
 
+def site_calibration_file(site_id: str) -> dict | None:
+    """sat/calib/<site>-est2.json, or None (absent / unreadable). Written by sat.quay_est2_calib --site."""
+    try:
+        return json.loads((CALIB_DIR / f"{site_id}-est2.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
 def calib_source(site_id: str) -> str:
-    """Which est-2 calibration a site uses: "self" (its own), "ZJG" (Zhanjiang's, borrowed: the site is
-    not calibrated) or "placeholder". Read order (design §1.4): sat/calib/<site>-est2.json -> Zhanjiang
-    (sat/quay_est2_calib.json) -> placeholders. A site's own file is used from PR-2 on; in PR-1 no site
-    other than Zhanjiang has one, and every other site uses Zhanjiang's values."""
+    """Which est-2 calibration a site uses: "self" (its own, adopted), "ZJG" (Zhanjiang's, borrowed: the site is
+    not calibrated, or its own calibration did not beat Zhanjiang's in the date-wise leave-one-out) or
+    "placeholder". Read order (design 1.4): sat/calib/<site>-est2.json (only when ``adopted``) -> Zhanjiang
+    (sat/quay_est2_calib.json) -> placeholders. A file without the ``adopted`` key (PR-1 stub) is "self_pending"."""
     if site_id == "ZJG":
         return "self" if _P else "placeholder"
-    if (CALIB_DIR / f"{site_id}-est2.json").exists():
-        return "self_pending"   # a file exists but per-site parameters are PR-2: still Zhanjiang's values
+    f = site_calibration_file(site_id)
+    if f is not None:
+        if "adopted" not in f:
+            return "self_pending"   # a file without a verdict: still Zhanjiang's values
+        if f.get("adopted") and f.get("params"):
+            return "self"
     return "ZJG" if _P else "placeholder"
+
+
+def calib_info(site_id: str) -> dict:
+    """What is shown with a site's est-2: calibrated (n answers) or Zhanjiang's values borrowed (not calibrated)."""
+    src = calib_source(site_id)
+    if site_id == "ZJG":
+        n = int(((CALIB or {}).get("labels") or {}).get("verified") or 0)
+        return {"calib_source": src, "calib_n": n, "calib_label": f"較正済み（{n} 件）" if src == "self" else "仮置き（未較正）"}
+    f = site_calibration_file(site_id)
+    n = int(((f or {}).get("labels") or {}).get("verified") or 0)
+    if src == "self":
+        return {"calib_source": src, "calib_n": n, "calib_label": f"較正済み（{n} 件）"}
+    if src == "placeholder":
+        return {"calib_source": src, "calib_n": 0, "calib_label": "仮置き（未較正）"}
+    tried = f is not None and f.get("adopted") is False
+    return {"calib_source": src, "calib_n": n if tried else 0,
+            "calib_label": "湛江流用（未較正）" + (f"。この港の答え {n} 件で較正を試したが、湛江流用より良くならなかった" if tried else "")}
+
+
+class site_calibration:
+    """Context manager: the module's parameters are the site's own (calibration adopted) inside, Zhanjiang's after."""
+    NAMES = ("DEPTH_SD_M", "DEPTH_MU", "TOWARD_DELTA", "SMEAR_P_REAL", "HARD_WAYS")
+
+    def __init__(self, site_id: str):
+        f = site_calibration_file(site_id) if site_id != "ZJG" else None
+        self.p = f["params"] if f and f.get("adopted") and f.get("params") else None
+
+    def __enter__(self):
+        g = globals()
+        self.saved = {k: g[k] for k in self.NAMES}
+        if self.p:
+            p = self.p
+            g["DEPTH_SD_M"] = float(p.get("depth_sd", g["DEPTH_SD_M"]))
+            dm = dict(g["DEPTH_MU"])
+            for k, v in (p.get("depth_mu") or {}).items():
+                if k in dm:
+                    dm[k] = tuple(v)
+            g["DEPTH_MU"] = dm
+            g["TOWARD_DELTA"] = tuple(float(x) for x in p.get("toward_delta") or (0.0, 0.0, 0.0))
+            g["SMEAR_P_REAL"] = float(p.get("smear_p_real", g["SMEAR_P_REAL"]))
+            if p.get("hard_ways") is not None:
+                g["HARD_WAYS"] = {str(w) for w in p["hard_ways"]}
+        return self
+
+    def __exit__(self, *exc):
+        globals().update(self.saved)
+        return False
 
 
 CALIB_SOURCE_NOTE = {
     "self": "この地点の較正",
     "ZJG": "湛江の較正を流用（この港では未較正）",
-    "self_pending": "この地点の較正ファイルはあるが、地点ごとの値の読み込みは PR-2。湛江の較正を流用（この港では未較正）",
+    "self_pending": "この地点の較正ファイルはあるが判定（adopted）が無い。湛江の較正を流用（この港では未較正）",
     "placeholder": "仮置き・較正前",
 }
 
@@ -280,7 +340,8 @@ def site_incidence_medians(ship_rows: list[dict]) -> dict:
 
 def depth_mu(face: str, incidence: float | None) -> tuple | None:
     if face == "toward":
-        return toward_mu(incidence)
+        mu = toward_mu(incidence)
+        return tuple(m + d for m, d in zip(mu, TOWARD_DELTA)) if any(TOWARD_DELTA) else mu
     return DEPTH_MU.get(face)
 
 
@@ -708,7 +769,8 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
                 pi = _float(inc_of.get((sid, partner[0]["acquired_utc"])))
                 pi = pi if pi is not None else inc_med.get((sid, str(partner[0].get("relative_orbit"))))
                 partner = ({**partner[0], "incidence_deg": pi}, partner[1])
-        e = estimate_scene(r, segs, sites[sid], partner, inc)
+        with site_calibration(sid):
+            e = estimate_scene(r, segs, sites[sid], partner, inc)
         cl = e["clues"]
         st = [d for d in e["stretches"]]
         ab = sites[sid].sector_ids if (sites[sid].shared and len(sites[sid].sector_ids) == 2) else []  # old A / B
@@ -762,17 +824,19 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
         rows_s = [x for x in out_rows if x["site_id"] == sid]
         if not rows_s:
             continue
-        src = calib_source(sid)
+        ci = calib_info(sid)
+        src = ci["calib_source"]
         wi = weights_info(sid)
         for x in rows_s:
-            x.update(calib_source=src, weights_version=wi["version"], weights_status=wi["status"],
+            x.update(calib_source=src, calib_n=ci["calib_n"], calib_label=ci["calib_label"], weights_version=wi["version"], weights_status=wi["status"],
                      weights_conf_level="" if wi["conf_level"] is None else wi["conf_level"], weights_conf=wi["w_conf"])
         write_csv(out / "quay_est2" / f"{sid}.csv", rows_s, CSV_FIELDS + PER_SITE_EXTRA)
         doc = {"version": EST2_VERSION, "site_id": sid, "calib_source": src, "calib_note": CALIB_SOURCE_NOTE[src],
+               "calib_n": ci["calib_n"], "calib_label": ci["calib_label"],
                "weights": wi,
                "status": f"{CALIB_SOURCE_NOTE[src]}。{STATUS}", "settings_file": "quay_est2.json（settings）",
                "sectors": [{"id": k, "role": v} for k, v in sites[sid].roles.items()],
-               "scenes": [{**x, "calib_source": src, "weights_version": wi["version"], "weights_status": wi["status"]}
+               "scenes": [{**x, "calib_source": src, "calib_label": ci["calib_label"], "weights_version": wi["version"], "weights_status": wi["status"]}
                           for x in scenes if x["site_id"] == sid]}
         (out / "quay_est2" / f"{sid}.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n",
                                                        encoding="utf-8")
