@@ -331,13 +331,17 @@ class RunQuayTest(unittest.TestCase):
         for b in m["quay"]["baselines"]:
             orbits.setdefault(b["site_id"], set()).add(b["relative_orbit"])
         self.assertEqual(orbits["ZJG"], {157, 84})
-        # the other ports (settings only, daily false) list their own orbits (PR-3a: QGZ 69 and 171, ZDH 171)
+        # the other ports list their own orbits (PR-3a: QGZ 69 and 171, ZDH 171; the ports of the all-ports
+        # expansion, settings only with daily false, list the orbits of the baselines they have)
         self.assertEqual({k: v for k, v in orbits.items() if k != "ZJG"},
-                         {"SYL": {157}, "SLP": {157}, "QGZ": {69, 171}, "ZDH": {171}})
+                         {"SYL": {157}, "SLP": {157}, "QGZ": {69, 171}, "ZDH": {171},
+                          "QJG": {171}, "QDH": {171}, "XSN": {171}, "LSN": {171, 98}, "SWS": {171},
+                          "XMN": {40, 142}, "STU": {40}, "MAW": {142}})
         self.assertIn("quay_counts.csv", m["files"])
         self.assertIn("quay_lines", m["attribution"])
         self.assertEqual(sorted(m["quay"]["tuning"]["scenes"]["ZJG"])[0], "2026-10-02T10:48:45Z")
-        bl = {b["relative_orbit"]: b for b in m["quay"]["blind_stretches"]}
+        # Zhanjiang's blind stretches (the other daily ports, SYL SLP QGZ ZDH, have their own entries)
+        bl = {b["relative_orbit"]: b for b in m["quay"]["blind_stretches"] if b["site_id"] == "ZJG"}
         self.assertEqual(set(bl), {157, 84})
         self.assertTrue(0.01 < bl[157]["share"] < bl[84]["share"] < 0.15)
         self.assertNotIn("1 割を超えて", json.dumps(m, ensure_ascii=False))

@@ -134,6 +134,21 @@ def _seg_dist(points: np.ndarray, a: np.ndarray, b: np.ndarray, chunk: int = 400
     return np.concatenate(out) if out else np.empty((0, len(a)))
 
 
+def _own_other(points: np.ndarray, a: np.ndarray, b: np.ndarray, way: np.ndarray, k, chunk: int = 4000):
+    """For each point: the distance to the nearest segment of way ``k`` and to the nearest segment of any other way
+    (inf if there is none). The same values as ``_seg_dist(...)[:, way == k].min(1)`` and ``[:, way != k].min(1)``,
+    taken chunk by chunk so that the (n_points x n_segments) matrix is never held at once (a long coastline of
+    a big site, ZDH, needed 3 GiB)."""
+    own = np.empty(len(points))
+    other = np.empty(len(points))
+    for s in range(0, len(points), chunk):
+        d = _seg_dist(points[s:s + chunk], a, b, chunk)
+        own[s:s + chunk] = d[:, way == k].min(1)
+        o = d[:, way != k]
+        other[s:s + chunk] = o.min(1) if o.shape[1] else np.inf
+    return own, other
+
+
 class Geometry:
     """Sample points, sides and band pixels of a site's quay lines (fixed per site and mask)."""
 
@@ -194,10 +209,7 @@ class Geometry:
                     continue
                 # ownership: no other line closer than this one (plus a tolerance)
                 flat = q.reshape(-1, 2)
-                dist = _seg_dist(flat, self.seg_a, self.seg_b)
-                own = dist[:, self.seg_way == k].min(1)
-                others = dist[:, self.seg_way != k]
-                other = others.min(1) if others.shape[1] else np.full(len(flat), np.inf)
+                own, other = _own_other(flat, self.seg_a, self.seg_b, self.seg_way, k)
                 owned = (own <= other + cfg["own_tolerance_m"]).reshape(q.shape[:2])
                 valid = inside & owned & allowed[rr_c, cc_c] & ok_side[:, None]
                 if not valid.any():
@@ -208,10 +220,7 @@ class Geometry:
                 dcc = np.floor(dq[..., 0] / rx).astype(int)
                 dinside = (drr >= 0) & (drr < h) & (dcc >= 0) & (dcc < w)
                 drr, dcc = np.clip(drr, 0, h - 1), np.clip(dcc, 0, w - 1)
-                ddist = _seg_dist(dq.reshape(-1, 2), self.seg_a, self.seg_b)
-                down = ddist[:, self.seg_way == k].min(1)
-                dothers = ddist[:, self.seg_way != k]
-                dother = dothers.min(1) if dothers.shape[1] else np.full(len(down), np.inf)
+                down, dother = _own_other(dq.reshape(-1, 2), self.seg_a, self.seg_b, self.seg_way, k)
                 dvalid = dinside & (down <= dother + cfg["own_tolerance_m"]).reshape(dq.shape[:2]) & allowed[drr, dcc]
                 # feat-1: the same depth pixels without the mean across the line: 3 pixels along it (-10, 0, +10 m)
                 tq = dq[:, :, None, :] + np.array([-1.0, 0.0, 1.0])[None, None, :, None] * cfg["step_m"] * tan[:, None, None, :]
