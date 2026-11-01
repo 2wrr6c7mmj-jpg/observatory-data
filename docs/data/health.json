@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T04:11:37Z",
+ "generated_utc": "2026-11-01T04:13:43Z",
  "state": "warn",
  "summary": {
-  "ok": 8,
-  "warn": 4,
+  "ok": 7,
+  "warn": 5,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -111,7 +111,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-10-31T09:57:23Z",
-   "heartbeat_age_h": 18.2,
+   "heartbeat_age_h": 18.3,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -140,7 +140,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-10-31T14:44:41Z",
-   "heartbeat_age_h": 13.4,
+   "heartbeat_age_h": 13.5,
    "data_date": "2026-10-31",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -183,8 +183,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "manual",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-10-31T08:30:49Z",
-   "heartbeat_age_h": 19.7,
+   "heartbeat_utc": "2026-11-01T04:13:20Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -201,17 +201,17 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-10-31T08:30:43Z",
-   "heartbeat_age_h": 19.7,
-   "data_date": "2026-10-31",
+   "heartbeat_utc": "2026-11-01T04:13:17Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-01",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-10-31T08:30:43Z",
-    "notam_watch_last_seen_utc": "2026-10-31T08:30:43Z",
-    "ll2_last_retrieved_utc": "2026-10-31T08:30:19Z"
+    "notices_last_retrieved_utc": "2026-11-01T04:13:17Z",
+    "notam_watch_last_seen_utc": "2026-11-01T04:13:17Z",
+    "ll2_last_retrieved_utc": "2026-11-01T04:13:14Z"
    }
   },
   {
@@ -224,12 +224,18 @@
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-01T04:10:53Z が入力の更新 2026-11-01T04:13:20Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-10-31T09:58:11Z",
-    "newest_input_utc": "2026-10-31T09:57:23Z"
+    "newest_input_utc": "2026-11-01T04:13:20Z"
    }
   },
   {
@@ -347,7 +353,7 @@
      "text": "schedule の実行 2026-10-31T07:09:45Z が failure（その後の手動等の実行で成功）"
     }
    ],
-   "last_success_started_utc": "2026-10-31T08:30:01Z",
+   "last_success_started_utc": "2026-11-01T04:13:03Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
     "id": 41179494126,
@@ -444,11 +450,11 @@
    "last_success_started_utc": "2026-11-01T04:10:53Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 41272067191,
-    "started_utc": "2026-11-01T04:10:53Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41272067191"
+    "id": 41272244873,
+    "started_utc": "2026-11-01T04:13:36Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41272244873"
    },
    "consecutive_failures": 0
   },
