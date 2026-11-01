@@ -657,7 +657,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "QJG"
    },
    "s2": {
     "enabled": true
@@ -727,7 +727,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "QDH"
    },
    "s2": {
     "enabled": true
@@ -819,7 +819,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "XSN"
    },
    "s2": {
     "enabled": true
@@ -895,7 +895,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "LSN"
    },
    "s2": {
     "enabled": true
@@ -965,7 +965,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "SWS"
    },
    "s2": {
     "enabled": true
@@ -1052,7 +1052,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "XMN"
    },
    "s2": {
     "enabled": true
@@ -1139,7 +1139,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "STU"
    },
    "s2": {
     "enabled": true
@@ -1225,7 +1225,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
-    "class_weights": "ZJG"
+    "class_weights": "MAW"
    },
    "s2": {
     "enabled": true

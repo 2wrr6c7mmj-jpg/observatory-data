@@ -146,6 +146,22 @@ CSV_FIELDS = [
     "hard_stretches", "hard_warship_mean",
     "est1_warship_mode", "est1_warship_p10", "est1_warship_p90",
 ]
+# only for a per_site site (Zhanjiang's quay_est2.csv keeps its columns): where the confidence and the calibration come from
+SCENE_PER_SITE_KEYS = ("incidence_source", "incidence_extrapolated")
+
+
+def weights_info(site_id: str) -> dict:
+    """The est-1 weights a site's est-2 numbers rest on (published per site): version, status, confidence."""
+    from . import quay_est
+    i = quay_est.site_weights_info(site_id)
+    return {"site_key": i["site_key"], "own": i["own"], "version": i["version"], "status": i["status"],
+            "w_conf": i["w_conf"], "conf_level": i["conf_level"], "fleet": i["fleet"]}
+
+
+PER_SITE_EXTRA = [
+    "calib_source", "weights_version", "weights_status", "weights_conf_level", "weights_conf",
+    "incidence_deg", "incidence_source", "incidence_extrapolated",
+]
 FREEZE_UTC = "2026-10-27"   # the S2 labels before this day only (later scenes are frozen as out-of-sample)
 
 
@@ -236,6 +252,30 @@ def toward_mu(incidence: float | None) -> tuple:
     lo, hi = 32.0, 45.0
     w = min(1.0, max(0.0, (incidence - lo) / (hi - lo)))
     return tuple((1 - w) * a + w * b for a, b in zip(TOWARD_MU[lo], TOWARD_MU[hi]))
+
+
+def incidence_extrapolated(incidence: float | None) -> bool:
+    """True when the angle is outside the range the toward means were calibrated on (32-45 deg): toward_mu
+    then stops at the nearer end value (the calibration is not extended beyond it)."""
+    if incidence is None:
+        return False
+    lo, hi = min(TOWARD_MU), max(TOWARD_MU)
+    return incidence < lo or incidence > hi
+
+
+def site_incidence_medians(ship_rows: list[dict]) -> dict:
+    """Median incidence_deg per (site, relative_orbit) over ship_counts.csv: the value for a scene that has none."""
+    vals: dict = {}
+    for r in ship_rows:
+        v = _float(r.get("incidence_deg"))
+        if v is not None:
+            vals.setdefault((r["site_id"], str(r.get("relative_orbit"))), []).append(v)
+    out = {}
+    for k, v in vals.items():
+        v = sorted(v)
+        n = len(v)
+        out[k] = v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2
+    return out
 
 
 def depth_mu(face: str, incidence: float | None) -> tuple | None:
@@ -625,6 +665,7 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
     rows = quay_rows if quay_rows is not None else read_csv(out / "quay_counts.csv")
     ship_rows = ship_rows if ship_rows is not None else read_csv(out / "ship_counts.csv")
     inc_of = {(r["site_id"], r["acquired_utc"]): r.get("incidence_deg") for r in ship_rows}
+    inc_med = site_incidence_medians(ship_rows)
     pairs = pairs if pairs is not None else (pairs_of(rows) if rows else {})
     feats = load_features(out)
     by_scene: dict = {}
@@ -654,6 +695,16 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
             inc = float(inc) if inc not in (None, "") else None
         except ValueError:
             inc = None
+        inc_src = "scene" if inc is not None else ""
+        if sid not in INCIDENCE_BY_ORBIT:   # a site without a fixed table (not Zhanjiang): never leave the angle out silently
+            if inc is None and (sid, str(r.get("relative_orbit"))) in inc_med:
+                inc, inc_src = inc_med[(sid, str(r.get("relative_orbit")))], "site_orbit_median"
+            elif inc is None:
+                inc_src = "midpoint"   # toward_mu(None): the middle of the 32 and 45 deg means
+            if partner is not None and _float(partner[0].get("incidence_deg")) is None:
+                pi = _float(inc_of.get((sid, partner[0]["acquired_utc"])))
+                pi = pi if pi is not None else inc_med.get((sid, str(partner[0].get("relative_orbit"))))
+                partner = ({**partner[0], "incidence_deg": pi}, partner[1])
         e = estimate_scene(r, segs, sites[sid], partner, inc)
         cl = e["clues"]
         st = [d for d in e["stretches"]]
@@ -684,9 +735,11 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
             "hard_stretches": e["hard"]["stretches"], "hard_warship_mean": e["hard"]["warship_mean"],
             "est1_warship_mode": r.get("est_warship_mode", ""), "est1_warship_p10": r.get("est_warship_p10", ""),
             "est1_warship_p90": r.get("est_warship_p90", ""),
+            "incidence_deg": inc, "incidence_source": inc_src, "incidence_extrapolated": incidence_extrapolated(inc),
         })
         scenes.append({"site_id": sid, "acquired_utc": r["acquired_utc"], "relative_orbit": r.get("relative_orbit"),
-                       "pair_id": pid or None, "incidence_deg": inc, "in_sample": r.get("in_sample", ""),
+                       "pair_id": pid or None, "incidence_deg": inc, "incidence_source": inc_src,
+                       "incidence_extrapolated": incidence_extrapolated(inc), "in_sample": r.get("in_sample", ""),
                        "warship": e["warship"], "warship_all": e["warship_all"], "ships": e["ships"], "by_sector": e["by_sector"],
                        "warship_dist": e["warship_dist"], "hard": e["hard"],
                        "clues": {CLUE_NAMES.get(k, k): v for k, v in sorted(cl.items())},
@@ -696,7 +749,8 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
                        "stretches": e["stretches"]})
     per_site = {sid for sid, c in cfg.items() if c.get("layout") == "per_site"}
     shared_rows = [x for x in out_rows if x["site_id"] not in per_site]
-    shared_scenes = [x for x in scenes if x["site_id"] not in per_site]
+    shared_scenes = [{k: v for k, v in x.items() if k not in SCENE_PER_SITE_KEYS}
+                     for x in scenes if x["site_id"] not in per_site]   # Zhanjiang's file keeps its keys
     if shared_rows or not per_site:
         write_csv(out / "quay_est2.csv", shared_rows, CSV_FIELDS)
         doc = {"version": EST2_VERSION, "status": STATUS, "settings": settings(), "scenes": shared_scenes}
@@ -706,11 +760,17 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
         if not rows_s:
             continue
         src = calib_source(sid)
-        write_csv(out / "quay_est2" / f"{sid}.csv", rows_s, CSV_FIELDS)
+        wi = weights_info(sid)
+        for x in rows_s:
+            x.update(calib_source=src, weights_version=wi["version"], weights_status=wi["status"],
+                     weights_conf_level="" if wi["conf_level"] is None else wi["conf_level"], weights_conf=wi["w_conf"])
+        write_csv(out / "quay_est2" / f"{sid}.csv", rows_s, CSV_FIELDS + PER_SITE_EXTRA)
         doc = {"version": EST2_VERSION, "site_id": sid, "calib_source": src, "calib_note": CALIB_SOURCE_NOTE[src],
+               "weights": wi,
                "status": f"{CALIB_SOURCE_NOTE[src]}。{STATUS}", "settings_file": "quay_est2.json（settings）",
                "sectors": [{"id": k, "role": v} for k, v in sites[sid].roles.items()],
-               "scenes": [x for x in scenes if x["site_id"] == sid]}
+               "scenes": [{**x, "calib_source": src, "weights_version": wi["version"], "weights_status": wi["status"]}
+                          for x in scenes if x["site_id"] == sid]}
         (out / "quay_est2" / f"{sid}.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n",
                                                        encoding="utf-8")
     for x in scenes:

@@ -117,6 +117,7 @@ def site_weights_info(site_id: str, path: Path = CLASSES_PATH) -> dict:
     rows, key = resolve_classes(t, site_id)
     st = (t.get("sites") or {}).get(key, {})
     return {"site_key": key, "own": key == site_id, "fleet": st.get("fleet"), "w_conf": st.get("w_conf"),
+            "conf_level": st.get("conf_level"), "version": st.get("version") or t.get("version", ""),
             "status": st.get("status", "estimate"), "basis": st.get("basis"),
             "classes": [c["id"] for c in rows]}
 
@@ -519,7 +520,8 @@ def site_class_tables() -> dict:
     version and note are given only when the site has them (Zhanjiang has neither: its entry is as before)."""
     t = load_classes()
     return {sid: {"fleet": st.get("fleet"), "w_conf": st.get("w_conf"), "status": st.get("status", "estimate"),
-                  "basis": st.get("basis"), **({"sources": st["sources"]} if st.get("sources") else {}),
+                  "basis": st.get("basis"), **({"conf_level": st["conf_level"]} if st.get("conf_level") else {}),
+                  **({"sources": st["sources"]} if st.get("sources") else {}),
                   **({"version": st["version"]} if st.get("version") else {}),
                   **({"note": st["note"]} if st.get("note") else {}),
                   "classes": class_table(sid)} for sid, st in (t.get("sites") or {}).items()}
