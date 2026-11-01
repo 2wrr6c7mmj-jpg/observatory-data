@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T04:11:00Z",
+ "generated_utc": "2026-11-01T04:11:37Z",
  "state": "warn",
  "summary": {
   "ok": 8,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-10-31T11:02:10Z",
-   "heartbeat_age_h": 17.1,
+   "heartbeat_age_h": 17.2,
    "data_date": "2026-10-26",
    "data_date_tz": "UTC",
    "data_age_days": 6,
@@ -219,8 +219,8 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-10-31T09:57:38Z",
-   "heartbeat_age_h": 18.2,
+   "heartbeat_utc": "2026-11-01T04:10:53Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -441,13 +441,13 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-10-31T09:57:38Z",
+   "last_success_started_utc": "2026-11-01T04:10:53Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
     "id": 41272067191,
     "started_utc": "2026-11-01T04:10:53Z",
-    "status": "queued",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41272067191"
    },
    "consecutive_failures": 0
