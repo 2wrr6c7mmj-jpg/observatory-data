@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T06:37:03Z",
+ "generated_utc": "2026-11-01T07:43:54Z",
  "state": "warn",
  "summary": {
   "ok": 8,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-01T06:31:50Z",
-   "heartbeat_age_h": 0.1,
+   "heartbeat_age_h": 1.2,
    "data_date": "2026-10-26",
    "data_date_tz": "UTC",
    "data_age_days": 6,
@@ -151,7 +151,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-10-31T09:57:23Z",
-   "heartbeat_age_h": 20.7,
+   "heartbeat_age_h": 21.8,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -180,7 +180,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-10-31T14:44:41Z",
-   "heartbeat_age_h": 15.9,
+   "heartbeat_age_h": 17.0,
    "data_date": "2026-10-31",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -223,8 +223,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "manual",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-01T04:13:20Z",
-   "heartbeat_age_h": 2.4,
+   "heartbeat_utc": "2026-11-01T07:43:31Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -241,17 +241,17 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-01T04:13:17Z",
-   "heartbeat_age_h": 2.4,
+   "heartbeat_utc": "2026-11-01T07:43:28Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-01T04:13:17Z",
-    "notam_watch_last_seen_utc": "2026-11-01T04:13:17Z",
-    "ll2_last_retrieved_utc": "2026-11-01T04:13:14Z"
+    "notices_last_retrieved_utc": "2026-11-01T07:43:28Z",
+    "notam_watch_last_seen_utc": "2026-11-01T07:43:28Z",
+    "ll2_last_retrieved_utc": "2026-11-01T07:43:24Z"
    }
   },
   {
@@ -260,16 +260,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-01T04:13:36Z",
-   "heartbeat_age_h": 2.4,
+   "heartbeat_age_h": 3.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-01T04:13:36Z が入力の更新 2026-11-01T07:43:31Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-01T04:13:57Z",
-    "newest_input_utc": "2026-11-01T04:13:20Z"
+    "newest_input_utc": "2026-11-01T07:43:31Z"
    }
   },
   {
@@ -473,25 +479,19 @@
     "launches",
     "jso"
    ],
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "failed",
-     "text": "schedule の実行 2026-10-31T07:09:45Z が failure（その後の手動等の実行で成功）"
-    }
-   ],
-   "last_success_started_utc": "2026-11-01T04:13:03Z",
-   "last_success_event": "workflow_dispatch",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-01T07:43:07Z",
+   "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41179494126,
-    "started_utc": "2026-10-31T07:09:45Z",
+    "id": 41285894296,
+    "started_utc": "2026-11-01T07:43:07Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41179494126",
-    "delay_h": 5.8
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41285894296",
+    "delay_h": 6.3
    },
-   "consecutive_failures": 1
+   "consecutive_failures": 0
   },
   {
    "file": "jcg-senkaku.yml",
@@ -578,11 +578,11 @@
    "last_success_started_utc": "2026-11-01T04:13:36Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 41272244873,
-    "started_utc": "2026-11-01T04:13:36Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41272244873"
+    "id": 41285937841,
+    "started_utc": "2026-11-01T07:43:48Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41285937841"
    },
    "consecutive_failures": 0
   },
@@ -684,8 +684,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-10-31",
-   "version": "ZDH の区画 A1 を多角形に、QGZ-land-v2（置くだけ。QGZ は QGZ-land-v1 のまま。湛江・SYL・SLP は変えない）"
+   "date": "2026-11-01",
+   "version": "表示 chips-1（数え方は変えない）"
   }
  },
  "credits": [
