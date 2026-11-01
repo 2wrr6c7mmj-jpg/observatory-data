@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-01T05:53:03Z",
+ "generated_utc": "2026-11-01T06:16:08Z",
  "state": "warn",
  "summary": {
   "ok": 8,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-10-31T11:02:10Z",
-   "heartbeat_age_h": 18.8,
+   "heartbeat_age_h": 19.2,
    "data_date": "2026-10-26",
    "data_date_tz": "UTC",
    "data_age_days": 6,
@@ -106,6 +106,46 @@
      "level": "warn",
      "code": "no_scene",
      "text": "ZDH：現行の範囲（ZDH-land-v2）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "QJG：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "QDH：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "XSN：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "LSN：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "SWS：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "XMN：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "STU：現行の範囲（None）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "MAW：現行の範囲（None）の撮影の行が無い"
     }
    ],
    "values": {
@@ -121,7 +161,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-10-31T09:57:23Z",
-   "heartbeat_age_h": 19.9,
+   "heartbeat_age_h": 20.3,
    "data_date": "2026-10-29",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -150,7 +190,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-10-31T14:44:41Z",
-   "heartbeat_age_h": 15.1,
+   "heartbeat_age_h": 15.5,
    "data_date": "2026-10-31",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -194,7 +234,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T04:13:20Z",
-   "heartbeat_age_h": 1.7,
+   "heartbeat_age_h": 2.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -212,7 +252,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-01T04:13:17Z",
-   "heartbeat_age_h": 1.7,
+   "heartbeat_age_h": 2.0,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -230,7 +270,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-01T04:13:36Z",
-   "heartbeat_age_h": 1.7,
+   "heartbeat_age_h": 2.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -318,6 +358,62 @@
     "publish": "trial",
     "trial": true,
     "mask_version": "ZDH-land-v2"
+   },
+   {
+    "site_id": "QJG",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "QDH",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "XSN",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "LSN",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "SWS",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "XMN",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "STU",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
+   },
+   {
+    "site_id": "MAW",
+    "name": null,
+    "publish": "trial",
+    "trial": true,
+    "mask_version": null
    }
   ],
   "jcg": {
@@ -541,9 +637,7 @@
    "SYL",
    "SLP",
    "QGZ",
-   "ZDH"
-  ],
-  "sites_configured_not_daily": [
+   "ZDH",
    "QJG",
    "QDH",
    "XSN",
@@ -553,6 +647,7 @@
    "STU",
    "MAW"
   ],
+  "sites_configured_not_daily": [],
   "changes_latest": {
    "date": "2026-10-31",
    "version": "ZDH の区画 A1 を多角形に、QGZ-land-v2（置くだけ。QGZ は QGZ-land-v1 のまま。湛江・SYL・SLP は変えない）"
