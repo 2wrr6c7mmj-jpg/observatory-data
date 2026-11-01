@@ -52,7 +52,7 @@ from pathlib import Path
 
 import numpy as np
 
-EST2_VERSION = "est-2"
+EST2_VERSION = "est-2.1"   # est-2 on the berth lines only (berth-1, sat/berths.py; 2026-11-01)
 CALIB_FILE = Path(__file__).with_name("quay_est2_calib.json")   # #7 (sat/quay_est2_calib.py); absent: placeholders
 
 C_VALUES = (1, 2, 3)
@@ -730,7 +730,10 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
     pairs = pairs if pairs is not None else (pairs_of(rows) if rows else {})
     feats = load_features(out)
     by_scene: dict = {}
+    from . import berths   # berth-1: only stretches on a berth line, past scenes included (est-2 is recomputed)
     for f in feats:
+        if not berths.feature_ok(berths.for_site(cfg.get(f["site_id"]) or {"id": f["site_id"]}), f, f["coords"]):
+            continue
         by_scene.setdefault((f["site_id"], f["acquired_utc"], f.get("mask_version") or ""), []).append(f)
     sites: dict = {}
     out_rows, scenes = [], []

@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2
+from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2
 from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
@@ -419,8 +419,11 @@ class Store:
             def features_for(site: dict, month: str) -> list[dict]:
                 p = self.out / detections_rel(site, month)
                 return json.loads(p.read_text(encoding="utf-8"))["features"] if p.exists() else []
+            def classify(site: dict, points: list[tuple[float, float]]) -> list[str] | None:
+                bt = berths.for_site(site)
+                return bt.classify(points) if bt.lines.get("ways") else None
             r = chips.update(self.out, [s for s in self.sites if s.get("enabled")], self.rows, features_for,
-                             mask_tag, row_mask_tag)
+                             mask_tag, row_mask_tag, classify=classify)
             if r["cleared"]:
                 write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
         except Exception as e:  # noqa: BLE001
@@ -497,6 +500,18 @@ def series_breaks(sites: list[dict]) -> list[dict]:
                 "note": (f"監視範囲を変更（旧範囲 v{h['mask_version']}：{h.get('note', '')}）。mask_version が違う行の数は範囲が違うため直接比べない。"
                          "新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"),
             })
+    for site in sites:
+        if not site.get("enabled"):
+            continue
+        out.append({
+            "site_id": site["id"], "kind": "berth_only", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
+            "from_version": "quay-v1・est-2", "to_version": f"{quay.QUAY_VERSION}・{quay_est2.EST2_VERSION}（{berths.VERSION}）",
+            "date_utc": berths.SINCE_UTC,
+            "note": (f"集計の対象を岸壁に限定（{berths.SINCE_UTC}）：岸壁の数（quay_counts.csv の quay_version＝{quay.QUAY_VERSION} の行）・"
+                     "推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。"
+                     "quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。"
+                     f"est-2 は毎回保存済みのファイルから全撮影を数え直すので、{quay_est2.EST2_VERSION} は過去の撮影も岸壁だけで計算した値"),
+        })
     return out
 
 
@@ -687,6 +702,8 @@ def site_status(site: dict) -> dict:
             "est2_calib_label": quay_est2.calib_info(site["id"])["calib_label"],
             "est2_calib_n": quay_est2.calib_info(site["id"])["calib_n"],
             "label_freeze_utc": qc.get("label_freeze_utc"),
+            "berths": ({**berths.Berths(site, quay_lines.load(site["id"], lv)).counts(), "version": berths.VERSION}
+                       if quay_lines.load(site["id"], lv) is not None else None),
         },
     }
     if site.get("sources"):
@@ -725,7 +742,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "ship_counts.csv": "1 行＝1 撮影×1 地点×1 範囲版（mask_version）。区画の列 sector_a_*・sector_b_* は区画が 1 つ＋残りの地点（湛江）だけ。他の地点は空（区画ごとの値は quay_sectors.csv）",
             "detections/<地点>/YYYY-MM.geojson・quay/<地点>/YYYY-MM.geojson": "湛江以外の地点（layout＝per_site）の候補と岸壁の占有区間。湛江は従来の detections/YYYY-MM.geojson・quay/YYYY-MM.geojson",
             "quay_sectors.csv": ("区画ごとの岸壁の数（縦持ち）：1 行＝1 撮影×1 地点×1 範囲版×1 区画。role（naval＝軍港の桟橋・岸壁、other＝水道・商港 など）、"
-                                 "quay-v1 の最小〜最大、est-1 の最頻値・80% 区間、est-2 の中央値・80% 区間と較正の出どころ（est2_calib_source）。"
+                                 "quay-v1・quay-v2 の最小〜最大、est-1 の最頻値・80% 区間、est-2 の中央値・80% 区間と較正の出どころ（est2_calib_source）。"
                                  "source＝quay_counts（横持ちの列から）の行は、このファイルを作る前の撮影を quay_counts.csv の区画 A・B の列から写したもの"),
             "quay_est2/<地点>.csv・quay_est2/<地点>.json": "湛江以外の地点の est-2（列は quay_est2.csv と同じ、区画 A・B の列は空。あわせて calib_source＝較正の出所、weights_version・weights_status・weights_conf_level・weights_conf＝est-1 の重みの版・状態・確度、incidence_deg・incidence_source・incidence_extrapolated＝使った入射角と出所、較正の範囲外か）。湛江は従来の quay_est2.csv・quay_est2.json",
             "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
@@ -733,14 +750,17 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）。color/ は各地点の最新 10 撮影だけ残す（古いものは消し、ship_counts.csv の color_image・color_thumb を空にする）。1 枚が 300 KB を超えるときだけ品質を下げて保存する",
             "chips/index.json・chips/<地点>/<撮影時刻>.json": ("サイトが赤枠を重ねるための索引（chips-1）。index＝地点ごとの最新 10 撮影（新しい順）の画像・縮小版・切り出しファイルの場所と候補数。"
                                                    "切り出しファイル＝画像の大きさ（image_px、凡例込み）、範囲（bbox）、画素の大きさ、候補ごとの枠（box_px＝画像左上が原点の画素、box_lonlat＝緯度経度）・長さの目安・信頼度（reliability・credibility）。"
-                                                   "出典の文を credit に持つ。枠は画像に焼き込まない。外洋は空"),
+                                                   "出典の文を credit に持つ。枠は画像に焼き込まない。外洋は空。"
+                                                   "berth-1（2026-11-01〜）：岸壁帯の候補のうち船が着く線（sat/berths.json）に沿わないものは candidates に出さず、"
+                                                   "件数だけ excluded_counts（off_berth＝線の無い陸際、coastline＝着かない海岸線沿い）に残す。港内水域の候補は今までどおり"),
             "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",
             "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）。s2_requests・s2_processing_units＝そのうち Sentinel-2（s2nc-1）の分",
             "s2_scenes.csv": "Sentinel-2 L2A の撮影日ごとの雲の判定（1 行＝1 日×1 地点×1 範囲版。result・雲の割合・PU）。clear の日だけ画像あり（s2）",
             "s2/<地点>/v<版>/<撮影時刻>.webp": "Sentinel-2 の自然色（試行、表示だけ）と縮小版 .thumb.webp",
             "CHANGES.md": "定義変更の記録",
-            "quay_counts.csv": "岸壁の占有数（quay-v1、試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ",
+            "quay_counts.csv": ("岸壁の占有数（試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ。"
+                                "quay_version＝quay-v2（2026-11-01〜）の行は船が着く線（sat/berths.json）の区間だけ、quay-v1 の行は海岸線の区間も含む（series_breaks）"),
             "quay/YYYY-MM.geojson": "撮影月ごとの岸壁の占有区間（線、水際から 15 m 沖に描く。長さ・数の幅・横抱きの可能性つき）。線は OSM 由来（attribution・license）",
             "quay/<地点>-zone-prior.json": "推定 est-1 の区画ごとの長さ 6 階級のディリクレ（初期値 alpha0 と更新後の alpha、更新に使った撮影）",
             "quay_est2.csv": ("推定 est-2（試行・較正 1 回目、一部は仮置き）：1 行＝1 撮影。軍艦の可能性が高い船の隻数の中央値とモデル内の 80% 区間（地点・区画 A・B）、"
@@ -759,7 +779,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "relative_orbit": "相対軌道（不明は空）",
             "incidence_deg": "入射角（地点の水域の中央値、度）",
             "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数",
-            "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数",
+            "quay_candidates": ("岸壁帯（陸マスクから 50 m 以内）の候補数。berth-1（2026-11-01〜、quay.berths）からは船が着く線に沿う候補だけ"
+                                "（着かない海岸線沿い・線の無い陸際の候補は detections の GeoJSON に残すが数えない。除いた数は status.json の quay_band_excluded）"),
             "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
             "mask_version": "陸マスクの版（＝監視範囲の版）。版が違う行は範囲が違い、直接比べない",
             "detector_version": "検出設定の版",
@@ -778,6 +799,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
         "quay": {
             "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
             "method": quay.settings(),
+            "berths": berths.settings(),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
             "estimate2_evaluation": est2_eval_ref(out),
@@ -860,6 +882,15 @@ class QuayContext:
         self._geom = None
         self._bl: dict = {}
         self._model = None
+        self._berths = None
+
+    def berths(self) -> "berths.Berths | None":
+        """berth-1: the site's berth lines (sat/berths.json) on its quay lines; None without quay lines."""
+        if self.lines is None:
+            return None
+        if self._berths is None:
+            self._berths = berths.Berths(self.site, self.lines)
+        return self._berths
 
     def model(self) -> quay_est.Model:
         if self._model is None:
@@ -992,6 +1023,17 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
     return feats
 
 
+def classify_band(bt: "berths.Berths | None", dets: list[dict]) -> dict | None:
+    """berth-1: mark quay-band candidates off the berth lines (d["berth_excluded"] = "coastline" / "off_berth");
+    open-water candidates are never touched. Returns the counts by reason, or None without quay lines."""
+    if bt is None:
+        return None
+    band = [d for d in dets if d["zone"] == "quay"]
+    for d, why in zip(band, bt.classify([(d["lon"], d["lat"]) for d in band])):
+        d["berth_excluded"] = why
+    return {r: sum(d.get("berth_excluded") == r for d in band) for r in berths.REASONS}
+
+
 def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.ndarray, vh: np.ndarray,
                sectors: list[dict], entry: dict, log=print) -> str:
     """Quay count of one scene against the baseline of its orbit; never stops the run."""
@@ -1009,6 +1051,9 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
             clat = (float(site["bbox"][1]) + float(site["bbox"][3])) / 2  # the bbox centre; no latitude: no look azimuth
         look = quay.look_azimuth(acq.get("orbit_direction"), float(clat)) if clat is not None else None
         q = quay.count(qctx.geometry(), vv, vh, layers, lambda lo, la: sector_of(sectors, lo, la), look_az_deg=look)
+        bt = qctx.berths()  # berth-1: only the stretches on a berth line are counted and judged
+        q = quay.restrict(q, lambda sg: bt.stretch_ok(sg["kind"], sg["way_id"], sg["line"]), qctx.geometry().cfg["cluster_m"])
+        entry["quay_excluded"] = {**q["excluded"], "berth_version": berths.VERSION}
         bver = f"ro{bmeta['relative_orbit']}-{bmeta['version']}"
         cred = fbase.credibility(int(bmeta["scenes"]), int(fbase.site_config(site)["min_scenes"]))
         row = {
@@ -1064,7 +1109,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
                           "mask_version": mask_tag(site), "sector_id": sc["id"], "sector_name": sc.get("name"),
                           "role": sc["role"], "occupied_min": mn, "occupied_max": mx,
                           "est_version": quay_est.EST_VERSION if st else "", "est_mode": st["mode"] if st else "",
-                          "est_p10": st["p10"] if st else "", "est_p90": st["p90"] if st else "", "source": "quay-v1"})
+                          "est_p10": st["p10"] if st else "", "est_p90": st["p90"] if st else "", "source": quay.QUAY_VERSION})
         store.add_sectors(srows)
     except Exception as e:
         entry.update(quay_result="error", quay_error=str(e)[:300])
@@ -1076,7 +1121,9 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
     if est is not None:
         et = (f"、推定 est-1 最頻 {est['all']['mode']}（80% {est['all']['p10']}〜{est['all']['p90']}、平均 {est['all']['mean']}、"
               f"60 m 以上 {est['warship']['mode']}）" + "".join(f" {k} {v['mode']}（{v['p10']}〜{v['p90']}）" for k, v in est["by_sector"].items()))
-    return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}、基準 {bver} n={bmeta['scenes']}）{et}"
+    ex = q.get("excluded") or {}
+    xt = f"、着かない線の {ex['segments']} 区間を除外" if ex.get("segments") else ""
+    return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}{xt}、基準 {bver} n={bmeta['scenes']}）{et}"
 
 
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
@@ -1163,12 +1210,16 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
                 d["lon"], d["lat"] = float(lon), float(lat)
                 d["sector"] = sector_of(sectors, d["lon"], d["lat"])
+            # berth-1: quay-band candidates off the berth lines are kept in detections/ but not counted
+            band_excluded = classify_band(qctx.berths(), dets)
+            if band_excluded is not None:
+                entry["quay_band_excluded"] = band_excluded
             image = image_path(site, acq["acquired_utc"]) if makes_png(site) else ""
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
                 inc = round(float(np.nanmedian(lia[valid_water])), 2)
             nh = sum(d["zone"] == "harbour" for d in dets)
-            nq = sum(d["zone"] == "quay" for d in dets)
+            nq = sum(d["zone"] == "quay" and not d.get("berth_excluded") for d in dets)
             row = {
                 "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
                 "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
@@ -1180,7 +1231,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             }
             for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 for zone in ("harbour", "quay"):
-                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] for d in dets)
+                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] and not d.get("berth_excluded")
+                                                      for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
                 row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
             quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors)) if makes_png(site) else None
@@ -1206,7 +1258,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         store.note_scene(entry)
         summary["counted"] += 1
         by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] for d in dets)}"
-                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] for d in dets)}" for sc in sectors)
+                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and not d.get('berth_excluded') for d in dets)}"
+                            for sc in sectors)
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
             f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）{qtext}")
     if len(new) > max_scenes:

@@ -33,7 +33,7 @@ from .baseline import smooth_db
 from .grid import Grid, dilate
 from .osm_mask import LAND, WATER
 
-QUAY_VERSION = "quay-v1"
+QUAY_VERSION = "quay-v2"   # quay-v1 + berth-1 (only the stretches on a berth line, sat/berths.py; 2026-11-01)
 DEFAULTS = {
     "step_m": 10.0,
     "inner_m": (5.0, 15.0, 25.0),       # 0-30 m band (pixel centres every 10 m)
@@ -462,7 +462,12 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
                 "sector": sector_of(lon, lat) if sector_of else None,
                 "line": [[round(float(pr["lon"][i]), 6), round(float(pr["lat"][i]), 6)] for i in idx],
             })
-    clusters = cluster(segs, cfg["cluster_m"])
+    return summarize(segs, cfg["cluster_m"], round(n_data / n_ok, 3) if n_ok else 0.0)
+
+
+def summarize(segs: list[dict], cluster_m: float, coverage: float) -> dict:
+    """Totals of occupied stretches: clusters (sets ``cluster`` / ``cluster_lead`` on each), min, max, by sector."""
+    clusters = cluster(segs, cluster_m)
     by_sector: dict = {}
     total_min = 0
     for ci, members in enumerate(clusters, 1):
@@ -477,9 +482,22 @@ def count(geom: Geometry, vv_db: np.ndarray, vh_db: np.ndarray, base: dict, sect
     return {
         "min": total_min, "max": sum(s["max"] for s in segs), "clusters": len(clusters),
         "segments": segs, "rafted": sum(s["rafted"] for s in segs),
-        "coverage": round(n_data / n_ok, 3) if n_ok else 0.0,
+        "coverage": coverage,
         "by_sector": by_sector,
     }
+
+
+def restrict(q: dict, keep, cluster_m: float = DEFAULTS["cluster_m"]) -> dict:
+    """``q`` (from ``count``) with only the stretches where ``keep(segment)`` is true (berth-1: the stretches
+    on a berth line, sat/berths.py), clustered and totalled again. ``excluded``: the stretches left out
+    (count, length) and ``excluded_segments`` (the left-out stretches themselves, as counted)."""
+    kept = [dict(s) for s in q["segments"] if keep(s)]
+    out_segs = [s for s in q["segments"] if not keep(s)]
+    r = summarize(kept, cluster_m, q["coverage"])
+    r["excluded"] = {"segments": len(out_segs), "length_m": int(sum(s["length_m"] for s in out_segs)),
+                     "max": int(sum(s["max"] for s in out_segs))}
+    r["excluded_segments"] = out_segs
+    return r
 
 
 BLIND_P10_DB = -8.0  # the baseline's VV p10 above this in the inner band: a ship there is unlikely to show
@@ -558,6 +576,9 @@ def settings() -> dict:
     return {
         "version": QUAY_VERSION,
         "lines": "OSM の man_made=pier・quay と natural=coastline（sat/masks/<地点>-quay-v<版>.json）。水側は陸マスクで決める（桟橋は両側）",
+        "berths": ("quay-v2（2026-11-01〜）：数・推定に使うのは船が着く線（berth-1、sat/berths.json）の占有区間だけ。着く線＝pier・quay の線（手書きの線を含む）と、"
+                   "地点ごとの許可リストで戻した海岸線の区間。それ以外の海岸線の区間は占有があっても数えない（区間の中点で判定）。帯の画素の持ち主（最も近い線）は全部の線で決める（quay-v1 と同じ）。"
+                   "quay-v1（〜2026-11-01）の行は海岸線も含む"),
         "bands_m": {"inner": [0, 30], "outer": [30, 60]},
         "step_m": c["step_m"],
         "occupied": f"帯の中の ΔVV（今回−基準 p10、3×3 平均）≥ +{c['dvv_db']:g} dB かつ ΔVH ≥ +{c['dvh_db']:g} dB、かつ今回の VV ≥ {c['vv_min_db']:g} dB",

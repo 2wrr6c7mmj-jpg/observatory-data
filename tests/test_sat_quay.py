@@ -200,12 +200,15 @@ class RunQuayTest(unittest.TestCase):
             self.assertEqual(r["relative_orbit"], "157")
             self.assertEqual(r["baseline_version"], "ro157-bl-1")
             self.assertEqual(r["credibility"], "3")
-            self.assertEqual((r["occupied_min"], r["occupied_max"]), ("2", "3"))
-            self.assertEqual((r["sector_a_min"], r["sector_a_max"], r["sector_b_min"], r["sector_b_max"]), ("1", "1", "1", "2"))
+            # berth-1: the ship on the coastline (not a berth line) is left out; only the pier's ship counts
+            # (quay-v1 counted 2-3: pier 1 in A, coastline 1-2 in B)
+            self.assertEqual(r["quay_version"], "quay-v2")
+            self.assertEqual((r["occupied_min"], r["occupied_max"]), ("1", "1"))
+            self.assertEqual((r["sector_a_min"], r["sector_a_max"], r["sector_b_min"], r["sector_b_max"]), ("1", "1", "0", "0"))
             self.assertTrue((out / r["change_image"]).exists())
             self.assertTrue((out / r["change_thumb"]).exists())
             gj = json.loads((out / "quay" / "2026-10.geojson").read_text())
-            self.assertEqual(len(gj["features"]), 2)
+            self.assertEqual([f["properties"]["line_kind"] for f in gj["features"]], ["pier"])
             self.assertEqual(gj["features"][0]["geometry"]["type"], "LineString")
             self.assertEqual(gj["features"][0]["properties"]["status"], "trial")
             # est-1: the distribution next to the old range, per stretch and in the zone prior
@@ -225,6 +228,8 @@ class RunQuayTest(unittest.TestCase):
             self.assertEqual(zp["applied"], [r["acquired_utc"]])
             st = {x["relative_orbit"]: x for x in json.loads((out / "status.json").read_text())["scenes"]}
             self.assertEqual(st[157]["quay_result"], "counted")
+            self.assertEqual(st[157]["quay_excluded"]["segments"], 1)
+            self.assertEqual(st[157]["quay_excluded"]["max"], 2)
             self.assertEqual(st[84]["quay_result"], "no_baseline")
             # ship_counts.csv (the CFAR count) is still written as before
             self.assertEqual(len(run.read_csv(out / "ship_counts.csv")), 2)

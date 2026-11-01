@@ -24,7 +24,8 @@ if np is not None:
 @unittest.skipUnless(np is not None, "numpy not installed")
 class ZhanjiangUnchangedTest(unittest.TestCase):
     """The code before PR-1 (9e86565) and this code, on the same scenario and the same machine
-    (tests/sat_zjg_golden.py): Zhanjiang's files must be byte for byte the same."""
+    (tests/sat_zjg_golden.py): Zhanjiang's files must be byte for byte the same, except the intended change
+    of berth-1 (2026-11-01, sat_zjg_golden.BERTH_CHANGED: only the stretches and candidates on a berth line)."""
 
     def test_every_zjg_file_is_byte_identical(self):
         with tempfile.TemporaryDirectory() as d:
@@ -35,9 +36,24 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         self.assertEqual(new["quay_results"], ["counted", "counted"])
         self.assertGreater(len(old["files"]), 20)
         changed = sorted(k for k in old["files"] if new["files"].get(k) != old["files"][k])
-        if changed:  # visible in the Actions annotations
-            print("::error::Zhanjiang outputs differ from 9e86565: " + ", ".join(changed))
-        self.assertEqual(changed, [], "湛江の出力が変わった")
+        unexpected = sorted(set(changed) - sat_zjg_golden.BERTH_CHANGED)
+        if unexpected:  # visible in the Actions annotations
+            print("::error::Zhanjiang outputs differ from 9e86565: " + ", ".join(unexpected))
+        self.assertEqual(unexpected, [], "湛江の出力が berth-1 以外で変わった")
+        # berth-1: the past rows are never rewritten; the new scenes count only the berth lines
+        self.assertEqual(old["past"], new["past"])
+        self.assertTrue(all(k == "pier" and w != 971239820 for k, w in new["new_lines"]), new["new_lines"])
+        self.assertIn("coastline", {k for k, _ in old["new_lines"]})
+        for o, n in zip(old["new_quay"], new["new_quay"]):
+            self.assertEqual(n["quay_version"], "quay-v2")
+            self.assertLess(int(n["occupied_max"]), int(o["occupied_max"]))
+        for o, n in zip(old["new_ship"], new["new_ship"]):
+            self.assertEqual(n["harbour_candidates"], o["harbour_candidates"])   # open water: as before
+            self.assertLessEqual(int(n["quay_candidates"]), int(o["quay_candidates"]))
+        for x in new["excluded"]:
+            self.assertGreater(x["quay_excluded"]["segments"], 0)
+            self.assertEqual(set(x["quay_band_excluded"]), {"off_berth", "coastline"})
+        self.assertEqual(new["est2_version"], ["est-2.1"])
         # chips/ (index and per-scene files for the site) is new; nothing else is added but NEW_FILES
         added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
         self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES))
@@ -50,7 +66,7 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         sectors = new["sectors"]
         fresh = [r for r in sectors if r["acquired_utc"] >= "2026-11"]
         self.assertEqual(sorted({(r["sector_id"], r["role"]) for r in fresh}), [("A", "naval"), ("B", "other")])
-        self.assertEqual({r["source"] for r in fresh}, {"quay-v1"})
+        self.assertEqual({r["source"] for r in fresh}, {"quay-v2"})
         self.assertEqual({r["est2_calib_source"] for r in sectors}, {"self"})
         past = [r for r in sectors if r["acquired_utc"] < "2026-11"]
         self.assertTrue(past and {r["source"] for r in past} == {"quay_counts（横持ちの列から）"})
