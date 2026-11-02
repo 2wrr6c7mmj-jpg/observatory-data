@@ -3,7 +3,7 @@
 The rows are the labelled sections the owner saw occupied (verified_c 1-3), paired with a Sentinel-1 scene within
 96 h (as sat/eval_occ.py: what is at hand are the public display images, orbit 157 ascending). For each row:
 
-* ``xsec``      the protrusion width W from the display image (sat/cols_xsec.section_width) and c from the
+* ``xsec``      the protrusion width W from the display image (``--raw``: from the raw sigma0 fetched again) (sat/cols_xsec.section_width) and c from the
                 calibrated model, calibrated leave-one-day-out (the day's rows never in its own fit), per direction;
 * ``xsec_raw``  the same model on the occupied depth of the stored quay feature (est-1 ``depth_m``, from the raw
                 sigma0 of the daily run) where a stretch lies on the section;
@@ -38,12 +38,14 @@ OUT = eval_occ.OUT
 EVAL_VERSION = "eval-cols-1"
 
 
-def rows_for_site(site_id: str, out: Path = OUT, ref: str | None = None) -> list[dict]:
+def rows_for_site(site_id: str, out: Path = OUT, ref: str | None = None, raw: Path | None = None) -> list[dict]:
     from .grid import Grid
     from .osm_mask import MASK_DIR, load_mask
     from .run import load_sites
     from . import s2_labels
-    base_rows = {(r["section_id"], r["date"]): r for r in eval_occ.evaluate_site(site_id, out, ref)["rows"]}
+    ev = eval_occ.evaluate_site(site_id, out, ref, raw=raw)
+    base_rows = {(r["section_id"], r["date"]): r for r in ev["rows"]}
+    est_out = Path(ev["est_out"])
     site = next(s for s in load_sites() if s["id"] == site_id)
     grid = Grid.for_site(site)
     mask, _ = load_mask(site_id, int(site.get("mask_version", 1)), MASK_DIR)
@@ -52,13 +54,13 @@ def rows_for_site(site_id: str, out: Path = OUT, ref: str | None = None) -> list
     secs = {s["section_id"]: s for s in s2_labels.sections(geom)}
     rv = json.loads((out / "labels" / site_id / "review.json").read_text(encoding="utf-8"))
     rv_secs = {s["id"]: {"way_id": s["way"], "side": s["side"], "line": s["line"]} for s in rv["sections"]}
-    scenes = {s["acquired_utc"]: s for s in eval_occ.display_scenes(site_id, out)}
-    chips = {}
+    scenes = {s["acquired_utc"]: s for s in (eval_occ.raw_scenes(site_id, raw) if raw else eval_occ.display_scenes(site_id, out))}
+    chips = {k: v.get("orbit_direction") for k, v in scenes.items() if v.get("orbit_direction")}
     for p in (out / "chips" / site_id).glob("*.json"):
         c = json.loads(p.read_text(encoding="utf-8"))
-        chips[c["acquired_utc"]] = c.get("orbit_direction")
+        chips.setdefault(c["acquired_utc"], c.get("orbit_direction"))
     feats_by: dict = {}
-    for f in e2.load_features(out):
+    for f in e2.load_features(est_out):
         if f["site_id"] == site_id:
             feats_by.setdefault(f["acquired_utc"], []).append(f)
     lat0 = float((site.get("quay") or {}).get("est2_lat0") or site.get("center_lat") or 18.2)
@@ -71,7 +73,9 @@ def rows_for_site(site_id: str, out: Path = OUT, ref: str | None = None) -> list
         if key not in dvv_cache:
             sc = scenes[key]
             bl = fbase.load(site, sc["orbit"])
-            vv, _vh = eval_occ.decode_display(sc["image"].read_bytes(), sc["chip_px"])
+            vv, _vh, pre = eval_occ.load_scene(sc)
+            if not pre:
+                vv = fbase.smooth_db(vv)   # the baseline is of 3x3 means
             dvv_cache[key] = vv - bl[0]["vv_p10"] if bl else None
         dvv = dvv_cache[key]
         w = cx.section_width(geom, secs[sid], dvv) if dvv is not None else None
@@ -130,8 +134,8 @@ def _summary(y: list[int], c: list[int], p: list[list[float]] | None = None) -> 
     return out
 
 
-def evaluate(out: Path = OUT, ref: str | None = None) -> dict:
-    rows = [r for sid in eval_occ.SITES for r in rows_for_site(sid, out, ref)]
+def evaluate(out: Path = OUT, ref: str | None = None, raw: Path | None = None) -> dict:
+    rows = [r for sid in eval_occ.SITES for r in rows_for_site(sid, out, ref, raw)]
     y = [r["owner_c"] for r in rows]
     res = {"version": EVAL_VERSION, "cols": cx.settings(), "rows": rows, "n": len(rows),
            "by_direction": {d: sum(r["direction"] == d for r in rows) for d in cx.DIRECTIONS},
@@ -170,8 +174,9 @@ def main(argv=None) -> int:
     ap.add_argument("--answers-ref")
     ap.add_argument("--write-calib", action="store_true")
     ap.add_argument("--json", type=Path)
+    ap.add_argument("--raw", type=Path, help="the raw sigma0 fetched again (sat/s1_recount.py --raw)")
     a = ap.parse_args(argv)
-    res = evaluate(a.out, a.answers_ref)
+    res = evaluate(a.out, a.answers_ref, a.raw)
     if a.json:
         a.json.write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     if a.write_calib:

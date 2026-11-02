@@ -130,7 +130,62 @@ def summary(rows: list[dict], key: str) -> dict:
 
 # ---------------------------------------------------------------- evaluation
 
-def evaluate_site(site_id: str, out: Path = OUT, ref: str | None = None, occ_cfg: dict | None = None, log=print) -> dict:
+def raw_scenes(site_id: str, raw: Path) -> list[dict]:
+    """The raw sigma0 fetched again (sat/s1_recount.py): <raw>/<site>/s1-<stamp>.npz with its .json."""
+    rows = []
+    for p in sorted((raw / site_id).glob("s1-*.npz")):
+        m = json.loads(p.with_suffix(".json").read_text(encoding="utf-8"))
+        rows.append({"acquired_utc": m["acquired_utc"], "orbit": int(m["relative_orbit"]), "path": p, "raw": True,
+                     "platform": m.get("platform"), "orbit_direction": m.get("orbit_direction"),
+                     "chip_px": (int(m["width"]), int(m["height"]))})
+    return rows
+
+
+def load_scene(sc: dict) -> tuple[np.ndarray, np.ndarray, bool]:
+    """(VV dB, VH dB, presmoothed): the raw sigma0 (not smoothed) or the display image (Lee filtered)."""
+    if sc.get("raw"):
+        from . import s1_recount
+        vv, vh, _ = s1_recount.load(sc["path"])
+        return vv, vh, False
+    vv, vh = decode_display(sc["image"].read_bytes(), sc["chip_px"])
+    return vv, vh, True
+
+
+def est2_on_raw(site_id: str, scenes: list[dict], out: Path = OUT, log=print) -> Path:
+    """est-2 for the raw scenes, by the daily run's own code on a copy of the published files (sat/run.py
+    count_quay, then Store.save, which recomputes est-2 for every scene): returns the copy's folder. Scenes that
+    already have a quay row (counted by the daily run from the same raw sigma0) are left as they are. No incidence
+    angle was fetched: est-2 uses the site's median incidence for these scenes."""
+    import shutil
+    import tempfile
+    from . import run
+    from .grid import Grid
+    from .osm_mask import MASK_DIR, load_mask
+    tmp = Path(tempfile.mkdtemp(prefix="eval-occ-raw-")) / "sat"
+    shutil.copytree(out, tmp, ignore=shutil.ignore_patterns("color", "images", "chips", "s2"))
+    site = next(s for s in run.load_sites() if s["id"] == site_id)
+    store = run.Store(tmp)
+    grid = Grid.for_site(site)
+    mask, _ = load_mask(site_id, int(site.get("mask_version", 1)), MASK_DIR)
+    qctx = run.QuayContext(site, grid, mask)
+    sectors = run.site_sectors(site)
+    tag = run.mask_tag(site)
+    have = {r["acquired_utc"] for r in store.quay_rows if r["site_id"] == site_id and run.row_mask_tag(r) == tag}
+    for sc in scenes:
+        if sc["acquired_utc"] in have:
+            continue
+        vv, vh, _ = load_scene(sc)
+        acq = {"acquired_utc": sc["acquired_utc"], "platform": sc.get("platform") or "sentinel-1",
+               "orbit_direction": sc.get("orbit_direction") or "ascending", "relative_orbit": sc["orbit"]}
+        entry = {"site_id": site_id, "acquired_utc": sc["acquired_utc"], "mask_version": tag}
+        run.count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log=lambda m: None)
+        log(f"{site_id} {sc['acquired_utc']}: {entry.get('quay_result')}")
+    store.save({"run_utc": "2026-11-03T00:00:00Z", "requests": 0})
+    return tmp
+
+
+def evaluate_site(site_id: str, out: Path = OUT, ref: str | None = None, occ_cfg: dict | None = None, log=print,
+                  raw: Path | None = None) -> dict:
     from .grid import Grid
     from .osm_mask import MASK_DIR, load_mask
     from .run import load_sites
@@ -145,11 +200,13 @@ def evaluate_site(site_id: str, out: Path = OUT, ref: str | None = None, occ_cfg
     rv_secs = {s["id"]: {"way_id": s["way"], "side": s["side"], "line": s["line"]} for s in rv["sections"]}
     day_t = {d["date"]: d["acquired_utc"] for d in rv["days"]}
     answers = [a for a in read_answers(site_id, out, ref) if a.get("verified") == "1" and a["section_id"] in secs]
-    scenes = [s for s in display_scenes(site_id, out) if (s["chip_px"][0], s["chip_px"][1]) == (grid.width, grid.height)]
-    est = json.loads((out / "quay_est2" / f"{site_id}.json").read_text(encoding="utf-8")) if (out / "quay_est2" / f"{site_id}.json").exists() else {"scenes": []}
+    scenes = raw_scenes(site_id, raw) if raw else display_scenes(site_id, out)
+    scenes = [s for s in scenes if (s["chip_px"][0], s["chip_px"][1]) == (grid.width, grid.height)]
+    est_out = est2_on_raw(site_id, scenes, out, log=lambda m: print(m, file=sys.stderr)) if raw else out
+    est = json.loads((est_out / "quay_est2" / f"{site_id}.json").read_text(encoding="utf-8")) if (est_out / "quay_est2" / f"{site_id}.json").exists() else {"scenes": []}
     est_by = {s["acquired_utc"]: s for s in est["scenes"]}
     feats_by: dict = {}
-    for f in e2.load_features(out):
+    for f in e2.load_features(est_out):
         if f["site_id"] == site_id:
             feats_by.setdefault(f["acquired_utc"], []).append(f)
     lat0 = float((site.get("quay") or {}).get("est2_lat0") or site.get("center_lat") or 18.2)
@@ -177,11 +234,11 @@ def evaluate_site(site_id: str, out: Path = OUT, ref: str | None = None, occ_cfg
                 cache[key] = None
                 continue
             layers, meta = bl
-            vv, vh = decode_display(sc["image"].read_bytes(), sc["chip_px"])
-            pv = occ_test.pvalues(vv, vh, layers, occ_cfg, n_scenes=int(meta.get("scenes") or 24), presmoothed=True)
+            vv, vh, pre = load_scene(sc)
+            pv = occ_test.pvalues(vv, vh, layers, occ_cfg, n_scenes=int(meta.get("scenes") or 24), presmoothed=pre)
             occ = occ_test.section_occupancy(geom, list(secs.values()), pv["p"], occ_cfg)
             samples: list = []
-            quay.count(geom, vv, vh, layers, presmoothed=True, samples_out=samples)
+            quay.count(geom, vv, vh, layers, presmoothed=pre, samples_out=samples)
             qocc = {}
             for sid, s in secs.items():
                 hit = np.asarray(samples[s["profile"]]["inner_hit"], bool)
@@ -206,7 +263,7 @@ def evaluate_site(site_id: str, out: Path = OUT, ref: str | None = None, occ_cfg
             p = p4(st)
             row["est2_p"], row["est2_c"] = round(1.0 - float(p[0]), 4), int(np.argmax(p))
         rows.append(row)
-    return {"site_id": site_id, "answers": len(answers), "days_answered": len({a["date"] for a in answers}),
+    return {"site_id": site_id, "est_out": str(est_out), "answers": len(answers), "days_answered": len({a["date"] for a in answers}),
             "scenes_at_hand": [s["acquired_utc"] for s in scenes], "rows_paired": len(rows),
             "days_paired": sorted({r["date"] for r in rows}),
             "metrics": {k: summary(rows, k) for k in ("est2", "quay_webp", "occ1")}, "rows": rows}
@@ -233,11 +290,12 @@ def plan(out: Path = OUT) -> dict:
     return res
 
 
-def evaluate(out: Path = OUT, ref: str | None = None, occ_cfg: dict | None = None) -> dict:
-    sites = {sid: evaluate_site(sid, out, ref, occ_cfg) for sid in SITES}
+def evaluate(out: Path = OUT, ref: str | None = None, occ_cfg: dict | None = None, raw: Path | None = None) -> dict:
+    sites = {sid: evaluate_site(sid, out, ref, occ_cfg, raw=raw) for sid in SITES}
     pooled_rows = [r for s in sites.values() for r in s["rows"]]
     return {"version": EVAL_VERSION, "occ": occ_test.settings() | (occ_cfg or {}),
-            "input": "表示用の WebP（chips、Lee 3×3・8 bit・非可逆）を dB に戻した画素。est2 は毎日の実行の生の σ0 から",
+            "input": ("取り直した生の σ0（sat/s1_recount.py）。est2 も同じ σ0 で毎日の実行の処理を流して計算" if raw else
+                      "表示用の WebP（chips、Lee 3×3・8 bit・非可逆）を dB に戻した画素。est2 は毎日の実行の生の σ0 から"),
             "pooled": {"rows": len(pooled_rows), "metrics": {k: summary(pooled_rows, k) for k in ("est2", "quay_webp", "occ1")}},
             "sites": sites, "plan": plan(out)}
 
@@ -247,8 +305,9 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--answers-ref", help="read the answers CSVs from this git ref")
     ap.add_argument("--json", type=Path, help="write the full result here")
+    ap.add_argument("--raw", type=Path, help="the raw sigma0 fetched again (sat/s1_recount.py --raw) instead of the display images")
     a = ap.parse_args(argv)
-    res = evaluate(a.out, a.answers_ref)
+    res = evaluate(a.out, a.answers_ref, raw=a.raw)
     if a.json:
         a.json.write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     brief = {"pooled": res["pooled"], "plan": res["plan"],
