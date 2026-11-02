@@ -95,7 +95,15 @@
     "est2_calib_note": "この地点の較正",
     "est2_calib_label": "較正済み（81 件）",
     "est2_calib_n": 81,
-    "label_freeze_utc": "2026-10-27"
+    "label_freeze_utc": "2026-10-27",
+    "berths": {
+     "berth_lines": 12,
+     "coastline_sections": 0,
+     "excluded_ways": [
+      "971239820"
+     ],
+     "version": "berth-1"
+    }
    }
   },
   {
@@ -267,7 +275,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 14,
+     "coastline_sections": 2,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -410,7 +424,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 10,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -525,7 +545,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 13,
+     "coastline_sections": 4,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -659,7 +685,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 39,
+     "coastline_sections": 2,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -781,7 +813,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 0,
+     "coastline_sections": 2,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -877,7 +915,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 14,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -996,7 +1040,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 10,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -1099,7 +1149,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 10,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -1196,7 +1252,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 23,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -1311,7 +1373,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 73,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -1424,7 +1492,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 23,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -1537,7 +1611,13 @@
     "est2_calib_note": "湛江の較正を流用（この港では未較正）",
     "est2_calib_label": "湛江流用（未較正）",
     "est2_calib_n": 0,
-    "label_freeze_utc": "2026-11-15"
+    "label_freeze_utc": "2026-11-15",
+    "berths": {
+     "berth_lines": 4,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "version": "berth-1"
+    }
    },
    "sources": [
     {
@@ -1567,6 +1647,136 @@
    "to_mask_version": "ZJG-land-v2",
    "date_utc": "2026-10-30",
    "note": "監視範囲を変更（旧範囲 v1：概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
+  },
+  {
+   "site_id": "ZJG",
+   "kind": "berth_only",
+   "from_mask_version": "ZJG-land-v2",
+   "to_mask_version": "ZJG-land-v2",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "SYL",
+   "kind": "berth_only",
+   "from_mask_version": "SYL-land-v2",
+   "to_mask_version": "SYL-land-v2",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "SLP",
+   "kind": "berth_only",
+   "from_mask_version": "SLP-land-v2",
+   "to_mask_version": "SLP-land-v2",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "QGZ",
+   "kind": "berth_only",
+   "from_mask_version": "QGZ-land-v1",
+   "to_mask_version": "QGZ-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "ZDH",
+   "kind": "berth_only",
+   "from_mask_version": "ZDH-land-v2",
+   "to_mask_version": "ZDH-land-v2",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "QJG",
+   "kind": "berth_only",
+   "from_mask_version": "QJG-land-v1",
+   "to_mask_version": "QJG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "QDH",
+   "kind": "berth_only",
+   "from_mask_version": "QDH-land-v2",
+   "to_mask_version": "QDH-land-v2",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "XSN",
+   "kind": "berth_only",
+   "from_mask_version": "XSN-land-v1",
+   "to_mask_version": "XSN-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "LSN",
+   "kind": "berth_only",
+   "from_mask_version": "LSN-land-v1",
+   "to_mask_version": "LSN-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "SWS",
+   "kind": "berth_only",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "XMN",
+   "kind": "berth_only",
+   "from_mask_version": "XMN-land-v1",
+   "to_mask_version": "XMN-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "STU",
+   "kind": "berth_only",
+   "from_mask_version": "STU-land-v1",
+   "to_mask_version": "STU-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "MAW",
+   "kind": "berth_only",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
   }
  ],
  "source": {
@@ -1586,19 +1796,19 @@
  "files": {
   "ship_counts.csv": "1 行＝1 撮影×1 地点×1 範囲版（mask_version）。区画の列 sector_a_*・sector_b_* は区画が 1 つ＋残りの地点（湛江）だけ。他の地点は空（区画ごとの値は quay_sectors.csv）",
   "detections/<地点>/YYYY-MM.geojson・quay/<地点>/YYYY-MM.geojson": "湛江以外の地点（layout＝per_site）の候補と岸壁の占有区間。湛江は従来の detections/YYYY-MM.geojson・quay/YYYY-MM.geojson",
-  "quay_sectors.csv": "区画ごとの岸壁の数（縦持ち）：1 行＝1 撮影×1 地点×1 範囲版×1 区画。role（naval＝軍港の桟橋・岸壁、other＝水道・商港 など）、quay-v1 の最小〜最大、est-1 の最頻値・80% 区間、est-2 の中央値・80% 区間と較正の出どころ（est2_calib_source）。source＝quay_counts（横持ちの列から）の行は、このファイルを作る前の撮影を quay_counts.csv の区画 A・B の列から写したもの",
+  "quay_sectors.csv": "区画ごとの岸壁の数（縦持ち）：1 行＝1 撮影×1 地点×1 範囲版×1 区画。role（naval＝軍港の桟橋・岸壁、other＝水道・商港 など）、quay-v1・quay-v2 の最小〜最大、est-1 の最頻値・80% 区間、est-2 の中央値・80% 区間と較正の出どころ（est2_calib_source）。source＝quay_counts（横持ちの列から）の行は、このファイルを作る前の撮影を quay_counts.csv の区画 A・B の列から写したもの",
   "quay_est2/<地点>.csv・quay_est2/<地点>.json": "湛江以外の地点の est-2（列は quay_est2.csv と同じ、区画 A・B の列は空。あわせて calib_source＝較正の出所、weights_version・weights_status・weights_conf_level・weights_conf＝est-1 の重みの版・状態・確度、incidence_deg・incidence_source・incidence_extrapolated＝使った入射角と出所、較正の範囲外か）。湛江は従来の quay_est2.csv・quay_est2.json",
   "detections/YYYY-MM.geojson": "撮影月ごとの候補（点、長さの目安つき）",
   "color/<地点>/v<版>/<撮影時刻>.webp": "疑似カラー（R＝VV、G＝VH、B＝VV−VH を逆向き）の WebP。範囲は全地点・全日で固定、表示用だけ 3×3 Lee フィルタ、凡例と出典は画像の下。候補の枠は焼き込まない（detections の GeoJSON から重ねる）。表示の版 s1fc-1 を入れてから処理した撮影のみ（それより前の撮影は VV の PNG のみ。再取得はしない）",
   "color/<地点>/v<版>/<撮影時刻>.thumb.webp": "その縮小版（320×320 に収める、凡例なし）。color/ は各地点の最新 10 撮影だけ残す（古いものは消し、ship_counts.csv の color_image・color_thumb を空にする）。1 枚が 300 KB を超えるときだけ品質を下げて保存する",
-  "chips/index.json・chips/<地点>/<撮影時刻>.json": "サイトが赤枠を重ねるための索引（chips-1）。index＝地点ごとの最新 10 撮影（新しい順）の画像・縮小版・切り出しファイルの場所と候補数。切り出しファイル＝画像の大きさ（image_px、凡例込み）、範囲（bbox）、画素の大きさ、候補ごとの枠（box_px＝画像左上が原点の画素、box_lonlat＝緯度経度）・長さの目安・信頼度（reliability・credibility）。出典の文を credit に持つ。枠は画像に焼き込まない。外洋は空",
+  "chips/index.json・chips/<地点>/<撮影時刻>.json": "サイトが赤枠を重ねるための索引（chips-1）。index＝地点ごとの最新 10 撮影（新しい順）の画像・縮小版・切り出しファイルの場所と候補数。切り出しファイル＝画像の大きさ（image_px、凡例込み）、範囲（bbox）、画素の大きさ、候補ごとの枠（box_px＝画像左上が原点の画素、box_lonlat＝緯度経度）・長さの目安・信頼度（reliability・credibility）。出典の文を credit に持つ。枠は画像に焼き込まない。外洋は空。berth-1（2026-11-01〜）：岸壁帯の候補のうち船が着く線（sat/berths.json）に沿わないものは candidates に出さず、件数だけ excluded_counts（off_berth＝線の無い陸際、coastline＝着かない海岸線沿い）に残す。港内水域の候補は今までどおり",
   "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
   "status.json": "処理したシーンと結果、最後の実行",
   "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）。s2_requests・s2_processing_units＝そのうち Sentinel-2（s2nc-1）の分",
   "s2_scenes.csv": "Sentinel-2 L2A の撮影日ごとの雲の判定（1 行＝1 日×1 地点×1 範囲版。result・雲の割合・PU）。clear の日だけ画像あり（s2）",
   "s2/<地点>/v<版>/<撮影時刻>.webp": "Sentinel-2 の自然色（試行、表示だけ）と縮小版 .thumb.webp",
   "CHANGES.md": "定義変更の記録",
-  "quay_counts.csv": "岸壁の占有数（quay-v1、試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ",
+  "quay_counts.csv": "岸壁の占有数（試行・精度未測定）。1 行＝1 撮影×1 地点×1 範囲版。撮影と同じ相対軌道の基準がある撮影だけ。quay_version＝quay-v2（2026-11-01〜）の行は船が着く線（sat/berths.json）の区間だけ、quay-v1 の行は海岸線の区間も含む（series_breaks）",
   "quay/YYYY-MM.geojson": "撮影月ごとの岸壁の占有区間（線、水際から 15 m 沖に描く。長さ・数の幅・横抱きの可能性つき）。線は OSM 由来（attribution・license）",
   "quay/<地点>-zone-prior.json": "推定 est-1 の区画ごとの長さ 6 階級のディリクレ（初期値 alpha0 と更新後の alpha、更新に使った撮影）",
   "quay_est2.csv": "推定 est-2（試行・較正 1 回目、一部は仮置き）：1 行＝1 撮影。軍艦の可能性が高い船の隻数の中央値とモデル内の 80% 区間（地点・区画 A・B）、全船の隻数、使えた手がかりの区間数（used_*）、人の目でも判断しにくい区間の数とその期待値（hard_*、注記だけ）、並べて見るための est-1 の 60 m 以上の値。取得済みのデータだけから毎回計算し直す",
@@ -1615,7 +1825,7 @@
   "relative_orbit": "相対軌道（不明は空）",
   "incidence_deg": "入射角（地点の水域の中央値、度）",
   "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数",
-  "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数",
+  "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数。berth-1（2026-11-01〜、quay.berths）からは船が着く線に沿う候補だけ（着かない海岸線沿い・線の無い陸際の候補は detections の GeoJSON に残すが数えない。除いた数は status.json の quay_band_excluded）",
   "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
   "mask_version": "陸マスクの版（＝監視範囲の版）。版が違う行は範囲が違い、直接比べない",
   "detector_version": "検出設定の版",
@@ -1691,8 +1901,9 @@
  "quay": {
   "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
   "method": {
-   "version": "quay-v1",
+   "version": "quay-v2",
    "lines": "OSM の man_made=pier・quay と natural=coastline（sat/masks/<地点>-quay-v<版>.json）。水側は陸マスクで決める（桟橋は両側）",
+   "berths": "quay-v2（2026-11-01〜）：数・推定に使うのは船が着く線（berth-1、sat/berths.json）の占有区間だけ。着く線＝pier・quay の線（手書きの線を含む）と、地点ごとの許可リストで戻した海岸線の区間。それ以外の海岸線の区間は占有があっても数えない（区間の中点で判定）。帯の画素の持ち主（最も近い線）は全部の線で決める（quay-v1 と同じ）。quay-v1（〜2026-11-01）の行は海岸線も含む",
    "bands_m": {
     "inner": [
      0,
@@ -1720,6 +1931,103 @@
     "depth": "depth_m＝ΔVV・ΔVH（今回の 3×3 平均−基準）で水際から 5〜120 m に占有が続く奥行き（2026-10-30 の feat-1 で 90→120 m）。depth_1x3_m＝今回を線に沿う 3 画素（−10・0・+10 m）だけで平均し法線方向には平均しない版（基準は 3×3 の p10 のまま）。どちらも区間の点の中央値、5 m 単位",
     "db_line": "外側の二回反射の線：区間の点の今回の VV（1×3）の断面を線形で平均し、奥行き（depth_1x3_m、無ければ depth_m、どちらも無ければ 45 m）＋15 m までの極大のうち最も強いものから 6 dB 以内で最も外側のものを取り、その山（−3 dB まで）のパワー重心の水際からの距離を db_line_m、山の値を db_line_db、そうした山の数（10 m 以内の重なりは 1 つ）を db_peaks とする（未検証。10 m 画素なので距離の分解能は約 10 m）",
     "pair_id": "同じ岸壁を2つの軌道で見る組（36 時間以内。その間に入出港があれば船は違う）：時刻順に、別の相対軌道の撮影で 36 時間以内のものと組にする（湛江では 157 と翌日の 84 など）。組は保存のたびに全行で作り直し、過去の撮影にも付く（過去の月の GeoJSON も書き直す）。時刻順に後から来る撮影では既存の組は変わらない"
+   }
+  },
+  "berths": {
+   "version": "berth-1",
+   "since_utc": "2026-11-01",
+   "file": "sat/berths.json",
+   "note": "船が着く場所（桟橋・岸壁・係留の区間）の定義。岸壁の数（quay-v2）・推定 est-1・est-2 と、公開の赤枠（chips）の岸壁帯の候補は、ここで「着く」とした線に沿うものだけを使う。着く線＝岸壁線（sat/masks/<地点>-quay-v<版>.json）のうち line_kind が pier・quay の線（手書きの線 sat/masks/<地点>-manual.geojson は岸壁線に負の id で入っている）。line_kind が coastline の線は原則「着かない」。岸壁として使われる海岸線の区間は coastline に way と区画（sector、その区画の中の部分だけ）か bbox [w, s, e, n] で戻す。exclude_ways は桟橋でも外す way。司令部の決定（2026-11-01、ユーザー指示「船が止まる岸壁ではない部分は集計や判定から外す」）",
+   "keep_m": 100.0,
+   "own_tolerance_m": 30.0,
+   "rules": {
+    "keep": "岸壁帯（陸マスクから 50 m 以内）の候補は、着く線まで keep_m 以内で、かつ着かない線より own_tolerance_m を超えて遠くないものだけ残す",
+    "coastline": "着かない海岸線（または exclude_ways の線）の方が近い岸壁帯の候補・占有区間",
+    "off_berth": "どの線からも keep_m より遠い岸壁帯の候補（線の無い陸際：島・防波堤・未収録の岸）",
+    "open_water": "港内水域（岸壁帯の外）の候補は今までどおり数え、赤枠にも出す（外さない）"
+   },
+   "sites": {
+    "ZJG": {
+     "coastline": [],
+     "exclude_ways": [
+      971239820
+     ],
+     "note": "海岸線 4 本（13975995・13976376・13977070・13978614）はすべて外す。13977070 は確認ページで所有者が 38 区間×日のうち 20 件を「判断できない」、占有ありは 4 件（設計書 est-2 の hard_ways）。桟橋 971239820（区画 B）も 5 件すべて「判断できない」で外す"
+    },
+    "SYL": {
+     "coastline": [
+      {
+       "way": 14129398,
+       "sector": "Y1",
+       "note": "修理施設の艤装岸壁（約 950 m、区画 Y1 の名前）"
+      },
+      {
+       "way": 14131254,
+       "sector": "X1",
+       "note": "西岸の杭の岸壁（約 500 m、区画 X1 の名前）"
+      }
+     ],
+     "exclude_ways": [],
+     "note": null
+    },
+    "QGZ": {
+     "coastline": [
+      {
+       "way": 15241280,
+       "sector": "A2",
+       "note": "内港の岸壁（区画 A2 の名前）"
+      },
+      {
+       "way": 15387629,
+       "sector": "A2",
+       "note": "同上"
+      },
+      {
+       "way": 219848835,
+       "sector": "A2",
+       "note": "同上"
+      },
+      {
+       "way": 219848840,
+       "sector": "A2",
+       "note": "同上"
+      }
+     ],
+     "exclude_ways": [],
+     "note": null
+    },
+    "ZDH": {
+     "coastline": [
+      {
+       "way": 597183279,
+       "sector": "A1",
+       "note": "西岸の横付け岸壁 W1〜W4（区画 A1 の名前）"
+      },
+      {
+       "way": 597183280,
+       "sector": "A2",
+       "note": "舟山水警区の岸壁（区画 A2 の名前）"
+      }
+     ],
+     "exclude_ways": [],
+     "note": null
+    },
+    "QJG": {
+     "coastline": [
+      {
+       "way": 43251729,
+       "sector": "A1",
+       "note": "潜水艦の桟橋が OSM に無く、岸壁線は海岸線だけ。区画 A1（桟橋の周り）の海岸線を手書きの線ができるまで仮に戻す（要 2部確認）"
+      },
+      {
+       "way": 1036282785,
+       "sector": "A1",
+       "note": "同上"
+      }
+     ],
+     "exclude_ways": [],
+     "note": null
+    }
    }
   },
   "estimate": {
@@ -5300,7 +5608,7 @@
    "depth": "depth_m＝内側の帯で占有のある点で、水際から法線方向 0〜120 m（5 m おき。feat-1 の前は 0〜90 m）に占有が続く奥行きの中央値。cols_hint＝round((depth−20)/18)（1〜3）は横に並ぶ列数の手がかりとして出すだけで推定には使わない（3×3 平均のにじみと艦幅の不確かさが大きく未検証）"
   },
   "estimate2": {
-   "version": "est-2",
+   "version": "est-2.1",
    "status": "較正 1 回目（人の目で確かめた S2 ラベル 81 区間×日、目視は所有者 1 人。列数の較正に使えたのは 45 件で少ない）。較正していない値（π・κ・列数の事前分布）は仮置きのまま。二回反射の線は #8 で較正したが交差検証で改善せず重み 0",
    "inputs": "quay_counts.csv と quay/YYYY-MM.geojson（取得済みの S1）、labels/ の S2 区間の線と船体の色（取得済み）。新たな取得はしない（PU 0）",
    "columns_abreast": {
