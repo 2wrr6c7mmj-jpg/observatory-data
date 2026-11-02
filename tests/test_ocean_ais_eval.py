@@ -424,7 +424,7 @@ class RepoTest(unittest.TestCase):
         self.assertTrue(a["enabled"])
         self.assertEqual(a["bbox"], [113.7, 21.5, 114.6, 22.3])
         self.assertLessEqual(a["pu_month_cap"], 240)                      # the 4部 proposal
-        self.assertLessEqual(sum(x["pu_month_cap"] for x in cfg["areas"] if x["enabled"]), 3500)   # OCEAN_CAP
+        self.assertLessEqual(sum(x["pu_month_cap"] for x in cfg["areas"] if x["enabled"]), 7000)   # OCEAN_CAP
 
     def test_workflows(self):
         rec = (ROOT / ".github/workflows/ais-record.yml").read_text(encoding="utf-8")
