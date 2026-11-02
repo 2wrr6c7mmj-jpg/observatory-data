@@ -129,6 +129,31 @@ def compute(vv_stack: list[np.ndarray], vh_stack: list[np.ndarray], keep: np.nda
     return out
 
 
+# bl-2 (occ-1, sat/occ_test.py; not built yet: needs a probe and PU, see sat/eval_occ.py plan): a longer period and
+# the low percentiles beside p10, for busy berths where p10 is a ship and not the empty berth. bl-1 is unchanged.
+BL2_VERSION = "bl-2"
+BL2_DEFAULTS = {**DEFAULTS, "lookback_days": 365, "max_scenes": 40, "low_pcts": (0, 5)}
+BL2_LAYERS = ("vv_p0", "vv_p5", "vh_p0", "vh_p5")
+
+
+def compute_low(vv_stack: list[np.ndarray], vh_stack: list[np.ndarray], keep: np.ndarray, cfg: dict | None = None) -> dict:
+    """bl-2 layers: the low percentiles (p0 = the minimum, p5) of VV and VH in dB, NaN where p10 would be no data."""
+    cfg = {**BL2_DEFAULTS, **(cfg or {})}
+    vv = np.stack(vv_stack).astype(np.float64)
+    vh = np.stack(vh_stack).astype(np.float64)
+    few = (np.isfinite(vv).sum(0) < cfg["min_valid"]) | ~keep
+    import warnings
+    out = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        for band, st in (("vv", vv), ("vh", vh)):
+            for p in cfg["low_pcts"]:
+                lay = np.nanpercentile(st, p, axis=0)
+                lay[few] = np.nan
+                out[f"{band}_p{p}"] = lay
+    return out
+
+
 def always_occupied(vv_p10: np.ndarray, vv_p90: np.ndarray) -> np.ndarray:
     with np.errstate(invalid="ignore"):
         return (vv_p10 > OCC_P10_DB) & ((vv_p90 - vv_p10) < OCC_SPREAD_DB)
