@@ -42,6 +42,11 @@ NEW_FILES = {"quay_sectors.csv"}    # outputs that did not exist before PR-1
 # of the past scenes stay the same (never rewritten) except est-2, which is recomputed for every scene.
 BERTH_CHANGED = {"quay/2026-11.geojson", "quay/ZJG-zone-prior.json", "quay_counts.csv", "quay_est2.csv", "quay_est2.json",
                  "ship_counts.csv", "status.json"}
+# The two scenes the fake client serves (Zhanjiang, orbits 157 and 84). The scenario's new rows are picked by
+# site and these times, never by position or by month: the copied records grow every day (other sites' scenes
+# of 2026-11-01T22Z sort between them since the daily run of 2026-11-02, and Zhanjiang's own daily scenes of
+# November will follow), and must not change what is compared.
+FAKE_UTC = ("2026-11-01T10:48:45Z", "2026-11-02T10:41:00Z")
 COPY = ["ship_counts.csv", "quay_counts.csv", "status.json", "usage.csv", "s2_scenes.csv",
         "quay/2026-10.geojson", "quay/ZJG-zone-prior.json", "quay/blind.geojson", "detections/2026-10.geojson",
         "labels/ZJG-s2-labels.csv", "labels/ZJG-s2-s1-match.csv", "labels/ZJG-s2-sections.geojson", "labels/meta.json",
@@ -59,6 +64,7 @@ from sat.osm_mask import load_mask
 
 src, work = Path(sys.argv[1]), Path(sys.argv[2])
 copy = json.loads(sys.argv[3])
+FAKE = tuple(json.loads(sys.argv[4]))
 NOW = datetime(2026, 11, 3, 1, 0, 0, tzinfo=timezone.utc)
 
 class Frozen(datetime):
@@ -74,8 +80,8 @@ class FakeClient:
         if collection is not None:  # Sentinel-2: no day
             return []
         p = {"platform": "sentinel-1c", "sat:orbit_state": "ascending", "sar:instrument_mode": "IW", "sar:polarizations": ["VV", "VH"]}
-        return [{"id": "g157", "properties": {**p, "sat:relative_orbit": 157, "datetime": "2026-11-01T10:48:45Z"}},
-                {"id": "g84", "properties": {**p, "sat:relative_orbit": 84, "datetime": "2026-11-02T10:41:00Z"}}]
+        return [{"id": "g157", "properties": {**p, "sat:relative_orbit": 157, "datetime": FAKE[0]}},
+                {"id": "g84", "properties": {**p, "sat:relative_orbit": 84, "datetime": FAKE[1]}}]
     def process(self, bbox, w, h, t0, t1, with_lia=True):
         self.requests += 1
         self.processing_units += 1.226
@@ -130,7 +136,10 @@ meta = {"site": {k: z.get(k) for k in keep},
         "baselines": [b for b in m["quay"]["baselines"] if b["site_id"] == "ZJG"],
         "blind": [b for b in m["quay"]["blind_stretches"] if b["site_id"] == "ZJG"],
         "tuning": m["quay"]["tuning"]["scenes"].get("ZJG"), "credit": m["attribution"]["credit"]}
-scenes = json.loads((out / "status.json").read_text(encoding="utf-8"))["scenes"][-2:]
+is_fake = lambda r: r.get("site_id") == "ZJG" and r.get("acquired_utc") in FAKE
+is_past = lambda r: r.get("site_id") == "ZJG" and r.get("acquired_utc") not in FAKE
+scenes = sorted((s for s in json.loads((out / "status.json").read_text(encoding="utf-8"))["scenes"] if is_fake(s)),
+                key=lambda s: s["acquired_utc"])
 sectors = []
 if (out / "quay_sectors.csv").exists():
     import csv
@@ -141,13 +150,13 @@ def rows_of(name):
     with (out / name).open(encoding="utf-8") as f:
         return list(csv.DictReader(f))
 sha = lambda x: hashlib.sha256(json.dumps(x, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
-past = {n: sha([r for r in rows_of(n) if r["acquired_utc"] < "2026-11"]) for n in ("quay_counts.csv", "ship_counts.csv")}
+past = {n: sha([r for r in rows_of(n) if is_past(r)]) for n in ("quay_counts.csv", "ship_counts.csv")}
 new_quay = [{k: r.get(k) for k in ("acquired_utc", "relative_orbit", "quay_version", "occupied_min", "occupied_max",
                                    "sector_a_min", "sector_a_max", "sector_b_min", "sector_b_max", "est_mode", "est_warship_mode")}
-            for r in rows_of("quay_counts.csv") if r["acquired_utc"] >= "2026-11"]
+            for r in rows_of("quay_counts.csv") if is_fake(r)]
 new_ship = [{k: r.get(k) for k in ("acquired_utc", "harbour_candidates", "quay_candidates", "sector_a_quay", "sector_b_quay")}
-            for r in rows_of("ship_counts.csv") if r["acquired_utc"] >= "2026-11"]
-gj = json.loads((out / "quay/2026-11.geojson").read_text(encoding="utf-8"))["features"]
+            for r in rows_of("ship_counts.csv") if is_fake(r)]
+gj = [f for f in json.loads((out / "quay/2026-11.geojson").read_text(encoding="utf-8"))["features"] if is_fake(f["properties"])]
 new_lines = sorted({(f["properties"]["line_kind"], f["properties"]["osm_way"]) for f in gj})
 e2 = rows_of("quay_est2.csv")
 print(json.dumps({"rc": rc, "files": files, "meta": meta, "sectors": sectors,
@@ -173,7 +182,7 @@ def old_package(dest: Path) -> Path:
 def start(root: Path, work: Path) -> subprocess.Popen:
     work.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "PYTHONPATH": str(root), "PYTHONDONTWRITEBYTECODE": "1"}
-    return subprocess.Popen([sys.executable, "-c", SCRIPT, str(SRC), str(work), json.dumps(COPY)],
+    return subprocess.Popen([sys.executable, "-c", SCRIPT, str(SRC), str(work), json.dumps(COPY), json.dumps(FAKE_UTC)],
                             cwd=str(work), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 
