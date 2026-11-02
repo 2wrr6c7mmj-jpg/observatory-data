@@ -263,7 +263,7 @@ def evaluate_site(site_id: str, out: Path = OUT, ref: str | None = None, occ_cfg
             p = p4(st)
             row["est2_p"], row["est2_c"] = round(1.0 - float(p[0]), 4), int(np.argmax(p))
         rows.append(row)
-    return {"site_id": site_id, "answers": len(answers), "days_answered": len({a["date"] for a in answers}),
+    return {"site_id": site_id, "est_out": str(est_out), "answers": len(answers), "days_answered": len({a["date"] for a in answers}),
             "scenes_at_hand": [s["acquired_utc"] for s in scenes], "rows_paired": len(rows),
             "days_paired": sorted({r["date"] for r in rows}),
             "metrics": {k: summary(rows, k) for k in ("est2", "quay_webp", "occ1")}, "rows": rows}
