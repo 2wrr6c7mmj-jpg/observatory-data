@@ -28,7 +28,7 @@ concurrency:
   group: probe-ocean-cfar
   cancel-in-progress: false
 env:
-  # 2026-11 の値（10-31 司令部、ocean-cfar-probe.yml・ports-archive.yml と同じ）：外洋 3,500（定期監視 案 B、probe と共用）、全体 6,000、余裕 450。
+  # 2026-11 の値（10-31 司令部、ocean-cfar-probe.yml・ports-archive.yml と同じ）：外洋 7,000（定期監視と probe の共用。11-02 ユーザー決定で 3,500 から引き上げ）、全体 9,000、余裕 450。
   # 根拠は ports-archive.yml の注記。12 月は値を書き直すまで「月が違う」で止まる。
   BUDGET_MONTH: '2026-11'
   OCEAN_CAP: '7000'
