@@ -64,11 +64,13 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         self.assertEqual(new["meta"], old["meta"])
         # quay_sectors.csv: the old scenes from the wide columns, the two new scenes from quay-v1
         sectors = new["sectors"]
-        fresh = [r for r in sectors if r["acquired_utc"] >= "2026-11"]
+        zjg = [r for r in sectors if r["site_id"] == "ZJG"]
+        fresh = [r for r in zjg if r["acquired_utc"] in sat_zjg_golden.FAKE_UTC]
+        self.assertEqual(sorted({r["acquired_utc"] for r in fresh}), sorted(sat_zjg_golden.FAKE_UTC))
         self.assertEqual(sorted({(r["sector_id"], r["role"]) for r in fresh}), [("A", "naval"), ("B", "other")])
         self.assertEqual({r["source"] for r in fresh}, {"quay-v2"})
-        self.assertEqual({r["est2_calib_source"] for r in sectors}, {"self"})
-        past = [r for r in sectors if r["acquired_utc"] < "2026-11"]
+        self.assertEqual({r["est2_calib_source"] for r in zjg}, {"self"})
+        past = [r for r in zjg if r["acquired_utc"] not in sat_zjg_golden.FAKE_UTC]
         self.assertTrue(past and {r["source"] for r in past} == {"quay_counts（横持ちの列から）"})
 
 
