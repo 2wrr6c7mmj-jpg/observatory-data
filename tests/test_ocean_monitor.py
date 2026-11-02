@@ -112,18 +112,21 @@ class ConfigTest(unittest.TestCase):
     def test_plan_b_areas_and_caps(self):
         cfg = m.load_config()
         on = {a["id"]: a for a in m.areas_in_order(cfg)}
-        self.assertEqual(set(on), {"SENKAKU", "YNG", "MYK", "TWE_S", "SAKI_S", "TSM", "OKI", "BASHI", "HKS"})
-        self.assertEqual({k for k, a in on.items() if a["mode"] == "monthly"}, {"OKI"})
+        self.assertEqual(set(on), {"SENKAKU", "YNG", "MYK", "TWE_S", "SAKI_S", "TSM", "OKI", "BASHI", "HKS", "ZSN",
+                                   "TWNE", "TWN", "TSN", "TSS", "TSW"})
+        self.assertEqual({k for k, a in on.items() if a["mode"] == "monthly"}, set())
         caps = {k: a["pu_month_cap"] for k, a in on.items()}
-        self.assertEqual(caps, {"SENKAKU": 70, "YNG": 360, "MYK": 460, "TWE_S": 490, "SAKI_S": 400, "TSM": 480, "OKI": 760,
-                                "BASHI": 300, "HKS": 180})
-        self.assertEqual({k for k, a in on.items() if a.get("min_revisit_days") == 4}, {"YNG", "TWE_S", "TSM"})
+        self.assertEqual(caps, {"SENKAKU": 150, "YNG": 600, "MYK": 650, "TWE_S": 600, "SAKI_S": 500, "TSM": 700, "OKI": 700,
+                                "BASHI": 550, "HKS": 180, "ZSN": 550, "TWNE": 250, "TWN": 400, "TSN": 400, "TSS": 420,
+                                "TSW": 350})
+        self.assertEqual({k for k, a in on.items() if a.get("min_revisit_days") == 4},
+                         {"YNG", "TWE_S", "TSM", "ZSN", "TWNE", "TWN", "TSN", "TSS", "TSW"})
         self.assertEqual([a["id"] for a in m.areas_in_order(cfg)][:3], ["SENKAKU", "YNG", "MYK"])
         off = {a["id"] for a in cfg["areas"] if not a.get("enabled")}
-        self.assertEqual(off, {"ZSN"})
+        self.assertEqual(off, set())
         self.assertEqual((on["BASHI"]["priority"], on["BASHI"]["mode"]), (2, "every_pass"))
         self.assertEqual(on["TWE_S"].get("min_area_share", cfg["min_area_share"]), 0.3)
-        self.assertLessEqual(sum(caps.values()), 3500)  # the areas' caps fit in OCEAN_CAP of plan B
+        self.assertLessEqual(sum(caps.values()), 7000)  # the areas' caps fit in OCEAN_CAP (2026-11-02)
         self.assertEqual(cfg["pixel_m"], 40)
 
     def test_priority_area_sea_is_not_counted_twice(self):

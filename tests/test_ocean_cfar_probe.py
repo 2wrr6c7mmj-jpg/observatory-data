@@ -576,7 +576,7 @@ class CapsAgreeTest(unittest.TestCase):
         self.assertEqual(float(mo["OCEAN_CAP"]), float(po["OCEAN_CAP"]))
         self.assertEqual(float(mo["GLOBAL_CAP"]), float(guard["global-cap"]))
         self.assertEqual(float(mo["GLOBAL_MARGIN"]), float(guard["global-margin"]))
-        self.assertEqual(float(mo["MAX_PU"]), 400.0)
+        self.assertEqual(float(mo["MAX_PU"]), 700.0)
 
     def test_monitor_workflow_shape(self):
         root = Path(__file__).resolve().parent.parent
