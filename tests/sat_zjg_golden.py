@@ -45,8 +45,10 @@ NEW_FILES = {"quay_sectors.csv"}    # outputs that did not exist before PR-1
 # with the rule switched on for the scenario's scenes (compare(windows_since=...)): only these files may differ besides
 # BERTH_CHANGED, and WINDOW_NEW_FILES is added (the regions left out, for the eye check).
 WINDOW_VERSION = "win-1"
+# Harbour candidates beyond band_m of the berth lines are not thrown away but counted apart as anchorage
+# (anchorage_counts.csv, user's decision 2026-11-03).
 WINDOW_CHANGED = {"ship_counts.csv", "detections/2026-11.geojson", "status.json"}
-WINDOW_NEW_FILES = {"windows/ZJG.geojson"}
+WINDOW_NEW_FILES = {"windows/ZJG.geojson", "anchorage_counts.csv"}
 BERTH_CHANGED = {"quay/2026-11.geojson", "quay/ZJG-zone-prior.json", "quay_counts.csv", "quay_est2.csv", "quay_est2.json",
                  "ship_counts.csv", "status.json"}
 # The two scenes the fake client serves (Zhanjiang, orbits 157 and 84). The scenario's new rows are picked by
@@ -168,14 +170,19 @@ new_ship = [{k: r.get(k) for k in ("acquired_utc", "harbour_candidates", "quay_c
 gj = [f for f in json.loads((out / "quay/2026-11.geojson").read_text(encoding="utf-8"))["features"] if is_fake(f["properties"])]
 new_lines = sorted({(f["properties"]["line_kind"], f["properties"]["osm_way"]) for f in gj})
 e2 = rows_of("quay_est2.csv")
+anch = [{k: r[k] for k in ("acquired_utc", "anchorage_candidates", "window_version")} for r in rows_of("anchorage_counts.csv")
+        if is_fake(r)] if (out / "anchorage_counts.csv").exists() else []
 dets = [f["properties"] for f in json.loads((out / "detections/2026-11.geojson").read_text(encoding="utf-8"))["features"] if is_fake(f["properties"])]
-cand = [{"utc": t, "harbour_kept": sum(d["zone"] == "harbour" and not d.get("window_excluded") for d in dets if d["acquired_utc"] == t),
+cand = [{"utc": t, "harbour_kept": sum(d["zone"] == "harbour" and not d.get("window_excluded") and d.get("window") != "anchorage"
+                                       for d in dets if d["acquired_utc"] == t),
+         "anchorage": sum(d.get("window") == "anchorage" for d in dets if d["acquired_utc"] == t),
+         "anchorage_zones": sorted({d["zone"] for d in dets if d["acquired_utc"] == t and d.get("window") == "anchorage"}),
          "window_excluded": sorted(d["window_excluded"] for d in dets if d["acquired_utc"] == t and d.get("window_excluded")),
          "all": sum(1 for d in dets if d["acquired_utc"] == t)} for t in FAKE]
 print(json.dumps({"rc": rc, "files": files, "meta": meta, "sectors": sectors,
                   "quay_results": [s.get("quay_result") for s in scenes],
                   "excluded": [{k: s.get(k) for k in ("quay_excluded", "quay_band_excluded")} for s in scenes],
-                  "window_excluded": [s.get("window_excluded") for s in scenes], "candidates": cand,
+                  "window_excluded": [s.get("window_excluded") for s in scenes], "candidates": cand, "anchorage_rows": anch,
                   "past": past, "new_quay": new_quay, "new_ship": new_ship, "new_lines": new_lines,
                   "est2_version": sorted({r["est2_version"] for r in e2}), "est2_rows": len(e2),
                   "est2_warship": [(r["acquired_utc"], r["warship_median"]) for r in e2]}, ensure_ascii=False))

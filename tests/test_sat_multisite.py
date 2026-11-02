@@ -56,6 +56,7 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         self.assertEqual(new["est2_version"], ["est-2.1"])
         # win-1 starts at Zhanjiang's windows.since_utc (after the scenario's scenes): not active here
         self.assertEqual(new["window_excluded"], [None, None])
+        self.assertEqual(new["anchorage_rows"], [])
         # chips/ (index and per-scene files for the site) is new; nothing else is added but NEW_FILES
         added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
         self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES))
@@ -95,15 +96,23 @@ class ZhanjiangWindowsTest(unittest.TestCase):
         added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
         self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES | sat_zjg_golden.WINDOW_NEW_FILES))
         self.assertEqual(old["past"], new["past"])            # rows of the earlier scenes never rewritten
-        for o, n, w, c, oc in zip(old["new_ship"], new["new_ship"], new["window_excluded"], new["candidates"], old["candidates"]):
+        reasons = ("land", "pond", "enclosed")
+        for o, n, w, c, oc, a in zip(old["new_ship"], new["new_ship"], new["window_excluded"], new["candidates"],
+                                     old["candidates"], new["anchorage_rows"]):
             self.assertEqual(w["version"], sat_zjg_golden.WINDOW_VERSION)
-            out = sum(w[r] for r in ("land", "pond", "enclosed", "off_band"))
+            self.assertNotIn("off_band", w)                      # open water is not thrown away (anchorage)
+            out = sum(w[r] for r in reasons)
             self.assertGreater(out, 0)
+            self.assertGreater(w["anchorage"], 0)
             # the detections are the same; the ones left out keep their reason in detections/ and are counted by reason
             self.assertEqual(c["all"], oc["all"])
             self.assertEqual(len(c["window_excluded"]), out)
-            self.assertEqual({r: c["window_excluded"].count(r) for r in ("land", "pond", "enclosed", "off_band")},
-                             {r: w[r] for r in ("land", "pond", "enclosed", "off_band")})
+            self.assertEqual({r: c["window_excluded"].count(r) for r in reasons}, {r: w[r] for r in reasons})
+            # anchorage: kept in detections/ (window = anchorage), counted in anchorage_counts.csv, only open harbour water
+            self.assertEqual(c["anchorage"], w["anchorage"])
+            self.assertEqual(int(a["anchorage_candidates"]), w["anchorage"])
+            self.assertEqual(a["window_version"], sat_zjg_golden.WINDOW_VERSION)
+            self.assertEqual(c["anchorage_zones"], ["harbour"])
             self.assertEqual(int(n["harbour_candidates"]), c["harbour_kept"])
             self.assertLess(int(n["harbour_candidates"]), int(o["harbour_candidates"]))
             self.assertLessEqual(int(n["quay_candidates"]), int(o["quay_candidates"]))

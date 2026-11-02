@@ -28,6 +28,7 @@ MIN_BOX_M = 30.0            # a box is at least this wide (a few pixels), as on 
 BOX_PAD_PX = 2.0
 MAX_IMAGE_BYTES = 300_000   # target for one colour image
 CREDIT = "Contains modified Copernicus Sentinel data {year}"
+WINDOW_LABELS = {"anchorage": "港内の錨泊（船が着く線から離れた水面。岸壁の候補とは別）"}
 CAPTION = "擬似カラー（レーダー VV・VH）。赤枠は自動検出の候補で、艦艇とは限らない。試行"
 _SAFE = re.compile(r"^(color|chips)/[A-Za-z0-9_\-./]+$")
 
@@ -80,6 +81,9 @@ def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px:
              "length_m": p.get("length_m"), "width_m": p.get("width_m"), "length_class": p.get("length_class"),
              "contrast_vv_db": p.get("contrast_vv_db"), "vh_ratio_db": p.get("vh_ratio_db"),
              "credibility": p.get("credibility"), "reliability": p.get("reliability"), "status": p.get("status")}
+        if p.get("window"):   # win-1: an anchorage candidate (open harbour water beyond the berth band), framed apart
+            c["window"] = p["window"]
+            c["window_label"] = WINDOW_LABELS.get(p["window"], p["window"])
         cands.append(c)
     mr, mc = grid.pixel_m
     return {

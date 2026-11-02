@@ -51,7 +51,8 @@ class WindowsTest(unittest.TestCase):
         self.assertEqual(self.reason(20.0, 20.0), "land")
         self.assertEqual(self.reason(12.0, 12.0), "pond")        # water not joined to the sea
         self.assertEqual(self.reason(69.0, 40.0), "enclosed")    # 20 m slot, under min_channel_m
-        self.assertEqual(self.reason(90.0, 95.0), "off_band")    # open water, far from any berth line
+        self.assertEqual(self.reason(90.0, 95.0), "anchorage")   # open water, far from any berth line: counted apart
+        self.assertEqual(self.w.classify([{"row": 90.0, "col": 95.0, "zone": "quay"}])[0], "")   # berth-1 decides the band
 
     def test_stable_bright_baseline_pixel_is_land(self):
         base = {"vv_p10": np.full(self.mask.shape, -20.0), "vv_p90": np.full(self.mask.shape, -12.0)}
@@ -62,7 +63,8 @@ class WindowsTest(unittest.TestCase):
     def test_regions_written_with_reasons(self):
         fc = self.w.regions()
         got = {f["properties"]["reason"] for f in fc["features"]}
-        self.assertEqual(got, {"pond", "enclosed", "off_band"})
+        self.assertEqual(got, {"pond", "enclosed", "anchorage"})
+        self.assertTrue(fc["has_berth_lines"])
         self.assertEqual(fc["version"], "win-1")
         for f in fc["features"]:
             ring = f["geometry"]["coordinates"][0]
@@ -70,6 +72,32 @@ class WindowsTest(unittest.TestCase):
             lo, la = f["properties"]["center"]
             self.assertTrue(110.0 <= lo <= 110.01 and 21.0 <= la <= 21.01)
         json.loads(windows.dumps(fc))
+
+    def test_no_berth_lines_skips_the_band(self):
+        w = windows.Windows(SITE, self.g, self.mask, berths.Berths(SITE, {"ways": []}, conf={}))
+        self.assertFalse(w.has_lines)
+        self.assertEqual(w.classify([{"row": 90.0, "col": 95.0, "zone": "harbour"}])[0], "")   # no anchorage split
+        self.assertEqual(w.classify([{"row": 12.0, "col": 12.0}])[0], "pond")                 # steps 1-3 still apply
+        self.assertEqual(w.regions()["counts_px"]["anchorage"], 0)
+
+    def test_series_break_only_with_quay_lines(self):
+        sites = [{**s, "enabled": True} for s in run.load_sites()[:1]]
+        no_lines = {**sites[0], "id": "NOLINES"}
+        br = [b for b in run.series_breaks(sites + [no_lines]) if b.get("kind") == "windows"]
+        self.assertEqual([b["site_id"] for b in br], [sites[0]["id"]])
+
+    def test_anchorage_frame_in_chips(self):
+        from sat import chips
+        f = {"type": "Feature", "geometry": {"type": "Point", "coordinates": [110.005, 21.005]},
+             "properties": {"n": 1, "zone": "harbour", "length_m": 40, "width_m": 20, "window": "anchorage"}}
+        doc = chips.scene_doc(SITE, self.g, {"acquired_utc": "2026-11-05T10:00:00Z", "color_image": "x.webp"}, [f],
+                              (10, 10), None, "TWN-land-v1")
+        self.assertEqual(doc["candidates"][0]["window"], "anchorage")
+        self.assertIn("錨泊", doc["candidates"][0]["window_label"])
+        f["properties"].pop("window")
+        doc = chips.scene_doc(SITE, self.g, {"acquired_utc": "2026-11-05T10:00:00Z", "color_image": "x.webp"}, [f],
+                              (10, 10), None, "TWN-land-v1")
+        self.assertNotIn("window", doc["candidates"][0])
 
     def test_active_from_since(self):
         self.assertFalse(windows.active(SITE, "2026-11-03T10:00:00Z"))
@@ -87,8 +115,10 @@ class WindowsTest(unittest.TestCase):
                 {"row": 12.0, "col": 12.0, "zone": "harbour"}]
         acq = {"acquired_utc": "2026-11-05T10:00:00Z", "relative_orbit": 157}
         res = run.classify_windows(Q(), SITE, acq, dets)
-        self.assertEqual(res, {"land": 0, "pond": 1, "enclosed": 0, "off_band": 1, "version": "win-1"})
-        self.assertEqual([d["window_excluded"] for d in dets], ["", "off_band", "pond"])
+        self.assertEqual(res, {"land": 0, "pond": 1, "enclosed": 0, "anchorage": 1, "version": "win-1"})
+        self.assertEqual([d["window_excluded"] for d in dets], ["", "", "pond"])
+        self.assertEqual([d.get("window") for d in dets], [None, "anchorage", None])
+        self.assertEqual([run.at_berth(d) for d in dets], [True, False, False])
         self.assertIsNone(run.classify_windows(Q(), SITE, {**acq, "acquired_utc": "2026-11-01T10:00:00Z"}, [{"row": 1, "col": 1}]))
 
     def test_every_site_has_a_rule(self):

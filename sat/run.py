@@ -32,6 +32,8 @@ from .osm_mask import MASK_DIR, build_mask, fetch_osm, load_mask, save_mask
 ROOT = Path(__file__).resolve().parent.parent
 SITES_FILE = Path(__file__).resolve().parent / "sites.json"
 OUT_DIR = ROOT / "docs" / "data" / "sat"
+ANCHORAGE_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "mask_version", "window_version",
+                    "anchorage_candidates", "by_sector", "len_lt50", "len_ge50"]
 PROCESSING_VERSION = "sat-2"  # sat-2: rectangular sites and sectors (A/B) per site
 FIRST_LOOKBACK_DAYS = 30   # first run for a site (free tier: keep the backfill short)
 LOOKBACK_DAYS = 6          # later runs: the last few days
@@ -258,6 +260,8 @@ class Store:
         self.by_id = {s["id"]: s for s in self.sites}
         self.sector_rows = read_csv(out / "quay_sectors.csv")
         self.new_sector_rows = False
+        self.anchorage_rows = read_csv(out / "anchorage_counts.csv")
+        self.new_anchorage = False
 
     def site(self, site_id: str) -> dict | None:
         return self.by_id.get(site_id)
@@ -306,6 +310,19 @@ class Store:
             q.write_bytes(data)
         self.new_quay.setdefault(quay_rel(self.site(row["site_id"]), row["acquired_utc"][:7]), []).append((row, features))
 
+    def add_anchorage(self, site: dict, acq: dict, tag: str, dets: list[dict], sectors: list[dict]) -> None:
+        """win-1: anchorage_counts.csv, one row per scene x site x mask version (only scenes under the window rule)."""
+        an = [d for d in dets if d.get("window") == fwindows.ANCHORAGE]
+        row = {"site_id": site["id"], "acquired_utc": acq["acquired_utc"], "platform": acq["platform"],
+               "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"], "mask_version": tag,
+               "window_version": fwindows.VERSION, "anchorage_candidates": len(an),
+               "by_sector": ";".join(f"{sc['id']}:{sum(d.get('sector') == sc['id'] for d in an)}" for sc in sectors),
+               "len_lt50": sum(d["length_class"] == "lt50" for d in an), "len_ge50": sum(d["length_class"] != "lt50" for d in an)}
+        key = (row["site_id"], row["acquired_utc"], tag)
+        self.anchorage_rows = [r for r in self.anchorage_rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key] + [row]
+        self.anchorage_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
+        self.new_anchorage = True
+
     def write_windows(self, site: dict, w: "fwindows.Windows | None") -> None:
         """win-1: windows/<site>.geojson, the water regions left out (written when it changes)."""
         if w is None:
@@ -344,6 +361,8 @@ class Store:
     def save(self, run: dict) -> None:
         self.out.mkdir(parents=True, exist_ok=True)
         write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
+        if self.new_anchorage:
+            write_csv(self.out / "anchorage_counts.csv", self.anchorage_rows, ANCHORAGE_FIELDS)
         for rel, items in self.new_features.items():
             p = self.out / rel
             fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
@@ -526,12 +545,16 @@ def series_breaks(sites: list[dict]) -> list[dict]:
         wc = fwindows.config(site) if site.get("enabled") else None
         if not wc or not wc.get("since_utc"):
             continue
+        if quay_lines.load(site["id"], int(site.get("quay_lines_version", quay_lines.LINES_VERSION))) is None:
+            continue   # no quay lines: the rule is never applied (QuayContext.windows), so no break either
         out.append({
             "site_id": site["id"], "kind": "windows", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
             "from_version": "窓の制限なし", "to_version": fwindows.VERSION, "date_utc": wc["since_utc"],
             "note": (f"候補の窓を、海とつながり艦が入れる水面（水路幅 {wc['min_channel_m']:g} m 以上）で、船が着く線から {wc['band_m']:g} m 以内に限定"
                      f"（{wc['since_utc']} 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。"
-                     "それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed・off_band）"),
+                     "それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。"
+                     f"船が着く線から {wc['band_m']:g} m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える"
+                     "（harbour_candidates には入らない）"),
         })
     return out
 
@@ -773,7 +796,9 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                                                    "切り出しファイル＝画像の大きさ（image_px、凡例込み）、範囲（bbox）、画素の大きさ、候補ごとの枠（box_px＝画像左上が原点の画素、box_lonlat＝緯度経度）・長さの目安・信頼度（reliability・credibility）。"
                                                    "出典の文を credit に持つ。枠は画像に焼き込まない。外洋は空。"
                                                    "berth-1（2026-11-01〜）：岸壁帯の候補のうち船が着く線（sat/berths.json）に沿わないものは candidates に出さず、"
-                                                   "件数だけ excluded_counts（off_berth＝線の無い陸際、coastline＝着かない海岸線沿い）に残す。港内水域の候補は今までどおり"),
+                                                   "件数だけ excluded_counts（off_berth＝線の無い陸際、coastline＝着かない海岸線沿い）に残す。港内水域の候補は今までどおり。"
+                                                   "win-1（地点の windows.since_utc 以降）：陸・池・桟橋に囲まれた狭い水面の候補は出さず excluded_counts の window_land・window_pond・window_enclosed に数える。"
+                                                   "船が着く線から離れた港内の錨泊の候補は window＝anchorage と window_label を付けて出す（岸壁の候補と区別して描く）"),
             "images/<地点>/[v<版>/]<撮影時刻>.png": "切り出しの VV 画像（灰）。赤枠＝港内水域の候補、黄枠＝岸壁帯の候補、水色＝陸マスクの縁、橙＝桟橋・橋などの構造物、紫＝区画 A/B の境界。v2 以降は版ごとの下位フォルダ",
             "status.json": "処理したシーンと結果、最後の実行",
             "usage.csv": "実行ごとの Sentinel Hub リクエスト数と処理単位（PU）。s2_requests・s2_processing_units＝そのうち Sentinel-2（s2nc-1）の分",
@@ -801,7 +826,10 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "incidence_deg": "入射角（地点の水域の中央値、度）",
             "harbour_candidates": ("港内水域（岸壁帯を除く切り出し範囲の水域）の候補数。win-1（地点の windows.since_utc 以降の撮影）からは、"
                                    "海とつながり艦が入れる水面で、船が着く線から band_m 以内の候補だけ（外した候補は detections の window_excluded、"
-                                   "件数は status.json の window_excluded、外した水面は windows/<地点>.geojson）"),
+                                   "件数は status.json の window_excluded、水面の区分は windows/<地点>.geojson）。band_m より遠い開けた水面の候補は"
+                                   "港内の錨泊として anchorage_counts.csv に別に数える"),
+            "anchorage_counts.csv": ("win-1：港内の錨泊。1 行＝1 撮影×1 地点×1 範囲版。船が着く線から band_m より遠い港内水域の候補の数"
+                                     "（anchorage_candidates、区画ごと by_sector、長さ 50 m 未満・以上）。岸壁の隻数とは別。窓の規則（windows.since_utc）以降の撮影だけ"),
             "quay_candidates": ("岸壁帯（陸マスクから 50 m 以内）の候補数。berth-1（2026-11-01〜、quay.berths）からは船が着く線に沿う候補だけ"
                                 "（着かない海岸線沿い・線の無い陸際の候補は detections の GeoJSON に残すが数えない。除いた数は status.json の quay_band_excluded）"),
             "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
@@ -1052,14 +1080,17 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 "mask_version": mask_tag(site), "detector_version": DETECTOR_VERSION,
                 "image": image,
                 **({"window_excluded": d["window_excluded"], "window_version": fwindows.VERSION} if "window_excluded" in d else {}),
+                **({"window": d["window"]} if d.get("window") else {}),
             },
         })
     return feats
 
 
 def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]) -> dict | None:
-    """win-1: d["window_excluded"] = "" (kept) or the reason, for every candidate of a scene from the site's
-    windows.since_utc. Returns the counts by reason (and the version), or None (rule not active)."""
+    """win-1, for every candidate of a scene from the site's windows.since_utc: d["window_excluded"] = "" (kept) or
+    the reason it is left out (land, pond, enclosed); d["window"] = "anchorage" for a harbour candidate beyond band_m
+    of the berth lines (kept, counted apart). Returns the counts by reason, the anchorage count and the version, or
+    None (rule not active)."""
     if not fwindows.active(site, acq["acquired_utc"]):
         return None
     w = qctx.windows()
@@ -1067,8 +1098,16 @@ def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict
         return None
     bl = qctx.baseline(acq["relative_orbit"])
     for d, why in zip(dets, w.classify(dets, bl[0] if bl else None)):
-        d["window_excluded"] = why
-    return {**{r: sum(d.get("window_excluded") == r for d in dets) for r in fwindows.REASONS}, "version": fwindows.VERSION}
+        d["window_excluded"] = why if why in fwindows.REASONS else ""
+        if why == fwindows.ANCHORAGE:
+            d["window"] = fwindows.ANCHORAGE
+    return {**{r: sum(d.get("window_excluded") == r for d in dets) for r in fwindows.REASONS},
+            fwindows.ANCHORAGE: sum(d.get("window") == fwindows.ANCHORAGE for d in dets), "version": fwindows.VERSION}
+
+
+def at_berth(d: dict) -> bool:
+    """A candidate counted in harbour_candidates / quay_candidates: not left out by berth-1 or win-1, not anchorage."""
+    return not d.get("berth_excluded") and not d.get("window_excluded") and d.get("window") != fwindows.ANCHORAGE
 
 
 def classify_band(bt: "berths.Berths | None", dets: list[dict]) -> dict | None:
@@ -1267,12 +1306,13 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             if win_excluded is not None:
                 entry["window_excluded"] = win_excluded
                 store.write_windows(site, qctx.windows())
+                store.add_anchorage(site, acq, tag, dets, sectors)
             image = image_path(site, acq["acquired_utc"]) if makes_png(site) else ""
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
                 inc = round(float(np.nanmedian(lia[valid_water])), 2)
-            nh = sum(d["zone"] == "harbour" and not d.get("window_excluded") for d in dets)
-            nq = sum(d["zone"] == "quay" and not d.get("berth_excluded") and not d.get("window_excluded") for d in dets)
+            nh = sum(d["zone"] == "harbour" and at_berth(d) for d in dets)
+            nq = sum(d["zone"] == "quay" and at_berth(d) for d in dets)
             row = {
                 "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
                 "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
@@ -1284,8 +1324,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             }
             for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 for zone in ("harbour", "quay"):
-                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] and not d.get("berth_excluded")
-                                                      and not d.get("window_excluded") for d in dets)
+                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] and at_berth(d) for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
                 row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
             quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors)) if makes_png(site) else None
@@ -1310,8 +1349,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         qtext = count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log)
         store.note_scene(entry)
         summary["counted"] += 1
-        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] and not d.get('window_excluded') for d in dets)}"
-                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and not d.get('berth_excluded') and not d.get('window_excluded') for d in dets)}"
+        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] and at_berth(d) for d in dets)}"
+                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and at_berth(d) for d in dets)}"
                             for sc in sectors)
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
             f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）{qtext}")
