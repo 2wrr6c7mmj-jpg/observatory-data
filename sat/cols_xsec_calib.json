@@ -1,0 +1,47 @@
+{
+ "version": "cols-1",
+ "measure": "生の σ0 からの占有の奥行き（est-1 depth_m、水際から途切れずに続く距離）",
+ "source": "湛江の目視ラベル（labels/ZJG-s2-labels.csv の verified_c、45 区間×日）と組にした S1 の奥行き（labels/ZJG-s2-s1-match.csv）。昇交（軌道 157・84）だけ。降交は撮影が無く既定値",
+ "check": {
+  "SYL_SLP": {
+   "n": 11,
+   "agree": 10,
+   "brier3": 0.3246,
+   "confusion": {
+    "1->1": 10,
+    "2->1": 1
+   }
+  },
+  "ZJG_lodo": {
+   "n": 45,
+   "agree": 35,
+   "brier3": 0.2145,
+   "confusion": {
+    "1->1": 26,
+    "1->2": 2,
+    "2->1": 4,
+    "2->2": 7,
+    "2->3": 1,
+    "3->2": 3,
+    "3->3": 2
+   }
+  }
+ },
+ "directions": {
+  "ascending": {
+   "w0": 30.5,
+   "beam": 29.7,
+   "sigma": 11.6,
+   "n": 45,
+   "status": "fitted"
+  },
+  "descending": {
+   "w0": 30.0,
+   "beam": 25.0,
+   "sigma": 12.0,
+   "n": 0,
+   "status": "default",
+   "note": "ラベル 0 件（6 件未満）のため既定値"
+  }
+ }
+}
