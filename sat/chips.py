@@ -162,11 +162,19 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
             feats = [f for f in by_month[month] if f["properties"]["acquired_utc"] == r["acquired_utc"]
                      and f["properties"]["site_id"] == site["id"] and row_tag(f["properties"]) == tag]
             excluded = None
+            # win-1: candidates the window rule left out at detection time (property window_excluded) are not framed
+            win = [f for f in feats if f["properties"].get("window_excluded")]
+            if win:
+                excluded = {}
+                for f in win:
+                    k = "window_" + f["properties"]["window_excluded"]
+                    excluded[k] = excluded.get(k, 0) + 1
+                feats = [f for f in feats if not f["properties"].get("window_excluded")]
             if classify is not None:
                 band = [f for f in feats if f["properties"].get("zone") == "quay"]
                 why = classify(site, [tuple(f["geometry"]["coordinates"][:2]) for f in band])
                 if why is not None:
-                    excluded = {k: 0 for k in ("off_berth", "coastline")}
+                    excluded = {**{k: 0 for k in ("off_berth", "coastline")}, **(excluded or {})}
                     drop = set()
                     for f, w in zip(band, why):
                         if w:

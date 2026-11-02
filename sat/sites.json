@@ -15,6 +15,7 @@
    "center_lat": 21.23,
    "center_lon": 110.44,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 2,
    "sectors": [
     {
@@ -96,6 +97,7 @@
    "center_lat": 18.215,
    "center_lon": 109.555,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 2,
    "quay_lines_version": 2,
    "sectors": [
@@ -283,6 +285,7 @@
    "center_lat": 18.2135,
    "center_lon": 109.688,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 2,
    "quay_lines_version": 2,
    "sectors": [
@@ -395,6 +398,7 @@
    "center_lat": 35.7233,
    "center_lon": 119.9817,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -483,6 +487,7 @@
    "center_lat": 30.0125,
    "center_lon": 122.0375,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 2,
    "quay_lines_version": 1,
    "sectors": [
@@ -624,6 +629,7 @@
    "center_lat": 36.1083,
    "center_lon": 120.585,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -694,6 +700,7 @@
    "center_lat": 36.0875,
    "center_lon": 120.3125,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 2,
    "quay_lines_version": 1,
    "sectors": [
@@ -786,6 +793,7 @@
    "center_lat": 29.535,
    "center_lon": 121.7725,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -861,6 +869,7 @@
    "center_lat": 38.805,
    "center_lon": 121.252,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -932,6 +941,7 @@
    "center_lat": 31.385,
    "center_lon": 121.5,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -1018,6 +1028,7 @@
    "center_lat": 24.4525,
    "center_lon": 118.0775,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -1094,6 +1105,7 @@
    "center_lat": 23.3375,
    "center_lon": 116.6675,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -1192,6 +1204,7 @@
    "center_lat": 25.99,
    "center_lon": 119.445,
    "pixel_m": 10,
+   "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [

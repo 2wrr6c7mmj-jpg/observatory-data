@@ -54,6 +54,8 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
             self.assertGreater(x["quay_excluded"]["segments"], 0)
             self.assertEqual(set(x["quay_band_excluded"]), {"off_berth", "coastline"})
         self.assertEqual(new["est2_version"], ["est-2.1"])
+        # win-1 starts at Zhanjiang's windows.since_utc (after the scenario's scenes): not active here
+        self.assertEqual(new["window_excluded"], [None, None])
         # chips/ (index and per-scene files for the site) is new; nothing else is added but NEW_FILES
         added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
         self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES))
@@ -72,6 +74,40 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         self.assertEqual({r["est2_calib_source"] for r in zjg}, {"self"})
         past = [r for r in zjg if r["acquired_utc"] not in sat_zjg_golden.FAKE_UTC]
         self.assertTrue(past and {r["source"] for r in past} == {"quay_counts（横持ちの列から）"})
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class ZhanjiangWindowsTest(unittest.TestCase):
+    """win-1 switched on for the scenario's scenes (tests/sat_zjg_golden.py, compare(windows_since=...)): Zhanjiang's
+    outputs change only in WINDOW_CHANGED (besides berth-1's BERTH_CHANGED) and windows/ZJG.geojson is added; the
+    candidates left out are exactly the ones counted by reason, and nothing else of the scene changes."""
+
+    def test_only_the_window_files_change(self):
+        with tempfile.TemporaryDirectory() as d:
+            old, new = sat_zjg_golden.compare(Path(d), windows_since="2026-11-01")
+        self.assertEqual((old["rc"], new["rc"]), (0, 0))
+        self.assertEqual(new["quay_results"], ["counted", "counted"])
+        changed = sorted(k for k in old["files"] if new["files"].get(k) != old["files"][k] and not k.startswith("chips/"))
+        unexpected = sorted(set(changed) - sat_zjg_golden.BERTH_CHANGED - sat_zjg_golden.WINDOW_CHANGED)
+        if unexpected:
+            print("::error::Zhanjiang outputs differ beyond berth-1 and win-1: " + ", ".join(unexpected))
+        self.assertEqual(unexpected, [])
+        added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
+        self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES | sat_zjg_golden.WINDOW_NEW_FILES))
+        self.assertEqual(old["past"], new["past"])            # rows of the earlier scenes never rewritten
+        for o, n, w, c, oc in zip(old["new_ship"], new["new_ship"], new["window_excluded"], new["candidates"], old["candidates"]):
+            self.assertEqual(w["version"], sat_zjg_golden.WINDOW_VERSION)
+            out = sum(w[r] for r in ("land", "pond", "enclosed", "off_band"))
+            self.assertGreater(out, 0)
+            # the detections are the same; the ones left out keep their reason in detections/ and are counted by reason
+            self.assertEqual(c["all"], oc["all"])
+            self.assertEqual(len(c["window_excluded"]), out)
+            self.assertEqual({r: c["window_excluded"].count(r) for r in ("land", "pond", "enclosed", "off_band")},
+                             {r: w[r] for r in ("land", "pond", "enclosed", "off_band")})
+            self.assertEqual(int(n["harbour_candidates"]), c["harbour_kept"])
+            self.assertLess(int(n["harbour_candidates"]), int(o["harbour_candidates"]))
+            self.assertLessEqual(int(n["quay_candidates"]), int(o["quay_candidates"]))
+        self.assertEqual(new["new_quay"][0]["quay_version"], "quay-v2")   # the quay count is not touched by win-1
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

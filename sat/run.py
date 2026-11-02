@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2
+from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
 from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
@@ -306,6 +306,16 @@ class Store:
             q.write_bytes(data)
         self.new_quay.setdefault(quay_rel(self.site(row["site_id"]), row["acquired_utc"][:7]), []).append((row, features))
 
+    def write_windows(self, site: dict, w: "fwindows.Windows | None") -> None:
+        """win-1: windows/<site>.geojson, the water regions left out (written when it changes)."""
+        if w is None:
+            return
+        p = self.out / "windows" / f"{site['id']}.geojson"
+        text = fwindows.dumps(w.regions())
+        if not p.exists() or p.read_text(encoding="utf-8") != text:
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text, encoding="utf-8")
+
     def has_rows(self, site_id: str, tag: str) -> bool:
         return any(r["site_id"] == site_id and row_mask_tag(r) == tag for r in self.rows)
 
@@ -511,6 +521,17 @@ def series_breaks(sites: list[dict]) -> list[dict]:
                      "推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。"
                      "quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。"
                      f"est-2 は毎回保存済みのファイルから全撮影を数え直すので、{quay_est2.EST2_VERSION} は過去の撮影も岸壁だけで計算した値"),
+        })
+    for site in sites:
+        wc = fwindows.config(site) if site.get("enabled") else None
+        if not wc or not wc.get("since_utc"):
+            continue
+        out.append({
+            "site_id": site["id"], "kind": "windows", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
+            "from_version": "窓の制限なし", "to_version": fwindows.VERSION, "date_utc": wc["since_utc"],
+            "note": (f"候補の窓を、海とつながり艦が入れる水面（水路幅 {wc['min_channel_m']:g} m 以上）で、船が着く線から {wc['band_m']:g} m 以内に限定"
+                     f"（{wc['since_utc']} 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。"
+                     "それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed・off_band）"),
         })
     return out
 
@@ -778,7 +799,9 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "orbit_direction": "軌道の向き（ascending / descending）",
             "relative_orbit": "相対軌道（不明は空）",
             "incidence_deg": "入射角（地点の水域の中央値、度）",
-            "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数",
+            "harbour_candidates": ("港内水域（岸壁帯を除く切り出し範囲の水域）の候補数。win-1（地点の windows.since_utc 以降の撮影）からは、"
+                                   "海とつながり艦が入れる水面で、船が着く線から band_m 以内の候補だけ（外した候補は detections の window_excluded、"
+                                   "件数は status.json の window_excluded、外した水面は windows/<地点>.geojson）"),
             "quay_candidates": ("岸壁帯（陸マスクから 50 m 以内）の候補数。berth-1（2026-11-01〜、quay.berths）からは船が着く線に沿う候補だけ"
                                 "（着かない海岸線沿い・線の無い陸際の候補は detections の GeoJSON に残すが数えない。除いた数は status.json の quay_band_excluded）"),
             "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
@@ -800,6 +823,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
             "method": quay.settings(),
             "berths": berths.settings(),
+            "windows": fwindows.settings(),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
             "estimate2_evaluation": est2_eval_ref(out),
@@ -883,6 +907,15 @@ class QuayContext:
         self._bl: dict = {}
         self._model = None
         self._berths = None
+        self._windows = None
+
+    def windows(self) -> "fwindows.Windows | None":
+        """win-1: where candidates may stand (sites.json windows); None without the block or quay lines."""
+        if self.lines is None or fwindows.config(self.site) is None:
+            return None
+        if self._windows is None:
+            self._windows = fwindows.Windows(self.site, self.grid, self.mask, self.berths())
+        return self._windows
 
     def berths(self) -> "berths.Berths | None":
         """berth-1: the site's berth lines (sat/berths.json) on its quay lines; None without quay lines."""
@@ -1018,9 +1051,24 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 "status": "candidate", "reliability": SOURCE_RELIABILITY, "credibility": CANDIDATE_CREDIBILITY,
                 "mask_version": mask_tag(site), "detector_version": DETECTOR_VERSION,
                 "image": image,
+                **({"window_excluded": d["window_excluded"], "window_version": fwindows.VERSION} if "window_excluded" in d else {}),
             },
         })
     return feats
+
+
+def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]) -> dict | None:
+    """win-1: d["window_excluded"] = "" (kept) or the reason, for every candidate of a scene from the site's
+    windows.since_utc. Returns the counts by reason (and the version), or None (rule not active)."""
+    if not fwindows.active(site, acq["acquired_utc"]):
+        return None
+    w = qctx.windows()
+    if w is None:
+        return None
+    bl = qctx.baseline(acq["relative_orbit"])
+    for d, why in zip(dets, w.classify(dets, bl[0] if bl else None)):
+        d["window_excluded"] = why
+    return {**{r: sum(d.get("window_excluded") == r for d in dets) for r in fwindows.REASONS}, "version": fwindows.VERSION}
 
 
 def classify_band(bt: "berths.Berths | None", dets: list[dict]) -> dict | None:
@@ -1214,12 +1262,17 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             band_excluded = classify_band(qctx.berths(), dets)
             if band_excluded is not None:
                 entry["quay_band_excluded"] = band_excluded
+            # win-1 (from the site's windows.since_utc): candidates off the sea-joined water along the berth lines
+            win_excluded = classify_windows(qctx, site, acq, dets)
+            if win_excluded is not None:
+                entry["window_excluded"] = win_excluded
+                store.write_windows(site, qctx.windows())
             image = image_path(site, acq["acquired_utc"]) if makes_png(site) else ""
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
                 inc = round(float(np.nanmedian(lia[valid_water])), 2)
-            nh = sum(d["zone"] == "harbour" for d in dets)
-            nq = sum(d["zone"] == "quay" and not d.get("berth_excluded") for d in dets)
+            nh = sum(d["zone"] == "harbour" and not d.get("window_excluded") for d in dets)
+            nq = sum(d["zone"] == "quay" and not d.get("berth_excluded") and not d.get("window_excluded") for d in dets)
             row = {
                 "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
                 "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
@@ -1232,7 +1285,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 for zone in ("harbour", "quay"):
                     row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] and not d.get("berth_excluded")
-                                                      for d in dets)
+                                                      and not d.get("window_excluded") for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
                 row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
             quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors)) if makes_png(site) else None
@@ -1257,8 +1310,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         qtext = count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log)
         store.note_scene(entry)
         summary["counted"] += 1
-        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] for d in dets)}"
-                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and not d.get('berth_excluded') for d in dets)}"
+        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] and not d.get('window_excluded') for d in dets)}"
+                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and not d.get('berth_excluded') and not d.get('window_excluded') for d in dets)}"
                             for sc in sectors)
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
             f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）{qtext}")
