@@ -597,11 +597,17 @@ class CapsAgreeTest(unittest.TestCase):
         self.assertNotIn("exit 2", month)
         self.assertIn("if: steps.month.outputs.ok == 'true'", text.split("name: Monitor", 1)[1].split("run:", 1)[0])
         self.assertIn("inputs.dry_run", pub)
-        # writes docs/data/ocean/monitor and docs/data/ocean/usage.csv only, pull --rebase before each new push
+        # writes docs/data/ocean/monitor, docs/data/ocean/usage.csv and the site's open-sea images (docs/data/sat/chips/ocean)
+        # only, plus the ocean list of chips/index.json copied onto the latest main; pull --rebase before each push
         self.assertIn("git add -A -- docs/data/ocean/monitor", pub)
         self.assertIn("git add -- docs/data/ocean/usage.csv", pub)
-        self.assertIn("docs/data/ocean/(monitor/|usage\\.csv$)", pub)
+        self.assertIn("git add -A -- docs/data/sat/chips/ocean", pub)
+        self.assertIn("docs/data/(ocean/(monitor/|usage\\.csv$)|sat/chips/ocean/)", pub)
         self.assertIn("git pull -q --rebase origin main", pub)
+        self.assertIn("python -m ocean.chips splice --sat docs/data/sat", pub)
+        self.assertIn("git add -- docs/data/sat/chips/index.json", pub)
+        self.assertLess(pub.index("git pull -q --rebase origin main"), pub.index("python -m ocean.chips splice"))
+        self.assertIn("--chips-out docs/data/sat", text.split("name: Monitor", 1)[1].split("- name:", 1)[0])
         self.assertNotIn("--force", text)
 
     def test_report_step_without_probe_log(self):
