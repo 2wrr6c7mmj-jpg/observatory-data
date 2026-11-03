@@ -1,0 +1,144 @@
+"""naval-1: the class of every berth line (sat/berth_class/<site>.json) and the headline counts on the naval lines only."""
+from __future__ import annotations
+
+import json
+import unittest
+from pathlib import Path
+
+from sat import berths
+
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover
+    np = None
+
+ROOT = Path(__file__).resolve().parent.parent
+
+SITE = {"id": "TNV", "bbox": [110.0, 21.0, 110.02, 21.02],
+        "sectors": [{"id": "A1", "role": "naval", "bbox": [110.0, 21.0, 110.01, 21.02]}]}
+LINES = {"ways": [
+    {"id": 1, "kind": "pier", "coords": [[110.002, 21.010], [110.004, 21.010]]},       # naval
+    {"id": 2, "kind": "pier", "coords": [[110.012, 21.010], [110.014, 21.010]]},       # civil
+    {"id": 3, "kind": "pier", "coords": [[110.016, 21.015], [110.018, 21.015]]},       # unknown (no entry)
+    {"id": 4, "kind": "coastline", "coords": [[110.000, 21.005], [110.020, 21.005]]},  # added from NAVAL_SINCE in A1
+    {"id": -1, "kind": "pier", "coords": [[110.006, 21.012], [110.007, 21.013]]},      # drawn, excluded in berth-1
+]}
+CLASSES = {"site": "TNV", "default": "unknown", "lines": [
+    {"way": 1, "kind": "pier", "class": "naval", "basis": ["test"]},
+    {"way": 2, "kind": "pier", "class": "civil", "basis": ["test"]},
+    {"way": 4, "kind": "coastline", "class": "naval", "added": True, "part": {"sector": "A1"}, "basis": ["test"]},
+    {"way": -1, "kind": "pier", "class": "naval", "added": True, "basis": ["test"]},
+]}
+CONF = {"keep_m": 100.0, "own_tolerance_m": 30.0, "sites": {"TNV": {"coastline": [], "exclude_ways": [-1]}}}
+
+
+class LineClassTest(unittest.TestCase):
+    def test_classes_and_default(self):
+        b = berths.Berths(SITE, LINES, CONF, classes=CLASSES)
+        self.assertEqual(b.line_class(1, 110.003, 21.01), "naval")
+        self.assertEqual(b.line_class(2, 110.013, 21.01), "civil")
+        self.assertEqual(b.line_class(3, 110.017, 21.015), "unknown")
+        self.assertEqual(b.stretch_class(2, LINES["ways"][1]["coords"]), "civil")
+
+    def test_added_sections_only_in_the_naval_variant(self):
+        b0 = berths.Berths(SITE, LINES, CONF, classes=CLASSES)
+        b1 = berths.Berths(SITE, LINES, CONF, classes=CLASSES, naval=True)
+        # berth-1 as before: the coastline is not a berth, the drawn pier is excluded
+        self.assertFalse(b0.point_ok("coastline", 4, 110.005, 21.005))
+        self.assertFalse(b0.point_ok("pier", -1, 110.0065, 21.0125))
+        # naval-1: the added coastline inside its sector and the drawn pier are berths
+        self.assertTrue(b1.point_ok("coastline", 4, 110.005, 21.005))
+        self.assertFalse(b1.point_ok("coastline", 4, 110.015, 21.005))   # outside the part
+        self.assertTrue(b1.point_ok("pier", -1, 110.0065, 21.0125))
+        self.assertEqual(b1.line_class(4, 110.005, 21.005), "naval")
+
+    def test_polygon_part_with_buffer_and_clip(self):
+        ring = [[110.0, 21.0], [110.01, 21.0], [110.01, 21.01], [110.0, 21.01], [110.0, 21.0]]
+        self.assertTrue(berths._in_area({"polygon": ring}, 110.005, 21.005))
+        self.assertFalse(berths._in_area({"polygon": ring}, 110.0102, 21.005))
+        self.assertTrue(berths._in_area({"polygon": ring, "buffer_m": 30}, 110.0102, 21.005))     # ~21 m outside
+        self.assertFalse(berths._in_area({"polygon": ring, "buffer_m": 30, "clip": [110.0, 21.0, 110.004, 21.01]},
+                                         110.005, 21.005))
+
+    @unittest.skipUnless(np is not None, "numpy not installed")
+    def test_nearest_class(self):
+        b = berths.Berths(SITE, LINES, CONF, classes=CLASSES)
+        got = b.nearest_class([(110.003, 21.0103), (110.013, 21.0103), (110.017, 21.0153), (110.01, 21.019)], 80.0)
+        self.assertEqual(got, ["naval", "civil", "unknown", None])
+
+    def test_feature_ok_by_date(self):
+        b = berths.Berths(SITE, LINES, CONF, classes=CLASSES)
+        c = LINES["ways"][1]["coords"]
+        before = {"line_kind": "pier", "osm_way": 2, "acquired_utc": "2026-11-04T10:00:00Z"}
+        after = {**before, "acquired_utc": berths.NAVAL_SINCE + "T10:00:00Z"}
+        self.assertTrue(berths.feature_ok(b, before, c))      # past scenes: never rewritten
+        self.assertFalse(berths.feature_ok(b, after, c))      # civil from NAVAL_SINCE
+        nav = {"line_kind": "pier", "osm_way": 1, "acquired_utc": after["acquired_utc"]}
+        self.assertTrue(berths.feature_ok(b, nav, LINES["ways"][0]["coords"]))
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class ClassifyNavalTest(unittest.TestCase):
+    def test_candidates_by_date(self):
+        from sat import run
+        b1 = berths.Berths(SITE, LINES, CONF, classes=CLASSES, naval=True)
+
+        class Q:
+            def __init__(self, on):
+                self.on = on
+
+            def berths(self, naval=False):
+                return b1
+
+            def naval(self, acquired_utc):
+                return self.on
+
+        def dets():
+            return [{"zone": "quay", "lon": 110.003, "lat": 21.0103}, {"zone": "quay", "lon": 110.013, "lat": 21.0103},
+                    {"zone": "harbour", "lon": 110.017, "lat": 21.0155}, {"zone": "harbour", "lon": 110.01, "lat": 21.019}]
+        d = dets()
+        self.assertIsNone(run.classify_naval(Q(False), SITE, {"acquired_utc": "2026-11-04T00:00:00Z"}, d))
+        self.assertTrue(all(run.at_berth(x) for x in d))
+        d = dets()
+        n = run.classify_naval(Q(True), SITE, {"acquired_utc": "2026-11-05T00:00:00Z"}, d)
+        self.assertEqual([x["berth_class"] for x in d], ["naval", "civil", "unknown", "unknown"])
+        self.assertEqual([run.at_berth(x) for x in d], [True, False, False, False])
+        self.assertEqual((n["quay_naval"], n["quay_civil"], n["harbour_unknown"]), (1, 1, 2))
+
+
+class ClassFilesTest(unittest.TestCase):
+    """Every berth line of every enabled site has a class with its evidence; the published map matches the files."""
+
+    def test_every_berth_line_has_a_class(self):
+        from sat import berth_class, quay_lines
+        from sat.run import load_sites
+        for s in load_sites():
+            if not s.get("enabled"):
+                continue
+            c = berths.load_classes(s["id"])
+            self.assertIsNotNone(c, s["id"])
+            lv = int(s.get("quay_lines_version", quay_lines.LINES_VERSION))
+            self.assertEqual(c["lines_version"], f"{s['id']}-quay-v{lv}")
+            lines = quay_lines.load(s["id"], lv)
+            have = {(str(e["way"]), json.dumps(e.get("part"), sort_keys=True)) for e in c["lines"]}
+            for it in berth_class.berth_items(s, lines):
+                self.assertIn((str(it["way"]), json.dumps(it["part"], sort_keys=True)), have, (s["id"], it["way"]))
+            ids = {str(w["id"]) for w in lines["ways"]}
+            for e in c["lines"]:
+                self.assertIn(e["class"], berths.CLASSES)
+                self.assertTrue(e.get("basis"), (s["id"], e["way"]))
+                self.assertIn(str(e["way"]), ids, (s["id"], e["way"]))   # a fixed entry of a line no longer drawn
+
+    def test_geojson_is_up_to_date(self):
+        from sat import berth_class
+        from sat.run import load_sites
+        want = berth_class.geojson([s for s in load_sites() if s.get("enabled")])
+        have = json.loads((ROOT / "docs" / "data" / "sat" / "berth_class.geojson").read_text(encoding="utf-8"))
+        self.assertEqual(have["features"], json.loads(json.dumps(want["features"])),
+                         "python -m sat.berth_class geojson で作り直す")
+        self.assertTrue(any("OpenStreetMap" in c for c in have["credit"]))
+        self.assertTrue(any("溫約瑟" in c for c in have["credit"]))
+
+
+if __name__ == "__main__":
+    unittest.main()

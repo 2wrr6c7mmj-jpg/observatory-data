@@ -1,0 +1,283 @@
+{
+ "site": "SWS",
+ "name": "上海・呉淞（上海水警区）",
+ "version": "naval-1",
+ "lines_version": "SWS-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:49:59Z",
+ "osm_base": "2026-11-03T06:41:15Z",
+ "osm_bbox": [
+  121.4,
+  31.29,
+  121.6,
+  31.48
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 114507409,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4315384137「吴淞」（amenity=ferry_terminal）に接する（0 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 114507412,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4406479386「吴淞渡口」（amenity=ferry_terminal）に接する（15 m）",
+    "OSM node/4315384137「吴淞」（amenity=ferry_terminal）に接する（20 m）",
+    "OSM way/114507908（amenity=ferry_terminal）に接する（23 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 114507903,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4406479386「吴淞渡口」（amenity=ferry_terminal）に接する（0 m）",
+    "OSM way/114507908（amenity=ferry_terminal）に接する（30 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 114507904,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4406479386「吴淞渡口」（amenity=ferry_terminal）に接する（20 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 114507905,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 114507906,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 168508815,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 168508817,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 168508820,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 168508824,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/168476034「上海集装箱码头有限公司张华浜码头」（landuse=industrial・industrial=port）に接する（5 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 697315140,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に接する（9 m）",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 415 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 697315143,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315144,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315145,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315146,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315147,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315152,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 443 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315153,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 460 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315154,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 533 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315155,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 146 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315156,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 140 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315157,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 291 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 697315158,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0010「上海水警區」まで 49 m",
+    "区画 A1（role naval）"
+   ]
+  }
+ ]
+}

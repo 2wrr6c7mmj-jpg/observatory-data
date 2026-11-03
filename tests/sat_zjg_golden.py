@@ -75,6 +75,10 @@ src, work = Path(sys.argv[1]), Path(sys.argv[2])
 copy = json.loads(sys.argv[3])
 FAKE = tuple(json.loads(sys.argv[4]))
 OVERRIDE = json.loads(sys.argv[5]) if len(sys.argv) > 5 else {}   # {site id: {key: value}} on sites.json (new code only)
+NAVAL_SINCE = OVERRIDE.pop("_naval_since", None)   # naval-1 switched on from this date (new code only)
+if NAVAL_SINCE:
+    from sat import berths
+    berths.NAVAL_SINCE = NAVAL_SINCE
 NOW = datetime(2026, 11, 3, 1, 0, 0, tzinfo=timezone.utc)
 
 class Frozen(datetime):
@@ -179,7 +183,14 @@ cand = [{"utc": t, "harbour_kept": sum(d["zone"] == "harbour" and not d.get("win
          "anchorage_zones": sorted({d["zone"] for d in dets if d["acquired_utc"] == t and d.get("window") == "anchorage"}),
          "window_excluded": sorted(d["window_excluded"] for d in dets if d["acquired_utc"] == t and d.get("window_excluded")),
          "all": sum(1 for d in dets if d["acquired_utc"] == t)} for t in FAKE]
-print(json.dumps({"rc": rc, "files": files, "meta": meta, "sectors": sectors,
+class_rows = [{k: r[k] for k in ("acquired_utc", "harbour_naval", "harbour_civil", "harbour_unknown", "quay_naval", "quay_civil",
+                                  "quay_unknown", "stretches_naval", "stretches_civil", "stretches_unknown")}
+              for r in rows_of("berth_class_counts.csv") if is_fake(r)] if (out / "berth_class_counts.csv").exists() else []
+naval_cand = [{"utc": t, "classes": sorted(d.get("berth_class", "") for d in dets if d["acquired_utc"] == t and d.get("berth_class")),
+               "excluded": sum(bool(d.get("naval_excluded")) for d in dets if d["acquired_utc"] == t)} for t in FAKE]
+print(json.dumps({"rc": rc, "files": files, "class_rows": class_rows, "naval_cand": naval_cand,
+                  "naval_excluded": [s.get("naval_excluded") for s in scenes],
+                  "quay_naval_excluded": [s.get("quay_naval_excluded") for s in scenes], "meta": meta, "sectors": sectors,
                   "quay_results": [s.get("quay_result") for s in scenes],
                   "excluded": [{k: s.get(k) for k in ("quay_excluded", "quay_band_excluded")} for s in scenes],
                   "window_excluded": [s.get("window_excluded") for s in scenes], "candidates": cand, "anchorage_rows": anch,
@@ -227,6 +238,26 @@ def compare(tmp: Path, windows_since: str | None = None) -> tuple[dict, dict]:
     return finish(po, "old (9e86565)"), finish(pn, "new")
 
 
+# naval-1 (2026-11-03, the user's instruction: only the naval piers and quays in the headline counts, from
+# berths.NAVAL_SINCE): checked with win-1 and naval-1 switched on for the scenario's scenes (compare_naval), against the
+# same code with win-1 only. Only these files may differ, berth_class_counts.csv is added, and the headline counts drop
+# by exactly the candidates and stretches counted apart as civil or unknown.
+NAVAL_CHANGED = {"ship_counts.csv", "detections/2026-11.geojson", "status.json", "quay/2026-11.geojson",
+                 "quay/ZJG-zone-prior.json", "quay_counts.csv", "quay_est2.csv", "quay_est2.json", "quay_sectors.csv",
+                 "windows/ZJG.geojson", "anchorage_counts.csv"}
+NAVAL_NEW_FILES = {"berth_class_counts.csv"}
+
+
+def compare_naval(tmp: Path, since: str = "2026-11-01") -> tuple[dict, dict]:
+    """(win-1 only, win-1 and naval-1) results of the new code on the same scenario, run in parallel."""
+    from sat.run import load_sites
+    z = next(s for s in load_sites() if s["id"] == "ZJG")
+    w = {"ZJG": {"windows": {**(z.get("windows") or {}), "since_utc": since}}}
+    pa = start(ROOT, tmp / "win", w)
+    pb = start(ROOT, tmp / "naval", {**w, "_naval_since": since})
+    return finish(pa, "win-1"), finish(pb, "win-1 + naval-1")
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as d:
         old, new = compare(Path(d))
@@ -241,6 +272,17 @@ def main() -> int:
                       "quay_results": new["quay_results"], "old_quay": old["new_quay"], "new_quay": new["new_quay"],
                       "old_ship": old["new_ship"], "new_ship": new["new_ship"], "old_lines": old["new_lines"],
                       "new_lines": new["new_lines"], "excluded": new["excluded"], "ok": ok}, ensure_ascii=False))
+    if not ok:
+        return 1
+    with tempfile.TemporaryDirectory() as d:
+        a, b = compare_naval(Path(d))
+    differ = sorted(k for k in set(a["files"]) & set(b["files"]) if a["files"][k] != b["files"][k] and not k.startswith("chips/"))
+    added = sorted(k for k in set(b["files"]) - set(a["files"]) if not k.startswith("chips/"))
+    unexpected = sorted(set(differ) - NAVAL_CHANGED)
+    ok = not unexpected and added == sorted(NAVAL_NEW_FILES) and a["past"] == b["past"]
+    print(json.dumps({"naval": True, "differ": differ, "unexpected": unexpected, "added": added,
+                      "win_ship": a["new_ship"], "naval_ship": b["new_ship"], "class_rows": b["class_rows"],
+                      "win_quay": a["new_quay"], "naval_quay": b["new_quay"], "ok": ok}, ensure_ascii=False))
     return 0 if ok else 1
 
 

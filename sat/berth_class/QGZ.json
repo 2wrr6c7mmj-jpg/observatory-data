@@ -1,0 +1,230 @@
+{
+ "site": "QGZ",
+ "name": "青島・古鎮口（楡池海軍基地）",
+ "version": "naval-1",
+ "lines_version": "QGZ-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:49:58Z",
+ "osm_base": "2026-11-03T06:30:06Z",
+ "osm_bbox": [
+  119.875,
+  35.62,
+  120.09,
+  35.825
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 15388243,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0022「青島綜合保障基地」まで 315 m",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 219848836,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0022「青島綜合保障基地」まで 378 m",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 219848837,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 219848839,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 219848841,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0022「青島綜合保障基地」まで 68 m",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 527583619,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 582517902,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 694211538,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1564921419,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1564921420,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1564921421,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1564921456,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1564921460,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 15241280,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0022「青島綜合保障基地」まで 315 m",
+    "区画 A2（role naval）"
+   ],
+   "part": {
+    "sector": "A2"
+   }
+  },
+  {
+   "way": 15387629,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ],
+   "part": {
+    "sector": "A2"
+   }
+  },
+  {
+   "way": 219848835,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "OSM way/979388708（waterway=dock）に含まれる",
+    "OSM way/979388709（waterway=dock）に含まれる",
+    "溫約瑟の地図 wen-0022「青島綜合保障基地」まで 68 m",
+    "区画 A2（role naval）"
+   ],
+   "part": {
+    "sector": "A2"
+   }
+  },
+  {
+   "way": 219848840,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/510086495「中国人民解放军海军青岛综合保障基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ],
+   "part": {
+    "sector": "A2"
+   }
+  }
+ ]
+}

@@ -44,7 +44,9 @@
     {"way": 43251729, "sector": "A1", "note": "潜水艦の桟橋が OSM に無く、岸壁線は海岸線だけ。区画 A1（桟橋の周り）の海岸線を手書きの線ができるまで仮に戻す（要 2部確認）"},
     {"way": 1036282785, "sector": "A1", "note": "同上"}
    ],
-   "exclude_ways": []
-  }
+   "exclude_ways": [-1],
+   "note": "手書きの突堤（QJG-quay-v2 の id −1、sat/masks/QJG-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
+  },
+  "MAW": {"coastline": [], "exclude_ways": [-1], "note": "手書きの造船所の岸壁（MAW-quay-v2 の id −1、sat/masks/MAW-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/MAW.json の added）から着く線にする"}
  }
 }

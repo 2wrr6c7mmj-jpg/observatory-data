@@ -1,0 +1,39 @@
+name: PLAN berth class OSM probe
+# 岸壁の線の区分（naval-1）の根拠に使う OSM の地物（軍の区域・港・造船所・桟橋）を Overpass から取る probe（sat/berth_osm.py）。
+# 作業環境から Overpass に届かないため。probe 用ブランチへの push でだけ動く。CDSE は使わない（PU 0）。
+# 結果（probe-raw/berth-osm/<地点>-osm-areas.json）は同じ probe ブランチにだけ commit する。main は変えない。
+on:
+  push:
+    branches: ['probe/berth-osm-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-berth-osm
+  cancel-in-progress: false
+jobs:
+  osm:
+    if: ${{ !contains(github.event.head_commit.message, '[berth-osm-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Overpass (all 13 sites, bbox + 0.08 degree with every pier and quay; XSN wider)
+        run: |
+          python -m sat.berth_osm --out probe-raw/berth-osm --wide-margin 0.08 --sleep 30 \
+            --wide XSN=121.55,29.35,121.98,29.70 2>&1 | tee "$RUNNER_TEMP/osm.log"
+          for f in probe-raw/berth-osm/*.json; do echo "::notice title=berth-osm::$(basename $f) $(wc -c < $f) bytes"; done
+          tail -c 3000 "$RUNNER_TEMP/osm.log" | while read l; do echo "::notice title=berth-osm-log::$l"; done
+          mkdir -p probe-raw/berth-osm
+      - name: Commit to this probe branch only
+        run: |
+          git add probe-raw/berth-osm
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 岸壁の区分の根拠（OSM の地物） [berth-osm-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

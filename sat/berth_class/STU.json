@@ -1,0 +1,395 @@
+{
+ "site": "STU",
+ "name": "汕頭（汕頭水警区）",
+ "version": "naval-1",
+ "lines_version": "STU-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:50:00Z",
+ "osm_base": "2026-11-03T06:44:16Z",
+ "osm_bbox": [
+  116.56,
+  23.24,
+  116.775,
+  23.435
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 528328081,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/1652967114「礐石码头」（amenity=ferry_terminal）に接する（0 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 535272396,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/614890707（landuse=military・military=office）に接する（31 m）",
+    "OSM way/1429145742（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0014「汕頭水警區」まで 129 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 535272398,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/614890710（landuse=military・military=office）に接する（28 m）",
+    "OSM way/614890712（landuse=military・military=office）に接する（31 m）",
+    "OSM way/1429145742（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0014「汕頭水警區」まで 142 m",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 572987307,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987309,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987318,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987319,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987321,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987323,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987355,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/5561341758「西堤码头」（amenity=ferry_terminal）に接する（0 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987357,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 572987359,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 575215382,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 575215383,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 575215384,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 575215385,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 813015111,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 813015112,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 826341874,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1092040603「东海舰队福建基地汕头水警区导弹快艇大队92376部队」（landuse=military・military=base）に接する（7 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1092040604,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1092040603「东海舰队福建基地汕头水警区导弹快艇大队92376部队」（landuse=military・military=base）に接する（39 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1489174181,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1489174182,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1489174183,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 23732560,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM の海軍の区域の岸壁。OSM では海岸線だけで、berth-1 の着く線に入っていなかった（汕頭水警区）",
+   "basis": [
+    "OSM way/1092040603「东海舰队福建基地汕头水警区导弹快艇大队92376部队」（landuse=military・military=base）の外形から 25 m 以内の海岸線（約 1815 m、範囲内）",
+    "溫約瑟の地図 wen-0014「汕頭水警區」（ミサイル艇の営区は西に約 3.2 km と作者の記載）"
+   ],
+   "part": {
+    "polygon": [
+     [
+      116.651538,
+      23.338311
+     ],
+     [
+      116.65531,
+      23.339479
+     ],
+     [
+      116.657077,
+      23.335484
+     ],
+     [
+      116.656725,
+      23.334892
+     ],
+     [
+      116.653838,
+      23.333473
+     ],
+     [
+      116.652859,
+      23.333143
+     ],
+     [
+      116.652518,
+      23.334009
+     ],
+     [
+      116.653427,
+      23.334338
+     ],
+     [
+      116.651538,
+      23.338311
+     ]
+    ],
+    "buffer_m": 25.0,
+    "osm": "way/1092040603"
+   },
+   "added": true,
+   "fixed": true
+  },
+  {
+   "way": 23732560,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM の海軍の区域の岸壁。OSM では海岸線だけで、berth-1 の着く線に入っていなかった（汕頭水警区）",
+   "basis": [
+    "OSM way/1429145742（landuse=military・military=base）の外形から 25 m 以内の海岸線（約 1004 m、範囲内）",
+    "溫約瑟の地図 wen-0014「汕頭水警區」（ミサイル艇の営区は西に約 3.2 km と作者の記載）"
+   ],
+   "part": {
+    "polygon": [
+     [
+      116.676796,
+      23.343667
+     ],
+     [
+      116.677199,
+      23.342815
+     ],
+     [
+      116.677212,
+      23.342785
+     ],
+     [
+      116.680716,
+      23.342882
+     ],
+     [
+      116.681111,
+      23.342839
+     ],
+     [
+      116.681842,
+      23.342691
+     ],
+     [
+      116.683366,
+      23.342106
+     ],
+     [
+      116.683362,
+      23.342297
+     ],
+     [
+      116.683939,
+      23.342098
+     ],
+     [
+      116.683894,
+      23.345756
+     ],
+     [
+      116.676079,
+      23.345674
+     ],
+     [
+      116.676599,
+      23.343619
+     ],
+     [
+      116.676736,
+      23.343633
+     ],
+     [
+      116.676796,
+      23.343667
+     ]
+    ],
+    "buffer_m": 25.0,
+    "osm": "way/1429145742"
+   },
+   "added": true,
+   "fixed": true
+  }
+ ]
+}

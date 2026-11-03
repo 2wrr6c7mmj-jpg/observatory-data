@@ -1,0 +1,944 @@
+{
+ "site": "XMN",
+ "name": "廈門（廈門水警区）",
+ "version": "naval-1",
+ "lines_version": "XMN-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:50:00Z",
+ "osm_base": "2026-11-03T06:42:15Z",
+ "osm_bbox": [
+  117.975,
+  24.355,
+  118.18,
+  24.55
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 128680383,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680385,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680386,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（3 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680387,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（11 m）",
+    "OSM way/284354810「厦门旅游客运码头」（amenity=ferry_terminal）に接する（12 m）",
+    "OSM node/2880962620（amenity=ferry_terminal）に接する（26 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680388,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680393,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（6 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680394,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680395,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680398,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（10 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680399,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 453 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680400,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 128680500）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 128680500（naval）と 5 m 以内で接続",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 216 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680403,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680405,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（2 m）",
+    "OSM node/11613239016「第九码头」（amenity=ferry_terminal）に接する（36 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680407,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 521 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680408,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（4 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680410,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680413,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4225380090（amenity=ferry_terminal）に接する（0 m）",
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（12 m）",
+    "OSM way/284354810「厦门旅游客运码头」（amenity=ferry_terminal）に接する（13 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680415,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 128680500）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 128680500（naval）と 5 m 以内で接続",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 256 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680416,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/10856330206「和平码头」（amenity=ferry_terminal）に接する（37 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 326 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680418,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（5 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680419,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680422,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（5 m）",
+    "OSM node/11613239016「第九码头」（amenity=ferry_terminal）に接する（30 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680423,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 547 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680425,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2880962620（amenity=ferry_terminal）に接する（0 m）",
+    "OSM node/4225380090（amenity=ferry_terminal）に接する（6 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680428,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 383 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680434,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2880962620（amenity=ferry_terminal）に接する（7 m）",
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（13 m）",
+    "OSM way/284354810「厦门旅游客运码头」（amenity=ferry_terminal）に接する（14 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680437,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680438,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（4 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680443,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680444,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680449,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（12 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680450,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680475,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 554 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680476,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680478,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680479,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680480,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680482,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680484,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680489,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680491,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 295 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680493,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4225380090（amenity=ferry_terminal）に接する（0 m）",
+    "OSM node/2880962620（amenity=ferry_terminal）に接する（18 m）",
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（35 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680497,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（38 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680500,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1083900171（landuse=military・military=base）に接する（13 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 173 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680503,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1083900171（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 5 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 128680504,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680505,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1083900171（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 75 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 128680507,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1083900171（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 38 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680508,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "溫約瑟の地図 wen-0049「廈門基地」まで 427 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680509,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2880962620（amenity=ferry_terminal）に接する（0 m）",
+    "OSM node/4225380090（amenity=ferry_terminal）に接する（8 m）",
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（36 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680513,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（24 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 128680528,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（26 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 422809828,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（32 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 422809829,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 422809830,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2880962620（amenity=ferry_terminal）に接する（11 m）",
+    "OSM node/4225380090（amenity=ferry_terminal）に接する（31 m）",
+    "OSM way/1249467282「厦门旅游游客码头」（amenity=ferry_terminal）に接する（36 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 718087008,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/1089487293「第一码头客运站」（amenity=ferry_terminal）に接する（4 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161910,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（34 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 574 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161911,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（30 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 558 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161912,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（27 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 546 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161913,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（23 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 570 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161914,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（2 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 560 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161915,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（2 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 557 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 732161929,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 828050791,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 828050792,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 927166856,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 927168469,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 927170022,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/11559674989「菽庄花园-游艇码头」（leisure=marina・seamark:type=harbour）に接する（17 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 927170023,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 927170169,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1178645221,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161909「钢琴码头」（amenity=ferry_terminal）に接する（2 m）",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 579 m",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1178645229,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM way/732161916「厦门轮渡码头」（amenity=ferry_terminal）に接する（32 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1549587302,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1083900171（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0049「廈門基地」まで 114 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 334467999,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM の海軍の区域の岸壁。OSM では海岸線だけで、berth-1 の着く線に入っていなかった（廈門水警区の基地）",
+   "basis": [
+    "OSM way/1083900171（landuse=military・military=base）の外形から 25 m 以内の海岸線（約 416 m、範囲内）",
+    "溫約瑟の地図 wen-0049「廈門基地」"
+   ],
+   "part": {
+    "polygon": [
+     [
+      118.073024,
+      24.451082
+     ],
+     [
+      118.073432,
+      24.451386
+     ],
+     [
+      118.073587,
+      24.451503
+     ],
+     [
+      118.073586,
+      24.451512
+     ],
+     [
+      118.073583,
+      24.451525
+     ],
+     [
+      118.073586,
+      24.451533
+     ],
+     [
+      118.073598,
+      24.451525
+     ],
+     [
+      118.073673,
+      24.451594
+     ],
+     [
+      118.074023,
+      24.451819
+     ],
+     [
+      118.074423,
+      24.451401
+     ],
+     [
+      118.074528,
+      24.451246
+     ],
+     [
+      118.074654,
+      24.451087
+     ],
+     [
+      118.07491,
+      24.450592
+     ],
+     [
+      118.075088,
+      24.450177
+     ],
+     [
+      118.075241,
+      24.449948
+     ],
+     [
+      118.075427,
+      24.44969
+     ],
+     [
+      118.075537,
+      24.449534
+     ],
+     [
+      118.075589,
+      24.449467
+     ],
+     [
+      118.07586,
+      24.449129
+     ],
+     [
+      118.0757,
+      24.449037
+     ],
+     [
+      118.075558,
+      24.448945
+     ],
+     [
+      118.075374,
+      24.448791
+     ],
+     [
+      118.07504,
+      24.448557
+     ],
+     [
+      118.073024,
+      24.451082
+     ]
+    ],
+    "buffer_m": 25.0,
+    "osm": "way/1083900171"
+   },
+   "added": true,
+   "fixed": true
+  }
+ ]
+}

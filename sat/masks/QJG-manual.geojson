@@ -1,0 +1,30 @@
+{
+ "type": "FeatureCollection",
+ "name": "QJG-manual",
+ "note": "OSM に無い桟橋の線（手書き）。姜哥荘の潜水艦基地の港内の突堤（北西に延びる約 170 m）。位置は S2 L2A 自然色 2026-10-22T02:57:38Z（probe/ports-archive-ops3 docs/data/sat/ports/QJG/s2/QJG/v1/）の目測で ±30 m 程度（OSM の海岸線とは約 50 m ずれて見える）。岸壁線 QJG-quay-v2 に id −1 で入れる。naval-1（2026-11-05 以降の撮影）からだけ着く線にする（sat/berths.json の exclude_ways と sat/berth_class/QJG.json の added）",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -1,
+    "name": "潜水艦基地の港内の突堤（根元→先）",
+    "kind": "pier",
+    "source": "S2 L2A 自然色 2026-10-22T02:57:38Z の目測（3部、2026-11-03）",
+    "accuracy_m": 30
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      120.58144,
+      36.1043
+     ],
+     [
+      120.58007,
+      36.1054
+     ]
+    ]
+   }
+  }
+ ]
+}

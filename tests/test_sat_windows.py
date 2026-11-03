@@ -106,8 +106,11 @@ class WindowsTest(unittest.TestCase):
 
     def test_classify_windows_marks_and_counts(self):
         class Q:
-            def windows(_self):
+            def windows(_self, naval=False):
                 return self.w
+
+            def naval(_self, acquired_utc):
+                return False
 
             def baseline(_self, orbit):
                 return None

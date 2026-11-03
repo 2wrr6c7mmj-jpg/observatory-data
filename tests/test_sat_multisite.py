@@ -120,6 +120,39 @@ class ZhanjiangWindowsTest(unittest.TestCase):
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
+class ZhanjiangNavalTest(unittest.TestCase):
+    """naval-1 switched on for the scenario's scenes (tests/sat_zjg_golden.py, compare_naval): against the same code
+    with win-1 only, Zhanjiang's outputs change only in NAVAL_CHANGED, berth_class_counts.csv is added, the past rows stay,
+    and the headline counts drop by exactly the candidates counted apart as civil or unknown."""
+
+    def test_only_the_naval_counts_change(self):
+        with tempfile.TemporaryDirectory() as d:
+            a, b = sat_zjg_golden.compare_naval(Path(d))
+        self.assertEqual((a["rc"], b["rc"]), (0, 0))
+        differ = sorted(k for k in set(a["files"]) & set(b["files"]) if a["files"][k] != b["files"][k] and not k.startswith("chips/"))
+        unexpected = sorted(set(differ) - sat_zjg_golden.NAVAL_CHANGED)
+        if unexpected:
+            print("::error::Zhanjiang outputs differ beyond naval-1: " + ", ".join(unexpected))
+        self.assertEqual(unexpected, [])
+        added = sorted(k for k in set(b["files"]) - set(a["files"]) if not k.startswith("chips/"))
+        self.assertEqual(added, sorted(sat_zjg_golden.NAVAL_NEW_FILES))
+        self.assertEqual(a["past"], b["past"])                    # rows of the earlier scenes never rewritten
+        self.assertEqual(a["class_rows"], [])
+        for w, n, c, x in zip(a["new_ship"], b["new_ship"], b["class_rows"], b["naval_excluded"]):
+            self.assertEqual(int(n["quay_candidates"]), int(c["quay_naval"]))
+            self.assertEqual(int(n["harbour_candidates"]), int(c["harbour_naval"]))
+            self.assertEqual(int(w["quay_candidates"]) + int(w["harbour_candidates"]),
+                             sum(int(c[f"{z}_{k}"]) for z in ("quay", "harbour") for k in ("naval", "civil", "unknown")))
+            self.assertEqual(x["civil"] + x["unknown"], int(w["quay_candidates"]) + int(w["harbour_candidates"])
+                             - int(n["quay_candidates"]) - int(n["harbour_candidates"]))
+        for w, n in zip(a["new_quay"], b["new_quay"]):
+            self.assertLessEqual(int(n["occupied_max"]), int(w["occupied_max"]))
+        for c in b["naval_cand"]:
+            self.assertTrue(c["classes"])
+            self.assertEqual(c["excluded"], sum(k != "naval" for k in c["classes"]))
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
 class SectorsTest(unittest.TestCase):
     SITE = {"id": "TSC", "bbox": [110.0, 21.0, 110.01, 21.01], "pixel_m": 10,
             "sectors": [{"id": "A1", "role": "naval", "polygon": [[110.0, 21.005], [110.005, 21.01], [110.0, 21.01]]},
@@ -796,7 +829,8 @@ class AllPortsTest(unittest.TestCase):
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"], x["provisional"]),
                              ("naval", "trial", "per_site", False, mv, True), sid)
             self.assertIs(x["daily"], True, sid)  # mask, baselines and OSM quay lines are all in
-            self.assertEqual(x["quay_lines_version"], 1, sid)
+            # naval-1 (2026-11-03): QJG and MAW have v2 = v1 + a drawn line (id -1), a berth only from berths.NAVAL_SINCE
+            self.assertEqual(x["quay_lines_version"], 2 if sid in ("QJG", "MAW") else 1, sid)
             self.assertEqual(x["pu_month_cap"], cap, sid)
             run.validate_site(x)
             run.validate_site(x)  # the check of a daily site
@@ -828,7 +862,7 @@ class AllPortsTest(unittest.TestCase):
             meta = run.site_meta(x)
             self.assertEqual(meta["quay"]["baselines_present"], orbits, sid)
             self.assertEqual(meta["quay"]["lacks"], [], sid)  # nothing is missing now
-            self.assertEqual(meta["quay"]["lines_version"], f"{sid}-quay-v1", sid)
+            self.assertEqual(meta["quay"]["lines_version"], f"{sid}-quay-v{x['quay_lines_version']}", sid)
             self.assertTrue(meta["quay"]["ready"], sid)
             self.assertEqual(meta["mode"], "毎日の取得")
 
