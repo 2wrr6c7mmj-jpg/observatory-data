@@ -1126,10 +1126,269 @@
     "dropped_vh": 9
    },
    "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "XSN",
+   "acquired_utc": "2026-11-02T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "XSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095402_20261102T095427_005287_00A0E7_1865_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:02:01Z",
+   "processing_units": 1.801445007324219,
+   "coverage": 0.996,
+   "quay_band_excluded": {
+    "off_berth": 2,
+    "coastline": 25
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8723,
+    "water_fraction": 0.3688,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 770,
+    "clusters": 191,
+    "dropped_small": 99,
+    "dropped_vh": 27
+   },
+   "quay_excluded": {
+    "segments": 2,
+    "length_m": 120,
+    "max": 2,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "ZDH",
+   "acquired_utc": "2026-11-02T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "ZDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095402_20261102T095427_005287_00A0E7_1865_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:00:35Z",
+   "processing_units": 3.1217956542968746,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 14
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9635,
+    "water_fraction": 0.3468,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1306,
+    "clusters": 191,
+    "dropped_small": 116,
+    "dropped_vh": 15
+   },
+   "quay_excluded": {
+    "segments": 13,
+    "length_m": 1150,
+    "max": 25,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "SWS",
+   "acquired_utc": "2026-11-02T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "SWS-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095427_20261102T095452_005287_00A0E7_39D3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:02:10Z",
+   "processing_units": 0.965423583984375,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 1,
+    "coastline": 0
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9845,
+    "water_fraction": 0.0513,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 22,
+    "clusters": 11,
+    "dropped_small": 9,
+    "dropped_vh": 1
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QDH",
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095542_20261102T095607_005287_00A0E7_9217_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:01:50Z",
+   "processing_units": 1.5418624877929688,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 28
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9574,
+    "water_fraction": 0.4111,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 561,
+    "clusters": 133,
+    "dropped_small": 84,
+    "dropped_vh": 8
+   },
+   "quay_excluded": {
+    "segments": 23,
+    "length_m": 3390,
+    "max": 59,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095542_20261102T095607_005287_00A0E7_9217_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:00:25Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 2,
+    "coastline": 2
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7508,
+    "water_fraction": 0.4402,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 653,
+    "clusters": 168,
+    "dropped_small": 115,
+    "dropped_vh": 10
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QJG",
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QJG-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095542_20261102T095607_005287_00A0E7_9217_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:02:14Z",
+   "processing_units": 0.6591796875,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 11
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8859,
+    "water_fraction": 0.3952,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 473,
+    "clusters": 73,
+    "dropped_small": 39,
+    "dropped_vh": 2
+   },
+   "quay_excluded": {
+    "segments": 2,
+    "length_m": 70,
+    "max": 2,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "LSN",
+   "acquired_utc": "2026-11-02T09:56:32Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "LSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095632_20261102T095657_005287_00A0E7_98F3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-03T13:02:18Z",
+   "processing_units": 1.61920166015625,
+   "coverage": 0.998,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 33
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9822,
+    "water_fraction": 0.2595,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 572,
+    "clusters": 107,
+    "dropped_small": 56,
+    "dropped_vh": 10
+   },
+   "quay_excluded": {
+    "segments": 8,
+    "length_m": 1080,
+    "max": 22,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-02T13:41:57Z",
+  "run_utc": "2026-11-03T13:00:22Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -1140,7 +1399,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 924.52
+    "budget_left_pu": 916.64
    },
    {
     "site_id": "SYL",
@@ -1151,7 +1410,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 924.52
+    "budget_left_pu": 916.64
    },
    {
     "site_id": "SLP",
@@ -1162,65 +1421,54 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 924.52
+    "budget_left_pu": 916.64
    },
    {
     "site_id": "QGZ",
     "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
+    "catalog_items": 2,
+    "acquisitions": 2,
     "new": 1,
     "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 922.62
+    "budget_left_pu": 914.75
    },
    {
     "site_id": "ZDH",
     "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 922.62
+    "budget_left_pu": 911.63
    },
    {
     "site_id": "QDH",
     "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
+    "catalog_items": 2,
+    "acquisitions": 2,
     "new": 1,
     "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 921.08
+    "budget_left_pu": 910.08
    },
    {
     "site_id": "XSN",
     "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 921.08
+    "budget_left_pu": 908.28
    },
    {
     "site_id": "SWS",
-    "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 921.08
-   },
-   {
-    "site_id": "QJG",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
@@ -1228,7 +1476,18 @@
     "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 920.42
+    "budget_left_pu": 907.32
+   },
+   {
+    "site_id": "QJG",
+    "lookback_days": 6,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 906.66
    },
    {
     "site_id": "LSN",
@@ -1239,7 +1498,7 @@
     "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 918.8
+    "budget_left_pu": 905.04
    },
    {
     "site_id": "XMN",
@@ -1250,7 +1509,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 918.8
+    "budget_left_pu": 905.04
    },
    {
     "site_id": "STU",
@@ -1261,7 +1520,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 918.8
+    "budget_left_pu": 905.04
    },
    {
     "site_id": "MAW",
@@ -1272,45 +1531,12 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 918.8
+    "budget_left_pu": 905.04
    }
   ],
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.009,
-    "requests": 2
-   },
-   {
-    "site_id": "SYL",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.015,
-    "requests": 2
-   },
-   {
-    "site_id": "SLP",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 2.134,
-    "requests": 3
-   },
-   {
-    "site_id": "QGZ",
     "days": 0,
     "clear": 0,
     "cloudy": 0,
@@ -1319,6 +1545,39 @@
     "errors": 0,
     "processing_units": 0.0,
     "requests": 1
+   },
+   {
+    "site_id": "SYL",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "SLP",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QGZ",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.009,
+    "requests": 2
    },
    {
     "site_id": "ZDH",
@@ -1333,14 +1592,14 @@
    },
    {
     "site_id": "QDH",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.007,
+    "requests": 2
    },
    {
     "site_id": "XSN",
@@ -1355,10 +1614,10 @@
    },
    {
     "site_id": "SWS",
-    "days": 0,
+    "days": 1,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 0,
+    "skipped": 1,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -1366,70 +1625,70 @@
    },
    {
     "site_id": "QJG",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.005,
+    "requests": 2
    },
    {
     "site_id": "LSN",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 1.357,
+    "requests": 3
    },
    {
     "site_id": "XMN",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.006,
+    "requests": 2
    },
    {
     "site_id": "STU",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.008,
+    "requests": 2
    },
    {
     "site_id": "MAW",
-    "days": 0,
+    "days": 1,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 0,
+    "skipped": 1,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
     "requests": 1
    }
   ],
-  "s2_requests": 17,
-  "s2_processing_units": 2.157,
-  "requests": 34,
-  "processing_units": 7.874,
+  "s2_requests": 20,
+  "s2_processing_units": 1.392,
+  "requests": 40,
+  "processing_units": 12.997,
   "pu_source": "header",
-  "scenes": 4,
-  "month_pu_before": 75.482,
+  "scenes": 7,
+  "month_pu_before": 83.356,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-02T13:41:57Z",
+ "updated_utc": "2026-11-03T13:00:22Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
@@ -1567,6 +1826,266 @@
    "to_version": "quay-v2・est-2.1（berth-1）",
    "date_utc": "2026-11-01",
    "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "ZJG",
+   "kind": "naval",
+   "from_mask_version": "ZJG-land-v2",
+   "to_mask_version": "ZJG-land-v2",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SYL",
+   "kind": "naval",
+   "from_mask_version": "SYL-land-v2",
+   "to_mask_version": "SYL-land-v2",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SLP",
+   "kind": "naval",
+   "from_mask_version": "SLP-land-v2",
+   "to_mask_version": "SLP-land-v2",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QGZ",
+   "kind": "naval",
+   "from_mask_version": "QGZ-land-v1",
+   "to_mask_version": "QGZ-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "ZDH",
+   "kind": "naval",
+   "from_mask_version": "ZDH-land-v2",
+   "to_mask_version": "ZDH-land-v2",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QJG",
+   "kind": "naval",
+   "from_mask_version": "QJG-land-v1",
+   "to_mask_version": "QJG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QDH",
+   "kind": "naval",
+   "from_mask_version": "QDH-land-v2",
+   "to_mask_version": "QDH-land-v2",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XSN",
+   "kind": "naval",
+   "from_mask_version": "XSN-land-v1",
+   "to_mask_version": "XSN-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LSN",
+   "kind": "naval",
+   "from_mask_version": "LSN-land-v1",
+   "to_mask_version": "LSN-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SWS",
+   "kind": "naval",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XMN",
+   "kind": "naval",
+   "from_mask_version": "XMN-land-v1",
+   "to_mask_version": "XMN-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "STU",
+   "kind": "naval",
+   "from_mask_version": "STU-land-v1",
+   "to_mask_version": "STU-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "MAW",
+   "kind": "naval",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-11-05",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "ZJG",
+   "kind": "windows",
+   "from_mask_version": "ZJG-land-v2",
+   "to_mask_version": "ZJG-land-v2",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "SYL",
+   "kind": "windows",
+   "from_mask_version": "SYL-land-v2",
+   "to_mask_version": "SYL-land-v2",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "SLP",
+   "kind": "windows",
+   "from_mask_version": "SLP-land-v2",
+   "to_mask_version": "SLP-land-v2",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "QGZ",
+   "kind": "windows",
+   "from_mask_version": "QGZ-land-v1",
+   "to_mask_version": "QGZ-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "ZDH",
+   "kind": "windows",
+   "from_mask_version": "ZDH-land-v2",
+   "to_mask_version": "ZDH-land-v2",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "QJG",
+   "kind": "windows",
+   "from_mask_version": "QJG-land-v1",
+   "to_mask_version": "QJG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "QDH",
+   "kind": "windows",
+   "from_mask_version": "QDH-land-v2",
+   "to_mask_version": "QDH-land-v2",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "XSN",
+   "kind": "windows",
+   "from_mask_version": "XSN-land-v1",
+   "to_mask_version": "XSN-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "LSN",
+   "kind": "windows",
+   "from_mask_version": "LSN-land-v1",
+   "to_mask_version": "LSN-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "SWS",
+   "kind": "windows",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "XMN",
+   "kind": "windows",
+   "from_mask_version": "XMN-land-v1",
+   "to_mask_version": "XMN-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "STU",
+   "kind": "windows",
+   "from_mask_version": "STU-land-v1",
+   "to_mask_version": "STU-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "MAW",
+   "kind": "windows",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-11-04",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
   }
  ]
 }
