@@ -4,7 +4,9 @@ name: Ocean monitor
 # 毎日 19:41 UTC（04:41 JST）：テスト → 月の確認 → OData のカタログ（認証なし・PU とリクエスト枠を使わない）で新しい撮影を確かめ、
 # なければ CDSE の Sentinel Hub には何も送らずに終わる。あれば usage を全ブランチから集めて（sat.port_archive gather）外洋の guard
 # （OCEAN_CAP・GLOBAL_CAP・GLOBAL_MARGIN、ocean.cfar_probe.budget と同じ式）と 1 回の上限 MAX_PU の内で取得・検出する。
-# 公開（main への commit）は docs/data/ocean/monitor/ と docs/data/ocean/usage.csv だけ。テストが通ったときだけ。
+# 公開（main への commit）は docs/data/ocean/monitor/ と docs/data/ocean/usage.csv、サイトの外洋の画像 docs/data/sat/chips/ocean/
+# （ocean.chips：取得済みの配列から作る。PU・リクエストは増えない。保留の域は作らない）と、その索引を写した
+# docs/data/sat/chips/index.json の ocean だけ（sat-ships と共有のファイル。push の直前に最新の main へ写し直す）。テストが通ったときだけ。
 # 使った PU は撮影ごとに usage に書き足し、例外・timeout（SIGTERM）で終わっても書く。push 前に git pull --rebase を 3 回までやり直す。
 # concurrency group は外洋の probe（ocean-cfar-probe.yml）と同じ probe-ocean-cfar：外洋の上限を同時に二重に使わない。
 # 同じ group に待ちの実行があるときに probe を push すると古い待ちは取り消される（翌日の実行が 3 日さかのぼって拾う）。
@@ -51,7 +53,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Tests
         id: tests
-        run: python -m unittest tests.test_ocean_monitor tests.test_ocean_cfar_probe tests.test_ocean_modes tests.test_sat -v
+        run: python -m unittest tests.test_ocean_monitor tests.test_ocean_chips tests.test_ocean_cfar_probe tests.test_ocean_modes tests.test_sat -v
       - name: Budget month
         id: month
         run: |
@@ -76,7 +78,7 @@ jobs:
           set -o pipefail
           DRY=""
           [ "$DRY_RUN" = "true" ] && DRY="--dry-run"
-          python -m ocean.monitor run --out docs/data/ocean/monitor --usage docs/data/ocean/usage.csv \
+          python -m ocean.monitor run --out docs/data/ocean/monitor --usage docs/data/ocean/usage.csv --chips-out docs/data/sat \
             --report-dir "$RUNNER_TEMP/report" \
             --budget-month "$BUDGET_MONTH" --ocean-cap "$OCEAN_CAP" --global-cap "$GLOBAL_CAP" --global-margin "$GLOBAL_MARGIN" \
             --max-pu "$MAX_PU" --sat-usage "$RUNNER_TEMP/sat.csv" \
@@ -100,25 +102,34 @@ jobs:
               p = p.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
               print(f"::{level} title=ocean-monitor {k + 1}/{len(parts)}::{p}")
           EOF
-      - name: Publish (docs/data/ocean/monitor and docs/data/ocean/usage.csv only)
+      - name: Publish (docs/data/ocean/monitor, docs/data/ocean/usage.csv, docs/data/sat/chips/ocean and the ocean list of chips/index.json)
         # also after a failed Monitor step (the PU spent are in usage.csv), never after failed tests or a dry run
         if: ${{ always() && steps.tests.outcome == 'success' && steps.month.outputs.ok == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
         run: |
           [ -d docs/data/ocean/monitor ] && git add -A -- docs/data/ocean/monitor
           [ -e docs/data/ocean/usage.csv ] && git add -- docs/data/ocean/usage.csv
+          [ -d docs/data/sat/chips/ocean ] && git add -A -- docs/data/sat/chips/ocean
           true
-          other="$(git status --porcelain | grep -v -E '^.. docs/data/ocean/(monitor/|usage\.csv$)' || true)"
+          other="$(git status --porcelain | grep -v -E '^.. docs/data/(ocean/(monitor/|usage\.csv$)|sat/chips/ocean/)' || true)"
           if [ -n "$other" ]; then echo "::error title=ocean-monitor::書き込み先の外が変わった（公開しない）: $other"; exit 1; fi
-          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
           export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -q -m "データ更新: 外洋の定期監視 ($(date -u +%Y-%m-%d)) [ocean-monitor]"
+          git diff --cached --quiet || git commit -q -m "データ更新: 外洋の定期監視 ($(date -u +%Y-%m-%d)) [ocean-monitor]"
+          # chips/index.json is shared with sat-ships (its sites): the ocean list is copied onto the latest main just
+          # before each push, in a commit of its own that is dropped and made again if the push is refused
+          pushed=false
           for i in 1 2 3; do
-            git push origin HEAD:main && break
-            [ "$i" = 3 ] && break
-            sleep $((i * 10))
-            git pull -q --rebase origin main
+            [ "$i" = 1 ] || sleep $((i * 10))
+            git pull -q --rebase origin main || { git rebase --abort 2>/dev/null; echo "::warning title=ocean-monitor::rebase に失敗（$i 回目）"; continue; }
+            python -m ocean.chips splice --sat docs/data/sat
+            spliced=false
+            git add -- docs/data/sat/chips/index.json 2>/dev/null || true
+            if ! git diff --cached --quiet; then git commit -q -m "データ更新: 衛星画像の索引（外洋） [ocean-monitor]"; spliced=true; fi
+            if [ -z "$(git rev-list origin/main..HEAD)" ]; then echo "No changes"; pushed=true; break; fi
+            if git push origin HEAD:main; then pushed=true; break; fi
+            if [ "$spliced" = true ]; then git reset -q --hard HEAD~1; fi
           done
+          [ "$pushed" = true ] || { echo "::error title=ocean-monitor::push できなかった"; exit 1; }
           git fetch -q origin main
           [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || git merge-base --is-ancestor HEAD origin/main || { echo "::error title=ocean-monitor::push できなかった"; exit 1; }
           echo "::notice title=ocean-monitor-commit::$(git rev-parse HEAD)"

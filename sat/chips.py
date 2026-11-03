@@ -30,6 +30,9 @@ MAX_IMAGE_BYTES = 300_000   # target for one colour image
 CREDIT = "Contains modified Copernicus Sentinel data {year}"
 WINDOW_LABELS = {"anchorage": "港内の錨泊（船が着く線から離れた水面。岸壁の候補とは別）"}
 CAPTION = "擬似カラー（レーダー VV・VH）。赤枠は自動検出の候補で、艦艇とは限らない。試行"
+OCEAN_FRAGMENT = "chips/ocean/index.json"   # written by ocean.chips (ocean.monitor); its "ocean" list is copied here
+INDEX_NOTE = ("各地点の最新 keep 撮影（新しい順）。それより古い疑似カラー画像・切り出しファイルは消す（作り直せる派生物）。"
+              "外洋（ocean）は域ごとの最新撮影（ocean.chips、chips/ocean/index.json から写す。保留の域は出さない）")
 _SAFE = re.compile(r"^(color|chips)/[A-Za-z0-9_\-./]+$")
 
 
@@ -117,6 +120,16 @@ def _write_if_changed(path: Path, text: str) -> None:
 def _remove(out: Path, rel: str) -> None:
     if rel and _SAFE.match(rel) and ".." not in rel:
         (out / rel).unlink(missing_ok=True)
+
+
+def ocean_entries(out: Path) -> list[dict]:
+    """The ``ocean`` list of index.json: copied from chips/ocean/index.json (ocean.chips); [] without one."""
+    try:
+        frag = json.loads((out / OCEAN_FRAGMENT).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    ocean = frag.get("ocean") if isinstance(frag, dict) else None
+    return ocean if isinstance(ocean, list) else []
 
 
 def chip_rel(site_id: str, stamp: str) -> str:
@@ -221,10 +234,10 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
         for x in index_sites:
             for s in x["scenes"]:
                 s.pop("retrieved_utc", None)
+        ocean = ocean_entries(out)
         idx = {"version": CHIPS_VERSION, "keep": keep, "updated_utc": max(stamps) if stamps else None,
-               "caption": CAPTION, "credit": credit(max(s["acquired_utc"][:4] for x in index_sites for s in x["scenes"])),
-               "note": "各地点の最新 keep 撮影（新しい順）。それより古い疑似カラー画像・切り出しファイルは消す（作り直せる派生物）。"
-                       "外洋（ocean）の切り出し画像は今は作っていない（ocean は空）",
-               "sites": index_sites, "ocean": []}
+               "caption": CAPTION,
+               "credit": credit(max(s["acquired_utc"][:4] for x in index_sites + ocean for s in x["scenes"])),
+               "note": INDEX_NOTE, "sites": index_sites, "ocean": ocean}
         _write_if_changed(out / "chips" / "index.json", _dump(idx))
     return {"scenes": n_scenes, "removed": removed, "cleared": cleared}

@@ -48,6 +48,13 @@ Miyako Strait, east of Taiwan, south of Sakishima, Taiwan Strait) at every pass,
    counts the published areas' passes only). The run reads both. Changing ``publish`` moves the files at the
    next run (or ``republish``, which sends nothing).
 
+7. Images for the site (``--chips-out``, docs/data/sat; ``ocean.chips``): from the arrays already fetched for
+   detection (no extra request, no extra PU), one colour image per pass of a published area: the area at a reduced
+   scale (frames of the A and B candidates as data) and zoom tiles of the strongest A candidates, in
+   ``chips/ocean/<AREA>/``; the latest ``ocean.chips.KEEP`` passes of an area are kept. Held areas get none. The
+   arrays are not kept: a pass already processed cannot be given an image afterwards. A failure here is reported
+   (``chips_errors``) and never stops the run or the publication of the counts.
+
 PU spent are added to ``--usage`` (docs/data/ocean/usage.csv) as the run goes and however it ends
 (``ocean.cfar_probe.UsageRecorder``/``guarded``). Exit codes as ``ocean.cfar_probe``: 2 month, 3 credentials.
 """
@@ -68,6 +75,7 @@ from pathlib import Path
 import numpy as np
 
 from ocean import cfar_probe as cp
+from ocean import chips as ocean_chips
 from ocean import coverage_probe as covp
 from ocean import wide
 from sat import cdse
@@ -845,6 +853,8 @@ def run(args, client=None, odata_get=None, overpass=None, now=None, pacer=None, 
 
 def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, bud, summary, rec, report_dir) -> dict:
     out = Path(args.out)
+    chips_out = Path(args.chips_out) if getattr(args, "chips_out", None) and not args.dry_run else None
+    summary["chips"], summary["chips_errors"] = [], []
     areas = areas_in_order(cfg)
     cells = area_cells(cfg, areas)
     passes, learned = load_state(out)
@@ -934,6 +944,8 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                 if args.dry_run or stop:
                     task["verdict"] = "planned" if args.dry_run else "stopped"
                     continue
+                cur["chip"] = ({"canvas": ocean_chips.Canvas(ac), "crops": {}}
+                               if chips_out is not None and not is_held(area) else None)
                 row, stop, files = _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud, summary,
                                                rec, out, area, ac, a, items, cov0, rows, learned, deadline, cur)
                 spent += row.get("pu") or 0.0
@@ -954,6 +966,9 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                         if row in rows:
                             row["status"] = "aborted"   # PU stay counted, the pass is fetched again
                         raise
+                    if cur.get("chip") is not None:
+                        _write_chip(chips_out, out, area, a, cur["chip"], files[0], now, summary, log)
+                cur["chip"] = None
                 save()
     except BaseException:
         r = cur.get("row")
@@ -970,6 +985,11 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                                       if t["verdict"] in ("take", "planned")), 3)
     if not args.dry_run and (new_rows or publication_stale(out, cfg)):
         save()
+    if chips_out is not None:   # keep, held areas, the index fragment (no network)
+        try:
+            summary["chips_index"] = ocean_chips.refresh(chips_out, cfg)
+        except Exception as ex:  # noqa: BLE001 - the images never stop the run
+            summary["chips_errors"].append(f"refresh: {type(ex).__name__}: {str(ex)[:200]}")
     summary["new_passes"] = [{k: r.get(k) for k in ("area", "acquired_utc", "status", "observed_share", "counts", "pu")}
                              for r in new_rows]
     cp._write_summary(report_dir, summary, client, pacer)
@@ -978,6 +998,23 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
     (report_dir / "report.txt").write_text(rep, encoding="utf-8")
     log(rep)
     return summary
+
+
+def _write_chip(chips_out: Path, out: Path, area: dict, a: dict, chip: dict, day: str, now: datetime, summary: dict,
+                log) -> None:
+    """The site's image of one pass (ocean.chips) from the day file just written (all parts of the pass)."""
+    try:
+        if chip.get("error"):
+            raise RuntimeError(chip["error"])
+        feats = [f for f in _read_json(out / "candidates" / f"{day}.geojson", {"features": []}).get("features", [])
+                 if f["properties"].get("area") == area["id"] and f["properties"].get("acquired_utc") == a["acquired_utc"]]
+        r = ocean_chips.write_pass(chips_out, area, a, chip["canvas"], feats, chip["crops"], cdse.iso(now))
+        if r:
+            summary["chips"].append(r)
+            log(f"{area['id']} {a['acquired_utc']}: 画像 {r['bytes'] // 1000} kB（{r['image_px'][0]}×{r['image_px'][1]}、"
+                f"候補 {r['candidates']}、拡大 {r['tiles']}）")
+    except Exception as ex:  # noqa: BLE001 - the images never stop the run nor the counts
+        summary["chips_errors"].append(f"{area['id']} {a['acquired_utc']}: {type(ex).__name__}: {str(ex)[:200]}")
 
 
 def _pass_row(a: dict, area: dict, ac: AreaCells, status: str, share: float, now: datetime) -> dict:
@@ -1045,6 +1082,14 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
             heading = v2.platform_heading(a["orbit_direction"], (g.south + g.north) / 2) if a.get("orbit_direction") else None
             c = [x for x in c if ac.contains(x["lon"], x["lat"])]
             ambiguity_check(c, vv, lia, land, g, heading, cfg)
+            chip = cur.get("chip")
+            if chip is not None and not chip.get("error"):
+                try:   # the site's image of the area, from the arrays already here (no request)
+                    chip["canvas"].add(g, vv, vh, valid)
+                    for x in c:
+                        chip["crops"][(x["lon"], x["lat"])] = ocean_chips.crop(vv, vh, g, x["lon"], x["lat"])
+                except Exception as ex:  # noqa: BLE001
+                    chip["error"] = f"{type(ex).__name__}: {str(ex)[:200]}"
             cands.extend(c)
             rects.append(g.bbox)
             summary["results"].append({"area": area["id"], "acquired_utc": a["acquired_utc"], "bbox": g.bbox,
@@ -1276,10 +1321,13 @@ def publication_stale(out: Path, cfg: dict) -> bool:
             or any(r.get("area") in held for r in public))
 
 
-def republish(out: Path, cfg: dict, now: datetime) -> str:
-    """save_state on the existing passes.json and static_learned.json (no catalogue, no Sentinel Hub)."""
+def republish(out: Path, cfg: dict, now: datetime, chips_out: Path | None = None) -> str:
+    """save_state on the existing passes.json and static_learned.json (no catalogue, no Sentinel Hub); with
+    ``chips_out``, the site's images too (held areas' images deleted, ``ocean.chips.refresh``)."""
     rows, learned = load_state(out)
     save_state(out, cfg, rows, learned, now)
+    if chips_out is not None:
+        ocean_chips.refresh(chips_out, cfg)
     return f"{len(rows)} 件の撮影の記録から書き直した。保留：{', '.join(sorted(held_ids(cfg))) or 'なし'}"
 
 
@@ -1298,6 +1346,12 @@ def report(s: dict) -> str:
                  f"{t.get('est_pu', 0)} PU、実績 {t.get('pu')} PU {t.get('status') or ''}）")
     for r in s.get("new_passes") or []:
         L.append(f"  → {r['area']} {r['acquired_utc']} {r['status']} 見た割合 {r.get('observed_share')} 件数 {json.dumps(r.get('counts'), ensure_ascii=False)}")
+    for c in s.get("chips") or []:
+        L.append(f"  画像 {c['area']} {c['acquired_utc']}: {c['bytes']} B {c['image_px']}、候補 {c['candidates']}、拡大 {c['tiles']}")
+    if s.get("chips_index"):
+        L.append("  画像の索引: " + json.dumps(s["chips_index"], ensure_ascii=False))
+    for e in s.get("chips_errors") or []:
+        L.append("画像のエラー（件数の公開には影響しない）: " + e)
     for e in s["errors"]:
         L.append("エラー: " + json.dumps(e, ensure_ascii=False, default=str))
     return "\n".join(L) + "\n"
@@ -1414,6 +1468,7 @@ def main(argv=None) -> int:
                                           "(publish/hold, meta); no network, no PU")
     rp.add_argument("--config", type=Path, default=CONFIG_FILE)
     rp.add_argument("--out", type=Path, default=Path("docs/data/ocean/monitor"))
+    rp.add_argument("--chips-out", type=Path, help="docs/data/sat: also prune the site's images (ocean.chips)")
     r = sub.add_parser("run", help="the daily run")
     r.add_argument("--config", type=Path, default=CONFIG_FILE)
     r.add_argument("--out", type=Path, default=Path("docs/data/ocean/monitor"))
@@ -1430,6 +1485,8 @@ def main(argv=None) -> int:
     r.add_argument("--max-pu", type=float, required=True, help="cap of this run (inside the month's caps)")
     r.add_argument("--max-minutes", type=float, default=100)
     r.add_argument("--lookback-days", type=int)
+    r.add_argument("--chips-out", type=Path, help="docs/data/sat: the site's images of the published areas (ocean.chips; "
+                                                 "no extra PU). Without it no image is made")
     r.add_argument("--dry-run", action="store_true", help="catalogue and plan only (no PU, nothing written to --out)")
     args = ap.parse_args(argv)
     if args.cmd == "plan":
@@ -1441,7 +1498,7 @@ def main(argv=None) -> int:
         print(rep)
         return 0
     if args.cmd == "republish":
-        print(republish(args.out, load_config(args.config), datetime.now(timezone.utc)))
+        print(republish(args.out, load_config(args.config), datetime.now(timezone.utc), args.chips_out))
         return 0
     now_month = datetime.now(timezone.utc).strftime("%Y-%m")
     if args.budget_month != now_month:
