@@ -40,6 +40,15 @@ NEW_FILES = {"quay_sectors.csv"}    # outputs that did not exist before PR-1
 # berth-1 (2026-11-01, the user's instruction: shores where ships never berth are left out of the counts):
 # an intended change of Zhanjiang's outputs. Only these files may differ from 9e86565; inside them the rows
 # of the past scenes stay the same (never rewritten) except est-2, which is recomputed for every scene.
+# win-1 (2026-11-03, the user's decision: candidate windows only on sea-joined water along the berth lines, from
+# windows.since_utc of sites.json): an intended change of Zhanjiang's outputs for the scenes from that date. Checked
+# with the rule switched on for the scenario's scenes (compare(windows_since=...)): only these files may differ besides
+# BERTH_CHANGED, and WINDOW_NEW_FILES is added (the regions left out, for the eye check).
+WINDOW_VERSION = "win-1"
+# Harbour candidates beyond band_m of the berth lines are not thrown away but counted apart as anchorage
+# (anchorage_counts.csv, user's decision 2026-11-03).
+WINDOW_CHANGED = {"ship_counts.csv", "detections/2026-11.geojson", "status.json"}
+WINDOW_NEW_FILES = {"windows/ZJG.geojson", "anchorage_counts.csv"}
 BERTH_CHANGED = {"quay/2026-11.geojson", "quay/ZJG-zone-prior.json", "quay_counts.csv", "quay_est2.csv", "quay_est2.json",
                  "ship_counts.csv", "status.json"}
 # The two scenes the fake client serves (Zhanjiang, orbits 157 and 84). The scenario's new rows are picked by
@@ -65,6 +74,7 @@ from sat.osm_mask import load_mask
 src, work = Path(sys.argv[1]), Path(sys.argv[2])
 copy = json.loads(sys.argv[3])
 FAKE = tuple(json.loads(sys.argv[4]))
+OVERRIDE = json.loads(sys.argv[5]) if len(sys.argv) > 5 else {}   # {site id: {key: value}} on sites.json (new code only)
 NOW = datetime(2026, 11, 3, 1, 0, 0, tzinfo=timezone.utc)
 
 class Frozen(datetime):
@@ -126,7 +136,8 @@ for rel in copy:
     shutil.copyfile(src / rel, out / rel)
 with mock.patch.object(run, "datetime", Frozen), mock.patch.object(quay, "Geometry", cached_geometry), \
         contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-    rc = run.main(["--out", str(out)], client=FakeClient(chip), sites=only_zjg_daily(run.load_sites()))
+    sites = [{**s, **OVERRIDE.get(s["id"], {})} for s in only_zjg_daily(run.load_sites())]
+    rc = run.main(["--out", str(out)], client=FakeClient(chip), sites=sites)
 files = {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest()
          for p in sorted(out.rglob("*")) if p.is_file() and p != out / "meta.json"}
 m = json.loads((out / "meta.json").read_text(encoding="utf-8"))
@@ -159,9 +170,19 @@ new_ship = [{k: r.get(k) for k in ("acquired_utc", "harbour_candidates", "quay_c
 gj = [f for f in json.loads((out / "quay/2026-11.geojson").read_text(encoding="utf-8"))["features"] if is_fake(f["properties"])]
 new_lines = sorted({(f["properties"]["line_kind"], f["properties"]["osm_way"]) for f in gj})
 e2 = rows_of("quay_est2.csv")
+anch = [{k: r[k] for k in ("acquired_utc", "anchorage_candidates", "window_version")} for r in rows_of("anchorage_counts.csv")
+        if is_fake(r)] if (out / "anchorage_counts.csv").exists() else []
+dets = [f["properties"] for f in json.loads((out / "detections/2026-11.geojson").read_text(encoding="utf-8"))["features"] if is_fake(f["properties"])]
+cand = [{"utc": t, "harbour_kept": sum(d["zone"] == "harbour" and not d.get("window_excluded") and d.get("window") != "anchorage"
+                                       for d in dets if d["acquired_utc"] == t),
+         "anchorage": sum(d.get("window") == "anchorage" for d in dets if d["acquired_utc"] == t),
+         "anchorage_zones": sorted({d["zone"] for d in dets if d["acquired_utc"] == t and d.get("window") == "anchorage"}),
+         "window_excluded": sorted(d["window_excluded"] for d in dets if d["acquired_utc"] == t and d.get("window_excluded")),
+         "all": sum(1 for d in dets if d["acquired_utc"] == t)} for t in FAKE]
 print(json.dumps({"rc": rc, "files": files, "meta": meta, "sectors": sectors,
                   "quay_results": [s.get("quay_result") for s in scenes],
                   "excluded": [{k: s.get(k) for k in ("quay_excluded", "quay_band_excluded")} for s in scenes],
+                  "window_excluded": [s.get("window_excluded") for s in scenes], "candidates": cand, "anchorage_rows": anch,
                   "past": past, "new_quay": new_quay, "new_ship": new_ship, "new_lines": new_lines,
                   "est2_version": sorted({r["est2_version"] for r in e2}), "est2_rows": len(e2),
                   "est2_warship": [(r["acquired_utc"], r["warship_median"]) for r in e2]}, ensure_ascii=False))
@@ -179,10 +200,10 @@ def old_package(dest: Path) -> Path:
     return dest
 
 
-def start(root: Path, work: Path) -> subprocess.Popen:
+def start(root: Path, work: Path, override: dict | None = None) -> subprocess.Popen:
     work.mkdir(parents=True, exist_ok=True)
     env = {**os.environ, "PYTHONPATH": str(root), "PYTHONDONTWRITEBYTECODE": "1"}
-    return subprocess.Popen([sys.executable, "-c", SCRIPT, str(SRC), str(work), json.dumps(COPY), json.dumps(FAKE_UTC)],
+    return subprocess.Popen([sys.executable, "-c", SCRIPT, str(SRC), str(work), json.dumps(COPY), json.dumps(FAKE_UTC), json.dumps(override or {})],
                             cwd=str(work), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 
@@ -193,10 +214,16 @@ def finish(p: subprocess.Popen, name: str) -> dict:
     return json.loads(out.strip().splitlines()[-1])
 
 
-def compare(tmp: Path) -> tuple[dict, dict]:
-    """(old, new) results of the same scenario, run in parallel."""
+def compare(tmp: Path, windows_since: str | None = None) -> tuple[dict, dict]:
+    """(old, new) results of the same scenario, run in parallel. ``windows_since``: the new code runs with Zhanjiang's
+    window rule (win-1) active from this date (the scenario's scenes are before the real since_utc)."""
     po = start(old_package(tmp / "oldroot"), tmp / "old")
-    pn = start(ROOT, tmp / "new")
+    ov = None
+    if windows_since:
+        from sat.run import load_sites
+        z = next(s for s in load_sites() if s["id"] == "ZJG")
+        ov = {"ZJG": {"windows": {**(z.get("windows") or {}), "since_utc": windows_since}}}
+    pn = start(ROOT, tmp / "new", ov)
     return finish(po, "old (9e86565)"), finish(pn, "new")
 
 

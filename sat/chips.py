@@ -28,6 +28,7 @@ MIN_BOX_M = 30.0            # a box is at least this wide (a few pixels), as on 
 BOX_PAD_PX = 2.0
 MAX_IMAGE_BYTES = 300_000   # target for one colour image
 CREDIT = "Contains modified Copernicus Sentinel data {year}"
+WINDOW_LABELS = {"anchorage": "港内の錨泊（船が着く線から離れた水面。岸壁の候補とは別）"}
 CAPTION = "擬似カラー（レーダー VV・VH）。赤枠は自動検出の候補で、艦艇とは限らない。試行"
 _SAFE = re.compile(r"^(color|chips)/[A-Za-z0-9_\-./]+$")
 
@@ -80,6 +81,9 @@ def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px:
              "length_m": p.get("length_m"), "width_m": p.get("width_m"), "length_class": p.get("length_class"),
              "contrast_vv_db": p.get("contrast_vv_db"), "vh_ratio_db": p.get("vh_ratio_db"),
              "credibility": p.get("credibility"), "reliability": p.get("reliability"), "status": p.get("status")}
+        if p.get("window"):   # win-1: an anchorage candidate (open harbour water beyond the berth band), framed apart
+            c["window"] = p["window"]
+            c["window_label"] = WINDOW_LABELS.get(p["window"], p["window"])
         cands.append(c)
     mr, mc = grid.pixel_m
     return {
@@ -162,11 +166,19 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
             feats = [f for f in by_month[month] if f["properties"]["acquired_utc"] == r["acquired_utc"]
                      and f["properties"]["site_id"] == site["id"] and row_tag(f["properties"]) == tag]
             excluded = None
+            # win-1: candidates the window rule left out at detection time (property window_excluded) are not framed
+            win = [f for f in feats if f["properties"].get("window_excluded")]
+            if win:
+                excluded = {}
+                for f in win:
+                    k = "window_" + f["properties"]["window_excluded"]
+                    excluded[k] = excluded.get(k, 0) + 1
+                feats = [f for f in feats if not f["properties"].get("window_excluded")]
             if classify is not None:
                 band = [f for f in feats if f["properties"].get("zone") == "quay"]
                 why = classify(site, [tuple(f["geometry"]["coordinates"][:2]) for f in band])
                 if why is not None:
-                    excluded = {k: 0 for k in ("off_berth", "coastline")}
+                    excluded = {**{k: 0 for k in ("off_berth", "coastline")}, **(excluded or {})}
                     drop = set()
                     for f, w in zip(band, why):
                         if w:
