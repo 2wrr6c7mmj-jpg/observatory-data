@@ -129,7 +129,7 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
     """Rewrite chips/ from the published rows; delete the colour files of scenes beyond the latest ``keep`` of a site
     (and blank their colour columns in ``rows``, which the caller saves). Returns {"scenes", "removed", "cleared"}.
 
-    ``classify(site, [(lon, lat), ...])`` (berth-1, sat/berths.py): for the quay-band candidates, "" (kept),
+    ``classify(site, [(lon, lat), ...], acquired_utc)`` (berth-1, sat/berths.py): for the quay-band candidates, "" (kept),
     "coastline" or "off_berth"; the others are left out of ``candidates`` and only counted in
     ``excluded_counts``. Open-water candidates are always kept. None (or no quay lines): every candidate."""
     index_sites, removed, cleared, n_scenes = [], 0, 0, 0
@@ -184,7 +184,7 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
                 feats = [f for f in feats if not f["properties"].get("naval_excluded")]
             if classify is not None:
                 band = [f for f in feats if f["properties"].get("zone") == "quay"]
-                why = classify(site, [tuple(f["geometry"]["coordinates"][:2]) for f in band])
+                why = classify(site, [tuple(f["geometry"]["coordinates"][:2]) for f in band], r["acquired_utc"])
                 if why is not None:
                     excluded = {**{k: 0 for k in ("off_berth", "coastline")}, **(excluded or {})}
                     drop = set()

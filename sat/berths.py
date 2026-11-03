@@ -76,9 +76,29 @@ def _in_poly(lon: float, lat: float, poly) -> bool:
     return inside
 
 
+def _near_ring(lon: float, lat: float, ring, m: float) -> bool:
+    """Within ``m`` metres of the outline ``ring`` (lon/lat)."""
+    mx, my = 111320.0 * math.cos(math.radians(lat)), 111132.0
+    px, py = lon * mx, lat * my
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:]):
+        ax, ay, bx, by = x1 * mx, y1 * my, x2 * mx, y2 * my
+        dx, dy = bx - ax, by - ay
+        dd = dx * dx + dy * dy
+        t = 0.0 if dd == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / dd))
+        if math.hypot(px - ax - t * dx, py - ay - t * dy) <= m:
+            return True
+    return False
+
+
 def _in_area(area: dict, lon: float, lat: float) -> bool:
     if area.get("polygon"):
-        return _in_poly(lon, lat, area["polygon"])
+        # naval-1: "buffer_m" also takes the points within that distance of the outline (a quay on the area's edge);
+        # "clip" [w, s, e, n] keeps only the points inside that box (e.g. the inner side of a harbour)
+        c = area.get("clip")
+        if c is not None and not (c[0] <= lon < c[2] and c[1] <= lat < c[3]):
+            return False
+        return _in_poly(lon, lat, area["polygon"]) or (
+            bool(area.get("buffer_m")) and _near_ring(lon, lat, area["polygon"], float(area["buffer_m"])))
     b = area.get("bbox")
     return b is not None and b[0] <= lon < b[2] and b[1] <= lat < b[3]
 
@@ -92,7 +112,8 @@ class Berths:
     """The berth rule of one site. ``lines``: the site's quay lines (quay_lines.load); ``site``: its sites.json entry;
     ``classes``: the naval-1 classes of its lines (default: sat/berth_class/<site>.json)."""
 
-    def __init__(self, site: dict, lines: dict | None, conf: dict | None = None, classes: dict | None | bool = True):
+    def __init__(self, site: dict, lines: dict | None, conf: dict | None = None, classes: dict | None | bool = True,
+                 naval: bool = False):
         conf = conf if conf is not None else _CONF
         sc = (conf.get("sites") or {}).get(site["id"]) or {}
         self.site_id = site["id"]
@@ -113,6 +134,17 @@ class Berths:
         self._segs = None
         # naval-1 classes: True = the site's file (sat/berth_class/<site>.json); a dict = these; None/False = none
         self.classes = load_classes(site["id"]) if classes is True else (classes or None)
+        # naval=True (scenes from NAVAL_SINCE): the berth sections the class file adds ("added": true, e.g. a naval quay
+        # that is only a coastline in OSM) are berth lines too; before that date the berth lines stay those of berth-1
+        self.naval = bool(naval and self.classes)
+        if self.naval:
+            for e in self.classes.get("lines") or []:
+                if e.get("added") and e.get("kind") in BERTH_KINDS:
+                    self.exclude.discard(str(e["way"]))   # a drawn line kept out of berth-1, a berth from NAVAL_SINCE
+                elif e.get("added"):
+                    part = e.get("part") or {}
+                    area = areas.get(part["sector"], {"bbox": [0, 0, 0, 0]}) if part.get("sector") else (part or {"all": True})
+                    self.allow.setdefault(str(e["way"]), []).append(area)
         self._cls: dict[str, list[tuple[dict | None, str]]] = {}
         for e in (self.classes or {}).get("lines") or []:
             part = e.get("part") or {}
@@ -243,14 +275,15 @@ class Berths:
 _CACHE: dict = {}
 
 
-def for_site(site: dict, lines_dir: Path | None = None) -> Berths:
-    """The site's berth rule on its current quay lines (cached per site and lines version)."""
+def for_site(site: dict, lines_dir: Path | None = None, naval: bool = False) -> Berths:
+    """The site's berth rule on its current quay lines (cached per site and lines version); ``naval``: the variant of
+    the scenes from NAVAL_SINCE (naval-1: with the berth sections the class file adds)."""
     from . import quay_lines
     lv = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
-    key = (site["id"], lv, str(lines_dir), json.dumps(site.get("sectors"), sort_keys=True))
+    key = (site["id"], lv, str(lines_dir), json.dumps(site.get("sectors"), sort_keys=True), bool(naval))
     if key not in _CACHE:
         lines = quay_lines.load(site["id"], lv, lines_dir) if lines_dir else quay_lines.load(site["id"], lv)
-        _CACHE[key] = Berths(site, lines)
+        _CACHE[key] = Berths(site, lines, naval=naval)
     return _CACHE[key]
 
 

@@ -732,7 +732,8 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
     by_scene: dict = {}
     from . import berths   # berth-1: only stretches on a berth line, past scenes included (est-2 is recomputed)
     for f in feats:
-        if not berths.feature_ok(berths.for_site(cfg.get(f["site_id"]) or {"id": f["site_id"]}), f, f["coords"]):
+        nv = berths.naval_active(f["site_id"], f.get("acquired_utc") or "")   # naval-1: the variant from NAVAL_SINCE
+        if not berths.feature_ok(berths.for_site(cfg.get(f["site_id"]) or {"id": f["site_id"]}, naval=nv), f, f["coords"]):
             continue
         by_scene.setdefault((f["site_id"], f["acquired_utc"], f.get("mask_version") or ""), []).append(f)
     sites: dict = {}

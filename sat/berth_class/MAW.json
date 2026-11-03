@@ -1,0 +1,77 @@
+{
+ "site": "MAW",
+ "name": "福州・馬尾（造船所）",
+ "version": "naval-1",
+ "lines_version": "MAW-quay-v2",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:54:13Z",
+ "osm_base": "2026-11-03T06:45:17Z",
+ "osm_bbox": [
+  119.345,
+  25.895,
+  119.545,
+  26.085
+ ],
+ "confidence": "低〜中（造船所の岸壁は OSM の外形からの手書き。造船所の外の桟橋 4 本は根拠が無く不明）",
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 441552240,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 475249660,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 475249859,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1071761731,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": -1,
+   "kind": "quay",
+   "class": "naval",
+   "conf": "推定",
+   "added": true,
+   "fixed": true,
+   "why": "造船所の岸壁（建造・整備中の艦を民間として落とさないため海軍に数える。民間船の建造・修理も入りうる）",
+   "basis": [
+    "OSM way/431595199「马尾造船厂」（industrial=shipyard）の川に面した縁（手書きの線 sat/masks/MAW-manual.geojson、id −1）",
+    "sites.json の MAW は造船所の監視地点（区画 A1＝馬尾造船所の岸壁）"
+   ]
+  }
+ ]
+}

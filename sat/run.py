@@ -469,8 +469,8 @@ class Store:
             def features_for(site: dict, month: str) -> list[dict]:
                 p = self.out / detections_rel(site, month)
                 return json.loads(p.read_text(encoding="utf-8"))["features"] if p.exists() else []
-            def classify(site: dict, points: list[tuple[float, float]]) -> list[str] | None:
-                bt = berths.for_site(site)
+            def classify(site: dict, points: list[tuple[float, float]], acquired_utc: str = "") -> list[str] | None:
+                bt = berths.for_site(site, naval=berths.naval_active(site["id"], acquired_utc))
                 return bt.classify(points) if bt.lines.get("ways") else None
             r = chips.update(self.out, [s for s in self.sites if s.get("enabled")], self.rows, features_for,
                              mask_tag, row_mask_tag, classify=classify)
@@ -971,24 +971,30 @@ class QuayContext:
         self._geom = None
         self._bl: dict = {}
         self._model = None
-        self._berths = None
-        self._windows = None
+        self._berths: dict = {}
+        self._windows: dict = {}
 
-    def windows(self) -> "fwindows.Windows | None":
-        """win-1: where candidates may stand (sites.json windows); None without the block or quay lines."""
+    def windows(self, naval: bool = False) -> "fwindows.Windows | None":
+        """win-1: where candidates may stand (sites.json windows); None without the block or quay lines.
+        ``naval``: on the berth lines of the naval-1 variant (scenes from berths.NAVAL_SINCE)."""
         if self.lines is None or fwindows.config(self.site) is None:
             return None
-        if self._windows is None:
-            self._windows = fwindows.Windows(self.site, self.grid, self.mask, self.berths())
-        return self._windows
+        if naval not in self._windows:
+            self._windows[naval] = fwindows.Windows(self.site, self.grid, self.mask, self.berths(naval))
+        return self._windows[naval]
 
-    def berths(self) -> "berths.Berths | None":
-        """berth-1: the site's berth lines (sat/berths.json) on its quay lines; None without quay lines."""
+    def berths(self, naval: bool = False) -> "berths.Berths | None":
+        """berth-1: the site's berth lines (sat/berths.json) on its quay lines; None without quay lines.
+        ``naval``: the naval-1 variant (scenes from berths.NAVAL_SINCE: with the classes and the added berth sections)."""
         if self.lines is None:
             return None
-        if self._berths is None:
-            self._berths = berths.Berths(self.site, self.lines)
-        return self._berths
+        if naval not in self._berths:
+            self._berths[naval] = berths.Berths(self.site, self.lines, naval=naval)
+        return self._berths[naval]
+
+    def naval(self, acquired_utc: str) -> bool:
+        """Is the naval-1 rule applied to this scene? (a class file and the date)"""
+        return self.lines is not None and berths.naval_active(self.site["id"], acquired_utc)
 
     def model(self) -> quay_est.Model:
         if self._model is None:
@@ -1132,7 +1138,7 @@ def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict
     None (rule not active)."""
     if not fwindows.active(site, acq["acquired_utc"]):
         return None
-    w = qctx.windows()
+    w = qctx.windows(qctx.naval(acq["acquired_utc"]))
     if w is None:
         return None
     bl = qctx.baseline(acq["relative_orbit"])
@@ -1156,8 +1162,10 @@ def classify_naval(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict])
     candidate still counted (at_berth) gets d["berth_class"], the class of the nearest berth line (within keep_m for the
     quay band, within the window's band_m for the open water; farther: unknown), and d["naval_excluded"] = the class when
     it is not naval (kept in detections/, counted apart). Returns the counts by zone and class, or None (rule not active)."""
-    bt = qctx.berths()
-    if bt is None or not bt.classes or not berths.naval_active(site["id"], acq["acquired_utc"]):
+    if not qctx.naval(acq["acquired_utc"]):
+        return None
+    bt = qctx.berths(True)
+    if bt is None or not bt.classes:
         return None
     band_m = float((fwindows.config(site) or fwindows.DEFAULTS)["band_m"])
     out = {f"{z}_{c}": 0 for z in ("harbour", "quay") for c in berths.CLASSES}
@@ -1199,10 +1207,10 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
             clat = (float(site["bbox"][1]) + float(site["bbox"][3])) / 2  # the bbox centre; no latitude: no look azimuth
         look = quay.look_azimuth(acq.get("orbit_direction"), float(clat)) if clat is not None else None
         q = quay.count(qctx.geometry(), vv, vh, layers, lambda lo, la: sector_of(sectors, lo, la), look_az_deg=look)
-        bt = qctx.berths()  # berth-1: only the stretches on a berth line are counted and judged
+        bt = qctx.berths(qctx.naval(acq["acquired_utc"]))  # berth-1: only the stretches on a berth line are counted and judged
         q = quay.restrict(q, lambda sg: bt.stretch_ok(sg["kind"], sg["way_id"], sg["line"]), qctx.geometry().cfg["cluster_m"])
         entry["quay_excluded"] = {**q["excluded"], "berth_version": berths.VERSION}
-        if bt.classes and berths.naval_active(site["id"], acq["acquired_utc"]):
+        if bt.naval:
             # naval-1: only the stretches on a naval line are counted; civil and unknown ones are counted apart
             by_cls = {c: [] for c in berths.CLASSES}
             for sg in q["segments"]:
@@ -1370,14 +1378,14 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 d["lon"], d["lat"] = float(lon), float(lat)
                 d["sector"] = sector_of(sectors, d["lon"], d["lat"])
             # berth-1: quay-band candidates off the berth lines are kept in detections/ but not counted
-            band_excluded = classify_band(qctx.berths(), dets)
+            band_excluded = classify_band(qctx.berths(qctx.naval(acq["acquired_utc"])), dets)
             if band_excluded is not None:
                 entry["quay_band_excluded"] = band_excluded
             # win-1 (from the site's windows.since_utc): candidates off the sea-joined water along the berth lines
             win_excluded = classify_windows(qctx, site, acq, dets)
             if win_excluded is not None:
                 entry["window_excluded"] = win_excluded
-                store.write_windows(site, qctx.windows())
+                store.write_windows(site, qctx.windows(qctx.naval(acq["acquired_utc"])))
                 store.add_anchorage(site, acq, tag, dets, sectors)
             # naval-1 (from berths.NAVAL_SINCE): only candidates on a naval berth line go into the headline counts
             naval = classify_naval(qctx, site, acq, dets)

@@ -631,7 +631,7 @@
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
-   "quay_lines_version": 1,
+   "quay_lines_version": 2,
    "sectors": [
     {
      "id": "A1",
@@ -1206,7 +1206,7 @@
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
-   "quay_lines_version": 1,
+   "quay_lines_version": 2,
    "sectors": [
     {
      "id": "A1",

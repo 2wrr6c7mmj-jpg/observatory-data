@@ -1,0 +1,148 @@
+{
+ "site": "SLP",
+ "name": "三亜・亜龍湾（龍坡、潜水艦基地）",
+ "version": "naval-1",
+ "lines_version": "SLP-quay-v2",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:49:58Z",
+ "osm_base": "2026-11-03T06:29:06Z",
+ "osm_bbox": [
+  109.585,
+  18.105,
+  109.795,
+  18.322
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 158981836,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769260「南部战区海军驱逐舰第9支队」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 158981837,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769260「南部战区海军驱逐舰第9支队」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 230360728,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A3（role naval）"
+   ]
+  },
+  {
+   "way": 230360733,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769259「中国人民解放军海军潜艇第二基地」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0005「潛艇第二基地」まで 84 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 230360735,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769259「中国人民解放军海军潜艇第二基地」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0005「潛艇第二基地」まで 167 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 230360737,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769259「中国人民解放军海军潜艇第二基地」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0005「潛艇第二基地」まで 245 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 230360738,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769259「中国人民解放军海军潜艇第二基地」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0005「潛艇第二基地」まで 355 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1112325436,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "区画 A3（role naval）"
+   ]
+  },
+  {
+   "way": 1185822323,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769259「中国人民解放军海军潜艇第二基地」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0005「潛艇第二基地」まで 552 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1366235753,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1504769259「中国人民解放军海军潜艇第二基地」（landuse=military・military=base）に含まれる",
+    "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0005「潛艇第二基地」まで 451 m",
+    "区画 A1（role naval）"
+   ]
+  }
+ ]
+}

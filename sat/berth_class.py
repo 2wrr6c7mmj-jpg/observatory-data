@@ -224,6 +224,105 @@ def classify_line(site: dict, item: dict, areas: list[Area], wen: list[dict], mx
     return e
 
 
+JOIN_M = 5.0
+
+
+def propagate(items: list[dict], entries: list[dict], mx: float, my: float) -> None:
+    """A pier or quay line joined (a vertex within JOIN_M) to a naval line, with no evidence of its own (unknown, no
+    civil or yard area), is part of the same structure (e.g. the head of a T pier, drawn as its own way): naval."""
+    geo = [[(x * mx, y * my) for x, y in it["coords"]] for it in items]
+    changed = True
+    while changed:
+        changed = False
+        for i, e in enumerate(entries[:len(items)]):
+            if e["class"] != "unknown" or e.get("fixed") or e["kind"] == "coastline" or "OSM " in " ".join(e["basis"]):
+                continue
+            for j, f in enumerate(entries[:len(items)]):
+                if f["class"] != "naval" or f["kind"] == "coastline" or i == j:
+                    continue
+                g = geo[j]
+                if any(_seg_dist(x, y, *a, *b) <= JOIN_M for x, y in geo[i] for a, b in zip(g, g[1:])):
+                    e.update({"class": "naval", "conf": "推定",
+                              "why": f"海軍の線（way {f['way']}）とつながる同じ桟橋の一部（OSM で別の way）"})
+                    e["basis"] = [f"way {f['way']}（naval）と {JOIN_M:.0f} m 以内で接続"] + e["basis"]
+                    changed = True
+                    break
+
+
+def propose_added(site: dict, osm_dir: Path, area_ids: list[str], min_m: float = 80.0, touch_m: float = TOUCH_M) -> list[dict]:
+    """Coastline sections of the site's quay lines inside (or within ``touch_m`` of) the given OSM areas that are not
+    berth lines yet: [{"way", "bbox", "length_m", "areas"}] (a proposal to review; the chosen ones go in the class
+    file as fixed entries with ``"added": true``)."""
+    lv = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
+    lines = quay_lines.load(site["id"], lv) or {"ways": []}
+    lat0 = (site["bbox"][1] + site["bbox"][3]) / 2
+    mx, my = _mxy(lat0)
+    osm = load_osm(osm_dir, site["id"]) or {"features": []}
+    areas = [Area(f, mx, my) for f in osm["features"] if f["osm"] in area_ids]
+    bt = berths.Berths(site, lines, classes=None)
+    b = site["bbox"]
+    out = []
+    for w in lines["ways"]:
+        if w["kind"] != "coastline":
+            continue
+        pts = [p for p in densify(w["coords"], mx, my, 10.0) if b[0] <= p[0] <= b[2] and b[1] <= p[1] <= b[3]]
+        run: list = []
+
+        def flush():
+            if len(run) >= 2:
+                L = sum(math.hypot((q[0] - p[0]) * mx, (q[1] - p[1]) * my) for p, q in zip(run, run[1:]))
+                if L >= min_m:
+                    xs, ys = [p[0] for p in run], [p[1] for p in run]
+                    out.append({"way": w["id"], "length_m": round(L),
+                                "bbox": [round(min(xs) - 0.0002, 5), round(min(ys) - 0.0002, 5),
+                                         round(max(xs) + 0.0002, 5), round(max(ys) + 0.0002, 5)]})
+        for p in pts:
+            q = [(p[0] * mx, p[1] * my)]
+            hit = [a.osm for a in areas if (lambda t: t[0] or t[1] <= touch_m)(a.touch(q))]
+            if hit and not bt.point_ok("coastline", w["id"], p[0], p[1]):
+                run.append(p)
+            else:
+                flush()
+                run = []
+        flush()
+    return out
+
+
+def add_sections(site: dict, osm_dir: Path, area_ids: list[str], cls: str, why: str, conf: str, extra_basis: list[str],
+                 buffer_m: float = 25.0, out_dir: Path = CLASS_DIR) -> list[dict]:
+    """Add the coastline sections along the given OSM areas (propose_added) to the class file as fixed entries with
+    ``"added": true`` (berth lines from NAVAL_SINCE; the part is the area's outline with ``buffer_m``)."""
+    p = out_dir / f"{site['id']}.json"
+    doc = json.loads(p.read_text(encoding="utf-8"))
+    osm = load_osm(osm_dir, site["id"]) or {"features": []}
+    lat0 = (site["bbox"][1] + site["bbox"][3]) / 2
+    mx, my = _mxy(lat0)
+    feats = {f["osm"]: f for f in osm["features"]}
+    added = []
+    for aid in area_ids:
+        f = feats[aid]
+        ring = max(f["rings"], key=len)
+        a = Area(f, mx, my)
+        for r in propose_added(site, osm_dir, [aid], touch_m=buffer_m):
+            e = {"way": r["way"], "kind": "coastline", "class": cls, "conf": conf, "why": why,
+                 "basis": [f"{a.label()}の外形から {buffer_m:.0f} m 以内の海岸線（約 {r['length_m']} m、範囲内）"] + extra_basis,
+                 "part": {"polygon": ring, "buffer_m": buffer_m, "osm": aid}, "added": True, "fixed": True}
+            key = (str(e["way"]), aid)
+            doc["lines"] = [x for x in doc["lines"] if not (x.get("added") and (str(x["way"]), (x.get("part") or {}).get("osm")) == key)]
+            doc["lines"].append(e)
+            added.append(e)
+    # one entry per (way, area): several runs of the same way along one area share the part
+    seen, uniq = set(), []
+    for x in doc["lines"]:
+        k = (str(x["way"]), json.dumps(x.get("part"), sort_keys=True))
+        if k not in seen:
+            seen.add(k)
+            uniq.append(x)
+    doc["lines"] = uniq
+    p.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return added
+
+
 def build(site: dict, osm_dir: Path | None, out_dir: Path = CLASS_DIR) -> dict:
     lv = int(site.get("quay_lines_version", quay_lines.LINES_VERSION))
     lines = quay_lines.load(site["id"], lv) or {"ways": []}
@@ -240,6 +339,7 @@ def build(site: dict, osm_dir: Path | None, out_dir: Path = CLASS_DIR) -> dict:
     for it in items:
         k = (str(it["way"]), json.dumps(it["part"], sort_keys=True))
         out_lines.append(fixed.pop(k) if k in fixed else classify_line(site, it, areas, wen, mx, my))
+    propagate(items, out_lines, mx, my)
     out_lines += list(fixed.values())   # a hand-fixed entry of a line no longer drawn stays (reported by the tests)
     doc = {"site": site["id"], "name": site.get("name"), "version": berths.NAVAL_VERSION,
            "lines_version": f"{site['id']}-quay-v{lv}", "default": "unknown",
@@ -261,6 +361,26 @@ def wen_credit() -> str:
     return "溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」"
 
 
+def clip(lines: dict, e: dict) -> list | None:
+    """The longest run of the way's vertices inside the entry's part (an added section, for the map)."""
+    w = next((x for x in lines.get("ways", []) if str(x["id"]) == str(e["way"])), None)
+    if w is None:
+        return None
+    if not e.get("part"):
+        return [w["coords"]]
+    runs, cur = [], []
+    for c in w["coords"]:
+        if berths._in_area(e["part"], c[0], c[1]):
+            cur.append(c)
+        else:
+            if len(cur) >= 2:
+                runs.append(cur)
+            cur = []
+    if len(cur) >= 2:
+        runs.append(cur)
+    return runs or None
+
+
 def geojson(sites: list[dict]) -> dict:
     """Every classed berth line as a LineString (the part of a coastline section only), for the eye check on a map."""
     feats = []
@@ -277,14 +397,19 @@ def geojson(sites: list[dict]) -> dict:
         n = {k: 0 for k in berths.CLASSES}
         for e in c["lines"]:
             coords = geo.get((str(e["way"]), json.dumps(e.get("part"), sort_keys=True)))
+            gtype = "LineString"
+            if not coords and e.get("added"):
+                coords, gtype = clip(lines, e), "MultiLineString"
             if not coords:
                 continue
             n[e["class"]] += 1
-            feats.append({"type": "Feature", "geometry": {"type": "LineString", "coordinates": coords},
+            feats.append({"type": "Feature", "geometry": {"type": gtype, "coordinates": coords},
                           "properties": {"site_id": site["id"], "site_name": site.get("name"), "way": e["way"],
                                          "osm": f"https://www.openstreetmap.org/way/{e['way']}" if int(e["way"]) > 0 else None,
                                          "kind": e["kind"], "class": e["class"], "conf": e.get("conf"), "why": e.get("why"),
-                                         "basis": e.get("basis"), "fixed": bool(e.get("fixed")), "part": e.get("part"),
+                                         "basis": e.get("basis"), "fixed": bool(e.get("fixed")), "added": bool(e.get("added")),
+                                         "part": ({k: v for k, v in e["part"].items() if k != "polygon"}
+                                                  if e.get("part") else None),
                                          "version": berths.NAVAL_VERSION}})
         counts[site["id"]] = n
     return {"type": "FeatureCollection", "version": berths.NAVAL_VERSION, "since_utc": berths.NAVAL_SINCE,
@@ -301,10 +426,34 @@ def main(argv=None) -> int:
     b = sub.add_parser("build")
     b.add_argument("--osm", type=Path, help="folder of <site>-osm-areas.json (sat/berth_osm.py)")
     b.add_argument("sites", nargs="*")
+    pr = sub.add_parser("propose")
+    pr.add_argument("site")
+    pr.add_argument("--osm", type=Path, required=True)
+    pr.add_argument("--areas", nargs="+", required=True, help="OSM ids, e.g. way/979396338")
+    pr.add_argument("--touch", type=float, default=TOUCH_M)
+    ad = sub.add_parser("add")
+    ad.add_argument("site")
+    ad.add_argument("--osm", type=Path, required=True)
+    ad.add_argument("--areas", nargs="+", required=True)
+    ad.add_argument("--class", dest="cls", default="naval", choices=berths.CLASSES)
+    ad.add_argument("--why", required=True)
+    ad.add_argument("--conf", default="推定")
+    ad.add_argument("--basis", nargs="*", default=[])
+    ad.add_argument("--buffer", type=float, default=25.0)
     g = sub.add_parser("geojson")
     g.add_argument("--out", type=Path, default=GEOJSON_OUT)
     args = ap.parse_args(argv)
     sites = [s for s in load_sites() if s.get("enabled")]
+    if args.cmd == "propose":
+        s = next(x for x in sites if x["id"] == args.site)
+        for r in propose_added(s, args.osm, args.areas, touch_m=args.touch):
+            print(json.dumps(r))
+        return 0
+    if args.cmd == "add":
+        s = next(x for x in sites if x["id"] == args.site)
+        for e in add_sections(s, args.osm, args.areas, args.cls, args.why, args.conf, args.basis, args.buffer):
+            print(e["way"], e["part"]["osm"], e["basis"][0])
+        return 0
     if args.cmd == "build":
         for s in sites:
             if args.sites and s["id"] not in args.sites:

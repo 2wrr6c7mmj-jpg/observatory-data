@@ -1,0 +1,151 @@
+{
+ "site": "ZJG",
+ "name": "湛江",
+ "version": "naval-1",
+ "lines_version": "ZJG-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:49:58Z",
+ "osm_base": "2026-11-03T06:26:00Z",
+ "osm_bbox": [
+  110.345,
+  21.115,
+  110.535,
+  21.345
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 218401620,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/926101379「南海舰队」（landuse=military・military=base）に含まれる",
+    "区画 A（role naval）"
+   ]
+  },
+  {
+   "way": 218404499,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/926101379「南海舰队」（landuse=military・military=base）に含まれる",
+    "区画 A（role naval）"
+   ]
+  },
+  {
+   "way": 218404500,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/926101379「南海舰队」（landuse=military・military=base）に含まれる",
+    "区画 A（role naval）"
+   ]
+  },
+  {
+   "way": 218404502,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/926101379「南海舰队」（landuse=military・military=base）に含まれる",
+    "区画 A（role naval）"
+   ]
+  },
+  {
+   "way": 218405149,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/926101379「南海舰队」（landuse=military・military=base）に含まれる",
+    "溫約瑟の地図 wen-0003「湛江基地」まで 134 m",
+    "区画 A（role naval）"
+   ]
+  },
+  {
+   "way": 549890606,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 549890607,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 549890608,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 549890609,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 549890610,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 549890611,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/1984144508「湛江渡口(东岸)」（amenity=ferry_terminal）に接する（36 m）",
+    "区画 A（role naval）"
+   ]
+  },
+  {
+   "way": 724837440,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  }
+ ]
+}

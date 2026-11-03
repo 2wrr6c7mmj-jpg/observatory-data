@@ -1,0 +1,473 @@
+{
+ "site": "ZDH",
+ "name": "舟山・定海（東海艦隊）",
+ "version": "naval-1",
+ "lines_version": "ZDH-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-03T06:49:59Z",
+ "osm_base": "2026-11-03T06:31:08Z",
+ "osm_bbox": [
+  121.915,
+  29.91,
+  122.16,
+  30.115
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 351277051,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/11861685324「鸭蛋山轮渡码头」（amenity=ferry_terminal）に接する（5 m）",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 351277053,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 351277054,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 351277055,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 351277056,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 351277057,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 732803274,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 814801319,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 814801322,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 814801323,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 814801324,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 814801323）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 814801323（naval）と 5 m 以内で接続",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 814801325,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 814801326,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 814801325）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 814801325（naval）と 5 m 以内で接続",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 814805498,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0023「舟山水警區(西營)」まで 230 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 814805499,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0023「舟山水警區(西營)」まで 541 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 814805500,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM に区域は無いが、海軍の区画の中で溫約瑟の地図の海軍の地点に近い",
+   "basis": [
+    "溫約瑟の地図 wen-0023「舟山水警區(西營)」まで 451 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 815971279,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "造船所の岸壁だが、軍の造船所と言える根拠が無い",
+   "basis": [
+    "OSM way/351277061「浙江凯灵船厂」（landuse=industrial）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 815971280,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に接する（0 m）",
+    "OSM way/351277061「浙江凯灵船厂」（landuse=industrial）に接する（7 m）",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 977792571,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1237478048,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1237478049,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1237478050,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM に区域は無いが、海軍の区画の中で溫約瑟の地図の海軍の地点に近い",
+   "basis": [
+    "溫約瑟の地図 wen-0023「舟山水警區(西營)」まで 472 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1237478059,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1446940000,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 1446940001）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 1446940001（naval）と 5 m 以内で接続",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1446940001,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1446940002,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1446940331,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0023「舟山水警區(西營)」まで 346 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1566623245,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1566623249,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1566634735,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 815971280）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 815971280（naval）と 5 m 以内で接続",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1566634738,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に接する（0 m）",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1566634739,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に含まれる",
+    "区画 A2（role naval）"
+   ]
+  },
+  {
+   "way": 1566652123,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1571011429,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1571011430,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1571011434,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1571011438,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1571011439,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1571011440,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 597183279,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/482638691「东部战区海军驱逐舰第3支队」（landuse=military・military=naval_base）に含まれる",
+    "溫約瑟の地図 wen-0023「舟山水警區(西營)」まで 186 m",
+    "区画 A1（role naval）"
+   ],
+   "part": {
+    "sector": "A1"
+   }
+  },
+  {
+   "way": 597183280,
+   "kind": "coastline",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM の軍と民間の区域の両方に接する。線の中点は軍の区域の内側",
+   "basis": [
+    "OSM way/351277058「舟山水警区机关」（landuse=military・military=naval_base）に含まれる",
+    "OSM way/351277061「浙江凯灵船厂」（landuse=industrial）に含まれる",
+    "OSM node/11861685324「鸭蛋山轮渡码头」（amenity=ferry_terminal）に接する（5 m）",
+    "区画 A2（role naval）"
+   ],
+   "part": {
+    "sector": "A2"
+   }
+  }
+ ]
+}
