@@ -1,4 +1,4 @@
-"""Open-sea monitoring (ocean/monitor.py, ocean-monitor-1). No network: fake OData, Process API and Overpass;
+"""Open-sea monitoring (ocean/monitor.py, ocean-monitor-2). No network: fake OData, Process API and Overpass;
 the classes are checked on the October 40 m wide results (probe/ocean-cfar-wide-ops3, 2026-10-31T03:37Z)."""
 from __future__ import annotations
 
@@ -385,7 +385,7 @@ class RunTest(unittest.TestCase):
                 self.assertEqual(f["properties"]["ais"], "unmatched")
             usage = list(csv.DictReader((tmp / "usage.csv").read_text(encoding="utf-8").splitlines()))
             self.assertEqual(len(usage), 1)
-            self.assertEqual(usage[0]["probe_version"], "ocean-monitor-1")
+            self.assertEqual(usage[0]["probe_version"], m.VERSION)
             self.assertAlmostEqual(float(usage[0]["processing_units"]), c.processing_units, places=2)
             # the next day: the same pass is not fetched again, no usage row is added
             s2, c2 = self.go(tmp, prods)
@@ -744,6 +744,158 @@ class RunTest(unittest.TestCase):
             self.assertIn("count_A_ge120_unconfirmed", meta["headline"])
             self.assertIn("見出しに使わない", meta["headline"])
             self.assertIn("処理した月", meta["months"])
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class ClusterDenseHoldTest(unittest.TestCase):
+    """ocean-monitor-2 (2026-11-03): cluster radius beyond cfar-v1's ring, dense fields, publish＝hold."""
+
+    def test_cluster_radius_must_exceed_the_cfar_ring(self):
+        cfg = m.load_config()
+        self.assertEqual(m.suppression_m(), 480.0)
+        for a in cfg["areas"]:
+            self.assertGreater(m.rule(cfg, a, "cluster")["radius_m"], m.suppression_m(), a["id"])
+        with tempfile.TemporaryDirectory() as d:
+            bad = small_config(Path(d), cluster={"radius_m": 500, "min_n": 5})    # ocean-monitor-1
+            with self.assertRaises(ValueError):
+                m.load_config(bad)
+            bad2 = small_config(Path(d))
+            c = json.loads(bad2.read_text(encoding="utf-8"))
+            c["areas"][0]["cluster"] = {"radius_m": 900}
+            bad2.write_text(json.dumps(c), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                m.load_config(bad2)
+            c["areas"][0]["cluster"] = {"radius_m": 1000}
+            c["areas"][1]["publish"] = "maybe"
+            bad2.write_text(json.dumps(c), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                m.load_config(bad2)
+            c["areas"][1]["publish"] = "hold"
+            bad2.write_text(json.dumps(c), encoding="utf-8")
+            self.assertEqual(m.held_ids(m.load_config(bad2)), {"M"})
+
+    def test_boats_spaced_beyond_the_ring_now_form_a_cluster(self):
+        # six boats about 700 m apart in a line: never closer than the 480 m ring, as in the detections of ZSN
+        pts = [{"lon": 122.9 + 0.0072 * k, "lat": 29.6} for k in range(6)]
+        self.assertEqual(m.clusters([dict(p) for p in pts], 500, 5), 0)    # ocean-monitor-1
+        cfg = m.load_config()
+        self.assertEqual(m.clusters(pts, cfg["cluster"]["radius_m"], cfg["cluster"]["min_n"]), 1)
+
+    def test_dense_field(self):
+        rng = np.random.default_rng(1)
+        field = [{"lon": 122.9 + float(x), "lat": 29.6 + float(y)} for x, y in rng.uniform(-0.015, 0.015, (12, 2))]
+        lone = [{"lon": 123.5, "lat": 30.5}, {"lon": 123.52, "lat": 30.5}]
+        pts = field + lone
+        self.assertEqual(m.dense_fields(pts, 5000, 8), 12)
+        self.assertTrue(all(p["dense"] for p in field))
+        self.assertFalse(any(p["dense"] for p in lone))
+        self.assertEqual(m.dense_fields(pts[:5], 5000, 8), 0)
+
+    def test_dense_takes_a_candidate_out_of_the_headline(self):
+        c = {"confidence": "high", "v2_confidence": "A", "edge": False, "ambiguity_suspect": False, "cluster": None}
+        self.assertEqual(m.classify(c), ("A", None))
+        self.assertEqual(m.classify({**c, "dense": True}), ("B", None))
+
+    def test_area_rule_overrides(self):
+        cfg = m.load_config()
+        a = {"id": "Z", "dense": {"min_n": 12}}
+        self.assertEqual(m.rule(cfg, a, "dense"), {**cfg["dense"], "min_n": 12})
+        self.assertEqual(m.rule(cfg, {"id": "Y"}, "cluster"), cfg["cluster"])
+
+    def test_zsn_is_held_and_left_out_of_the_published_meta(self):
+        cfg = m.load_config()
+        self.assertEqual(m.held_ids(cfg), {"ZSN"})
+        zsn = next(a for a in cfg["areas"] if a["id"] == "ZSN")
+        self.assertTrue(zsn["enabled"])                     # still fetched and recorded
+        self.assertIn("ZSN", [a["id"] for a in m.areas_in_order(cfg)])
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            m.write_meta(out, cfg, [], {"points": []}, NOW)
+            m.write_areas(out, cfg, NOW)
+            meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
+            self.assertNotIn("ZSN", [a["id"] for a in meta["areas"]])
+            self.assertEqual([h["id"] for h in meta["held_areas"]], ["ZSN"])
+            self.assertEqual(meta["series_breaks"][0]["to_version"], "ocean-monitor-2")
+            ids = [f["properties"]["id"] for f in json.loads((out / "areas.geojson").read_text(encoding="utf-8"))["features"]]
+            self.assertNotIn("ZSN", ids)
+            self.assertIn("TWE_S", ids)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class HoldRunTest(unittest.TestCase):
+    """A held area is fetched and recorded, but nothing of it reaches the files the site reads."""
+    setUp, tearDown = RunTest.setUp, RunTest.tearDown
+
+    def go(self, tmp, prods, **kw):
+        """RunTest.go with one strong candidate added at the centre of every request (the fake images have none)."""
+        from unittest import mock
+        orig = wide.detect_rect
+
+        def detect(vv, vh, lia, land, static, g, a, datamask=None):
+            out, info = orig(vv, vh, lia, land, static, g, a, datamask=datamask)
+            lon, lat = (g.west + g.east) / 2, (g.south + g.north) / 2
+            out.append({"lon": round(lon, 5), "lat": round(lat, 5), "acquired_utc": a["acquired_utc"],
+                        "platform": a.get("platform"), "orbit_direction": a.get("orbit_direction"),
+                        "relative_orbit": a.get("relative_orbit"), "length_m_est": 200, "width_m_est": 40,
+                        "length_class": "ge200", "pixels_40m": 12, "peak_vv_db": 5.0, "contrast_vv_db": 20.0,
+                        "vh_ratio_db": 15.0, "near_coast": False, "static": False, "edge": False, "confidence": "high",
+                        "v2_match": True, "v2_confidence": "A", "v2_length_m": 200})
+            return out, info
+        with mock.patch.object(wide, "detect_rect", detect):
+            return RunTest.go(self, tmp, prods, **kw)
+
+    def _cfg(self, tmp, hold):
+        p = small_config(tmp)
+        c = json.loads(p.read_text(encoding="utf-8"))
+        for a in c["areas"]:
+            if a["id"] == "T":
+                a["publish"] = "hold" if hold else "publish"
+        p.write_text(json.dumps(c, ensure_ascii=False), encoding="utf-8")
+        return p
+
+    def test_held_area_goes_to_held_only_and_moves_back(self):
+        with tempfile.TemporaryDirectory() as d:
+            tmp = Path(d)
+            t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)
+            prods = [product("C", t, 171, "ASCENDING", box(123.5, 24.5, 125.5, 26.5))]
+            s, c = self.go(tmp, prods, config=self._cfg(tmp, True))
+            self.assertGreater(len(c.calls), 0)
+            out = tmp / "monitor"
+            passes = json.loads((out / "passes.json").read_text(encoding="utf-8"))["passes"]
+            self.assertEqual({p["area"] for p in passes}, {"T", "M"})          # recorded
+            self.assertTrue(all(p["method_version"] == m.VERSION for p in passes))
+            pub = json.loads((out / "candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
+            held = json.loads((out / "held/candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
+            self.assertEqual({f["properties"]["area"] for f in pub}, {"M"} if pub else set())
+            self.assertTrue(held)
+            self.assertEqual({f["properties"]["area"] for f in held}, {"T"})
+            cov = json.loads((out / "coverage/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
+            self.assertNotIn("T", {f["properties"]["area"] for f in cov})
+            self.assertEqual({r["area"] for r in csv_rows(out / "series.csv")}, {"M"})
+            self.assertEqual({r["area"] for r in json.loads((out / "series.json").read_text(encoding="utf-8"))["rows"]}, {"M"})
+            self.assertEqual([r["area"] for r in json.loads((out / "held/series.json").read_text(encoding="utf-8"))["rows"]], ["T"])
+            meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
+            self.assertEqual([a["id"] for a in meta["areas"]], ["M"])
+            self.assertEqual([h["id"] for h in meta["held_areas"]], ["T"])
+            n_held = len(held)
+            # released: the next run (no new pass, no PU) moves T back to the public files
+            s2, c2 = self.go(tmp, prods, config=self._cfg(tmp, False), now=NOW + timedelta(hours=1))
+            self.assertEqual(c2.calls, [])
+            pub = json.loads((out / "candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
+            self.assertEqual(sum(f["properties"]["area"] == "T" for f in pub), n_held)
+            self.assertFalse((out / "held/candidates/2026-10-30.geojson").exists())
+            self.assertEqual({r["area"] for r in csv_rows(out / "series.csv")}, {"T", "M"})
+            self.assertEqual(json.loads((out / "held/series.json").read_text(encoding="utf-8"))["rows"], [])
+            # held again by republish (no network): out of the public files again
+            m.republish(out, m.load_config(self._cfg(tmp, True)), NOW + timedelta(hours=2))
+            pub = json.loads((out / "candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
+            self.assertFalse(any(f["properties"]["area"] == "T" for f in pub))
+            self.assertEqual(len(json.loads((out / "held/candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]), n_held)
+
+    def test_old_rows_are_marked_as_version_1(self):
+        rows = [{"area": "T", "acquired_utc": "2026-10-30T09:52:08Z", "status": "ok", "observed_share": 0.9,
+                 "counts": {"A": 1, "B": 0}}]
+        self.assertEqual(m.series_rows(rows)[0]["method_version"], "ocean-monitor-1")
+
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class PlanMonthTest(unittest.TestCase):
