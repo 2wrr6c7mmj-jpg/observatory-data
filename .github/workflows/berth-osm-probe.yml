@@ -20,12 +20,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Overpass (all 13 sites, bbox + 0.08 degree with every pier and quay; XSN wider)
         run: |
           python -m sat.berth_osm --out probe-raw/berth-osm --wide-margin 0.08 --sleep 30 \
             --wide XSN=121.55,29.35,121.98,29.70 2>&1 | tee "$RUNNER_TEMP/osm.log"
           for f in probe-raw/berth-osm/*.json; do echo "::notice title=berth-osm::$(basename $f) $(wc -c < $f) bytes"; done
-          grep FAILED "$RUNNER_TEMP/osm.log" | while read l; do echo "::error title=berth-osm::$l"; done || true
+          tail -c 3000 "$RUNNER_TEMP/osm.log" | while read l; do echo "::notice title=berth-osm-log::$l"; done
+          mkdir -p probe-raw/berth-osm
       - name: Commit to this probe branch only
         run: |
           git add probe-raw/berth-osm
