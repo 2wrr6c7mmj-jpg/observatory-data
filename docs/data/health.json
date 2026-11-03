@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-03T02:13:36Z",
+ "generated_utc": "2026-11-03T08:05:47Z",
  "state": "warn",
  "summary": {
-  "ok": 11,
-  "warn": 1,
+  "ok": 10,
+  "warn": 2,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-02T13:41:57Z",
-   "heartbeat_age_h": 12.5,
+   "heartbeat_age_h": 18.4,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -141,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 14.5,
+   "heartbeat_age_h": 20.4,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -164,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 9.7,
+   "heartbeat_age_h": 15.6,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -208,7 +208,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 18.4,
+   "heartbeat_age_h": 24.3,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 7,
@@ -226,7 +226,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 18.4,
+   "heartbeat_age_h": 24.3,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -244,7 +244,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 14.5,
+   "heartbeat_age_h": 20.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -577,19 +577,25 @@
     "launches",
     "jso"
    ],
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "failed",
+     "text": "schedule の実行 2026-11-03T08:05:26Z が failure"
+    }
+   ],
    "last_success_started_utc": "2026-11-02T07:50:10Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41408853943,
-    "started_utc": "2026-11-02T07:50:10Z",
+    "id": 41600706751,
+    "started_utc": "2026-11-03T08:05:26Z",
     "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41408853943",
-    "delay_h": 6.5
+    "conclusion": "failure",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41600706751",
+    "delay_h": 6.7
    },
-   "consecutive_failures": 0
+   "consecutive_failures": 1
   },
   {
    "file": "jcg-senkaku.yml",
@@ -670,11 +676,11 @@
    "last_success_started_utc": "2026-11-02T11:41:10Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 41438755678,
-    "started_utc": "2026-11-02T11:41:10Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41438755678"
+    "id": 41600735632,
+    "started_utc": "2026-11-03T08:05:41Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41600735632"
    },
    "consecutive_failures": 0
   },
@@ -873,8 +879,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-01",
-   "version": "quay-v2 / est-2.1 / berth-1（検出・港内水域の候補数は変えない）"
+   "date": "2026-11-05",
+   "version": "naval-1（検出・陸マスク・範囲は変えない。2026-11-05 以降の撮影から）"
   }
  },
  "credits": [
