@@ -28,7 +28,7 @@ jobs:
           python -c "from collectors.polite import require_allowed; print('::notice title=robots::', require_allowed('https://notam-watch.pages.dev/data/manifest.json', 'observatory-data/1').reason)"
       - name: Build into probe-raw/notam
         run: |
-          node notam/military.mjs probe-raw/notam
+          NOTAM_PROBE_CANDIDATES=1 node notam/military.mjs probe-raw/notam
           python3 -c "
           import json; m=json.load(open('probe-raw/notam/meta.json')); print('::notice title=notam-counts::', json.dumps(m['counts']), json.dumps(m['source_snapshot'], ensure_ascii=False))"
       - name: Commit to this probe branch only

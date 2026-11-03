@@ -15,13 +15,14 @@ const byKey = Object.fromEntries(items.map(i => [i.key, i]));
 test('keeps military and launch notices in East Asia, now or within 30 days', () => {
   assert.deepEqual(Object.keys(byKey).sort(), [
     'aviation:A1234/26', 'aviation:B5829/26', 'aviation:P4290/26',
-    'maritime:NAVAREA XI 9999/26', 'maritime:闽航警0612/26',
+    'maritime:NAVAREA XI 9999/26', 'maritime:琼航警0950/26', 'maritime:辽航警0901/26', 'maritime:闽航警0612/26',
   ]);
 });
 
 test('drops civil, expired, far-future, cancelled, out-of-region and unrelated notices', () => {
   for (const id of ['A2000/26', 'A3000/26', 'A4000/26', 'A5000/26', 'A6000/26', 'V3389/26']) assert.ok(!byKey[`aviation:${id}`], id);
   assert.ok(!byKey['maritime:渝航通〔2026〕0194号']);
+  assert.ok(!byKey['maritime:HN177/2026'], 'every compiled period has ended');
 });
 
 test('classifies by keywords first and Q-codes second', () => {
@@ -44,6 +45,11 @@ test('time window and status', () => {
   assert.equal(byKey['maritime:NAVAREA XI 9999/26'].valid.status, 'unknown');
   assert.equal(byKey['aviation:B5829/26'].valid.start_utc, '2026-11-20T11:00:00Z');
   assert.equal(byKey['aviation:B5829/26'].valid.schedule, '1100-1400');
+  const v = byKey['maritime:辽航警0901/26'].valid;
+  assert.deepEqual([v.status, v.basis, v.start_utc, v.end_utc], ['active', 'validity-period', '2026-11-02T16:00:00Z', '2026-11-08T16:00:00Z']);
+  const u = byKey['maritime:琼航警0950/26'].valid;
+  assert.deepEqual([u.status, u.basis, u.periods.length], ['upcoming', 'period', 1]);
+  assert.equal(byKey['maritime:NAVAREA XI 9999/26'].valid.basis, 'none');
   assert.equal(timeStatus({start: NOW - 1, end: null, permanent: true}, NOW), 'active');
   assert.equal(timeStatus({start: NOW + 31 * 86400e3, end: null}, NOW), null);
   assert.equal(timeStatus({start: NOW + 29 * 86400e3, end: null}, NOW), 'upcoming');
@@ -69,8 +75,8 @@ test('carries original text, source, NOTAM Watch reference and the launch match'
 
 test('meta counts, cautions and validation', () => {
   const m = meta({items, now: NOW, snapshot: {file: 'x'}, retrievedAt: '2026-11-04T00:50:00Z'});
-  assert.equal(m.counts.total, 5);
-  assert.deepEqual(m.counts.by_category, {launch: 1, firing: 2, exercise: 1, military: 0, gnss: 0, danger_area: 1});
+  assert.equal(m.counts.total, 7);
+  assert.deepEqual(m.counts.by_category, {launch: 1, firing: 3, exercise: 2, military: 0, gnss: 0, danger_area: 1});
   assert.equal(m.counts.with_launch_ref, 1);
   assert.ok(m.cautions[0].startsWith('0 件は'));
   assert.ok(validate(items, m));

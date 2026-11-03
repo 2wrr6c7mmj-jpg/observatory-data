@@ -21,6 +21,7 @@ import {fileURLToPath} from 'node:url';
 import {classifyAviationActivity, aviationBody} from './vendor/aviation-activity.mjs';
 import {classifyMaritimeActivity} from './vendor/maritime-activity.mjs';
 import {fetchSnapshot} from './extract.mjs';
+import {maritimeWindowStatus, maritimeStartsWithin} from './vendor/maritime-window.mjs';
 
 export const VERSION = 'military-1';
 export const SITE = 'https://notam-watch.pages.dev/';
@@ -58,7 +59,7 @@ export const Q_SUBJECTS = Object.freeze({
 });
 // Q-code conditions (4th-5th letters) meaning the area is no longer in force.
 const Q_ENDED = new Set(['CD', 'CN']); // deactivated, cancelled
-const CIVIL = /\bFIREWORKS?\b|\bMODEL\s+ROCKETS?\b|\bLASER\s+(?:LIGHT\s+)?SHOW\b|\bWATER\s+BOMBING\b|\bFIRE\s*FIGHTING\b|\bRAINMAKING\b|\bCLOUD\s+SEEDING\b/;
+const CIVIL = /\bCLD\s+SEEDING\b|\bFIREWORKS?\b|\bMODEL\s+ROCKETS?\b|\bLASER\s+(?:LIGHT\s+)?SHOW\b|\bWATER\s+BOMBING\b|\bFIRE\s*FIGHTING\b|\bRAINMAKING\b|\bCLOUD\s+SEEDING\b/;
 
 const iso = ms => (Number.isFinite(ms) ? new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z') : null);
 const round = v => +Number(v).toFixed(4);
@@ -121,7 +122,7 @@ export function area(item, q) {
   return null;
 }
 
-/** active / upcoming / unknown, or null when outside [now, now + 30 days] or cancelled. */
+/** active / upcoming / unknown, or null when outside [now, now + 30 days] or cancelled (aviation: B/C fields). */
 export function timeStatus(item, now) {
   if (item.cancelled) return null;
   const start = Number.isFinite(item.start) ? item.start : null;
@@ -131,6 +132,36 @@ export function timeStatus(item, now) {
   if (start === null && end === null && !item.permanent) return 'unknown';
   if (start !== null && start > now) return 'upcoming';
   return 'active';
+}
+
+const bounded = p => Number.isFinite(p?.start) && Number.isFinite(p?.end) && p.end > p.start;
+/** Every dated window NOTAM Watch compiled for a maritime warning. */
+export function maritimePeriods(item) {
+  const s = item.staticSchedule || {};
+  return [...(s.periods || []), ...(s.validityPeriods || []), ...(s.semanticTime?.calendarPeriods || []), ...(s.conditionalPeriods || [])]
+    .filter(bounded).map(p => ({start: p.start, end: p.end}));
+}
+
+/**
+ * Maritime warnings: NOTAM Watch's own window rules (vendor/maritime-window.mjs) at the evaluation time.
+ * {status, basis} or null. A warning whose every known window has ended is dropped even when
+ * NOTAM Watch still lists it as "needs review".
+ */
+export function maritimeStatus(item, now) {
+  const s = item.staticSchedule || {};
+  if (item.cancelled || s.cancelled) return null;
+  const top = timeStatus(item, now);
+  if (Number.isFinite(item.start) || Number.isFinite(item.end)) return top ? {status: top, basis: 'item'} : null;
+  const w = maritimeWindowStatus(item, now, now);
+  if (w === 'active') return {status: 'active', basis: 'activity-period'};
+  if (w === 'validity') return {status: 'active', basis: 'validity-period'};
+  if (maritimeStartsWithin(item, now, HORIZON_DAYS * 24)) return {status: 'upcoming', basis: 'period'};
+  if (w === 'inactive') return null;
+  const periods = maritimePeriods(item);
+  const open = (s.openEndedPeriods || []).some(p => Number.isFinite(p.start) && p.end === null);
+  if (periods.length && !open && periods.every(p => p.end < now)) return null;
+  if (periods.length && !open && periods.every(p => p.start > now + HORIZON_DAYS * 86400e3)) return null;
+  return {status: 'unknown', basis: periods.length ? 'period-unresolved' : 'none'};
 }
 
 function source(item, dataset) {
@@ -174,14 +205,17 @@ export function build(data, {now = Date.now(), snapshot = {}, launches = new Map
   for (const dataset of ['aviation', 'maritime']) {
     for (const item of data?.[dataset]?.items ?? []) {
       if (!item || typeof item.id !== 'string') continue;
-      const status = timeStatus(item, now);
-      if (!status) continue;
+      const when = dataset === 'aviation' ? (st => st && {status: st, basis: 'item'})(timeStatus(item, now)) : maritimeStatus(item, now);
+      if (!when) continue;
+      const status = when.status;
       const {categories, basis, q} = classify(item, dataset);
       if (!categories.length) continue;
       const where = area(item, q);
       if (!where) continue;
       const key = `${dataset}:${item.id}`;
-      const end = item.permanent ? null : iso(item.end);
+      const periods = dataset === 'maritime' ? maritimePeriods(item) : [];
+      const start = Number.isFinite(item.start) ? item.start : periods.length ? Math.min(...periods.map(p => p.start)) : null;
+      const endMs = item.permanent ? null : Number.isFinite(item.end) ? item.end : periods.length ? Math.max(...periods.map(p => p.end)) : null;
       items.push({
         key, id: item.id, dataset, type: dataset === 'aviation' ? '航空' : '海上',
         issuer: dataset === 'aviation'
@@ -189,7 +223,8 @@ export function build(data, {now = Date.now(), snapshot = {}, launches = new Map
           : {code: null, name: item.sourceName ?? null, country: item.sourceCountry ?? item.countries?.[0] ?? null},
         q_code: q?.code ?? null,
         category: categories[0], categories, basis,
-        valid: {start_utc: iso(item.start), end_utc: end, permanent: !!item.permanent, status,
+        valid: {start_utc: iso(start), end_utc: iso(endMs), permanent: !!item.permanent, status, basis: when.basis,
+          ...(periods.length ? {periods: periods.slice(0, 30).map(p => ({start_utc: iso(p.start), end_utc: iso(p.end)}))} : {}),
           schedule: dataset === 'aviation' ? (item.staticSchedule?.diagnostic?.raw || null) : null,
           estimated_end: item.staticSchedule?.estimatedEnd === true || undefined},
         area: where,
@@ -226,7 +261,12 @@ export function meta({items, now, snapshot, retrievedAt}) {
     files: {'military.json': '条件に合う告知の一覧（items）。meta.json：本ファイル'},
     counts: counts(items),
     region: {...REGION, note: '区域の頂点（円は中心）のどれかがこの範囲内にあれば採る。図形がない場合は航空は Q 行の座標、海上は発出元の国（JP・CN・TW・KR・KP・PH・VN）で判断し、area.basis に記す'},
-    period: `取得時点で有効なもの（status=active）と、${HORIZON_DAYS}日以内に有効になるもの（upcoming）。開始・終了とも不明なものは unknown。取消済みは除く。時刻は UTC`,
+    period: `取得時点で有効なもの（status=active）と、${HORIZON_DAYS}日以内に有効になるもの（upcoming）。期間を確定できないもの（unknown）も含める。取消済みと、分かっている期間がすべて過去のものは除く。時刻は UTC`,
+    time_rules: {
+      aviation: 'B)・C) 欄（NOTAM Watch の start/end）。D) 欄の時間帯は valid.schedule に原文のまま',
+      maritime: 'NOTAM Watch が本文から解釈した期間（staticSchedule）を、NOTAM Watch と同じ判定（notam/vendor/maritime-window.mjs）で現在時刻に当てる。start_utc/end_utc は分かっている期間の最初と最後、periods に個別の期間',
+      basis: {item: '告知の開始・終了', 'activity-period': '実施時間の期間内', 'validity-period': '有効期間（告知の効力の範囲）内。実施中とは限らない', period: '今後30日以内に始まる期間がある', 'period-unresolved': '期間の一部しか解釈できず、現在が期間内か確定できない', none: '期間を読み取れない（NOTAM Watch でも「要確認」）'},
+    },
     classification: {
       categories: CATEGORIES,
       rules: [
@@ -262,7 +302,7 @@ export function validate(items, m) {
     if (!['aviation', 'maritime'].includes(it.dataset) || it.key !== `${it.dataset}:${it.id}`) fail(`dataset/key ${at}`);
     if (!CATEGORIES[it.category] || it.categories[0] !== it.category || !it.categories.every(c => CATEGORIES[c])) fail(`category ${at}`);
     if (!it.basis.length) fail(`basis ${at}`);
-    if (!['active', 'upcoming', 'unknown'].includes(it.valid.status)) fail(`status ${at}`);
+    if (!['active', 'upcoming', 'unknown'].includes(it.valid.status) || typeof it.valid.basis !== 'string') fail(`status ${at}`);
     for (const t of [it.valid.start_utc, it.valid.end_utc]) if (t !== null && !ISO.test(t)) fail(`time ${at}`);
     if (!['shape', 'q-line', 'source-country'].includes(it.area.basis)) fail(`area basis ${at}`);
     for (const s of it.area.shapes) {
@@ -314,6 +354,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await mkdir(outDir, {recursive: true});
     await writeAtomic(join(outDir, 'military.json'), {generated_utc: m.retrieved_utc, snapshot: snapshot.file ?? null, items});
     await writeAtomic(join(outDir, 'meta.json'), m);
+    if (process.env.NOTAM_PROBE_CANDIDATES) {
+      // Probe only: classified East Asian notices before the time filter, to check the time rules offline.
+      const keep = ['id', 'start', 'end', 'cancelled', 'permanent', 'staticSchedule', 'sourceName', 'sourceCountry', 'countries', 'location', 'shapes', 'text', 'publicProjection', 'purpose', 'topic'];
+      const cand = {};
+      for (const dataset of ['aviation', 'maritime']) {
+        cand[dataset] = {items: (data?.[dataset]?.items ?? []).filter(item => { const c = classify(item, dataset); return c.categories.length && area(item, c.q); })
+          .map(item => Object.fromEntries(keep.filter(k => k in item).map(k => [k, item[k]])))};
+      }
+      await writeFile(join(outDir, 'candidates.json'), JSON.stringify({buildAt: data.buildAt ?? null, ...cand}) + '\n');
+    }
     const c = m.counts;
     console.log(`::notice title=NOTAM military::${c.total} items (${Object.entries(c.by_category).map(([k, v]) => `${k}=${v}`).join(' ')}; launch refs ${c.with_launch_ref}) from ${snapshot.file} (${snapshot.via})`);
   } catch (error) {

@@ -267,7 +267,10 @@
     "dataset": "maritime",
     "countries": [
      "JP"
-    ]
+    ],
+    "staticSchedule": {
+     "requiresReview": true
+    }
    },
    {
     "id": "渝航通〔2026〕0194号",
@@ -283,6 +286,109 @@
     "countries": [
      "CN"
     ]
+   },
+   {
+    "id": "HN177/2026",
+    "text": "HN177/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-36.00N 110-55.80E FROM 1232 UTC TO 1432 UTC DAILY FROM 23 TO 24 SEP. ENTERING PROHIBITED. HAINAN MSA CHINA.",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [
+     {
+      "kind": "circle",
+      "points": [
+       [
+        19.6,
+        110.93
+       ]
+      ],
+      "radius": 10000
+     }
+    ],
+    "sourceName": "清澜海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ],
+    "staticSchedule": {
+     "periods": [
+      {
+       "start": 1790166720000,
+       "end": 1790173920000
+      },
+      {
+       "start": 1790253120000,
+       "end": 1790260320000
+      }
+     ],
+     "requiresReview": true
+    }
+   },
+   {
+    "id": "辽航警0901/26",
+    "text": "黄海北部 军事演习 11月3日至11月8日。禁止驶入。",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        38.5,
+        122.5
+       ]
+      ]
+     }
+    ],
+    "sourceName": "大连海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ],
+    "staticSchedule": {
+     "validityPeriods": [
+      {
+       "start": 1793635200000,
+       "end": 1794153600000
+      }
+     ],
+     "requiresReview": true
+    }
+   },
+   {
+    "id": "琼航警0950/26",
+    "text": "南海 实弹射击 11月15日0800时至1700时。",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        18.0,
+        109.0
+       ]
+      ]
+     }
+    ],
+    "sourceName": "三亚海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ],
+    "staticSchedule": {
+     "periods": [
+      {
+       "start": 1794700800000,
+       "end": 1794733200000
+      }
+     ]
+    }
    }
   ]
  }
