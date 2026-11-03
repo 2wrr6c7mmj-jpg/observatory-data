@@ -1,4 +1,4 @@
-"""Open-sea monitoring with Sentinel-1 (ocean-monitor-1): large-ship candidates not yet matched with AIS.
+"""Open-sea monitoring with Sentinel-1 (ocean-monitor-2): large-ship candidates not yet matched with AIS.
 
     python -m ocean.monitor run  --out docs/data/ocean/monitor --usage docs/data/ocean/usage.csv \
         --budget-month YYYY-MM --ocean-cap N --global-cap N --global-margin N --max-pu 400 [--dry-run] ...
@@ -25,15 +25,28 @@ Miyako Strait, east of Taiwan, south of Sakishima, Taiwan Strait) at every pass,
    BILINEAR), cfar-v1 as the detector of record and cfar-v2 for the match (``ocean.wide.detect_rect``).
 4. Flags: sea state per cell (VV median outside [low_db, high_db] -> not counted and not seen), azimuth
    ambiguity (a pixel >= 15 dB brighter at the ambiguity offset along the platform heading, land included),
-   fishing clusters (>= 5 within 500 m), learned fixed objects (``static_learned.json``: >= 3 of the last
+   fishing clusters (>= 5 linked within 1,500 m; ocean-monitor-2), dense fields (>= 8 other candidates within
+   5 km; ocean-monitor-2), learned fixed objects (``static_learned.json``: >= 3 of the last
    5 looks of the same satellite and track within 200 m).
 5. Classes: A = cfar-v1 high and cfar-v2 A within 100 m, not coast/fixed/edge/ambiguity/sea state/cluster
    (headline; "低〜中" until the 10 m chip check, M3); B = the rest of v1 medium/high and v2-only
    (published, not counted); reference = v1 low, coast band, fixed objects, sea state (counts only).
+   Clusters and dense fields: ``cluster`` and ``dense`` of ``monitor.json``, overridden per area by the area's
+   own ``cluster``/``dense``. The linking radius must be at least twice cfar-v1's background ring (guard 160 m +
+   ring 320 m = 480 m at 40 m): two targets closer than the ring raise each other's background and are rarely
+   both detected, so detections start 500-800 m apart and in ocean-monitor-1 (500 m) no cluster was ever found
+   (2026-11-03, ZSN: 1,071 A, 0 clusters).
 6. Output in ``--out`` (docs/data/ocean/monitor): ``meta.json``, ``areas.geojson``, ``passes.json``,
    ``candidates/YYYY-MM-DD.geojson``, ``coverage/YYYY-MM-DD.geojson``, ``series.csv``, ``series.json``,
    ``static_learned.json``. Counts are null (not seen) when less than ``count_min_share`` of the area was
    seen; 0 only when that much was seen and nothing was found. No sigma0 is written.
+   Areas with ``"publish": "hold"`` are fetched and recorded as the others, but their candidates, coverage and
+   series rows go to ``--out/held/`` (``candidates/``, ``coverage/``, ``series.json``) and the area is left out of
+   ``meta.json``'s areas, ``areas.geojson``, ``series.csv``/``series.json`` and the public day files (the site
+   reads only those). Their pass records and learned fixed objects go to ``held/passes.json`` and
+   ``held/static_learned.json``: nothing public holds a count or a candidate of a held area (``meta.json``
+   counts the published areas' passes only). The run reads both. Changing ``publish`` moves the files at the
+   next run (or ``republish``, which sends nothing).
 
 PU spent are added to ``--usage`` (docs/data/ocean/usage.csv) as the run goes and however it ends
 (``ocean.cfar_probe.UsageRecorder``/``guarded``). Exit codes as ``ocean.cfar_probe``: 2 month, 3 credentials.
@@ -61,7 +74,11 @@ from sat import cdse
 from sat import detect2 as v2
 from sat.grid import Grid, m_per_deg
 
-VERSION = "ocean-monitor-1"
+VERSION = "ocean-monitor-2"
+HELD_REASON = "検品で候補の数の妥当性を確かめるまで公開を保留（取得と記録は続ける）"
+V1_VERSION = "ocean-monitor-1"   # rows written before method_version was recorded
+HELD_DIR = "held"
+PUBLISH_MODES = ("publish", "hold")
 CONFIG_FILE = Path(__file__).resolve().parent / "monitor.json"
 PAGE = 1000
 WINDOW_DAYS = 5
@@ -81,7 +98,8 @@ LAND_POLYS = {
 SERIES_FIELDS = ["area", "acquired_utc", "date", "platform", "relative_orbit", "orbit_direction", "status",
                  "area_sea_km2", "observed_sea_km2", "observed_share", "count_A", "count_A_ge120_confirmed",
                  "count_A_ge120_unconfirmed", "count_B", "clusters", "density_A_per_1000km2",
-                 "sea_state_excluded_km2", "vv_median_db", "pu", "source"]
+                 "sea_state_excluded_km2", "vv_median_db", "pu", "source", "method_version"]
+SERIES_JSON_FIELDS = [f for f in SERIES_FIELDS if f != "source"]   # series.json: source is the attribution
 CLASS_LABEL = {"A": "A（確度：低〜中、10 m の切り出しで未確認）", "B": "B（確度：低）"}
 LIMITS = [
     "S1 の分解能は約 20 m。40 m の取得では 80 m 未満の船は数えない（見逃す）。艦種・国籍・軍民の区別は S1 だけではできない。",
@@ -106,7 +124,32 @@ def load_config(path: Path = CONFIG_FILE) -> dict:
             raise ValueError(f"{a['id']}: bbox は [西, 南, 東, 北]")
         if a["mode"] not in ("every_pass", "monthly"):
             raise ValueError(f"{a['id']}: mode は every_pass か monthly")
+        if a.get("publish", "publish") not in PUBLISH_MODES:
+            raise ValueError(f"{a['id']}: publish は publish か hold")
+        r = rule(cfg, a, "cluster")
+        if float(r["radius_m"]) < 2 * suppression_m():
+            raise ValueError(f"{a['id']}: cluster.radius_m {r['radius_m']} は cfar-v1 の守り帯＋リング "
+                             f"{suppression_m():.0f} m の 2 倍以上にする（それより近い 2 隻は片方しか検出されにくく、"
+                             "検出どうしの間隔は 500〜800 m から始まるので、群れがつながらない）")
     return cfg
+
+
+def suppression_m() -> float:
+    """Distance within which two cfar-v1 targets sit in each other's background ring (guard + ring at 40 m)."""
+    return float(wide.V1_CFG_40M["guard_m"]) + float(wide.V1_CFG_40M["background_m"])
+
+
+def rule(cfg: dict, area: dict, key: str) -> dict:
+    """``cfg[key]`` with the area's own ``key`` over it (``cluster``, ``dense``)."""
+    return {**(cfg.get(key) or {}), **(area.get(key) or {})}
+
+
+def is_held(area: dict) -> bool:
+    return area.get("publish", "publish") == "hold"
+
+
+def held_ids(cfg: dict) -> set:
+    return {a["id"] for a in cfg["areas"] if is_held(a)}
 
 
 def areas_in_order(cfg: dict, include_disabled: bool = False) -> list[dict]:
@@ -427,6 +470,23 @@ def clusters(cands: list[dict], radius_m: float, min_n: int) -> int:
     return g
 
 
+def dense_fields(cands: list[dict], radius_m: float, min_n: int) -> int:
+    """Sets ``dense`` on candidates with at least ``min_n`` others within ``radius_m`` (a field of fishing boats or
+    of fixed objects: a convoy or a task group is not that dense). Returns the number flagged."""
+    for c in cands:
+        c["dense"] = False
+    if not min_n or len(cands) <= min_n:
+        return 0
+    xy = _xy(cands)
+    n = 0
+    for i in range(len(cands)):
+        k = int((np.hypot(xy[:, 0] - xy[i, 0], xy[:, 1] - xy[i, 1]) <= radius_m).sum()) - 1
+        if k >= min_n:
+            cands[i]["dense"] = True
+            n += 1
+    return n
+
+
 def near(points: list[dict], lon: float, lat: float, radius_m: float) -> bool:
     my, mx = m_per_deg(lat)
     return any(math.hypot((p["lon"] - lon) * mx, (p["lat"] - lat) * my) <= radius_m for p in points)
@@ -442,7 +502,7 @@ def classify(c: dict) -> tuple[str, str | None]:
     if c.get("confidence") == "low":
         return "ref", "v1_low"
     if (c.get("confidence") == "high" and c.get("v2_confidence") == "A" and not c.get("edge")
-            and not c.get("ambiguity_suspect") and c.get("cluster") is None):
+            and not c.get("ambiguity_suspect") and c.get("cluster") is None and not c.get("dense")):
         return "A", None
     return "B", None
 
@@ -582,12 +642,22 @@ def series_rows(passes: list[dict], min_share: float = 0.3) -> list[dict]:
                      "count_A_ge120_unconfirmed": c.get("A_ge120_unconfirmed"), "count_B": c.get("B"),
                      "clusters": c.get("clusters"), "density_A_per_1000km2": c.get("density_A_per_1000km2"),
                      "sea_state_excluded_km2": p.get("sea_state_excluded_km2"), "vv_median_db": p.get("vv_median_db"),
-                     "pu": p.get("pu"), "source": cp.attribution([p["acquired_utc"]])})
+                     "pu": p.get("pu"), "method_version": p.get("method_version") or V1_VERSION,
+                     "source": cp.attribution([p["acquired_utc"]])})
     return rows
 
 
-def write_series(out: Path, passes: list[dict], now: datetime, min_share: float = 0.3) -> None:
-    rows = series_rows(passes, min_share)
+def write_series(out: Path, passes: list[dict], now: datetime, min_share: float = 0.3, held: set = frozenset()) -> None:
+    """series.csv/series.json of the published areas; the rows of held areas go to held/series.json only."""
+    every = series_rows(passes, min_share)
+    rows = [r for r in every if r["area"] not in held]
+    hrows = [r for r in every if r["area"] in held]
+    if hrows or (out / HELD_DIR / "series.json").exists():
+        _write(out / HELD_DIR / "series.json", cp.dumps({
+            "version": VERSION, "generated_utc": cdse.iso(now), "held": sorted(held),
+            "note": "公開を保留した域（monitor.json の publish＝hold）の行。サイトは読まない。検品用",
+            "attribution": cp.attribution([r["acquired_utc"] for r in hrows], now),
+            "null_rule": NULL_RULE, "fields": SERIES_JSON_FIELDS, "rows": hrows}))
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=SERIES_FIELDS, lineterminator="\n")
     w.writeheader()
@@ -597,7 +667,7 @@ def write_series(out: Path, passes: list[dict], now: datetime, min_share: float 
     times = [r["acquired_utc"] for r in rows]
     _write(out / "series.json", cp.dumps({"version": VERSION, "generated_utc": cdse.iso(now),
                                           "attribution": cp.attribution(times, now),
-                                          "null_rule": NULL_RULE, "fields": SERIES_FIELDS[:-1], "rows": rows}))
+                                          "null_rule": NULL_RULE, "fields": SERIES_JSON_FIELDS, "rows": rows}))
 
 
 NULL_RULE = ("件数（count_*）は、域の海のうち実際に見た（データがあり海況が普通の）割合が count_min_share（30%）未満の撮影では "
@@ -618,14 +688,14 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
             "data": "Sentinel-1 IW GRD（VV・VH・入射角）、40 m（BILINEAR）、Sentinel Hub Process API。新しい撮影は CDSE OData カタログで確かめる",
             "detector": "cfar-v1（記録の検出器、40 m、守り帯 160 m・リング 320 m、長さ 80 m 以上）と cfar-v2（100 m 以内の一致）",
             "masks": "OSM の陸・海岸（海岸から 1 km は near_coast）・洋上の固定物（風車・掘削台・航路標識、300 m 膨張）、学習した固定物",
-            "sea_state": cfg["sea_state"], "cluster": cfg["cluster"], "ambiguity": cfg["ambiguity"],
+            "sea_state": cfg["sea_state"], "cluster": cfg["cluster"], "dense": cfg.get("dense"), "ambiguity": cfg["ambiguity"],
             "static_learned": cfg["static_learned"],
             "schedule": "毎日 19:41 UTC（04:41 JST）。昇交（09:20–10:32 UTC）は同じ日、降交（21:17–21:51 UTC）は翌日に処理",
         },
         "classes": {
             "A": "cfar-v1 が high かつ cfar-v2 の A と 100 m 以内で一致し、海岸帯・固定物・端・方位アンビギュイティ・海況不良・群れでない。"
                  "見出しの数に入れる。10 m の切り出しで船の形と長さ 80 m 以上を確認するまで確度は「低〜中」（chip_checked=false）",
-            "B": "cfar-v1 high か cfar-v2 A の片方だけ、または cfar-v1 medium、または端・アンビギュイティ・群れの印あり。確度「低」。"
+            "B": "cfar-v1 high か cfar-v2 A の片方だけ、または cfar-v1 medium、または端・アンビギュイティ・群れ・密集（dense_field）の印あり。確度「低」。"
                  "GeoJSON に出すが見出しの数に入れない",
             "reference": "cfar-v1 low・海岸帯・固定物（OSM・学習）・海況不良。出さない（passes.json の内訳だけ）",
             "high": "「高」は S1 だけでは付けない。統幕の通峡の発表・海保の尖閣の発表・AIS の照合と一致したときだけ分析の文章で付ける",
@@ -645,10 +715,19 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
         "limits": LIMITS,
         "areas": [{k: a.get(k) for k in ("id", "name", "bbox", "priority", "mode", "orbits", "expected_per_month",
                                           "pu_month_cap", "min_revisit_days", "note")}
-                  for a in areas_in_order(cfg)],
+                  for a in areas_in_order(cfg) if not is_held(a)],
+        "held_areas": [{"id": a["id"], "reason": HELD_REASON} for a in areas_in_order(cfg) if is_held(a)],
+        "publish_rule": "publish＝hold の域は取得と記録を続けるが、撮影の記録・候補・見た範囲・件数・学習した固定物は held/ に"
+                        "だけ書き、passes・areas・areas.geojson・series・candidates・coverage・static_learned には出さない（検品で直るまで）",
+        "series_breaks": [{**b, "first_processed_utc": min((p.get("processed_utc") for p in passes
+                                                              if p.get("method_version") == b.get("to_version")
+                                                              and p.get("processed_utc")), default=None)}
+                          for b in cfg.get("series_breaks") or []],
         "files": {"areas.geojson": "監視域", "passes.json": "処理した撮影（域ごと）", "candidates/YYYY-MM-DD.geojson": "撮影日（UTC）ごとの候補（A・B）",
                   "coverage/YYYY-MM-DD.geojson": "その日に実際に見た範囲（0.1° のセル、海況不良のセルは state で区別）",
-                  "series.csv・series.json": "域×撮影ごとの件数の時系列", "static_learned.json": "学習した固定物"},
+                  "series.csv・series.json": "域×撮影ごとの件数の時系列（method_version で手法の版を区別。series_breaks を見る）",
+                  "static_learned.json": "学習した固定物",
+                  "held/": "公開を保留した域の passes.json・static_learned.json・candidates・coverage・series.json（サイトは読まない。検品用）"},
         "passes": len(passes), "static_learned_points": len(learned.get("points", [])),
     }
     _write(out / "meta.json", cp.dumps(meta, indent=1))
@@ -657,7 +736,8 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
 def write_areas(out: Path, cfg: dict, now: datetime) -> None:
     feats = [{"type": "Feature", "geometry": _poly(*a["bbox"]),
               "properties": {k: a.get(k) for k in ("id", "name", "priority", "mode", "orbits", "expected_per_month",
-                                                   "min_revisit_days", "note")}} for a in areas_in_order(cfg)]
+                                                   "min_revisit_days", "note")}} for a in areas_in_order(cfg)
+             if not is_held(a)]
     _write(out / "areas.geojson", cp.dumps(_fc(feats, cp.attribution([], now, osm=False), version=cfg["version"])))
 
 
@@ -767,9 +847,7 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
     out = Path(args.out)
     areas = areas_in_order(cfg)
     cells = area_cells(cfg, areas)
-    passes = _read_state(out / "passes.json", {}).get("passes", [])
-    learned = _read_state(out / "static_learned.json", {})
-    learned.setdefault("points", [])
+    passes, learned = load_state(out)
     lookback = summary["lookback_days"]
     acqs, by_id, nreq = catalogue(union_bbox(areas), now - timedelta(days=lookback), now, get=odata_get, log=log, sleep=sleep)
     summary["odata_requests"] = nreq
@@ -871,7 +949,7 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
                     done.add(key)
                 if files:              # the day files first: passes.json never says "done" without them
                     try:
-                        write_day_files(out, now, *files, append=cont)
+                        write_day_files(out, now, *files, append=cont, held=is_held(area))
                     except BaseException:
                         if row in rows:
                             row["status"] = "aborted"   # PU stay counted, the pass is fetched again
@@ -890,7 +968,7 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
         raise
     summary["planned_pu"] = round(sum(t.get("est_pu") or 0 for t in summary["tasks"]
                                       if t["verdict"] in ("take", "planned")), 3)
-    if not args.dry_run and (new_rows or not (out / "meta.json").exists()):
+    if not args.dry_run and (new_rows or publication_stale(out, cfg)):
         save()
     summary["new_passes"] = [{k: r.get(k) for k in ("area", "acquired_utc", "status", "observed_share", "counts", "pu")}
                              for r in new_rows]
@@ -907,7 +985,8 @@ def _pass_row(a: dict, area: dict, ac: AreaCells, status: str, share: float, now
             "relative_orbit": a.get("relative_orbit"), "orbit_direction": a.get("orbit_direction"),
             "published_utc": a.get("published_utc"), "processed_utc": cdse.iso(now),
             "hours_to_processed": round((now - a["time"]).total_seconds() / 3600, 1),
-            "footprint_share": round(share, 3), "area_sea_km2": round(ac.sea_km2()), "status": status}
+            "footprint_share": round(share, 3), "area_sea_km2": round(ac.sea_km2()), "status": status,
+            "method_version": VERSION}
 
 
 def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud, summary, rec, out, area, ac, a,
@@ -1015,19 +1094,23 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
 
     def prior_points(t):
         if t not in prior_cache:
-            fc = _read_json(out / "candidates" / f"{t[:10]}.geojson", {"features": []})
             prior_cache[t] = [{"lon": f["geometry"]["coordinates"][0], "lat": f["geometry"]["coordinates"][1]}
-                              for f in fc.get("features", []) if f["properties"].get("acquired_utc") == t]
+                              for base in (out, out / HELD_DIR)
+                              for f in _read_json(base / "candidates" / f"{t[:10]}.geojson", {"features": []}).get("features", [])
+                              if f["properties"].get("acquired_utc") == t]
         return prior_cache[t]
     row["static_learned_added"] = learn_static(cands, a, history, prior_points, learned, cfg)
     pool = [c for c in cands if not (c.get("near_coast") or c.get("static") or c.get("static_learned"))]
-    n_clusters = clusters(pool, float(cfg["cluster"]["radius_m"]), int(cfg["cluster"]["min_n"]))
+    rc, rd = rule(cfg, area, "cluster"), rule(cfg, area, "dense")
+    n_clusters = clusters(pool, float(rc["radius_m"]), int(rc["min_n"]))
+    n_dense = dense_fields(pool, float(rd["radius_m"]), int(rd["min_n"])) if rd else 0
     excl = {"near_coast": 0, "static": 0, "static_learned": 0, "sea_state": 0, "v1_low": 0, "edge": 0,
-            "ambiguity": 0, "cluster": 0}
+            "ambiguity": 0, "cluster": 0, "dense": 0}
     counts = {"A": 0, "B": 0, "ref": 0}
     pub = []
     for c in cands:
         c.setdefault("cluster", None)
+        c.setdefault("dense", False)
         cls, why = classify(c)
         counts[cls] += 1
         if why:
@@ -1036,6 +1119,7 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
             excl["edge"] += bool(c.get("edge"))
             excl["ambiguity"] += bool(c.get("ambiguity_suspect"))
             excl["cluster"] += c.get("cluster") is not None
+            excl["dense"] += bool(c.get("dense"))
         if cls == "ref":
             continue
         props = {"area": area["id"], "acquired_utc": c["acquired_utc"], "platform": c.get("platform"),
@@ -1046,8 +1130,8 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                  "pixels_40m": c["pixels_40m"], "peak_vv_db": c["peak_vv_db"], "contrast_vv_db": c["contrast_vv_db"],
                  "vh_ratio_db": c["vh_ratio_db"], "v1_confidence": c["confidence"], "v2_confidence": c["v2_confidence"],
                  "v2_match": c["v2_match"], "v2_length_m": c.get("v2_length_m"), "edge": c["edge"], "ambiguity_suspect": c["ambiguity_suspect"],
-                 "ambiguity_parent": c["ambiguity_parent"], "cluster": c["cluster"], "sea_state": c["sea_state"],
-                 "chip_checked": False, "length_m_10m": None, "ais": "unmatched"}
+                 "ambiguity_parent": c["ambiguity_parent"], "cluster": c["cluster"], "dense_field": c["dense"],
+                 "sea_state": c["sea_state"], "chip_checked": False, "length_m_10m": None, "ais": "unmatched"}
         pub.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
                     "properties": props})
     area_km2 = ac.sea_km2()
@@ -1063,7 +1147,7 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                    "clusters": n_clusters if counted else None,
                    "density_A_per_1000km2": round(counts["A"] / obs_km2 * 1000, 3) if counted and obs_km2 else None,
                    "published_A": counts["A"], "published_B": counts["B"], "reference": counts["ref"],
-                   "published_A_ge120": a_large, "published_clusters": n_clusters},
+                   "published_A_ge120": a_large, "published_clusters": n_clusters, "dense_flagged": n_dense},
         "excluded": excl,
         "observed_cells": [[round(ac.w + i * ac.cell, 6), round(ac.s + j * ac.cell, 6), round(float(observed[j, i]), 3)]
                            for j in range(ac.ny) for i in range(ac.nx) if observed[j, i] >= 0.5 and ac.own[j, i] > 0],
@@ -1076,13 +1160,54 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
     return row, stop, files
 
 
+def _day_key(q: dict):
+    return (q.get("acquired_utc"), q.get("area"))
+
+
+def _merge_candidates(path: Path, feats: list[dict], now: datetime, append: bool = False) -> None:
+    merge_day(path, feats, _day_key, lambda times: cp.attribution(times, now), append=append, version=VERSION,
+              name="大型船の候補（AIS 未照合、未確認）", classes=CLASS_LABEL)
+
+
+def _merge_coverage(path: Path, feats: list[dict], now: datetime, append: bool = False) -> None:
+    merge_day(path, feats, _day_key, lambda times: cp.attribution(times, now, osm=False), append=append,
+              version=VERSION, note="見た範囲（0.1° のセル）。state: seen＝件数に入る、sea_state_low/high＝海況不良で件数に入れない")
+
+
 def write_day_files(out: Path, now: datetime, day: str, pub: list[dict], cov_feats: list[dict],
-                    append: bool = False) -> None:
-    key = lambda q: (q.get("acquired_utc"), q.get("area"))
-    merge_day(out / "candidates" / f"{day}.geojson", pub, key, lambda times: cp.attribution(times, now),
-              append=append, version=VERSION, name="大型船の候補（AIS 未照合、未確認）", classes=CLASS_LABEL)
-    merge_day(out / "coverage" / f"{day}.geojson", cov_feats, key, lambda times: cp.attribution(times, now, osm=False),
-              append=append, version=VERSION, note="見た範囲（0.1° のセル）。state: seen＝件数に入る、sea_state_low/high＝海況不良で件数に入れない")
+                    append: bool = False, held: bool = False) -> None:
+    """The day's candidates and coverage; under ``out/held/`` for an area held from publication."""
+    base = out / HELD_DIR if held else out
+    _merge_candidates(base / "candidates" / f"{day}.geojson", pub, now, append)
+    _merge_coverage(base / "coverage" / f"{day}.geojson", cov_feats, now, append)
+
+
+def relocate_held(out: Path, held: set, now: datetime) -> int:
+    """Move the features of held areas from the public day files to ``out/held/`` and those of areas no longer
+    held back. Returns the number of features moved."""
+    moved = 0
+    for sub, merge in (("candidates", _merge_candidates), ("coverage", _merge_coverage)):
+        for src_base, dst_base, go in ((out, out / HELD_DIR, lambda a: a in held),
+                                       (out / HELD_DIR, out, lambda a: a not in held)):
+            d = src_base / sub
+            for f in sorted(d.glob("*.geojson")) if d.exists() else []:
+                fc = _read_json(f, None)
+                if not fc or "features" not in fc:
+                    continue
+                away = [x for x in fc["features"] if go(x["properties"].get("area"))]
+                if not away:
+                    continue
+                merge(dst_base / sub / f.name, away, now)
+                keep = [x for x in fc["features"] if not go(x["properties"].get("area"))]
+                if keep or src_base == out:
+                    fc["features"] = keep
+                    times = sorted({x["properties"].get("acquired_utc") for x in keep if x["properties"].get("acquired_utc")})
+                    fc["attribution"] = cp.attribution(times, now, osm=(sub == "candidates"))
+                    _write(f, cp.dumps(fc))
+                else:
+                    f.unlink()
+                moved += len(away)
+    return moved
 
 
 def prune_orphans(out: Path, rows: list[dict]) -> int:
@@ -1090,7 +1215,7 @@ def prune_orphans(out: Path, rows: list[dict]) -> int:
     (e.g. written just before a run was cut): nothing is published that series and passes do not count."""
     keep = {(r["acquired_utc"], r["area"]) for r in rows if r.get("status") in PUBLISHED}
     n = 0
-    for sub in ("candidates", "coverage"):
+    for sub in ("candidates", "coverage", f"{HELD_DIR}/candidates", f"{HELD_DIR}/coverage"):
         for f in sorted((out / sub).glob("*.geojson")) if (out / sub).exists() else []:
             fc = _read_json(f, None)
             if not fc or "features" not in fc:
@@ -1103,19 +1228,59 @@ def prune_orphans(out: Path, rows: list[dict]) -> int:
     return n
 
 
+def load_state(out: Path) -> tuple[list[dict], dict]:
+    """Pass records and learned fixed objects: the public files and those of held areas (``held/``) together."""
+    rows = _read_state(out / "passes.json", {}).get("passes", [])
+    rows = rows + _read_state(out / HELD_DIR / "passes.json", {}).get("passes", [])
+    learned = _read_state(out / "static_learned.json", {})
+    learned.setdefault("points", [])
+    hl = _read_state(out / HELD_DIR / "static_learned.json", {})
+    learned["points"] = learned["points"] + list(hl.get("points") or [])
+    return rows, learned
+
+
 def save_state(out: Path, cfg: dict, rows: list[dict], learned: dict, now: datetime) -> None:
-    """passes.json, static_learned.json, series, areas.geojson and meta.json as of now; orphans pruned."""
+    """passes.json, static_learned.json, series, areas.geojson and meta.json as of now; orphans pruned.
+    The pass records and learned points of held areas go to ``held/`` only."""
     rows.sort(key=lambda r: (r["acquired_utc"], r["area"]))
-    _write(out / "passes.json", cp.dumps({"version": VERSION, "attribution": cp.attribution(
-        [p["acquired_utc"] for p in rows], now), "passes": rows}, indent=None))
-    learned.update({"version": VERSION, "rule": cfg["static_learned"],
-                    "review": "2部が月 1 回見直す",
-                    "attribution": cp.attribution([p["added_utc"] for p in learned["points"]], now)})
-    _write(out / "static_learned.json", cp.dumps(learned, indent=1))
-    write_series(out, rows, now, float(cfg["count_min_share"]))
+    held = held_ids(cfg)
+    pub_rows = [r for r in rows if r["area"] not in held]
+    held_rows = [r for r in rows if r["area"] in held]
+    learned.update({"version": VERSION, "rule": cfg["static_learned"], "review": "2部が月 1 回見直す"})
+    pub_pts = [q for q in learned["points"] if q.get("area") not in held]
+    held_pts = [q for q in learned["points"] if q.get("area") in held]
+    for base, rs, pts in ((out, pub_rows, pub_pts), (out / HELD_DIR, held_rows, held_pts)):
+        if base != out and not rs and not pts and not (base / "passes.json").exists():
+            continue
+        _write(base / "passes.json", cp.dumps({"version": VERSION, "attribution": cp.attribution(
+            [p["acquired_utc"] for p in rs], now), "passes": rs}, indent=None))
+        _write(base / "static_learned.json", cp.dumps({**{k: v for k, v in learned.items() if k != "points"},
+                                                       "attribution": cp.attribution([q["added_utc"] for q in pts], now),
+                                                       "points": pts}, indent=1))
+    write_series(out, rows, now, float(cfg["count_min_share"]), held)
     write_areas(out, cfg, now)
-    write_meta(out, cfg, rows, learned, now)
+    write_meta(out, cfg, pub_rows, {"points": pub_pts}, now)
+    relocate_held(out, held, now)
     prune_orphans(out, rows)
+
+
+def publication_stale(out: Path, cfg: dict) -> bool:
+    """The published files follow another config version or another set of held areas (rewrite them)."""
+    meta = _read_json(out / "meta.json", None)
+    if not meta:
+        return True
+    held = held_ids(cfg)
+    public = _read_json(out / "passes.json", {}).get("passes") or []
+    return (meta.get("config_version") != cfg["version"]
+            or sorted(h.get("id") for h in meta.get("held_areas") or []) != sorted(held)
+            or any(r.get("area") in held for r in public))
+
+
+def republish(out: Path, cfg: dict, now: datetime) -> str:
+    """save_state on the existing passes.json and static_learned.json (no catalogue, no Sentinel Hub)."""
+    rows, learned = load_state(out)
+    save_state(out, cfg, rows, learned, now)
+    return f"{len(rows)} 件の撮影の記録から書き直した。保留：{', '.join(sorted(held_ids(cfg))) or 'なし'}"
 
 
 def report(s: dict) -> str:
@@ -1239,12 +1404,16 @@ def plan_report(res: dict) -> str:
 # ---------------------------------------------------------------- main
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="open-sea monitoring with Sentinel-1 (ocean-monitor-1)")
+    ap = argparse.ArgumentParser(description="open-sea monitoring with Sentinel-1 (ocean-monitor-2)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("plan", help="passes, cover and PU of each area over a past month (OData only, no PU)")
     p.add_argument("--month", required=True)
     p.add_argument("--config", type=Path, default=CONFIG_FILE)
     p.add_argument("--out", type=Path, required=True)
+    rp = sub.add_parser("republish", help="rewrite the published files from passes.json under the current config "
+                                          "(publish/hold, meta); no network, no PU")
+    rp.add_argument("--config", type=Path, default=CONFIG_FILE)
+    rp.add_argument("--out", type=Path, default=Path("docs/data/ocean/monitor"))
     r = sub.add_parser("run", help="the daily run")
     r.add_argument("--config", type=Path, default=CONFIG_FILE)
     r.add_argument("--out", type=Path, default=Path("docs/data/ocean/monitor"))
@@ -1270,6 +1439,9 @@ def main(argv=None) -> int:
         rep = plan_report(res)
         (args.out / "report.txt").write_text(rep, encoding="utf-8")
         print(rep)
+        return 0
+    if args.cmd == "republish":
+        print(republish(args.out, load_config(args.config), datetime.now(timezone.utc)))
         return 0
     now_month = datetime.now(timezone.utc).strftime("%Y-%m")
     if args.budget_month != now_month:

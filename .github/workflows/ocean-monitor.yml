@@ -1,5 +1,5 @@
 name: Ocean monitor
-# 外洋の定期監視（ocean/monitor.py、ocean-monitor-1）。設計：2部 ocean-monitoring-design（2026-10-31）、司令部は案 B を採用
+# 外洋の定期監視（ocean/monitor.py、ocean-monitor-2）。設計：2部 ocean-monitoring-design（2026-10-31）、司令部は案 B を採用
 # （要所は撮影ごと 40 m、沖縄〜奄美は月 1 回。域と域ごとの月の上限は ocean/monitor.json）。
 # 毎日 19:41 UTC（04:41 JST）：テスト → 月の確認 → OData のカタログ（認証なし・PU とリクエスト枠を使わない）で新しい撮影を確かめ、
 # なければ CDSE の Sentinel Hub には何も送らずに終わる。あれば usage を全ブランチから集めて（sat.port_archive gather）外洋の guard
