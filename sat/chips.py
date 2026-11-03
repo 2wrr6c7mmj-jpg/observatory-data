@@ -241,3 +241,41 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
                "note": INDEX_NOTE, "sites": index_sites, "ocean": ocean}
         _write_if_changed(out / "chips" / "index.json", _dump(idx))
     return {"scenes": n_scenes, "removed": removed, "cleared": cleared}
+
+
+def splice_sites(out: Path, ports_index: Path) -> bool:
+    """Writes the ports' part of ``ports_index`` (chips/index.json as this run wrote it) into chips/index.json, with
+    ``ocean`` from the fragment on disk (the latest main's, written by ocean.chips). Used by sat/publish.sh after
+    ``git pull --rebase`` onto a main where ocean-monitor may have rewritten the shared index. True if changed;
+    False (nothing written) when ``ports_index`` cannot be read."""
+    try:
+        ports = json.loads(ports_index.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(ports, dict) or not isinstance(ports.get("sites"), list):
+        return False
+    ocean = ocean_entries(out)
+    years = [s["acquired_utc"][:4] for x in ports["sites"] + ocean for s in x.get("scenes") or [] if s.get("acquired_utc")]
+    new = {**ports, "ocean": ocean, "credit": credit(max(years)) if years else ports.get("credit"), "note": INDEX_NOTE}
+    p = out / "chips" / "index.json"
+    text = _dump(new)
+    if p.exists() and p.read_text(encoding="utf-8") == text:
+        return False
+    _write_if_changed(p, text)
+    return True
+
+
+def main(argv=None) -> int:
+    import argparse
+    ap = argparse.ArgumentParser(description="chips-1 index; no network")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    s = sub.add_parser("splice", help="copy the ports' sites of --sites into chips/index.json (ocean from the fragment)")
+    s.add_argument("--sat", type=Path, default=Path("docs/data/sat"))
+    s.add_argument("--sites", type=Path, required=True)
+    a = ap.parse_args(argv)
+    print("chips/index.json: " + ("更新" if splice_sites(a.sat, a.sites) else "変更なし"))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
