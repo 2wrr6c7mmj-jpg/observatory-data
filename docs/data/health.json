@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-03T13:06:04Z",
+ "generated_utc": "2026-11-03T14:38:32Z",
  "state": "alert",
  "summary": {
-  "ok": 8,
-  "warn": 3,
+  "ok": 5,
+  "warn": 6,
   "alert": 1,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-03T13:00:22Z",
-   "heartbeat_age_h": 0.1,
+   "heartbeat_age_h": 1.6,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -121,7 +121,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 25.4,
+   "heartbeat_age_h": 27.0,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -144,7 +144,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 20.6,
+   "heartbeat_age_h": 22.1,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -188,12 +188,18 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 29.3,
+   "heartbeat_age_h": 30.8,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 7,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "heartbeat_late",
+     "text": "最後の再構築（built_utc）から 31 h（>30 h：遅延）"
+    }
+   ],
    "values": {
     "passages": 1024,
     "releases": 1564,
@@ -206,12 +212,23 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 29.3,
+   "heartbeat_age_h": 30.8,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 1,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "heartbeat_late",
+     "text": "最後の作成（generated_utc）から 31 h（>30 h：遅延）"
+    },
+    {
+     "level": "warn",
+     "code": "notam_watch_old",
+     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（31 h 前、>30 h：NOTAM Watch 側が古い）"
+    }
+   ],
    "values": {
     "notices_last_retrieved_utc": "2026-11-02T07:50:31Z",
     "notam_watch_last_seen_utc": "2026-11-02T07:50:31Z",
@@ -224,7 +241,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 25.4,
+   "heartbeat_age_h": 27.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -635,19 +652,25 @@
    "sources": [
     "pla-tracker"
    ],
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "failed",
+     "text": "schedule の実行 2026-11-03T14:38:01Z が failure"
+    }
+   ],
    "last_success_started_utc": "2026-11-02T16:29:54Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41482041357,
-    "started_utc": "2026-11-02T16:29:54Z",
+    "id": 41655618503,
+    "started_utc": "2026-11-03T14:38:01Z",
     "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41482041357",
-    "delay_h": 9.9
+    "conclusion": "failure",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41655618503",
+    "delay_h": 8.0
    },
-   "consecutive_failures": 0
+   "consecutive_failures": 1
   },
   {
    "file": "proto.yml",
