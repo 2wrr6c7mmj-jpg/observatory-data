@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-02T21:29:07Z",
+ "generated_utc": "2026-11-03T01:47:56Z",
  "state": "warn",
  "summary": {
-  "ok": 10,
-  "warn": 2,
+  "ok": 11,
+  "warn": 1,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,12 +71,17 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-02T13:41:57Z",
-   "heartbeat_age_h": 7.8,
+   "heartbeat_age_h": 12.1,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "warn",
    "reasons": [
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "ZJG：最新の撮影 2026-10-26 から 8 日（撮影の抜け）"
+    },
     {
      "level": "warn",
      "code": "orbit_gap",
@@ -90,22 +95,32 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "ZDH：最新の撮影 2026-10-21 から 12 日（撮影の抜け）"
+     "text": "SYL：最新の撮影 2026-10-26 から 8 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "XSN：最新の撮影 2026-10-21 から 12 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-10-26 から 8 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SWS：最新の撮影 2026-10-21 から 12 日（撮影の抜け）"
+     "text": "ZDH：最新の撮影 2026-10-21 から 13 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "STU：最新の撮影 2026-10-24 から 9 日（撮影の抜け）"
+     "text": "XSN：最新の撮影 2026-10-21 から 13 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "SWS：最新の撮影 2026-10-21 から 13 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "STU：最新の撮影 2026-10-24 から 10 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -121,7 +136,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 9.8,
+   "heartbeat_age_h": 14.1,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -144,7 +159,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 5.0,
+   "heartbeat_age_h": 9.3,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -188,7 +203,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 13.6,
+   "heartbeat_age_h": 18.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 7,
@@ -206,10 +221,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 13.6,
+   "heartbeat_age_h": 18.0,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -224,7 +239,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 9.8,
+   "heartbeat_age_h": 14.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -666,25 +681,19 @@
    "sources": [
     "ocean"
    ],
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "failed",
-     "text": "schedule の実行 2026-11-01T23:00:17Z が failure（その後の手動等の実行で成功）"
-    }
-   ],
-   "last_success_started_utc": "2026-11-02T21:08:35Z",
-   "last_success_event": "workflow_dispatch",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-03T01:45:15Z",
+   "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41359910016,
-    "started_utc": "2026-11-01T23:00:17Z",
+    "id": 41561776814,
+    "started_utc": "2026-11-03T01:45:15Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41359910016",
-    "delay_h": 3.3
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41561776814",
+    "delay_h": 6.1
    },
-   "consecutive_failures": 1
+   "consecutive_failures": 0
   }
  ],
  "sat": {
