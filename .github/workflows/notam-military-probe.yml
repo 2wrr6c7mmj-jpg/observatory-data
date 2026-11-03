@@ -1,0 +1,41 @@
+name: NOTAM military probe
+# 作業環境から notam-watch.pages.dev に届かないため、probe 用ブランチへの push でだけ動く読み取り専用の確認。
+# NOTAM Watch の静的ファイルを1回読み、notam/military.mjs の出力を同じ probe ブランチ（probe-raw/notam/）にだけ commit する。main は変えない。
+on:
+  push:
+    branches: ['probe/notam-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-notam
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: ${{ !contains(github.event.head_commit.message, '[notam-probe-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test notam/*.test.mjs
+      - name: robots.txt
+        run: |
+          python -c "from collectors.polite import require_allowed; print('::notice title=robots::', require_allowed('https://notam-watch.pages.dev/data/manifest.json', 'observatory-data/1').reason)"
+      - name: Build into probe-raw/notam
+        run: |
+          node notam/military.mjs probe-raw/notam
+          python3 -c "
+          import json; m=json.load(open('probe-raw/notam/meta.json')); print('::notice title=notam-counts::', json.dumps(m['counts']), json.dumps(m['source_snapshot'], ensure_ascii=False))"
+      - name: Commit to this probe branch only
+        run: |
+          git add probe-raw/notam
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: NOTAM 軍事・発射の出力 [notam-probe-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

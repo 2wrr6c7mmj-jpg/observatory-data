@@ -35,7 +35,7 @@ export async function fetchSnapshot(fetcher = fetch, origin = ORIGIN) {
   const kinds = fetched.map(f => (/\.gzip-/.test(f) ? 'gzip' : /\.part-/.test(f) ? 'parts' : 'json'));
   const via = `${[...new Set(kinds)].join(' then ')}, ${fetched.length} file(s)`;
   return {data: JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)), file: manifest.file,
-    builtAt: manifest.buildAt ?? manifest.builtAt ?? manifest.generatedAt ?? null, via};
+    builtAt: manifest.buildAt ?? manifest.builtAt ?? manifest.generatedAt ?? null, via, manifest};
 }
 
 async function snapshot(path) {
