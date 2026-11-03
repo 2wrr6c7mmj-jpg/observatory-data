@@ -745,6 +745,36 @@ class RunTest(unittest.TestCase):
             self.assertIn("見出しに使わない", meta["headline"])
             self.assertIn("処理した月", meta["months"])
 
+def assert_no_area(tc: unittest.TestCase, out: Path, area: str) -> None:
+    """No public file (outside held/) holds a record, a candidate, a cell, a row or a count of ``area``; meta.json
+    names it only in held_areas, with a reason that has no number in it."""
+    def walk(x, path):
+        if isinstance(x, dict):
+            for k in ("area", "id"):
+                tc.assertNotEqual(x.get(k), area, f"{path}: {k}={area}")
+            for k, v in x.items():
+                walk(v, path)
+        elif isinstance(x, list):
+            for v in x:
+                walk(v, path)
+    for f in sorted(out.rglob("*")):
+        rel = f.relative_to(out)
+        if not f.is_file() or rel.parts[0] == m.HELD_DIR or rel.parts[0] == "osm":
+            continue
+        if f.suffix == ".csv":
+            tc.assertNotIn(area, {r["area"] for r in csv_rows(f)}, str(rel))
+            continue
+        if f.suffix not in (".json", ".geojson"):
+            continue
+        doc = json.loads(f.read_text(encoding="utf-8"))
+        if rel.name == "meta.json":
+            held = doc.get("held_areas") or []
+            for h in held:
+                tc.assertIsNone(re.search(r"[0-9０-９]", h.get("reason") or ""), h)
+            doc = {k: v for k, v in doc.items() if k != "held_areas"}
+        walk(doc, str(rel))
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class ClusterDenseHoldTest(unittest.TestCase):
     """ocean-monitor-2 (2026-11-03): cluster radius beyond cfar-v1's ring, dense fields, publish＝hold."""
@@ -861,8 +891,12 @@ class HoldRunTest(unittest.TestCase):
             self.assertGreater(len(c.calls), 0)
             out = tmp / "monitor"
             passes = json.loads((out / "passes.json").read_text(encoding="utf-8"))["passes"]
-            self.assertEqual({p["area"] for p in passes}, {"T", "M"})          # recorded
-            self.assertTrue(all(p["method_version"] == m.VERSION for p in passes))
+            self.assertEqual({p["area"] for p in passes}, {"M"})               # public: published areas only
+            hp = json.loads((out / "held/passes.json").read_text(encoding="utf-8"))["passes"]
+            self.assertEqual({p["area"] for p in hp}, {"T"})                   # recorded in held/
+            self.assertTrue(all(p["method_version"] == m.VERSION for p in passes + hp))
+            self.assertEqual(json.loads((out / "meta.json").read_text(encoding="utf-8"))["passes"], 1)
+            assert_no_area(self, out, "T")
             pub = json.loads((out / "candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
             held = json.loads((out / "held/candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
             self.assertEqual({f["properties"]["area"] for f in pub}, {"M"} if pub else set())
@@ -885,11 +919,58 @@ class HoldRunTest(unittest.TestCase):
             self.assertFalse((out / "held/candidates/2026-10-30.geojson").exists())
             self.assertEqual({r["area"] for r in csv_rows(out / "series.csv")}, {"T", "M"})
             self.assertEqual(json.loads((out / "held/series.json").read_text(encoding="utf-8"))["rows"], [])
+            self.assertEqual({p["area"] for p in json.loads((out / "passes.json").read_text(encoding="utf-8"))["passes"]},
+                             {"T", "M"})
+            self.assertEqual(json.loads((out / "held/passes.json").read_text(encoding="utf-8"))["passes"], [])
             # held again by republish (no network): out of the public files again
             m.republish(out, m.load_config(self._cfg(tmp, True)), NOW + timedelta(hours=2))
             pub = json.loads((out / "candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]
             self.assertFalse(any(f["properties"]["area"] == "T" for f in pub))
             self.assertEqual(len(json.loads((out / "held/candidates/2026-10-30.geojson").read_text(encoding="utf-8"))["features"]), n_held)
+            assert_no_area(self, out, "T")
+            # the next run reads held/ too: the pass of T is not fetched again
+            s3, c3 = self.go(tmp, prods, config=self._cfg(tmp, True), now=NOW + timedelta(hours=3))
+            self.assertEqual(c3.calls, [])
+            self.assertEqual(len(json.loads((out / "held/passes.json").read_text(encoding="utf-8"))["passes"]), 1)
+
+    def test_held_learned_points_stay_in_held(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "monitor"
+            cfg = m.load_config(self._cfg(Path(d), True))
+            rows = [{"area": "T", "acquired_utc": "2026-10-30T09:52:08Z", "status": "ok", "observed_share": 0.9,
+                     "counts": {"A": 3, "B": 1}, "observed_cells": [[124.0, 25.0, 1.0]], "excluded": {"cluster": 0}},
+                    {"area": "M", "acquired_utc": "2026-10-30T09:52:08Z", "status": "ok", "observed_share": 0.9,
+                     "counts": {"A": 1, "B": 0}}]
+            learned = {"points": [{"lon": 124.1, "lat": 25.1, "added_utc": "2026-10-30T09:52:08Z", "area": "T"},
+                                  {"lon": 124.5, "lat": 25.1, "added_utc": "2026-10-30T09:52:08Z", "area": "M"}]}
+            m.save_state(out, cfg, rows, learned, NOW)
+            pub = json.loads((out / "static_learned.json").read_text(encoding="utf-8"))["points"]
+            self.assertEqual([q["area"] for q in pub], ["M"])
+            self.assertEqual(json.loads((out / "meta.json").read_text(encoding="utf-8"))["static_learned_points"], 1)
+            rows2, learned2 = m.load_state(out)
+            self.assertEqual(sorted(r["area"] for r in rows2), ["M", "T"])
+            self.assertEqual(sorted(q["area"] for q in learned2["points"]), ["M", "T"])
+            assert_no_area(self, out, "T")
+
+    def test_series_csv_adds_method_version_last(self):
+        self.assertEqual(m.SERIES_FIELDS[-2:], ["source", "method_version"])
+        self.assertNotIn("source", m.SERIES_JSON_FIELDS)
+        self.assertIn("method_version", m.SERIES_JSON_FIELDS)
+
+    def test_republish_of_the_published_data_leaves_no_trace_of_zsn(self):
+        """The repository's own published data under the current config: ZSN only in held/."""
+        import shutil
+        src = ROOT / "docs" / "data" / "ocean" / "monitor"
+        if not (src / "passes.json").exists():
+            self.skipTest("no published data")
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "monitor"
+            shutil.copytree(src, out)
+            before, _ = m.load_state(out)
+            m.republish(out, m.load_config(), NOW)
+            assert_no_area(self, out, "ZSN")
+            after, _ = m.load_state(out)
+            self.assertEqual(len(after), len(before))     # nothing lost: the held rows are in held/
 
     def test_old_rows_are_marked_as_version_1(self):
         rows = [{"area": "T", "acquired_utc": "2026-10-30T09:52:08Z", "status": "ok", "observed_share": 0.9,

@@ -43,8 +43,10 @@ Miyako Strait, east of Taiwan, south of Sakishima, Taiwan Strait) at every pass,
    Areas with ``"publish": "hold"`` are fetched and recorded as the others, but their candidates, coverage and
    series rows go to ``--out/held/`` (``candidates/``, ``coverage/``, ``series.json``) and the area is left out of
    ``meta.json``'s areas, ``areas.geojson``, ``series.csv``/``series.json`` and the public day files (the site
-   reads only those). ``passes.json`` keeps every pass (internal record). Changing ``publish`` moves the files
-   at the next run (or ``republish``, which sends nothing).
+   reads only those). Their pass records and learned fixed objects go to ``held/passes.json`` and
+   ``held/static_learned.json``: nothing public holds a count or a candidate of a held area (``meta.json``
+   counts the published areas' passes only). The run reads both. Changing ``publish`` moves the files at the
+   next run (or ``republish``, which sends nothing).
 
 PU spent are added to ``--usage`` (docs/data/ocean/usage.csv) as the run goes and however it ends
 (``ocean.cfar_probe.UsageRecorder``/``guarded``). Exit codes as ``ocean.cfar_probe``: 2 month, 3 credentials.
@@ -73,6 +75,7 @@ from sat import detect2 as v2
 from sat.grid import Grid, m_per_deg
 
 VERSION = "ocean-monitor-2"
+HELD_REASON = "検品で候補の数の妥当性を確かめるまで公開を保留（取得と記録は続ける）"
 V1_VERSION = "ocean-monitor-1"   # rows written before method_version was recorded
 HELD_DIR = "held"
 PUBLISH_MODES = ("publish", "hold")
@@ -95,7 +98,8 @@ LAND_POLYS = {
 SERIES_FIELDS = ["area", "acquired_utc", "date", "platform", "relative_orbit", "orbit_direction", "status",
                  "area_sea_km2", "observed_sea_km2", "observed_share", "count_A", "count_A_ge120_confirmed",
                  "count_A_ge120_unconfirmed", "count_B", "clusters", "density_A_per_1000km2",
-                 "sea_state_excluded_km2", "vv_median_db", "pu", "method_version", "source"]
+                 "sea_state_excluded_km2", "vv_median_db", "pu", "source", "method_version"]
+SERIES_JSON_FIELDS = [f for f in SERIES_FIELDS if f != "source"]   # series.json: source is the attribution
 CLASS_LABEL = {"A": "A（確度：低〜中、10 m の切り出しで未確認）", "B": "B（確度：低）"}
 LIMITS = [
     "S1 の分解能は約 20 m。40 m の取得では 80 m 未満の船は数えない（見逃す）。艦種・国籍・軍民の区別は S1 だけではできない。",
@@ -653,7 +657,7 @@ def write_series(out: Path, passes: list[dict], now: datetime, min_share: float 
             "version": VERSION, "generated_utc": cdse.iso(now), "held": sorted(held),
             "note": "公開を保留した域（monitor.json の publish＝hold）の行。サイトは読まない。検品用",
             "attribution": cp.attribution([r["acquired_utc"] for r in hrows], now),
-            "null_rule": NULL_RULE, "fields": SERIES_FIELDS[:-1], "rows": hrows}))
+            "null_rule": NULL_RULE, "fields": SERIES_JSON_FIELDS, "rows": hrows}))
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=SERIES_FIELDS, lineterminator="\n")
     w.writeheader()
@@ -663,7 +667,7 @@ def write_series(out: Path, passes: list[dict], now: datetime, min_share: float 
     times = [r["acquired_utc"] for r in rows]
     _write(out / "series.json", cp.dumps({"version": VERSION, "generated_utc": cdse.iso(now),
                                           "attribution": cp.attribution(times, now),
-                                          "null_rule": NULL_RULE, "fields": SERIES_FIELDS[:-1], "rows": rows}))
+                                          "null_rule": NULL_RULE, "fields": SERIES_JSON_FIELDS, "rows": rows}))
 
 
 NULL_RULE = ("件数（count_*）は、域の海のうち実際に見た（データがあり海況が普通の）割合が count_min_share（30%）未満の撮影では "
@@ -712,9 +716,9 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
         "areas": [{k: a.get(k) for k in ("id", "name", "bbox", "priority", "mode", "orbits", "expected_per_month",
                                           "pu_month_cap", "min_revisit_days", "note")}
                   for a in areas_in_order(cfg) if not is_held(a)],
-        "held_areas": [{"id": a["id"], "reason": a.get("publish_note")} for a in areas_in_order(cfg) if is_held(a)],
-        "publish_rule": "publish＝hold の域は取得と記録（passes.json）を続けるが、候補・見た範囲・件数（series）は held/ に"
-                        "だけ書き、areas・areas.geojson・series・candidates・coverage には出さない（検品で直るまで）",
+        "held_areas": [{"id": a["id"], "reason": HELD_REASON} for a in areas_in_order(cfg) if is_held(a)],
+        "publish_rule": "publish＝hold の域は取得と記録を続けるが、撮影の記録・候補・見た範囲・件数・学習した固定物は held/ に"
+                        "だけ書き、passes・areas・areas.geojson・series・candidates・coverage・static_learned には出さない（検品で直るまで）",
         "series_breaks": [{**b, "first_processed_utc": min((p.get("processed_utc") for p in passes
                                                               if p.get("method_version") == b.get("to_version")
                                                               and p.get("processed_utc")), default=None)}
@@ -723,7 +727,7 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
                   "coverage/YYYY-MM-DD.geojson": "その日に実際に見た範囲（0.1° のセル、海況不良のセルは state で区別）",
                   "series.csv・series.json": "域×撮影ごとの件数の時系列（method_version で手法の版を区別。series_breaks を見る）",
                   "static_learned.json": "学習した固定物",
-                  "held/": "公開を保留した域の candidates・coverage・series.json（サイトは読まない。検品用）"},
+                  "held/": "公開を保留した域の passes.json・static_learned.json・candidates・coverage・series.json（サイトは読まない。検品用）"},
         "passes": len(passes), "static_learned_points": len(learned.get("points", [])),
     }
     _write(out / "meta.json", cp.dumps(meta, indent=1))
@@ -843,9 +847,7 @@ def _run(args, cfg, client, odata_get, overpass, now, pacer, sleep, log, clock, 
     out = Path(args.out)
     areas = areas_in_order(cfg)
     cells = area_cells(cfg, areas)
-    passes = _read_state(out / "passes.json", {}).get("passes", [])
-    learned = _read_state(out / "static_learned.json", {})
-    learned.setdefault("points", [])
+    passes, learned = load_state(out)
     lookback = summary["lookback_days"]
     acqs, by_id, nreq = catalogue(union_bbox(areas), now - timedelta(days=lookback), now, get=odata_get, log=log, sleep=sleep)
     summary["odata_requests"] = nreq
@@ -1092,9 +1094,10 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
 
     def prior_points(t):
         if t not in prior_cache:
-            fc = _read_json(out / "candidates" / f"{t[:10]}.geojson", {"features": []})
             prior_cache[t] = [{"lon": f["geometry"]["coordinates"][0], "lat": f["geometry"]["coordinates"][1]}
-                              for f in fc.get("features", []) if f["properties"].get("acquired_utc") == t]
+                              for base in (out, out / HELD_DIR)
+                              for f in _read_json(base / "candidates" / f"{t[:10]}.geojson", {"features": []}).get("features", [])
+                              if f["properties"].get("acquired_utc") == t]
         return prior_cache[t]
     row["static_learned_added"] = learn_static(cands, a, history, prior_points, learned, cfg)
     pool = [c for c in cands if not (c.get("near_coast") or c.get("static") or c.get("static_learned"))]
@@ -1225,19 +1228,38 @@ def prune_orphans(out: Path, rows: list[dict]) -> int:
     return n
 
 
+def load_state(out: Path) -> tuple[list[dict], dict]:
+    """Pass records and learned fixed objects: the public files and those of held areas (``held/``) together."""
+    rows = _read_state(out / "passes.json", {}).get("passes", [])
+    rows = rows + _read_state(out / HELD_DIR / "passes.json", {}).get("passes", [])
+    learned = _read_state(out / "static_learned.json", {})
+    learned.setdefault("points", [])
+    hl = _read_state(out / HELD_DIR / "static_learned.json", {})
+    learned["points"] = learned["points"] + list(hl.get("points") or [])
+    return rows, learned
+
+
 def save_state(out: Path, cfg: dict, rows: list[dict], learned: dict, now: datetime) -> None:
-    """passes.json, static_learned.json, series, areas.geojson and meta.json as of now; orphans pruned."""
+    """passes.json, static_learned.json, series, areas.geojson and meta.json as of now; orphans pruned.
+    The pass records and learned points of held areas go to ``held/`` only."""
     rows.sort(key=lambda r: (r["acquired_utc"], r["area"]))
-    _write(out / "passes.json", cp.dumps({"version": VERSION, "attribution": cp.attribution(
-        [p["acquired_utc"] for p in rows], now), "passes": rows}, indent=None))
-    learned.update({"version": VERSION, "rule": cfg["static_learned"],
-                    "review": "2部が月 1 回見直す",
-                    "attribution": cp.attribution([p["added_utc"] for p in learned["points"]], now)})
-    _write(out / "static_learned.json", cp.dumps(learned, indent=1))
     held = held_ids(cfg)
+    pub_rows = [r for r in rows if r["area"] not in held]
+    held_rows = [r for r in rows if r["area"] in held]
+    learned.update({"version": VERSION, "rule": cfg["static_learned"], "review": "2部が月 1 回見直す"})
+    pub_pts = [q for q in learned["points"] if q.get("area") not in held]
+    held_pts = [q for q in learned["points"] if q.get("area") in held]
+    for base, rs, pts in ((out, pub_rows, pub_pts), (out / HELD_DIR, held_rows, held_pts)):
+        if base != out and not rs and not pts and not (base / "passes.json").exists():
+            continue
+        _write(base / "passes.json", cp.dumps({"version": VERSION, "attribution": cp.attribution(
+            [p["acquired_utc"] for p in rs], now), "passes": rs}, indent=None))
+        _write(base / "static_learned.json", cp.dumps({**{k: v for k, v in learned.items() if k != "points"},
+                                                       "attribution": cp.attribution([q["added_utc"] for q in pts], now),
+                                                       "points": pts}, indent=1))
     write_series(out, rows, now, float(cfg["count_min_share"]), held)
     write_areas(out, cfg, now)
-    write_meta(out, cfg, rows, learned, now)
+    write_meta(out, cfg, pub_rows, {"points": pub_pts}, now)
     relocate_held(out, held, now)
     prune_orphans(out, rows)
 
@@ -1247,15 +1269,16 @@ def publication_stale(out: Path, cfg: dict) -> bool:
     meta = _read_json(out / "meta.json", None)
     if not meta:
         return True
+    held = held_ids(cfg)
+    public = _read_json(out / "passes.json", {}).get("passes") or []
     return (meta.get("config_version") != cfg["version"]
-            or sorted(h.get("id") for h in meta.get("held_areas") or []) != sorted(held_ids(cfg)))
+            or sorted(h.get("id") for h in meta.get("held_areas") or []) != sorted(held)
+            or any(r.get("area") in held for r in public))
 
 
 def republish(out: Path, cfg: dict, now: datetime) -> str:
     """save_state on the existing passes.json and static_learned.json (no catalogue, no Sentinel Hub)."""
-    rows = _read_state(out / "passes.json", {}).get("passes", [])
-    learned = _read_state(out / "static_learned.json", {})
-    learned.setdefault("points", [])
+    rows, learned = load_state(out)
     save_state(out, cfg, rows, learned, now)
     return f"{len(rows)} 件の撮影の記録から書き直した。保留：{', '.join(sorted(held_ids(cfg))) or 'なし'}"
 
