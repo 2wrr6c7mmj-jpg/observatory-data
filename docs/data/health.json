@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-03T01:47:56Z",
+ "generated_utc": "2026-11-03T02:13:36Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-02T13:41:57Z",
-   "heartbeat_age_h": 12.1,
+   "heartbeat_age_h": 12.5,
    "data_date": "2026-11-01",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -91,6 +91,11 @@
      "level": "warn",
      "code": "orbit_gap",
      "text": "ZJG：撮影の抜け ro84 10-27（同じ軌道 12 日ごとの期待に対して）"
+    },
+    {
+     "level": "warn",
+     "code": "orbit_gap",
+     "text": "ZJG：撮影の抜け ro157 11-01（同じ軌道 6 日ごとの期待に対して）"
     },
     {
      "level": "warn",
@@ -136,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 14.1,
+   "heartbeat_age_h": 14.5,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -159,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 9.3,
+   "heartbeat_age_h": 9.7,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -203,7 +208,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 18.0,
+   "heartbeat_age_h": 18.4,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 7,
@@ -221,7 +226,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 18.0,
+   "heartbeat_age_h": 18.4,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -239,7 +244,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 14.1,
+   "heartbeat_age_h": 14.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -721,6 +726,13 @@
     "relative_orbit": 84,
     "expected_utc": "2026-10-27T10:41:00Z",
     "interval_days": 12,
+    "site_id": "ZJG",
+    "level": "warn"
+   },
+   {
+    "relative_orbit": 157,
+    "expected_utc": "2026-11-01T10:48:45Z",
+    "interval_days": 6,
     "site_id": "ZJG",
     "level": "warn"
    }
