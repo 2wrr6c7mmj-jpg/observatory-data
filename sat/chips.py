@@ -174,6 +174,14 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
                     k = "window_" + f["properties"]["window_excluded"]
                     excluded[k] = excluded.get(k, 0) + 1
                 feats = [f for f in feats if not f["properties"].get("window_excluded")]
+            # naval-1: candidates on a civil or unknown berth line (property naval_excluded) are not framed; counted
+            nav = [f for f in feats if f["properties"].get("naval_excluded")]
+            if nav:
+                excluded = dict(excluded or {})
+                for f in nav:
+                    k = "naval_" + f["properties"]["naval_excluded"]
+                    excluded[k] = excluded.get(k, 0) + 1
+                feats = [f for f in feats if not f["properties"].get("naval_excluded")]
             if classify is not None:
                 band = [f for f in feats if f["properties"].get("zone") == "quay"]
                 why = classify(site, [tuple(f["geometry"]["coordinates"][:2]) for f in band])

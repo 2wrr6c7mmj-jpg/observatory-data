@@ -32,6 +32,12 @@ from .osm_mask import MASK_DIR, build_mask, fetch_osm, load_mask, save_mask
 ROOT = Path(__file__).resolve().parent.parent
 SITES_FILE = Path(__file__).resolve().parent / "sites.json"
 OUT_DIR = ROOT / "docs" / "data" / "sat"
+# naval-1: one row per scene x site x mask version from berths.NAVAL_SINCE, the candidates and occupied stretches by the
+# class of their berth line (naval = the headline counts; civil and unknown counted apart, never in the headline)
+CLASS_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "mask_version", "naval_version",
+                "harbour_naval", "harbour_civil", "harbour_unknown", "quay_naval", "quay_civil", "quay_unknown",
+                "stretches_naval", "stretches_civil", "stretches_unknown", "occupied_max_naval", "occupied_max_civil",
+                "occupied_max_unknown"]
 ANCHORAGE_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "mask_version", "window_version",
                     "anchorage_candidates", "by_sector", "len_lt50", "len_ge50"]
 PROCESSING_VERSION = "sat-2"  # sat-2: rectangular sites and sectors (A/B) per site
@@ -262,6 +268,8 @@ class Store:
         self.new_sector_rows = False
         self.anchorage_rows = read_csv(out / "anchorage_counts.csv")
         self.new_anchorage = False
+        self.class_rows = read_csv(out / "berth_class_counts.csv")
+        self.new_class = False
 
     def site(self, site_id: str) -> dict | None:
         return self.by_id.get(site_id)
@@ -323,6 +331,17 @@ class Store:
         self.anchorage_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
         self.new_anchorage = True
 
+    def add_class_counts(self, site: dict, acq: dict, tag: str, values: dict) -> None:
+        """naval-1: berth_class_counts.csv, one row per scene x site x mask version (merged: candidates, then stretches)."""
+        key = (site["id"], acq["acquired_utc"], tag)
+        old = next((r for r in self.class_rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) == key), {})
+        row = {**old, "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "platform": acq.get("platform"),
+               "orbit_direction": acq.get("orbit_direction"), "relative_orbit": acq.get("relative_orbit"), "mask_version": tag,
+               "naval_version": berths.NAVAL_VERSION, **values}
+        self.class_rows = [r for r in self.class_rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key] + [row]
+        self.class_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
+        self.new_class = True
+
     def write_windows(self, site: dict, w: "fwindows.Windows | None") -> None:
         """win-1: windows/<site>.geojson, the water regions left out (written when it changes)."""
         if w is None:
@@ -363,6 +382,8 @@ class Store:
         write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
         if self.new_anchorage:
             write_csv(self.out / "anchorage_counts.csv", self.anchorage_rows, ANCHORAGE_FIELDS)
+        if self.new_class:
+            write_csv(self.out / "berth_class_counts.csv", self.class_rows, CLASS_FIELDS)
         for rel, items in self.new_features.items():
             p = self.out / rel
             fc = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {"type": "FeatureCollection", "features": []}
@@ -540,6 +561,17 @@ def series_breaks(sites: list[dict]) -> list[dict]:
                      "推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。"
                      "quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。"
                      f"est-2 は毎回保存済みのファイルから全撮影を数え直すので、{quay_est2.EST2_VERSION} は過去の撮影も岸壁だけで計算した値"),
+        })
+    for site in sites:
+        if not site.get("enabled") or berths.load_classes(site["id"]) is None:
+            continue
+        out.append({
+            "site_id": site["id"], "kind": "naval", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
+            "from_version": "全区分の岸壁", "to_version": berths.NAVAL_VERSION, "date_utc": berths.NAVAL_SINCE,
+            "note": (f"見出しの数を海軍の桟橋・岸壁に限定（{berths.NAVAL_SINCE} 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。"
+                     "ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線"
+                     "（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に"
+                     "区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"),
         })
     for site in sites:
         wc = fwindows.config(site) if site.get("enabled") else None
@@ -828,6 +860,10 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                                    "海とつながり艦が入れる水面で、船が着く線から band_m 以内の候補だけ（外した候補は detections の window_excluded、"
                                    "件数は status.json の window_excluded、水面の区分は windows/<地点>.geojson）。band_m より遠い開けた水面の候補は"
                                    "港内の錨泊として anchorage_counts.csv に別に数える"),
+            "berth_class_counts.csv": (f"{berths.NAVAL_VERSION}：岸壁の線の区分（海軍・民間・不明）ごとの数。1 行＝1 撮影×1 地点×1 範囲版"
+                                       f"（{berths.NAVAL_SINCE} 以降の撮影で、区分の設定 sat/berth_class/<地点>.json のある地点だけ）。"
+                                       "harbour_*・quay_*＝候補の数（見出しの harbour_candidates・quay_candidates は *_naval と同じ）、"
+                                       "stretches_*＝岸壁の占有区間の数、occupied_max_*＝その上限の隻数の和（見出しの quay_counts は海軍の線だけ）"),
             "anchorage_counts.csv": ("win-1：港内の錨泊。1 行＝1 撮影×1 地点×1 範囲版。船が着く線から band_m より遠い港内水域の候補の数"
                                      "（anchorage_candidates、区画ごと by_sector、長さ 50 m 未満・以上）。岸壁の隻数とは別。窓の規則（windows.since_utc）以降の撮影だけ"),
             "quay_candidates": ("岸壁帯（陸マスクから 50 m 以内）の候補数。berth-1（2026-11-01〜、quay.berths）からは船が着く線に沿う候補だけ"
@@ -851,6 +887,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "status": "試行（精度未測定）。正解データとの突き合わせをしていない",
             "method": quay.settings(),
             "berths": berths.settings(),
+            "naval": berths.class_settings(),
             "windows": fwindows.settings(),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
@@ -1081,6 +1118,8 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 "image": image,
                 **({"window_excluded": d["window_excluded"], "window_version": fwindows.VERSION} if "window_excluded" in d else {}),
                 **({"window": d["window"]} if d.get("window") else {}),
+                **({"berth_class": d["berth_class"], "naval_excluded": d.get("naval_excluded", ""),
+                    "naval_version": berths.NAVAL_VERSION} if d.get("berth_class") else {}),
             },
         })
     return feats
@@ -1106,8 +1145,30 @@ def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict
 
 
 def at_berth(d: dict) -> bool:
-    """A candidate counted in harbour_candidates / quay_candidates: not left out by berth-1 or win-1, not anchorage."""
-    return not d.get("berth_excluded") and not d.get("window_excluded") and d.get("window") != fwindows.ANCHORAGE
+    """A candidate counted in harbour_candidates / quay_candidates: not left out by berth-1 or win-1, not anchorage, and
+    (naval-1, from berths.NAVAL_SINCE) on a naval berth line."""
+    return (not d.get("berth_excluded") and not d.get("window_excluded") and d.get("window") != fwindows.ANCHORAGE
+            and not d.get("naval_excluded"))
+
+
+def classify_naval(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]) -> dict | None:
+    """naval-1, for a scene from berths.NAVAL_SINCE of a site with a class file (sat/berth_class/<site>.json): every
+    candidate still counted (at_berth) gets d["berth_class"], the class of the nearest berth line (within keep_m for the
+    quay band, within the window's band_m for the open water; farther: unknown), and d["naval_excluded"] = the class when
+    it is not naval (kept in detections/, counted apart). Returns the counts by zone and class, or None (rule not active)."""
+    bt = qctx.berths()
+    if bt is None or not bt.classes or not berths.naval_active(site["id"], acq["acquired_utc"]):
+        return None
+    band_m = float((fwindows.config(site) or fwindows.DEFAULTS)["band_m"])
+    out = {f"{z}_{c}": 0 for z in ("harbour", "quay") for c in berths.CLASSES}
+    for zone, max_m in (("quay", bt.keep_m), ("harbour", band_m)):
+        ds = [d for d in dets if d["zone"] == zone and at_berth(d)]
+        for d, c in zip(ds, bt.nearest_class([(d["lon"], d["lat"]) for d in ds], max_m)):
+            c = c or "unknown"
+            d["berth_class"] = c
+            d["naval_excluded"] = "" if c == "naval" else c
+            out[f"{zone}_{c}"] += 1
+    return out
 
 
 def classify_band(bt: "berths.Berths | None", dets: list[dict]) -> dict | None:
@@ -1141,6 +1202,17 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         bt = qctx.berths()  # berth-1: only the stretches on a berth line are counted and judged
         q = quay.restrict(q, lambda sg: bt.stretch_ok(sg["kind"], sg["way_id"], sg["line"]), qctx.geometry().cfg["cluster_m"])
         entry["quay_excluded"] = {**q["excluded"], "berth_version": berths.VERSION}
+        if bt.classes and berths.naval_active(site["id"], acq["acquired_utc"]):
+            # naval-1: only the stretches on a naval line are counted; civil and unknown ones are counted apart
+            by_cls = {c: [] for c in berths.CLASSES}
+            for sg in q["segments"]:
+                by_cls[bt.stretch_class(sg["way_id"], sg["line"])].append(sg)
+            q = quay.restrict(q, lambda sg: bt.stretch_class(sg["way_id"], sg["line"]) == "naval", qctx.geometry().cfg["cluster_m"])
+            entry["quay_naval_excluded"] = {c: {"segments": len(by_cls[c]), "max": int(sum(x["max"] for x in by_cls[c]))}
+                                            for c in ("civil", "unknown")} | {"version": berths.NAVAL_VERSION}
+            store.add_class_counts(site, acq, mask_tag(site), {
+                **{f"stretches_{c}": len(v) for c, v in by_cls.items()},
+                **{f"occupied_max_{c}": int(sum(x["max"] for x in v)) for c, v in by_cls.items()}})
         bver = f"ro{bmeta['relative_orbit']}-{bmeta['version']}"
         cred = fbase.credibility(int(bmeta["scenes"]), int(fbase.site_config(site)["min_scenes"]))
         row = {
@@ -1307,6 +1379,13 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 entry["window_excluded"] = win_excluded
                 store.write_windows(site, qctx.windows())
                 store.add_anchorage(site, acq, tag, dets, sectors)
+            # naval-1 (from berths.NAVAL_SINCE): only candidates on a naval berth line go into the headline counts
+            naval = classify_naval(qctx, site, acq, dets)
+            if naval is not None:
+                entry["naval_excluded"] = {"civil": naval["harbour_civil"] + naval["quay_civil"],
+                                           "unknown": naval["harbour_unknown"] + naval["quay_unknown"],
+                                           "version": berths.NAVAL_VERSION}
+                store.add_class_counts(site, acq, tag, naval)
             image = image_path(site, acq["acquired_utc"]) if makes_png(site) else ""
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
