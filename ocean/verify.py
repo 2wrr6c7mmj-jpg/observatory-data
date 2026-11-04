@@ -44,7 +44,8 @@ DEFAULTS = {
     "fixed_db": 8.0,         # persistence >= this over the sea of the earlier passes: fixed
     "transient_db": 4.0,     # <= this: transient (a ship that was not there)
     "peak_search_px": 4,     # the peak is searched within 80 m of the 40 m position
-    "small_m": 50.0,         # shorter than this at 20 m: not a large ship (A -> B)
+    "small_m": 50.0,         # shorter than this at 20 m: flagged (A -> B only with small_demote, after a review)
+    "small_demote": False,
     "est_pu": 0.3,           # planning value per request (64 px, 2 bands, x2 orthorectification, <= 9 passes)
 }
 VERDICTS = ("fixed", "transient", "uncertain", "unknown")

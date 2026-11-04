@@ -262,6 +262,28 @@ def render_sheet(tiles: list[np.ndarray], max_bytes: int = MAX_SHEET_BYTES) -> t
     return out, im.size
 
 
+def _previous_tiles(sat_out: Path, old: dict | None) -> dict:
+    """{(lon, lat) rounded 5: (rgb, res_m)} from the sheet already written for this pass (a pass fetched in parts)."""
+    if not old or not old.get("sheet"):
+        return {}
+    try:
+        from PIL import Image
+        im = np.asarray(Image.open(sat_out / old["sheet"]).convert("RGB"))
+    except (OSError, ValueError):
+        return {}
+    out = {}
+    for c in old.get("candidates") or []:
+        t, ce = c.get("tile"), c.get("center")
+        if not t or not ce or len(t.get("xy") or []) != 2:
+            continue
+        x, y = t["xy"]
+        sz = int(t.get("size") or SHEET_TILE)
+        tile = im[y:y + sz, x:x + sz]
+        if tile.shape[:2] == (SHEET_TILE, SHEET_TILE):
+            out[(round(ce[0], 5), round(ce[1], 5))] = (tile.copy(), int(t.get("res_m") or 40))
+    return out
+
+
 def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list[dict], crops: dict,
                generated_utc: str, crops20: dict | None = None) -> dict | None:
     """Image and chip file of one pass over one area. ``feats``: the pass's published A/B features (all parts);
@@ -285,6 +307,7 @@ def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list
             pass
     ordered = _order([f for f in feats if f["properties"].get("class") in ("A", "B")])
     cands, tiles, sheet = [], [], []
+    prev_tiles = _previous_tiles(sat_out, old)
     for n, f in enumerate(ordered, 1):
         p = f["properties"]
         lon, lat = f["geometry"]["coordinates"][:2]
@@ -303,6 +326,8 @@ def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list
         if p.get("class") == "A" and rgb is not None and len(tiles) < MAX_TILES:
             tiles.append((n, "A", rgb, p.get("length_m_est_40m")))
         t = sheet_tile(rgb, (crops20 or {}).get((lon, lat))) if len(sheet) < SHEET_MAX else None
+        if t is None and len(sheet) < SHEET_MAX:   # a pass fetched in parts: the tile of an earlier part stays
+            t = prev_tiles.get((round(lon, 5), round(lat, 5)))
         if t is not None:
             k = len(sheet)
             sheet.append(t[0])
@@ -327,13 +352,7 @@ def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list
     sheet_rel = f"{SUBDIR}/{area['id']}/{st}{SHEET_SUFFIX}.webp"
     if sheet:
         sdata, spx = render_sheet(sheet)
-        doc.update(sheet=sheet_rel, sheet_px=list(spx), sheet_note=SHEET_NOTE)
-    elif old and old.get("sheet") and (sat_out / old["sheet"]).exists():   # a later part without new tiles
-        doc.update(sheet=old["sheet"], sheet_px=old.get("sheet_px"), sheet_note=SHEET_NOTE)
-        for c in cands:
-            prev = next((x for x in old.get("candidates") or [] if x.get("center") == c["center"] and x.get("tile")), None)
-            if prev:
-                c["tile"] = prev["tile"]
+        doc.update(sheet=sheet_rel, sheet_px=list(spx), sheet_note=SHEET_NOTE, sheet_v=generated_utc)
     d.mkdir(parents=True, exist_ok=True)
     if sheet:
         (sat_out / sheet_rel).write_bytes(sdata)

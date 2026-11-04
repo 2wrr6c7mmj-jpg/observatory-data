@@ -164,10 +164,11 @@ class VerifyPassTest(unittest.TestCase):
         ship, turbine, boat, b = cs
         self.assertEqual(ship["verify"]["verdict"], "transient")
         self.assertTrue(turbine.get("static_temporal"))
-        self.assertTrue(boat.get("small_20m"))                        # 40 m long at 20 m: not a large ship
+        self.assertTrue(boat.get("small_20m_flag"))                   # 40 m long at 20 m: flagged ...
+        self.assertNotIn("small_20m", boat)                           # ... but stays A until the review (small_demote)
         self.assertNotIn("verify", b)
         self.assertEqual(r["counts"]["fixed"], 1)
-        self.assertEqual([p["kind"] for p in learned["points"]], ["temporal"])
+        self.assertEqual(learned["points"], [])                       # the second look is never learned
         self.assertEqual(set(chip["crops20"]), {(120.1, 24.0), (120.2, 24.0), (120.3, 24.0)})
         # the classes after the second look
         for c in cs:
@@ -175,14 +176,22 @@ class VerifyPassTest(unittest.TestCase):
             c.update({"confidence": "high", "v2_confidence": "A"})
         self.assertEqual(m.classify(ship), ("A", None))
         self.assertEqual(m.classify(turbine), ("ref", "static_temporal"))
+        self.assertEqual(m.classify(boat), ("A", None))
+        boat["small_20m"] = True                                      # with small_demote
         self.assertEqual(m.classify(boat), ("B", None))
         props = m.verify_props(ship["verify"])
-        self.assertEqual((props["verified"], props["verify_verdict"], props["length_m_20m"]), (True, "transient", 160))
+        self.assertEqual((props["verified"], props["verify_verdict"], props["length_m_20m"], props["small_20m"]),
+                         (True, "transient", 160, False))
+        self.assertTrue(m.verify_props(boat["verify"])["small_20m"])
         self.assertEqual(m.verify_props(None), {"verified": False})
-        # the next pass: the learned turbine is not fetched again
+        # a point learned by the cross-orbit rule (still active) is not fetched again; an expired one is
+        pt = {"lon": 120.2, "lat": 24.0, "added_utc": "2026-11-01T10:00:00Z"}
         client2 = VerifyClient(self.scenes())
-        self.go(client2, self.cands(), learned=learned)
+        self.go(client2, self.cands(), learned={"points": [pt]})
         self.assertNotIn(120.2, client2.calls)
+        client3 = VerifyClient(self.scenes())
+        self.go(client3, self.cands(), learned={"points": [{**pt, "added_utc": "2026-08-01T10:00:00Z"}]})
+        self.assertIn(120.2, client3.calls)
 
     def test_caps(self):
         client = VerifyClient(self.scenes())
@@ -196,6 +205,40 @@ class VerifyPassTest(unittest.TestCase):
         client = VerifyClient(self.scenes())
         r, _, _ = self.go(client, self.cands())
         self.assertEqual(client.calls, [])
+
+    def test_requests_left_month_stop_and_other_errors(self):
+        client = VerifyClient(self.scenes())
+        client.requests = 9
+        bud_args = dict(pu_left=100.0)
+        summary = {"errors": []}
+        r = m._verify_pass(self.args, self.cfg, client, type("P", (), {"wait": lambda s, x: None, "spent": lambda s, x: None})(),
+                           lambda x: None, lambda: NOW, {**bud_args, "requests_left": 11}, summary, self.area, self.acq,
+                           self.cands(), [], {"points": []}, time.monotonic() + 60, self.row, {"chip": None}, lambda x: None)
+        self.assertEqual((r["requests"], r["counts"]["skipped_cap"]), (2, 1))     # the month's requests: 11
+        from ocean import cfar_probe as cp
+
+        class Stops(VerifyClient):
+            def process_raw(self, *a):
+                raise cp.MonthStop("month")
+        r, _, _ = self.go(Stops(self.scenes()), self.cands())
+        self.assertEqual(r["counts"]["skipped_cap"], 3)
+
+        class Garbage(VerifyClient):
+            def process_raw(self, payload, accept, input_bands):
+                self.requests += 1
+                self.processing_units += self.pu
+                return b"not a png", self.pu
+        cs = self.cands()
+        r, _, summary = self.go(Garbage(self.scenes()), cs)
+        self.assertEqual((r["counts"]["errors"], r["requests"]), (3, 3))
+        self.assertFalse(any("verify" in c for c in cs))
+
+    def test_missing_pu_header_counts_the_planning_value(self):
+        client = VerifyClient(self.scenes(), pu=0.016)
+        client.pu_reported = False
+        r, _, _ = self.go(client, self.cands())
+        self.assertAlmostEqual(r["pu"], 0.9)                         # 3 x est_pu 0.3, not 3 x 0.016
+        self.assertTrue(r.get("pu_estimated"))
 
     def test_a_failed_request_leaves_the_candidate(self):
         cs = self.cands()
@@ -261,8 +304,8 @@ class CrossOrbitLearningTest(unittest.TestCase):
         def h(t, plat, ro):
             return {"acquired_utc": t, "platform": plat, "relative_orbit": ro, "status": "ok", "rects": rect}
         hist = [h("2026-09-01T09:52:08Z", "sentinel-1c", 171),     # older than 45 days: not a look
-                h("2026-11-10T21:40:00Z", "sentinel-1d", 69), h("2026-11-14T09:44:00Z", "sentinel-1c", 98)]
-        pts = {"2026-09-01T09:52:08Z": [{"lon": 123.5, "lat": 24.5}], "2026-11-10T21:40:00Z": [{"lon": 123.5, "lat": 24.5}],
+                h("2026-11-02T21:40:00Z", "sentinel-1d", 69), h("2026-11-14T09:44:00Z", "sentinel-1c", 98)]
+        pts = {"2026-09-01T09:52:08Z": [{"lon": 123.5, "lat": 24.5}], "2026-11-02T21:40:00Z": [{"lon": 123.5, "lat": 24.5}],
                "2026-11-14T09:44:00Z": [{"lon": 123.5004, "lat": 24.4998}]}
         learned = {"points": []}
         c = {"lon": 123.5, "lat": 24.5}
@@ -271,6 +314,17 @@ class CrossOrbitLearningTest(unittest.TestCase):
         learned = {"points": []}
         c = {"lon": 123.5, "lat": 24.5}
         self.assertEqual(m.learn_static([c], acq, hist[:2], lambda t: pts[t], learned, cfg), 0)
+        # three hits within a week (a ship at anchor): not learned (min_span_days 14)
+        week = [h("2026-11-14T21:40:00Z", "sentinel-1d", 69), h("2026-11-17T09:44:00Z", "sentinel-1c", 98)]
+        wpts = {"2026-11-14T21:40:00Z": [{"lon": 123.5, "lat": 24.5}], "2026-11-17T09:44:00Z": [{"lon": 123.5, "lat": 24.5}]}
+        learned = {"points": []}
+        self.assertEqual(m.learn_static([{"lon": 123.5, "lat": 24.5}], acq, week, lambda t: wpts[t], learned, cfg), 0)
+
+    def test_learned_points_expire(self):
+        cfg = m.load_config()
+        learned = {"points": [{"lon": 1, "lat": 1, "added_utc": "2026-10-01T00:00:00Z"},
+                              {"lon": 2, "lat": 2, "added_utc": "2026-11-10T00:00:00Z"}]}
+        self.assertEqual([p["lon"] for p in m.active_points(learned, "2026-11-20T00:00:00Z", cfg)], [2])
 
 
 if __name__ == "__main__":

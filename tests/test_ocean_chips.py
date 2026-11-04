@@ -138,6 +138,28 @@ class ChipTest(unittest.TestCase):
             self.assertGreater(im[: H, :5].mean(), 20)
             self.assertEqual(r["tiles"], 15)
 
+    def test_a_pass_in_parts_keeps_the_earlier_tiles(self):
+        with tempfile.TemporaryDirectory() as d:
+            sat = Path(d)
+            t = "2026-11-01T10:00:00Z"
+            canvas = oc.Canvas(self.ac)
+            g = Grid(124.0, 25.0, 124.2, 25.6, 500, 1500)
+            rng = np.random.default_rng(2)
+            vv = 10 * np.log10(rng.exponential(10 ** (-1.8), (g.height, g.width)))
+            vh = vv - 7.0
+            canvas.add(g, vv, vh, np.ones(vv.shape, bool))
+            pts = [(124.01 + 0.012 * k, 25.05 + 0.03 * k) for k in range(3)]
+            feats = [feature(lon, lat, "A", 10 + k, "AAA", t) for k, (lon, lat) in enumerate(pts)]
+            acq = {**self.acq, "acquired_utc": t}
+            first = {p: oc.crop(vv, vh, g, *p) for p in pts[:2]}
+            oc.write_pass(sat, {"id": "AAA", "name": "テスト"}, acq, canvas, feats[:2], first, t)
+            later = {pts[2]: oc.crop(vv, vh, g, *pts[2])}       # the second part fetched only the third
+            oc.write_pass(sat, {"id": "AAA", "name": "テスト"}, acq, canvas, feats, later, t)
+            doc = json.loads((sat / "chips/ocean/AAA/2026-11-01T10-00-00Z.json").read_text(encoding="utf-8"))
+            self.assertTrue(all(c.get("tile") for c in doc["candidates"]))
+            self.assertEqual(doc["sheet_px"], [3 * oc.SHEET_TILE, oc.SHEET_TILE])
+            self.assertEqual(doc["sheet_v"], t)
+
     def test_sheet_prefers_the_20m_cut_out(self):
         rgb40 = np.zeros((oc.TILE_NATIVE, oc.TILE_NATIVE, 3), np.uint8)
         rgb40[oc.TILE_NATIVE // 2, oc.TILE_NATIVE // 2] = 255
