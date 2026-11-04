@@ -1004,6 +1004,61 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "SYL",
+   "acquired_utc": "2026-11-01T10:48:32Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "mask_version": "SYL-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261101T104832_20261101T104901_005273_00A073_9741_COG.SAFE",
+    "S1D_IW_GRDH_1SDV_20261101T104832_20261101T104901_005273_00A073_E6DC_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-04T13:12:49Z",
+   "processing_units": 3.2168579101562504,
+   "coverage": 0.0,
+   "result": "skipped_low_coverage",
+   "quay_result": "skipped"
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-11-01T10:49:01Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 157,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261101T104901_20261101T104926_005273_00A073_D738_COG.SAFE",
+    "S1D_IW_GRDH_1SDV_20261101T104901_20261101T104926_005273_00A073_1FEA_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-04T13:12:30Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.998,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 8
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9825,
+    "water_fraction": 0.3055,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 678,
+    "clusters": 128,
+    "dropped_small": 74,
+    "dropped_vh": 17
+   },
+   "quay_excluded": {
+    "segments": 5,
+    "length_m": 460,
+    "max": 8,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "LSN",
    "acquired_utc": "2026-11-01T22:03:46Z",
    "platform": "sentinel-1c",
@@ -1388,29 +1443,29 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-03T13:00:22Z",
+  "run_utc": "2026-11-04T13:12:29Z",
   "sites": [
    {
     "site_id": "ZJG",
     "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
+    "catalog_items": 2,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 916.64
+    "budget_left_pu": 901.81
    },
    {
     "site_id": "SYL",
     "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
+    "catalog_items": 2,
+    "acquisitions": 1,
+    "new": 1,
     "counted": 0,
-    "skipped": 0,
+    "skipped": 1,
     "errors": 0,
-    "budget_left_pu": 916.64
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "SLP",
@@ -1421,84 +1476,84 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 916.64
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "QGZ",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 914.75
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "ZDH",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 911.63
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "QDH",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 910.08
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "XSN",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 908.28
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "SWS",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 907.32
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "QJG",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 906.66
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "LSN",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 905.04
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "XMN",
@@ -1509,7 +1564,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 905.04
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "STU",
@@ -1520,7 +1575,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 905.04
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "MAW",
@@ -1531,7 +1586,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 905.04
+    "budget_left_pu": 898.59
    }
   ],
   "s2": [
@@ -1570,14 +1625,14 @@
    },
    {
     "site_id": "QGZ",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.009,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "ZDH",
@@ -1592,14 +1647,14 @@
    },
    {
     "site_id": "QDH",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.007,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XSN",
@@ -1614,10 +1669,10 @@
    },
    {
     "site_id": "SWS",
-    "days": 1,
+    "days": 0,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 1,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -1625,70 +1680,70 @@
    },
    {
     "site_id": "QJG",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.005,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "LSN",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 1.357,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XMN",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.006,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "STU",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.008,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "MAW",
-    "days": 1,
+    "days": 0,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 1,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
     "requests": 1
    }
   ],
-  "s2_requests": 20,
-  "s2_processing_units": 1.392,
-  "requests": 40,
-  "processing_units": 12.997,
+  "s2_requests": 13,
+  "s2_processing_units": 0.0,
+  "requests": 28,
+  "processing_units": 5.056,
   "pu_source": "header",
-  "scenes": 7,
-  "month_pu_before": 83.356,
+  "scenes": 2,
+  "month_pu_before": 96.353,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-03T13:00:22Z",
+ "updated_utc": "2026-11-04T13:12:29Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
