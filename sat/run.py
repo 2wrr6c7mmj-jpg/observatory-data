@@ -23,11 +23,12 @@ import numpy as np
 
 from . import baseline as fbase
 from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
+from . import fixed as ffixed
 from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
-from .osm_mask import MASK_DIR, build_mask, fetch_osm, load_mask, save_mask
+from .osm_mask import MASK_DIR, WATER, build_mask, fetch_osm, load_mask, save_mask
 
 ROOT = Path(__file__).resolve().parent.parent
 SITES_FILE = Path(__file__).resolve().parent / "sites.json"
@@ -320,7 +321,7 @@ class Store:
 
     def add_anchorage(self, site: dict, acq: dict, tag: str, dets: list[dict], sectors: list[dict]) -> None:
         """win-1: anchorage_counts.csv, one row per scene x site x mask version (only scenes under the window rule)."""
-        an = [d for d in dets if d.get("window") == fwindows.ANCHORAGE]
+        an = [d for d in dets if d.get("window") == fwindows.ANCHORAGE and not d.get("fixed_excluded")]
         row = {"site_id": site["id"], "acquired_utc": acq["acquired_utc"], "platform": acq["platform"],
                "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"], "mask_version": tag,
                "window_version": fwindows.VERSION, "anchorage_candidates": len(an),
@@ -561,6 +562,17 @@ def series_breaks(sites: list[dict]) -> list[dict]:
                      "推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。"
                      "quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。"
                      f"est-2 は毎回保存済みのファイルから全撮影を数え直すので、{quay_est2.EST2_VERSION} は過去の撮影も岸壁だけで計算した値"),
+        })
+    for site in sites:
+        if not site.get("enabled"):
+            continue
+        out.append({
+            "site_id": site["id"], "kind": "fixed", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
+            "from_version": "固定物の判定なし", "to_version": ffixed.VERSION, "date_utc": ffixed.SINCE_UTC,
+            "note": (f"候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す"
+                     f"（{ffixed.SINCE_UTC} 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。"
+                     "外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。"
+                     "それより前の行は書き換えないので直接比べない"),
         })
     for site in sites:
         if not site.get("enabled") or berths.load_classes(site["id"]) is None:
@@ -889,6 +901,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "berths": berths.settings(),
             "naval": berths.class_settings(),
             "windows": fwindows.settings(),
+            "fixed": ffixed.settings(),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
             "estimate2_evaluation": est2_eval_ref(out),
@@ -952,7 +965,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "岸壁に横付けされた艦は陸と区別しにくく数え落とす前提（岸壁帯は別に数える。横付けの船は基準との変化で quay_counts.csv に別に数える：quay）",
             "画素 10 m・実分解能約 20 m。接して並ぶ艦は 1 つにまとまり、大型艦は分かれることがある",
             "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
-            "固定物（ブイ・係留施設等）のマスクはまだ無く、固定物も候補に数える",
+            f"固定物（桟橋の縁・係船柱・ブイ等）は {ffixed.SINCE_UTC} 以降の撮影で、空の岸壁の基準でも明るく当日も変化しない候補を外す（fix-1）。"
+            "基準の無い軌道と、それより前の撮影では固定物も候補に数える。半年のうち 9 割以上同じ所にいる船は固定物と区別できない",
             "撮影は地点ごとに数日おき。軌道の向き・入射角で見え方が変わるため、比較は同じ相対軌道どうしで行う",
             "湛江の範囲 v2 は 2部の確定案（2026-10-30）。北端 21.265N で麻斜の桟橋群が切れていないかは次の撮影の画像で確かめる。確かめるまで公開画面の地図には出さない",
             "区画は候補の重心で決める。境界をまたぐ艦は重心のある側に数える",
@@ -1124,6 +1138,8 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 "image": image,
                 **({"window_excluded": d["window_excluded"], "window_version": fwindows.VERSION} if "window_excluded" in d else {}),
                 **({"window": d["window"]} if d.get("window") else {}),
+                **({k: d.get(k) for k in ("fixed_excluded", "ship_conf", "rise_db", "rise_z", "base_db", "spread_db",
+                                          "fixed_version")} if d.get("fixed_version") else {}),
                 **({"berth_class": d["berth_class"], "naval_excluded": d.get("naval_excluded", ""),
                     "naval_version": berths.NAVAL_VERSION} if d.get("berth_class") else {}),
             },
@@ -1150,11 +1166,22 @@ def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict
             fwindows.ANCHORAGE: sum(d.get("window") == fwindows.ANCHORAGE for d in dets), "version": fwindows.VERSION}
 
 
+def classify_fixed(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict], vv: np.ndarray) -> dict | None:
+    """fix-1 (sat/fixed.py), for every candidate of a scene from fixed.SINCE_UTC: d["fixed_excluded"] = "structure"
+    (bright when the berth is empty and nothing new today: not counted) or "" and d["ship_conf"] (high / medium / low).
+    Returns the counts, or None (rule not active)."""
+    if not ffixed.active(acq["acquired_utc"]):
+        return None
+    bl = qctx.baseline(acq["relative_orbit"])
+    water = qctx.mask == WATER if qctx.mask is not None else None
+    return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water)
+
+
 def at_berth(d: dict) -> bool:
     """A candidate counted in harbour_candidates / quay_candidates: not left out by berth-1 or win-1, not anchorage, and
     (naval-1, from berths.NAVAL_SINCE) on a naval berth line."""
     return (not d.get("berth_excluded") and not d.get("window_excluded") and d.get("window") != fwindows.ANCHORAGE
-            and not d.get("naval_excluded"))
+            and not d.get("naval_excluded") and not d.get("fixed_excluded"))
 
 
 def classify_naval(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]) -> dict | None:
@@ -1381,6 +1408,10 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             band_excluded = classify_band(qctx.berths(qctx.naval(acq["acquired_utc"])), dets)
             if band_excluded is not None:
                 entry["quay_band_excluded"] = band_excluded
+            # fix-1 (from fixed.SINCE_UTC): the candidate's pixels against the empty-berth baseline (structure / ship_conf)
+            fix = classify_fixed(qctx, site, acq, dets, vv)
+            if fix is not None:
+                entry["fixed"] = fix
             # win-1 (from the site's windows.since_utc): candidates off the sea-joined water along the berth lines
             win_excluded = classify_windows(qctx, site, acq, dets)
             if win_excluded is not None:

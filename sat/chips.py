@@ -84,6 +84,8 @@ def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px:
              "length_m": p.get("length_m"), "width_m": p.get("width_m"), "length_class": p.get("length_class"),
              "contrast_vv_db": p.get("contrast_vv_db"), "vh_ratio_db": p.get("vh_ratio_db"),
              "credibility": p.get("credibility"), "reliability": p.get("reliability"), "status": p.get("status")}
+        if p.get("fixed_version"):   # fix-1: how ship-like against the empty-berth baseline
+            c.update({k: p.get(k) for k in ("ship_conf", "rise_db", "rise_z", "base_db")})
         if p.get("window"):   # win-1: an anchorage candidate (open harbour water beyond the berth band), framed apart
             c["window"] = p["window"]
             c["window_label"] = WINDOW_LABELS.get(p["window"], p["window"])
@@ -187,6 +189,14 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
                     k = "window_" + f["properties"]["window_excluded"]
                     excluded[k] = excluded.get(k, 0) + 1
                 feats = [f for f in feats if not f["properties"].get("window_excluded")]
+            # fix-1: candidates the empty-berth baseline shows as a structure (property fixed_excluded) are not framed
+            fx = [f for f in feats if f["properties"].get("fixed_excluded")]
+            if fx:
+                excluded = dict(excluded or {})
+                for f in fx:
+                    k = "fixed_" + f["properties"]["fixed_excluded"]
+                    excluded[k] = excluded.get(k, 0) + 1
+                feats = [f for f in feats if not f["properties"].get("fixed_excluded")]
             # naval-1: candidates on a civil or unknown berth line (property naval_excluded) are not framed; counted
             nav = [f for f in feats if f["properties"].get("naval_excluded")]
             if nav:

@@ -77,12 +77,13 @@ import numpy as np
 from ocean import cfar_probe as cp
 from ocean import chips as ocean_chips
 from ocean import coverage_probe as covp
+from ocean import verify
 from ocean import wide
 from sat import cdse
 from sat import detect2 as v2
 from sat.grid import Grid, m_per_deg
 
-VERSION = "ocean-monitor-2"
+VERSION = "ocean-monitor-3"
 HELD_REASON = "検品で候補の数の妥当性を確かめるまで公開を保留（取得と記録は続ける）"
 V1_VERSION = "ocean-monitor-1"   # rows written before method_version was recorded
 HELD_DIR = "held"
@@ -108,7 +109,7 @@ SERIES_FIELDS = ["area", "acquired_utc", "date", "platform", "relative_orbit", "
                  "count_A_ge120_unconfirmed", "count_B", "clusters", "density_A_per_1000km2",
                  "sea_state_excluded_km2", "vv_median_db", "pu", "source", "method_version"]
 SERIES_JSON_FIELDS = [f for f in SERIES_FIELDS if f != "source"]   # series.json: source is the attribution
-CLASS_LABEL = {"A": "A（確度：低〜中、10 m の切り出しで未確認）", "B": "B（確度：低）"}
+CLASS_LABEL = {"A": "A（確度：低〜中）", "A_verified": "A（確度：中）", "B": "B（確度：低）"}
 LIMITS = [
     "S1 の分解能は約 20 m。40 m の取得では 80 m 未満の船は数えない（見逃す）。艦種・国籍・軍民の区別は S1 だけではできない。",
     "見えるのは撮影の瞬間（昇交 18:20–19:32 JST・降交 06:17–06:51 JST）だけ。域ごとに月 2〜5 回。撮影の間の動きは分からない。",
@@ -495,6 +496,48 @@ def dense_fields(cands: list[dict], radius_m: float, min_n: int) -> int:
     return n
 
 
+def grid_fields(cands: list[dict], rule_: dict | None) -> int:
+    """Sets ``static_grid`` on the members of a regular lattice (an offshore wind farm): each member's nearest
+    neighbour within [min_m, max_m] and at least ``min_neighbours`` others at that spacing (+-tol), members linked
+    within ``link`` x the spacing, at least ``min_n`` members and a spread of the spacing (CV) of at most ``cv_max``.
+    A fleet or an anchorage is not that regular (2026-11-04: Changhua wind farms CV 0.01-0.03, the Kaohsiung
+    anchorage 0.13). Returns the number flagged."""
+    for c in cands:
+        c["static_grid"] = False
+    if not rule_ or len(cands) < int(rule_["min_n"]):
+        return 0
+    xy = _xy(cands)
+    d = np.hypot(xy[:, None, 0] - xy[None, :, 0], xy[:, None, 1] - xy[None, :, 1])
+    np.fill_diagonal(d, np.inf)
+    d1 = d.min(axis=1)
+    lo, hi, tol = float(rule_["min_m"]), float(rule_["max_m"]), float(rule_["tol"])
+    reg = [i for i in range(len(cands)) if lo <= d1[i] <= hi
+           and int((np.abs(d[i] - d1[i]) <= tol * d1[i]).sum()) >= int(rule_["min_neighbours"])]
+    parent = {i: i for i in reg}
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+    for x in range(len(reg)):
+        for y in range(x + 1, len(reg)):
+            a, b = reg[x], reg[y]
+            if d[a, b] <= float(rule_["link"]) * max(d1[a], d1[b]):
+                parent[find(a)] = find(b)
+    groups: dict = {}
+    for i in reg:
+        groups.setdefault(find(i), []).append(i)
+    n = 0
+    for m in groups.values():
+        sp = d1[m]
+        if len(m) >= int(rule_["min_n"]) and float(np.std(sp) / np.mean(sp)) <= float(rule_["cv_max"]):
+            for i in m:
+                cands[i]["static_grid"] = True
+            n += len(m)
+    return n
+
+
 def near(points: list[dict], lon: float, lat: float, radius_m: float) -> bool:
     my, mx = m_per_deg(lat)
     return any(math.hypot((p["lon"] - lon) * mx, (p["lat"] - lat) * my) <= radius_m for p in points)
@@ -502,7 +545,7 @@ def near(points: list[dict], lon: float, lat: float, radius_m: float) -> bool:
 
 def classify(c: dict) -> tuple[str, str | None]:
     """("A" | "B" | "ref", reason of ref or None)."""
-    for k in ("near_coast", "static", "static_learned"):
+    for k in ("near_coast", "static", "static_learned", "static_grid", "static_temporal"):
         if c.get(k):
             return "ref", k
     if c.get("sea_state") in ("low", "high"):
@@ -510,32 +553,62 @@ def classify(c: dict) -> tuple[str, str | None]:
     if c.get("confidence") == "low":
         return "ref", "v1_low"
     if (c.get("confidence") == "high" and c.get("v2_confidence") == "A" and not c.get("edge")
-            and not c.get("ambiguity_suspect") and c.get("cluster") is None and not c.get("dense")):
+            and not c.get("ambiguity_suspect") and c.get("cluster") is None and not c.get("dense")
+            and not c.get("small_20m")):
         return "A", None
     return "B", None
 
 
 # ---------------------------------------------------------------- learned fixed objects
 
+def active_points(learned: dict, acquired_utc: str, cfg: dict) -> list[dict]:
+    """Learned points still applied to a pass at ``acquired_utc``: added within ``expire_days`` before it (a point that
+    is still there is learned again; a ship that left is no longer hidden). The file keeps the old points for review."""
+    days = float((cfg.get("static_learned") or {}).get("expire_days") or 0)
+    pts = learned.get("points") or []
+    if not days:
+        return pts
+    t = cdse.parse_time(acquired_utc)
+    out = []
+    for p in pts:
+        try:
+            age = (t - cdse.parse_time(p["added_utc"])).total_seconds() / 86400
+        except (KeyError, TypeError, ValueError):
+            continue
+        if -1 <= age <= days:
+            out.append(p)
+    return out
+
+
 def learn_static(cands: list[dict], acq: dict, history: list[dict], prior_points, learned: dict, cfg: dict) -> int:
     """Adds points seen in >= min_hits of the last ``looks`` looks of the same satellite and track (this pass
-    included) to ``learned["points"]``. ``history``: pass records (any area) newest last; ``prior_points``:
+    included; with ``any_orbit`` the looks of any satellite and track within ``window_days``) to ``learned["points"]``. ``history``: pass records (any area) newest last; ``prior_points``:
     function(acquired_utc) -> candidate points of that pass. Returns the number added."""
     rule = cfg["static_learned"]
     key = (acq.get("platform"), acq.get("relative_orbit"))
-    same = [h for h in history if (h.get("platform"), h.get("relative_orbit")) == key
-            and h.get("status") in SEEN and h["acquired_utc"] < acq["acquired_utc"]]
+    any_orbit = bool(rule.get("any_orbit"))
+    window = float(rule.get("window_days") or 0)
+    t_now = cdse.parse_time(acq["acquired_utc"])
+    same = [h for h in history if (any_orbit or (h.get("platform"), h.get("relative_orbit")) == key)
+            and h.get("status") in SEEN and h["acquired_utc"] < acq["acquired_utc"]
+            and (not window or (t_now - cdse.parse_time(h["acquired_utc"])).total_seconds() <= window * 86400)]
     added = 0
+    active = active_points(learned, acq["acquired_utc"], cfg)
     for c in cands:
         if c.get("near_coast") or c.get("static") or c.get("static_learned"):
             continue
         looks = [h for h in same if any(b[0] <= c["lon"] <= b[2] and b[1] <= c["lat"] <= b[3] for b in h.get("rects") or [])]
         looks = sorted({h["acquired_utc"] for h in looks})[-(int(rule["looks"]) - 1):]
-        hits = 1 + sum(1 for t in looks if near(prior_points(t), c["lon"], c["lat"], float(rule["radius_m"])))
-        if hits >= int(rule["min_hits"]) and not near(learned["points"], c["lon"], c["lat"], float(rule["radius_m"])):
+        hit_t = [t for t in looks if near(prior_points(t), c["lon"], c["lat"], float(rule["radius_m"]))]
+        hits = 1 + len(hit_t)
+        span = (t_now - cdse.parse_time(hit_t[0])).total_seconds() / 86400 if hit_t else 0.0
+        if hits >= int(rule["min_hits"]) and span >= float(rule.get("min_span_days") or 0) \
+                and not near(active, c["lon"], c["lat"], float(rule["radius_m"])):
             learned["points"].append({"lon": c["lon"], "lat": c["lat"], "platform": acq.get("platform"),
                                       "relative_orbit": acq.get("relative_orbit"), "hits": hits, "looks": len(looks) + 1,
-                                      "added_utc": acq["acquired_utc"], "area": c.get("area")})
+                                      "added_utc": acq["acquired_utc"], "area": c.get("area"),
+                                      "kind": "any_orbit" if any_orbit else "same_orbit"})
+            active.append(learned["points"][-1])
             c["static_learned"] = True
             added += 1
     return added
@@ -695,17 +768,20 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
         "method": {
             "data": "Sentinel-1 IW GRD（VV・VH・入射角）、40 m（BILINEAR）、Sentinel Hub Process API。新しい撮影は CDSE OData カタログで確かめる",
             "detector": "cfar-v1（記録の検出器、40 m、守り帯 160 m・リング 320 m、長さ 80 m 以上）と cfar-v2（100 m 以内の一致）",
-            "masks": "OSM の陸・海岸（海岸から 1 km は near_coast）・洋上の固定物（風車・掘削台・航路標識、300 m 膨張）、学習した固定物",
+            "masks": "OSM の陸・海岸（海岸から 1 km は near_coast）・洋上の固定物（風車・掘削台・航路標識、300 m 膨張）、"
+                     "洋上風力の格子（grid）、20 m の取り直しで過去の撮影でも明るかった地点（static_temporal）、学習した固定物（軌道をまたいで数える）",
+            "grid": cfg.get("grid"), "verify": verify.settings(cfg),
             "sea_state": cfg["sea_state"], "cluster": cfg["cluster"], "dense": cfg.get("dense"), "ambiguity": cfg["ambiguity"],
             "static_learned": cfg["static_learned"],
             "schedule": "毎日 19:41 UTC（04:41 JST）。昇交（09:20–10:32 UTC）は同じ日、降交（21:17–21:51 UTC）は翌日に処理",
         },
         "classes": {
-            "A": "cfar-v1 が high かつ cfar-v2 の A と 100 m 以内で一致し、海岸帯・固定物・端・方位アンビギュイティ・海況不良・群れでない。"
-                 "見出しの数に入れる。10 m の切り出しで船の形と長さ 80 m 以上を確認するまで確度は「低〜中」（chip_checked=false）",
+            "A": "cfar-v1 が high かつ cfar-v2 の A と 100 m 以内で一致し、海岸帯・固定物・端・方位アンビギュイティ・海況不良・群れ・密集でなく、"
+                 "（small_demote のときは 20 m の取り直しで 50 m 未満でない）。見出しの数に入れる。20 m の取り直しで過去の撮影にいなかった（verify_verdict＝transient）"
+                 "ものは確度「中」、取り直していないもの・判定がつかないものは「低〜中」",
             "B": "cfar-v1 high か cfar-v2 A の片方だけ、または cfar-v1 medium、または端・アンビギュイティ・群れ・密集（dense_field）の印あり。確度「低」。"
                  "GeoJSON に出すが見出しの数に入れない",
-            "reference": "cfar-v1 low・海岸帯・固定物（OSM・学習）・海況不良。出さない（passes.json の内訳だけ）",
+            "reference": "cfar-v1 low・海岸帯・固定物（OSM・格子・20 m の取り直し・学習）・海況不良。出さない（passes.json の内訳だけ）",
             "high": "「高」は S1 だけでは付けない。統幕の通峡の発表・海保の尖閣の発表・AIS の照合と一致したときだけ分析の文章で付ける",
         },
         "ais": "全件 AIS 未照合（ais=unmatched）。AIS の生データ・MMSI は出さない",
@@ -731,6 +807,10 @@ def write_meta(out: Path, cfg: dict, passes: list[dict], learned: dict, now: dat
                                                               if p.get("method_version") == b.get("to_version")
                                                               and p.get("processed_utc")), default=None)}
                           for b in cfg.get("series_breaks") or []],
+        "verify_fields": {"verified": "20 m の取り直しをしたか", "verify_verdict": "fixed（固定物。その撮影だけ参考に回し、学習しない）・transient（その日だけ）・"
+                          "uncertain（中間）・unknown（過去の撮影が 3 回未満など）", "persist_db": "過去の撮影の 30 パーセンタイルが周りの海より何 dB 明るいか",
+                          "n_prior": "比べた過去の撮影の数", "length_m_20m・width_m_20m・heading_deg_20m": "20 m で測った長さ・幅・向き（真北から 0〜180°）",
+                          "small_20m": "20 m で長さ 50 m 未満（印。small_demote が false の間は A のまま）"},
         "files": {"areas.geojson": "監視域", "passes.json": "処理した撮影（域ごと）", "candidates/YYYY-MM-DD.geojson": "撮影日（UTC）ごとの候補（A・B）",
                   "coverage/YYYY-MM-DD.geojson": "その日に実際に見た範囲（0.1° のセル、海況不良のセルは state で区別）",
                   "series.csv・series.json": "域×撮影ごとの件数の時系列（method_version で手法の版を区別。series_breaks を見る）",
@@ -1008,7 +1088,8 @@ def _write_chip(chips_out: Path, out: Path, area: dict, a: dict, chip: dict, day
             raise RuntimeError(chip["error"])
         feats = [f for f in _read_json(out / "candidates" / f"{day}.geojson", {"features": []}).get("features", [])
                  if f["properties"].get("area") == area["id"] and f["properties"].get("acquired_utc") == a["acquired_utc"]]
-        r = ocean_chips.write_pass(chips_out, area, a, chip["canvas"], feats, chip["crops"], cdse.iso(now))
+        r = ocean_chips.write_pass(chips_out, area, a, chip["canvas"], feats, chip["crops"], cdse.iso(now),
+                                   crops20=chip.get("crops20"))
         if r:
             summary["chips"].append(r)
             log(f"{area['id']} {a['acquired_utc']}: 画像 {r['bytes'] // 1000} kB（{r['image_px'][0]}×{r['image_px'][1]}、"
@@ -1127,12 +1208,13 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
     seen = (observed >= 0.5) & (ac.own > 0)
     obs_km2 = float((ac.km2 * ac.sea * observed * good * seen).sum())
     bad_km2 = float((ac.km2 * ac.sea * observed * ~good * seen).sum())
+    active_now = active_points(learned, a["acquired_utc"], cfg)
     for c in cands:
         cell = ac.cell_of(c["lon"], c["lat"])
         st = sea_state(meds[cell], cfg) if cell else None
         c["sea_state"] = st
         c["area"] = area["id"]
-        c["static_learned"] = near(learned["points"], c["lon"], c["lat"], float(cfg["static_learned"]["radius_m"]))
+        c["static_learned"] = near(active_now, c["lon"], c["lat"], float(cfg["static_learned"]["radius_m"]))
     cands = wide.dedupe(cands)
     # learned fixed objects (before the classes: a point learned now is a reference too)
     prior_cache: dict = {}
@@ -1146,17 +1228,27 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
         return prior_cache[t]
     row["static_learned_added"] = learn_static(cands, a, history, prior_points, learned, cfg)
     pool = [c for c in cands if not (c.get("near_coast") or c.get("static") or c.get("static_learned"))]
+    n_grid = grid_fields(pool, cfg.get("grid"))
+    pool = [c for c in pool if not c.get("static_grid")]
     rc, rd = rule(cfg, area, "cluster"), rule(cfg, area, "dense")
     n_clusters = clusters(pool, float(rc["radius_m"]), int(rc["min_n"]))
     n_dense = dense_fields(pool, float(rd["radius_m"]), int(rd["min_n"])) if rd else 0
-    excl = {"near_coast": 0, "static": 0, "static_learned": 0, "sea_state": 0, "v1_low": 0, "edge": 0,
-            "ambiguity": 0, "cluster": 0, "dense": 0}
-    counts = {"A": 0, "B": 0, "ref": 0}
-    pub = []
     for c in cands:
         c.setdefault("cluster", None)
         c.setdefault("dense", False)
+        c["_class"] = classify(c)[0]
+    vsum = _verify_pass(args, cfg, client, pacer, sleep, clock, bud, summary, area, a, cands, history, learned,
+                        deadline, row, cur, log)
+    pu += vsum["pu"]
+    nreq += vsum["requests"]
+    row["pu"], row["requests"], row["verify"] = round(pu, 3), nreq, vsum["counts"]
+    excl = {"near_coast": 0, "static": 0, "static_learned": 0, "static_grid": 0, "static_temporal": 0, "sea_state": 0,
+            "v1_low": 0, "edge": 0, "ambiguity": 0, "cluster": 0, "dense": 0, "small_20m": 0}
+    counts = {"A": 0, "B": 0, "ref": 0}
+    pub = []
+    for c in cands:
         cls, why = classify(c)
+        c.pop("_class", None)
         counts[cls] += 1
         if why:
             excl[why] += 1
@@ -1165,6 +1257,7 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
             excl["ambiguity"] += bool(c.get("ambiguity_suspect"))
             excl["cluster"] += c.get("cluster") is not None
             excl["dense"] += bool(c.get("dense"))
+            excl["small_20m"] += bool(c.get("small_20m"))
         if cls == "ref":
             continue
         props = {"area": area["id"], "acquired_utc": c["acquired_utc"], "platform": c.get("platform"),
@@ -1176,7 +1269,10 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                  "vh_ratio_db": c["vh_ratio_db"], "v1_confidence": c["confidence"], "v2_confidence": c["v2_confidence"],
                  "v2_match": c["v2_match"], "v2_length_m": c.get("v2_length_m"), "edge": c["edge"], "ambiguity_suspect": c["ambiguity_suspect"],
                  "ambiguity_parent": c["ambiguity_parent"], "cluster": c["cluster"], "dense_field": c["dense"],
-                 "sea_state": c["sea_state"], "chip_checked": False, "length_m_10m": None, "ais": "unmatched"}
+                 "sea_state": c["sea_state"], "chip_checked": False, "length_m_10m": None, "ais": "unmatched",
+                 **verify_props(c.get("verify"), bool(c.get("small_20m_flag")))}
+        if cls == "A" and (c.get("verify") or {}).get("verdict") == "transient":
+            props["confidence_label"] = CLASS_LABEL["A_verified"]
         pub.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
                     "properties": props})
     area_km2 = ac.sea_km2()
@@ -1192,7 +1288,8 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                    "clusters": n_clusters if counted else None,
                    "density_A_per_1000km2": round(counts["A"] / obs_km2 * 1000, 3) if counted and obs_km2 else None,
                    "published_A": counts["A"], "published_B": counts["B"], "reference": counts["ref"],
-                   "published_A_ge120": a_large, "published_clusters": n_clusters, "dense_flagged": n_dense},
+                   "published_A_ge120": a_large, "published_clusters": n_clusters, "dense_flagged": n_dense,
+                   "grid_flagged": n_grid},
         "excluded": excl,
         "observed_cells": [[round(ac.w + i * ac.cell, 6), round(ac.s + j * ac.cell, 6), round(float(observed[j, i]), 3)]
                            for j in range(ac.ny) for i in range(ac.nx) if observed[j, i] >= 0.5 and ac.own[j, i] > 0],
@@ -1203,6 +1300,88 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
     log(f"{area['id']} {a['acquired_utc']}: 見た {row['observed_sea_km2']} km²（{row['observed_share']}）、"
         f"A {counts['A']}・B {counts['B']}・参考 {counts['ref']}、群れ {n_clusters}、PU {row['pu']}")
     return row, stop, files
+
+
+def verify_props(v: dict | None, small: bool = False) -> dict:
+    """The second look (ocean.verify) in the published properties."""
+    if not v:
+        return {"verified": False}
+    return {"verified": True, "verify_version": v.get("version"), "verify_verdict": v.get("verdict"),
+            "persist_db": v.get("persist_db"), "n_prior": v.get("n_prior"), "length_m_20m": v.get("length_m_20m"),
+            "small_20m": bool(small),
+            "width_m_20m": v.get("width_m_20m"), "heading_deg_20m": v.get("heading_deg_20m")}
+
+
+def _verify_pass(args, cfg, client, pacer, sleep, clock, bud, summary, area, a, cands, history, learned, deadline,
+                 row, cur, log) -> dict:
+    """ocean.verify for the pass's A candidates (``c["_class"]``): a 20 m cut-out with the earlier passes per
+    candidate, within the run's budget, the area's month cap and the month's requests. A fixed object becomes
+    ``static_temporal`` (this pass only, never learned), a target under ``small_m`` at 20 m is flagged (``small_20m``
+    = B only with ``small_demote``). Never stops the pass: a failed request leaves
+    the candidate as it was. Returns {"pu", "requests", "counts"}."""
+    st = verify.settings(cfg)
+    res = {"pu": 0.0, "requests": 0, "counts": {**{v: 0 for v in verify.VERDICTS}, "errors": 0, "skipped_cap": 0}}
+    if not st["enabled"] or args.dry_run or not hasattr(client, "process_raw"):
+        return res
+    picks = verify.select(cands, active_points(learned, a["acquired_utc"], cfg), st,
+                          float(cfg["static_learned"]["radius_m"]))
+    if not picks:
+        return res
+    month = processed_month(row)
+    base_pu = float(row.get("pu") or 0.0)
+    area_used = base_pu + sum(float(p.get("pu") or 0) for p in history
+                              if p["area"] == area["id"] and processed_month(p) == month)
+    area_left = float(area["pu_month_cap"]) - area_used
+    est = float(st["est_pu"])
+    for k, c in enumerate(picks):
+        req_left = bud.get("requests_left")
+        if cp.month_changed(args, clock) or time.monotonic() > deadline \
+                or client.processing_units + est > bud["pu_left"] + 1e-9 or res["pu"] + est > area_left \
+                or (req_left is not None and int(getattr(client, "requests", 0)) + 1 > int(req_left)):
+            res["counts"]["skipped_cap"] += len(picks) - k
+            break
+        if k:
+            sleep(1)
+        pacer.wait(est)
+        before = client.processing_units
+        try:
+            arr, pu1 = verify.fetch(client, c, a, st)
+            if not getattr(client, "pu_reported", True) and pu1 < est:   # no PU header: count the planning value
+                client.processing_units += est - pu1
+                res["pu_estimated"] = True
+            pacer.spent(pu1)
+            v = verify.judge(arr, st)
+        except cp.MonthStop:
+            res["counts"]["skipped_cap"] += len(picks) - k
+            break
+        except cdse.CredentialError:
+            raise
+        except Exception as ex:  # noqa: BLE001 - a failed second look never stops the pass
+            res["counts"]["errors"] += 1
+            summary["errors"].append({"area": area["id"], "acquired_utc": a["acquired_utc"], "stage": "verify",
+                                      "lon": c["lon"], "lat": c["lat"], "error": f"{type(ex).__name__}: {str(ex)[:200]}"})
+            continue
+        finally:
+            res["pu"] += client.processing_units - before
+            res["requests"] += 1
+            row["pu"] = round(base_pu + res["pu"], 3)   # an exception above still counts these PU (aborted row)
+        c["verify"] = v
+        res["counts"][v["verdict"]] += 1
+        if v["verdict"] == "fixed":   # this pass only (not learned): a ship at anchor for weeks comes back when it leaves
+            c["static_temporal"] = True
+        elif v.get("length_m_20m") is not None and v["length_m_20m"] < float(st["small_m"]):
+            c["small_20m_flag"] = True
+            if st.get("small_demote"):
+                c["small_20m"] = True
+        chip = cur.get("chip")
+        if chip is not None and not chip.get("error"):
+            try:
+                chip.setdefault("crops20", {})[(c["lon"], c["lat"])] = verify.tile_rgb(arr)
+            except Exception as ex:  # noqa: BLE001 - the image never stops the decision
+                chip["error"] = f"{type(ex).__name__}: {str(ex)[:200]}"
+    log(f"{area['id']} {a['acquired_utc']}: 20 m の確認 {res['requests']} 件（PU {round(res['pu'], 2)}）"
+        f" {res['counts']}")
+    return res
 
 
 def _day_key(q: dict):
