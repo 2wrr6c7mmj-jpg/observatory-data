@@ -1,7 +1,7 @@
 {
- "version":"ocean-monitor-1",
- "config_version":"ocean-monitor-1",
- "generated_utc":"2026-11-02T21:16:02Z",
+ "version":"ocean-monitor-2",
+ "config_version":"ocean-monitor-2",
+ "generated_utc":"2026-11-04T00:15:39Z",
  "attribution":"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0",
  "credits":[
   "Contains modified Copernicus Sentinel data (Copernicus Sentinel-1, ESA; CDSE Sentinel Hub)",
@@ -17,9 +17,14 @@
    "note":"0.1° セルごとの VV 中央値。low 未満（風の弱い暗い海・雑音床）と high 超（強風・雨）は件数に入れず、見た面積からも除く（仮置き、最初の 1 週間の検品で直す）"
   },
   "cluster":{
-   "radius_m":500,
+   "radius_m":1500,
    "min_n":5,
-   "note":"同じ撮影で 500 m 以内のつながりが 5 件以上の群れ（漁船）は見出しの数に入れず、群れの数だけ数える"
+   "note":"同じ撮影で 1,500 m 以内のつながりが 5 件以上の群れ（漁船）は見出しの数に入れず、群れの数だけ数える。半径は cfar-v1 の守り帯＋リング（40 m で 480 m）より大きくする（ocean-monitor-2、2026-11-03。旧 500 m では全域・全撮影で群れ 0）。域ごとに cluster で上書きできる"
+  },
+  "dense":{
+   "radius_m":5000,
+   "min_n":8,
+   "note":"同じ撮影で 5 km 以内にほかの候補が 8 件以上ある候補は密集（漁場・固定物の列）として B に回す（dense_field）。艦隊・船団はここまで密にならない。2026-11-02/03 の公開分での試算：ZSN・TSM・TSN で効き、TWE_S・BASHI は 0、TSW は 1。域ごとに dense で上書きできる（ocean-monitor-2）"
   },
   "ambiguity":{
    "tol_az_m":400,
@@ -37,7 +42,7 @@
  },
  "classes":{
   "A":"cfar-v1 が high かつ cfar-v2 の A と 100 m 以内で一致し、海岸帯・固定物・端・方位アンビギュイティ・海況不良・群れでない。見出しの数に入れる。10 m の切り出しで船の形と長さ 80 m 以上を確認するまで確度は「低〜中」（chip_checked=false）",
-  "B":"cfar-v1 high か cfar-v2 A の片方だけ、または cfar-v1 medium、または端・アンビギュイティ・群れの印あり。確度「低」。GeoJSON に出すが見出しの数に入れない",
+  "B":"cfar-v1 high か cfar-v2 A の片方だけ、または cfar-v1 medium、または端・アンビギュイティ・群れ・密集（dense_field）の印あり。確度「低」。GeoJSON に出すが見出しの数に入れない",
   "reference":"cfar-v1 low・海岸帯・固定物（OSM・学習）・海況不良。出さない（passes.json の内訳だけ）",
   "high":"「高」は S1 だけでは付けない。統幕の通峡の発表・海保の尖閣の発表・AIS の照合と一致したときだけ分析の文章で付ける"
  },
@@ -288,23 +293,6 @@
    "note":null
   },
   {
-   "id":"ZSN",
-   "name":"舟山の東",
-   "bbox":[
-    122.2,
-    27.8,
-    123.8,
-    31.4
-   ],
-   "priority":3,
-   "mode":"every_pass",
-   "orbits":"S1D/171",
-   "expected_per_month":2.5,
-   "pu_month_cap":550,
-   "min_revisit_days":4,
-   "note":"案 B では取らない（漁船の群れが多い。案 A でも月 1 回まで）（2026-11-02 追記：ユーザー指示で有効化し、撮影ごとに取る）"
-  },
-  {
    "id":"TSW",
    "name":"台湾海峡西部（金門・廈門〜東山の沖）",
    "bbox":[
@@ -322,14 +310,32 @@
    "note":"2026-11-02 ユーザー指示（地図の範囲の船をなるべく取る）で追加"
   }
  ],
+ "held_areas":[
+  {
+   "id":"ZSN",
+   "reason":"検品で候補の数の妥当性を確かめるまで公開を保留（取得と記録は続ける）"
+  }
+ ],
+ "publish_rule":"publish＝hold の域は取得と記録を続けるが、撮影の記録・候補・見た範囲・件数・学習した固定物は held/ にだけ書き、passes・areas・areas.geojson・series・candidates・coverage・static_learned には出さない（検品で直るまで）",
+ "series_breaks":[
+  {
+   "from_version":"ocean-monitor-1",
+   "to_version":"ocean-monitor-2",
+   "date_utc":"2026-11-03",
+   "areas":"all",
+   "change":"群れの半径 500→1,500 m、密集（dense：5 km 以内に 8 件以上）を B に。ocean-monitor-1 の行（method_version＝ocean-monitor-1）は群れ・密集を除いていないので、A の件数を直接比べない",
+   "first_processed_utc":"2026-11-04T00:15:39Z"
+  }
+ ],
  "files":{
   "areas.geojson":"監視域",
   "passes.json":"処理した撮影（域ごと）",
   "candidates/YYYY-MM-DD.geojson":"撮影日（UTC）ごとの候補（A・B）",
   "coverage/YYYY-MM-DD.geojson":"その日に実際に見た範囲（0.1° のセル、海況不良のセルは state で区別）",
-  "series.csv・series.json":"域×撮影ごとの件数の時系列",
-  "static_learned.json":"学習した固定物"
+  "series.csv・series.json":"域×撮影ごとの件数の時系列（method_version で手法の版を区別。series_breaks を見る）",
+  "static_learned.json":"学習した固定物",
+  "held/":"公開を保留した域の passes.json・static_learned.json・candidates・coverage・series.json（サイトは読まない。検品用）"
  },
- "passes":6,
+ "passes":11,
  "static_learned_points":0
 }
