@@ -108,15 +108,25 @@ class ChipTest(unittest.TestCase):
             self.assertLessEqual(len(img), oc.MAX_IMAGE_BYTES)
             self.assertLessEqual(max(doc["chip_px"]), oc.OVERVIEW_MAX)
             self.assertEqual(doc["chip_px"], [canvas.grid.width, canvas.grid.height])
-            # A first (stronger contrast first), then B; the 6 strongest A get a zoom tile
+            # A first (stronger contrast first), then B; ocean-chips-2: no zoom tiles in the overview, every
+            # candidate has its own tile in the sheet (1.28 km, the 40 m crop x2 here: no 20 m cut-out)
             self.assertEqual([c["class"] for c in doc["candidates"]], ["A"] * 12 + ["B"] * 3)
             self.assertEqual([c["n"] for c in doc["candidates"]], list(range(1, 16)))
             self.assertEqual(doc["candidates"][0]["contrast_vv_db"], 21)
-            self.assertEqual([t["n"] for t in doc["tiles"]], list(range(1, 7)))
+            self.assertEqual(doc["tiles"], [])
             self.assertEqual(doc["counts"], {"A": 12, "B": 3})
-            for t in doc["tiles"]:   # the tiles are below the overview (outside chip_px, where the site draws nothing)
-                self.assertGreaterEqual(t["box_px"][1], doc["chip_px"][1])
-                self.assertLessEqual(t["box_px"][3], doc["image_px"][1])
+            sheet = (sat / doc["sheet"]).read_bytes()
+            self.assertEqual(list(satchips.webp_size(sheet)), doc["sheet_px"])
+            self.assertEqual(doc["sheet_px"], [15 * oc.SHEET_TILE, oc.SHEET_TILE])
+            self.assertLessEqual(len(sheet), oc.MAX_SHEET_BYTES)
+            xy = [c["tile"]["xy"] for c in doc["candidates"]]
+            self.assertEqual(xy, [[k * oc.SHEET_TILE, 0] for k in range(15)])
+            for c in doc["candidates"]:
+                t = c["tile"]
+                self.assertEqual((t["size"], t["res_m"]), (oc.SHEET_TILE, 40))
+                x0, y0, x1, y1 = t["frame"]
+                self.assertTrue(0 <= x0 < x1 <= oc.SHEET_TILE and 0 <= y0 < y1 <= oc.SHEET_TILE)
+                self.assertAlmostEqual(x1 - x0, 160 / 20 + 3, places=3)   # 160 m at 20 m per tile px, +1.5 px each side
             # the 40 m length is not given as length_m (the site's text says 10 m pixels)
             self.assertTrue(all(c["length_m"] is None and c["length_m_est_40m"] == 160 for c in doc["candidates"]))
             self.assertTrue(all(c["credibility"] in ("A", "B") for c in doc["candidates"]))
@@ -126,7 +136,18 @@ class ChipTest(unittest.TestCase):
             W, H = doc["chip_px"]
             self.assertLess(im[: H, W - 5:W].mean(), 8)
             self.assertGreater(im[: H, :5].mean(), 20)
-            self.assertEqual(r["tiles"], 6)
+            self.assertEqual(r["tiles"], 15)
+
+    def test_sheet_prefers_the_20m_cut_out(self):
+        rgb40 = np.zeros((oc.TILE_NATIVE, oc.TILE_NATIVE, 3), np.uint8)
+        rgb40[oc.TILE_NATIVE // 2, oc.TILE_NATIVE // 2] = 255
+        t, res = oc.sheet_tile(rgb40, None)
+        self.assertEqual((t.shape, res), ((oc.SHEET_TILE, oc.SHEET_TILE, 3), 40))
+        self.assertEqual(int(t[oc.SHEET_TILE // 2, oc.SHEET_TILE // 2, 0]), 255)   # the candidate stays in the middle
+        rgb20 = np.full((oc.SHEET_TILE, oc.SHEET_TILE, 3), 7, np.uint8)
+        t, res = oc.sheet_tile(rgb40, rgb20)
+        self.assertEqual((int(t[0, 0, 0]), res), (7, 20))
+        self.assertIsNone(oc.sheet_tile(None, None))
 
     def test_keep_held_index_and_splice(self):
         with tempfile.TemporaryDirectory() as d:
@@ -141,7 +162,7 @@ class ChipTest(unittest.TestCase):
             r = oc.refresh(sat, cfg)
             self.assertEqual((r["areas"], r["scenes"]), (1, 3))
             self.assertFalse((sat / "chips/ocean/HLD").exists())          # held: nothing of it stays
-            self.assertEqual(len(list((sat / "chips/ocean/AAA").glob("*.webp"))), 3)
+            self.assertEqual(len(list((sat / "chips/ocean/AAA").glob("*.webp"))), 6)   # overview and sheet
             self.assertEqual(len(list((sat / "chips/ocean/AAA").glob("*.json"))), 3)
             frag = json.loads((sat / "chips/ocean/index.json").read_text(encoding="utf-8"))
             self.assertEqual([s["acquired_utc"][:10] for s in frag["ocean"][0]["scenes"]],

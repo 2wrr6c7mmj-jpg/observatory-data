@@ -36,7 +36,7 @@ from sat import chips as satchips
 from sat import color
 from sat.grid import Grid
 
-VERSION = "ocean-chips-1"
+VERSION = "ocean-chips-2"
 SUBDIR = "chips/ocean"
 FRAGMENT = "chips/ocean/index.json"
 INDEX = "chips/index.json"
@@ -45,16 +45,22 @@ OVERVIEW_MAX = 600          # the area's longer side in the overview, px (fits a
 TILE_NATIVE = 64            # zoom tile: 64 px at 40 m = 2.56 km square
 TILE_SCALE = 2              # shown at x2 (nearest)
 TILE_GAP = 4
-MAX_TILES = 6               # strongest A candidates (by VV contrast) get a zoom tile
+MAX_TILES = 0               # ocean-chips-2: no zoom tiles in the overview (every candidate has its own in the sheet)
+SHEET_TILE = 64             # one candidate in the sheet: 1.28 km square (40 m x2 or 20 m x1)
+SHEET_COLS = 16
+SHEET_MAX = 256             # candidates with a tile per pass (A first)
+MAX_SHEET_BYTES = 350_000
 MIN_BOX_PX = 8.0            # a frame on the overview is at least this wide (a ship is below one overview pixel)
 MAX_IMAGE_BYTES = 250_000
 QUALITY_STEPS = (70, 60, 50, 40, 30)
 RED = (255, 40, 40)
 CAPTION = satchips.CAPTION
-NOTE = ("外洋の域の縮小画像（左上の chip_px の範囲。赤枠は A・B 候補の位置を示す最小 8 画素の正方形で、船体の大きさではない）と、"
-        "その下に VV のコントラストが強い A 候補の拡大（40 m、2 倍表示、2.56 km 四方、最大 6 件。枠と番号は画像に焼き込み）。"
-        "取得しなかった所は黒。候補は AIS 未照合・未確認")
+NOTE = ("外洋の域の縮小画像（chip_px の範囲。赤枠は A・B 候補の位置を示す最小 8 画素の正方形で、船体の大きさではない）。"
+        "候補ごとの切り出しは sheet（SHEET_NOTE）。取得しなかった所は黒")
+SHEET_NOTE = ("候補ごとの切り出し（1.28 km 四方、候補が中央）。tile.res_m＝20 は 20 m の取り直し（過去の撮影と比べた確認つき）、"
+              "40 は検出に使った 40 m の画像を 2 倍表示。赤枠（tile.frame、タイル内の画素）は推定の長さ")
 _STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z$")
+SHEET_SUFFIX = "-c"         # <stamp>-c.webp: the sheet of candidate tiles
 
 
 def stamp_of(acquired_utc: str) -> str:
@@ -218,10 +224,49 @@ def _label(area_id: str, acq: dict, canvas: Canvas) -> str:
             f"  overview ~{round((mr + mc) / 2, -1):g} m/px")
 
 
+def sheet_tile(c40: np.ndarray | None, c20: np.ndarray | None) -> tuple[np.ndarray, int] | None:
+    """(64 px RGB, pixel metres) of one candidate: the 20 m cut-out of the second look if there is one, else the
+    middle 32 px of the 40 m crop shown x2. Both 1.28 km square, centred on the candidate."""
+    if c20 is not None and c20.shape[:2] == (SHEET_TILE, SHEET_TILE):
+        return c20, 20
+    if c40 is not None and c40.shape[0] >= SHEET_TILE // 2:
+        h = c40.shape[0] // 2
+        q = SHEET_TILE // 4
+        mid = c40[h - q:h + q, h - q:h + q]
+        return np.repeat(np.repeat(mid, 2, axis=0), 2, axis=1), 40
+    return None
+
+
+def tile_frame(length_m, res_m: int) -> list[float]:
+    """The red frame inside a tile (tile px): the candidate's length (40 m or 20 m estimate) as a square, 6 px at least."""
+    half = max(3.0, (float(length_m or 0) / 20.0) / 2 + 1.5)    # 20 m per tile px in both kinds of tile
+    c = SHEET_TILE / 2
+    return [round(c - half, 1), round(c - half, 1), round(c + half, 1), round(c + half, 1)]
+
+
+def render_sheet(tiles: list[np.ndarray], max_bytes: int = MAX_SHEET_BYTES) -> tuple[bytes, tuple[int, int]]:
+    """The tiles in rows of SHEET_COLS, no gaps, nothing burned in (the site draws the frames)."""
+    from PIL import Image
+    cols = min(SHEET_COLS, max(1, len(tiles)))
+    rows = math.ceil(len(tiles) / cols)
+    im = Image.new("RGB", (cols * SHEET_TILE, rows * SHEET_TILE), color.BG)
+    for k, t in enumerate(tiles):
+        im.paste(Image.fromarray(t, "RGB"), ((k % cols) * SHEET_TILE, (k // cols) * SHEET_TILE))
+    out = b""
+    for q in QUALITY_STEPS:
+        buf = io.BytesIO()
+        im.save(buf, "WEBP", quality=q, method=color.WEBP_METHOD)
+        out = buf.getvalue()
+        if len(out) <= max_bytes:
+            break
+    return out, im.size
+
+
 def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list[dict], crops: dict,
-               generated_utc: str) -> dict | None:
+               generated_utc: str, crops20: dict | None = None) -> dict | None:
     """Image and chip file of one pass over one area. ``feats``: the pass's published A/B features (all parts);
-    ``crops``: {(lon, lat): rgb} of the candidates fetched by this run. A pass continued from an earlier run keeps
+    ``crops``: {(lon, lat): rgb} of the candidates fetched by this run (40 m), ``crops20`` the 20 m cut-outs of the
+    second look (ocean.verify). Every candidate with a crop gets a tile in the sheet <stamp>-c.webp. A pass continued from an earlier run keeps
     the earlier part of the overview from the image already written. Returns the scene entry or None."""
     from PIL import Image
     if not canvas.has_data:
@@ -239,7 +284,7 @@ def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list
         except OSError:
             pass
     ordered = _order([f for f in feats if f["properties"].get("class") in ("A", "B")])
-    cands, tiles = [], []
+    cands, tiles, sheet = [], [], []
     for n, f in enumerate(ordered, 1):
         p = f["properties"]
         lon, lat = f["geometry"]["coordinates"][:2]
@@ -251,10 +296,19 @@ def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list
                       "length_m_est_40m": p.get("length_m_est_40m"),
                       "contrast_vv_db": p.get("contrast_vv_db"), "vh_ratio_db": p.get("vh_ratio_db"),
                       "credibility": p.get("class"), "reliability": None})
+        cands[-1].update({k: p.get(k) for k in ("confidence_label", "verified", "verify_verdict", "persist_db",
+                                                 "n_prior", "length_m_20m", "width_m_20m", "heading_deg_20m")
+                          if k in p})
         rgb = crops.get((lon, lat))
         if p.get("class") == "A" and rgb is not None and len(tiles) < MAX_TILES:
             tiles.append((n, "A", rgb, p.get("length_m_est_40m")))
-            cands[-1]["tile"] = True
+        t = sheet_tile(rgb, (crops20 or {}).get((lon, lat))) if len(sheet) < SHEET_MAX else None
+        if t is not None:
+            k = len(sheet)
+            sheet.append(t[0])
+            x, y = (k % SHEET_COLS) * SHEET_TILE, (k // SHEET_COLS) * SHEET_TILE
+            length = p.get("length_m_20m") if t[1] == 20 else p.get("length_m_est_40m")
+            cands[-1]["tile"] = {"xy": [x, y], "size": SHEET_TILE, "res_m": t[1], "frame": tile_frame(length, t[1])}
     year = acq["acquired_utc"][:4]
     data, size, tmeta = render_capped(over, tiles, _label(area["id"], acq, canvas), satchips.credit(year))
     mr, mc = canvas.grid.pixel_m
@@ -270,11 +324,23 @@ def write_pass(sat_out: Path, area: dict, acq: dict, canvas: Canvas, feats: list
         "counts": {"A": sum(c["class"] == "A" for c in cands), "B": sum(c["class"] == "B" for c in cands)},
         "caption": CAPTION, "credit": satchips.credit(year), "generated_utc": generated_utc,
     }
+    sheet_rel = f"{SUBDIR}/{area['id']}/{st}{SHEET_SUFFIX}.webp"
+    if sheet:
+        sdata, spx = render_sheet(sheet)
+        doc.update(sheet=sheet_rel, sheet_px=list(spx), sheet_note=SHEET_NOTE)
+    elif old and old.get("sheet") and (sat_out / old["sheet"]).exists():   # a later part without new tiles
+        doc.update(sheet=old["sheet"], sheet_px=old.get("sheet_px"), sheet_note=SHEET_NOTE)
+        for c in cands:
+            prev = next((x for x in old.get("candidates") or [] if x.get("center") == c["center"] and x.get("tile")), None)
+            if prev:
+                c["tile"] = prev["tile"]
     d.mkdir(parents=True, exist_ok=True)
+    if sheet:
+        (sat_out / sheet_rel).write_bytes(sdata)
     (sat_out / img_rel).write_bytes(data)
     (sat_out / doc_rel).write_text(_dump(doc), encoding="utf-8")
-    return {"area": area["id"], "acquired_utc": acq["acquired_utc"], "bytes": len(data), "image_px": list(size),
-            "candidates": len(cands), "tiles": len(tiles)}
+    return {"area": area["id"], "acquired_utc": acq["acquired_utc"], "bytes": len(data) + (len(sdata) if sheet else 0),
+            "image_px": list(size), "candidates": len(cands), "tiles": len(sheet)}
 
 
 # ---------------------------------------------------------------- keep, held areas, index fragment and splice
@@ -316,8 +382,9 @@ def refresh(sat_out: Path, cfg: dict, keep: int = KEEP) -> dict:
         for _t, p, _doc in docs[keep:]:
             p.unlink()
             p.with_suffix(".webp").unlink(missing_ok=True)
+            p.with_name(p.stem + SHEET_SUFFIX + ".webp").unlink(missing_ok=True)
             removed += 2
-        kept = {p.stem for _t, p, _d in docs[:keep]}
+        kept = {p.stem for _t, p, _d in docs[:keep]} | {p.stem + SHEET_SUFFIX for _t, p, _d in docs[:keep]}
         for p in d.glob("*.webp"):     # an image without a chip file
             if p.stem not in kept:
                 p.unlink()
@@ -328,6 +395,8 @@ def refresh(sat_out: Path, cfg: dict, keep: int = KEEP) -> dict:
             if not img.exists():
                 continue
             total += img.stat().st_size + p.stat().st_size
+            sh = p.with_name(p.stem + SHEET_SUFFIX + ".webp")
+            total += sh.stat().st_size if sh.exists() else 0
             stamps.append(doc.get("generated_utc") or t)
             scenes.append({"acquired_utc": t, "platform": doc.get("platform"), "orbit_direction": doc.get("orbit_direction"),
                            "relative_orbit": doc.get("relative_orbit"), "chip": f"{SUBDIR}/{a['id']}/{p.name}",
