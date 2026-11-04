@@ -1270,7 +1270,7 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
                  "v2_match": c["v2_match"], "v2_length_m": c.get("v2_length_m"), "edge": c["edge"], "ambiguity_suspect": c["ambiguity_suspect"],
                  "ambiguity_parent": c["ambiguity_parent"], "cluster": c["cluster"], "dense_field": c["dense"],
                  "sea_state": c["sea_state"], "chip_checked": False, "length_m_10m": None, "ais": "unmatched",
-                 **verify_props(c.get("verify"))}
+                 **verify_props(c.get("verify"), bool(c.get("small_20m_flag")))}
         if cls == "A" and (c.get("verify") or {}).get("verdict") == "transient":
             props["confidence_label"] = CLASS_LABEL["A_verified"]
         pub.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [c["lon"], c["lat"]]},
@@ -1302,13 +1302,13 @@ def _fetch_pass(args, cfg, client, overpass, now, pacer, sleep, log, clock, bud,
     return row, stop, files
 
 
-def verify_props(v: dict | None) -> dict:
+def verify_props(v: dict | None, small: bool = False) -> dict:
     """The second look (ocean.verify) in the published properties."""
     if not v:
         return {"verified": False}
     return {"verified": True, "verify_version": v.get("version"), "verify_verdict": v.get("verdict"),
             "persist_db": v.get("persist_db"), "n_prior": v.get("n_prior"), "length_m_20m": v.get("length_m_20m"),
-            "small_20m": bool(v.get("length_m_20m") is not None and v["length_m_20m"] < float(verify.DEFAULTS["small_m"])),
+            "small_20m": bool(small),
             "width_m_20m": v.get("width_m_20m"), "heading_deg_20m": v.get("heading_deg_20m")}
 
 

@@ -182,7 +182,7 @@ class VerifyPassTest(unittest.TestCase):
         props = m.verify_props(ship["verify"])
         self.assertEqual((props["verified"], props["verify_verdict"], props["length_m_20m"], props["small_20m"]),
                          (True, "transient", 160, False))
-        self.assertTrue(m.verify_props(boat["verify"])["small_20m"])
+        self.assertTrue(m.verify_props(boat["verify"], boat.get("small_20m_flag"))["small_20m"])
         self.assertEqual(m.verify_props(None), {"verified": False})
         # a point learned by the cross-orbit rule (still active) is not fetched again; an expired one is
         pt = {"lon": 120.2, "lat": 24.0, "added_utc": "2026-11-01T10:00:00Z"}
