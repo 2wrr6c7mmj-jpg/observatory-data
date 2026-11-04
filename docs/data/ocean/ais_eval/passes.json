@@ -1,5 +1,116 @@
 {
  "version": "ais-eval-1",
- "attribution": "Contains modified Copernicus Sentinel data [2026]. AIS: aisstream.io (reception results only: counts, rates and per-candidate match flags; no AIS position, MMSI or name is published).",
- "passes": []
+ "attribution": "Contains modified Copernicus Sentinel data [2026]. AIS: aisstream.io (reception results only: counts, rates and per-candidate match flags; no AIS ship position or identity is published).",
+ "passes": [
+  {
+   "area": "HKS",
+   "acquired_utc": "2026-11-03T10:32:47Z",
+   "platform": "sentinel-1d",
+   "relative_orbit": 11,
+   "orbit_direction": "ascending",
+   "recorded_window_utc": [
+    "2026-11-03T10:13:03Z",
+    "2026-11-03T10:53:03Z"
+   ],
+   "evaluated_utc": "2026-11-04T00:29:59Z",
+   "status": "evaluated",
+   "t_center_utc": "2026-11-03T10:33:03Z",
+   "osm_obstacles": true,
+   "ais": {
+    "ships_with_positions": 122,
+    "ships_usable": 73,
+    "ships_reference": 5,
+    "excluded": {
+     "no_length": 38,
+     "stale": 49,
+     "motion_unknown": 0,
+     "outside_seen": 0,
+     "near_coast": 30,
+     "static": 0
+    },
+    "messages": 639
+   },
+   "candidates": {
+    "n": 213,
+    "n_v2": 208,
+    "by_ais": {
+     "200": {
+      "matched": 4,
+      "unmatched": 35,
+      "no_ais_coverage": 174
+     },
+     "300": {
+      "matched": 5,
+      "unmatched": 34,
+      "no_ais_coverage": 174
+     }
+    }
+   },
+   "detection": {
+    "v1": {
+     "200": {
+      "ge100": {
+       "n": 1,
+       "hit": 1
+      },
+      "50_100": {
+       "n": 4,
+       "hit": 1
+      }
+     },
+     "300": {
+      "ge100": {
+       "n": 1,
+       "hit": 1
+      },
+      "50_100": {
+       "n": 4,
+       "hit": 1
+      }
+     }
+    },
+    "v2": {
+     "200": {
+      "ge100": {
+       "n": 1,
+       "hit": 1
+      },
+      "50_100": {
+       "n": 4,
+       "hit": 1
+      }
+     },
+     "300": {
+      "ge100": {
+       "n": 1,
+       "hit": 1
+      },
+      "50_100": {
+       "n": 4,
+       "hit": 1
+      }
+     }
+    }
+   },
+   "length_diff_m": {
+    "v1": {
+     "50_100": {
+      "100": 1
+     },
+     "ge100": {
+      "-30": 1
+     }
+    },
+    "v2": {
+     "50_100": {
+      "100": 1
+     },
+     "ge100": {
+      "100": 1
+     }
+    }
+   },
+   "rv_s": 120.0
+  }
+ ]
 }

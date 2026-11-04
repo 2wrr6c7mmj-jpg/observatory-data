@@ -1,0 +1,1498 @@
+{
+ "version": "ais-eval-1",
+ "passes": {
+  "2026-11-03T10:32:47Z": [
+   {
+    "lon": 113.87455,
+    "lat": 22.29223,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.09666,
+    "lat": 22.29027,
+    "ais_200": "matched",
+    "ais_300": "matched",
+    "ais_length_band": "ge100"
+   },
+   {
+    "lon": 114.36758,
+    "lat": 22.28715,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.79934,
+    "lat": 22.28521,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.11877,
+    "lat": 22.27219,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.83341,
+    "lat": 22.27107,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.09928,
+    "lat": 22.26349,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.81404,
+    "lat": 22.25884,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.80259,
+    "lat": 22.25766,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.7412,
+    "lat": 22.25229,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.7289,
+    "lat": 22.25293,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.80864,
+    "lat": 22.25123,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.31474,
+    "lat": 22.24947,
+    "ais_200": "matched",
+    "ais_300": "matched",
+    "ais_length_band": "50_100"
+   },
+   {
+    "lon": 113.79025,
+    "lat": 22.24496,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.09187,
+    "lat": 22.23759,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.70721,
+    "lat": 22.23296,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.79553,
+    "lat": 22.22775,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.82393,
+    "lat": 22.22412,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.79718,
+    "lat": 22.22246,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.80483,
+    "lat": 22.22185,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.76638,
+    "lat": 22.22072,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.36295,
+    "lat": 22.21603,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.32806,
+    "lat": 22.21377,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.80048,
+    "lat": 22.21362,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78626,
+    "lat": 22.20342,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.49947,
+    "lat": 22.20357,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.16687,
+    "lat": 22.20026,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78205,
+    "lat": 22.19616,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78335,
+    "lat": 22.19219,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.19794,
+    "lat": 22.18331,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.47606,
+    "lat": 22.18139,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.98486,
+    "lat": 22.1772,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.88145,
+    "lat": 22.1742,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.15791,
+    "lat": 22.17217,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.19419,
+    "lat": 22.16924,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.83972,
+    "lat": 22.16907,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.04622,
+    "lat": 22.16866,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78386,
+    "lat": 22.16823,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.82161,
+    "lat": 22.16835,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.17554,
+    "lat": 22.1664,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.12368,
+    "lat": 22.16562,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.1658,
+    "lat": 22.16575,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.13345,
+    "lat": 22.16561,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.11434,
+    "lat": 22.16493,
+    "ais_200": "matched",
+    "ais_300": "matched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.97499,
+    "lat": 22.16384,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.14534,
+    "lat": 22.16297,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78575,
+    "lat": 22.15865,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.12452,
+    "lat": 22.15807,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.16902,
+    "lat": 22.15771,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.16008,
+    "lat": 22.15671,
+    "ais_200": "matched",
+    "ais_300": "matched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.79436,
+    "lat": 22.15639,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.7731,
+    "lat": 22.15594,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.76723,
+    "lat": 22.15593,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.76115,
+    "lat": 22.15383,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.80489,
+    "lat": 22.15192,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.76676,
+    "lat": 22.14777,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78287,
+    "lat": 22.14754,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.91118,
+    "lat": 22.14635,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.13182,
+    "lat": 22.1441,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.44336,
+    "lat": 22.14275,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78166,
+    "lat": 22.14126,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.06703,
+    "lat": 22.14068,
+    "ais_200": "unmatched",
+    "ais_300": "matched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.33491,
+    "lat": 22.13993,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.49903,
+    "lat": 22.13892,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.25497,
+    "lat": 22.13752,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.79018,
+    "lat": 22.13783,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.7933,
+    "lat": 22.13719,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.77616,
+    "lat": 22.13347,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.98973,
+    "lat": 22.13076,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.40641,
+    "lat": 22.13021,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.78507,
+    "lat": 22.12953,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.77373,
+    "lat": 22.12926,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.10273,
+    "lat": 22.12626,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.93087,
+    "lat": 22.12293,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.79431,
+    "lat": 22.1216,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.14951,
+    "lat": 22.11933,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.42952,
+    "lat": 22.11793,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.12549,
+    "lat": 22.11732,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.15987,
+    "lat": 22.11258,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.26463,
+    "lat": 22.10797,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.48162,
+    "lat": 22.10804,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.32661,
+    "lat": 22.10804,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.96918,
+    "lat": 22.10442,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.9023,
+    "lat": 22.1009,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.77165,
+    "lat": 22.09916,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.89149,
+    "lat": 22.09905,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.00924,
+    "lat": 22.09883,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.00271,
+    "lat": 22.09681,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.87333,
+    "lat": 22.09536,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.90759,
+    "lat": 22.09409,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.00766,
+    "lat": 22.09031,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.89491,
+    "lat": 22.08945,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.45508,
+    "lat": 22.08918,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.01431,
+    "lat": 22.08889,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.43288,
+    "lat": 22.08729,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.90465,
+    "lat": 22.08659,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.00111,
+    "lat": 22.08673,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.87204,
+    "lat": 22.08537,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.01388,
+    "lat": 22.0851,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.88213,
+    "lat": 22.08334,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.91458,
+    "lat": 22.0826,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.89398,
+    "lat": 22.0815,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.7031,
+    "lat": 22.08059,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.86872,
+    "lat": 22.07676,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.74567,
+    "lat": 22.07752,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.98776,
+    "lat": 22.07679,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.90949,
+    "lat": 22.07466,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.89792,
+    "lat": 22.07389,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.74312,
+    "lat": 22.07323,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.07316,
+    "lat": 22.07279,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.87953,
+    "lat": 22.07167,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.05463,
+    "lat": 22.06949,
+    "ais_200": "unmatched",
+    "ais_300": "unmatched",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.90726,
+    "lat": 22.06711,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.73998,
+    "lat": 22.06588,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.89892,
+    "lat": 22.06449,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.87479,
+    "lat": 22.06359,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.88498,
+    "lat": 22.06431,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.21196,
+    "lat": 22.06181,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.75209,
+    "lat": 22.06013,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.26026,
+    "lat": 22.0585,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.94221,
+    "lat": 22.05402,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.75438,
+    "lat": 22.05296,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.1014,
+    "lat": 22.04803,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.4263,
+    "lat": 22.04857,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.18888,
+    "lat": 22.04763,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.12842,
+    "lat": 22.04598,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.16334,
+    "lat": 22.04553,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.17104,
+    "lat": 22.04472,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.1104,
+    "lat": 22.04456,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.14171,
+    "lat": 22.04384,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.75225,
+    "lat": 22.03899,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.74497,
+    "lat": 22.03858,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.82288,
+    "lat": 22.03779,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.98048,
+    "lat": 22.03707,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.1498,
+    "lat": 22.03576,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.14776,
+    "lat": 22.03479,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.13178,
+    "lat": 22.03252,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.15402,
+    "lat": 22.02578,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.10196,
+    "lat": 22.02463,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.96467,
+    "lat": 22.01762,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.12534,
+    "lat": 22.01525,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.44254,
+    "lat": 22.01444,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.95837,
+    "lat": 22.01323,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.93024,
+    "lat": 22.01231,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.06697,
+    "lat": 22.00841,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.11163,
+    "lat": 22.0085,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.73328,
+    "lat": 22.00589,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.27546,
+    "lat": 21.99794,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.90328,
+    "lat": 21.98793,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.44803,
+    "lat": 21.98707,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.98647,
+    "lat": 21.98231,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.95439,
+    "lat": 21.97386,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.97411,
+    "lat": 21.96761,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.99639,
+    "lat": 21.9674,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.49879,
+    "lat": 21.96217,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.00939,
+    "lat": 21.95574,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.921,
+    "lat": 21.95333,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.98923,
+    "lat": 21.95098,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.81805,
+    "lat": 21.9433,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.12722,
+    "lat": 21.94244,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.47417,
+    "lat": 21.93305,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.90401,
+    "lat": 21.93031,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.20939,
+    "lat": 21.92656,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.77067,
+    "lat": 21.91844,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.92721,
+    "lat": 21.91625,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.44794,
+    "lat": 21.90627,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.97649,
+    "lat": 21.90465,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.94864,
+    "lat": 21.90246,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.29838,
+    "lat": 21.90215,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.88314,
+    "lat": 21.8868,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.3828,
+    "lat": 21.87192,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.30745,
+    "lat": 21.851,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.00198,
+    "lat": 21.85115,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.74104,
+    "lat": 21.84136,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.49478,
+    "lat": 21.84156,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.46202,
+    "lat": 21.83011,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.40292,
+    "lat": 21.824,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.48805,
+    "lat": 21.79915,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.3059,
+    "lat": 21.79291,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.27239,
+    "lat": 21.79205,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.43096,
+    "lat": 21.78454,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.84651,
+    "lat": 21.76807,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.82784,
+    "lat": 21.75579,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.91919,
+    "lat": 21.72456,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.47166,
+    "lat": 21.71083,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.31497,
+    "lat": 21.6971,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.10997,
+    "lat": 21.6953,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.74058,
+    "lat": 21.6944,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.33372,
+    "lat": 21.68626,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.4816,
+    "lat": 21.67868,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.28765,
+    "lat": 21.66662,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.30242,
+    "lat": 21.66568,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.81364,
+    "lat": 21.65734,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.20829,
+    "lat": 21.65639,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.74929,
+    "lat": 21.65216,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.39019,
+    "lat": 21.64204,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.42159,
+    "lat": 21.62827,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.2442,
+    "lat": 21.62504,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.9609,
+    "lat": 21.61584,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.75764,
+    "lat": 21.60951,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.26607,
+    "lat": 21.59685,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.48113,
+    "lat": 21.57718,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.88368,
+    "lat": 21.55849,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.76258,
+    "lat": 21.54809,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 113.86572,
+    "lat": 21.54708,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.17787,
+    "lat": 21.50596,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.46914,
+    "lat": 21.50417,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.52601,
+    "lat": 22.29915,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.5314,
+    "lat": 22.18815,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.52108,
+    "lat": 22.06397,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.50919,
+    "lat": 21.82539,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.52864,
+    "lat": 21.81937,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   },
+   {
+    "lon": 114.52356,
+    "lat": 21.79093,
+    "ais_200": "no_ais_coverage",
+    "ais_300": "no_ais_coverage",
+    "ais_length_band": null
+   }
+  ]
+ }
+}
