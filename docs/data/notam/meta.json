@@ -1,0 +1,93 @@
+{
+ "dataset": "notam",
+ "version": "military-1",
+ "title": "東アジアの軍事演習・射撃・発射・危険区域の NOTAM と航行警報（NOTAM Watch 経由）",
+ "retrieved_utc": "2026-11-04T00:41:24Z",
+ "evaluated_at_utc": "2026-11-04T00:41:23Z",
+ "source_snapshot": {
+  "site": "https://notam-watch.pages.dev/",
+  "file": "snapshot-c39ebd4eec3bbaef.json",
+  "sha256": "c39ebd4eec3bbaef2eaa48937804b85a33d4c9fb96a27045a9c7f747e5e01bbf",
+  "built_utc": "2026-11-03T23:14:38.521Z",
+  "counts": {
+   "aviation": 3239,
+   "maritime": 5067
+  },
+  "via": "gzip, 1 file(s)"
+ },
+ "source": {
+  "name": "NOTAM Watch（notam-watch.pages.dev）が公開する航空 NOTAM と航行警報",
+  "origin": "航空：各国の航空当局が出した NOTAM（FAA NOTAM Search 経由）。海上：海上保安庁の航行警報、中国海事局の航行警告、台湾・韓国・フィリピン等の水路当局の告知など。各項目の source に NOTAM Watch が示す元の出典を記載",
+  "position": "公式の告知。演習・射撃・発射などを予告するもので、実施を示すものではない"
+ },
+ "files": {
+  "military.json": "条件に合う告知の一覧（items）。meta.json：本ファイル"
+ },
+ "counts": {
+  "total": 1223,
+  "by_category": {
+   "launch": 18,
+   "firing": 480,
+   "exercise": 125,
+   "military": 88,
+   "gnss": 1,
+   "danger_area": 511
+  },
+  "by_dataset": {
+   "aviation": 765,
+   "maritime": 458
+  },
+  "by_status": {
+   "active": 525,
+   "upcoming": 263,
+   "unknown": 435
+  },
+  "with_launch_ref": 10
+ },
+ "region": {
+  "lat_min": 0,
+  "lat_max": 50,
+  "lon_min": 100,
+  "lon_max": 150,
+  "note": "区域の頂点（円は中心）のどれかがこの範囲内にあれば採る。図形がない場合は航空は Q 行の座標、海上は発出元の国（JP・CN・TW・KR・KP・PH・VN）で判断し、area.basis に記す"
+ },
+ "period": "取得時点で有効なもの（status=active）と、30日以内に有効になるもの（upcoming）。期間を確定できないもの（unknown）も含める。取消済みと、分かっている期間がすべて過去のものは除く。時刻は UTC",
+ "time_rules": {
+  "aviation": "B)・C) 欄（NOTAM Watch の start/end）。D) 欄の時間帯は valid.schedule に原文のまま",
+  "maritime": "NOTAM Watch が本文から解釈した期間（staticSchedule）を、NOTAM Watch と同じ判定（notam/vendor/maritime-window.mjs）で現在時刻に当てる。start_utc/end_utc は分かっている期間の最初と最後、periods に個別の期間",
+  "basis": {
+   "item": "告知の開始・終了",
+   "activity-period": "実施時間の期間内",
+   "validity-period": "有効期間（告知の効力の範囲）内。実施中とは限らない",
+   "period": "今後30日以内に始まる期間がある",
+   "period-unresolved": "期間の一部しか解釈できず、現在が期間内か確定できない",
+   "none": "期間を読み取れない（NOTAM Watch でも「要確認」）"
+  }
+ },
+ "classification": {
+  "categories": {
+   "launch": "ミサイル・ロケット発射（落下物の危険区域を含む）",
+   "firing": "射撃・爆撃",
+   "exercise": "軍事演習・訓練",
+   "military": "軍の活動・任務",
+   "gnss": "GPS等の電波障害",
+   "danger_area": "危険区域・制限区域の設定（Q コードのみによる。軍事と確定していない）"
+  },
+  "rules": [
+   "キーワード：NOTAM Watch の軍事タブと同じ判定（notam/vendor/aviation-activity.mjs・maritime-activity.mjs。NOTAM Watch の shared/ から変更なしで複製）。航空は E) 欄、海上は本文で判定",
+   "Q コード（航空のみ）：QWM**=firing、QWE**=exercise、QWF**=military、QWT**=military、QRD**=danger_area、QRR**=danger_area、QRP**=danger_area、QRT**=danger_area、QRM**=danger_area、QRA**=danger_area。キーワードで分類できなかった場合だけ追加する。花火・模型ロケット等の民間の語がある NOTAM と NOTAMC は除く",
+   "danger_area は Q コードだけで採ったもの。軍の使用が多いが、軍事と確定したものではない",
+   "複数に当たる場合、category は launch > firing > exercise > military > gnss > danger_area の順で最初のもの。categories にすべてを記す。basis に根拠（by=keyword / q-code / source-category）"
+  ]
+ },
+ "launch_matching": "docs/data/launches/notices.json に同じ key（\"aviation:B5829/26\" など）がある項目に launch を付ける。events.json の発射候補に含まれる場合は event_index（events の添字）と推定発射場を付ける",
+ "cautions": [
+  "0 件は警告や演習がないことを意味しない。NOTAM Watch が取得できた当局・範囲だけが対象で、取得の失敗や未対応の当局もある",
+  "告知は予定であり、実施・中止は別に確かめる必要がある",
+  "時刻・区域は NOTAM Watch の解釈による。D) 欄の時間帯や日出・日没の条件は valid.schedule と原文を確認すること",
+  "原文（original.text）が正。要約や分類は機械判定で誤りがありうる",
+  "NOTAM Watch に個別の告知を開く URL はない。notam_watch.url はサイトの入口で、id で検索する"
+ ],
+ "null_rule": "null は不明を表す（終了時刻が null で permanent=false なら終了不明）",
+ "schedule": "2時間ごと（UTC の奇数時 50 分）。NOTAM Watch の公開（偶数時 13 分から）を避ける"
+}
