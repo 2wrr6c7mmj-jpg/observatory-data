@@ -1,0 +1,395 @@
+{
+ "schemaVersion": 1,
+ "buildAt": "2026-11-04T00:13:00.000Z",
+ "aviation": {
+  "items": [
+   {
+    "id": "B5829/26",
+    "location": "RPHI",
+    "text": "B5829/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/1245N11610E038\r\nA) RPHI B) 2611201100 C) 2611231400\r\nD) 1100-1400\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n130200N 1153700E -\r\n132100N 1160400E -\r\n122800N 1164300E - \r\n121000N 1161600E -\r\n130200N 1153700E\r\n(200NM WEST OF BUSUANGA AP).\r\nF) SFC G) UNL",
+    "cancelled": false,
+    "start": 1795172400000,
+    "end": 1795442400000,
+    "permanent": false,
+    "shapes": [
+     {
+      "kind": "polygon",
+      "points": [
+       [
+        13.0333,
+        115.6167
+       ],
+       [
+        13.35,
+        116.0667
+       ],
+       [
+        12.4667,
+        116.7167
+       ],
+       [
+        12.1667,
+        116.2667
+       ],
+       [
+        13.0333,
+        115.6167
+       ]
+      ],
+      "provenance": "text"
+     }
+    ],
+    "dataset": "aviation",
+    "countries": [
+     "PH"
+    ],
+    "staticSchedule": {
+     "diagnostic": {
+      "status": "supported",
+      "raw": "1100-1400"
+     }
+    }
+   },
+   {
+    "id": "P4290/26",
+    "location": "RJJJ",
+    "text": "P4290/26 NOTAMN\r\nQ)RJJJ/QWELW/IV/BO/W/000/250/3300N13900E030\r\nA)RJJJ B)2611010000 C)2611100900\r\nE)AIR EXER WILL TAKE PLACE. SOURCE/JASDF\r\nF)SFC G)FL250",
+    "cancelled": false,
+    "start": 1793491200000,
+    "end": 1794301200000,
+    "permanent": false,
+    "shapes": [
+     {
+      "kind": "circle",
+      "points": [
+       [
+        33.0,
+        139.0
+       ]
+      ],
+      "radius": 55560,
+      "provenance": "text"
+     }
+    ],
+    "dataset": "aviation",
+    "countries": [
+     "JP"
+    ]
+   },
+   {
+    "id": "A1234/26",
+    "location": "RKRR",
+    "text": "A1234/26 NOTAMN\r\nQ)RKRR/QRTCA/IV/BO/W/000/100/3700N12600E010\r\nA)RKRR B)2611030000 C)2611060900\r\nE)TEMPO RESTRICTED AREA ACT",
+    "cancelled": false,
+    "start": 1793664000000,
+    "end": 1793955600000,
+    "permanent": false,
+    "shapes": [],
+    "dataset": "aviation",
+    "countries": [
+     "KR"
+    ]
+   },
+   {
+    "id": "A2000/26",
+    "location": "RJJJ",
+    "text": "A2000/26 NOTAMN\r\nQ)RJJJ/QWMLW/IV/BO/W/000/030/3500N13900E005\r\nA)RJJJ B)2611050900 C)2611051000\r\nE)FIREWORKS WILL TAKE PLACE",
+    "cancelled": false,
+    "start": 1793869200000,
+    "end": 1793872800000,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        35.0,
+        139.0
+       ]
+      ]
+     }
+    ],
+    "dataset": "aviation"
+   },
+   {
+    "id": "A3000/26",
+    "location": "PGZU",
+    "text": "A3000/26 NOTAMN\r\nQ)PGZU/QWMLW/IV/BO/W/000/999/1500N16000E050\r\nA)PGZU B)2611050000 C)2611060000\r\nE)MISSILE FIRING",
+    "cancelled": false,
+    "start": 1793836800000,
+    "end": 1793923200000,
+    "shapes": [
+     {
+      "kind": "circle",
+      "points": [
+       [
+        15.0,
+        160.0
+       ]
+      ],
+      "radius": 90000
+     }
+    ],
+    "dataset": "aviation"
+   },
+   {
+    "id": "A4000/26",
+    "location": "ZSHA",
+    "text": "A4000/26 NOTAMN\r\nQ)ZSHA/QWMLW/IV/BO/W/000/999/3000N12500E050\r\nA)ZSHA B)2610200000 C)2611010000\r\nE)MILITARY EXER",
+    "cancelled": false,
+    "start": 1792454400000,
+    "end": 1793491200000,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        30.0,
+        125.0
+       ]
+      ]
+     }
+    ],
+    "dataset": "aviation"
+   },
+   {
+    "id": "A5000/26",
+    "location": "ZSHA",
+    "text": "A5000/26 NOTAMN\r\nQ)ZSHA/QWELW/IV/BO/W/000/999/3000N12500E050\r\nA)ZSHA B)2612200000 C)2612210000\r\nE)MILITARY EXER",
+    "cancelled": false,
+    "start": 1797724800000,
+    "end": 1797811200000,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        30.0,
+        125.0
+       ]
+      ]
+     }
+    ],
+    "dataset": "aviation"
+   },
+   {
+    "id": "A6000/26",
+    "location": "RCAA",
+    "text": "A6000/26 NOTAMN\r\nQ)RCAA/QWMLW/IV/BO/W/000/999/2300N12000E050\r\nA)RCAA B)2611040000 C)2611050000\r\nE)GUN FRNG",
+    "cancelled": true,
+    "start": 1793750400000,
+    "end": 1793836800000,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        23.0,
+        120.0
+       ]
+      ]
+     }
+    ],
+    "dataset": "aviation"
+   },
+   {
+    "id": "V3389/26",
+    "location": "RJJJ",
+    "text": "V3389/26 NOTAMN\r\nQ)RJJJ/QOLAS/IV/M/E/000/007/3352N13439E005\r\nA)RJJJ B)2609022130 C)2612021600\r\nE)OBST LGT U/S",
+    "cancelled": false,
+    "start": 1788384600000,
+    "end": 1796227200000,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        33.86,
+        134.65
+       ]
+      ]
+     }
+    ],
+    "dataset": "aviation"
+   }
+  ]
+ },
+ "maritime": {
+  "items": [
+   {
+    "id": "闽航警0612/26",
+    "location": "",
+    "text": "台湾海峡 2026年11月6日0800时至1800时 进行实弹射击，禁止驶入。",
+    "cancelled": false,
+    "start": 1793923200000,
+    "end": 1793959200000,
+    "shapes": [
+     {
+      "kind": "polygon",
+      "points": [
+       [
+        24.5,
+        119.0
+       ],
+       [
+        24.5,
+        119.5
+       ],
+       [
+        24.0,
+        119.5
+       ],
+       [
+        24.0,
+        119.0
+       ]
+      ]
+     }
+    ],
+    "sourceName": "福建海事局",
+    "sourceUrl": "https://www.fj.msa.gov.cn/",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ]
+   },
+   {
+    "id": "NAVAREA XI 9999/26",
+    "location": "",
+    "text": "射撃訓練を実施する。区域は本文参照。",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [],
+    "sourceName": "海上保安庁 NAVAREA XI",
+    "sourceUrl": "https://www1.kaiho.mlit.go.jp/TUHO/keiho/navarea11.html",
+    "sourceCountry": "JP",
+    "dataset": "maritime",
+    "countries": [
+     "JP"
+    ],
+    "staticSchedule": {
+     "requiresReview": true
+    }
+   },
+   {
+    "id": "渝航通〔2026〕0194号",
+    "location": "",
+    "text": "禁航进行趸船抛锚及定位。",
+    "cancelled": false,
+    "start": 1793750400000,
+    "end": 1794096000000,
+    "shapes": [],
+    "sourceName": "重庆海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ]
+   },
+   {
+    "id": "HN177/2026",
+    "text": "HN177/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-36.00N 110-55.80E FROM 1232 UTC TO 1432 UTC DAILY FROM 23 TO 24 SEP. ENTERING PROHIBITED. HAINAN MSA CHINA.",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [
+     {
+      "kind": "circle",
+      "points": [
+       [
+        19.6,
+        110.93
+       ]
+      ],
+      "radius": 10000
+     }
+    ],
+    "sourceName": "清澜海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ],
+    "staticSchedule": {
+     "periods": [
+      {
+       "start": 1790166720000,
+       "end": 1790173920000
+      },
+      {
+       "start": 1790253120000,
+       "end": 1790260320000
+      }
+     ],
+     "requiresReview": true
+    }
+   },
+   {
+    "id": "辽航警0901/26",
+    "text": "黄海北部 军事演习 11月3日至11月8日。禁止驶入。",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        38.5,
+        122.5
+       ]
+      ]
+     }
+    ],
+    "sourceName": "大连海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ],
+    "staticSchedule": {
+     "validityPeriods": [
+      {
+       "start": 1793635200000,
+       "end": 1794153600000
+      }
+     ],
+     "requiresReview": true
+    }
+   },
+   {
+    "id": "琼航警0950/26",
+    "text": "南海 实弹射击 11月15日0800时至1700时。",
+    "cancelled": false,
+    "start": null,
+    "end": null,
+    "shapes": [
+     {
+      "kind": "point",
+      "points": [
+       [
+        18.0,
+        109.0
+       ]
+      ]
+     }
+    ],
+    "sourceName": "三亚海事局",
+    "sourceCountry": "CN",
+    "dataset": "maritime",
+    "countries": [
+     "CN"
+    ],
+    "staticSchedule": {
+     "periods": [
+      {
+       "start": 1794700800000,
+       "end": 1794733200000
+      }
+     ]
+    }
+   }
+  ]
+ }
+}
