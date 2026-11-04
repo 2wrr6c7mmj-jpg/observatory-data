@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-04T11:34:28Z",
+ "generated_utc": "2026-11-04T11:34:53Z",
  "state": "alert",
  "summary": {
   "ok": 3,
@@ -707,7 +707,7 @@
     {
      "level": "alert",
      "code": "failed",
-     "text": "workflow_run の実行 2026-11-04T07:38:55Z が failure（3 回続けて）"
+     "text": "workflow_run の実行 2026-11-04T11:34:20Z が failure（4 回続けて）"
     }
    ],
    "last_success_started_utc": "2026-11-02T11:41:10Z",
@@ -715,11 +715,11 @@
    "last_scheduled": {
     "id": 41821984883,
     "started_utc": "2026-11-04T11:34:20Z",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41821984883"
    },
-   "consecutive_failures": 3
+   "consecutive_failures": 4
   },
   {
    "file": "ocean-monitor.yml",
