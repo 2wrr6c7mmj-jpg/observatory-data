@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-04T11:34:53Z",
+ "generated_utc": "2026-11-04T13:16:06Z",
  "state": "alert",
  "summary": {
   "ok": 3,
@@ -70,8 +70,8 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-03T13:00:22Z",
-   "heartbeat_age_h": 22.6,
+   "heartbeat_utc": "2026-11-04T13:12:29Z",
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -79,23 +79,8 @@
    "reasons": [
     {
      "level": "warn",
-     "code": "scene_old",
-     "text": "ZJG：最新の撮影 2026-10-26 から 9 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
      "code": "orbit_gap",
      "text": "ZJG：撮影の抜け ro84 10-27（同じ軌道 12 日ごとの期待に対して）"
-    },
-    {
-     "level": "warn",
-     "code": "orbit_gap",
-     "text": "ZJG：撮影の抜け ro157 11-01（同じ軌道 6 日ごとの期待に対して）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "SYL：最新の撮影 2026-10-26 から 9 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -110,9 +95,9 @@
    ],
    "values": {
     "latest_acquired_utc": "2026-11-02T09:56:32Z",
-    "last_run_utc": "2026-11-03T13:00:22Z",
+    "last_run_utc": "2026-11-04T13:12:29Z",
     "last_run_errors": 0,
-    "last_run_scenes": 7
+    "last_run_scenes": 2
    }
   },
   {
@@ -121,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 47.9,
+   "heartbeat_age_h": 49.6,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -130,7 +115,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後に成功した取得から 48 h（>30 h：遅延）"
+     "text": "最後に成功した取得から 50 h（>30 h：遅延）"
     },
     {
      "level": "warn",
@@ -155,7 +140,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 43.1,
+   "heartbeat_age_h": 44.8,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 2,
@@ -164,7 +149,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後に成功した取得から 43 h（>30 h：遅延）"
+     "text": "最後に成功した取得から 45 h（>30 h：遅延）"
     },
     {
      "level": "warn",
@@ -210,7 +195,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 51.7,
+   "heartbeat_age_h": 53.4,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 8,
@@ -219,7 +204,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の再構築（built_utc）から 52 h（>30 h：遅延）"
+     "text": "最後の再構築（built_utc）から 53 h（>30 h：遅延）"
     }
    ],
    "values": {
@@ -234,7 +219,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 51.7,
+   "heartbeat_age_h": 53.4,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -243,12 +228,12 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の作成（generated_utc）から 52 h（>30 h：遅延）"
+     "text": "最後の作成（generated_utc）から 53 h（>30 h：遅延）"
     },
     {
      "level": "warn",
      "code": "notam_watch_old",
-     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（52 h 前、>30 h：NOTAM Watch 側が古い）"
+     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（53 h 前、>30 h：NOTAM Watch 側が古い）"
     }
    ],
    "values": {
@@ -263,7 +248,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 47.9,
+   "heartbeat_age_h": 49.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -301,27 +286,27 @@
     "trial": true,
     "mask_version": "ZJG-land-v2",
     "est1": {
-     "acquired_utc": "2026-10-26T10:48:45Z",
+     "acquired_utc": "2026-11-01T10:49:01Z",
      "version": "est-1",
-     "mode": 35,
-     "p10": 30,
-     "p90": 41,
-     "warship_mode": 22,
-     "warship_p10": 18,
-     "warship_p90": 25,
+     "mode": 23,
+     "p10": 20,
+     "p90": 28,
+     "warship_mode": 17,
+     "warship_p10": 14,
+     "warship_p90": 19,
      "credibility": 3,
-     "in_sample": "tuning"
+     "in_sample": ""
     },
     "est2": {
-     "acquired_utc": "2026-10-26T10:48:45Z",
+     "acquired_utc": "2026-11-01T10:49:01Z",
      "version": "est-2.1",
-     "warship_median": 20,
-     "warship_p10": 17,
-     "warship_p90": 24,
-     "ships_median": 36,
-     "ships_p10": 33,
-     "ships_p90": 40,
-     "in_sample": "tuning"
+     "warship_median": 14,
+     "warship_p10": 11,
+     "warship_p90": 18,
+     "ships_median": 30,
+     "ships_p10": 28,
+     "ships_p90": 34,
+     "in_sample": ""
     }
    },
    {
@@ -654,15 +639,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-03T12:52:05Z",
+   "last_success_started_utc": "2026-11-04T13:04:22Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41639324076,
-    "started_utc": "2026-11-03T12:52:05Z",
+    "id": 41834766425,
+    "started_utc": "2026-11-04T13:04:22Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41639324076",
-    "delay_h": 7.6
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41834766425",
+    "delay_h": 7.8
    },
    "consecutive_failures": 0
   },
@@ -748,19 +733,19 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 96.353,
-   "usage_csv_requests": 257,
-   "usage_csv_runs": 7,
-   "status_month_pu_before": 83.356,
-   "status_last_run_utc": "2026-11-03T13:00:22Z",
-   "usage_csv_pu_before_last_run": 83.356,
+   "usage_csv_pu": 101.409,
+   "usage_csv_requests": 285,
+   "usage_csv_runs": 8,
+   "status_month_pu_before": 96.353,
+   "status_last_run_utc": "2026-11-04T13:12:29Z",
+   "usage_csv_pu_before_last_run": 96.353,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
   "gaps": [
    {
     "relative_orbit": 157,
-    "expected_utc": "2026-10-20T10:48:45Z",
+    "expected_utc": "2026-10-20T10:49:01Z",
     "interval_days": 6,
     "site_id": "ZJG",
     "level": "info"
@@ -771,32 +756,25 @@
     "interval_days": 12,
     "site_id": "ZJG",
     "level": "warn"
-   },
-   {
-    "relative_orbit": 157,
-    "expected_utc": "2026-11-01T10:48:45Z",
-    "interval_days": 6,
-    "site_id": "ZJG",
-    "level": "warn"
    }
   ],
   "latest_scene": {
    "ZJG": {
-    "acquired_utc": "2026-10-26T10:48:45Z",
-    "platform": "sentinel-1c",
+    "acquired_utc": "2026-11-01T10:49:01Z",
+    "platform": "sentinel-1d",
     "relative_orbit": 157,
-    "coverage": 0.994,
+    "coverage": 0.998,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "ZJG-land-v2"
    },
    "SYL": {
-    "acquired_utc": "2026-10-26T10:48:16Z",
-    "platform": "sentinel-1c",
+    "acquired_utc": "2026-11-01T10:48:32Z",
+    "platform": "sentinel-1d",
     "relative_orbit": 157,
-    "coverage": 0.998,
-    "result": "counted",
-    "quay_result": "counted",
+    "coverage": 0.0,
+    "result": "skipped_low_coverage",
+    "quay_result": "skipped",
     "mask_version": "SYL-land-v2"
    },
    "SLP": {
