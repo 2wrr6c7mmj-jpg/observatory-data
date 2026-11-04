@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-03T19:26:42Z",
+ "generated_utc": "2026-11-04T00:29:51Z",
  "state": "alert",
  "summary": {
   "ok": 3,
@@ -71,16 +71,16 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-03T13:00:22Z",
-   "heartbeat_age_h": 6.4,
+   "heartbeat_age_h": 11.5,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "ZJG：最新の撮影 2026-10-26 から 8 日（撮影の抜け）"
+     "text": "ZJG：最新の撮影 2026-10-26 から 9 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -95,17 +95,17 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SYL：最新の撮影 2026-10-26 から 8 日（撮影の抜け）"
+     "text": "SYL：最新の撮影 2026-10-26 から 9 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SLP：最新の撮影 2026-10-26 から 8 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-10-26 から 9 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "STU：最新の撮影 2026-10-24 から 10 日（撮影の抜け）"
+     "text": "STU：最新の撮影 2026-10-24 から 11 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -121,7 +121,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 31.8,
+   "heartbeat_age_h": 36.8,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -130,7 +130,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後に成功した取得から 32 h（>30 h：遅延）"
+     "text": "最後に成功した取得から 37 h（>30 h：遅延）"
     },
     {
      "level": "warn",
@@ -155,12 +155,17 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 26.9,
+   "heartbeat_age_h": 32.0,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 2,
    "state": "warn",
    "reasons": [
+    {
+     "level": "warn",
+     "code": "heartbeat_late",
+     "text": "最後に成功した取得から 32 h（>30 h：遅延）"
+    },
     {
      "level": "warn",
      "code": "data_old",
@@ -205,7 +210,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 35.6,
+   "heartbeat_age_h": 40.7,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 8,
@@ -214,7 +219,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の再構築（built_utc）から 36 h（>30 h：遅延）"
+     "text": "最後の再構築（built_utc）から 41 h（>30 h：遅延）"
     }
    ],
    "values": {
@@ -229,21 +234,21 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 35.6,
+   "heartbeat_age_h": 40.7,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の作成（generated_utc）から 36 h（>30 h：遅延）"
+     "text": "最後の作成（generated_utc）から 41 h（>30 h：遅延）"
     },
     {
      "level": "warn",
      "code": "notam_watch_old",
-     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（36 h 前、>30 h：NOTAM Watch 側が古い）"
+     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（41 h 前、>30 h：NOTAM Watch 側が古い）"
     }
    ],
    "values": {
@@ -258,7 +263,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 31.8,
+   "heartbeat_age_h": 36.8,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -726,15 +731,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-03T01:45:15Z",
+   "last_success_started_utc": "2026-11-04T00:11:17Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41561776814,
-    "started_utc": "2026-11-03T01:45:15Z",
+    "id": 41744930106,
+    "started_utc": "2026-11-04T00:11:17Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41561776814",
-    "delay_h": 6.1
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41744930106",
+    "delay_h": 4.5
    },
    "consecutive_failures": 0
   }
