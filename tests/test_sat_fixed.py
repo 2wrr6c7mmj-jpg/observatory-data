@@ -1,4 +1,4 @@
-"""fix-1: fixed objects and the pier/ship decision in the ports, against the empty-berth baseline (synthetic)."""
+"""fix-1 / fix-2: fixed objects and the pier/ship decision in the ports, against the empty-berth baseline (synthetic)."""
 from __future__ import annotations
 
 import unittest
@@ -110,6 +110,147 @@ class FixedTest(unittest.TestCase):
         doc = satchips.scene_doc({"id": "X"}, g, row, feats, (400, 450), None, "X-land-v1")
         c = doc["candidates"][0]
         self.assertEqual((c["ship_conf"], c["rise_db"]), ("high", 9.1))
+
+
+# fixed_eval/out/margin.csv (2部、2026-11-06): the 8 candidates of 60 m and more on naval berths that are bright in the
+# baseline and did not rise (base >= 8, rise < 3); fix-1 keeps them only because p90 - p10 is 0-2 dB over 3.5.
+# (site, lon, lat, length_m, base_db, rise_db, spread_db)
+MARGIN_8 = [
+    ("QGZ", 119.963946, 35.741315, 187, 12.0, 2.8, 3.5),
+    ("ZJG", 110.433462, 21.210922, 68, 30.0, 2.4, 3.5),
+    ("ZDH", 122.006476, 30.024359, 118, 13.4, 1.6, 3.6),
+    ("QJG", 120.59533, 36.103067, 102, 14.2, 2.0, 3.8),
+    ("ZJG", 110.433621, 21.211177, 96, 29.2, 1.8, 4.0),
+    ("ZJG", 110.433353, 21.210815, 118, 28.4, 1.2, 4.0),
+    ("SYL", 109.545125, 18.223845, 106, 18.8, 2.7, 4.8),
+    ("SYL", 109.553173, 18.229887, 88, 24.2, 1.5, 5.5),
+]
+WP10 = -22.0
+
+
+def flat(base_db, rise_db, spread_db, h=20, w=20):
+    """Uniform rasters with these base / rise / spread (uniform, so the 3x3 mean changes nothing)."""
+    p10 = np.full((h, w), WP10 + base_db)
+    return np.full((h, w), WP10 + base_db + rise_db), {"vv_p10": p10, "vv_p90": p10 + spread_db, "vh_p10": p10 - 7}
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class GuardTest(unittest.TestCase):
+    """fix-2's guard (2部の設計書 fixed_eval 4.2 の 3): a structure by fix-1's test is kept on a naval berth when 60 m
+    and more (or a piece near such a candidate) and at a shipyard; the decision is recorded either way."""
+
+    def setUp(self):
+        self.meta = {"water_vv_p10_median_db": WP10}
+
+    def cands(self, *specs):
+        return [{"rmin": 5, "rmax": 7, "cmin": 5, "cmax": 15, "pixels": 33, "vh_ratio_db": 2.0, "contrast_vv_db": 20.0,
+                 "lon": lon, "lat": lat, "length_m": ln} for lon, lat, ln in specs]
+
+    def test_versions_by_date(self):
+        self.assertIsNone(fixed.version_for("2026-11-04T23:59:59Z"))
+        self.assertEqual(fixed.version_for(fixed.FIX2_SINCE + "T00:00:00Z"), "fix-2")
+        if fixed.FIX2_SINCE > fixed.SINCE_UTC:
+            self.assertEqual(fixed.version_for(fixed.SINCE_UTC + "T10:00:00Z"), "fix-1")
+
+    def test_reasons(self):
+        dets = self.cands((110.0, 21.0, 120), (110.0005, 21.0, 40), (110.0030, 21.0, 40), (110.0, 21.002, 200),
+                          (110.0, 21.004, 59))
+        ctx = [{"berth_class": "naval"}, {"berth_class": "naval"}, {"berth_class": "naval"}, {"berth_class": "civil"},
+               {"berth_class": "unknown", "yard_line": True}]
+        self.assertEqual(fixed.guard_reasons(dets, ctx), [["naval_long"], ["naval_near"], [], [], ["yard_line"]])
+        dets[0]["length_m"] = 59      # no naval candidate of 60 m left: no piece either
+        self.assertEqual(fixed.guard_reasons(dets, ctx)[:2], [[], []])
+        self.assertEqual(fixed.guard_reasons(dets[:1], [{"yard_site": True, "yard_sector": True}]),
+                         [["yard_site", "yard_sector"]])
+
+    def test_structure_is_guarded_or_excluded_and_recorded_either_way(self):
+        vv, bl = flat(20.0, 0.5, 2.0)     # a clear structure by fix-1 (spread 2 dB)
+        dets = self.cands((110.0, 21.0, 120), (110.0, 21.01, 120), (110.0, 21.02, 30))
+        ctx = [{"berth_class": "naval"}, {"berth_class": "civil"}, {"berth_class": "naval"}]
+        c1 = fixed.classify([dict(d) for d in dets], vv, bl, self.meta, None)                     # fix-1: all three
+        self.assertEqual((c1["structure"], c1["version"]), (3, "fix-1"))
+        c2 = fixed.classify(dets, vv, bl, self.meta, None, version="fix-2", guard_ctx=ctx)
+        naval, civil, small = dets
+        self.assertEqual((naval["fixed_excluded"], naval["fixed_flag"], naval["fixed_guard"], naval["ship_conf"]),
+                         ("", "guarded", "naval_long", "low"))
+        self.assertEqual((civil["fixed_excluded"], civil["fixed_flag"], civil["fixed_guard"], civil["fixed_guard_class"]),
+                         ("structure", "", "", "civil"))
+        self.assertEqual((small["fixed_excluded"], small["fixed_guard_class"]), ("structure", "naval"))
+        self.assertEqual((c2["structure"], c2["guarded"], c2["guarded_by"]["naval_long"], c2["low"], c2["version"]),
+                         (2, 1, 1, 1, "fix-2"))
+        self.assertTrue(run.at_berth(naval))
+        self.assertFalse(run.at_berth(civil))
+
+    def test_a_ship_moored_for_months_is_kept(self):
+        """模擬（設計書 6 の (2)）：a 120 m x 16 m hull +25 dB over the water, always in the baseline and there today."""
+        h, w = 60, 60
+        p10 = np.full((h, w), WP10)
+        p10[20:22, 10:22] = WP10 + 25.0                       # along the quay, 12 x 2 px of 10 m
+        p10 = fixed.smooth3_db(p10)
+        bl = {"vv_p10": p10, "vv_p90": p10 + 1.0, "vh_p10": p10 - 7}
+        vv = np.full((h, w), WP10)
+        vv[20:22, 10:22] = WP10 + 25.0
+        mk = lambda: [{"rmin": 20, "rmax": 21, "cmin": 10, "cmax": 21, "pixels": 24, "vh_ratio_db": 6.0,  # noqa: E731
+                       "contrast_vv_db": 25.0, "lon": 110.0, "lat": 21.0, "length_m": 120}]
+        d1, d2 = mk(), mk()
+        fixed.classify(d1, vv, bl, self.meta, None)
+        fixed.classify(d2, vv, bl, self.meta, None, version="fix-2", guard_ctx=[{"berth_class": "naval"}])
+        self.assertEqual(d1[0]["fixed_excluded"], "structure")
+        self.assertEqual((d2[0]["fixed_excluded"], d2[0]["fixed_flag"]), ("", "guarded"))
+
+    def test_the_8_margin_candidates_stay_even_at_6_db(self):
+        """The 8 of margin.csv on the real berth lines and classes (sat/berth_class): naval, so guarded by length;
+        with fix-1's spread threshold raised to 6 dB fix-1 drops all 8 and fix-2 none."""
+        from sat import berths, quay_lines
+        sites = {s["id"]: s for s in run.load_sites()}
+        for site_id, lon, lat, ln, base, rise, spread in MARGIN_8:
+            with self.subTest(site=site_id, lon=lon):
+                s = sites[site_id]
+                bt = berths.Berths(s, quay_lines.load(site_id, int(s.get("quay_lines_version", quay_lines.LINES_VERSION))),
+                                   naval=True)
+                (_way, cl), = bt.nearest_line([(lon, lat)], bt.keep_m)
+                self.assertEqual(cl, "naval")
+                vv, bl = flat(base, rise, spread)
+                for thr in (3.5, 6.0):
+                    d1, d2 = self.cands((lon, lat, ln)), self.cands((lon, lat, ln))
+                    fixed.classify(d1, vv, bl, self.meta, None, cfg={"spread_db": thr})
+                    fixed.classify(d2, vv, bl, self.meta, None, cfg={"spread_db": thr}, version="fix-2",
+                                   guard_ctx=[{"berth_class": cl}])
+                    self.assertEqual(d2[0]["fixed_excluded"], "")
+                    if thr == 6.0:
+                        self.assertEqual(d1[0]["fixed_excluded"], "structure")
+                        self.assertEqual((d2[0]["fixed_flag"], d2[0]["fixed_guard"]), ("guarded", "naval_long"))
+
+    def test_run_context_from_the_berth_lines_and_sectors(self):
+        """run.fixed_guard_ctx: the naval-1 class of the nearest line, the shipyard line and sector, on a real site."""
+        site = next(s for s in run.load_sites() if s["id"] == "ZJG")
+        q = run.QuayContext(site, None, None)
+        dets = [{"zone": "quay", "lon": 110.433462, "lat": 21.210922, "sector": "A"},
+                {"zone": "quay", "lon": 110.30, "lat": 21.10, "sector": "B"}]
+        ctx = run.fixed_guard_ctx(q, site, {"acquired_utc": fixed.FIX2_SINCE + "T10:00:00Z"}, dets)
+        self.assertEqual([c["berth_class"] for c in ctx], ["naval", "unknown"])
+        self.assertFalse(any(c["yard_site"] or c["yard_sector"] or c["yard_line"] for c in ctx))
+        yard = {**site, "kind": "yard", "sectors": [{**sc, "role": "dock"} for sc in site.get("sectors") or []]}
+        ctx = run.fixed_guard_ctx(run.QuayContext(yard, None, None), yard, {"acquired_utc": fixed.FIX2_SINCE + "T10:00:00Z"},
+                                  dets[:1])
+        self.assertTrue(ctx[0]["yard_site"] and ctx[0]["yard_sector"])
+        old = run.fixed_guard_ctx(q, site, {"acquired_utc": "2026-11-01T10:00:00Z"}, dets[:1])   # naval-1 not applied
+        self.assertIsNone(old[0]["berth_class"])
+
+    def test_yard_lines_of_the_class_files(self):
+        from sat import berths
+        sites = {s["id"]: s for s in run.load_sites()}
+        b = berths.Berths(sites["MAW"], {"ways": []})
+        self.assertTrue(b.yard_ways())
+        self.assertFalse(berths.Berths(sites["QGZ"], {"ways": []}).yard_ways())
+
+    def test_series_break_and_settings(self):
+        br = [b for b in run.series_breaks(run.load_sites()) if b.get("kind") == "fixed" and b.get("site_id") == "ZJG"]
+        st = fixed.settings()
+        self.assertEqual(st["version"], "fix-2")
+        self.assertEqual(st["guard"]["naval_len_m"], 60.0)
+        self.assertEqual(br[-1]["to_version"], "fix-2")
+        self.assertEqual(br[-1]["date_utc"], fixed.FIX2_SINCE)
 
 
 if __name__ == "__main__":

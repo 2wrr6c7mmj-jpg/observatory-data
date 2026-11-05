@@ -583,14 +583,25 @@ def series_breaks(sites: list[dict]) -> list[dict]:
                      f"（{SIZE_SINCE} 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。"
                      "それより前の行は書き換えないので直接比べない"),
         })
+        guard_note = (f"{ffixed.FIX2_SINCE} 以降（fix-2）は、海軍の岸壁の {ffixed.GUARD['naval_len_m']:.0f} m 以上の候補"
+                      f"（{ffixed.GUARD['near_m']:.0f} m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。"
+                      "長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。")
+        first = ffixed.VERSION if ffixed.FIX2_SINCE <= ffixed.SINCE_UTC else ffixed.FIX1_VERSION
         out.append({
             "site_id": site["id"], "kind": "fixed", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
-            "from_version": "固定物の判定なし", "to_version": ffixed.VERSION, "date_utc": ffixed.SINCE_UTC,
+            "from_version": "固定物の判定なし", "to_version": first, "date_utc": ffixed.SINCE_UTC,
             "note": (f"候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す"
                      f"（{ffixed.SINCE_UTC} 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。"
                      "外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。"
+                     + (guard_note if first == ffixed.VERSION else "") +
                      "それより前の行は書き換えないので直接比べない"),
         })
+        if first != ffixed.VERSION:
+            out.append({
+                "site_id": site["id"], "kind": "fixed", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
+                "from_version": ffixed.FIX1_VERSION, "to_version": ffixed.VERSION, "date_utc": ffixed.FIX2_SINCE,
+                "note": guard_note + "harbour_candidates・quay_candidates が guarded の分だけ増えうる。それより前の行は書き換えない",
+            })
     for site in sites:
         if not site.get("enabled") or berths.load_classes(site["id"]) is None:
             continue
@@ -1014,6 +1025,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "画素 10 m・実分解能約 20 m。接して並ぶ艦は 1 つにまとまり、大型艦は分かれることがある",
             "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
             f"固定物（桟橋の縁・係船柱・ブイ等）は {ffixed.SINCE_UTC} 以降の撮影で、空の岸壁の基準でも明るく当日も変化しない候補を外す（fix-1）。"
+            f"{ffixed.FIX2_SINCE} 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（その片を含む）と造船所の候補は外さない"
+            "（長く係留している艦を構造物として外さないため。その分、海軍の岸壁の大きな構造物は残りうる）。"
             "基準の無い軌道と、それより前の撮影では固定物も候補に数える。半年のうち 9 割以上同じ所にいる船は固定物と区別できない",
             "撮影は地点ごとに数日おき。軌道の向き・入射角で見え方が変わるため、比較は同じ相対軌道どうしで行う",
             "湛江の範囲 v2 は 2部の確定案（2026-10-30）。北端 21.265N で麻斜の桟橋群が切れていないかは次の撮影の画像で確かめる。確かめるまで公開画面の地図には出さない",
@@ -1189,6 +1202,8 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 **({"small_excluded": True} if d.get("small_excluded") else {}),
                 **({k: d.get(k) for k in ("fixed_excluded", "ship_conf", "rise_db", "rise_z", "base_db", "spread_db",
                                           "fixed_version")} if d.get("fixed_version") else {}),
+                **({k: d.get(k) for k in ("fixed_flag", "fixed_guard", "fixed_guard_class")}
+                   if d.get("fixed_version") == ffixed.VERSION else {}),
                 **({"berth_class": d["berth_class"], "naval_excluded": d.get("naval_excluded", ""),
                     "naval_version": berths.NAVAL_VERSION} if d.get("berth_class") else {}),
             },
@@ -1215,15 +1230,41 @@ def classify_windows(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict
             fwindows.ANCHORAGE: sum(d.get("window") == fwindows.ANCHORAGE for d in dets), "version": fwindows.VERSION}
 
 
+def fixed_guard_ctx(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]) -> list[dict]:
+    """fix-2's guard inputs per candidate (sat/fixed.py guard_reasons): the class of the nearest berth line as naval-1
+    gives it (quay band: keep_m; open water: the window's band_m; only when naval-1 is applied to the scene), whether that
+    line is a shipyard berth, whether the site is a yard and the candidate in a shipyard sector."""
+    ctx = [{"berth_class": None, "yard_site": site.get("kind") == "yard", "yard_sector": False, "yard_line": False}
+           for _ in dets]
+    roles = {sc["id"]: sc.get("role") for sc in site_sectors(site)}
+    for d, c in zip(dets, ctx):
+        c["yard_sector"] = roles.get(d.get("sector")) in ffixed.YARD_ROLES
+    bt = qctx.berths(True) if qctx.naval(acq["acquired_utc"]) else None
+    if bt is None or not bt.classes:
+        return ctx
+    yard = bt.yard_ways()
+    band_m = float((fwindows.config(site) or fwindows.DEFAULTS)["band_m"])
+    for zone, max_m in (("quay", bt.keep_m), ("harbour", band_m)):
+        idx = [i for i, d in enumerate(dets) if d["zone"] == zone]
+        for i, (way, cl) in zip(idx, bt.nearest_line([(dets[i]["lon"], dets[i]["lat"]) for i in idx], max_m)):
+            ctx[i]["berth_class"] = cl or "unknown"
+            ctx[i]["yard_line"] = way is not None and way in yard
+    return ctx
+
+
 def classify_fixed(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict], vv: np.ndarray) -> dict | None:
-    """fix-1 (sat/fixed.py), for every candidate of a scene from fixed.SINCE_UTC: d["fixed_excluded"] = "structure"
-    (bright when the berth is empty and nothing new today: not counted) or "" and d["ship_conf"] (high / medium / low).
-    Returns the counts, or None (rule not active)."""
-    if not ffixed.active(acq["acquired_utc"]):
+    """fix-1 / fix-2 (sat/fixed.py), for every candidate of a scene from fixed.SINCE_UTC: d["fixed_excluded"] =
+    "structure" (bright when the berth is empty and nothing new today: not counted) or "" and d["ship_conf"]
+    (high / medium / low). From fixed.FIX2_SINCE (fix-2) a structure on a naval berth of 60 m and more (or its piece) or
+    at a shipyard is kept: d["fixed_flag"] = "guarded", reasons in d["fixed_guard"]. Returns the counts, or None."""
+    version = ffixed.version_for(acq["acquired_utc"])
+    if version is None:
         return None
     bl = qctx.baseline(acq["relative_orbit"])
     water = qctx.mask == WATER if qctx.mask is not None else None
-    return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water)
+    ctx = fixed_guard_ctx(qctx, site, acq, dets) if version == ffixed.VERSION else None
+    return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water, version=version,
+                           guard_ctx=ctx)
 
 
 def mark_small(acq: dict, dets: list[dict]) -> None:
@@ -1472,7 +1513,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             band_excluded = classify_band(qctx.berths(qctx.naval(acq["acquired_utc"])), dets)
             if band_excluded is not None:
                 entry["quay_band_excluded"] = band_excluded
-            # fix-1 (from fixed.SINCE_UTC): the candidate's pixels against the empty-berth baseline (structure / ship_conf)
+            # fix-1 / fix-2 (from fixed.SINCE_UTC): the candidate's pixels against the empty-berth baseline (structure /
+            # ship_conf); fix-2 keeps a structure on a naval berth of 60 m and more or at a shipyard (guarded)
             fix = classify_fixed(qctx, site, acq, dets, vv)
             if fix is not None:
                 entry["fixed"] = fix
