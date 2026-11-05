@@ -432,7 +432,8 @@ class Store:
                 fp = f["properties"]
                 if "pair_id" in fp or pairs.get(qkey(fp)):
                     fp["pair_id"] = pairs.get(qkey(fp)) or None
-            fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4]), "features": feats}
+            in_file = [x for x in self.sites if quay_rel(x, month) == rel]
+            fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4], in_file), "features": feats}
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         for sid, zp in self.zone_priors.items():
@@ -446,16 +447,19 @@ class Store:
         self.save_sectors(est2)
         # quay/blind.geojson: the shared-layout sites (Zhanjiang) as before; a per_site site in quay/<site>/blind.geojson
         groups: dict[str, list] = {}
+        group_sites: dict[str, list] = {}
         for b in blind_summary(self.sites):
             site = self.site(b["site_id"])
             rel = f"quay/{b['site_id']}/blind.geojson" if site and layout(site) == "per_site" else "quay/blind.geojson"
             groups.setdefault(rel, []).extend(b["features"])
+            if site and site not in group_sites.setdefault(rel, []):
+                group_sites[rel].append(site)
         for rel, blind_feats in groups.items():
             if not blind_feats:
                 continue
             p = self.out / rel
             p.parent.mkdir(parents=True, exist_ok=True)
-            fc = {"type": "FeatureCollection", **quay_fc_attribution(None), "features": blind_feats}
+            fc = {"type": "FeatureCollection", **quay_fc_attribution(None, group_sites.get(rel, [])), "features": blind_feats}
             p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         if run.get("requests"):
             self.usage.append({k: run.get(k) for k in USAGE_FIELDS})
@@ -615,10 +619,39 @@ def series_breaks(sites: list[dict]) -> list[dict]:
     return out
 
 
-def quay_fc_attribution(year: str | None) -> dict:
-    """attribution / license of a quay GeoJSON: its lines follow the OSM quay lines (ODbL)."""
+def manual_line_credits(site: dict) -> list[str]:
+    """The credits of the lines drawn by hand from imagery (negative ids) in the site's quay lines, every version up to
+    the current one (a month file may hold scenes of an older version): the ``credit`` of the line's feature in the
+    manual file (sat/masks/<site>-manual.geojson), else the file's ``credit``. A drawn line without one (e.g. MAW -1,
+    taken from an OSM outline) adds nothing."""
+    out: list[str] = []
+    for v in range(1, int(site.get("quay_lines_version", quay_lines.LINES_VERSION)) + 1):
+        lines = quay_lines.load(site["id"], v)
+        ids = {w["id"] for w in (lines or {}).get("ways", []) if (w.get("id") or 0) < 0}
+        mf = ((lines or {}).get("manual") or {}).get("file")
+        if not ids or not mf:
+            continue
+        mp = ROOT / mf
+        doc = json.loads(mp.read_text(encoding="utf-8")) if mp.exists() else {}
+        for f in doc.get("features", []):
+            c = f["properties"].get("credit") or doc.get("credit")
+            if f["properties"].get("id") in ids and c and c not in out:
+                out.append(c)
+    return out
+
+
+def quay_fc_attribution(year: str | None, sites: list[dict] | tuple = ()) -> dict:
+    """attribution / license of a quay GeoJSON: its lines follow the OSM quay lines (ODbL); for the ``sites`` whose
+    quay lines hold lines drawn from imagery, their credits too (manual_line_credits)."""
     cop = f"; contains modified Copernicus Sentinel data {year}" if year else ""
-    return {"attribution": f"岸壁の線：{OSM_CREDIT}{cop}", "license": f"{OSM_LICENSE}（{OSM_CREDIT}。線の幾何は OpenStreetMap に由来）"}
+    extra: list[str] = []
+    for site in sites:
+        extra += [c for c in manual_line_credits(site) if c not in extra]
+    if not extra:
+        return {"attribution": f"岸壁の線：{OSM_CREDIT}{cop}", "license": f"{OSM_LICENSE}（{OSM_CREDIT}。線の幾何は OpenStreetMap に由来）"}
+    sat = "; ".join(extra)
+    return {"attribution": f"岸壁の線：{OSM_CREDIT}; 一部は衛星画像の目視判読：{sat}{cop}",
+            "license": f"{OSM_LICENSE}（{OSM_CREDIT}。線の幾何は OpenStreetMap に由来し、一部は衛星画像の目視判読：{sat}）"}
 
 
 _BLIND_CACHE: dict = {}

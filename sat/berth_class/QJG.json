@@ -2,7 +2,7 @@
  "site": "QJG",
  "name": "青島・姜哥荘（第 1 潜水艦基地）",
  "version": "naval-1",
- "lines_version": "QJG-quay-v2",
+ "lines_version": "QJG-quay-v3",
  "default": "unknown",
  "built_utc": "2026-11-03T06:57:41Z",
  "osm_base": "2026-11-03T06:32:08Z",
@@ -16,7 +16,8 @@
  "note": null,
  "sources": [
   "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
-  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）",
+  "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community）：港内の突堤の線 −2（sat/masks/QJG-manual.geojson）"
  ],
  "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
  "lines": [
@@ -54,17 +55,17 @@
    }
   },
   {
-   "way": -1,
+   "way": -2,
    "kind": "pier",
    "class": "naval",
    "conf": "推定",
    "added": true,
    "fixed": true,
-   "why": "潜水艦基地の港内の突堤（OSM に線が無い。手書き）",
+   "why": "潜水艦基地の港内の突堤（OSM に線が無い。v2 の手書きの −1 を衛星画像の判読で引き直した線）",
    "basis": [
     "OSM way/299397471「姜格庄基地」（landuse=military）の港内",
     "溫約瑟の地図 wen-0004「姜各莊基地(東)」（核潜水艦の基地、乾ドック・岸壁）",
-    "S2 2026-10-22 の自然色で突堤を目視（sat/masks/QJG-manual.geojson）"
+    "Esri World Imagery（2026-11-05 取得）の目視判読（判読 sat/011「斜め桟橋（潜水艦係留）」、確度 高、約 177 m のうち OSM の海岸線の根元より先の約 138 m、sat/masks/QJG-manual.geojson）。S2 2026-10-22 の目測（v2 の −1、±30 m）と同じ突堤"
    ]
   },
   {

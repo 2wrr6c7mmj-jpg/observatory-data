@@ -829,8 +829,9 @@ class AllPortsTest(unittest.TestCase):
             self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"], x["provisional"]),
                              ("naval", "trial", "per_site", False, mv, True), sid)
             self.assertIs(x["daily"], True, sid)  # mask, baselines and OSM quay lines are all in
-            # naval-1 (2026-11-03): QJG and MAW have v2 = v1 + a drawn line (id -1), a berth only from berths.NAVAL_SINCE
-            self.assertEqual(x["quay_lines_version"], 2 if sid in ("QJG", "MAW") else 1, sid)
+            # naval-1 (2026-11-03): QJG and MAW have v2 = v1 + a drawn line (id -1), a berth only from berths.NAVAL_SINCE;
+            # (2026-11-05) QDH v2 = v1 + 4 piers read from Esri World Imagery (ids -1..-4), QJG v3 = v2 with -1 redrawn as -2
+            self.assertEqual(x["quay_lines_version"], {"QJG": 3, "MAW": 2, "QDH": 2}.get(sid, 1), sid)
             self.assertEqual(x["pu_month_cap"], cap, sid)
             run.validate_site(x)
             run.validate_site(x)  # the check of a daily site

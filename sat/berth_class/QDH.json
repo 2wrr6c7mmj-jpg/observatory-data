@@ -2,7 +2,7 @@
  "site": "QDH",
  "name": "青島港内の海軍区域",
  "version": "naval-1",
- "lines_version": "QDH-quay-v1",
+ "lines_version": "QDH-quay-v2",
  "default": "unknown",
  "built_utc": "2026-11-03T06:49:59Z",
  "osm_base": "2026-11-03T06:35:07Z",
@@ -16,7 +16,8 @@
  "note": null,
  "sources": [
   "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
-  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）",
+  "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community）：OSM に無い桟橋の線（sat/masks/QDH-manual.geojson）"
  ],
  "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
  "lines": [
@@ -530,6 +531,62 @@
    },
    "added": true,
    "fixed": true
+  },
+  {
+   "way": -1,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "added": true,
+   "fixed": true,
+   "why": "海軍基地の大港の西岸（西港区）の桟橋「西港区 桟橋2（艦艇係留）」（OSM に線が無い。衛星画像の判読、約 88 m）",
+   "basis": [
+    "OSM way/979396338「中国人民解放军海军基地」（landuse=military・military=naval_base）の外形から付け根まで約 3 m（区画 A1 の中）",
+    "溫約瑟の地図 wen-0008「潛艇第一基地」（大港）",
+    "Esri World Imagery（2026-11-05 取得）の目視判読で桟橋と横付けの艦を確認（判読 sat/031、確度 高、sat/masks/QDH-manual.geojson）"
+   ]
+  },
+  {
+   "way": -2,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "added": true,
+   "fixed": true,
+   "why": "海軍基地の大港の西岸（西港区）の桟橋「西港区 桟橋3（艦艇係留）」（OSM に線が無い。衛星画像の判読、約 89 m）",
+   "basis": [
+    "OSM way/979396338「中国人民解放军海军基地」（landuse=military・military=naval_base）の外形から付け根まで約 2 m（区画 A1 の中）",
+    "溫約瑟の地図 wen-0008「潛艇第一基地」（大港）",
+    "Esri World Imagery（2026-11-05 取得）の目視判読で桟橋と横付けの艦を確認（判読 sat/032、確度 高、sat/masks/QDH-manual.geojson）"
+   ]
+  },
+  {
+   "way": -3,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "added": true,
+   "fixed": true,
+   "why": "海軍基地の大港の西岸（西港区）の桟橋「西港区 桟橋4（艦艇係留）」（OSM に線が無い。衛星画像の判読、約 88 m）",
+   "basis": [
+    "OSM way/979396338「中国人民解放军海军基地」（landuse=military・military=naval_base）の外形から付け根まで約 2 m（区画 A1 の中）",
+    "溫約瑟の地図 wen-0008「潛艇第一基地」（大港）",
+    "Esri World Imagery（2026-11-05 取得）の目視判読で桟橋と横付けの艦を確認（判読 sat/033、確度 高、sat/masks/QDH-manual.geojson）"
+   ]
+  },
+  {
+   "way": -4,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "added": true,
+   "fixed": true,
+   "why": "海軍基地の大港の西岸（西港区）の桟橋「西港区 桟橋5（艦艇係留）」（OSM に線が無い。衛星画像の判読、約 89 m）",
+   "basis": [
+    "OSM way/979396338「中国人民解放军海军基地」（landuse=military・military=naval_base）の外形から付け根まで約 2 m（区画 A1 の中）",
+    "溫約瑟の地図 wen-0008「潛艇第一基地」（大港）",
+    "Esri World Imagery（2026-11-05 取得）の目視判読で桟橋と横付けの艦を確認（判読 sat/034、確度 高、sat/masks/QDH-manual.geojson）"
+   ]
   }
  ]
 }

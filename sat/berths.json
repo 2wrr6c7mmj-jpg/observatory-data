@@ -44,9 +44,10 @@
     {"way": 43251729, "sector": "A1", "note": "潜水艦の桟橋が OSM に無く、岸壁線は海岸線だけ。区画 A1（桟橋の周り）の海岸線を手書きの線ができるまで仮に戻す（要 2部確認）"},
     {"way": 1036282785, "sector": "A1", "note": "同上"}
    ],
-   "exclude_ways": [-1],
-   "note": "手書きの突堤（QJG-quay-v2 の id −1、sat/masks/QJG-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
+   "exclude_ways": [-1, -2],
+   "note": "港内の突堤の線（QJG-quay-v3 の id −2、Esri World Imagery の目視判読 2026-11-05、sat/masks/QJG-manual.geojson。v2 の手書きの −1〔S2 の目測〕を置き換えた）は berth-1 では外し（−1 も保存済みの地物に残っていたときのため外したまま）、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
   },
+  "QDH": {"coastline": [], "exclude_ways": [-1, -2, -3, -4], "note": "西港区の桟橋 4 本（QDH-quay-v2 の id −1〜−4、Esri World Imagery の目視判読 2026-11-05、sat/masks/QDH-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QDH.json の added）から着く線にする"},
   "MAW": {"coastline": [], "exclude_ways": [-1], "note": "手書きの造船所の岸壁（MAW-quay-v2 の id −1、sat/masks/MAW-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/MAW.json の added）から着く線にする"}
  }
 }

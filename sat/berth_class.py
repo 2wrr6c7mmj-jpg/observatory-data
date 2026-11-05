@@ -26,6 +26,8 @@ is rebuilt; their ``basis`` says why.
     python -m sat.berth_class geojson [--out docs/data/sat/berth_class.geojson]
 
 Data (c) OpenStreetMap contributors, ODbL 1.0. Wen's map: 出典は docs/data/ref/wen-pla-bases.meta.json の credit.
+Lines read by eye from Esri World Imagery (QDH −1〜−4, QJG −2; 2026-11-05): Source: Esri, Vantor, Earthstar
+Geographics, and the GIS User Community (``ESRI_CREDIT`` in the published map when such a line is in it).
 """
 from __future__ import annotations
 
@@ -47,6 +49,9 @@ TOUCH_M = 40.0
 WEN_M = 600.0
 STEP_M = 20.0
 MIL_VALUES = {"naval_base", "base", "barracks", "office", "training_area", "airfield", "launchpad", "obstacle_course"}
+# lines read by eye from Esri World Imagery (sat/masks/<site>-manual.geojson; only the line positions, no imagery)
+ESRI_CREDIT = ("線の一部は Esri World Imagery の目視判読（2026-11-05）。Digitized from Esri World Imagery "
+               "(Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed")
 NAVY_LAYER = "解放軍海軍、海軍陸戰隊基地及設施"
 INDUSTRY_LAYER = "中國軍工及航天產業"
 
@@ -415,7 +420,8 @@ def geojson(sites: list[dict]) -> dict:
     return {"type": "FeatureCollection", "version": berths.NAVAL_VERSION, "since_utc": berths.NAVAL_SINCE,
             "note": ("岸壁・桟橋の線の区分（naval＝海軍、civil＝民間、unknown＝不明）。見出しの数（港内・岸壁帯の候補、岸壁の占有、est-1・est-2、赤枠）"
                      f"は {berths.NAVAL_SINCE} 以降の撮影で naval の線に沿うものだけ。区分の設定は sat/berth_class/<地点>.json、根拠は basis"),
-            "credit": ["Data © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)", wen_credit()],
+            "credit": ["Data © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)", wen_credit()]
+            + ([ESRI_CREDIT] if any("Esri" in " ".join(f["properties"]["basis"] or []) for f in feats) else []),
             "counts": counts, "features": feats}
 
 

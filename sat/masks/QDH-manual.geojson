@@ -1,0 +1,117 @@
+{
+ "type": "FeatureCollection",
+ "name": "QDH-manual",
+ "note": "OSM に無い桟橋の線（衛星画像の判読）。青島の海軍基地（OSM way/979396338「中国人民解放军海军基地」）の大港の西岸（西港区）から東へ延びる桟橋 4 本（各約 88 m、艦が横付けしているのが写っている）。位置は Esri World Imagery（2026-11-05 取得、ズーム 16〜18）の目視判読で、ずれは数 m 程度。岸壁線 QDH-quay-v2 に id −1〜−4 で入れる。naval-1（2026-11-05 以降の撮影）からだけ着く線にする（sat/berths.json の exclude_ways と sat/berth_class/QDH.json の added）。判読した線のうち、OSM の海岸線 69732009 とほぼ重なる線（南東突堤・北岸壁・南岸壁、平均 2〜8 m）は入れない（海岸線の区間が naval-1 で着く線になっている。重なった線は帯の画素を両方が持ち、占有を二重に数える）。西港区 桟橋1（sat/030）は画像の小桟橋から約 50 m 北にずれているので入れない",
+ "license": "線の位置は Esri World Imagery の目視判読（画像そのものは含まない）",
+ "credit": "Digitized from Esri World Imagery (Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -1,
+    "name": "西港区 桟橋2（艦艇係留）（付け根→先端）",
+    "kind": "pier",
+    "sat_id": "sat/031",
+    "confidence": "高",
+    "length_m": 88,
+    "source": "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18、位置のずれは数 m 程度）、判読 sat/031「西港区 桟橋2（艦艇係留）」（青島基地（北部戦区海軍司令部））",
+    "credit": "Digitized from Esri World Imagery (Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed",
+    "accuracy_m": 5
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      120.312438,
+      36.095459
+     ],
+     [
+      120.313404,
+      36.09558
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -2,
+    "name": "西港区 桟橋3（艦艇係留）（付け根→先端）",
+    "kind": "pier",
+    "sat_id": "sat/032",
+    "confidence": "高",
+    "length_m": 89,
+    "source": "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18、位置のずれは数 m 程度）、判読 sat/032「西港区 桟橋3（艦艇係留）」（青島基地（北部戦区海軍司令部））",
+    "credit": "Digitized from Esri World Imagery (Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed",
+    "accuracy_m": 5
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      120.31291,
+      36.094626
+     ],
+     [
+      120.313897,
+      36.094661
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -3,
+    "name": "西港区 桟橋4（艦艇係留）（付け根→先端）",
+    "kind": "pier",
+    "sat_id": "sat/033",
+    "confidence": "高",
+    "length_m": 88,
+    "source": "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18、位置のずれは数 m 程度）、判読 sat/033「西港区 桟橋4（艦艇係留）」（青島基地（北部戦区海軍司令部））",
+    "credit": "Digitized from Esri World Imagery (Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed",
+    "accuracy_m": 5
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      120.312867,
+      36.093517
+     ],
+     [
+      120.313833,
+      36.093378
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -4,
+    "name": "西港区 桟橋5（艦艇係留）（付け根→先端）",
+    "kind": "pier",
+    "sat_id": "sat/034",
+    "confidence": "高",
+    "length_m": 89,
+    "source": "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18、位置のずれは数 m 程度）、判読 sat/034「西港区 桟橋5（艦艇係留）」（青島基地（北部戦区海軍司令部））",
+    "credit": "Digitized from Esri World Imagery (Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed",
+    "accuracy_m": 5
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      120.312545,
+      36.092719
+     ],
+     [
+      120.313511,
+      36.092546
+     ]
+    ]
+   }
+  }
+ ]
+}
