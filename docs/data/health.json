@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-05T13:30:05Z",
- "state": "alert",
+ "generated_utc": "2026-11-05T14:56:22Z",
+ "state": "warn",
  "summary": {
-  "ok": 10,
+  "ok": 11,
   "warn": 1,
-  "alert": 1,
+  "alert": 0,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-05T13:26:25Z",
-   "heartbeat_age_h": 0.1,
+   "heartbeat_age_h": 1.5,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 3,
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-05T11:29:56Z",
-   "heartbeat_age_h": 2.0,
+   "heartbeat_age_h": 3.4,
    "data_date": "2026-11-04",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-05T02:17:40Z",
-   "heartbeat_age_h": 11.2,
+   "heartbeat_age_h": 12.6,
    "data_date": "2026-11-04",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +173,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T08:00:38Z",
-   "heartbeat_age_h": 5.5,
+   "heartbeat_age_h": 6.9,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 9,
@@ -191,7 +191,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T08:00:36Z",
-   "heartbeat_age_h": 5.5,
+   "heartbeat_age_h": 6.9,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -209,7 +209,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-05T11:30:09Z",
-   "heartbeat_age_h": 2.0,
+   "heartbeat_age_h": 3.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -608,25 +608,19 @@
    "sources": [
     "pla-tracker"
    ],
-   "state": "alert",
-   "reasons": [
-    {
-     "level": "alert",
-     "code": "failed",
-     "text": "schedule の実行 2026-11-04T14:51:35Z が failure（2 回続けて）（その後の手動等の実行で成功）"
-    }
-   ],
-   "last_success_started_utc": "2026-11-05T02:17:28Z",
-   "last_success_event": "workflow_dispatch",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-05T14:55:54Z",
+   "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41851773289,
-    "started_utc": "2026-11-04T14:51:35Z",
+    "id": 42049802877,
+    "started_utc": "2026-11-05T14:55:54Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41851773289",
-    "delay_h": 8.2
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42049802877",
+    "delay_h": 8.3
    },
-   "consecutive_failures": 2
+   "consecutive_failures": 0
   },
   {
    "file": "proto.yml",
