@@ -142,8 +142,8 @@ class RunColorTest(unittest.TestCase):
             store = run.Store(out, [SITE])
             store.save({"run_utc": "2026-10-30T05:17:00Z"})
             text = (out / "ship_counts.csv").read_text().splitlines()
-            self.assertTrue(text[0].endswith(",color_image,color_thumb"))
-            self.assertTrue(text[1].endswith(",,"))
+            self.assertTrue(text[0].endswith(",color_image,color_thumb,harbour_small,quay_small"))   # size-1 columns last
+            self.assertTrue(text[1].endswith(",,,,"))
 
 
 if __name__ == "__main__":

@@ -59,8 +59,13 @@ CSV_FIELDS = [
     "mask_version", "detector_version", "processing_version",
     "coverage", "len_lt50", "len_50_100", "len_100_200", "len_ge200", "processing_units", "image",
     "sector_a_harbour", "sector_a_quay", "sector_b_harbour", "sector_b_quay",
-    "color_image", "color_thumb",
+    "color_image", "color_thumb", "harbour_small", "quay_small",
 ]
+# size-1 (ユーザーの決定 2026-11-05)：SIZE_SINCE 以降の撮影は、見出しの数（harbour_candidates・quay_candidates・区画）に
+# 長さ HEADLINE_MIN_M 以上の候補だけを入れる。軍の岸壁の小さい候補（艇・タグボートなど）は harbour_small・quay_small に別に数え、
+# 赤枠には残す
+SIZE_SINCE = "2026-11-06"
+HEADLINE_MIN_M = 50.0
 SECTOR_COLUMNS = ("a", "b")  # the first sector of a site is "a"; the rest of the chip is "b"
 
 USAGE_FIELDS = ["run_utc", "requests", "processing_units", "pu_source", "scenes",
@@ -567,6 +572,13 @@ def series_breaks(sites: list[dict]) -> list[dict]:
         if not site.get("enabled"):
             continue
         out.append({
+            "site_id": site["id"], "kind": "size", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
+            "from_version": "長さを問わない", "to_version": "size-1", "date_utc": SIZE_SINCE,
+            "note": (f"見出しの harbour_candidates・quay_candidates・区画は長さ {HEADLINE_MIN_M:.0f} m 以上の候補だけ"
+                     f"（{SIZE_SINCE} 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。"
+                     "それより前の行は書き換えないので直接比べない"),
+        })
+        out.append({
             "site_id": site["id"], "kind": "fixed", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
             "from_version": "固定物の判定なし", "to_version": ffixed.VERSION, "date_utc": ffixed.SINCE_UTC,
             "note": (f"候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す"
@@ -886,6 +898,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "processing_version": "処理の版",
             "coverage": "地点の水域のうちデータがあった割合",
             "len_lt50 / len_50_100 / len_100_200 / len_ge200": "候補（両区域）の長さの区分ごとの数（〜50 / 50〜100 / 100〜200 / 200 m〜）",
+            "harbour_small / quay_small": (f"size-1（{SIZE_SINCE} 以降の撮影）：数える候補のうち長さ {HEADLINE_MIN_M:.0f} m 未満"
+                                           "（艇・タグボートなど）。見出しの harbour_candidates・quay_candidates・区画には入らない。それより前は空"),
             "processing_units": "その撮影の取得に使った処理単位（PU）",
             "image": "切り出し画像（VV の灰、枠つきの PNG）",
             "color_image": "疑似カラーの WebP（凡例つき、枠なし）。作っていない行は空",
@@ -1138,6 +1152,7 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 "image": image,
                 **({"window_excluded": d["window_excluded"], "window_version": fwindows.VERSION} if "window_excluded" in d else {}),
                 **({"window": d["window"]} if d.get("window") else {}),
+                **({"small_excluded": True} if d.get("small_excluded") else {}),
                 **({k: d.get(k) for k in ("fixed_excluded", "ship_conf", "rise_db", "rise_z", "base_db", "spread_db",
                                           "fixed_version")} if d.get("fixed_version") else {}),
                 **({"berth_class": d["berth_class"], "naval_excluded": d.get("naval_excluded", ""),
@@ -1175,6 +1190,20 @@ def classify_fixed(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict],
     bl = qctx.baseline(acq["relative_orbit"])
     water = qctx.mask == WATER if qctx.mask is not None else None
     return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water)
+
+
+def mark_small(acq: dict, dets: list[dict]) -> None:
+    """size-1: from SIZE_SINCE, a candidate otherwise counted but shorter than HEADLINE_MIN_M gets d["small_excluded"]."""
+    if acq["acquired_utc"][:10] < SIZE_SINCE:
+        return
+    for d in dets:
+        if at_berth(d) and float(d.get("length_m") or 0) < HEADLINE_MIN_M:
+            d["small_excluded"] = True
+
+
+def headline(d: dict) -> bool:
+    """In the headline counts: at_berth and not small_excluded (size-1)."""
+    return at_berth(d) and not d.get("small_excluded")
 
 
 def at_berth(d: dict) -> bool:
@@ -1429,8 +1458,10 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             inc = None
             if lia is not None and np.isfinite(lia[valid_water]).any():
                 inc = round(float(np.nanmedian(lia[valid_water])), 2)
-            nh = sum(d["zone"] == "harbour" and at_berth(d) for d in dets)
-            nq = sum(d["zone"] == "quay" and at_berth(d) for d in dets)
+            mark_small(acq, dets)
+            nh = sum(d["zone"] == "harbour" and headline(d) for d in dets)
+            nq = sum(d["zone"] == "quay" and headline(d) for d in dets)
+            small = acq["acquired_utc"][:10] >= SIZE_SINCE
             row = {
                 "site_id": site["id"], "acquired_utc": acq["acquired_utc"], "retrieved_utc": retrieved,
                 "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
@@ -1439,10 +1470,12 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 "mask_version": tag, "detector_version": DETECTOR_VERSION,
                 "processing_version": PROCESSING_VERSION, "coverage": round(float(coverage), 3),
                 "processing_units": pu, "image": image,
+                "harbour_small": sum(d["zone"] == "harbour" and bool(d.get("small_excluded")) for d in dets) if small else "",
+                "quay_small": sum(d["zone"] == "quay" and bool(d.get("small_excluded")) for d in dets) if small else "",
             }
             for col, sc in zip(SECTOR_COLUMNS, wide_sectors(sectors, site)):
                 for zone in ("harbour", "quay"):
-                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] and at_berth(d) for d in dets)
+                    row[f"sector_{col}_{zone}"] = sum(d["zone"] == zone and d["sector"] == sc["id"] and headline(d) for d in dets)
             for name, _lo, _hi in LENGTH_CLASSES:
                 row[f"len_{name}"] = sum(d["length_class"] == name for d in dets)
             quick = render.quicklook(vv, mask, dets, sector_raster(grid, sectors)) if makes_png(site) else None
@@ -1467,7 +1500,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         qtext = count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log)
         store.note_scene(entry)
         summary["counted"] += 1
-        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] and at_berth(d) for d in dets)}"
+        by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] and headline(d) for d in dets)}"
                             f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and at_berth(d) for d in dets)}"
                             for sc in sectors)
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
