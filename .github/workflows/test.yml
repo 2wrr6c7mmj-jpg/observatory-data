@@ -15,6 +15,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      # the collect workflows run the tests without numpy before they publish: a module that fails to import there
+      # stops every collector (2026-11-03〜05). Same check here, before numpy is installed.
+      - name: Tests without numpy (as the collect workflows)
+        run: python -c "import sys, unittest; sys.modules['numpy'] = None; unittest.main(module=None, argv=['x', 'discover', '-s', 'tests', '-t', '.'])"
       - run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - run: python -m unittest discover -s tests -t . -v
         env:

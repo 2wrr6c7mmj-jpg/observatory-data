@@ -27,7 +27,7 @@ def chip(h, w):
     return png.encode(np.stack([enc(vv), enc(vh), np.ones((h, w))], -1).astype(np.uint16), depth=16, filters=[1])
 
 
-class Fake(LimitedClient):
+class Fake(LimitedClient if np is not None else object):   # no numpy in the collect workflows
     def __init__(self, cap, **kw):
         super().__init__(cap, 100, 1000.0, 1000, budget_month="2026-11", utcnow=lambda: NOW, sleep=lambda s: None,
                          client_id="x", client_secret="y")

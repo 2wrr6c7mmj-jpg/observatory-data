@@ -235,6 +235,19 @@ export function build(data, {now = Date.now(), snapshot = {}, launches = new Map
       });
     }
   }
+  // NOTAM Watch's files can hold the same id twice in one dataset (2026-11-04: aviation A5720/26 stopped every build).
+  // One item per key: the later start (a re-issue), else the first. The count goes to meta (duplicates_merged).
+  const byKey = new Map();
+  let duplicates = 0;
+  for (const it of items) {
+    const prev = byKey.get(it.key);
+    if (!prev) { byKey.set(it.key, it); continue; }
+    duplicates++;
+    if (String(it.valid.start_utc ?? '') > String(prev.valid.start_utc ?? '')) byKey.set(it.key, it);
+  }
+  items.length = 0;
+  items.push(...byKey.values());
+  build.lastDuplicates = duplicates;
   for (const it of items) if (it.valid.estimated_end === undefined) delete it.valid.estimated_end;
   items.sort((a, b) => ORDER.indexOf(a.category) - ORDER.indexOf(b.category)
     || String(a.valid.start_utc ?? '').localeCompare(String(b.valid.start_utc ?? '')) || a.key.localeCompare(b.key));
@@ -248,7 +261,7 @@ export function counts(items) {
     with_launch_ref: items.filter(i => i.launch).length};
 }
 
-export function meta({items, now, snapshot, retrievedAt}) {
+export function meta({items, now, snapshot, retrievedAt, duplicates = 0}) {
   return {
     dataset: 'notam', version: VERSION,
     title: '東アジアの軍事演習・射撃・発射・危険区域の NOTAM と航行警報（NOTAM Watch 経由）',
@@ -260,6 +273,7 @@ export function meta({items, now, snapshot, retrievedAt}) {
       position: '公式の告知。演習・射撃・発射などを予告するもので、実施を示すものではない'},
     files: {'military.json': '条件に合う告知の一覧（items）。meta.json：本ファイル'},
     counts: counts(items),
+    duplicates_merged: duplicates,
     region: {...REGION, note: '区域の頂点（円は中心）のどれかがこの範囲内にあれば採る。図形がない場合は航空は Q 行の座標、海上は発出元の国（JP・CN・TW・KR・KP・PH・VN）で判断し、area.basis に記す'},
     period: `取得時点で有効なもの（status=active）と、${HORIZON_DAYS}日以内に有効になるもの（upcoming）。期間を確定できないもの（unknown）も含める。取消済みと、分かっている期間がすべて過去のものは除く。時刻は UTC`,
     time_rules: {
@@ -349,7 +363,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const notices = await readJson(join(root, 'docs/data/launches/notices.json'), {});
     const events = (await readJson(join(root, 'docs/data/launches/events.json'), {})).events ?? [];
     const items = build(data, {now, snapshot, launches: launchIndex(notices, events)});
-    const m = meta({items, now, snapshot, retrievedAt: iso(Date.now())});
+    const m = meta({items, now, snapshot, retrievedAt: iso(Date.now()), duplicates: build.lastDuplicates ?? 0});
     validate(items, m);
     await mkdir(outDir, {recursive: true});
     await writeAtomic(join(outDir, 'military.json'), {generated_utc: m.retrieved_utc, snapshot: snapshot.file ?? null, items});

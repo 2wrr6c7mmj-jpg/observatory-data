@@ -92,3 +92,16 @@ test('Q-line parsing', () => {
     {fir: 'RPHI', code: 'QWMLW', subject: 'WM', condition: 'LW', lat: 12.75, lon: 116.1667});
   assert.equal(qLine('no q line'), null);
 });
+
+test('the same id twice in one dataset becomes one item (the later start)', () => {
+  const av = fixture.aviation.items.find((x) => build({aviation: {items: [x]}}, {now: NOW}).length === 1);
+  assert.ok(av, 'fixture has an aviation item that is kept');
+  const later = {...av, start: (Number.isFinite(av.start) ? av.start : NOW) + 3600e3};
+  const out = build({aviation: {items: [av, later]}}, {now: NOW});
+  assert.equal(out.length, 1);
+  assert.equal(build.lastDuplicates, 1);
+  assert.equal(out[0].valid.start_utc, new Date(later.start).toISOString().replace(/\.\d{3}Z$/, 'Z'));
+  const m = meta({items: out, now: NOW, snapshot: {}, retrievedAt: '2026-11-05T00:00:00Z', duplicates: 1});
+  validate(out, m);
+  assert.equal(m.duplicates_merged, 1);
+});
