@@ -7,6 +7,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
+try:
+    import numpy  # noqa: F401 - sat.chips (run as a subprocess below) needs it; the collect workflows have none
+    HAVE_NP = True
+except ImportError:
+    HAVE_NP = False
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "sat" / "publish.sh"
 IDX = "docs/data/sat/chips/index.json"
@@ -30,7 +36,7 @@ def index(sites, ocean):
             "sites": sites, "ocean": ocean}
 
 
-@unittest.skipUnless(shutil.which("git") and shutil.which("bash"), "git / bash not available")
+@unittest.skipUnless(shutil.which("git") and shutil.which("bash") and HAVE_NP, "git / bash / numpy not available")
 class PublishTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
