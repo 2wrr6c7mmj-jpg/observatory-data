@@ -886,7 +886,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                                    "港内の錨泊として anchorage_counts.csv に別に数える"),
             "berth_class_counts.csv": (f"{berths.NAVAL_VERSION}：岸壁の線の区分（海軍・民間・不明）ごとの数。1 行＝1 撮影×1 地点×1 範囲版"
                                        f"（{berths.NAVAL_SINCE} 以降の撮影で、区分の設定 sat/berth_class/<地点>.json のある地点だけ）。"
-                                       "harbour_*・quay_*＝候補の数（見出しの harbour_candidates・quay_candidates は *_naval と同じ）、"
+                                       f"harbour_*・quay_*＝候補の数（見出しの harbour_candidates・quay_candidates は *_naval と同じ。size-1（{SIZE_SINCE} 以降）は *_naval − *_small）、"
                                        "stretches_*＝岸壁の占有区間の数、occupied_max_*＝その上限の隻数の和（見出しの quay_counts は海軍の線だけ）"),
             "anchorage_counts.csv": ("win-1：港内の錨泊。1 行＝1 撮影×1 地点×1 範囲版。船が着く線から band_m より遠い港内水域の候補の数"
                                      "（anchorage_candidates、区画ごと by_sector、長さ 50 m 未満・以上）。岸壁の隻数とは別。窓の規則（windows.since_utc）以降の撮影だけ"),
@@ -1501,7 +1501,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
         store.note_scene(entry)
         summary["counted"] += 1
         by_sector = "".join(f"、{sc['id']} {sum(d['zone'] == 'harbour' and d['sector'] == sc['id'] and headline(d) for d in dets)}"
-                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and at_berth(d) for d in dets)}"
+                            f"+{sum(d['zone'] == 'quay' and d['sector'] == sc['id'] and headline(d) for d in dets)}"
                             for sc in sectors)
         log(f"{site['id']} {tag} {acq['acquired_utc']} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}"
             f" 入射角{inc}: 港内候補 {nh}、岸壁帯候補 {nq}{by_sector}（{pu} PU、水域の {coverage:.0%}）{qtext}")
