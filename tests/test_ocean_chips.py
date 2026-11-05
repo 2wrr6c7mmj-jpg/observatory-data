@@ -225,9 +225,10 @@ class ChipTest(unittest.TestCase):
 @unittest.skipUnless(np is not None, "numpy / Pillow not installed")
 class MonitorChipsTest(unittest.TestCase):
     """ocean.monitor with --chips-out: the same requests as without; held areas get no image."""
-    setUp, tearDown = tom.RunTest.setUp, tom.RunTest.tearDown
-    go = tom.HoldRunTest.go
-    _cfg = tom.HoldRunTest._cfg
+    if np is not None:   # the collect workflows run the tests without numpy: tom is not imported there
+        setUp, tearDown = tom.RunTest.setUp, tom.RunTest.tearDown
+        go = tom.HoldRunTest.go
+        _cfg = tom.HoldRunTest._cfg
 
     def test_images_need_no_extra_request_and_skip_held_areas(self):
         t = datetime(2026, 10, 30, 9, 52, 8, tzinfo=timezone.utc)

@@ -106,6 +106,7 @@ class ClassifyNavalTest(unittest.TestCase):
         self.assertEqual((n["quay_naval"], n["quay_civil"], n["harbour_unknown"]), (1, 1, 2))
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")   # sat.berth_class needs numpy
 class ClassFilesTest(unittest.TestCase):
     """Every berth line of every enabled site has a class with its evidence; the published map matches the files."""
 
