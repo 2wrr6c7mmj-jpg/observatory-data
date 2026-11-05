@@ -1,0 +1,49 @@
+name: PLAN land mask OSM probe
+# 陸マスク（sat/osm_mask.py）を Overpass から作る probe。作業環境から Overpass に届かないため。
+# probe/osm-mask-<地点>-v<版> ブランチへの push でだけ動く（例：probe/osm-mask-MAW-v2）。CDSE は使わない（PU 0）。
+# 結果（sat/masks/<地点>-land-v<版>.png・.json と Overpass の答え probe-raw/osm-mask/）は同じ probe ブランチにだけ commit する。
+# main は変えない。取り込むかどうかは、作業環境で確かめてから PR で決める。
+on:
+  push:
+    branches: ['probe/osm-mask-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-osm-mask
+  cancel-in-progress: false
+jobs:
+  mask:
+    if: ${{ !contains(github.event.head_commit.message, '[osm-mask-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Overpass and build the mask
+        run: |
+          spec="${GITHUB_REF_NAME#probe/osm-mask-}"          # e.g. MAW-v2
+          site="${spec%-v*}"; ver="${spec##*-v}"
+          echo "::notice title=osm-mask::site=$site version=$ver"
+          python -m sat.osm_mask "$site" --version "$ver" --save-osm "probe-raw/osm-mask/$site-v$ver-overpass.json" \
+            > "$RUNNER_TEMP/meta.json" 2> "$RUNNER_TEMP/err.log" || { tail -c 2000 "$RUNNER_TEMP/err.log" | while read l; do echo "::error title=osm-mask::$l"; done; exit 1; }
+          python - "$RUNNER_TEMP/meta.json" <<'PY'
+          import json, sys
+          m = json.load(open(sys.argv[1]))
+          keep = {k: m.get(k) for k in ("version", "osm_base", "coastline_ways", "structure_ways", "water_mode", "water_areas",
+                                         "water_outer_rings", "water_inner_rings", "water_fraction", "land_fraction",
+                                         "structure_fraction")}
+          print(f"::notice title=osm-mask-meta::{json.dumps(keep, ensure_ascii=False)}")
+          PY
+          ls -la sat/masks/"$site"-land-v"$ver".* probe-raw/osm-mask/ | while read l; do echo "::notice title=osm-mask-files::$l"; done
+      - name: Commit to this probe branch only
+        run: |
+          git add sat/masks probe-raw/osm-mask
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 陸マスク（OSM） [osm-mask-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
