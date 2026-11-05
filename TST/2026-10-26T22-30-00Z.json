@@ -1,0 +1,101 @@
+{
+ "version": "raw-1",
+ "site_id": "TST",
+ "acquired_utc": "2026-10-26T22:30:00Z",
+ "platform": "sentinel-1a",
+ "orbit_direction": "descending",
+ "relative_orbit": 28,
+ "catalog_ids": [
+  "b"
+ ],
+ "retrieved_utc": "2026-11-05T20:57:10Z",
+ "processing_units": 4.883,
+ "chip": "2026-10-26T22-30-00Z.png",
+ "encoding": {
+  "format": "PNG 16-bit RGBA",
+  "bands": [
+   "VV",
+   "VH",
+   "localIncidenceAngle",
+   "dataMask"
+  ],
+  "db": "value / 800 - 50 (0 = no data)",
+  "lia_deg": "value / 100",
+  "with_lia": true
+ },
+ "bbox": [
+  110.400369,
+  21.190968,
+  110.419631,
+  21.209032
+ ],
+ "width": 200,
+ "height": 200,
+ "pixel_m": [
+  10.000199415505024,
+  9.999989527382095
+ ],
+ "mask": "../masks/TST-land-v1.png",
+ "mask_version": "TST-land-v1",
+ "coverage": 1.0,
+ "detector_version": "cfar-v1",
+ "detector_params": {
+  "pfa": 1e-05,
+  "guard_m": 70.0,
+  "background_m": 150.0,
+  "min_background_fraction": 0.25,
+  "min_pixels": 3,
+  "vh_min_ratio": 2.0,
+  "quay_band_m": 50.0
+ },
+ "detector_info": {
+  "valid_fraction": 1.0,
+  "water_fraction": 0.8,
+  "threshold_sigma": 4.265,
+  "guard_px": 7,
+  "outer_px": 22,
+  "hit_pixels": 79,
+  "clusters": 16,
+  "dropped_small": 13,
+  "dropped_vh": 1
+ },
+ "candidates": [
+  {
+   "row": 50.5,
+   "col": 42.5,
+   "rmin": 50,
+   "rmax": 51,
+   "cmin": 40,
+   "cmax": 45,
+   "pixels": 12,
+   "length_m": 60,
+   "width_m": 20,
+   "length_class": "50_100",
+   "zone": "quay",
+   "peak_vv_db": 0.0,
+   "contrast_vv_db": 20.0,
+   "vh_ratio_db": 17.0,
+   "lon": 110.40451033,
+   "lat": 21.20442568
+  },
+  {
+   "row": 101.0,
+   "col": 107.0,
+   "rmin": 100,
+   "rmax": 102,
+   "cmin": 100,
+   "cmax": 114,
+   "pixels": 45,
+   "length_m": 150,
+   "width_m": 30,
+   "length_class": "100_200",
+   "zone": "harbour",
+   "peak_vv_db": 0.0,
+   "contrast_vv_db": 17.9,
+   "vh_ratio_db": 15.9,
+   "lon": 110.410722325,
+   "lat": 21.199864520000002
+  }
+ ],
+ "attribution": "Contains modified Copernicus Sentinel data 2026; land mask (c) OpenStreetMap contributors, ODbL 1.0"
+}
