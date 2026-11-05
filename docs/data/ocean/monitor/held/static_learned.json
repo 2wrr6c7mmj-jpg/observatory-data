@@ -1,10 +1,14 @@
 {
- "version":"ocean-monitor-2",
+ "version":"ocean-monitor-3",
  "rule":{
   "radius_m":200,
   "looks":5,
   "min_hits":3,
-  "note":"同じ衛星・軌道の直近 5 回（その地点を見た撮影）のうち 3 回以上、±200 m に候補が出た地点（2部が月 1 回見直す）"
+  "note":"直近 45 日の撮影（衛星・軌道を問わない）のうち、その地点を見た直近 5 回で 3 回以上、±200 m に候補が出て、最初の当たりから 14 日以上たっている地点（1 週間ほどの錨泊は学習しない）。学習した点は 45 日で効かなくなり、まだあれば学び直す。ocean-monitor-3 から軌道をまたいで数える（2部が月 1 回見直す）",
+  "any_orbit":true,
+  "window_days":45,
+  "min_span_days":14,
+  "expire_days":45
  },
  "review":"2部が月 1 回見直す",
  "attribution":"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0",
