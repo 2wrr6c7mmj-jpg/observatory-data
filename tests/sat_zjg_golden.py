@@ -165,7 +165,9 @@ def rows_of(name):
     with (out / name).open(encoding="utf-8") as f:
         return list(csv.DictReader(f))
 sha = lambda x: hashlib.sha256(json.dumps(x, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
-past = {n: sha([r for r in rows_of(n) if is_past(r)]) for n in ("quay_counts.csv", "ship_counts.csv")}
+ADDED_COLS = ("harbour_small", "quay_small")   # size-1 (2026-11-06): new columns, empty in the past rows
+past = {n: sha([{k: v for k, v in r.items() if not (k in ADDED_COLS and v == "")} for r in rows_of(n) if is_past(r)])
+        for n in ("quay_counts.csv", "ship_counts.csv")}
 new_quay = [{k: r.get(k) for k in ("acquired_utc", "relative_orbit", "quay_version", "occupied_min", "occupied_max",
                                    "sector_a_min", "sector_a_max", "sector_b_min", "sector_b_max", "est_mode", "est_warship_mode")}
             for r in rows_of("quay_counts.csv") if is_fake(r)]

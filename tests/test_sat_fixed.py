@@ -114,3 +114,19 @@ class FixedTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class SizeGateTest(unittest.TestCase):
+    """size-1: from SIZE_SINCE the headline counts take candidates of 50 m and more; smaller ones are counted apart."""
+
+    def test_small_candidates_leave_the_headline(self):
+        from sat import run as r
+        dets = [{"zone": "quay", "length_m": 30}, {"zone": "quay", "length_m": 120},
+                {"zone": "quay", "length_m": 20, "naval_excluded": "civil"}]
+        r.mark_small({"acquired_utc": "2026-11-05T10:00:00Z"}, dets)
+        self.assertFalse(any(d.get("small_excluded") for d in dets))        # before SIZE_SINCE: unchanged
+        r.mark_small({"acquired_utc": r.SIZE_SINCE + "T10:00:00Z"}, dets)
+        self.assertEqual([bool(d.get("small_excluded")) for d in dets], [True, False, False])
+        self.assertEqual([r.headline(d) for d in dets], [False, True, False])
+        self.assertTrue(r.at_berth(dets[0]))                                 # still a naval candidate (framed)
