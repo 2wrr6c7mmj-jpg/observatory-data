@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-04T19:41:50Z",
+ "generated_utc": "2026-11-05T00:35:17Z",
  "state": "alert",
  "summary": {
   "ok": 3,
@@ -71,10 +71,10 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-04T13:12:29Z",
-   "heartbeat_age_h": 6.5,
+   "heartbeat_age_h": 11.4,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 3,
    "state": "warn",
    "reasons": [
     {
@@ -85,12 +85,12 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SLP：最新の撮影 2026-10-26 から 9 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-10-26 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "STU：最新の撮影 2026-10-24 から 11 日（撮影の抜け）"
+     "text": "STU：最新の撮影 2026-10-24 から 12 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 56.0,
+   "heartbeat_age_h": 60.9,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 4,
@@ -115,7 +115,7 @@
     {
      "level": "alert",
      "code": "heartbeat_stopped",
-     "text": "最後に成功した取得から 56 h（>54 h：停止と判断）"
+     "text": "最後に成功した取得から 61 h（>54 h：停止と判断）"
     },
     {
      "level": "warn",
@@ -140,16 +140,16 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 51.2,
+   "heartbeat_age_h": 56.1,
    "data_date": "2026-11-02",
    "data_date_tz": "TWT",
    "data_age_days": 3,
    "state": "alert",
    "reasons": [
     {
-     "level": "warn",
-     "code": "heartbeat_late",
-     "text": "最後に成功した取得から 51 h（>30 h：遅延）"
+     "level": "alert",
+     "code": "heartbeat_stopped",
+     "text": "最後に成功した取得から 56 h（>54 h：停止と判断）"
     },
     {
      "level": "alert",
@@ -195,7 +195,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:37Z",
-   "heartbeat_age_h": 59.9,
+   "heartbeat_age_h": 64.7,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 9,
@@ -204,7 +204,7 @@
     {
      "level": "alert",
      "code": "heartbeat_stopped",
-     "text": "最後の再構築（built_utc）から 60 h（>54 h：停止と判断）"
+     "text": "最後の再構築（built_utc）から 65 h（>54 h：停止と判断）"
     }
    ],
    "values": {
@@ -219,21 +219,21 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-02T07:50:31Z",
-   "heartbeat_age_h": 59.9,
+   "heartbeat_age_h": 64.7,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 3,
    "state": "alert",
    "reasons": [
     {
      "level": "alert",
      "code": "heartbeat_stopped",
-     "text": "最後の作成（generated_utc）から 60 h（>54 h：停止と判断）"
+     "text": "最後の作成（generated_utc）から 65 h（>54 h：停止と判断）"
     },
     {
      "level": "warn",
      "code": "notam_watch_old",
-     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（60 h 前、>30 h：NOTAM Watch 側が古い）"
+     "text": "NOTAM Watch 由来の最終確認 2026-11-02T07:50:31Z（65 h 前、>30 h：NOTAM Watch 側が古い）"
     }
    ],
    "values": {
@@ -248,7 +248,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-02T11:41:10Z",
-   "heartbeat_age_h": 56.0,
+   "heartbeat_age_h": 60.9,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -716,15 +716,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-04T00:11:17Z",
+   "last_success_started_utc": "2026-11-05T00:30:52Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41744930106,
-    "started_utc": "2026-11-04T00:11:17Z",
+    "id": 41941881733,
+    "started_utc": "2026-11-05T00:30:52Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41744930106",
-    "delay_h": 4.5
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41941881733",
+    "delay_h": 4.8
    },
    "consecutive_failures": 0
   }
