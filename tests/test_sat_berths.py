@@ -150,6 +150,7 @@ class EsriPiersTest(unittest.TestCase):
                         self.assertGreater(d, tol, (sid, i, w["id"]))
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")   # sat.run needs numpy
 class QuayAttributionTest(unittest.TestCase):
     """The quay GeoJSON credits the lines drawn from imagery (1部の審査 PR #73): Esri for QDH -1..-4 and QJG -2, Copernicus
     for the S2 line QJG -1 (v2); a site with OSM lines only (Zhanjiang) keeps the OSM-only text."""
