@@ -1443,27 +1443,27 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-04T13:12:29Z",
+  "run_utc": "2026-11-05T13:26:25Z",
   "sites": [
    {
     "site_id": "ZJG",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 901.81
+    "budget_left_pu": 898.59
    },
    {
     "site_id": "SYL",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 1,
-    "new": 1,
+    "new": 0,
     "counted": 0,
-    "skipped": 1,
+    "skipped": 0,
     "errors": 0,
     "budget_left_pu": 898.59
    },
@@ -1636,14 +1636,14 @@
    },
    {
     "site_id": "ZDH",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.014,
+    "requests": 2
    },
    {
     "site_id": "QDH",
@@ -1658,21 +1658,21 @@
    },
    {
     "site_id": "XSN",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.008,
+    "requests": 2
    },
    {
     "site_id": "SWS",
-    "days": 0,
+    "days": 1,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 0,
+    "skipped": 1,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -1734,16 +1734,16 @@
     "requests": 1
    }
   ],
-  "s2_requests": 13,
-  "s2_processing_units": 0.0,
+  "s2_requests": 15,
+  "s2_processing_units": 0.023,
   "requests": 28,
-  "processing_units": 5.056,
+  "processing_units": 0.023,
   "pu_source": "header",
-  "scenes": 2,
-  "month_pu_before": 96.353,
+  "scenes": 0,
+  "month_pu_before": 101.409,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-04T13:12:29Z",
+ "updated_utc": "2026-11-05T13:26:25Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
@@ -1881,6 +1881,266 @@
    "to_version": "quay-v2・est-2.1（berth-1）",
    "date_utc": "2026-11-01",
    "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "ZJG",
+   "kind": "size",
+   "from_mask_version": "ZJG-land-v2",
+   "to_mask_version": "ZJG-land-v2",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "ZJG",
+   "kind": "fixed",
+   "from_mask_version": "ZJG-land-v2",
+   "to_mask_version": "ZJG-land-v2",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SYL",
+   "kind": "size",
+   "from_mask_version": "SYL-land-v2",
+   "to_mask_version": "SYL-land-v2",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SYL",
+   "kind": "fixed",
+   "from_mask_version": "SYL-land-v2",
+   "to_mask_version": "SYL-land-v2",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SLP",
+   "kind": "size",
+   "from_mask_version": "SLP-land-v2",
+   "to_mask_version": "SLP-land-v2",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SLP",
+   "kind": "fixed",
+   "from_mask_version": "SLP-land-v2",
+   "to_mask_version": "SLP-land-v2",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QGZ",
+   "kind": "size",
+   "from_mask_version": "QGZ-land-v1",
+   "to_mask_version": "QGZ-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QGZ",
+   "kind": "fixed",
+   "from_mask_version": "QGZ-land-v1",
+   "to_mask_version": "QGZ-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "ZDH",
+   "kind": "size",
+   "from_mask_version": "ZDH-land-v2",
+   "to_mask_version": "ZDH-land-v2",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "ZDH",
+   "kind": "fixed",
+   "from_mask_version": "ZDH-land-v2",
+   "to_mask_version": "ZDH-land-v2",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QJG",
+   "kind": "size",
+   "from_mask_version": "QJG-land-v1",
+   "to_mask_version": "QJG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QJG",
+   "kind": "fixed",
+   "from_mask_version": "QJG-land-v1",
+   "to_mask_version": "QJG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QDH",
+   "kind": "size",
+   "from_mask_version": "QDH-land-v2",
+   "to_mask_version": "QDH-land-v2",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "QDH",
+   "kind": "fixed",
+   "from_mask_version": "QDH-land-v2",
+   "to_mask_version": "QDH-land-v2",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XSN",
+   "kind": "size",
+   "from_mask_version": "XSN-land-v1",
+   "to_mask_version": "XSN-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XSN",
+   "kind": "fixed",
+   "from_mask_version": "XSN-land-v1",
+   "to_mask_version": "XSN-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LSN",
+   "kind": "size",
+   "from_mask_version": "LSN-land-v1",
+   "to_mask_version": "LSN-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LSN",
+   "kind": "fixed",
+   "from_mask_version": "LSN-land-v1",
+   "to_mask_version": "LSN-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SWS",
+   "kind": "size",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "SWS",
+   "kind": "fixed",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XMN",
+   "kind": "size",
+   "from_mask_version": "XMN-land-v1",
+   "to_mask_version": "XMN-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XMN",
+   "kind": "fixed",
+   "from_mask_version": "XMN-land-v1",
+   "to_mask_version": "XMN-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "STU",
+   "kind": "size",
+   "from_mask_version": "STU-land-v1",
+   "to_mask_version": "STU-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "STU",
+   "kind": "fixed",
+   "from_mask_version": "STU-land-v1",
+   "to_mask_version": "STU-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "MAW",
+   "kind": "size",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "MAW",
+   "kind": "fixed",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-1",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZJG",
