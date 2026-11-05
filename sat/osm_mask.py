@@ -6,6 +6,11 @@ natural=coastline ways are drawn as barriers, the free pixels are split into
 the coastline it lies on (OSM convention: land on the left of the way).
 Piers, breakwaters, groynes and road/rail bridges are added as structures.
 
+Water polygons (``"mask_water": "osm_polygons"`` in sites.json): for a site on a river with no natural=coastline
+(Mawei on the Min River), water is the inside of the OSM water areas (natural=water, waterway=riverbank; ways and
+multipolygon relations, inner rings are land) and everything else is land; structures are added as above. Without the
+setting the coastline method is used and the query is unchanged.
+
 Mask values: 0 water, 1 land, 2 structure (pier / breakwater / bridge).
 Data (c) OpenStreetMap contributors, ODbL 1.0.
 
@@ -39,23 +44,35 @@ MASK_DIR = Path(__file__).resolve().parent / "masks"
 WATER, LAND, STRUCTURE = 0, 1, 2
 
 
-def overpass_query(grid: Grid) -> str:
+WATER_MODES = ("coastline", "osm_polygons")
+
+
+def water_mode(site: dict) -> str:
+    m = site.get("mask_water", "coastline")
+    if m not in WATER_MODES:
+        raise ValueError(f"{site['id']}: mask_water {m} は不明")
+    return m
+
+
+def overpass_query(grid: Grid, water_polygons: bool = False) -> str:
     s, w, n, e = grid.south, grid.west, grid.north, grid.east
     b = f"({s},{w},{n},{e})"
-    return (f'[out:json][timeout:90];('
+    water = (f'way["natural"="water"]{b};relation["natural"="water"]{b};'
+             f'way["waterway"="riverbank"]{b};relation["waterway"="riverbank"]{b};') if water_polygons else ""
+    return (f'[out:json][timeout:{180 if water_polygons else 90}];('
             f'way["natural"="coastline"]{b};'
             f'way["man_made"~"^(pier|breakwater|groyne|quay)$"]{b};'
             f'way["bridge"]["highway"]{b};'
             f'way["bridge"]["railway"]{b};'
-            f');out geom;')
+            f'{water});out geom;')
 
 
-def fetch_osm(grid: Grid, url: str = OVERPASS_URL) -> dict:
-    data = urllib.parse.urlencode({"data": overpass_query(grid)}).encode()
+def fetch_osm(grid: Grid, url: str = OVERPASS_URL, water_polygons: bool = False) -> dict:
+    data = urllib.parse.urlencode({"data": overpass_query(grid, water_polygons)}).encode()
     req = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT})
     for attempt in range(3):
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with urllib.request.urlopen(req, timeout=240) as resp:
                 return json.loads(resp.read())
         except Exception:
             if attempt == 2:
@@ -69,6 +86,79 @@ def _way_pixels(grid: Grid, way: dict):
     lon = [p["lon"] for p in geom]
     lat = [p["lat"] for p in geom]
     return grid.to_pixel(lon, lat)
+
+
+def is_water_area(tags: dict) -> bool:
+    return tags.get("natural") == "water" or tags.get("waterway") == "riverbank"
+
+
+def _rings(ways: list[list[tuple[float, float]]]) -> list[list[tuple[float, float]]]:
+    """Closed rings from the member ways of a multipolygon (joined end to end, reversed where needed). A chain that
+    cannot be closed (a member outside the data) is closed by its end points, as OSM tools do."""
+    todo = [list(w) for w in ways if len(w) >= 2]
+    rings = []
+    while todo:
+        ring = todo.pop(0)
+        while ring[0] != ring[-1]:
+            for k, w in enumerate(todo):
+                if w[0] == ring[-1]:
+                    ring += w[1:]
+                elif w[-1] == ring[-1]:
+                    ring += w[::-1][1:]
+                elif w[-1] == ring[0]:
+                    ring = w[:-1] + ring
+                elif w[0] == ring[0]:
+                    ring = w[::-1][:-1] + ring
+                else:
+                    continue
+                todo.pop(k)
+                break
+            else:
+                ring.append(ring[0])
+        if len(ring) >= 4:
+            rings.append(ring)
+    return rings
+
+
+def water_areas(osm: dict) -> list[tuple[list, list]]:
+    """[(outer rings, inner rings)] of the OSM water areas (lon, lat) in ``osm`` (Overpass ``out geom``)."""
+    out = []
+    for el in osm.get("elements", []):
+        if not is_water_area(el.get("tags", {})):
+            continue
+        if el.get("type") == "way" and el.get("geometry"):
+            ring = [(p["lon"], p["lat"]) for p in el["geometry"]]
+            if len(ring) >= 4 and ring[0] == ring[-1]:
+                out.append(([ring], []))
+        elif el.get("type") == "relation":
+            members = [m for m in el.get("members", []) if m.get("type") == "way" and m.get("geometry")]
+            parts = {role: _rings([[(p["lon"], p["lat"]) for p in m["geometry"]] for m in members
+                                   if (m.get("role") or "outer") == role]) for role in ("outer", "inner")}
+            if parts["outer"]:
+                out.append((parts["outer"], parts["inner"]))
+    return out
+
+
+def water_polygon_mask(grid: Grid, osm: dict) -> tuple[np.ndarray, dict]:
+    """True = inside an OSM water area (outer rings filled, inner rings taken out)."""
+    h, w = grid.height, grid.width
+    water = np.zeros((h, w), bool)
+    n_outer = n_inner = 0
+    areas = water_areas(osm)
+    for outers, inners in areas:
+        area = np.zeros((h, w), bool)
+        for ring in outers:
+            r, c = grid.to_pixel([p[0] for p in ring], [p[1] for p in ring])
+            fill_polygon(area, r, c)
+            n_outer += 1
+        for ring in inners:
+            hole = np.zeros((h, w), bool)
+            r, c = grid.to_pixel([p[0] for p in ring], [p[1] for p in ring])
+            fill_polygon(hole, r, c)
+            area &= ~hole
+            n_inner += 1
+        water |= area
+    return water, {"water_areas": len(areas), "water_outer_rings": n_outer, "water_inner_rings": n_inner}
 
 
 def fix_path(site_id: str, mask_dir: Path = MASK_DIR) -> Path:
@@ -123,7 +213,8 @@ def _fractions(mask: np.ndarray) -> dict:
     }
 
 
-def build_mask(grid: Grid, osm: dict, land_fix: list[dict] | None = None) -> tuple[np.ndarray, dict]:
+def build_mask(grid: Grid, osm: dict, land_fix: list[dict] | None = None,
+               water_polygons: bool = False) -> tuple[np.ndarray, dict]:
     h, w = grid.height, grid.width
     coast = np.zeros((h, w), bool)
     coast_ways = []
@@ -133,6 +224,8 @@ def build_mask(grid: Grid, osm: dict, land_fix: list[dict] | None = None) -> tup
         if el.get("type") != "way" or not el.get("geometry"):
             continue
         tags = el.get("tags", {})
+        if is_water_area(tags):
+            continue   # water areas: only with water_polygons (below)
         rows, cols = _way_pixels(grid, el)
         if tags.get("natural") == "coastline":
             draw_line(coast, rows, cols)
@@ -176,6 +269,10 @@ def build_mask(grid: Grid, osm: dict, land_fix: list[dict] | None = None) -> tup
     unvoted = int(((votes[1:, 0] + votes[1:, 1]) == 0).sum())
     mask = np.where(land_comp[labels], LAND, WATER).astype(np.uint8)
     mask[coast] = LAND
+    winfo = None
+    if water_polygons:   # a river site: the OSM water areas decide land and water (the coastline is not used)
+        water, winfo = water_polygon_mask(grid, osm)
+        mask = np.where(water, WATER, LAND).astype(np.uint8)
     mask[struct & (mask == WATER)] = STRUCTURE
     fixed = None
     if land_fix:
@@ -187,6 +284,8 @@ def build_mask(grid: Grid, osm: dict, land_fix: list[dict] | None = None) -> tup
         "regions_without_votes": unvoted,
         **_fractions(mask),
     }
+    if winfo is not None:
+        info.update(water_mode="osm_polygons", **winfo)
     if fixed is not None:
         info["land_fix"] = fixed
     return mask, info
@@ -198,7 +297,7 @@ def mask_paths(site_id: str, version: int, mask_dir: Path = MASK_DIR) -> tuple[P
 
 
 def save_mask(site: dict, grid: Grid, mask: np.ndarray, info: dict, osm: dict, version: int,
-              mask_dir: Path = MASK_DIR) -> dict:
+              mask_dir: Path = MASK_DIR, water_polygons: bool = False) -> dict:
     mask_dir.mkdir(parents=True, exist_ok=True)
     p_png, p_json = mask_paths(site["id"], version, mask_dir)
     p_png.write_bytes(png.encode(mask))
@@ -212,7 +311,7 @@ def save_mask(site: dict, grid: Grid, mask: np.ndarray, info: dict, osm: dict, v
         "values": {"0": "water", "1": "land", "2": "structure (pier/breakwater/groyne/quay/bridge)"},
         "source": "OpenStreetMap via Overpass API",
         "osm_base": (osm.get("osm3s") or {}).get("timestamp_osm_base"),
-        "query": overpass_query(grid),
+        "query": overpass_query(grid, water_polygons),
         "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
         **info,
     }
@@ -259,6 +358,8 @@ def main(argv=None) -> int:
     ap.add_argument("--from-version", type=int,
                     help="apply the land fixes of --version to this committed mask instead of asking Overpass")
     ap.add_argument("--mask-dir", type=Path, default=MASK_DIR)
+    ap.add_argument("--osm-json", type=Path, help="build from this saved Overpass answer instead of asking Overpass")
+    ap.add_argument("--save-osm", type=Path, help="also write the Overpass answer here (probe)")
     args = ap.parse_args(argv)
     site = next(s for s in load_sites() if s["id"] == args.site)
     grid = Grid.for_site(site)
@@ -267,9 +368,13 @@ def main(argv=None) -> int:
     if args.from_version:
         print(json.dumps(fix_from_version(site, grid, args.from_version, version, args.mask_dir), ensure_ascii=False, indent=1))
         return 0
-    osm = fetch_osm(grid)
-    mask, info = build_mask(grid, osm, load_land_fix(site["id"], version, args.mask_dir))
-    meta = save_mask(site, grid, mask, info, osm, version, args.mask_dir)
+    wp = water_mode(site) == "osm_polygons"
+    osm = json.loads(args.osm_json.read_text(encoding="utf-8")) if args.osm_json else fetch_osm(grid, water_polygons=wp)
+    if args.save_osm:
+        args.save_osm.parent.mkdir(parents=True, exist_ok=True)
+        args.save_osm.write_text(json.dumps(osm, ensure_ascii=False), encoding="utf-8")
+    mask, info = build_mask(grid, osm, load_land_fix(site["id"], version, args.mask_dir), water_polygons=wp)
+    meta = save_mask(site, grid, mask, info, osm, version, args.mask_dir, water_polygons=wp)
     print(json.dumps(meta, ensure_ascii=False, indent=1))
     return 0
 
