@@ -224,7 +224,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 40,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {
@@ -564,7 +564,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 22,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {
@@ -745,7 +745,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 46,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {
@@ -986,7 +986,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 14,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {
@@ -1074,7 +1074,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 19,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {
@@ -1162,7 +1162,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 17,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {
@@ -1249,7 +1249,7 @@
    "publish": "trial",
    "layout": "per_site",
    "png": false,
-   "pu_month_cap": 9,
+   "pu_month_cap": 200,
    "provisional": true,
    "sources": [
     {

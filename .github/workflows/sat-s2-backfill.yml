@@ -32,7 +32,10 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           rc=0
-          python -m sat.s2 --days 365 --max-pu 100 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/s2.log" || rc=$?
+          # 不明の岸壁の振り分け用（11-05）：不明の多い港だけ、直近 180 日、港ごとに 30 PU まで
+          for s in XMN STU ZDH QDH SYL SWS MAW; do
+            python -m sat.s2 --site $s --days 180 --max-pu 30 >> "$RUNNER_TEMP/summary.json" 2>> "$RUNNER_TEMP/s2.log" || rc=$?
+          done
           cat "$RUNNER_TEMP/s2.log" "$RUNNER_TEMP/summary.json"
           exit $rc
       - name: Report (annotations)
