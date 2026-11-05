@@ -1,0 +1,64 @@
+{
+ "type": "FeatureCollection",
+ "site_id": "QGZ",
+ "registry_hash": "df0ee5069595",
+ "attribution": [
+  "固定物の台帳（人が光学画像で確かめた点。sat/fixed_registry）"
+ ],
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.963946,
+     35.741315
+    ]
+   },
+   "properties": {
+    "id": "QGZ-001",
+    "kind": "mask_error",
+    "status": "confirmed",
+    "confirmed_by": "2部",
+    "radius_m": 30,
+    "added_utc": "2026-11-06",
+    "expires_utc": null,
+    "note": "陸マスクの抜けた海岸（護岸と道路。艦が着く岸壁ではない）。2部の設計書 fixed_eval（2026-11-06） 3.3「QGZ の 187 m（3.5）は陸マスクの抜けた海岸」",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     119.96431,
+     35.741636
+    ]
+   },
+   "properties": {
+    "id": "QGZ-002",
+    "kind": "pier_part",
+    "status": "confirmed",
+    "confirmed_by": "2部",
+    "radius_m": 30,
+    "added_utc": "2026-11-06",
+    "expires_utc": null,
+    "note": "護岸の角。2部の設計書 fixed_eval（2026-11-06） 3.3「今の閾値で外れている軍の岸壁の 6 件（30〜46 m）は…どれも構造物（…QGZ の岸壁の角…）」。fix-2 の歯止め（naval_near：2026-04-17 の 95 m の候補から 77 m）で残っていた",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）"
+     }
+    ]
+   }
+  }
+ ]
+}

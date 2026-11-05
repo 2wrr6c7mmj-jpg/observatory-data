@@ -24,6 +24,7 @@ import numpy as np
 from . import baseline as fbase
 from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
 from . import fixed as ffixed
+from . import fixed_registry as freg
 from . import raw_store
 from . import sectors as fsectors
 from . import color as fcolor
@@ -585,7 +586,10 @@ def series_breaks(sites: list[dict]) -> list[dict]:
         })
         guard_note = (f"{ffixed.FIX2_SINCE} 以降（fix-2）は、海軍の岸壁の {ffixed.GUARD['naval_len_m']:.0f} m 以上の候補"
                       f"（{ffixed.GUARD['near_m']:.0f} m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。"
-                      "長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。")
+                      "長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。"
+                      "人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は"
+                      "数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と"
+                      "密集（field）は印だけで数は変えない。")
         first = ffixed.VERSION if ffixed.FIX2_SINCE <= ffixed.SINCE_UTC else ffixed.FIX1_VERSION
         out.append({
             "site_id": site["id"], "kind": "fixed", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
@@ -960,7 +964,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "berths": berths.settings(),
             "naval": berths.class_settings(),
             "windows": fwindows.settings(),
-            "fixed": ffixed.settings(),
+            "fixed": ffixed.settings({sid: freg.entries_hash(freg.confirmed(freg.load(sid)))
+                                      for sid in freg.sites_with_registry()}),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
             "estimate2_evaluation": est2_eval_ref(out),
@@ -1202,7 +1207,8 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 **({"small_excluded": True} if d.get("small_excluded") else {}),
                 **({k: d.get(k) for k in ("fixed_excluded", "ship_conf", "rise_db", "rise_z", "base_db", "spread_db",
                                           "fixed_version")} if d.get("fixed_version") else {}),
-                **({k: d.get(k) for k in ("fixed_flag", "fixed_guard", "fixed_guard_class")}
+                **({k: d.get(k) for k in ("fixed_flag", "fixed_guard", "fixed_guard_class", "fixed_registry_id",
+                                          "berthed_long")}
                    if d.get("fixed_version") == ffixed.VERSION else {}),
                 **({"berth_class": d["berth_class"], "naval_excluded": d.get("naval_excluded", ""),
                     "naval_version": berths.NAVAL_VERSION} if d.get("berth_class") else {}),
@@ -1255,16 +1261,21 @@ def fixed_guard_ctx(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]
 def classify_fixed(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict], vv: np.ndarray) -> dict | None:
     """fix-1 / fix-2 (sat/fixed.py), for every candidate of a scene from fixed.SINCE_UTC: d["fixed_excluded"] =
     "structure" (bright when the berth is empty and nothing new today: not counted) or "" and d["ship_conf"]
-    (high / medium / low). From fixed.FIX2_SINCE (fix-2) a structure on a naval berth of 60 m and more (or its piece) or
-    at a shipyard is kept: d["fixed_flag"] = "guarded", reasons in d["fixed_guard"]. Returns the counts, or None."""
+    (high / medium / low). From fixed.FIX2_SINCE (fix-2): also "registry" (the site's confirmed fixed objects,
+    sat/fixed_registry), a structure on a naval berth of 60 m and more (or its piece) or at a shipyard is kept
+    (d["fixed_flag"] = "guarded", reasons in d["fixed_guard"]), and the flags point / field. Win-1 must have been judged
+    (naval_near counts only candidates not left out). Returns the counts (with registry_hash), or None."""
     version = ffixed.version_for(acq["acquired_utc"])
     if version is None:
         return None
     bl = qctx.baseline(acq["relative_orbit"])
     water = qctx.mask == WATER if qctx.mask is not None else None
-    ctx = fixed_guard_ctx(qctx, site, acq, dets) if version == ffixed.VERSION else None
+    if version != ffixed.VERSION:
+        return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water, version=version)
+    reg = freg.active(freg.load(site["id"]), acq["acquired_utc"])
     return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water, version=version,
-                           guard_ctx=ctx)
+                           guard_ctx=fixed_guard_ctx(qctx, site, acq, dets), registry=reg,
+                           registry_hash=freg.entries_hash(reg))
 
 
 def mark_small(acq: dict, dets: list[dict]) -> None:
@@ -1513,13 +1524,16 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             band_excluded = classify_band(qctx.berths(qctx.naval(acq["acquired_utc"])), dets)
             if band_excluded is not None:
                 entry["quay_band_excluded"] = band_excluded
+            # win-1 (from the site's windows.since_utc): candidates off the sea-joined water along the berth lines.
+            # Judged before fix-2 (which needs to know the counted candidates for naval_near) and independent of it;
+            # the anchorage is stored after the fixed decision.
+            win_excluded = classify_windows(qctx, site, acq, dets)
             # fix-1 / fix-2 (from fixed.SINCE_UTC): the candidate's pixels against the empty-berth baseline (structure /
-            # ship_conf); fix-2 keeps a structure on a naval berth of 60 m and more or at a shipyard (guarded)
+            # ship_conf); fix-2: the registry, the guard (a naval berth of 60 m and more, its piece, a shipyard) and the
+            # point / field flags
             fix = classify_fixed(qctx, site, acq, dets, vv)
             if fix is not None:
                 entry["fixed"] = fix
-            # win-1 (from the site's windows.since_utc): candidates off the sea-joined water along the berth lines
-            win_excluded = classify_windows(qctx, site, acq, dets)
             if win_excluded is not None:
                 entry["window_excluded"] = win_excluded
                 store.write_windows(site, qctx.windows(qctx.naval(acq["acquired_utc"])))

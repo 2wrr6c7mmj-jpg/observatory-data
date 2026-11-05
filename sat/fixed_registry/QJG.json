@@ -1,0 +1,99 @@
+{
+ "site": "QJG",
+ "note": "青島・姜哥荘。fix-2 の台帳の最初の版（3部が設計書の目視の結果から作成、2026-11-06）",
+ "entries": [
+  {
+   "id": "QJG-001",
+   "lon": 120.59533,
+   "lat": 36.103067,
+   "radius_m": 30,
+   "kind": "mask_error",
+   "status": "confirmed",
+   "confirmed_by": "2部",
+   "added_utc": "2026-11-06",
+   "expires_utc": null,
+   "evidence": {
+    "base_db": 14.2,
+    "spread_db": 3.8,
+    "rise_db": 2.0,
+    "length_m": 102,
+    "s_scenes": "2026-04-17 の 1 撮影で 102 m の候補（fix-1 の spread 3.8 dB で境目、海軍の線）",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）",
+      "by": [
+       "2部",
+       "3部（再確認）"
+      ],
+      "ref": "2部の目視の図 near_esri.png のパネル 3（QJG L102）（内部の確認用。再配布しない）"
+     }
+    ],
+    "note": "岬の先端の岩場（陸マスクに入っていない）。2部の設計書 fixed_eval（2026-11-06） 3.3「QJG の 102 m（3.8）は岬の先端で…構造物だった」"
+   }
+  },
+  {
+   "id": "QJG-002",
+   "lon": 120.571333,
+   "lat": 36.108815,
+   "radius_m": 30,
+   "kind": "pier_part",
+   "status": "confirmed",
+   "confirmed_by": "2部",
+   "added_utc": "2026-11-06",
+   "expires_utc": null,
+   "evidence": {
+    "base_db": 15.8,
+    "spread_db": 2.9,
+    "rise_db": 2.1,
+    "length_m": 46,
+    "s_scenes": "2026-04-17 の 1 撮影で S（岸壁帯）",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）",
+      "by": [
+       "2部",
+       "3部（再確認）"
+      ],
+      "ref": "2部の目視の図 struct_esri.png のパネル 22（QJG L46 n26）（内部の確認用。再配布しない）"
+     }
+    ],
+    "note": "防波堤の先端。2部の設計書 fixed_eval（2026-11-06） 3.3「…どれも構造物（QJG の防波堤の先・岩…）」。fix-2 の歯止め（naval_near：100 m 先の 80 m の候補。rise 6.7 dB で当日来た船と見られる）で残っていた"
+   }
+  },
+  {
+   "id": "QJG-003",
+   "lon": 120.571846,
+   "lat": 36.108705,
+   "radius_m": 30,
+   "kind": "pier_part",
+   "status": "confirmed",
+   "confirmed_by": "2部",
+   "added_utc": "2026-11-06",
+   "expires_utc": null,
+   "evidence": {
+    "base_db": 16.5,
+    "spread_db": 2.5,
+    "rise_db": 0.7,
+    "length_m": 46,
+    "s_scenes": "2026-04-17 の 1 撮影で S（開けた水面）。QJG-002 から 48 m、同じ防波堤の先端",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）",
+      "by": [
+       "2部",
+       "3部（再確認）"
+      ],
+      "ref": "2部の目視の図 struct_esri.png のパネル 23（QJG L46 n74）（内部の確認用。再配布しない）"
+     }
+    ],
+    "note": "防波堤の先端（丸い頭）。2部の設計書 fixed_eval（2026-11-06） 3.3 と同じ"
+   }
+  }
+ ]
+}

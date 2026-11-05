@@ -157,7 +157,11 @@ class GuardTest(unittest.TestCase):
                           (110.0, 21.004, 59))
         ctx = [{"berth_class": "naval"}, {"berth_class": "naval"}, {"berth_class": "naval"}, {"berth_class": "civil"},
                {"berth_class": "unknown", "yard_line": True}]
-        self.assertEqual(fixed.guard_reasons(dets, ctx), [["naval_long"], ["naval_near"], [], [], ["yard_line"]])
+        # yard_line only on a naval shipyard berth (1部の指摘：「軍の造船所と言える根拠が無い」unknown の線には付けない)
+        self.assertEqual(fixed.guard_reasons(dets, ctx), [["naval_long"], ["naval_near"], [], [], []])
+        ctx[4]["berth_class"] = "naval"
+        self.assertEqual(fixed.guard_reasons(dets, ctx)[4], ["yard_line"])
+        ctx[4]["berth_class"] = "unknown"
         dets[0]["length_m"] = 59      # no naval candidate of 60 m left: no piece either
         self.assertEqual(fixed.guard_reasons(dets, ctx)[:2], [[], []])
         self.assertEqual(fixed.guard_reasons(dets[:1], [{"yard_site": True, "yard_sector": True}]),

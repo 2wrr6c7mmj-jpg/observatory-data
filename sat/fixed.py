@@ -24,22 +24,33 @@ From ``SINCE_UTC`` only (earlier rows are not rewritten): a fixed candidate stay
 ``fixed_excluded`` = "structure" and is not counted (``at_berth``), like win-1's ``window_excluded``. Zhanjiang's
 golden scenes are older than SINCE_UTC, so tests/sat_zjg_golden.py is unchanged.
 
-fix-2, guard only (2部の設計書 fixed_eval 4.2 の 3, from ``FIX2_SINCE``): the structure test cannot tell a structure from
-a ship that stays at one berth for months (bright when "empty", nothing new today). A candidate that meets it is kept
-(``fixed_flag`` = "guarded", ``ship_conf`` = "low", counted as before fix-1) when any of these holds (``fixed_guard``):
+fix-2 (2部の設計書 fixed_eval 4.2, from ``FIX2_SINCE``): the structure test cannot tell a structure from a ship that
+stays at one berth for months (bright when "empty", nothing new today). In two steps, so that the merge of split pieces
+(split_eval (b)) can come in between without changing this module:
 
-    naval_long   the nearest berth line (berths.py, naval-1: keep_m in the quay band, the window's band_m in the open
-                 water) is naval and the candidate is ``GUARD["naval_len_m"]`` or longer
-    naval_near   that line is naval and a candidate of the same scene on a naval line, ``naval_len_m`` or longer, is
-                 within ``GUARD["near_m"]`` (a split piece of a moored warship; until split pieces are merged)
-    yard_site    the site's kind is yard
-    yard_sector  the candidate is in a shipyard sector (role dock / slip / fitout / hall_apron)
-    yard_line    the nearest berth line is a shipyard berth of the class file (why "造船所の岸壁…")
+1. ``score`` (per candidate, nothing is excluded yet): fix-1's ``assess`` (``structure`` = S) and the match with the
+   registry of confirmed fixed objects (sat/fixed_registry.py; centre within the entry's radius_m). ``bridge_ok`` says
+   whether a candidate may join two others in the merge: never an S or a registry candidate (a structure must not join a
+   ship to a pier or two ships into one long object).
+2. ``decide`` (per object: a merged group of candidates, or each candidate alone until the merge exists):
+   - every piece is S or in the registry, and no guard: not counted, ``fixed_excluded`` = "registry" (all pieces in
+     the registry) or "structure";
+   - the guard (``fixed_guard``) keeps it (``fixed_flag`` = "guarded", ``berthed_long`` = true, ``ship_conf`` low):
+       naval_long   the nearest berth line (berths.py, naval-1: keep_m in the quay band, the window's band_m in the open
+                    water) is naval and the object is ``GUARD["naval_len_m"]`` or longer
+       naval_near   that line is naval and a counted naval object of ``naval_len_m`` or more (not left out by berth-1 or
+                    win-1, not dropped by the registry) is within ``GUARD["near_m"]`` (a split piece; until the merge)
+       yard_site    the site's kind is yard
+       yard_sector  in a shipyard sector (role dock / slip / fitout / hall_apron)
+       yard_line    the nearest berth line is a naval shipyard berth of the class file (why "造船所の岸壁…", class naval)
+     except that registry entries of kind pier_part or mask_error (a person saw a structure) win over the guard when
+     every piece is in them and did not rise today (rise_db < DEFAULTS["rise_db"]: a ship that came alongside is kept);
+   - flags that never change the counts: ``point`` (open water, 40 m or less, weak but always there: a buoy or a
+     beacon) and ``field`` (5 or more small open-water candidates within 300 m: rafts, nets or a fishing fleet).
 
-``fixed_guard`` (the reasons, "+"-joined) and ``fixed_guard_class`` (the line class used) are written on every fix-2
-candidate, excluded or not, so the decision can be traced either way. The registry of confirmed fixed objects, the point
-and field flags and ``berthed_long`` of the design are not in this version yet (they do not change the counts, except the
-registry, which will carry its own hash per scene).
+``fixed_guard`` (the reasons, "+"-joined), ``fixed_guard_class`` (the line class used) and ``fixed_registry_id`` are
+written on every fix-2 candidate, excluded or not. Each scene records ``registry_hash`` (sat/fixed_registry.py) in
+status.json: a registry change changes the counts.
 """
 from __future__ import annotations
 
@@ -58,6 +69,14 @@ GUARD = {
 }
 YARD_ROLES = ("dock", "slip", "fitout", "hall_apron")
 GUARD_REASONS = ("naval_long", "naval_near", "yard_site", "yard_sector", "yard_line")
+REVISION = 2              # fix-2 revisions: 1 = the guard only (PR #76), 2 = registry, point / field, object decision
+POINT = {                 # a weak spot that is always there (design 4.2 の 4); flag only
+    "max_len_m": 40.0,    # the median length of split pieces (split_eval)
+    "base_db": 4.0, "spread_db": 5.0, "rise_db": 6.0,   # looser than fix-1: weak but always there
+}                          # and in the open water (zone harbour: 50 m or more from the land mask, cfar-v1's quay band)
+FIELD = {"radius_m": 300.0, "min_n": 5, "max_len_m": 40.0}   # the ocean cluster rule scaled to 10 m pixels; flag only,
+                                                            # provisional (no field in the 2026-11 sample)
+FLAGS = ("guarded", "point", "field")
 DEFAULTS = {
     "bright_db": 8.0,      # baseline p10 this far above the site's water p10: bright when the berth is empty
     "rise_db": 3.0,        # today's VV over the baseline p10, median of the candidate's pixels
@@ -76,7 +95,10 @@ NOTE = {
     "structure": "空の岸壁の基準でも明るく（水面の p10 より bright_db 以上）、当日も上がっておらず（rise_db 未満）、"
                  "基準の p90−p10 も小さい：桟橋の縁・係船柱・ブイ・クレーン台船など。数えない",
     "guarded": "fix-2：structure の条件に当たるが、海軍の岸壁の 60 m 以上の候補（またはその片）か造船所の候補なので外さずに数える"
-               "（長く係留している艦は構造物と同じく基準でも明るく当日も変化しないため）。理由は fixed_guard",
+               "（長く係留している艦は構造物と同じく基準でも明るく当日も変化しないため）。理由は fixed_guard。berthed_long＝true",
+    "registry": "fix-2：人が光学画像で構造物と確かめた台帳（sat/fixed_registry）の点の radius_m 以内。数えない。項目は fixed_registry_id",
+    "point": "fix-2：開けた水面の小さく弱いがいつもある点（ブイ・灯標など）。数は変えない。2 撮影以上で同じ点なら台帳の候補",
+    "field": "fix-2：開けた水面の小さい候補の密集（筏・網・漁船団）。数は変えない",
     "ship_conf": "船らしさ。high＝当日だけ基準より大きく上がり（high_rise_db 以上、z high_z 以上）、VH も強く、長さ high_len_m 以上。"
                  "medium＝基準より rise_db 以上上がった。low＝それ以外（よく船がいる所か、変化が弱い）。基準の無い軌道は自分の画像の"
                  "コントラストだけで、medium まで",
@@ -100,21 +122,38 @@ def _dist_m(a: dict, b: dict) -> float:
     return math.hypot((a["lon"] - b["lon"]) * mx, (a["lat"] - b["lat"]) * my)
 
 
-def guard_reasons(dets: list[dict], ctx: list[dict], cfg: dict | None = None) -> list[list[str]]:
-    """fix-2's guard for every candidate (all of them, structure or not). ``ctx[i]``: {"berth_class": naval / civil /
-    unknown / None, "yard_site", "yard_sector", "yard_line": bool} for ``dets[i]`` (which has lon, lat, length_m)."""
+def counted_base(d: dict) -> bool:
+    """Not left out before the fixed decision (berth-1, win-1, anchorage): may anchor naval_near."""
+    return not d.get("berth_excluded") and not d.get("window_excluded") and d.get("window") != "anchorage"
+
+
+def guard_reasons(dets: list[dict], ctx: list[dict], cfg: dict | None = None, objects: list[list[int]] | None = None,
+                  lengths: list[float] | None = None, anchor_ok: list[bool] | None = None) -> list[list[str]]:
+    """fix-2's guard for every object (default: each candidate alone), structure or not. ``ctx[i]``: {"berth_class":
+    naval / civil / unknown / None, "yard_site", "yard_sector", "yard_line": bool} for ``dets[i]`` (lon, lat,
+    length_m). ``lengths``: the objects' lengths (default: the longest piece). ``anchor_ok``: per object, may it anchor
+    naval_near (default: every piece ``counted_base``)."""
     g = {**GUARD, **(cfg or {})}
     long_m, near_m = float(g["naval_len_m"]), float(g["near_m"])
-    naval = [c.get("berth_class") == "naval" for c in ctx]
-    anchors = [i for i, d in enumerate(dets) if naval[i] and float(d.get("length_m") or 0) >= long_m]
+    objs = objects if objects is not None else [[i] for i in range(len(dets))]
+    lens = lengths if lengths is not None else [max(float(dets[i].get("length_m") or 0) for i in o) for o in objs]
+    ok = anchor_ok if anchor_ok is not None else [all(counted_base(dets[i]) for i in o) for o in objs]
+    naval = [any(ctx[i].get("berth_class") == "naval" for i in o) for o in objs]
+    anchors = [k for k in range(len(objs)) if naval[k] and lens[k] >= long_m and ok[k]]
     out = []
-    for i, (d, c) in enumerate(zip(dets, ctx)):
+    for k, o in enumerate(objs):
         r = []
-        if naval[i] and float(d.get("length_m") or 0) >= long_m:
+        if naval[k] and lens[k] >= long_m:
             r.append("naval_long")
-        elif naval[i] and any(j != i and _dist_m(d, dets[j]) <= near_m for j in anchors):
+        elif naval[k] and any(j != k and any(_dist_m(dets[i], dets[m]) <= near_m for i in o for m in objs[j])
+                              for j in anchors):
             r.append("naval_near")
-        r += [k for k in ("yard_site", "yard_sector", "yard_line") if c.get(k)]
+        if any(ctx[i].get("yard_site") for i in o):
+            r.append("yard_site")
+        if any(ctx[i].get("yard_sector") for i in o):
+            r.append("yard_sector")
+        if any(ctx[i].get("yard_line") and ctx[i].get("berth_class") == "naval" for i in o):
+            r.append("yard_line")
         out.append(r)
     return out
 
@@ -199,29 +238,110 @@ def assess(d: dict, vv_s: np.ndarray, base: dict | None, wp10: float | None, cfg
     return out
 
 
+def score(dets: list[dict], vv_s: np.ndarray, base: dict | None, wp10: float | None, cfg: dict | None = None,
+          registry: list[dict] | None = None, version: str = VERSION) -> list[dict]:
+    """Step 1 of fix-2, per candidate (nothing excluded yet): fix-1's ``assess`` with its exclusion taken back into
+    ``S``, and the registry entry the candidate's centre falls in (``reg``). Returns one dict per candidate."""
+    from . import fixed_registry as freg
+    out = []
+    for d in dets:
+        r = assess(d, vv_s, base, wp10, cfg, version)
+        r["S"] = r["fixed_excluded"] == "structure"
+        r["fixed_excluded"] = ""
+        e = freg.match(registry, d["lon"], d["lat"]) if registry and "lon" in d else None
+        r["reg"] = e
+        out.append(r)
+    return out
+
+
+def bridge_ok(sc: dict) -> bool:
+    """May this candidate join others in the merge of split pieces? Never an S or a registry candidate (design 5)."""
+    return not sc.get("S") and not sc.get("reg")
+
+
+def decide(dets: list[dict], scores: list[dict], ctx: list[dict] | None, cfg: dict | None = None,
+           objects: list[list[int]] | None = None, lengths: list[float] | None = None) -> dict:
+    """Step 2 of fix-2, per object (``objects``: lists of candidate indices; default each candidate alone; ``lengths``:
+    the merged lengths). Writes the fields into every candidate and returns the counts."""
+    from . import fixed_registry as freg
+    c = {**DEFAULTS, **(cfg or {})}
+    n = len(dets)
+    ctx = ctx if ctx is not None else [{} for _ in range(n)]
+    objs = objects if objects is not None else [[i] for i in range(n)]
+    lens = lengths if lengths is not None else [max(float(dets[i].get("length_m") or 0) for i in o) for o in objs]
+
+    def overrides(i):  # a confirmed structure kind that did not rise today wins over the guard
+        e, r = scores[i]["reg"], scores[i].get("rise_db")
+        return bool(e) and e["kind"] in freg.OVERRIDES_GUARD and r is not None and r < float(c["rise_db"])
+
+    dropped_by_reg = [all(overrides(i) for i in o) for o in objs]
+    anchor_ok = [all(counted_base(dets[i]) for i in o) and not dropped_by_reg[k] for k, o in enumerate(objs)]
+    reasons = guard_reasons(dets, ctx, cfg, objs, lens, anchor_ok)
+    counts = {"structure": 0, "registry": 0, "guarded": 0, "point": 0, "field": 0, "high": 0, "medium": 0, "low": 0,
+              "no_baseline": 0, "guarded_by": {k: 0 for k in GUARD_REASONS}}
+    small = [dets[i].get("zone") == "harbour" for i in range(n)]
+    for k, o in enumerate(objs):
+        all_reg = all(scores[i]["reg"] for i in o)
+        fixed = all(scores[i]["S"] or scores[i]["reg"] for i in o)
+        why = reasons[k]
+        excl, flag = "", ""
+        if fixed:
+            if not why or dropped_by_reg[k]:
+                excl = "registry" if all_reg else "structure"
+            else:
+                flag = "guarded"
+        if not excl and not flag and lens[k] <= POINT["max_len_m"] and all(small[i] for i in o):
+            bs = [(scores[i].get("base_db"), scores[i].get("spread_db"), scores[i].get("rise_db")) for i in o]
+            if all(b is not None and sp is not None and r is not None and b >= POINT["base_db"]
+                   and sp < POINT["spread_db"] and r < POINT["rise_db"] for b, sp, r in bs):
+                flag = "point"
+            elif lens[k] <= FIELD["max_len_m"]:
+                near = sum(1 for j in range(n) if small[j] and float(dets[j].get("length_m") or 0) <= FIELD["max_len_m"]
+                           and any(_dist_m(dets[i], dets[j]) <= FIELD["radius_m"] for i in o))
+                if near >= FIELD["min_n"]:
+                    flag = "field"
+        for i in o:
+            r = {kk: v for kk, v in scores[i].items() if kk not in ("S", "reg")}
+            e = scores[i]["reg"]
+            r.update(fixed_excluded=excl, fixed_flag=flag, fixed_guard="+".join(why),
+                     fixed_guard_class=ctx[i].get("berth_class") or "", fixed_registry_id=e["id"] if e else "",
+                     berthed_long=flag == "guarded")
+            if excl:
+                r["ship_conf"] = None
+            elif r.get("ship_conf") is None:
+                r["ship_conf"] = "low"
+            dets[i].update(r)
+            if excl:
+                counts[excl] += 1
+            else:
+                counts[r["ship_conf"]] += 1
+                if flag:
+                    counts[flag] += 1
+                    if flag == "guarded":
+                        for kk in why:
+                            counts["guarded_by"][kk] += 1
+            if r.get("basis", "").startswith("no_baseline"):
+                counts["no_baseline"] += 1
+    counts["version"] = VERSION
+    counts["revision"] = REVISION
+    return counts
+
+
 def classify(dets: list[dict], vv_db: np.ndarray, base: dict | None, meta: dict | None, water: np.ndarray | None,
-             cfg: dict | None = None, version: str = FIX1_VERSION, guard_ctx: list[dict] | None = None) -> dict:
-    """Writes ``assess`` into every candidate. Returns the counts (structure, high, medium, low, no_baseline; fix-2 also
-    guarded and guarded_by: reason -> count). ``version`` fix-2: the guard (``guard_ctx``, one dict per candidate, see
-    ``guard_reasons``; None = no berth class and no shipyard, so no guard) keeps a structure candidate."""
+             cfg: dict | None = None, version: str = FIX1_VERSION, guard_ctx: list[dict] | None = None,
+             registry: list[dict] | None = None, registry_hash: str = "") -> dict:
+    """Writes the decision into every candidate. fix-1: ``assess`` (counts structure, high, medium, low, no_baseline).
+    fix-2: ``score`` then ``decide`` with each candidate as its own object (``guard_ctx``: one dict per candidate, see
+    ``guard_reasons``; None = no berth class and no shipyard; ``registry``: the site's active entries)."""
     vv_s = smooth3_db(vv_db)
     wp10 = water_p10(base, meta, water) if base is not None else None
+    if version == VERSION:
+        counts = decide(dets, score(dets, vv_s, base, wp10, cfg, registry, version), guard_ctx, cfg)
+        counts["registry_hash"] = registry_hash
+        return counts
     counts = {"structure": 0, "high": 0, "medium": 0, "low": 0, "no_baseline": 0}
-    fix2 = version == VERSION
-    if fix2:
-        ctx = guard_ctx if guard_ctx is not None else [{} for _ in dets]
-        reasons = guard_reasons(dets, ctx, cfg)
-        counts.update(guarded=0, guarded_by={k: 0 for k in GUARD_REASONS})
-    for i, d in enumerate(dets):
+    for d in dets:
         r = assess(d, vv_s, base, wp10, cfg, version)
-        if fix2:
-            why = reasons[i]
-            r.update(fixed_flag="", fixed_guard="+".join(why), fixed_guard_class=ctx[i].get("berth_class") or "")
-            if r["fixed_excluded"] == "structure" and why:   # a structure by fix-1's test, kept by the guard
-                r.update(fixed_excluded="", fixed_flag="guarded", ship_conf="low")
-                counts["guarded"] += 1
-                for k in why:
-                    counts["guarded_by"][k] += 1
         d.update(r)
         if r["fixed_excluded"]:
             counts["structure"] += 1
@@ -233,20 +353,41 @@ def classify(dets: list[dict], vv_db: np.ndarray, base: dict | None, meta: dict 
     return counts
 
 
-def settings() -> dict:
-    return {"version": VERSION, "since_utc": SINCE_UTC, "defaults": DEFAULTS, "notes": NOTE, "labels": CONF_LABEL,
-            "versions": [{"version": FIX1_VERSION, "since_utc": SINCE_UTC, "until_utc": FIX2_SINCE},
-                         {"version": VERSION, "since_utc": FIX2_SINCE}],
+def settings(registry_hashes: dict | None = None) -> dict:
+    """meta.json "fixed". ``registry_hashes``: {site: hash of its active registry entries}."""
+    if FIX2_SINCE <= SINCE_UTC:   # fix-1 never applied to a scene: fix-2 from the start
+        versions = [{"version": VERSION, "since_utc": FIX2_SINCE, "revision": REVISION,
+                     "note": "fix-1 は公開データの撮影に一度も適用されないまま fix-2 に置き換えた（適用期間なし）"}]
+    else:
+        versions = [{"version": FIX1_VERSION, "since_utc": SINCE_UTC, "until_utc": FIX2_SINCE},
+                    {"version": VERSION, "since_utc": FIX2_SINCE, "revision": REVISION}]
+    return {"version": VERSION, "revision": REVISION, "since_utc": SINCE_UTC, "defaults": DEFAULTS, "notes": NOTE,
+            "labels": CONF_LABEL, "versions": versions,
             "guard": {**GUARD, "yard_roles": list(YARD_ROLES), "reasons": list(GUARD_REASONS),
-                      "rule": ("fix-2：structure の条件に当たる候補でも、次のどれかに当たれば外さずに数える（fixed_flag＝guarded、"
-                               "ship_conf＝low）。naval_long＝最も近い着く線（naval-1 と同じ距離：岸壁帯は keep_m、開けた水面は窓の band_m）が"
-                               "海軍で長さ naval_len_m 以上。naval_near＝その線が海軍で、同じ撮影の near_m 以内に海軍の線の naval_len_m 以上の候補"
+                      "rule": ("fix-2：structure の条件に当たる候補（または台帳に載った候補）でも、次のどれかに当たれば外さずに数える"
+                               "（fixed_flag＝guarded、berthed_long＝true、ship_conf＝low）。naval_long＝最も近い着く線（naval-1 と同じ距離："
+                               "岸壁帯は keep_m、開けた水面は窓の band_m）が海軍で、物体の長さ naval_len_m 以上。naval_near＝その線が海軍で、"
+                               "同じ撮影の near_m 以内に、数えている（berth-1・win-1 で外れず、台帳で外れない）海軍の naval_len_m 以上の物体がある"
                                "（係留中の艦の割れた片。片をまとめる処理が入るまでの代わり）。yard_site＝地点の kind が yard。"
-                               "yard_sector＝造船所の区画（role が yard_roles）。yard_line＝最も近い着く線が造船所の岸壁"
-                               "（sat/berth_class の why が「造船所の岸壁」）。理由 fixed_guard と、使った線の区分 fixed_guard_class は、"
-                               "外した候補にも残した候補にも記録する。人が確かめた固定物の台帳・点状（P）・密集（F）の印・berthed_long は未実装"),
-                      "source": "2部の設計書 fixed_eval（2026-11-06）4.2 の 3"},
+                               "yard_sector＝造船所の区画（role が yard_roles）。yard_line＝最も近い着く線が海軍の造船所の岸壁"
+                               "（sat/berth_class の why が「造船所の岸壁」で区分 naval）。ただし台帳の pier_part・mask_error（人が構造物と確かめた点）"
+                               "で、当日も上がっていない（rise_db が defaults の rise_db 未満）ものは歯止めより優先して外す。理由 fixed_guard と、"
+                               "使った線の区分 fixed_guard_class は、外した候補にも残した候補にも記録する"),
+                      "source": "2部の設計書 fixed_eval（2026-11-06）4.2"},
+            "registry": {"files": "sat/fixed_registry/<地点>.json", "geojson": "fixed/<地点>.geojson",
+                         "match": "候補の中心が項目の radius_m 以内（既定 30 m、上限 100 m）",
+                         "active": "status が confirmed で confirmed_by（2部・owner）があり、撮影日が expires_utc より前",
+                         "expires_days": {"gear": 120, "raft": 120}, "hashes": registry_hashes or {},
+                         "per_scene": "status.json の撮影ごとの fixed.registry_hash"},
+            "point": {**POINT, "rule": "開けた水面（陸マスクから 50 m 以上、zone harbour）で長さ max_len_m 以下、base_db 以上・"
+                                       "spread_db 未満・rise_db 未満：ブイ・灯標などの弱いがいつもある点。数は変えない（fixed_flag＝point）"},
+            "field": {**FIELD, "rule": "開けた水面の max_len_m 以下の候補が同じ撮影の radius_m 以内に min_n 件以上（自分を含む）："
+                                       "筏・網・漁船団。1 撮影では区別できないので数は変えない（fixed_flag＝field）。値は仮置き"},
+            "order": ("検出 → win-1 → fix-2 の採点（score：S と台帳の一致。まだ外さない）→ 割れのまとめ（入れる場合。S と台帳の候補は"
+                      "つなぎにしない：bridge_ok）→ fix-2 の判定（decide：物体の単位。物体を外すのは片がすべて S か台帳で、"
+                      "物体の長さで歯止めにかからないとき）→ size-1（まとめた後の長さ）→ naval-1 の数・quay・est-1・est-2。"
+                      "まとめの処理が無いうちは候補 1 つを物体とする"),
             "rule": ("候補の画素（その日の明るい順に pixels 個、3×3 平均）を、同じ軌道の空の岸壁の基準（VV p10・p90）と比べる。"
                      "base_db＝基準の p10 と水面の p10 の差、rise_db＝その日の VV と基準の p10 の差の中央値、rise_z＝画素数で割り引いた z。"
-                     "structure の候補は detections/ に fixed_excluded 付きで残し、件数（harbour_candidates・quay_candidates・錨泊・区画）に入れない。"
-                     "SINCE_UTC より前の行は書き換えない")}
+                     "structure・registry の候補は detections/ に fixed_excluded 付きで残し、件数（harbour_candidates・quay_candidates・"
+                     "錨泊・区画）に入れない。point・field は印だけで数は変えない。SINCE_UTC より前の行は書き換えない")}
