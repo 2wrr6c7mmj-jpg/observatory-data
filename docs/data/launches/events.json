@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-02T07:50:31Z",
+ "generated_utc": "2026-11-05T02:17:23Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -218,15 +218,6 @@
    "bearing_spread_deg": 0.0,
    "inclination_deg": 101.2,
    "recorded_launches": [
-    {
-     "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-     "name": "Mir | Demo Flight",
-     "status": "TBC",
-     "net_utc": "2026-11-04T05:00:00Z",
-     "rocket": "Mir",
-     "orbit": "LEO",
-     "pad": "ADD Offshore launch platform"
-    },
     {
      "ll2_id": "e0741415-6c63-4236-9736-24a6c04485bc",
      "name": "Nuri | NeonSat-2 to 6",
@@ -500,29 +491,21 @@
    "distance_km": 848
   },
   {
-   "window_start_utc": "2026-11-05T20:00Z",
-   "window_end_utc": "2026-11-09T23:00Z",
+   "window_start_utc": "2026-11-05T15:00Z",
+   "window_end_utc": "2026-11-05T17:00Z",
    "areas": [
     [
-     9.14,
-     119.21
-    ],
-    [
-     19.598,
-     110.936
+     18.384,
+     111.573
     ]
    ],
    "notices": [
-    "aviation:B5731/26",
-    "maritime:琼航警221/2026",
-    "aviation:B5826/26"
+    "maritime:琼航警225/2026"
    ],
-   "method": "aligned",
-   "site": "西昌",
+   "method": "nearest-only",
+   "site": "文昌",
    "country": "CN",
-   "azimuth_deg": 135.6,
-   "bearing_spread_deg": 1.6,
-   "inclination_deg": 52.0,
+   "distance_km": 151,
    "recorded_launches": [
     {
      "ll2_id": "711de6bc-f755-475b-a12f-ec5240da3a11",
@@ -532,6 +515,60 @@
      "rocket": "Long March 2C",
      "orbit": "N/A",
      "pad": "Launch Complex 3 (LC-3/LA-1)"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-05T19:00Z",
+   "window_end_utc": "2026-11-09T23:00Z",
+   "areas": [
+    [
+     9.151,
+     119.226
+    ],
+    [
+     19.598,
+     110.936
+    ]
+   ],
+   "notices": [
+    "maritime:NAVAREA XI 26-0494",
+    "aviation:B5731/26",
+    "maritime:琼航警221/2026",
+    "aviation:B5826/26"
+   ],
+   "method": "aligned",
+   "site": "西昌",
+   "country": "CN",
+   "azimuth_deg": 135.6,
+   "bearing_spread_deg": 1.5,
+   "inclination_deg": 52.0
+  },
+  {
+   "window_start_utc": "2026-11-08T20:17Z",
+   "window_end_utc": "2026-11-08T20:47Z",
+   "areas": [
+    [
+     9.14,
+     119.21
+    ]
+   ],
+   "notices": [
+    "aviation:B5920/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 1464,
+   "recorded_launches": [
+    {
+     "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
+     "name": "Long March 12 | SatNet LEO Group TBD?",
+     "status": "Go",
+     "net_utc": "2026-11-08T20:25:00Z",
+     "rocket": "Long March 12",
+     "orbit": "LEO",
+     "pad": "Commercial LC-2"
     }
    ]
   },
@@ -570,9 +607,13 @@
    "distance_km": 1386
   },
   {
-   "window_start_utc": "2026-11-20T11:00Z",
-   "window_end_utc": "2026-11-23T14:00Z",
+   "window_start_utc": "2026-11-20T10:30Z",
+   "window_end_utc": "2026-11-23T14:10Z",
    "areas": [
+    [
+     12.25,
+     116.641
+    ],
     [
      12.81,
      116.057
@@ -583,26 +624,16 @@
     ]
    ],
    "notices": [
+    "aviation:B5910/26",
     "aviation:B5829/26",
     "aviation:B5830/26"
    ],
    "method": "aligned",
-   "site": "文昌",
+   "site": "西昌",
    "country": "CN",
-   "azimuth_deg": 143.4,
-   "bearing_spread_deg": 0.1,
-   "inclination_deg": 55.8,
-   "recorded_launches": [
-    {
-     "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
-     "name": "Long March 8A | SatNet LEO Group TBD?",
-     "status": "TBC",
-     "net_utc": "2026-11-20T11:00:00Z",
-     "rocket": "Long March 8A",
-     "orbit": "LEO",
-     "pad": "Commercial LC-1"
-    }
-   ]
+   "azimuth_deg": 137.0,
+   "bearing_spread_deg": 1.0,
+   "inclination_deg": 53.1
   },
   {
    "window_start_utc": "2026-11-24T07:00Z",
@@ -772,9 +803,9 @@
   },
   {
    "ll2_id": "f3f201cd-0ff9-4ff7-9aaa-1d22c399c75a",
-   "name": "Kinetica 2 | SpaceSail Polar Group TBD?",
-   "status": "Go",
-   "net_utc": "2026-11-03T00:10:00Z",
+   "name": "Kinetica 2 | SpaceSail Polar Group #17",
+   "status": "Success",
+   "net_utc": "2026-11-03T00:15:00Z",
    "rocket": "Kinetica 2",
    "provider": "CAS Space",
    "orbit": "PO",
@@ -786,23 +817,6 @@
    "lon": 100.21939,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/f3f201cd-0ff9-4ff7-9aaa-1d22c399c75a/",
    "event_index": null
-  },
-  {
-   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-   "name": "Mir | Demo Flight",
-   "status": "TBC",
-   "net_utc": "2026-11-04T05:00:00Z",
-   "rocket": "Mir",
-   "provider": "Agency for Defense Development",
-   "orbit": "LEO",
-   "mission_type": "Test Flight",
-   "pad": "ADD Offshore launch platform",
-   "location": "Sea Launch",
-   "country": "???",
-   "lat": 33.216667,
-   "lon": 126.366667,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
-   "event_index": 8
   },
   {
    "ll2_id": "711de6bc-f755-475b-a12f-ec5240da3a11",
@@ -822,23 +836,6 @@
    "event_index": 22
   },
   {
-   "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
-   "name": "Long March 12 | SatNet LEO Group TBD?",
-   "status": "Go",
-   "net_utc": "2026-11-05T21:15:00Z",
-   "rocket": "Long March 12",
-   "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "LEO",
-   "mission_type": "Communications",
-   "pad": "Commercial LC-2",
-   "location": "Wenchang Space Launch Site, People's Republic of China",
-   "country": "CHN",
-   "lat": 19.59755,
-   "lon": 110.936481,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/a2423132-f965-423f-8b03-6891b775dc54/",
-   "event_index": null
-  },
-  {
    "ll2_id": "e91d1da2-819b-4523-95bf-39ac7daa871d",
    "name": "Ceres-2 | Unknown Payload",
    "status": "Go",
@@ -856,6 +853,23 @@
    "event_index": null
   },
   {
+   "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
+   "name": "Long March 12 | SatNet LEO Group TBD?",
+   "status": "Go",
+   "net_utc": "2026-11-08T20:25:00Z",
+   "rocket": "Long March 12",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-2",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.59755,
+   "lon": 110.936481,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a2423132-f965-423f-8b03-6891b775dc54/",
+   "event_index": 24
+  },
+  {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
    "name": "Long March 8A | SatNet LEO Group TBD?",
    "status": "TBC",
@@ -870,7 +884,7 @@
    "lat": 19.597275,
    "lon": 110.930753,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a2975167-7c6f-4403-99e1-b40df17c8140/",
-   "event_index": 25
+   "event_index": null
   },
   {
    "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
@@ -887,7 +901,7 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
-   "event_index": 26
+   "event_index": 28
   },
   {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
@@ -904,6 +918,23 @@
    "lat": 40.957893,
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+   "name": "Mir | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-11-30T00:00:00Z",
+   "rocket": "Mir",
+   "provider": "Agency for Defense Development",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "pad": "ADD Offshore launch platform",
+   "location": "Sea Launch",
+   "country": "???",
+   "lat": 33.216667,
+   "lon": 126.366667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
    "event_index": null
   },
   {

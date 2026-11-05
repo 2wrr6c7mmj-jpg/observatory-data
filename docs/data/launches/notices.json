@@ -1,6 +1,6 @@
 {
- "last_retrieved_utc": "2026-11-02T07:50:31Z",
- "last_snapshot": "snapshot-0049bb3fc960e8d8.json",
+ "last_retrieved_utc": "2026-11-05T02:17:23Z",
+ "last_snapshot": "snapshot-5c891328e73189fc.json",
  "notices": {
   "aviation:B5731/26": {
    "authority": "RPHI",
@@ -111,7 +111,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "B5829/26",
    "key": "aviation:B5829/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -153,7 +153,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "B5830/26",
    "key": "aviation:B5830/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -203,7 +203,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "B5831/26",
    "key": "aviation:B5831/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -235,6 +235,97 @@
    "start_utc": "2026-11-24T07:00:00Z",
    "text": "B5831/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2611240700 C) 2611271000\r\nD) 0700-1000\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E - \r\n092800N 1191300E -\r\n085700N 1193600E -\r\n084500N 1192000E - \r\n091600N 1185700E\r\n(27NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
   },
+  "aviation:B5910/26": {
+   "authority": "RPHI",
+   "end_utc": "2026-11-23T14:10:00Z",
+   "evidence": [
+    "AEROSPACE FLT"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "B5910/26",
+   "key": "aviation:B5910/26",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       12.5,
+       116.9167
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       12,
+       116.3667
+      ]
+     ]
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-11-20T10:30:00Z",
+   "text": "B5910/26 NOTAMN\r\nQ) RPHI/QANLC/I /NBO/E /140/999/1207N11525E090\r\nA) RPHI B) 2611201030 C) 2611231410\r\nD) 1030-1410\r\nE) RNAV RTE CLSD WI MANILA FIR:\r\nM754 (NOBEN - LULBU)\r\nM765 (PANDI - NOBEN)\r\nDUE SPECIAL OPS (AEROSPACE FLT ACT).\r\n\r\nALTN RTE:\r\nNOBEN DCT 123000N 1165500E DCT LULBU - VICE VERSA\r\nPANDI DCT 120000N 1162200E DCT REKEL - VICE VERSA"
+  },
+  "aviation:B5919/26": {
+   "authority": "RPHI",
+   "end_utc": "2026-11-06T11:30:00Z",
+   "evidence": [
+    "AEROSPACE FLT"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "B5919/26",
+   "key": "aviation:B5919/26",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [],
+   "source": "aviation",
+   "start_utc": "2026-11-03T11:30:00Z",
+   "text": "B5919/26 NOTAMC B5826/26\r\nQ) RPHI/QWMXX/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2611031130\r\nE) SPECIAL OPS (AEROSPACE FLT ACT)(27NM SOUTHEAST OF PUERTO PRINCESA \r\nINTL AP) NEW NOTAM TO FLW."
+  },
+  "aviation:B5920/26": {
+   "authority": "RPHI",
+   "end_utc": "2026-11-08T20:47:00Z",
+   "evidence": [
+    "AEROSPACE FLT",
+    "EST FALL AREA"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "B5920/26",
+   "key": "aviation:B5920/26",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       9.2667,
+       118.95
+      ],
+      [
+       9.4667,
+       119.2167
+      ],
+      [
+       8.95,
+       119.6
+      ],
+      [
+       8.75,
+       119.3333
+      ],
+      [
+       9.2667,
+       118.95
+      ]
+     ]
+    }
+   ],
+   "source": "aviation",
+   "start_utc": "2026-11-08T20:17:00Z",
+   "text": "B5920/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2611082017 C) 2611082047\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E -\r\n092800N 1191300E -\r\n085700N 1193600E -\r\n084500N 1192000E -\r\n091600N 1185700E\r\n(29NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
+  },
   "aviation:P3998/26": {
    "authority": "RJJJ",
    "end_utc": "2026-11-16T15:00:00Z",
@@ -244,7 +335,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "P3998/26",
    "key": "aviation:P3998/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -360,7 +451,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "P3999/26",
    "key": "aviation:P3999/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -412,7 +503,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "P5375/26",
    "key": "aviation:P5375/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -475,7 +566,7 @@
    "first_seen_utc": "2026-11-02T07:50:31Z",
    "id": "P5506/26",
    "key": "aviation:P5506/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -528,7 +619,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN177/2026",
    "key": "maritime:HN177/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -553,7 +644,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN182/2026",
    "key": "maritime:HN182/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -578,7 +669,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN192/2026",
    "key": "maritime:HN192/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -603,7 +694,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN202/2026",
    "key": "maritime:HN202/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -628,7 +719,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "HN213/2026",
    "key": "maritime:HN213/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -644,6 +735,58 @@
    "start_utc": null,
    "text": "HN213/26 SOUTH CHINA SEA .ROCKET FIRING IN AREA WITHIN 5.4 SEA MILES RADIUS OF 19-35.85N 110-56.18E FROM 2020 UTC TO 2220 UTC DAILY FROM 5 TO 6 NOV. ENTERING PROHIBITED. HAINAN MSA CHINA."
   },
+  "maritime:HN217/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "WRECKAGE FROM THE ROCKET"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "HN217/2026",
+   "key": "maritime:HN217/2026",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       18.4482,
+       111.0348
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       18.8818,
+       111.6374
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       18.3287,
+       112.1229
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       17.8756,
+       111.4983
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "HN217/26 SOUTH CHINA SEA ，SOUTH CHINA SEA .WRECKAGE FROM THE ROCKET WILL FALL IN AREA BOUNDED BY THE LINES JOINING 18-26.892N/111-02.088E、18-52.908N/111-38.244E、18-19.722N/112-07.374E AND 17-52.536N/111-29.898E FROM 051500 UTC TO 051700 UTC NOV. ENTERING PROHIBITED. HAINAN MSA CHINA."
+  },
   "maritime:NAVAREA XI 26-0439": {
    "authority": "東シナ海及び北太平洋西部、ロケット打上げ",
    "end_utc": "2026-10-07T04:53:00Z",
@@ -653,7 +796,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "NAVAREA XI 26-0439",
    "key": "maritime:NAVAREA XI 26-0439",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -711,7 +854,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "NAVAREA XI 26-0486",
    "key": "maritime:NAVAREA XI 26-0486",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -760,6 +903,117 @@
    "start_utc": null,
    "text": "NO.26-0486 　　　発表日時：2026年10月28日 21時\n\n\nNORTH PACIFIC, WESTERN PART.\nROCKET LAUNCHING.\n040500Z TO 040900Z NOV, \nALTERNATE 0500Z TO 0900Z DAILY 02, 03\nAND 05 TO 30 NOV. AREAS BOUNDED BY\nA. 24-28-29N 132-46-04E\n   25-02-30N 133-46-43E\n   22-11-33N 135-39-51E\n   21-37-52N 134-40-15E.\nB. 15-42-03N 138-55-05E\n   16-08-26N 139-44-02E\n   13-55-46N 140-59-49E\n   13-29-29N 140-11-17E.\nCANCEL THIS MSG 301000Z NOV."
   },
+  "maritime:NAVAREA XI 26-0494": {
+   "authority": "スールー海、宇宙ゴミ落下",
+   "end_utc": "2026-11-06T01:00:00Z",
+   "evidence": [
+    "SPACE DEBRIS"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "NAVAREA XI 26-0494",
+   "key": "maritime:NAVAREA XI 26-0494",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       9.28,
+       118.99
+      ],
+      [
+       9.4,
+       119.15
+      ],
+      [
+       9.1,
+       119.37
+      ],
+      [
+       8.99,
+       119.21
+      ],
+      [
+       9.27,
+       118.95
+      ],
+      [
+       9.47,
+       119.21
+      ],
+      [
+       8.95,
+       119.6
+      ],
+      [
+       8.75,
+       119.33
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-11-05T19:00:00Z",
+   "text": "NO.26-0494 　　　発表日時：2026年11月02日 21時\n\n\nSULU SEA.\nSPACE DEBRIS.\n051900Z TO 060100Z NOV. AREAS BOUNDED BY\nA. 09-16.8N 118-59.4E\n   09-24.0N 119-09.0E\n   09-06.0N 119-22.2E\n   08-59.4N 119-12.6E.\n(2)09-16.2N 118-57.0E\n   09-28.2N 119-12.6E\n   08-57.0N 119-36.0E\n   08-45.0N 119-19.8E.\nCANCEL THIS MSG 060200Z NOV."
+  },
+  "maritime:NAVAREA XI 26-0496": {
+   "authority": "スールー海、宇宙ゴミ落下",
+   "end_utc": null,
+   "evidence": [
+    "SPACE DEBRIS"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "NAVAREA XI 26-0496",
+   "key": "maritime:NAVAREA XI 26-0496",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       9.28,
+       118.99
+      ],
+      [
+       9.4,
+       119.15
+      ],
+      [
+       9.1,
+       119.37
+      ],
+      [
+       8.99,
+       119.21
+      ]
+     ]
+    },
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       9.27,
+       118.95
+      ],
+      [
+       9.47,
+       119.21
+      ],
+      [
+       8.95,
+       119.6
+      ],
+      [
+       8.75,
+       119.33
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "NO.26-0496 　　　発表日時：2026年11月03日 21時\n\n\nSULU SEA.\nSPACE DEBRIS.\n081800Z TO 082400Z NOV. AREAS BOUNDED BY\nA. 09-16.8N 118-59.4E\n   09-24.0N 119-09.0E\n   09-06.0N 119-22.2E\n   08-59.4N 119-12.6E.\nB. 09-16.2N 118-57.0E\n   09-28.2N 119-12.6E\n   08-57.0N 119-36.0E\n   08-45.0N 119-19.8E.\nCANCEL 0494/26.\nCANCEL THIS MSG 090100Z NOV."
+  },
   "maritime:SD827/2026": {
    "authority": "中国沿海",
    "end_utc": null,
@@ -770,7 +1024,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "SD827/2026",
    "key": "maritime:SD827/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -849,7 +1103,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ272/26",
    "key": "maritime:ZJ272/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -901,7 +1155,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ332/26",
    "key": "maritime:ZJ332/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -953,7 +1207,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ350/26",
    "key": "maritime:ZJ350/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -1005,7 +1259,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ385/2026",
    "key": "maritime:ZJ385/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -1057,7 +1311,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ385/26",
    "key": "maritime:ZJ385/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "point",
@@ -1109,7 +1363,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "云航警51/25",
    "key": "maritime:云航警51/25",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1146,7 +1400,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "沪航警561/26",
    "key": "maritime:沪航警561/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1261,7 +1515,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "沪航警722/26",
    "key": "maritime:沪航警722/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1376,7 +1630,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警627/26",
    "key": "maritime:浙航警627/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1413,7 +1667,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警807/26",
    "key": "maritime:浙航警807/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1450,7 +1704,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警841/26",
    "key": "maritime:浙航警841/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1487,7 +1741,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警960/2026",
    "key": "maritime:浙航警960/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1524,7 +1778,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警960/26",
    "key": "maritime:浙航警960/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1561,7 +1815,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警130/26",
    "key": "maritime:琼航警130/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1587,7 +1841,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警138/26",
    "key": "maritime:琼航警138/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1613,7 +1867,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警148/26",
    "key": "maritime:琼航警148/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1639,7 +1893,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警174/26",
    "key": "maritime:琼航警174/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1665,7 +1919,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警182/2026",
    "key": "maritime:琼航警182/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1702,7 +1956,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警185/2026",
    "key": "maritime:琼航警185/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1728,7 +1982,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警190/2026",
    "key": "maritime:琼航警190/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1754,7 +2008,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警200/2026",
    "key": "maritime:琼航警200/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1780,7 +2034,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警210/2026",
    "key": "maritime:琼航警210/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1806,7 +2060,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "琼航警221/2026",
    "key": "maritime:琼航警221/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1823,6 +2077,43 @@
    "start_utc": "2026-11-05T20:20:00Z",
    "text": "琼航警221/26，南海，自11月6日至11月7日，每日0420时至0620时，在以19-35.85N 110-56.18E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
   },
+  "maritime:琼航警225/2026": {
+   "authority": "南海",
+   "end_utc": "2026-11-05T17:00:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-11-05T02:17:23Z",
+   "id": "琼航警225/2026",
+   "key": "maritime:琼航警225/2026",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       18.4482,
+       111.0348
+      ],
+      [
+       18.8818,
+       111.6374
+      ],
+      [
+       18.3287,
+       112.1229
+      ],
+      [
+       17.8756,
+       111.4983
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-11-05T15:00:00Z",
+   "text": "琼航警225/26，南海，11月5日2300时至6日0100时，在18-26.892N/111-02.088E、18-52.908N/111-38.244E、18-19.722N/112-07.374E和17-52.536N/111-29.898E 诸点连线水域范围内有火箭残骸掉落，禁止驶入。"
+  },
   "maritime:琼航警259/25": {
    "authority": "南海",
    "end_utc": "2025-12-31T23:10:00Z",
@@ -1832,7 +2123,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警259/25",
    "key": "maritime:琼航警259/25",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
@@ -1859,7 +2150,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "鲁航警629/26",
    "key": "maritime:鲁航警629/26",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1923,7 +2214,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "鲁航警906/2026",
    "key": "maritime:鲁航警906/2026",
-   "last_seen_utc": "2026-11-02T07:50:31Z",
+   "last_seen_utc": "2026-11-05T02:17:23Z",
    "shapes": [
     {
      "kind": "circle",
