@@ -24,6 +24,7 @@ import numpy as np
 from . import baseline as fbase
 from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
 from . import fixed as ffixed
+from . import raw_store
 from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
@@ -1385,7 +1386,8 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,
                  budget_left: float, max_scenes: int, log=print, probe: dict | None = None,
                  raw_dir: Path | None = None, lines_dir: Path = MASK_DIR,
-                 baseline_dir: Path = fbase.BASELINE_DIR, only: str | None = None) -> dict:
+                 baseline_dir: Path = fbase.BASELINE_DIR, only: str | None = None,
+                 keep_raw: Path | None = None) -> dict:
     grid = Grid.for_site(site)
     tag = mask_tag(site)
     sectors = site_sectors(site)
@@ -1530,6 +1532,14 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             log(f"{site['id']} {acq['acquired_utc']}: カラー画像を作れなかった {str(e)[:200]}")
         store.add(row, features, quick, extra)
         entry.update(result="counted", detector_info=info)
+        if keep_raw is not None:  # raw-1: the chip as fetched, for a later look (sat-raw/<day> branch, never docs/)
+            try:
+                raw_store.save_scene(keep_raw, site, grid, acq, data, mask=mask, mask_tag=tag, with_lia=with_lia,
+                                     processing_units=pu, retrieved_utc=retrieved, coverage=round(float(coverage), 3),
+                                     detector_version=DETECTOR_VERSION, detector_params=dict(DETECT_DEFAULTS),
+                                     info=info, dets=dets)
+            except Exception as e:  # never stops the count
+                log(f"{site['id']} {acq['acquired_utc']}: 切り出しを残せなかった {str(e)[:200]}")
         qtext = count_quay(store, qctx, site, acq, vv, vh, sectors, entry, log)
         store.note_scene(entry)
         summary["counted"] += 1
@@ -1552,6 +1562,7 @@ def main(argv=None, client=None, sites=None) -> int:
     ap.add_argument("--days", type=int, help=f"look back this many days (max {MAX_LOOKBACK_DAYS})")
     ap.add_argument("--max-scenes", type=int, default=MAX_SCENES_PER_RUN)
     ap.add_argument("--only", help="probe only: process only the scenes whose acquired_utc starts with this")
+    ap.add_argument("--keep-raw", type=Path, help="also write each counted scene's chip as fetched here (raw-1, sat.raw_store)")
     args = ap.parse_args(argv)
     if args.only and not args.probe:
         ap.error("--only is for --probe")
@@ -1612,7 +1623,8 @@ def main(argv=None, client=None, sites=None) -> int:
                     continue
             try:
                 s = process_site(client, store, site, mask, now, args.days, sbudget, args.max_scenes, probe=probe,
-                                 raw_dir=args.probe / "raw" if probe is not None else None, only=args.only)
+                                 raw_dir=args.probe / "raw" if probe is not None else None, only=args.only,
+                                 keep_raw=args.keep_raw)
             except cdse.CredentialError:
                 raise
             except cdse.CDSEError as e:  # e.g. catalog 429/5xx: record it, go on to the next site

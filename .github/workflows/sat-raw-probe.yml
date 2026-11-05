@@ -1,0 +1,52 @@
+name: Sentinel-1 chip keeping probe
+# raw-1 の確認用（CDSE を使わない）。probe/sat-raw-* への push でだけ動く。
+# 合成の切り出し（tests の FakeClient：実データではない）で sat.run --keep-raw → sat.raw_store push を通し、
+# 本番の sat-raw/ とは別の接頭辞 sat-raw-probe/<日> に commit する。古い日のブランチの削除も確かめるため、
+# 先に sat-raw-probe/2000-01-01 を作ってから push する（14 日より古いので消える）。main と docs/ には書かない。
+on:
+  push:
+    branches: ['probe/sat-raw-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-sat-raw-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  keep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: Synthetic run with --keep-raw (no CDSE)
+        run: |
+          python - "$RUNNER_TEMP" <<'EOF'
+          import sys
+          from pathlib import Path
+          from tests import test_sat as ts
+          tmp = Path(sys.argv[1])
+          rt = ts.RunTest()
+          chip, land = rt.chip()
+          rc = rt.run_main(["--out", str(tmp / "out"), "--keep-raw", str(tmp / "sat-raw")], ts.FakeClient(chip), land)
+          print("rc", rc, sorted(p.relative_to(tmp).as_posix() for p in (tmp / "sat-raw").rglob("*") if p.is_file()))
+          sys.exit(rc)
+          EOF
+      - name: Push to sat-raw-probe/<day> and delete an old day
+        run: |
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git push -q origin "HEAD:refs/heads/sat-raw-probe/2000-01-01"
+          python -m sat.raw_store push --src "$RUNNER_TEMP/sat-raw" --prefix sat-raw-probe --keep-days 14 \
+            --note "**試験用の合成データ（tests の FakeClient）。Sentinel-1 の実データではない。**
+
+          " > "$RUNNER_TEMP/push.json"
+          echo "::notice title=sat-raw-probe::$(cat "$RUNNER_TEMP/push.json")"
+          if git ls-remote --exit-code --heads origin refs/heads/sat-raw-probe/2000-01-01 >/dev/null; then
+            echo "::error title=sat-raw-probe::古い日のブランチが消えていない"; exit 1
+          fi
