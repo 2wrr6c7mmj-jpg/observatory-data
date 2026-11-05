@@ -334,12 +334,47 @@ def build(client, site: dict, mask: np.ndarray, out_dir: Path, now: datetime, bu
     return summary
 
 
+def remask(site: dict, grid: Grid, orbit: int, from_tag: str, mask: np.ndarray, base_dir: Path = BASELINE_DIR) -> dict:
+    """The baseline of the site's current mask made from the stored baseline of an older mask of the same extent
+    (no scene is fetched): the layers are the old ones, kept only within KEEP_M of the new water and structures, and
+    the statistics (water level, always occupied) are computed again on the new mask. Only possible when the old
+    baseline holds every pixel the new one keeps (checked)."""
+    old_site = {**site, "mask_version": int(from_tag.rsplit("-v", 1)[1])}
+    if tag(old_site) != from_tag:
+        raise ValueError(f"{from_tag} は {site['id']} の陸マスクの版でない")
+    old = load(old_site, orbit, base_dir)
+    if old is None:
+        raise FileNotFoundError(f"{from_tag} の軌道 {orbit} の基準が無い")
+    layers, meta = old
+    if (meta.get("width"), meta.get("height")) != (grid.width, grid.height) or list(meta.get("bbox")) != list(grid.bbox):
+        raise ValueError(f"{from_tag} の基準は範囲が違う")
+    keep = keep_region(mask)
+    old_mask, _ = load_mask(site["id"], old_site["mask_version"])
+    missing = int((keep & ~keep_region(old_mask)).sum())   # no-data pixels inside the old kept region stay no-data
+    if missing:
+        raise ValueError(f"{from_tag} の基準は、新しいマスクで残す画素のうち {missing} 画素を残していない（作り直しが要る）")
+    new = {k: np.where(keep, layers[k], np.nan) for k in LAYERS}
+    new["n_valid"] = np.where(keep, int(meta["stats"]["min_valid_scenes_in_kept"]), 0)
+    cfg = {**site_config(site), **{k: v for k, v in (meta.get("method") or {}).items()
+                                   if k in ("min_valid", "min_coverage", "lookback_days", "max_scenes")}}
+    cfg["p_low"], cfg["p_high"] = (meta.get("method") or {}).get("percentiles", [cfg["p_low"], cfg["p_high"]])
+    out = save(site, grid, orbit, new, meta["scene_list"], cfg, mask, base_dir, meta["built_utc"])
+    out["derived_from"] = {"mask_version": from_tag, "file": f"sat/baselines/{from_tag}/{stem(orbit)}.json",
+                           "note": ("同じ範囲の旧マスクの基準の層（同じ撮影・同じ値）を、新しいマスクの水域・構造物から "
+                                    f"{KEEP_M:g} m 以内だけ残して使う。撮影は取り直していない（PU 0）。統計は新しいマスクで計算し直した。"
+                                    "min_valid_scenes_in_kept は旧基準の値（残す画素は旧基準で残していた画素の一部）")}
+    paths(site, orbit, base_dir)["json"].write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return out
+
+
 def main(argv=None, client=None) -> int:
     from .run import MONTHLY_PU_CAP, OUT_DIR, load_sites, month_usage, read_csv
     from .osm_mask import MASK_DIR
     ap = argparse.ArgumentParser(description="Build the per-orbit quay baselines of a site (probe)")
     ap.add_argument("site")
-    ap.add_argument("--out", type=Path, required=True, help="directory for the baseline files (not the repo)")
+    ap.add_argument("--out", type=Path, help="directory for the baseline files (not the repo)")
+    ap.add_argument("--remask-from", help="no fetch: make the baselines of the current mask from those of this older "
+                                          "mask of the same extent (e.g. MAW-land-v1), written to sat/baselines")
     ap.add_argument("--usage", type=Path, default=OUT_DIR / "usage.csv", help="published usage.csv (monthly cap)")
     ap.add_argument("--max-pu", type=float, default=130.0, help="cap for this run")
     ap.add_argument("--export-scenes", type=int, default=0)
@@ -348,6 +383,14 @@ def main(argv=None, client=None) -> int:
     now = datetime.now(timezone.utc)
     site = next(s for s in load_sites() if s["id"] == args.site)
     mask, _ = load_mask(site["id"], int(site.get("mask_version", 1)), MASK_DIR)
+    if args.remask_from:
+        grid = Grid.for_site(site)
+        for o in site_config(site)["orbits"]:
+            m = remask(site, grid, o, args.remask_from, mask, args.out or BASELINE_DIR)
+            print(json.dumps({"orbit": o, "mask_version": m["mask_version"], "stats": m["stats"]}, ensure_ascii=False))
+        return 0
+    if args.out is None:
+        ap.error("--out is required")
     used_pu, _req = month_usage(read_csv(args.usage), now.strftime("%Y-%m"))
     budget = min(args.max_pu, MONTHLY_PU_CAP - used_pu)
     client = client if client is not None else cdse.Client()

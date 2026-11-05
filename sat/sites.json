@@ -1205,7 +1205,7 @@
    "center_lon": 119.445,
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
-   "mask_version": 1,
+   "mask_water": "osm_polygons", "mask_version": 2, "history": [{"mask_version": 1, "until_utc": "2026-11-06", "recount": false, "note": "OSM の海岸線（natural=coastline）だけで作ったため、海岸線の無い閩江の地点では陸の画素が 0（値 0 が 96.3%、桟橋・橋 3.7%）で、市街地が水面として検出にかかっていた（2部の fixed_eval で発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた"}],
    "quay_lines_version": 2,
    "sectors": [
     {
@@ -1233,7 +1233,7 @@
     "lookback_days": 365,
     "max_scenes": 30,
     "min_scenes": 24,
-    "note": "ro142-bl-1（24 撮影、2025-12-28〜2026-10-07、確度 3） は MAW-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+    "note": "ro142-bl-1（24 撮影、2025-12-28〜2026-10-07、確度 3） は MAW-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。MAW-land-v2 の基準は同じ層を新しいマスクで残す画素だけにして作った（python -m sat.baseline MAW --remask-from MAW-land-v1、取り直しなし）。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
    },
    "quay": {
     "tuning_scenes": [],

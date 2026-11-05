@@ -114,6 +114,24 @@ def mask_tag(site: dict) -> str:
     return f"{site['id']}-land-v{mask_version(site)}"
 
 
+def rebuilt_mask_filter(site: dict, store: "Store", acqs: list[dict], done: set[str]) -> list[dict]:
+    """A rebuilt mask without a recount (``mask_since``): drop the scenes acquired before it and the scenes already
+    counted (or tried) with an older mask of the site, so the new version never fetches a scene again."""
+    since = mask_since(site)
+    if not since:
+        return acqs
+    older = store.done_any(site["id"]) - done
+    return [a for a in acqs if a["acquired_utc"][:10] >= since and a["acquired_utc"] not in older]
+
+
+def mask_since(site: dict) -> str | None:
+    """A mask rebuilt without a recount (the latest ``history`` entry has ``recount`` false): the current mask is
+    used only for scenes acquired from its ``until_utc``, and a scene counted with an older mask is never fetched
+    again (no CDSE request is added by the new version). None: the usual rule (a new extent recounts 30 days)."""
+    h = [x for x in site.get("history") or [] if x.get("recount") is False and x.get("until_utc")]
+    return max(x["until_utc"] for x in h)[:10] if h else None
+
+
 def row_mask_tag(r: dict) -> str:
     """Mask version of a published row or scene (entries written before v2 have none: v1)."""
     return r.get("mask_version") or f"{r['site_id']}-land-v1"
@@ -359,6 +377,13 @@ class Store:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(text, encoding="utf-8")
 
+    def done_any(self, site_id: str) -> set[str]:
+        """Scenes of the site counted (or tried) with any mask version."""
+        keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id}
+        keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
+                 if s["site_id"] == site_id and s.get("result") != "error"}
+        return keys
+
     def has_rows(self, site_id: str, tag: str) -> bool:
         return any(r["site_id"] == site_id and row_mask_tag(r) == tag for r in self.rows)
 
@@ -558,8 +583,12 @@ def series_breaks(sites: list[dict]) -> list[dict]:
                 "from_mask_version": f"{site['id']}-land-v{h['mask_version']}",
                 "to_mask_version": mask_tag(site),
                 "date_utc": h.get("until_utc"),
-                "note": (f"監視範囲を変更（旧範囲 v{h['mask_version']}：{h.get('note', '')}）。mask_version が違う行の数は範囲が違うため直接比べない。"
-                         "新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"),
+                "note": ((f"陸マスクを作り直した（範囲は同じ。旧版 v{h['mask_version']}：{h.get('note', '')}）。mask_version が違う行の数は"
+                          f"陸と水の分け方が違うため直接比べない。新しい版は {h.get('until_utc')} 以降の撮影だけに使い、旧版で数えた撮影は"
+                          "取り直さない（CDSE の要求を増やさない）。旧版の行は残す")
+                         if h.get("recount") is False else
+                         (f"監視範囲を変更（旧範囲 v{h['mask_version']}：{h.get('note', '')}）。mask_version が違う行の数は範囲が違うため直接比べない。"
+                          "新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）")),
             })
     for site in sites:
         if not site.get("enabled"):
@@ -1435,11 +1464,14 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
     if mask.shape != (grid.height, grid.width):
         raise ValueError(f"{site['id']}: 陸マスク {tag} の大きさ {mask.shape} が範囲 {(grid.height, grid.width)} と合わない")
     qctx = QuayContext(site, grid, mask, lines_dir, baseline_dir)
+    since = mask_since(site)
     if days is None:
         days = LOOKBACK_DAYS if store.has_rows(site["id"], tag) else FIRST_LOOKBACK_DAYS
         # the first run with a baseline also gives the recent scenes a quay count (fetched again once)
         if not store.quay_done(site["id"], tag) and any(qctx.baseline(o) for o in fbase.site_config(site)["orbits"]):
             days = FIRST_LOOKBACK_DAYS
+        if since:   # a rebuilt mask without a recount: the usual few days
+            days = LOOKBACK_DAYS
     days = min(days, MAX_LOOKBACK_DAYS)
     feats = client.catalog(grid.bbox, now - timedelta(days=days), now)
     if probe is not None and feats:
@@ -1450,6 +1482,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
     # Also a counted scene without a quay count, once a baseline of its orbit exists (re-fetched once).
     new = [a for a in acqs if a["acquired_utc"] not in done
            or (a["acquired_utc"] not in qdone and qctx.baseline(a["relative_orbit"]) is not None)]
+    new = rebuilt_mask_filter(site, store, new, done)
     if only:
         new = [a for a in new if a["acquired_utc"].startswith(only)]
     log(f"{site['id']}: カタログ {len(feats)} 件 → 撮影 {len(acqs)} 回（過去 {days} 日）、新着 {len(new)}")
