@@ -202,7 +202,7 @@ class Berths:
             lat0 = sum(c[1] for c in pts) / len(pts) if pts else 0.0
             self._lat0 = lat0
             self._mx, self._my = 111320.0 * math.cos(math.radians(lat0)), 111132.0
-            A, B, OK, CL = [], [], [], []
+            A, B, OK, CL, WY = [], [], [], [], []
             for w in ways:
                 c = w["coords"]
                 for (x1, y1), (x2, y2) in zip(c, c[1:]):
@@ -215,8 +215,10 @@ class Berths:
                         B.append((bx * self._mx, by * self._my))
                         OK.append(self.point_ok(w["kind"], w.get("id"), (ax + bx) / 2, (ay + by) / 2))
                         CL.append(CLASSES.index(self.line_class(w.get("id"), (ax + bx) / 2, (ay + by) / 2)))
+                        WY.append(str(w.get("id")))
             self._segs = (np.array(A, float).reshape(-1, 2), np.array(B, float).reshape(-1, 2), np.array(OK, bool))
             self._seg_cls = np.array(CL, int)
+            self._seg_way = np.array(WY, object)
         return self._segs
 
     def classify(self, points) -> list[str]:
@@ -271,7 +273,37 @@ class Berths:
                 out.append(CLASSES[int(cl[j])] if x <= max_m else None)
         return out
 
+    def nearest_line(self, points, max_m: float) -> list[tuple[str | None, str | None]]:
+        """For [(lon, lat), ...] (way id, class) of the nearest berth line within ``max_m`` ((None, None): none so near).
+        The same distance and line as ``nearest_class`` (fix-2's guard needs the line, to tell a shipyard berth)."""
+        if not points:
+            return []
+        import numpy as np
+        a, b, ok = self._segments()
+        if not ok.any():
+            return [(None, None)] * len(points)
+        a, b, cl, wy = a[ok], b[ok], self._seg_cls[ok], self._seg_way[ok]
+        p = np.array([(lo * self._mx, la * self._my) for lo, la in points], float)
+        d = b - a
+        dd = np.maximum((d * d).sum(1), 1e-12)
+        out: list[tuple[str | None, str | None]] = []
+        for k in range(0, len(p), 256):
+            q = p[k:k + 256, None, :]
+            t = np.clip(((q - a[None]) * d[None]).sum(2) / dd[None], 0, 1)
+            c = a[None] + t[..., None] * d[None]
+            dist = np.hypot(q[..., 0] - c[..., 0], q[..., 1] - c[..., 1])
+            i = dist.argmin(1)
+            for j, x in zip(i, dist[np.arange(len(i)), i]):
+                out.append((str(wy[j]), CLASSES[int(cl[j])]) if x <= max_m else (None, None))
+        return out
 
+    def yard_ways(self) -> set[str]:
+        """Way ids of the shipyard berths of the class file (``why`` from sat/berth_class.py: "造船所の岸壁…", naval at a
+        shipyard site or a naval yard, unknown otherwise). fix-2 never drops a candidate at these on its own."""
+        return {str(e["way"]) for e in (self.classes or {}).get("lines") or [] if str(e.get("why", "")).startswith(YARD_WHY)}
+
+
+YARD_WHY = "造船所の岸壁"
 _CACHE: dict = {}
 
 
