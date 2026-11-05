@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-05T02:20:25Z",
+ "generated_utc": "2026-11-05T02:20:51Z",
  "state": "alert",
  "summary": {
   "ok": 7,
@@ -140,7 +140,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-05T02:17:40Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-11-04",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -184,7 +184,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T02:17:27Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 9,
@@ -219,7 +219,7 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-05T02:17:39Z",
+   "heartbeat_utc": "2026-11-05T02:20:17Z",
    "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
@@ -661,13 +661,13 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-05T02:17:39Z",
+   "last_success_started_utc": "2026-11-05T02:20:17Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
     "id": 41954530065,
     "started_utc": "2026-11-05T02:20:17Z",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41954530065"
    },
    "consecutive_failures": 0
