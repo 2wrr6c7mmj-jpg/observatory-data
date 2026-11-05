@@ -17,7 +17,7 @@
  "sources": [
   "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
   "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）",
-  "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18。Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community）：OSM に無い桟橋の線（sat/masks/QDH-manual.geojson）"
+  "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community）：OSM に無い桟橋の線（sat/masks/QDH-manual.geojson）"
  ],
  "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
  "lines": [

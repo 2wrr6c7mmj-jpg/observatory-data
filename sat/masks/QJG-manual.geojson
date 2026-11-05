@@ -14,7 +14,8 @@
     "superseded_by": -2,
     "lines_versions": [
      "QJG-quay-v2"
-    ]
+    ],
+    "credit": "Contains modified Copernicus Sentinel data 2026"
    },
    "geometry": {
     "type": "LineString",
@@ -39,7 +40,7 @@
     "sat_id": "sat/011",
     "confidence": "高",
     "source": "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18、位置のずれは数 m 程度）、判読 sat/011「斜め桟橋（潜水艦係留）」（姜哥荘 潜水艦基地）",
-    "credit": "Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    "credit": "Digitized from Esri World Imagery (Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed",
     "accuracy_m": 5,
     "replaces": -1,
     "lines_versions": [
@@ -63,6 +64,5 @@
     ]
    }
   }
- ],
- "credit": "−2：Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+ ]
 }

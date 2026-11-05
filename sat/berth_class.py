@@ -26,7 +26,7 @@ is rebuilt; their ``basis`` says why.
     python -m sat.berth_class geojson [--out docs/data/sat/berth_class.geojson]
 
 Data (c) OpenStreetMap contributors, ODbL 1.0. Wen's map: 出典は docs/data/ref/wen-pla-bases.meta.json の credit.
-Lines read by eye from Esri World Imagery (QDH −1〜−4, QJG −2; 2026-11-05): Source: Esri, Maxar, Earthstar
+Lines read by eye from Esri World Imagery (QDH −1〜−4, QJG −2; 2026-11-05): Source: Esri, Vantor, Earthstar
 Geographics, and the GIS User Community (``ESRI_CREDIT`` in the published map when such a line is in it).
 """
 from __future__ import annotations
@@ -50,9 +50,9 @@ WEN_M = 600.0
 STEP_M = 20.0
 MIL_VALUES = {"naval_base", "base", "barracks", "office", "training_area", "airfield", "launchpad", "obstacle_course"}
 # lines read by eye from Esri World Imagery (sat/masks/<site>-manual.geojson; only the line positions, no imagery)
-ESRI_CREDIT = ("線の一部は Esri World Imagery の目視判読（2026-11-05）。"
-               "Imagery source: Esri, Maxar, Earthstar Geographics, and the GIS User Community")
-NAVY_LAYER ="解放軍海軍、海軍陸戰隊基地及設施"
+ESRI_CREDIT = ("線の一部は Esri World Imagery の目視判読（2026-11-05）。Digitized from Esri World Imagery "
+               "(Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed")
+NAVY_LAYER = "解放軍海軍、海軍陸戰隊基地及設施"
 INDUSTRY_LAYER = "中國軍工及航天產業"
 
 

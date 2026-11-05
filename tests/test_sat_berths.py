@@ -31,8 +31,13 @@ class BerthsFileTest(unittest.TestCase):
             for e in sc.get("coastline") or []:
                 self.assertEqual(kinds.get(str(e["way"])), "coastline", (sid, e))
                 self.assertTrue(e.get("sector") in secs or e.get("bbox"), (sid, e))
+            # an excluded way is a line of the current version or of an earlier one (QJG -1: v2 only, kept out in case a
+            # stored feature still carries it)
+            lv = int(SITES[sid].get("quay_lines_version", 1))
+            known = {str(w["id"]) for v in range(1, lv + 1)
+                     for w in json.loads((ROOT / "sat" / "masks" / f"{sid}-quay-v{v}.json").read_text(encoding="utf-8"))["ways"]}
             for w in sc.get("exclude_ways") or []:
-                self.assertIn(str(w), kinds, (sid, w))
+                self.assertIn(str(w), known, (sid, w))
 
     def test_zjg_rule(self):
         site = SITES["ZJG"]
@@ -143,6 +148,28 @@ class EsriPiersTest(unittest.TestCase):
                     for p in pts:
                         d = min(_seg_m(p, a, b, mx, my) for a, b in zip(o, o[1:]))
                         self.assertGreater(d, tol, (sid, i, w["id"]))
+
+
+class QuayAttributionTest(unittest.TestCase):
+    """The quay GeoJSON credits the lines drawn from imagery (1部の審査 PR #73): Esri for QDH -1..-4 and QJG -2, Copernicus
+    for the S2 line QJG -1 (v2); a site with OSM lines only (Zhanjiang) keeps the OSM-only text."""
+
+    def test_credits(self):
+        from sat import run
+        zjg = run.quay_fc_attribution("2026", [SITES["ZJG"]])
+        self.assertEqual(zjg, run.quay_fc_attribution("2026"))
+        self.assertIn("線の幾何は OpenStreetMap に由来）", zjg["license"])
+        self.assertNotIn("Esri", zjg["attribution"])
+        for sid in ("QDH", "QJG"):
+            a = run.quay_fc_attribution("2026", [SITES[sid]])
+            for k in ("attribution", "license"):
+                self.assertIn("Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community", a[k], (sid, k))
+                self.assertIn("一部は衛星画像の目視判読", a[k], (sid, k))
+                self.assertIn("© OpenStreetMap contributors", a[k], (sid, k))
+            self.assertIn("ODbL", a["license"])
+        self.assertIn("Copernicus Sentinel data 2026", run.quay_fc_attribution(None, [SITES["QJG"]])["license"])
+        self.assertNotIn("Copernicus", run.quay_fc_attribution(None, [SITES["QDH"]])["license"])
+        self.assertEqual(run.manual_line_credits(SITES["MAW"]), [])   # MAW -1 follows an OSM outline
 
 
 def _seg_m(p, a, b, mx, my) -> float:
