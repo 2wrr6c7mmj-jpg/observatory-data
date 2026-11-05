@@ -1,7 +1,7 @@
 {
  "type": "FeatureCollection",
  "name": "QJG-manual",
- "note": "OSM に無い桟橋の線（手書き）。姜哥荘の潜水艦基地の港内の突堤（北西に延びる約 170 m）。位置は S2 L2A 自然色 2026-10-22T02:57:38Z（probe/ports-archive-ops3 docs/data/sat/ports/QJG/s2/QJG/v1/）の目測で ±30 m 程度（OSM の海岸線とは約 50 m ずれて見える）。岸壁線 QJG-quay-v2 に id −1 で入れる。naval-1（2026-11-05 以降の撮影）からだけ着く線にする（sat/berths.json の exclude_ways と sat/berth_class/QJG.json の added）",
+ "note": "OSM に無い桟橋の線。姜哥荘の潜水艦基地の港内の突堤（北西に延びる約 170 m）。−1：S2 L2A 自然色 2026-10-22T02:57:38Z（probe/ports-archive-ops3 docs/data/sat/ports/QJG/s2/QJG/v1/）の目測（±30 m 程度。OSM の海岸線とは約 50 m ずれて見える）。岸壁線 QJG-quay-v2 だけに入っている（記録として残す）。−2：同じ突堤を Esri World Imagery（2026-11-05 取得、ズーム 16〜18）の目視判読で引き直した線（ずれは数 m 程度、付け根は OSM の海岸線 43251729 から約 1 m）。−1 とは平均 24 m 離れている。付け根の約 39 m は OSM の海岸線が根元をなぞっているので、その先端から先の約 138 m だけを入れる。岸壁線 QJG-quay-v3 に id −2 で入れ（−1 は v3 に無い）、naval-1（2026-11-05 以降の撮影）からだけ着く線にする（sat/berths.json の exclude_ways と sat/berth_class/QJG.json の added）",
  "features": [
   {
    "type": "Feature",
@@ -10,7 +10,11 @@
     "name": "潜水艦基地の港内の突堤（根元→先）",
     "kind": "pier",
     "source": "S2 L2A 自然色 2026-10-22T02:57:38Z の目測（3部、2026-11-03）",
-    "accuracy_m": 30
+    "accuracy_m": 30,
+    "superseded_by": -2,
+    "lines_versions": [
+     "QJG-quay-v2"
+    ]
    },
    "geometry": {
     "type": "LineString",
@@ -25,6 +29,40 @@
      ]
     ]
    }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": -2,
+    "name": "斜め桟橋（潜水艦係留）（OSM の海岸線の根元の先端→先端）",
+    "kind": "pier",
+    "sat_id": "sat/011",
+    "confidence": "高",
+    "source": "Esri World Imagery の目視判読（2026-11-05 取得、ズーム 16〜18、位置のずれは数 m 程度）、判読 sat/011「斜め桟橋（潜水艦係留）」（姜哥荘 潜水艦基地）",
+    "credit": "Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    "accuracy_m": 5,
+    "replaces": -1,
+    "lines_versions": [
+     "QJG-quay-v3"
+    ],
+    "length_m_read": 177,
+    "length_m": 138,
+    "trimmed": "判読の線（付け根 [120.581871, 36.104284]→先端、177 m）の付け根の約 39 m は OSM の海岸線 43251729 が突堤の根元をなぞっている（2〜6 m 以内）。同じ所に線が 2 本あると帯の画素を両方が持ち二重に数えるので、海岸線の根元の先端（[120.581552, 36.104522]、海岸線から 0.5 m）から先だけを入れた"
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      120.581552,
+      36.104522
+     ],
+     [
+      120.580423,
+      36.105367
+     ]
+    ]
+   }
   }
- ]
+ ],
+ "credit": "−2：Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
 }

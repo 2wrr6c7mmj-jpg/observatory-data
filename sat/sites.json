@@ -631,7 +631,7 @@
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 1,
-   "quay_lines_version": 2,
+   "quay_lines_version": 3,
    "sectors": [
     {
      "id": "A1",
@@ -684,7 +684,7 @@
      "note": "北部戦区海軍の第 1 潜水艦基地、青島の東北東約 18 km の湾"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QJG-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QJG-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 13 PU／月＝毎日の取得の月の見込み（S1 約 5.3 撮影／月×0.66 PU＋S2 約 13.3 日／月×(0.03＋0.35×0.55) PU＝約 6.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QJG-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QJG-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 13 PU／月＝毎日の取得の月の見込み（S1 約 5.3 撮影／月×0.66 PU＋S2 約 13.3 日／月×(0.03＋0.35×0.55) PU＝約 6.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。岸壁線 QJG-quay-v3（naval-1、2026-11-05）＝v2 の手書きの突堤 −1（S2 の目測 ±30 m）を Esri World Imagery の目視判読（2026-11-05、数 m）の −2 に置き換えたもの（sat/masks/QJG-manual.geojson）。−2 は 2026-11-05 以降の撮影だけ着く線。"
   },
   {
    "id": "QDH",
@@ -702,7 +702,7 @@
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
    "mask_version": 2,
-   "quay_lines_version": 1,
+   "quay_lines_version": 2,
    "sectors": [
     {
      "id": "A1",
@@ -777,7 +777,7 @@
      "note": "OSM の地物の外形（sat/port_locate.py、2026-10-30 取得）。© OpenStreetMap contributors, ODbL 1.0"
     }
    ],
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QDH-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QDH-land-v2（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 46 PU／月＝毎日の取得の月の見込み（S1 約 10.7 撮影／月×1.54 PU＋S2 約 13.3 日／月×(0.03＋0.35×1.28) PU＝約 22.8 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QDH-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QDH-land-v2（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 46 PU／月＝毎日の取得の月の見込み（S1 約 10.7 撮影／月×1.54 PU＋S2 約 13.3 日／月×(0.03＋0.35×1.28) PU＝約 22.8 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。岸壁線 QDH-quay-v2（naval-1、2026-11-05）＝v1（OSM）＋OSM に無い西港区の桟橋 4 本 −1〜−4（Esri World Imagery の目視判読 2026-11-05、数 m。sat/masks/QDH-manual.geojson）。−1〜−4 は 2026-11-05 以降の撮影だけ着く線。"
   },
   {
    "id": "XSN",
