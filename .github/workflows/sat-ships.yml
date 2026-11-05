@@ -93,7 +93,8 @@ jobs:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
           DAYS: ${{ inputs.days }}
-        run: python -m sat.run ${DAYS:+--days "$DAYS"}
+        # raw-1: also keep each counted scene's chip as fetched (no extra request), pushed below to sat-raw/<day>
+        run: python -m sat.run ${DAYS:+--days "$DAYS"} --keep-raw "$RUNNER_TEMP/sat-raw"
       - name: Publish changed data
         # Also after a failed Count (status.json / usage.csv record the PU spent), but not
         # when the run was cancelled or the tests failed.
@@ -106,3 +107,16 @@ jobs:
           # chips/index.json is shared with ocean-monitor: the ports' part is copied onto the latest main before
           # each push (a failed rebase is aborted and tried again), see sat/publish.sh
           bash sat/publish.sh "データ更新: Sentinel-1 港内候補 ($(date -u +%Y-%m-%d))"
+      - name: Keep the chips (sat-raw/<day> branch, never main or docs/)
+        # raw-1: the chips of this run go to the branch sat-raw/<run date UTC> (a commit with no parent), and the
+        # sat-raw/YYYY-MM-DD branches older than 14 days are deleted (sat/raw_store.py). After the data is published:
+        # a failure here never stops or undoes the day's counts (warning annotation only).
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe && github.event_name != 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          if python -m sat.raw_store push --src "$RUNNER_TEMP/sat-raw" --keep-days 14 > "$RUNNER_TEMP/sat-raw.json" 2> "$RUNNER_TEMP/sat-raw.log"; then
+            echo "::notice title=sat-raw::$(cat "$RUNNER_TEMP/sat-raw.json")"
+          else
+            echo "::warning title=sat-raw::切り出しを残せなかった: $(tail -c 600 "$RUNNER_TEMP/sat-raw.log" | tr '\n' ' ')"
+          fi
