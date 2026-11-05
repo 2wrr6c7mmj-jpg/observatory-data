@@ -108,6 +108,12 @@ def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px:
     }
 
 
+def _naval_scene(site: dict, acquired_utc: str) -> bool:
+    """naval-1 applies to the scene: from berths.NAVAL_SINCE, for a site with a berth class file."""
+    from . import berths   # noqa: PLC0415 - keep this module light for the site-side tests
+    return berths.naval_active(site["id"], acquired_utc)
+
+
 def _dump(obj) -> str:
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n"
 
@@ -197,7 +203,15 @@ def update(out: Path, sites: list[dict], rows: list[dict], features_for: Callabl
                     k = "fixed_" + f["properties"]["fixed_excluded"]
                     excluded[k] = excluded.get(k, 0) + 1
                 feats = [f for f in feats if not f["properties"].get("fixed_excluded")]
-            # naval-1: candidates on a civil or unknown berth line (property naval_excluded) are not framed; counted
+            # naval-1: candidates on a civil or unknown berth line (property naval_excluded) are not framed; counted.
+            # From berths.NAVAL_SINCE the open-water anchorage (win-1, no berth line) is not framed either: only naval
+            # (user's instruction 2026-11-05: the counts and the squares show the navy only)
+            if _naval_scene(site, r["acquired_utc"]):
+                an = [f for f in feats if f["properties"].get("window")]
+                if an:
+                    excluded = dict(excluded or {})
+                    excluded["naval_anchorage"] = excluded.get("naval_anchorage", 0) + len(an)
+                    feats = [f for f in feats if not f["properties"].get("window")]
             nav = [f for f in feats if f["properties"].get("naval_excluded")]
             if nav:
                 excluded = dict(excluded or {})

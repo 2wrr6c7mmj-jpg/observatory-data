@@ -143,3 +143,43 @@ class ClassFilesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class NavalOnlyFramesTest(unittest.TestCase):
+    """User's instruction 2026-11-05: the counts and the squares show the navy only. From NAVAL_SINCE the chips frame
+    neither civil/unknown berth candidates nor the open-water anchorage; before it, the anchorage stays framed."""
+
+    def test_anchorage_not_framed_on_naval_scenes(self):
+        import io
+        import tempfile
+        from PIL import Image
+        from sat import chips
+        from sat.run import load_sites
+        site = next(s for s in load_sites() if s["id"] == "SYL")
+        lon = (site["bbox"][0] + site["bbox"][2]) / 2
+        lat = (site["bbox"][1] + site["bbox"][3]) / 2
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            rows = []
+            feats = []
+            for t in ("2026-11-04T10:00:00Z", "2026-11-05T10:00:00Z"):
+                img = f"color/SYL/{t[:10]}.webp"
+                (out / img).parent.mkdir(parents=True, exist_ok=True)
+                buf = io.BytesIO()
+                Image.new("RGB", (20, 20)).save(buf, "WEBP")
+                (out / img).write_bytes(buf.getvalue())
+                rows.append({"site_id": "SYL", "acquired_utc": t, "color_image": img, "mask_version": "x"})
+                base = {"acquired_utc": t, "site_id": "SYL", "mask_version": "x", "length_m": 100, "width_m": 20}
+                feats += [
+                    {"geometry": {"coordinates": [lon, lat]}, "properties": {**base, "n": 1, "zone": "quay", "berth_class": "naval", "naval_excluded": ""}},
+                    {"geometry": {"coordinates": [lon, lat]}, "properties": {**base, "n": 2, "zone": "harbour", "window": "anchorage"}},
+                    {"geometry": {"coordinates": [lon, lat]}, "properties": {**base, "n": 3, "zone": "quay", "berth_class": "civil", "naval_excluded": "civil"}},
+                ]
+            chips.update(out, [site], rows, lambda s, m: feats, lambda s: "x", lambda r: r["mask_version"])
+            docs = {p.name[:10]: json.loads(p.read_text(encoding="utf-8")) for p in (out / "chips").rglob("SYL/*.json")}
+            before, after = docs["2026-11-04"], docs["2026-11-05"]
+            self.assertEqual([c["n"] for c in after["candidates"]], [1])
+            self.assertEqual(after["excluded_counts"]["naval_anchorage"], 1)
+            self.assertEqual(after["excluded_counts"]["naval_civil"], 1)
+            self.assertIn(2, [c["n"] for c in before["candidates"]])   # before NAVAL_SINCE: unchanged
