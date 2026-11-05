@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-05T02:18:29Z",
+ "generated_utc": "2026-11-05T02:20:25Z",
  "state": "alert",
  "summary": {
   "ok": 7,
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-02T11:40:58Z",
-   "heartbeat_age_h": 62.6,
+   "heartbeat_age_h": 62.7,
    "data_date": "2026-11-01",
    "data_date_tz": "JST",
    "data_age_days": 4,
@@ -202,7 +202,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T02:17:23Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -586,11 +586,11 @@
     {
      "level": "alert",
      "code": "failed",
-     "text": "schedule の実行 2026-11-04T11:33:54Z が failure（2 回続けて）"
+     "text": "schedule の実行 2026-11-04T11:33:54Z が failure（2 回続けて）（その後の手動等の実行で成功）"
     }
    ],
-   "last_success_started_utc": "2026-11-02T11:40:22Z",
-   "last_success_event": "schedule",
+   "last_success_started_utc": "2026-11-05T02:17:50Z",
+   "last_success_event": "workflow_dispatch",
    "last_scheduled": {
     "id": 41821919117,
     "started_utc": "2026-11-04T11:33:54Z",
@@ -664,11 +664,11 @@
    "last_success_started_utc": "2026-11-05T02:17:39Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 41954243470,
-    "started_utc": "2026-11-05T02:17:39Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41954243470"
+    "id": 41954530065,
+    "started_utc": "2026-11-05T02:20:17Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41954530065"
    },
    "consecutive_failures": 0
   },
