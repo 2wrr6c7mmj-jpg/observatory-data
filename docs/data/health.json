@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-05T02:17:46Z",
+ "generated_utc": "2026-11-05T02:18:08Z",
  "state": "alert",
  "summary": {
-  "ok": 4,
+  "ok": 5,
   "warn": 2,
-  "alert": 6,
+  "alert": 5,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -139,30 +139,19 @@
    "name": "PLA Activity Tracker",
    "kind": "daily",
    "workflow": "pla-tracker.yml",
-   "heartbeat_utc": "2026-11-02T16:30:09Z",
-   "heartbeat_age_h": 57.8,
-   "data_date": "2026-11-02",
+   "heartbeat_utc": "2026-11-05T02:17:40Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-04",
    "data_date_tz": "TWT",
-   "data_age_days": 3,
-   "state": "alert",
-   "reasons": [
-    {
-     "level": "alert",
-     "code": "heartbeat_stopped",
-     "text": "最後に成功した取得から 58 h（>54 h：停止と判断）"
-    },
-    {
-     "level": "alert",
-     "code": "data_old",
-     "text": "最新の日 2026-11-02（台湾 今日−3）"
-    }
-   ],
+   "data_age_days": 1,
+   "state": "ok",
+   "reasons": [],
    "values": {
     "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
     "access": "robots",
-    "days": 303,
+    "days": 305,
     "last_run_result": "ok",
-    "revised_count": 0
+    "revised_count": 1
    }
   },
   {
@@ -539,11 +528,11 @@
    "note": "null は不明、0 は原文に明記"
   },
   "taiwan": {
-   "date": "2026-11-02",
+   "date": "2026-11-04",
    "date_tz": "TWT",
-   "aircraft_total": 19,
-   "median_line_cross": 0,
-   "ships_total": 13,
+   "aircraft_total": 22,
+   "median_line_cross": 14,
+   "ships_total": 12,
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
@@ -653,11 +642,11 @@
     {
      "level": "alert",
      "code": "failed",
-     "text": "schedule の実行 2026-11-04T14:51:35Z が failure（2 回続けて）"
+     "text": "schedule の実行 2026-11-04T14:51:35Z が failure（2 回続けて）（その後の手動等の実行で成功）"
     }
    ],
-   "last_success_started_utc": "2026-11-02T16:29:54Z",
-   "last_success_event": "schedule",
+   "last_success_started_utc": "2026-11-05T02:17:28Z",
+   "last_success_event": "workflow_dispatch",
    "last_scheduled": {
     "id": 41851773289,
     "started_utc": "2026-11-04T14:51:35Z",
