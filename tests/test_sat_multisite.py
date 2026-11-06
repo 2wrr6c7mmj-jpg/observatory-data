@@ -815,7 +815,7 @@ class AllPortsTest(unittest.TestCase):
 
     EXPECT = {  # site: (mask version, baseline orbits, pu_month_cap, naval sectors)
         "QJG": (1, [171], 13, 1), "QDH": (2, [171], 46, 1), "XSN": (1, [171], 17, 1), "LSN": (1, [171, 98], 40, 1),
-        "SWS": (1, [171], 14, 1), "XMN": (1, [40, 142], 19, 1), "STU": (1, [40], 17, 2), "MAW": (1, [142], 9, 1),
+        "SWS": (1, [171], 14, 1), "XMN": (1, [40, 142], 19, 1), "STU": (1, [40], 17, 2), "MAW": (2, [142], 9, 1),
     }
 
     def sites(self):

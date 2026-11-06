@@ -94,6 +94,17 @@ def mask_tag(site: dict) -> str:
     return f"{site['id']}-land-v{int(site.get('mask_version', 1))}"
 
 
+def mask_since(site: dict) -> str | None:
+    """A land mask rebuilt without a recount: the ``until_utc`` (YYYY-MM-DD) of the site's latest ``history`` entry
+    when that entry has ``recount`` false, else None. Only the latest entry counts (an older rebuild without a recount
+    does not hold back a later one that recounts). sat/run.py uses the same rule for the S1 scenes."""
+    h = [x for x in site.get("history") or [] if isinstance(x, dict) and x.get("until_utc")]
+    if not h:
+        return None
+    last = max(enumerate(h), key=lambda kx: (str(kx[1]["until_utc"])[:10], kx[0]))[1]   # ties: the later listed
+    return str(last["until_utc"])[:10] if last.get("recount") is False else None
+
+
 def image_paths(site: dict, acquired_utc: str) -> tuple[str, str]:
     base = f"s2/{site['id']}/v{int(site.get('mask_version', 1))}/{acquired_utc.replace(':', '-')}"
     return base + ".webp", base + ".thumb.webp"
@@ -257,15 +268,25 @@ def _pct(x) -> str:
 
 
 def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBACK_DAYS, budget: float = 1e9,
-                log=print, max_pu: float | None = None) -> dict:
+                log=print, max_pu: float | None = None, before_since: bool = True) -> dict:
     """New Sentinel-2 days of one site: records every day once (any result but error), an image on clear days.
-    Stops before ``budget`` / ``max_pu`` would be exceeded. Returns a summary."""
+    Stops before ``budget`` / ``max_pu`` would be exceeded. Returns a summary.
+
+    A land mask rebuilt without a recount (``mask_since``): a day recorded with an older mask version of the site is
+    done (the S2 image does not depend on the land mask: fetching it again under the new tag would only spend PU and
+    store the same picture twice, s2/<site>/v<old> and v<new>), and with ``before_since`` (the daily run) so is every
+    day before ``until_utc``: the new version starts there, as the S1 scenes do. ``summary["older_mask"]`` counts the
+    days left to the older version."""
     grid = Grid.for_site(site)
     tag = mask_tag(site)
     path = out / "s2_scenes.csv"
     rows = read_rows(path)
     mine = {r["date"]: r for r in rows if r["site_id"] == site["id"] and r["mask_version"] == tag}
-    done = {k for k, r in mine.items() if r["result"] != "error" or int(r.get("attempts") or 1) >= MAX_ERROR_ATTEMPTS}
+    finished = lambda r: r["result"] != "error" or int(r.get("attempts") or 1) >= MAX_ERROR_ATTEMPTS  # noqa: E731
+    done = {k for k, r in mine.items() if finished(r)}
+    since = mask_since(site)
+    older = {r["date"] for r in rows if since and r["site_id"] == site["id"] and r["mask_version"] != tag
+             and finished(r)} - done
     pu0 = client.processing_units
     req0 = client.requests
     feats = client.catalog(grid.bbox, now - timedelta(days=days), now, collection=COLLECTION)
@@ -274,6 +295,9 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
     limit = budget if max_pu is None else min(budget, max_pu)
     for d in day_groups(feats):
         if d["date"] in done:
+            continue
+        if d["date"] in older or (since and before_since and d["date"] < since):
+            summary["older_mask"] = summary.get("older_mask", 0) + 1   # only when there is one (old summaries same)
             continue
         spent = client.processing_units - pu0
         if spent + EST_PRE_PU + EST_FULL_PU > limit:
@@ -397,7 +421,9 @@ def main(argv=None, client=None, sites=None) -> int:
                 if left < EST_PRE_PU + EST_FULL_PU:
                     sums.append({"site_id": site["id"], "deferred_site_cap": True})
                     continue
-            sums.append(update_site(client, args.out, site, now, args.days, left, log=lambda m: print(m, file=sys.stderr)))
+            # a backfill fills the past: only the days recorded with an older mask of the site are skipped
+            sums.append(update_site(client, args.out, site, now, args.days, left, log=lambda m: print(m, file=sys.stderr),
+                                    before_since=False))
     finally:
         if client.requests:
             usage.append({"run_utc": cdse.iso(now), "requests": client.requests,

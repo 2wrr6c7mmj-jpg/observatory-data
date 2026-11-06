@@ -616,7 +616,7 @@
    "center_lat": 25.99,
    "center_lon": 119.445,
    "pixel_m": 10,
-   "mask_version": 1,
+   "mask_version": 2,
    "enabled": true,
    "provisional": true,
    "priority": 2,
