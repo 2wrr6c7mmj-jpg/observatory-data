@@ -1440,10 +1440,174 @@
     "berth_version": "berth-1"
    },
    "quay_result": "counted"
+  },
+  {
+   "site_id": "STU",
+   "acquired_utc": "2026-11-05T10:16:50Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 40,
+   "mask_version": "STU-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261105T101650_20261105T101719_005331_00A261_3307_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-06T13:08:34Z",
+   "processing_units": 1.66363525390625,
+   "coverage": 0.997,
+   "quay_band_excluded": {
+    "off_berth": 5,
+    "coastline": 16
+   },
+   "fixed": {
+    "structure": 0,
+    "registry": 0,
+    "registry_over_guard": 0,
+    "guarded": 0,
+    "point": 0,
+    "field": 0,
+    "high": 12,
+    "medium": 24,
+    "low": 4,
+    "no_baseline": 0,
+    "guarded_by": {
+     "naval_long": 0,
+     "naval_near": 0,
+     "yard_site": 0,
+     "yard_sector": 0,
+     "yard_line": 0
+    },
+    "version": "fix-2",
+    "revision": 2,
+    "registry_hash": ""
+   },
+   "window_excluded": {
+    "land": 0,
+    "pond": 0,
+    "enclosed": 1,
+    "anchorage": 11,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 1,
+    "unknown": 3,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9171,
+    "water_fraction": 0.2863,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 609,
+    "clusters": 119,
+    "dropped_small": 69,
+    "dropped_vh": 10
+   },
+   "quay_excluded": {
+    "segments": 10,
+    "length_m": 710,
+    "max": 18,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 3,
+     "max": 3
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "XMN",
+   "acquired_utc": "2026-11-05T10:16:50Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 40,
+   "mask_version": "XMN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261105T101650_20261105T101719_005331_00A261_3307_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-06T13:08:21Z",
+   "processing_units": 1.349853515625,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 11
+   },
+   "fixed": {
+    "structure": 4,
+    "registry": 0,
+    "registry_over_guard": 0,
+    "guarded": 0,
+    "point": 0,
+    "field": 0,
+    "high": 7,
+    "medium": 13,
+    "low": 5,
+    "no_baseline": 0,
+    "guarded_by": {
+     "naval_long": 0,
+     "naval_near": 0,
+     "yard_site": 0,
+     "yard_sector": 0,
+     "yard_line": 0
+    },
+    "version": "fix-2",
+    "revision": 2,
+    "registry_hash": ""
+   },
+   "window_excluded": {
+    "land": 0,
+    "pond": 0,
+    "enclosed": 0,
+    "anchorage": 9,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 4,
+    "unknown": 3,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9737,
+    "water_fraction": 0.2588,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 544,
+    "clusters": 75,
+    "dropped_small": 36,
+    "dropped_vh": 10
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 10,
+     "max": 12
+    },
+    "unknown": {
+     "segments": 6,
+     "max": 6
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-05T13:26:25Z",
+  "run_utc": "2026-11-06T13:08:14Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -1454,7 +1618,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "SYL",
@@ -1465,7 +1629,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "SLP",
@@ -1476,7 +1640,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "QGZ",
@@ -1487,7 +1651,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "ZDH",
@@ -1498,7 +1662,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "QDH",
@@ -1509,7 +1673,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "XSN",
@@ -1520,7 +1684,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "SWS",
@@ -1531,7 +1695,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "QJG",
@@ -1542,7 +1706,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "LSN",
@@ -1553,21 +1717,32 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 898.57
    },
    {
     "site_id": "XMN",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 897.22
    },
    {
     "site_id": "STU",
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 895.55
+   },
+   {
+    "site_id": "MAW",
     "lookback_days": 6,
     "catalog_items": 0,
     "acquisitions": 0,
@@ -1575,18 +1750,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.59
-   },
-   {
-    "site_id": "MAW",
-    "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 898.59
+    "budget_left_pu": 895.55
    }
   ],
   "s2": [
@@ -1625,28 +1789,17 @@
    },
    {
     "site_id": "QGZ",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "ZDH",
     "days": 1,
     "clear": 0,
     "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.014,
+    "processing_units": 0.009,
     "requests": 2
    },
    {
-    "site_id": "QDH",
+    "site_id": "ZDH",
     "days": 0,
     "clear": 0,
     "cloudy": 0,
@@ -1657,7 +1810,51 @@
     "requests": 1
    },
    {
+    "site_id": "QDH",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.007,
+    "requests": 2
+   },
+   {
     "site_id": "XSN",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "SWS",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QJG",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.005,
+    "requests": 2
+   },
+   {
+    "site_id": "LSN",
     "days": 1,
     "clear": 0,
     "cloudy": 1,
@@ -1666,39 +1863,6 @@
     "errors": 0,
     "processing_units": 0.008,
     "requests": 2
-   },
-   {
-    "site_id": "SWS",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 1,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "QJG",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "LSN",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
    },
    {
     "site_id": "XMN",
@@ -1713,14 +1877,14 @@
    },
    {
     "site_id": "STU",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.008,
+    "requests": 2
    },
    {
     "site_id": "MAW",
@@ -1730,20 +1894,21 @@
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
+    "older_mask": 2,
     "processing_units": 0.0,
     "requests": 1
    }
   ],
-  "s2_requests": 15,
-  "s2_processing_units": 0.023,
-  "requests": 28,
-  "processing_units": 0.023,
+  "s2_requests": 18,
+  "s2_processing_units": 0.036,
+  "requests": 33,
+  "processing_units": 3.05,
   "pu_source": "header",
-  "scenes": 0,
-  "month_pu_before": 101.409,
+  "scenes": 2,
+  "month_pu_before": 101.432,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-05T13:26:25Z",
+ "updated_utc": "2026-11-06T13:08:14Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
@@ -1753,6 +1918,13 @@
    "note": "監視範囲を変更（旧範囲 v1：概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
   },
   {
+   "site_id": "MAW",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v2",
+   "date_utc": "2026-11-06",
+   "note": "陸マスクを作り直した（範囲は同じ。旧版 v1：OSM の海岸線（natural=coastline）だけで作ったため、海岸線の無い閩江の地点では陸の画素が 0（値 0 が 96.3%、桟橋・橋 3.7%）で、市街地が水面として検出にかかっていた（2部の fixed_eval で発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた）。mask_version が違う行の数は陸と水の分け方が違うため直接比べない。新しい版は 2026-11-06 以降の撮影だけに使い、旧版で数えた撮影は取り直さない（CDSE の要求を増やさない）。旧版の行は残す"
+  },
+  {
    "site_id": "ZJG",
    "kind": "berth_only",
    "from_mask_version": "ZJG-land-v2",
@@ -1875,8 +2047,8 @@
   {
    "site_id": "MAW",
    "kind": "berth_only",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "quay-v1・est-2",
    "to_version": "quay-v2・est-2.1（berth-1）",
    "date_utc": "2026-11-01",
@@ -1898,9 +2070,9 @@
    "from_mask_version": "ZJG-land-v2",
    "to_mask_version": "ZJG-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SYL",
@@ -1918,9 +2090,9 @@
    "from_mask_version": "SYL-land-v2",
    "to_mask_version": "SYL-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SLP",
@@ -1938,9 +2110,9 @@
    "from_mask_version": "SLP-land-v2",
    "to_mask_version": "SLP-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QGZ",
@@ -1958,9 +2130,9 @@
    "from_mask_version": "QGZ-land-v1",
    "to_mask_version": "QGZ-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZDH",
@@ -1978,9 +2150,9 @@
    "from_mask_version": "ZDH-land-v2",
    "to_mask_version": "ZDH-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QJG",
@@ -1998,9 +2170,9 @@
    "from_mask_version": "QJG-land-v1",
    "to_mask_version": "QJG-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QDH",
@@ -2018,9 +2190,9 @@
    "from_mask_version": "QDH-land-v2",
    "to_mask_version": "QDH-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XSN",
@@ -2038,9 +2210,9 @@
    "from_mask_version": "XSN-land-v1",
    "to_mask_version": "XSN-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "LSN",
@@ -2058,9 +2230,9 @@
    "from_mask_version": "LSN-land-v1",
    "to_mask_version": "LSN-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SWS",
@@ -2078,9 +2250,9 @@
    "from_mask_version": "SWS-land-v1",
    "to_mask_version": "SWS-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XMN",
@@ -2098,9 +2270,9 @@
    "from_mask_version": "XMN-land-v1",
    "to_mask_version": "XMN-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "STU",
@@ -2118,15 +2290,15 @@
    "from_mask_version": "STU-land-v1",
    "to_mask_version": "STU-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "MAW",
    "kind": "size",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "長さを問わない",
    "to_version": "size-1",
    "date_utc": "2026-11-06",
@@ -2135,12 +2307,12 @@
   {
    "site_id": "MAW",
    "kind": "fixed",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZJG",
@@ -2265,8 +2437,8 @@
   {
    "site_id": "MAW",
    "kind": "naval",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
    "date_utc": "2026-11-05",
@@ -2395,8 +2567,8 @@
   {
    "site_id": "MAW",
    "kind": "windows",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "窓の制限なし",
    "to_version": "win-1",
    "date_utc": "2026-11-04",

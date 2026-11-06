@@ -101,3 +101,8 @@ QJG,2026-11-02T09:55:42Z,171,QJG-land-v1,A1,潜水艦の桟橋（姜哥荘、ORF
 QJG,2026-11-02T09:55:42Z,171,QJG-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
 LSN,2026-11-02T09:56:32Z,171,LSN-land-v1,A1,旅順の内港（半島先端の湖状の港、港口の内側）,naval,1,2,est-1,1,1,2,est-2.1,0,0,0,ZJG,quay-v2
 LSN,2026-11-02T09:56:32Z,171,LSN-land-v1,B,それ以外,other,1,2,est-1,1,1,2,est-2.1,0,0,0,ZJG,quay-v2
+STU,2026-11-05T10:16:50Z,40,STU-land-v1,A1,ミサイル艇大隊（OSM way/1092040603）,naval,6,11,est-1,8,6,10,est-2.1,1,0,3,ZJG,quay-v2
+STU,2026-11-05T10:16:50Z,40,STU-land-v1,A2,東の基地（OSM way/1429145743、military=base）,naval,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+STU,2026-11-05T10:16:50Z,40,STU-land-v1,B,それ以外,other,3,10,est-1,4,4,9,est-2.1,0,0,1,ZJG,quay-v2
+XMN,2026-11-05T10:16:50Z,40,XMN-land-v1,A1,廈門水警区（OSM way/409154029）,naval,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+XMN,2026-11-05T10:16:50Z,40,XMN-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2

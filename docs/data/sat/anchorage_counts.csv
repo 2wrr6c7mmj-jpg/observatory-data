@@ -1,0 +1,3 @@
+site_id,acquired_utc,platform,orbit_direction,relative_orbit,mask_version,window_version,anchorage_candidates,by_sector,len_lt50,len_ge50
+STU,2026-11-05T10:16:50Z,sentinel-1d,ascending,40,STU-land-v1,win-1,11,A1:0;A2:0;B:11,9,2
+XMN,2026-11-05T10:16:50Z,sentinel-1d,ascending,40,XMN-land-v1,win-1,9,A1:0;B:9,5,4

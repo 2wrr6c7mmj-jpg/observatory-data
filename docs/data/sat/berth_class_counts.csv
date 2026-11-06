@@ -1,0 +1,3 @@
+site_id,acquired_utc,platform,orbit_direction,relative_orbit,mask_version,naval_version,harbour_naval,harbour_civil,harbour_unknown,quay_naval,quay_civil,quay_unknown,stretches_naval,stretches_civil,stretches_unknown,occupied_max_naval,occupied_max_civil,occupied_max_unknown
+STU,2026-11-05T10:16:50Z,sentinel-1d,ascending,40,STU-land-v1,naval-1,1,0,0,2,1,3,10,0,3,21,0,3
+XMN,2026-11-05T10:16:50Z,sentinel-1d,ascending,40,XMN-land-v1,naval-1,0,0,0,2,4,3,0,10,6,0,12,6

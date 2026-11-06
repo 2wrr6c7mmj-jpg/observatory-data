@@ -742,7 +742,7 @@
    "height_px": 300,
    "area_km2": 8.6,
    "provisional": true,
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QJG-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QJG-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 13 PU／月＝毎日の取得の月の見込み（S1 約 5.3 撮影／月×0.66 PU＋S2 約 13.3 日／月×(0.03＋0.35×0.55) PU＝約 6.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。",
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QJG-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QJG-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 13 PU／月＝毎日の取得の月の見込み（S1 約 5.3 撮影／月×0.66 PU＋S2 約 13.3 日／月×(0.03＋0.35×0.55) PU＝約 6.5 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。岸壁線 QJG-quay-v3（naval-1、2026-11-05）＝v2 の手書きの突堤 −1（S2 の目測 ±30 m）を Esri World Imagery の目視判読（2026-11-05、数 m）の −2 に置き換えたもの（sat/masks/QJG-manual.geojson）。−2 は 2026-11-05 以降の撮影だけ着く線。",
    "sectors": [
     {
      "id": "A1",
@@ -780,7 +780,7 @@
     "baselines_present": [
      171
     ],
-    "lines_version": "QJG-quay-v2",
+    "lines_version": "QJG-quay-v3",
     "class_weights": {
      "site_key": "QJG",
      "own": true,
@@ -818,7 +818,8 @@
      "berth_lines": 0,
      "coastline_sections": 2,
      "excluded_ways": [
-      "-1"
+      "-1",
+      "-2"
      ],
      "version": "berth-1"
     }
@@ -846,7 +847,7 @@
    "height_px": 499,
    "area_km2": 20.2,
    "provisional": true,
-   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QDH-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QDH-land-v2（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 46 PU／月＝毎日の取得の月の見込み（S1 約 10.7 撮影／月×1.54 PU＋S2 約 13.3 日／月×(0.03＋0.35×1.28) PU＝約 22.8 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。",
+   "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 QDH-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク QDH-land-v2（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 46 PU／月＝毎日の取得の月の見込み（S1 約 10.7 撮影／月×1.54 PU＋S2 約 13.3 日／月×(0.03＋0.35×1.28) PU＝約 22.8 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。岸壁線 QDH-quay-v2（naval-1、2026-11-05）＝v1（OSM）＋OSM に無い西港区の桟橋 4 本 −1〜−4（Esri World Imagery の目視判読 2026-11-05、数 m。sat/masks/QDH-manual.geojson）。−1〜−4 は 2026-11-05 以降の撮影だけ着く線。",
    "sectors": [
     {
      "id": "A1",
@@ -884,7 +885,7 @@
     "baselines_present": [
      171
     ],
-    "lines_version": "QDH-quay-v1",
+    "lines_version": "QDH-quay-v2",
     "class_weights": {
      "site_key": "QDH",
      "own": true,
@@ -921,7 +922,12 @@
     "berths": {
      "berth_lines": 14,
      "coastline_sections": 0,
-     "excluded_ways": [],
+     "excluded_ways": [
+      "-1",
+      "-2",
+      "-3",
+      "-4"
+     ],
      "version": "berth-1"
     }
    },
@@ -1530,7 +1536,7 @@
   {
    "id": "MAW",
    "name": "福州・馬尾（造船所）",
-   "mask_version": "MAW-land-v1",
+   "mask_version": "MAW-land-v2",
    "bbox": [
     119.425,
     25.975,
@@ -1653,6 +1659,13 @@
    "note": "監視範囲を変更（旧範囲 v1：概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
   },
   {
+   "site_id": "MAW",
+   "from_mask_version": "MAW-land-v1",
+   "to_mask_version": "MAW-land-v2",
+   "date_utc": "2026-11-06",
+   "note": "陸マスクを作り直した（範囲は同じ。旧版 v1：OSM の海岸線（natural=coastline）だけで作ったため、海岸線の無い閩江の地点では陸の画素が 0（値 0 が 96.3%、桟橋・橋 3.7%）で、市街地が水面として検出にかかっていた（2部の fixed_eval で発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた）。mask_version が違う行の数は陸と水の分け方が違うため直接比べない。新しい版は 2026-11-06 以降の撮影だけに使い、旧版で数えた撮影は取り直さない（CDSE の要求を増やさない）。旧版の行は残す"
+  },
+  {
    "site_id": "ZJG",
    "kind": "berth_only",
    "from_mask_version": "ZJG-land-v2",
@@ -1775,8 +1788,8 @@
   {
    "site_id": "MAW",
    "kind": "berth_only",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "quay-v1・est-2",
    "to_version": "quay-v2・est-2.1（berth-1）",
    "date_utc": "2026-11-01",
@@ -1798,9 +1811,9 @@
    "from_mask_version": "ZJG-land-v2",
    "to_mask_version": "ZJG-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SYL",
@@ -1818,9 +1831,9 @@
    "from_mask_version": "SYL-land-v2",
    "to_mask_version": "SYL-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SLP",
@@ -1838,9 +1851,9 @@
    "from_mask_version": "SLP-land-v2",
    "to_mask_version": "SLP-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QGZ",
@@ -1858,9 +1871,9 @@
    "from_mask_version": "QGZ-land-v1",
    "to_mask_version": "QGZ-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZDH",
@@ -1878,9 +1891,9 @@
    "from_mask_version": "ZDH-land-v2",
    "to_mask_version": "ZDH-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QJG",
@@ -1898,9 +1911,9 @@
    "from_mask_version": "QJG-land-v1",
    "to_mask_version": "QJG-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QDH",
@@ -1918,9 +1931,9 @@
    "from_mask_version": "QDH-land-v2",
    "to_mask_version": "QDH-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XSN",
@@ -1938,9 +1951,9 @@
    "from_mask_version": "XSN-land-v1",
    "to_mask_version": "XSN-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "LSN",
@@ -1958,9 +1971,9 @@
    "from_mask_version": "LSN-land-v1",
    "to_mask_version": "LSN-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SWS",
@@ -1978,9 +1991,9 @@
    "from_mask_version": "SWS-land-v1",
    "to_mask_version": "SWS-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XMN",
@@ -1998,9 +2011,9 @@
    "from_mask_version": "XMN-land-v1",
    "to_mask_version": "XMN-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "STU",
@@ -2018,15 +2031,15 @@
    "from_mask_version": "STU-land-v1",
    "to_mask_version": "STU-land-v1",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "MAW",
    "kind": "size",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "長さを問わない",
    "to_version": "size-1",
    "date_utc": "2026-11-06",
@@ -2035,12 +2048,12 @@
   {
    "site_id": "MAW",
    "kind": "fixed",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "固定物の判定なし",
-   "to_version": "fix-1",
+   "to_version": "fix-2",
    "date_utc": "2026-11-05",
-   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。それより前の行は書き換えないので直接比べない"
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZJG",
@@ -2165,8 +2178,8 @@
   {
    "site_id": "MAW",
    "kind": "naval",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
    "date_utc": "2026-11-05",
@@ -2295,8 +2308,8 @@
   {
    "site_id": "MAW",
    "kind": "windows",
-   "from_mask_version": "MAW-land-v1",
-   "to_mask_version": "MAW-land-v1",
+   "from_mask_version": "MAW-land-v2",
+   "to_mask_version": "MAW-land-v2",
    "from_version": "窓の制限なし",
    "to_version": "win-1",
    "date_utc": "2026-11-04",
@@ -2553,9 +2566,20 @@
       }
      ],
      "exclude_ways": [
-      -1
+      -1,
+      -2
      ],
-     "note": "手書きの突堤（QJG-quay-v2 の id −1、sat/masks/QJG-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
+     "note": "港内の突堤の線（QJG-quay-v3 の id −2、Esri World Imagery の目視判読 2026-11-05、sat/masks/QJG-manual.geojson。v2 の手書きの −1〔S2 の目測〕を置き換えた）は berth-1 では外し（−1 も保存済みの地物に残っていたときのため外したまま）、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
+    },
+    "QDH": {
+     "coastline": [],
+     "exclude_ways": [
+      -1,
+      -2,
+      -3,
+      -4
+     ],
+     "note": "西港区の桟橋 4 本（QDH-quay-v2 の id −1〜−4、Esri World Imagery の目視判読 2026-11-05、sat/masks/QDH-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QDH.json の added）から着く線にする"
     },
     "MAW": {
      "coastline": [],
@@ -2595,11 +2619,11 @@
     },
     "QDH": {
      "lines": {
-      "naval": 3,
+      "naval": 7,
       "civil": 0,
       "unknown": 13
      },
-     "lines_version": "QDH-quay-v1",
+     "lines_version": "QDH-quay-v2",
      "confidence": null,
      "note": null
     },
@@ -2619,7 +2643,7 @@
       "civil": 0,
       "unknown": 0
      },
-     "lines_version": "QJG-quay-v2",
+     "lines_version": "QJG-quay-v3",
      "confidence": "中（OSM の基地の区域と溫約瑟の地図で海軍。南の外海に面した海岸線を berth-1 が区画 A1 で戻しているのは 2部の確認待ちのまま）",
      "note": null
     },
@@ -2723,7 +2747,8 @@
    "rule": "候補は中心の画素が陸・池・幅 min_channel_m 未満の水路の奥なら外す（detections/ に window_excluded 付きで残し、件数は status.json の window_excluded）。港内水域の候補で船が着く線から band_m より遠いものは外さず、港内の錨泊（window＝anchorage）として anchorage_counts.csv に別に数え、赤枠も岸壁の候補と区別して出す（chips の window）。船が着く線の無い地点は錨泊の区別をしない。水面の区分は windows/<地点>.geojson"
   },
   "fixed": {
-   "version": "fix-1",
+   "version": "fix-2",
+   "revision": 2,
    "since_utc": "2026-11-05",
    "defaults": {
     "bright_db": 8.0,
@@ -2739,6 +2764,11 @@
    },
    "notes": {
     "structure": "空の岸壁の基準でも明るく（水面の p10 より bright_db 以上）、当日も上がっておらず（rise_db 未満）、基準の p90−p10 も小さい：桟橋の縁・係船柱・ブイ・クレーン台船など。数えない",
+    "guarded": "fix-2：structure の条件に当たるが、海軍の岸壁の 60 m 以上の候補（またはその片）か造船所の候補なので外さずに数える（長く係留している艦は構造物と同じく基準でも明るく当日も変化しないため）。理由は fixed_guard。berthed_long＝true",
+    "registry": "fix-2：人が光学画像で構造物と確かめた台帳（sat/fixed_registry）の点の radius_m 以内。数えない。項目は fixed_registry_id",
+    "registry_over_guard": "fix-2：歯止めに当たるが、台帳の pier_part・mask_error で、当日も上がらず（rise_db 未満）、物体の長さが台帳のevidence.length_m＋余裕（REGISTRY_LEN）以下なので外した候補。2部の毎月の見直しの一覧に載る",
+    "point": "fix-2：開けた水面の小さく弱いがいつもある点（ブイ・灯標など）。数は変えない。2 撮影以上で同じ点なら台帳の候補",
+    "field": "fix-2：開けた水面の小さい候補の密集（筏・網・漁船団）。数は変えない",
     "ship_conf": "船らしさ。high＝当日だけ基準より大きく上がり（high_rise_db 以上、z high_z 以上）、VH も強く、長さ high_len_m 以上。medium＝基準より rise_db 以上上がった。low＝それ以外（よく船がいる所か、変化が弱い）。基準の無い軌道は自分の画像のコントラストだけで、medium まで"
    },
    "labels": {
@@ -2746,7 +2776,68 @@
     "medium": "中",
     "low": "低"
    },
-   "rule": "候補の画素（その日の明るい順に pixels 個、3×3 平均）を、同じ軌道の空の岸壁の基準（VV p10・p90）と比べる。base_db＝基準の p10 と水面の p10 の差、rise_db＝その日の VV と基準の p10 の差の中央値、rise_z＝画素数で割り引いた z。structure の候補は detections/ に fixed_excluded 付きで残し、件数（harbour_candidates・quay_candidates・錨泊・区画）に入れない。SINCE_UTC より前の行は書き換えない"
+   "versions": [
+    {
+     "version": "fix-2",
+     "since_utc": "2026-11-05",
+     "revision": 2,
+     "note": "fix-1 は公開データの撮影に一度も適用されないまま fix-2 に置き換えた（適用期間なし）"
+    }
+   ],
+   "guard": {
+    "naval_len_m": 60.0,
+    "near_m": 100.0,
+    "yard_roles": [
+     "dock",
+     "slip",
+     "fitout",
+     "hall_apron"
+    ],
+    "reasons": [
+     "naval_long",
+     "naval_near",
+     "yard_site",
+     "yard_sector",
+     "yard_line"
+    ],
+    "rule": "fix-2：structure の条件に当たる候補（または台帳に載った候補）でも、次のどれかに当たれば外さずに数える（fixed_flag＝guarded、berthed_long＝true、ship_conf＝low）。naval_long＝最も近い着く線（naval-1 と同じ距離：岸壁帯は keep_m、開けた水面は窓の band_m）が海軍で、物体の長さ naval_len_m 以上。naval_near＝その線が海軍で、同じ撮影の near_m 以内に、数えている（berth-1・win-1 で外れず、台帳で外れない）海軍の naval_len_m 以上の物体がある（係留中の艦の割れた片。片をまとめる処理が入るまでの代わり）。yard_site＝地点の kind が yard。yard_sector＝造船所の区画（role が yard_roles）。yard_line＝最も近い着く線が海軍の造船所の岸壁（sat/berth_class の why が「造船所の岸壁」で区分 naval）。ただし台帳の pier_part・mask_error（人が構造物と確かめた点）で、当日も上がっていない（rise_db が defaults の rise_db 未満）うえ、物体の長さが台帳の evidence.length_m＋余裕（registry_len）以下のものは歯止めより優先して外す（長く係留する艦は基準でも明るく当日も上がらないので、長さで見分ける。外した数は status.json の fixed.registry_over_guard、候補の registry_over_guard＝true）。理由 fixed_guard と、使った線の区分 fixed_guard_class は、外した候補にも残した候補にも記録する",
+    "registry_len": {
+     "pad_m": 10.0,
+     "pad_frac": 0.2,
+     "rule": "evidence.length_m + max(pad_m, pad_frac × evidence.length_m)。evidence.length_m が無い項目は歯止めに勝たない"
+    },
+    "source": "2部の設計書 fixed_eval（2026-11-06）4.2"
+   },
+   "registry": {
+    "files": "sat/fixed_registry/<地点>.json",
+    "geojson": "fixed/<地点>.geojson",
+    "match": "候補の中心が項目の radius_m 以内（既定 30 m、上限 100 m）",
+    "active": "status が confirmed で confirmed_by（2部・owner）があり、撮影日が expires_utc より前",
+    "expires_days": {
+     "gear": 120,
+     "raft": 120
+    },
+    "hashes": {
+     "QGZ": "df0ee5069595",
+     "QJG": "95178a8cc36d"
+    },
+    "per_scene": "status.json の撮影ごとの fixed.registry_hash（読めなかった日は registry_error）"
+   },
+   "point": {
+    "max_len_m": 40.0,
+    "base_db": 4.0,
+    "spread_db": 5.0,
+    "rise_db": 6.0,
+    "rule": "開けた水面（陸マスクから 50 m 以上、zone harbour）で長さ max_len_m 以下、base_db 以上・spread_db 未満・rise_db 未満：ブイ・灯標などの弱いがいつもある点。数は変えない（fixed_flag＝point）"
+   },
+   "field": {
+    "radius_m": 300.0,
+    "min_n": 5,
+    "max_len_m": 40.0,
+    "rule": "開けた水面の max_len_m 以下の候補が同じ撮影の radius_m 以内に min_n 件以上（自分を含む）：筏・網・漁船団。1 撮影では区別できないので数は変えない（fixed_flag＝field）。値は仮置き"
+   },
+   "order": "検出 → win-1 → fix-2 の採点（score：S と台帳の一致。まだ外さない）→ 割れのまとめ（入れる場合。S と台帳の候補はつなぎにしない：bridge_ok）→ fix-2 の判定（decide：物体の単位。物体を外すのは片がすべて S か台帳で、物体の長さで歯止めにかからないとき）→ size-1（まとめた後の長さ）→ naval-1 の数・quay・est-1・est-2。まとめの処理が無いうちは候補 1 つを物体とする",
+   "rule": "候補の画素（その日の明るい順に pixels 個、3×3 平均）を、同じ軌道の空の岸壁の基準（VV p10・p90）と比べる。base_db＝基準の p10 と水面の p10 の差、rise_db＝その日の VV と基準の p10 の差の中央値、rise_z＝画素数で割り引いた z。structure・registry の候補は detections/ に fixed_excluded 付きで残し、件数（harbour_candidates・quay_candidates・錨泊・区画）に入れない。point・field は印だけで数は変えない。SINCE_UTC より前の行は書き換えない"
   },
   "estimate": {
    "version": "est-1",
@@ -7310,14 +7401,14 @@
    },
    {
     "site_id": "MAW",
-    "mask_version": "MAW-land-v1",
+    "mask_version": "MAW-land-v2",
     "relative_orbit": 142,
     "version": "ro142-bl-1",
     "scenes": 24,
     "first_utc": "2025-12-28T10:10:09Z",
     "last_utc": "2026-10-07T10:09:26Z",
     "credibility": "3",
-    "file": "sat/baselines/MAW-land-v1/ro142-bl-1.json"
+    "file": "sat/baselines/MAW-land-v2/ro142-bl-1.json"
    }
   ],
   "change_image": {
@@ -7460,24 +7551,24 @@
     "mask_version": "QJG-land-v1",
     "relative_orbit": 171,
     "baseline_version": "ro171-bl-1",
-    "lines_version": "QJG-quay-v2",
-    "total_m": 10510,
-    "blind_m": 160,
-    "share": 0.015,
-    "strict_m": 10,
-    "stretches": 3
+    "lines_version": "QJG-quay-v3",
+    "total_m": 10430,
+    "blind_m": 270,
+    "share": 0.026,
+    "strict_m": 20,
+    "stretches": 5
    },
    {
     "site_id": "QDH",
     "mask_version": "QDH-land-v2",
     "relative_orbit": 171,
     "baseline_version": "ro171-bl-1",
-    "lines_version": "QDH-quay-v1",
-    "total_m": 25740,
-    "blind_m": 8270,
-    "share": 0.321,
-    "strict_m": 4010,
-    "stretches": 158
+    "lines_version": "QDH-quay-v2",
+    "total_m": 26310,
+    "blind_m": 8350,
+    "share": 0.317,
+    "strict_m": 4040,
+    "stretches": 163
    },
    {
     "site_id": "XSN",
@@ -7565,15 +7656,15 @@
    },
    {
     "site_id": "MAW",
-    "mask_version": "MAW-land-v1",
+    "mask_version": "MAW-land-v2",
     "relative_orbit": 142,
     "baseline_version": "ro142-bl-1",
     "lines_version": "MAW-quay-v2",
-    "total_m": 1740,
-    "blind_m": 950,
-    "share": 0.546,
-    "strict_m": 540,
-    "stretches": 19
+    "total_m": 820,
+    "blind_m": 300,
+    "share": 0.366,
+    "strict_m": 110,
+    "stretches": 7
    }
   ],
   "blind_note": "内側の帯（水際から 0〜30 m）の最大で基準の VV p10 が −8 dB を超える区間は、基準に船（または構造物）が入っていて数えられない可能性が高い。total_m＝水側のある線の全長、blind_m＝その区間の長さの合計、share＝割合（判定は帯の 3 画素の最大なので、岸壁自体のにじみも拾う多めの値）。strict_m＝帯の 3 画素すべてが −8 dB を超える長さ（少なめの値）。線は quay/blind.geojson",
@@ -7657,7 +7748,7 @@
   "岸壁に横付けされた艦は陸と区別しにくく数え落とす前提（岸壁帯は別に数える。横付けの船は基準との変化で quay_counts.csv に別に数える：quay）",
   "画素 10 m・実分解能約 20 m。接して並ぶ艦は 1 つにまとまり、大型艦は分かれることがある",
   "陸マスクは OSM の海岸線から作った固定マスクで、埋立て・新しい岸壁は反映が遅れる",
-  "固定物（桟橋の縁・係船柱・ブイ等）は 2026-11-05 以降の撮影で、空の岸壁の基準でも明るく当日も変化しない候補を外す（fix-1）。基準の無い軌道と、それより前の撮影では固定物も候補に数える。半年のうち 9 割以上同じ所にいる船は固定物と区別できない",
+  "固定物（桟橋の縁・係船柱・ブイ等）は 2026-11-05 以降の撮影で、空の岸壁の基準でも明るく当日も変化しない候補を外す（fix-1）。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（その片を含む）と造船所の候補は外さない（長く係留している艦を構造物として外さないため。その分、海軍の岸壁の大きな構造物は残りうる）。基準の無い軌道と、それより前の撮影では固定物も候補に数える。半年のうち 9 割以上同じ所にいる船は固定物と区別できない",
   "撮影は地点ごとに数日おき。軌道の向き・入射角で見え方が変わるため、比較は同じ相対軌道どうしで行う",
   "湛江の範囲 v2 は 2部の確定案（2026-10-30）。北端 21.265N で麻斜の桟橋群が切れていないかは次の撮影の画像で確かめる。確かめるまで公開画面の地図には出さない",
   "区画は候補の重心で決める。境界をまたぐ艦は重心のある側に数える"
