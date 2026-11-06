@@ -964,8 +964,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "berths": berths.settings(),
             "naval": berths.class_settings(),
             "windows": fwindows.settings(),
-            "fixed": ffixed.settings({sid: freg.entries_hash(freg.confirmed(freg.load(sid)))
-                                      for sid in freg.sites_with_registry()}),
+            "fixed": ffixed.settings(*registry_hashes()),
             "estimate": quay_est.settings(),
             "estimate2": quay_est2.settings(),
             "estimate2_evaluation": est2_eval_ref(out),
@@ -1208,7 +1207,7 @@ def chip_features(site: dict, grid: Grid, acq: dict, dets: list[dict], image: st
                 **({k: d.get(k) for k in ("fixed_excluded", "ship_conf", "rise_db", "rise_z", "base_db", "spread_db",
                                           "fixed_version")} if d.get("fixed_version") else {}),
                 **({k: d.get(k) for k in ("fixed_flag", "fixed_guard", "fixed_guard_class", "fixed_registry_id",
-                                          "berthed_long")}
+                                          "berthed_long", "registry_over_guard")}
                    if d.get("fixed_version") == ffixed.VERSION else {}),
                 **({"berth_class": d["berth_class"], "naval_excluded": d.get("naval_excluded", ""),
                     "naval_version": berths.NAVAL_VERSION} if d.get("berth_class") else {}),
@@ -1258,6 +1257,33 @@ def fixed_guard_ctx(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict]
     return ctx
 
 
+def registry_hashes() -> tuple[dict, dict]:
+    """meta.json fixed.registry: {site: hash of its confirmed entries} and {site: error} for a registry file that cannot
+    be read (a broken file must not stop the day's save; ``python -m sat.fixed_registry check`` in the tests stops it
+    before it is merged)."""
+    hashes, errors = {}, {}
+    try:
+        sites = freg.sites_with_registry()
+    except OSError as ex:  # pragma: no cover
+        return {}, {"*": f"{type(ex).__name__}: {ex}"}
+    for sid in sites:
+        try:
+            hashes[sid] = freg.entries_hash(freg.confirmed(freg.load(sid)))
+        except Exception as ex:  # noqa: BLE001  any broken file: record it, keep the rest
+            errors[sid] = f"{type(ex).__name__}: {ex}"
+    return hashes, errors
+
+
+def site_registry(site_id: str, acquired_utc: str) -> tuple[list[dict], str, str]:
+    """(active entries, their hash, error). A registry file that cannot be read is used as empty (no candidate dropped
+    by it) and the error is recorded in status.json fixed.registry_error."""
+    try:
+        reg = freg.active(freg.load(site_id), acquired_utc)
+        return reg, freg.entries_hash(reg), ""
+    except Exception as ex:  # noqa: BLE001
+        return [], "", f"{type(ex).__name__}: {ex}"
+
+
 def classify_fixed(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict], vv: np.ndarray) -> dict | None:
     """fix-1 / fix-2 (sat/fixed.py), for every candidate of a scene from fixed.SINCE_UTC: d["fixed_excluded"] =
     "structure" (bright when the berth is empty and nothing new today: not counted) or "" and d["ship_conf"]
@@ -1272,10 +1298,12 @@ def classify_fixed(qctx: "QuayContext", site: dict, acq: dict, dets: list[dict],
     water = qctx.mask == WATER if qctx.mask is not None else None
     if version != ffixed.VERSION:
         return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water, version=version)
-    reg = freg.active(freg.load(site["id"]), acq["acquired_utc"])
-    return ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water, version=version,
-                           guard_ctx=fixed_guard_ctx(qctx, site, acq, dets), registry=reg,
-                           registry_hash=freg.entries_hash(reg))
+    reg, reg_hash, reg_err = site_registry(site["id"], acq["acquired_utc"])
+    counts = ffixed.classify(dets, vv, bl[0] if bl else None, bl[1] if bl else None, water, version=version,
+                             guard_ctx=fixed_guard_ctx(qctx, site, acq, dets), registry=reg, registry_hash=reg_hash)
+    if reg_err:
+        counts["registry_error"] = reg_err
+    return counts
 
 
 def mark_small(acq: dict, dets: list[dict]) -> None:

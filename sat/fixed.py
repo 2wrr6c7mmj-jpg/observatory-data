@@ -44,7 +44,10 @@ stays at one berth for months (bright when "empty", nothing new today). In two s
        yard_sector  in a shipyard sector (role dock / slip / fitout / hall_apron)
        yard_line    the nearest berth line is a naval shipyard berth of the class file (why "造船所の岸壁…", class naval)
      except that registry entries of kind pier_part or mask_error (a person saw a structure) win over the guard when
-     every piece is in them and did not rise today (rise_db < DEFAULTS["rise_db"]: a ship that came alongside is kept);
+     every piece is in them, did not rise today (rise_db < DEFAULTS["rise_db"]: a ship that came alongside is kept) and
+     the object is no longer than the entry's ``evidence.length_m`` plus ``REGISTRY_LEN`` (a ship moored for months
+     next to the structure is bright in the baseline too and does not rise: only its length tells it apart). Those are
+     counted as ``registry_over_guard`` and marked on the candidate (``registry_over_guard`` = true) for 2部's review;
    - flags that never change the counts: ``point`` (open water, 40 m or less, weak but always there: a buoy or a
      beacon) and ``field`` (5 or more small open-water candidates within 300 m: rafts, nets or a fishing fleet).
 
@@ -77,6 +80,9 @@ POINT = {                 # a weak spot that is always there (design 4.2 の 4);
 FIELD = {"radius_m": 300.0, "min_n": 5, "max_len_m": 40.0}   # the ocean cluster rule scaled to 10 m pixels; flag only,
                                                             # provisional (no field in the 2026-11 sample)
 FLAGS = ("guarded", "point", "field")
+REGISTRY_LEN = {"pad_m": 10.0, "pad_frac": 0.2}   # a registry entry wins over the guard only for an object up to its
+                                                  # evidence.length_m + max(pad_m, pad_frac x length_m) (1部の審査
+                                                  # 2026-11-06: QJG-002 46 m -> 56 m, under the guard's 60 m)
 DEFAULTS = {
     "bright_db": 8.0,      # baseline p10 this far above the site's water p10: bright when the berth is empty
     "rise_db": 3.0,        # today's VV over the baseline p10, median of the candidate's pixels
@@ -97,6 +103,8 @@ NOTE = {
     "guarded": "fix-2：structure の条件に当たるが、海軍の岸壁の 60 m 以上の候補（またはその片）か造船所の候補なので外さずに数える"
                "（長く係留している艦は構造物と同じく基準でも明るく当日も変化しないため）。理由は fixed_guard。berthed_long＝true",
     "registry": "fix-2：人が光学画像で構造物と確かめた台帳（sat/fixed_registry）の点の radius_m 以内。数えない。項目は fixed_registry_id",
+    "registry_over_guard": "fix-2：歯止めに当たるが、台帳の pier_part・mask_error で、当日も上がらず（rise_db 未満）、物体の長さが台帳の"
+                           "evidence.length_m＋余裕（REGISTRY_LEN）以下なので外した候補。2部の毎月の見直しの一覧に載る",
     "point": "fix-2：開けた水面の小さく弱いがいつもある点（ブイ・灯標など）。数は変えない。2 撮影以上で同じ点なら台帳の候補",
     "field": "fix-2：開けた水面の小さい候補の密集（筏・網・漁船団）。数は変えない",
     "ship_conf": "船らしさ。high＝当日だけ基準より大きく上がり（high_rise_db 以上、z high_z 以上）、VH も強く、長さ high_len_m 以上。"
@@ -254,6 +262,15 @@ def score(dets: list[dict], vv_s: np.ndarray, base: dict | None, wp10: float | N
     return out
 
 
+def registry_len_limit(e: dict | None) -> float | None:
+    """The longest object an entry may drop over the guard: evidence.length_m + max(pad_m, pad_frac x it); None when
+    the entry has no length (then the guard always wins)."""
+    ln = ((e or {}).get("evidence") or {}).get("length_m")
+    if isinstance(ln, bool) or not isinstance(ln, (int, float)) or not ln > 0:
+        return None
+    return float(ln) + max(REGISTRY_LEN["pad_m"], REGISTRY_LEN["pad_frac"] * float(ln))
+
+
 def bridge_ok(sc: dict) -> bool:
     """May this candidate join others in the merge of split pieces? Never an S or a registry candidate (design 5)."""
     return not sc.get("S") and not sc.get("reg")
@@ -270,24 +287,27 @@ def decide(dets: list[dict], scores: list[dict], ctx: list[dict] | None, cfg: di
     objs = objects if objects is not None else [[i] for i in range(n)]
     lens = lengths if lengths is not None else [max(float(dets[i].get("length_m") or 0) for i in o) for o in objs]
 
-    def overrides(i):  # a confirmed structure kind that did not rise today wins over the guard
+    def overrides(i, length):  # a confirmed structure kind, nothing new today and no longer than the entry's evidence
         e, r = scores[i]["reg"], scores[i].get("rise_db")
-        return bool(e) and e["kind"] in freg.OVERRIDES_GUARD and r is not None and r < float(c["rise_db"])
+        lim = registry_len_limit(e)
+        return (bool(e) and e["kind"] in freg.OVERRIDES_GUARD and r is not None and r < float(c["rise_db"])
+                and lim is not None and length <= lim)
 
-    dropped_by_reg = [all(overrides(i) for i in o) for o in objs]
+    dropped_by_reg = [all(overrides(i, lens[k]) for i in o) for k, o in enumerate(objs)]
     anchor_ok = [all(counted_base(dets[i]) for i in o) and not dropped_by_reg[k] for k, o in enumerate(objs)]
     reasons = guard_reasons(dets, ctx, cfg, objs, lens, anchor_ok)
-    counts = {"structure": 0, "registry": 0, "guarded": 0, "point": 0, "field": 0, "high": 0, "medium": 0, "low": 0,
+    counts = {"structure": 0, "registry": 0, "registry_over_guard": 0, "guarded": 0, "point": 0, "field": 0, "high": 0, "medium": 0, "low": 0,
               "no_baseline": 0, "guarded_by": {k: 0 for k in GUARD_REASONS}}
     small = [dets[i].get("zone") == "harbour" for i in range(n)]
     for k, o in enumerate(objs):
         all_reg = all(scores[i]["reg"] for i in o)
         fixed = all(scores[i]["S"] or scores[i]["reg"] for i in o)
         why = reasons[k]
-        excl, flag = "", ""
+        excl, flag, over = "", "", False
         if fixed:
             if not why or dropped_by_reg[k]:
                 excl = "registry" if all_reg else "structure"
+                over = bool(why)       # the guard applied and a registry entry won over it
             else:
                 flag = "guarded"
         if not excl and not flag and lens[k] <= POINT["max_len_m"] and all(small[i] for i in o):
@@ -305,7 +325,7 @@ def decide(dets: list[dict], scores: list[dict], ctx: list[dict] | None, cfg: di
             e = scores[i]["reg"]
             r.update(fixed_excluded=excl, fixed_flag=flag, fixed_guard="+".join(why),
                      fixed_guard_class=ctx[i].get("berth_class") or "", fixed_registry_id=e["id"] if e else "",
-                     berthed_long=flag == "guarded")
+                     berthed_long=flag == "guarded", registry_over_guard=over)
             if excl:
                 r["ship_conf"] = None
             elif r.get("ship_conf") is None:
@@ -313,6 +333,8 @@ def decide(dets: list[dict], scores: list[dict], ctx: list[dict] | None, cfg: di
             dets[i].update(r)
             if excl:
                 counts[excl] += 1
+                if over:
+                    counts["registry_over_guard"] += 1
             else:
                 counts[r["ship_conf"]] += 1
                 if flag:
@@ -353,8 +375,9 @@ def classify(dets: list[dict], vv_db: np.ndarray, base: dict | None, meta: dict 
     return counts
 
 
-def settings(registry_hashes: dict | None = None) -> dict:
-    """meta.json "fixed". ``registry_hashes``: {site: hash of its active registry entries}."""
+def settings(registry_hashes: dict | None = None, registry_errors: dict | None = None) -> dict:
+    """meta.json "fixed". ``registry_hashes``: {site: hash of its active registry entries}; ``registry_errors``:
+    {site: why its file could not be read} (written only when there is one)."""
     if FIX2_SINCE <= SINCE_UTC:   # fix-1 never applied to a scene: fix-2 from the start
         versions = [{"version": VERSION, "since_utc": FIX2_SINCE, "revision": REVISION,
                      "note": "fix-1 は公開データの撮影に一度も適用されないまま fix-2 に置き換えた（適用期間なし）"}]
@@ -371,14 +394,20 @@ def settings(registry_hashes: dict | None = None) -> dict:
                                "（係留中の艦の割れた片。片をまとめる処理が入るまでの代わり）。yard_site＝地点の kind が yard。"
                                "yard_sector＝造船所の区画（role が yard_roles）。yard_line＝最も近い着く線が海軍の造船所の岸壁"
                                "（sat/berth_class の why が「造船所の岸壁」で区分 naval）。ただし台帳の pier_part・mask_error（人が構造物と確かめた点）"
-                               "で、当日も上がっていない（rise_db が defaults の rise_db 未満）ものは歯止めより優先して外す。理由 fixed_guard と、"
+                               "で、当日も上がっていない（rise_db が defaults の rise_db 未満）うえ、物体の長さが台帳の evidence.length_m＋余裕"
+                               "（registry_len）以下のものは歯止めより優先して外す（長く係留する艦は基準でも明るく当日も上がらないので、"
+                               "長さで見分ける。外した数は status.json の fixed.registry_over_guard、候補の registry_over_guard＝true）。"
+                               "理由 fixed_guard と、"
                                "使った線の区分 fixed_guard_class は、外した候補にも残した候補にも記録する"),
+                      "registry_len": {**REGISTRY_LEN, "rule": "evidence.length_m + max(pad_m, pad_frac × evidence.length_m)。"
+                                       "evidence.length_m が無い項目は歯止めに勝たない"},
                       "source": "2部の設計書 fixed_eval（2026-11-06）4.2"},
             "registry": {"files": "sat/fixed_registry/<地点>.json", "geojson": "fixed/<地点>.geojson",
                          "match": "候補の中心が項目の radius_m 以内（既定 30 m、上限 100 m）",
                          "active": "status が confirmed で confirmed_by（2部・owner）があり、撮影日が expires_utc より前",
                          "expires_days": {"gear": 120, "raft": 120}, "hashes": registry_hashes or {},
-                         "per_scene": "status.json の撮影ごとの fixed.registry_hash"},
+                         "per_scene": "status.json の撮影ごとの fixed.registry_hash（読めなかった日は registry_error）",
+                         **({"errors": registry_errors} if registry_errors else {})},
             "point": {**POINT, "rule": "開けた水面（陸マスクから 50 m 以上、zone harbour）で長さ max_len_m 以下、base_db 以上・"
                                        "spread_db 未満・rise_db 未満：ブイ・灯標などの弱いがいつもある点。数は変えない（fixed_flag＝point）"},
             "field": {**FIELD, "rule": "開けた水面の max_len_m 以下の候補が同じ撮影の radius_m 以内に min_n 件以上（自分を含む）："

@@ -4,7 +4,9 @@ A person checked each entry on optical imagery (Esri World Imagery, Sentinel-2) 
 part, a pontoon, a buoy, a beacon, a bridge pier, fishing gear, a raft, or a hole in the land mask. From fixed.FIX2_SINCE
 a candidate whose centre is within ``radius_m`` of an active entry is not counted (``fixed_excluded`` = "registry",
 ``fixed_registry_id``), except that fix-2's guard (a naval berth candidate of 60 m and more, its pieces, a shipyard) wins
-over every kind but ``pier_part`` and ``mask_error`` (sat/fixed.py).
+over every kind but ``pier_part`` and ``mask_error``, and over those too when the object rose today or is longer than
+the entry's ``evidence.length_m`` plus a margin (sat/fixed.py ``REGISTRY_LEN``): ``evidence.length_m`` is required
+for those two kinds.
 
 File::
 
@@ -21,7 +23,9 @@ Each scene records the hash of the site's active entries (``registry_hash``): ch
 Pure Python (the collect workflows run without numpy).
 
     python -m sat.fixed_registry geojson          # writes docs/data/sat/fixed/<site>.geojson (checked by the tests)
-    python -m sat.fixed_registry review           # the month's list for 2部: guarded / berthed_long and repeated points
+    python -m sat.fixed_registry check            # every registry file (also run by .github/workflows/test.yml)
+    python -m sat.fixed_registry review           # the month's list for 2部: guarded / berthed_long, the registry
+                                                  # entries that won over the guard, and repeated points
 """
 from __future__ import annotations
 
@@ -50,9 +54,21 @@ def load(site_id: str, d: Path | None = None) -> dict | None:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
+def _day(v) -> date | None:
+    """An ISO date (or datetime) string as a date; None when it is not one."""
+    if not isinstance(v, str):
+        return None
+    try:
+        return date.fromisoformat(v[:10])
+    except ValueError:
+        return None
+
+
 def check(reg: dict, site_id: str | None = None) -> list[str]:
     """The problems of a registry file ([] = fine)."""
     errs = []
+    if not isinstance(reg, dict) or not isinstance(reg.get("entries", []), list):
+        return ["not a registry object with an entries list"]
     if site_id and reg.get("site") != site_id:
         errs.append(f"site {reg.get('site')} != {site_id}")
     seen = set()
@@ -73,34 +89,39 @@ def check(reg: dict, site_id: str | None = None) -> list[str]:
             errs.append(f"{i}: status {e.get('status')}")
         if e.get("status", "confirmed") == "confirmed" and e.get("confirmed_by") not in CONFIRMERS:
             errs.append(f"{i}: confirmed without confirmed_by in {CONFIRMERS}")
-        try:
-            added = date.fromisoformat(str(e.get("added_utc"))[:10])
-        except ValueError:
-            errs.append(f"{i}: added_utc")
-            continue
-        exp = e.get("expires_utc")
-        if e.get("kind") in EXPIRING:
-            if not exp:
-                errs.append(f"{i}: {e['kind']} needs expires_utc")
-            elif date.fromisoformat(exp[:10]) > added + timedelta(days=EXPIRING[e["kind"]]):
-                errs.append(f"{i}: expires_utc later than {EXPIRING[e['kind']]} days after added_utc")
-        elif exp:
-            try:
-                date.fromisoformat(exp[:10])
-            except ValueError:
-                errs.append(f"{i}: expires_utc")
         ev = e.get("evidence") or {}
+        if not isinstance(ev, dict):
+            errs.append(f"{i}: evidence is not an object")
+            ev = {}
         if e.get("status", "confirmed") == "confirmed" and not ev.get("imagery"):
             errs.append(f"{i}: confirmed without evidence.imagery")
+        if e.get("kind") in OVERRIDES_GUARD:
+            ln = ev.get("length_m")
+            if isinstance(ln, bool) or not isinstance(ln, (int, float)) or not ln > 0:
+                errs.append(f"{i}: {e.get('kind')} needs evidence.length_m (the longest object it may drop over the guard)")
+        added = _day(e.get("added_utc"))
+        if added is None:
+            errs.append(f"{i}: added_utc {e.get('added_utc')!r} is not a date")
+        exp = e.get("expires_utc")
+        if exp is not None and _day(exp) is None:
+            errs.append(f"{i}: expires_utc {exp!r} is not a date (YYYY-MM-DD) or null")
+        elif e.get("kind") in EXPIRING:
+            if not exp:
+                errs.append(f"{i}: {e['kind']} needs expires_utc")
+            elif added is not None and _day(exp) > added + timedelta(days=EXPIRING[e["kind"]]):
+                errs.append(f"{i}: expires_utc later than {EXPIRING[e['kind']]} days after added_utc")
     return errs
 
 
 def active(reg: dict | None, acquired_utc: str) -> list[dict]:
-    """The entries used for a scene acquired at ``acquired_utc``: confirmed, confirmed_by set, not expired."""
+    """The entries used for a scene acquired at ``acquired_utc``: confirmed, confirmed_by set, not expired. An entry
+    that ``check`` finds a problem in (a broken date, place or radius) is not used: it never drops a candidate."""
     day = acquired_utc[:10]
     out = []
     for e in (reg or {}).get("entries") or []:
-        if e.get("status", "confirmed") != "confirmed" or e.get("confirmed_by") not in CONFIRMERS:
+        if not isinstance(e, dict) or e.get("status", "confirmed") != "confirmed" or e.get("confirmed_by") not in CONFIRMERS:
+            continue
+        if check({"site": None, "entries": [e]}):
             continue
         if e.get("expires_utc") and day >= e["expires_utc"][:10]:
             continue
@@ -174,9 +195,12 @@ def write_geojson(d: Path | None = None, out: Path | None = None) -> list[Path]:
 
 
 def review(features: list[dict], point_m: float = 30.0, min_scenes: int = 2) -> dict:
-    """The list 2部 checks each month (design 4.4 / 6): the guarded and berthed_long candidates, and the points flagged
-    ``point`` in ``min_scenes`` or more scenes within ``point_m`` of each other (proposed registry entries)."""
+    """The list 2部 checks each month (design 4.4 / 6): the guarded and berthed_long candidates, the candidates a
+    registry entry dropped over the guard (``registry_over_guard``: is it still the structure, not a ship alongside?),
+    and the points flagged ``point`` in ``min_scenes`` or more scenes within ``point_m`` of each other (proposed
+    registry entries)."""
     guarded = [f for f in features if f["properties"].get("fixed_flag") == "guarded"]
+    over = [f for f in features if f["properties"].get("registry_over_guard")]
     pts = [f for f in features if f["properties"].get("fixed_flag") == "point"]
     groups: list[list[dict]] = []
     for f in pts:
@@ -200,6 +224,13 @@ def review(features: list[dict], point_m: float = 30.0, min_scenes: int = 2) -> 
                          "lon": f["geometry"]["coordinates"][0], "lat": f["geometry"]["coordinates"][1],
                          "length_m": f["properties"].get("length_m"), "fixed_guard": f["properties"].get("fixed_guard"),
                          "berthed_long": f["properties"].get("berthed_long")} for f in guarded],
+            "registry_over_guard": [{"site_id": f["properties"].get("site_id"),
+                                     "acquired_utc": f["properties"].get("acquired_utc"),
+                                     "lon": f["geometry"]["coordinates"][0], "lat": f["geometry"]["coordinates"][1],
+                                     "length_m": f["properties"].get("length_m"),
+                                     "rise_db": f["properties"].get("rise_db"),
+                                     "fixed_registry_id": f["properties"].get("fixed_registry_id"),
+                                     "fixed_guard": f["properties"].get("fixed_guard")} for f in over],
             "proposed_points": proposed}
 
 
@@ -209,7 +240,12 @@ def main(argv=None) -> int:
     ap.add_argument("--months", nargs="*", help="review: detections/**/<YYYY-MM>.geojson to read (default: all)")
     a = ap.parse_args(argv)
     if a.cmd == "check":
-        bad = {sid: check(load(sid), sid) for sid in sites_with_registry()}
+        bad = {}
+        for sid in sites_with_registry():
+            try:
+                bad[sid] = check(load(sid), sid)
+            except (ValueError, OSError) as ex:      # not JSON (json.JSONDecodeError is a ValueError), unreadable
+                bad[sid] = [f"load: {ex}"]
         bad = {k: v for k, v in bad.items() if v}
         print(json.dumps(bad, ensure_ascii=False, indent=1) if bad else "ok")
         return 1 if bad else 0
