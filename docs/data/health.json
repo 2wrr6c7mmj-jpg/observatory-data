@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-06T00:55:27Z",
+ "generated_utc": "2026-11-06T06:30:08Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-05T13:26:25Z",
-   "heartbeat_age_h": 11.5,
+   "heartbeat_age_h": 17.1,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
    "data_age_days": 4,
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-05T11:29:56Z",
-   "heartbeat_age_h": 13.4,
+   "heartbeat_age_h": 19.0,
    "data_date": "2026-11-04",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-05T02:17:40Z",
-   "heartbeat_age_h": 22.6,
+   "heartbeat_age_h": 28.2,
    "data_date": "2026-11-04",
    "data_date_tz": "TWT",
    "data_age_days": 2,
@@ -179,7 +179,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T08:00:38Z",
-   "heartbeat_age_h": 16.9,
+   "heartbeat_age_h": 22.5,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 10,
@@ -197,7 +197,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T08:00:36Z",
-   "heartbeat_age_h": 16.9,
+   "heartbeat_age_h": 22.5,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -215,7 +215,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-05T11:30:09Z",
-   "heartbeat_age_h": 13.4,
+   "heartbeat_age_h": 19.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -533,7 +533,7 @@
     "window_start_utc": "2026-11-08T20:17Z",
     "window_end_utc": "2026-11-08T20:47Z"
    },
-   "active_notices": 28
+   "active_notices": 27
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -837,8 +837,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-05",
-   "version": "fix-2 第 2 版（revision 2。検出・陸マスク・範囲・区画は変えない。2026-11-05 以降の撮影から）"
+   "date": "2026-11-06",
+   "version": "MAW-land-v2（馬尾の陸マスクの作り直し。検出・範囲・区画・岸壁線は変えない。2026-11-06 以降の撮影から）"
   }
  },
  "credits": [
