@@ -1,0 +1,91 @@
+{
+ "type": "FeatureCollection",
+ "site_id": "QJG",
+ "registry_hash": "95178a8cc36d",
+ "attribution": [
+  "固定物の台帳（人が光学画像で確かめた点。sat/fixed_registry）"
+ ],
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.59533,
+     36.103067
+    ]
+   },
+   "properties": {
+    "id": "QJG-001",
+    "kind": "mask_error",
+    "status": "confirmed",
+    "confirmed_by": "2部",
+    "radius_m": 30,
+    "added_utc": "2026-11-06",
+    "expires_utc": null,
+    "note": "岬の先端の岩場（陸マスクに入っていない）。2部の設計書 fixed_eval（2026-11-06） 3.3「QJG の 102 m（3.8）は岬の先端で…構造物だった」。根拠は S1 の 1 撮影（2026-04-17）と撮影日不明の Esri の画像だけで、ほかの撮影・S2 では確かめていない（2部の毎月の見直しで確かめ直す）",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.571333,
+     36.108815
+    ]
+   },
+   "properties": {
+    "id": "QJG-002",
+    "kind": "pier_part",
+    "status": "confirmed",
+    "confirmed_by": "2部",
+    "radius_m": 30,
+    "added_utc": "2026-11-06",
+    "expires_utc": null,
+    "note": "防波堤の先端。2部の設計書 fixed_eval（2026-11-06） 3.3「…どれも構造物（QJG の防波堤の先・岩…）」。fix-2 の歯止め（naval_near：100 m 先の 80 m の候補。rise 6.7 dB で当日来た船と見られる）で残っていた。根拠は S1 の 1 撮影（2026-04-17）と撮影日不明の Esri の画像だけで、ほかの撮影・S2 では確かめていない（2部の毎月の見直しで確かめ直す）",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）"
+     }
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     120.571846,
+     36.108705
+    ]
+   },
+   "properties": {
+    "id": "QJG-003",
+    "kind": "pier_part",
+    "status": "confirmed",
+    "confirmed_by": "2部",
+    "radius_m": 30,
+    "added_utc": "2026-11-06",
+    "expires_utc": null,
+    "note": "防波堤の先端（丸い頭）。2部の設計書 fixed_eval（2026-11-06） 3.3 と同じ。根拠は S1 の 1 撮影（2026-04-17）と撮影日不明の Esri の画像だけで、ほかの撮影・S2 では確かめていない（2部の毎月の見直しで確かめ直す）",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）"
+     }
+    ]
+   }
+  }
+ ]
+}

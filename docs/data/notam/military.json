@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-05T19:03:40Z",
+ "generated_utc": "2026-11-06T00:34:39Z",
  "snapshot": "snapshot-fda40d537ff3b3ac.json",
  "items": [
   {
@@ -779,7 +779,7 @@
     "start_utc": "2026-11-05T20:20:00Z",
     "end_utc": "2026-11-06T22:20:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "periods": [
      {
@@ -25712,8 +25712,8 @@
     "start_utc": "2026-11-02T00:00:00Z",
     "end_utc": "2026-11-06T10:00:00Z",
     "permanent": false,
-    "status": "upcoming",
-    "basis": "period",
+    "status": "active",
+    "basis": "activity-period",
     "periods": [
      {
       "start_utc": "2026-11-02T00:00:00Z",
@@ -26326,7 +26326,7 @@
     "start_utc": "2026-11-05T21:00:00Z",
     "end_utc": "2026-11-06T23:00:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "2100-2300"
    },
@@ -35372,8 +35372,8 @@
     "start_utc": "2026-11-01T21:00:00Z",
     "end_utc": "2026-12-13T10:30:00Z",
     "permanent": false,
-    "status": "upcoming",
-    "basis": "period",
+    "status": "active",
+    "basis": "activity-period",
     "periods": [
      {
       "start_utc": "2026-11-01T21:00:00Z",
@@ -37411,7 +37411,7 @@
     "start_utc": "2026-11-06T00:30:00Z",
     "end_utc": "2026-11-06T04:30:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": null
    },
@@ -47393,69 +47393,6 @@
    "launch": null
   },
   {
-   "key": "aviation:N4239/26",
-   "id": "N4239/26",
-   "dataset": "aviation",
-   "type": "航空",
-   "issuer": {
-    "code": "RJSM",
-    "name": null,
-    "country": "JP"
-   },
-   "q_code": "QFALT",
-   "category": "military",
-   "categories": [
-    "military"
-   ],
-   "basis": [
-    {
-     "by": "keyword",
-     "category": "military",
-     "rule": "military-source",
-     "matched": "JAPAN AIR SELF DEFENSE FORCE"
-    }
-   ],
-   "valid": {
-    "start_utc": "2026-11-05T23:30:00Z",
-    "end_utc": "2026-11-06T00:00:00Z",
-    "permanent": false,
-    "status": "upcoming",
-    "basis": "item",
-    "schedule": null
-   },
-   "area": {
-    "basis": "shape",
-    "shapes": [
-     {
-      "kind": "point",
-      "points": [
-       [
-        40.7,
-        141.3667
-       ]
-      ],
-      "approximate": true
-     }
-    ]
-   },
-   "original": {
-    "text": "N4239/26 NOTAMN\r\nQ)RJJJ/QFALT/IV/NBO/A/000/999/4042N14122E005\r\nA)RJSM B)2611052330 C)2611060000\r\nE)AD RESTRICTED OPS DUE TO CEREMONY\r\nPROHIBITED:ENG RUN UP,ENG START AND AUX PWR UNIT OPS ON S SIDE OF\r\n           RWY,TKOF,LDG,TGL,LOW APCH,HEL HOVERING,ACFT TAX ON A LANE\r\n           AND A TWY,HIGH PWR ENG RUN UP WO SILENCER\r\nAVBL:STRAIGHT IN FULL STOP LDG\r\nCOOR:3RD AIRWING DEFENSE DIVISION\r\n     TEL:0176-53-4121(EXTENSION 3045)\r\nEXC EMERG,ALERT ACFT,EXERCISE ACFT,MQ-9/MQ-4/RQ-4 ASSIGNED MISSION\r\n    LAUNCH,JAPAN AIR SELF DEFENSE FORCE SKED ACFT,UNITED STATES AIR\r\n    FORCE SKED ACFT,CIV SKED ACFT"
-   },
-   "source": {
-    "name": "FAA NOTAM Search（各国の航空当局が出した NOTAM）",
-    "url": "https://notams.aim.faa.gov/notamSearch/nsapp.html#/",
-    "via": "NOTAM Watch",
-    "note": "NOTAM Watch の詳細画面の「公式原文」と同じ参照先"
-   },
-   "notam_watch": {
-    "url": "https://notam-watch.pages.dev/",
-    "dataset": "aviation",
-    "id": "N4239/26",
-    "snapshot": "snapshot-fda40d537ff3b3ac.json"
-   },
-   "launch": null
-  },
-  {
    "key": "aviation:P5310/26",
    "id": "P5310/26",
    "dataset": "aviation",
@@ -47482,7 +47419,7 @@
     "start_utc": "2026-11-06T00:00:00Z",
     "end_utc": "2026-11-06T03:00:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": null
    },
@@ -80453,191 +80390,6 @@
    "launch": null
   },
   {
-   "key": "aviation:E5171/26",
-   "id": "E5171/26",
-   "dataset": "aviation",
-   "type": "航空",
-   "issuer": {
-    "code": "RKRR",
-    "name": null,
-    "country": "KR"
-   },
-   "q_code": "QRTCA",
-   "category": "danger_area",
-   "categories": [
-    "danger_area"
-   ],
-   "basis": [
-    {
-     "by": "q-code",
-     "category": "danger_area",
-     "rule": "Q-RT",
-     "matched": "QRTCA"
-    }
-   ],
-   "valid": {
-    "start_utc": "2026-11-03T23:30:00Z",
-    "end_utc": "2026-11-05T23:59:00Z",
-    "permanent": false,
-    "status": "active",
-    "basis": "item",
-    "schedule": "03 05 2330-2359"
-   },
-   "area": {
-    "basis": "shape",
-    "shapes": [
-     {
-      "kind": "polygon",
-      "points": [
-       [
-        35,
-        127.3039
-       ],
-       [
-        35,
-        128.375
-       ],
-       [
-        34.825,
-        128.3583
-       ],
-       [
-        34.1464,
-        127.3036
-       ],
-       [
-        35,
-        127.3039
-       ]
-      ]
-     }
-    ]
-   },
-   "original": {
-    "text": "E5171/26 NOTAMN  \r\nQ)RKRR/QRTCA/IV/BO/W/200/430/3434N12750E038\r\nA)RKRR B)2611032330 C)2611052359\r\nD)03 05 2330-2359\r\nE)TEMPO RESTRICTED AREA ACT AS FLW\r\nAREA BOUNDED BY THE FOLLOWING\r\n350000N1271814E-350000N1282230E-344930N1282130E-340847N1271813E-35000\r\n0N1271814E\r\n\r\nRMK:  EXC SKED CIV ACFT INBOUND TO/OUTBOUND FM RKJY AND RKPS\r\nF)FL200 G)FL430"
-   },
-   "source": {
-    "name": "FAA NOTAM Search（各国の航空当局が出した NOTAM）",
-    "url": "https://notams.aim.faa.gov/notamSearch/nsapp.html#/",
-    "via": "NOTAM Watch",
-    "note": "NOTAM Watch の詳細画面の「公式原文」と同じ参照先"
-   },
-   "notam_watch": {
-    "url": "https://notam-watch.pages.dev/",
-    "dataset": "aviation",
-    "id": "E5171/26",
-    "snapshot": "snapshot-fda40d537ff3b3ac.json"
-   },
-   "launch": null
-  },
-  {
-   "key": "aviation:E5172/26",
-   "id": "E5172/26",
-   "dataset": "aviation",
-   "type": "航空",
-   "issuer": {
-    "code": "RKRR",
-    "name": null,
-    "country": "KR"
-   },
-   "q_code": "QRTCA",
-   "category": "danger_area",
-   "categories": [
-    "danger_area"
-   ],
-   "basis": [
-    {
-     "by": "q-code",
-     "category": "danger_area",
-     "rule": "Q-RT",
-     "matched": "QRTCA"
-    }
-   ],
-   "valid": {
-    "start_utc": "2026-11-03T23:30:00Z",
-    "end_utc": "2026-11-05T23:59:00Z",
-    "permanent": false,
-    "status": "active",
-    "basis": "item",
-    "schedule": "03 05 2330-2359"
-   },
-   "area": {
-    "basis": "shape",
-    "shapes": [
-     {
-      "kind": "point",
-      "points": [
-       [
-        35.6361,
-        127.4806
-       ]
-      ]
-     },
-     {
-      "kind": "point",
-      "points": [
-       [
-        35.6611,
-        128.4028
-       ]
-      ]
-     },
-     {
-      "kind": "point",
-      "points": [
-       [
-        35.6292,
-        128.4306
-       ]
-      ]
-     },
-     {
-      "kind": "point",
-      "points": [
-       [
-        35.2542,
-        128.3972
-       ]
-      ]
-     },
-     {
-      "kind": "point",
-      "points": [
-       [
-        35.2333,
-        127.4
-       ]
-      ]
-     },
-     {
-      "kind": "point",
-      "points": [
-       [
-        35.6361,
-        127.4806
-       ]
-      ]
-     }
-    ]
-   },
-   "original": {
-    "text": "E5172/26 NOTAMN  \r\nQ)RKRR/QRTCA/IV/BO/W/200/430/3526N12755E029\r\nA)RKRR B)2611032330 C)2611052359\r\nD)03 05 2330-2359\r\nE)TEMPO RESTRICTED AREA ACT AS FLW\r\nAREA BOUNDED BY THE FOLLOWING\r\n353810N1272850E-353940N1282410E-353745N1282550E-351515N1282350E-35140\r\n0N1272400E-353810N1272850E\r\n\r\nRMK: 1. EXC SKED CIV ACFT INBOUND TO/OUTBOUND FM RKJY AND RKPS\r\n     2. EXCLUDING THE AREA THAT OVERLAP WITH ATS RTE V547/Y657\r\nF)FL200 G)FL430"
-   },
-   "source": {
-    "name": "FAA NOTAM Search（各国の航空当局が出した NOTAM）",
-    "url": "https://notams.aim.faa.gov/notamSearch/nsapp.html#/",
-    "via": "NOTAM Watch",
-    "note": "NOTAM Watch の詳細画面の「公式原文」と同じ参照先"
-   },
-   "notam_watch": {
-    "url": "https://notam-watch.pages.dev/",
-    "dataset": "aviation",
-    "id": "E5172/26",
-    "snapshot": "snapshot-fda40d537ff3b3ac.json"
-   },
-   "launch": null
-  },
-  {
    "key": "aviation:D3453/26",
    "id": "D3453/26",
    "dataset": "aviation",
@@ -82775,7 +82527,7 @@
     "start_utc": "2026-11-05T22:00:00Z",
     "end_utc": "2026-11-06T13:30:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": null
    },
@@ -82839,7 +82591,7 @@
     "start_utc": "2026-11-06T00:00:00Z",
     "end_utc": "2026-12-31T09:00:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "0000-0900"
    },
@@ -82902,7 +82654,7 @@
     "start_utc": "2026-11-06T00:00:00Z",
     "end_utc": "2026-11-10T09:00:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": null
    },
