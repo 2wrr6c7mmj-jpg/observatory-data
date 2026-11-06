@@ -1,7 +1,7 @@
 {
  "version":"ocean-monitor-3",
  "config_version":"ocean-monitor-3",
- "generated_utc":"2026-11-05T00:35:00Z",
+ "generated_utc":"2026-11-06T00:35:03Z",
  "attribution":"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0",
  "credits":[
   "Contains modified Copernicus Sentinel data (Copernicus Sentinel-1, ESA; CDSE Sentinel Hub)",
@@ -361,7 +361,7 @@
    "date_utc":"2026-11-05",
    "areas":"all",
    "change":"洋上風力の格子（grid）と 20 m の取り直しで固定物と判った候補（static_temporal）を参考に、学習した固定物を軌道をまたいで数える（14 日以上に散らばった当たり、45 日で失効）。A の件数は ocean-monitor-2 より減る（彰化沖の風車など）ので直接比べない",
-   "first_processed_utc":null
+   "first_processed_utc":"2026-11-06T00:35:03Z"
   }
  ],
  "verify_fields":{
@@ -381,6 +381,6 @@
   "static_learned.json":"学習した固定物",
   "held/":"公開を保留した域の passes.json・static_learned.json・candidates・coverage・series.json（サイトは読まない。検品用）"
  },
- "passes":11,
+ "passes":13,
  "static_learned_points":0
 }
