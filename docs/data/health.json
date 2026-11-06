@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-06T21:27:08Z",
+ "generated_utc": "2026-11-06T23:51:58Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-06T13:08:14Z",
-   "heartbeat_age_h": 8.3,
+   "heartbeat_age_h": 10.7,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-06T11:29:43Z",
-   "heartbeat_age_h": 10.0,
+   "heartbeat_age_h": 12.4,
    "data_date": "2026-11-05",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-06T14:34:53Z",
-   "heartbeat_age_h": 6.9,
+   "heartbeat_age_h": 9.3,
    "data_date": "2026-11-06",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +173,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-06T08:04:57Z",
-   "heartbeat_age_h": 13.4,
+   "heartbeat_age_h": 15.8,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 11,
@@ -197,7 +197,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-06T08:04:54Z",
-   "heartbeat_age_h": 13.4,
+   "heartbeat_age_h": 15.8,
    "data_date": "2026-11-06",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -215,7 +215,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-06T11:30:04Z",
-   "heartbeat_age_h": 10.0,
+   "heartbeat_age_h": 12.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -521,7 +521,7 @@
     "window_start_utc": "2026-11-08T19:20Z",
     "window_end_utc": "2026-11-08T21:20Z"
    },
-   "active_notices": 31
+   "active_notices": 30
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -647,15 +647,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-06T00:31:39Z",
+   "last_success_started_utc": "2026-11-06T23:48:05Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42137463727,
-    "started_utc": "2026-11-06T00:31:39Z",
+    "id": 42314232836,
+    "started_utc": "2026-11-06T23:48:05Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42137463727",
-    "delay_h": 4.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42314232836",
+    "delay_h": 4.1
    },
    "consecutive_failures": 0
   }
