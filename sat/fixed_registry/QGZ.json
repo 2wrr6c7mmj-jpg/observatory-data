@@ -1,0 +1,90 @@
+{
+ "site": "QGZ",
+ "note": "青島・古鎮口。fix-2 の台帳の最初の版（2026-11-06）。作成は3部（2部の設計書 fixed_eval 3.2・3.3 の目視の結果から）、確認は2部の目視（confirmed_by＝2部。ユーザーの判断 2026-11-06「2部の確認で可」）。どの項目も根拠は S1 の 1 撮影と撮影日不明の Esri の画像だけ（evidence.provenance.single_scene）",
+ "entries": [
+  {
+   "id": "QGZ-001",
+   "lon": 119.963946,
+   "lat": 35.741315,
+   "radius_m": 30,
+   "kind": "mask_error",
+   "status": "confirmed",
+   "confirmed_by": "2部",
+   "added_utc": "2026-11-06",
+   "expires_utc": null,
+   "evidence": {
+    "base_db": 12.0,
+    "spread_db": 3.5,
+    "rise_db": 2.8,
+    "length_m": 187,
+    "s_scenes": "2026-04-10 の 1 撮影で 187 m の候補（fix-1 の spread 3.5 dB で境目、海軍の線）",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）",
+      "by": [
+       "2部",
+       "3部（再確認）"
+      ],
+      "ref": "2部の目視の図 near_esri.png のパネル 1（QGZ L187）（内部の確認用。再配布しない）"
+     }
+    ],
+    "note": "陸マスクの抜けた海岸（護岸と道路。艦が着く岸壁ではない）。2部の設計書 fixed_eval（2026-11-06） 3.3「QGZ の 187 m（3.5）は陸マスクの抜けた海岸」。根拠は S1 の 1 撮影（2026-04-10）と撮影日不明の Esri の画像だけで、ほかの撮影・S2 では確かめていない（2部の毎月の見直しで確かめ直す）",
+    "provenance": {
+     "made_by": "3部（設計書の目視の結果から台帳の項目を作成、2026-11-06）",
+     "confirmed_by": "2部の目視（Esri World Imagery、2026-11-06。3部も同じ画像で再確認）",
+     "design": "2部の設計書 fixed_eval（2026-11-06）3.3（係留中の軍艦：60 m 以上の 8 件のうち「QGZ の 187 m（3.5）は陸マスクの抜けた海岸」）",
+     "figure": "2部の目視の図 near_esri.png のパネル 1（QGZ L187）",
+     "viewed_utc": "2026-11-06",
+     "scenes": [
+      "2026-04-10"
+     ],
+     "single_scene": true
+    }
+   }
+  },
+  {
+   "id": "QGZ-002",
+   "lon": 119.96431,
+   "lat": 35.741636,
+   "radius_m": 30,
+   "kind": "pier_part",
+   "status": "confirmed",
+   "confirmed_by": "2部",
+   "added_utc": "2026-11-06",
+   "expires_utc": null,
+   "evidence": {
+    "base_db": 10.5,
+    "spread_db": 3.2,
+    "rise_db": 0.1,
+    "length_m": 38,
+    "s_scenes": "2026-04-17 の 1 撮影で S（fix-1 の structure）。QGZ-001 から 49 m、同じ護岸",
+    "imagery": [
+     {
+      "source": "Esri World Imagery（Esri, Vantor, Earthstar Geographics）",
+      "viewed_utc": "2026-11-06",
+      "captured": "不明（Esri の画像。S1 の撮影日とは違う）",
+      "by": [
+       "2部",
+       "3部（再確認）"
+      ],
+      "ref": "2部の目視の図 struct_esri.png のパネル 18（QGZ L38）（内部の確認用。再配布しない）"
+     }
+    ],
+    "note": "護岸の角。2部の設計書 fixed_eval（2026-11-06） 3.3「今の閾値で外れている軍の岸壁の 6 件（30〜46 m）は…どれも構造物（…QGZ の岸壁の角…）」。fix-2 の歯止め（naval_near：2026-04-17 の 95 m の候補から 77 m）で残っていた。根拠は S1 の 1 撮影（2026-04-17）と撮影日不明の Esri の画像だけで、ほかの撮影・S2 では確かめていない（2部の毎月の見直しで確かめ直す）",
+    "provenance": {
+     "made_by": "3部（設計書の目視の結果から台帳の項目を作成、2026-11-06）",
+     "confirmed_by": "2部の目視（Esri World Imagery、2026-11-06。3部も同じ画像で再確認）",
+     "design": "2部の設計書 fixed_eval（2026-11-06）3.3（今の閾値で外れている軍の岸壁の 6 件「QGZ の岸壁の角」）と 3.2（S の目視）",
+     "figure": "2部の目視の図 struct_esri.png のパネル 18（QGZ L38）",
+     "viewed_utc": "2026-11-06",
+     "scenes": [
+      "2026-04-17"
+     ],
+     "single_scene": true
+    }
+   }
+  }
+ ]
+}

@@ -86,6 +86,11 @@ def scene_doc(site: dict, grid: Grid, row: dict, features: list[dict], image_px:
              "credibility": p.get("credibility"), "reliability": p.get("reliability"), "status": p.get("status")}
         if p.get("fixed_version"):   # fix-1: how ship-like against the empty-berth baseline
             c.update({k: p.get(k) for k in ("ship_conf", "rise_db", "rise_z", "base_db")})
+        if p.get("fixed_flag"):      # fix-2: guarded (framed as usual, berthed long) / point, field (framed in grey)
+            c["fixed_flag"] = p["fixed_flag"]
+            c["frame"] = "grey" if p["fixed_flag"] in ("point", "field") else "red"
+            if p.get("berthed_long"):
+                c["berthed_long"] = True
         if p.get("window"):   # win-1: an anchorage candidate (open harbour water beyond the berth band), framed apart
             c["window"] = p["window"]
             c["window_label"] = WINDOW_LABELS.get(p["window"], p["window"])

@@ -125,6 +125,9 @@ MARGIN_8 = [
     ("SYL", 109.545125, 18.223845, 106, 18.8, 2.7, 4.8),
     ("SYL", 109.553173, 18.229887, 88, 24.2, 1.5, 5.5),
 ]
+# design 3.3: the 2 of the 8 that were structures on Esri (dropped by the registry from fix-2 revision 2) and the 6 ships
+MARGIN_STRUCTURES = {("QGZ", 119.963946, 35.741315): "QGZ-001", ("QJG", 120.59533, 36.103067): "QJG-001"}
+MARGIN_SHIPS = [m for m in MARGIN_8 if (m[0], m[1], m[2]) not in MARGIN_STRUCTURES]
 WP10 = -22.0
 
 
@@ -157,7 +160,11 @@ class GuardTest(unittest.TestCase):
                           (110.0, 21.004, 59))
         ctx = [{"berth_class": "naval"}, {"berth_class": "naval"}, {"berth_class": "naval"}, {"berth_class": "civil"},
                {"berth_class": "unknown", "yard_line": True}]
-        self.assertEqual(fixed.guard_reasons(dets, ctx), [["naval_long"], ["naval_near"], [], [], ["yard_line"]])
+        # yard_line only on a naval shipyard berth (1部の指摘：「軍の造船所と言える根拠が無い」unknown の線には付けない)
+        self.assertEqual(fixed.guard_reasons(dets, ctx), [["naval_long"], ["naval_near"], [], [], []])
+        ctx[4]["berth_class"] = "naval"
+        self.assertEqual(fixed.guard_reasons(dets, ctx)[4], ["yard_line"])
+        ctx[4]["berth_class"] = "unknown"
         dets[0]["length_m"] = 59      # no naval candidate of 60 m left: no piece either
         self.assertEqual(fixed.guard_reasons(dets, ctx)[:2], [[], []])
         self.assertEqual(fixed.guard_reasons(dets[:1], [{"yard_site": True, "yard_sector": True}]),
@@ -200,9 +207,14 @@ class GuardTest(unittest.TestCase):
 
     def test_the_8_margin_candidates_stay_even_at_6_db(self):
         """The 8 of margin.csv on the real berth lines and classes (sat/berth_class): naval, so guarded by length;
-        with fix-1's spread threshold raised to 6 dB fix-1 drops all 8 and fix-2 none."""
+        with fix-1's spread threshold raised to 6 dB fix-1 drops all 8 and fix-2 none. With the committed registry
+        (sat/fixed_registry) as the daily run uses it, the 6 ships (MARGIN_SHIPS) are still never dropped, and only
+        the 2 structures that 2部 saw on Esri (QGZ 187 m = QGZ-001, QJG 102 m = QJG-001) are dropped by the registry."""
         from sat import berths, quay_lines
+        from sat import fixed_registry as freg
         sites = {s["id"]: s for s in run.load_sites()}
+        day = fixed.FIX2_SINCE + "T10:00:00Z"
+        self.assertEqual(len(MARGIN_SHIPS), 6)
         for site_id, lon, lat, ln, base, rise, spread in MARGIN_8:
             with self.subTest(site=site_id, lon=lon):
                 s = sites[site_id]
@@ -210,16 +222,27 @@ class GuardTest(unittest.TestCase):
                                    naval=True)
                 (_way, cl), = bt.nearest_line([(lon, lat)], bt.keep_m)
                 self.assertEqual(cl, "naval")
+                reg = freg.active(freg.load(site_id), day)
+                ship = (site_id, lon, lat) in {(m[0], m[1], m[2]) for m in MARGIN_SHIPS}
                 vv, bl = flat(base, rise, spread)
                 for thr in (3.5, 6.0):
-                    d1, d2 = self.cands((lon, lat, ln)), self.cands((lon, lat, ln))
+                    d1, d2, d3 = (self.cands((lon, lat, ln)) for _ in range(3))
                     fixed.classify(d1, vv, bl, self.meta, None, cfg={"spread_db": thr})
                     fixed.classify(d2, vv, bl, self.meta, None, cfg={"spread_db": thr}, version="fix-2",
                                    guard_ctx=[{"berth_class": cl}])
+                    fixed.classify(d3, vv, bl, self.meta, None, cfg={"spread_db": thr}, version="fix-2",
+                                   guard_ctx=[{"berth_class": cl}], registry=reg)
                     self.assertEqual(d2[0]["fixed_excluded"], "")
+                    if ship:
+                        self.assertEqual((d3[0]["fixed_excluded"], d3[0]["fixed_registry_id"]), ("", ""))
+                    else:
+                        self.assertEqual((d3[0]["fixed_excluded"], d3[0]["registry_over_guard"]), ("registry", True))
+                        self.assertEqual(d3[0]["fixed_registry_id"], MARGIN_STRUCTURES[(site_id, lon, lat)])
                     if thr == 6.0:
                         self.assertEqual(d1[0]["fixed_excluded"], "structure")
                         self.assertEqual((d2[0]["fixed_flag"], d2[0]["fixed_guard"]), ("guarded", "naval_long"))
+                        if ship:
+                            self.assertEqual((d3[0]["fixed_flag"], d3[0]["fixed_guard"]), ("guarded", "naval_long"))
 
     def test_run_context_from_the_berth_lines_and_sectors(self):
         """run.fixed_guard_ctx: the naval-1 class of the nearest line, the shipyard line and sector, on a real site."""
