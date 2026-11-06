@@ -290,5 +290,8 @@
   "mask_version": "MAW-land-v1",
   "file": "sat/baselines/MAW-land-v1/ro142-bl-1.json",
   "note": "同じ範囲の旧マスクの基準の層（同じ撮影・同じ値）を、新しいマスクの水域・構造物から 200 m 以内だけ残して使う。撮影は取り直していない（PU 0）。統計は新しいマスクで計算し直した。min_valid_scenes_in_kept は旧基準の値（残す画素は旧基準で残していた画素の一部）"
- }
+ },
+ "remasked_from": "MAW-land-v1",
+ "remasked_utc": "2026-11-05T23:24:32Z",
+ "scene_list_note": "scene_list の撮影ごとの値（coverage・water_vv_median_db など）は旧マスク MAW-land-v1 で撮影時に計算したもので、このマスクでは計算し直していない（撮影を取り直していないため）。stats はこのマスクで計算し直した値。remasked_utc はこの基準を作ったコミット a7cf1fbd の時刻（作業環境の時計）"
 }

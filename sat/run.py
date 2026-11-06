@@ -127,9 +127,9 @@ def rebuilt_mask_filter(site: dict, store: "Store", acqs: list[dict], done: set[
 def mask_since(site: dict) -> str | None:
     """A mask rebuilt without a recount (the latest ``history`` entry has ``recount`` false): the current mask is
     used only for scenes acquired from its ``until_utc``, and a scene counted with an older mask is never fetched
-    again (no CDSE request is added by the new version). None: the usual rule (a new extent recounts 30 days)."""
-    h = [x for x in site.get("history") or [] if x.get("recount") is False and x.get("until_utc")]
-    return max(x["until_utc"] for x in h)[:10] if h else None
+    again (no CDSE request is added by the new version). None: the usual rule (a new extent recounts 30 days), also
+    when an older entry had ``recount`` false but the latest does not. The same rule as sat/s2.py (S2 days)."""
+    return s2.mask_since(site)
 
 
 def row_mask_tag(r: dict) -> str:

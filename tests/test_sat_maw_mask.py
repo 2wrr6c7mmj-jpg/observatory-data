@@ -3,7 +3,10 @@ the baseline carried over from MAW-land-v1 without a fetch, and the switch witho
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
+from datetime import datetime, timezone
+from pathlib import Path
 
 try:
     import numpy as np
@@ -13,7 +16,7 @@ except ImportError:  # pragma: no cover
 if np is not None:
     from sat import baseline as fb
     from sat import osm_mask as om
-    from sat import png, run
+    from sat import png, run, s2
     from sat.grid import Grid
 
 
@@ -100,6 +103,10 @@ class MawV2Test(unittest.TestCase):
         self.assertEqual((m2["mask_version"], m2["derived_from"]["mask_version"], m2["scenes"], m2["built_utc"]),
                          ("MAW-land-v2", "MAW-land-v1", m1["scenes"], m1["built_utc"]))
         self.assertLess(m2["stats"]["water_vv_p10_median_db"], -20)      # v1: -13.6 (the city counted as water)
+        self.assertEqual(m2["remasked_from"], "MAW-land-v1")            # 1部の審査 (#78-3)
+        self.assertRegex(m2["remasked_utc"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+        self.assertIn("MAW-land-v1", m2["scene_list_note"])
+        self.assertEqual(m2["scene_list"], m1["scene_list"])            # the per-scene values are v1's
 
     def test_no_scene_is_fetched_again(self):
         self.assertEqual(run.mask_since(self.site), "2026-11-06")
@@ -116,6 +123,67 @@ class MawV2Test(unittest.TestCase):
                                               "2026-11-08T10:10:00Z", "2026-11-09T10:10:00Z")]
         got = [a["acquired_utc"][:10] for a in run.rebuilt_mask_filter(self.site, S(), acqs, set())]
         self.assertEqual(got, ["2026-11-08", "2026-11-09"])     # before the date, counted or tried with v1: never again
+
+    def test_mask_since_reads_only_the_latest_history_entry(self):
+        """1部の審査 (#78-2): an older rebuild without a recount does not hold back a later one that recounts."""
+        h1 = {"mask_version": 1, "until_utc": "2026-11-06", "recount": False}
+        self.assertEqual(run.mask_since({"history": [h1]}), "2026-11-06")
+        self.assertIsNone(run.mask_since({"history": [h1, {"mask_version": 2, "until_utc": "2026-12-01"}]}))
+        self.assertIsNone(run.mask_since({"history": [h1, {"mask_version": 2, "until_utc": "2026-12-01",
+                                                           "recount": True}]}))
+        self.assertEqual(run.mask_since({"history": [{"mask_version": 2, "until_utc": "2026-12-01", "recount": False},
+                                                     {"mask_version": 1, "until_utc": "2026-11-06"}]}), "2026-12-01")
+        self.assertIsNone(run.mask_since({"history": []}))
+        self.assertIsNone(run.mask_since({}))
+        self.assertEqual(run.mask_since(self.site), s2.mask_since(self.site))
+
+    def test_s2_days_of_the_older_mask_are_not_fetched_again(self):
+        """1部の審査 (#78-1): the S2 catalog of the last 10 days has days recorded with MAW-land-v1. The daily run of
+        v2 fetches only the days from until_utc that v1 did not record (no PU, no second picture under s2/MAW/v2)."""
+        from tests.test_sat_s2 import FakeS2
+        site = {**self.site, "bbox": [119.43, 26.0, 119.435, 26.008], "sectors": [], "s2": {"enabled": True}}
+        site.pop("sector_rest", None)
+        days = {"2026-11-01": (5.0, 0.0),     # before until_utc, recorded with v1 (clear, an image under v1)
+                "2026-11-03": (5.0, 0.0),     # before until_utc, not recorded (deferred by v1's budget): not fetched
+                "2026-11-06": (5.0, 0.0),     # from until_utc, already recorded with v1 (the run before the merge)
+                "2026-11-07": (5.0, 0.0),     # from until_utc, recorded with v1 as an error (tried 3 times: done)
+                "2026-11-08": (5.0, 0.0),     # from until_utc, v1 error once: v2 may try it
+                "2026-11-09": (5.0, 0.0)}     # new: fetched with v2
+        now = datetime(2026, 11, 10, 12, 0, tzinfo=timezone.utc)
+        v1 = lambda d, res, **kw: {"site_id": "MAW", "mask_version": "MAW-land-v1", "date": d,  # noqa: E731
+                                   "acquired_utc": d + "T02:50:00Z", "result": res, **kw}
+        with tempfile.TemporaryDirectory() as t:
+            out = Path(t)
+            s2.write_rows(out / "s2_scenes.csv", [
+                v1("2026-11-01", "clear", image="s2/MAW/v1/2026-11-01T02-50-00Z.webp"), v1("2026-11-06", "cloudy"),
+                v1("2026-11-07", "error", attempts=s2.MAX_ERROR_ATTEMPTS), v1("2026-11-08", "error", attempts=1),
+                {"site_id": "ZJG", "mask_version": "ZJG-land-v2", "date": "2026-11-03", "result": "clear"}])
+            cli = FakeS2(days)
+            r = s2.update_site(cli, out, site, now, s2.LOOKBACK_DAYS, log=lambda *a: None)
+            self.assertEqual(sorted({d for _k, d in cli.calls}), ["2026-11-08", "2026-11-09"])
+            self.assertEqual((r["days"], r["older_mask"]), (2, 4))
+            rows = s2.read_rows(out / "s2_scenes.csv")
+            self.assertEqual(sorted((x["date"], x["mask_version"]) for x in rows if x["site_id"] == "MAW"),
+                             [("2026-11-01", "MAW-land-v1"), ("2026-11-06", "MAW-land-v1"), ("2026-11-07", "MAW-land-v1"),
+                              ("2026-11-08", "MAW-land-v1"), ("2026-11-08", "MAW-land-v2"), ("2026-11-09", "MAW-land-v2")])
+            v2_imgs = sorted(p.name for p in (out / "s2" / "MAW" / "v2").glob("*.webp")) if (out / "s2/MAW/v2").exists() \
+                else []
+            self.assertNotIn("2026-11-01T02-50-00Z.webp", v2_imgs)
+            self.assertFalse(any(n.startswith(("2026-11-01", "2026-11-03", "2026-11-06", "2026-11-07")) for n in v2_imgs))
+            # the next run: nothing again
+            cli2 = FakeS2(days)
+            r2 = s2.update_site(cli2, out, site, now, s2.LOOKBACK_DAYS, log=lambda *a: None)
+            self.assertEqual((r2["days"], cli2.calls), (0, []))
+            # a backfill (before_since False) fills a day before until_utc that no version recorded, nothing else
+            cli3 = FakeS2(days)
+            s2.update_site(cli3, out, site, now, s2.LOOKBACK_DAYS, log=lambda *a: None, before_since=False)
+            self.assertEqual(sorted({d for _k, d in cli3.calls}), ["2026-11-03"])
+        # a site without a rebuilt mask: unchanged (every day of the catalog is new)
+        zjg = {**site, "id": "ZJG", "history": []}
+        with tempfile.TemporaryDirectory() as t:
+            cli = FakeS2(days)
+            r = s2.update_site(cli, Path(t), zjg, now, s2.LOOKBACK_DAYS, log=lambda *a: None)
+            self.assertEqual((r["days"], "older_mask" in r), (6, False))
 
     def test_series_break(self):
         br = [b for b in run.series_breaks(run.load_sites()) if b.get("site_id") == "MAW" and "kind" not in b]

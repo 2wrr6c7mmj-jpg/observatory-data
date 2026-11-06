@@ -800,7 +800,8 @@ def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left
             tot["stopped"] = "PU の上限"
             break
         try:
-            s = s2.update_site(client, out, s2site, end, days=days, max_pu=left, log=log)
+            # the archive covers the past: only the days already recorded with an older mask are skipped
+            s = s2.update_site(client, out, s2site, end, days=days, max_pu=left, log=log, before_since=False)
         except BudgetStop as e:
             tot["stopped"] = str(e)
             log(f"{site['id']} S2: {e}（この 30 日の行は記録されない）")

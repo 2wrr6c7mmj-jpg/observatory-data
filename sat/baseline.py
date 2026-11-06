@@ -334,7 +334,8 @@ def build(client, site: dict, mask: np.ndarray, out_dir: Path, now: datetime, bu
     return summary
 
 
-def remask(site: dict, grid: Grid, orbit: int, from_tag: str, mask: np.ndarray, base_dir: Path = BASELINE_DIR) -> dict:
+def remask(site: dict, grid: Grid, orbit: int, from_tag: str, mask: np.ndarray, base_dir: Path = BASELINE_DIR,
+           now: datetime | None = None) -> dict:
     """The baseline of the site's current mask made from the stored baseline of an older mask of the same extent
     (no scene is fetched): the layers are the old ones, kept only within KEEP_M of the new water and structures, and
     the statistics (water level, always occupied) are computed again on the new mask. Only possible when the old
@@ -363,6 +364,11 @@ def remask(site: dict, grid: Grid, orbit: int, from_tag: str, mask: np.ndarray, 
                            "note": ("同じ範囲の旧マスクの基準の層（同じ撮影・同じ値）を、新しいマスクの水域・構造物から "
                                     f"{KEEP_M:g} m 以内だけ残して使う。撮影は取り直していない（PU 0）。統計は新しいマスクで計算し直した。"
                                     "min_valid_scenes_in_kept は旧基準の値（残す画素は旧基準で残していた画素の一部）")}
+    out["remasked_from"] = from_tag
+    out["remasked_utc"] = (now or datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    out["scene_list_note"] = (f"scene_list の撮影ごとの値（coverage・water_vv_median_db など）は旧マスク {from_tag} で撮影時に"
+                              "計算したもので、このマスクでは計算し直していない（撮影を取り直していないため）。stats は"
+                              "このマスクで計算し直した値")
     paths(site, orbit, base_dir)["json"].write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return out
 
