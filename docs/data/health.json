@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-05T21:56:51Z",
+ "generated_utc": "2026-11-06T00:55:27Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,10 +71,10 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-05T13:26:25Z",
-   "heartbeat_age_h": 8.5,
+   "heartbeat_age_h": 11.5,
    "data_date": "2026-11-02",
    "data_date_tz": "UTC",
-   "data_age_days": 3,
+   "data_age_days": 4,
    "state": "warn",
    "reasons": [
     {
@@ -85,12 +85,12 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SLP：最新の撮影 2026-10-26 から 10 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-10-26 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "STU：最新の撮影 2026-10-24 から 12 日（撮影の抜け）"
+     "text": "STU：最新の撮影 2026-10-24 から 13 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-05T11:29:56Z",
-   "heartbeat_age_h": 10.4,
+   "heartbeat_age_h": 13.4,
    "data_date": "2026-11-04",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-05T02:17:40Z",
-   "heartbeat_age_h": 19.7,
+   "heartbeat_age_h": 22.6,
    "data_date": "2026-11-04",
    "data_date_tz": "TWT",
    "data_age_days": 2,
@@ -179,7 +179,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T08:00:38Z",
-   "heartbeat_age_h": 13.9,
+   "heartbeat_age_h": 16.9,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 10,
@@ -197,10 +197,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-05T08:00:36Z",
-   "heartbeat_age_h": 13.9,
+   "heartbeat_age_h": 16.9,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -215,7 +215,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-05T11:30:09Z",
-   "heartbeat_age_h": 10.4,
+   "heartbeat_age_h": 13.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -659,14 +659,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-05T00:30:52Z",
+   "last_success_started_utc": "2026-11-06T00:31:39Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 41941881733,
-    "started_utc": "2026-11-05T00:30:52Z",
+    "id": 42137463727,
+    "started_utc": "2026-11-06T00:31:39Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/41941881733",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42137463727",
     "delay_h": 4.8
    },
    "consecutive_failures": 0
@@ -838,7 +838,7 @@
   "sites_configured_not_daily": [],
   "changes_latest": {
    "date": "2026-11-05",
-   "version": "QDH-quay-v2・QJG-quay-v3（naval-1 の着く線の追加。検出・陸マスク・範囲・区画は変えない。2026-11-05 以降の撮影から。湛江は変えない）"
+   "version": "fix-2 第 2 版（revision 2。検出・陸マスク・範囲・区画は変えない。2026-11-05 以降の撮影から）"
   }
  },
  "credits": [
