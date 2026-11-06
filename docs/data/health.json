@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-06T11:30:53Z",
+ "generated_utc": "2026-11-06T13:11:48Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -70,11 +70,11 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-05T13:26:25Z",
-   "heartbeat_age_h": 22.1,
-   "data_date": "2026-11-02",
+   "heartbeat_utc": "2026-11-06T13:08:14Z",
+   "heartbeat_age_h": 0.1,
+   "data_date": "2026-11-05",
    "data_date_tz": "UTC",
-   "data_age_days": 4,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
@@ -89,15 +89,15 @@
     },
     {
      "level": "warn",
-     "code": "scene_old",
-     "text": "STU：最新の撮影 2026-10-24 から 13 日（撮影の抜け）"
+     "code": "no_scene",
+     "text": "MAW：現行の範囲（MAW-land-v2）の撮影の行が無い"
     }
    ],
    "values": {
-    "latest_acquired_utc": "2026-11-02T09:56:32Z",
-    "last_run_utc": "2026-11-05T13:26:25Z",
+    "latest_acquired_utc": "2026-11-05T10:16:50Z",
+    "last_run_utc": "2026-11-06T13:08:14Z",
     "last_run_errors": 0,
-    "last_run_scenes": 0
+    "last_run_scenes": 2
    }
   },
   {
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-06T11:29:43Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.7,
    "data_date": "2026-11-05",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-05T02:17:40Z",
-   "heartbeat_age_h": 33.2,
+   "heartbeat_age_h": 34.9,
    "data_date": "2026-11-04",
    "data_date_tz": "TWT",
    "data_age_days": 2,
@@ -138,7 +138,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後に成功した取得から 33 h（>30 h：遅延）"
+     "text": "最後に成功した取得から 35 h（>30 h：遅延）"
     },
     {
      "level": "warn",
@@ -184,7 +184,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-06T08:04:57Z",
-   "heartbeat_age_h": 3.4,
+   "heartbeat_age_h": 5.1,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 10,
@@ -202,7 +202,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-06T08:04:54Z",
-   "heartbeat_age_h": 3.4,
+   "heartbeat_age_h": 5.1,
    "data_date": "2026-11-06",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -220,7 +220,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-06T11:30:04Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.7,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -459,14 +459,14 @@
     "trial": true,
     "mask_version": "XMN-land-v1",
     "est1": {
-     "acquired_utc": "2026-10-31T10:08:57Z",
+     "acquired_utc": "2026-11-05T10:16:50Z",
      "version": "est-1",
-     "mode": 10,
-     "p10": 7,
-     "p90": 13,
-     "warship_mode": 1,
+     "mode": 0,
+     "p10": 0,
+     "p90": 0,
+     "warship_mode": 0,
      "warship_p10": 0,
-     "warship_p90": 3,
+     "warship_p90": 0,
      "credibility": 3,
      "in_sample": ""
     }
@@ -478,16 +478,16 @@
     "trial": true,
     "mask_version": "STU-land-v1",
     "est1": {
-     "acquired_utc": "2026-10-24T10:16:50Z",
+     "acquired_utc": "2026-11-05T10:16:50Z",
      "version": "est-1",
      "mode": 14,
-     "p10": 12,
+     "p10": 11,
      "p90": 18,
-     "warship_mode": 6,
-     "warship_p10": 4,
-     "warship_p90": 9,
+     "warship_mode": 3,
+     "warship_p10": 2,
+     "warship_p90": 6,
      "credibility": 3,
-     "in_sample": "baseline"
+     "in_sample": ""
     }
    },
    {
@@ -495,19 +495,7 @@
     "name": "福州・馬尾（造船所）",
     "publish": "trial",
     "trial": true,
-    "mask_version": "MAW-land-v1",
-    "est1": {
-     "acquired_utc": "2026-10-31T10:09:26Z",
-     "version": "est-1",
-     "mode": 3,
-     "p10": 2,
-     "p90": 4,
-     "warship_mode": 1,
-     "warship_p10": 0,
-     "warship_p90": 2,
-     "credibility": 3,
-     "in_sample": ""
-    }
+    "mask_version": "MAW-land-v2"
    }
   ],
   "jcg": {
@@ -599,15 +587,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-05T13:18:04Z",
+   "last_success_started_utc": "2026-11-06T13:01:34Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42034550234,
-    "started_utc": "2026-11-05T13:18:04Z",
+    "id": 42222163500,
+    "started_utc": "2026-11-06T13:01:34Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42034550234",
-    "delay_h": 8.0
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42222163500",
+    "delay_h": 7.7
    },
    "consecutive_failures": 0
   },
@@ -681,12 +669,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 101.432,
-   "usage_csv_requests": 313,
-   "usage_csv_runs": 9,
-   "status_month_pu_before": 101.409,
-   "status_last_run_utc": "2026-11-05T13:26:25Z",
-   "usage_csv_pu_before_last_run": 101.409,
+   "usage_csv_pu": 104.482,
+   "usage_csv_requests": 346,
+   "usage_csv_runs": 10,
+   "status_month_pu_before": 101.432,
+   "status_last_run_utc": "2026-11-06T13:08:14Z",
+   "usage_csv_pu_before_last_run": 101.432,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -798,31 +786,22 @@
     "mask_version": "SWS-land-v1"
    },
    "XMN": {
-    "acquired_utc": "2026-10-31T10:08:57Z",
+    "acquired_utc": "2026-11-05T10:16:50Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 142,
+    "relative_orbit": 40,
     "coverage": 1.0,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "XMN-land-v1"
    },
    "STU": {
-    "acquired_utc": "2026-10-24T10:16:50Z",
+    "acquired_utc": "2026-11-05T10:16:50Z",
     "platform": "sentinel-1d",
     "relative_orbit": 40,
     "coverage": 0.997,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "STU-land-v1"
-   },
-   "MAW": {
-    "acquired_utc": "2026-10-31T10:09:26Z",
-    "platform": "sentinel-1d",
-    "relative_orbit": 142,
-    "coverage": 1.0,
-    "result": "counted",
-    "quay_result": "counted",
-    "mask_version": "MAW-land-v1"
    }
   },
   "sites_daily": [
