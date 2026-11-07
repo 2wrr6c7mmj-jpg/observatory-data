@@ -20,7 +20,9 @@ The automatic class of a line is built from public sources only, and every entry
 * anything else is unknown (never counted in the headline: "clearly a warship" only).
 
 Entries with ``"fixed": true`` (a decision by hand: imagery, a published source) are kept as they are when the file
-is rebuilt; their ``basis`` says why.
+is rebuilt; their ``basis`` says why. An entry with ``"berth": false`` (2026-11-07, A-1) is a line in the naval area where
+no warship berths (a boat basin's shore, a jetty for boats and tenders): its class stays, but from naval-1's start the
+line (or the ``part`` of it) is not a berth: not counted, not judged, not evaluated (sat/berths.py Berths.no_berth).
 
     python -m sat.berth_class build --osm DIR [SITE ...]     # writes sat/berth_class/<site>.json
     python -m sat.berth_class geojson [--out docs/data/sat/berth_class.geojson]
@@ -404,7 +406,7 @@ def geojson(sites: list[dict]) -> dict:
         for e in c["lines"]:
             coords = geo.get((str(e["way"]), json.dumps(e.get("part"), sort_keys=True)))
             gtype = "LineString"
-            if not coords and e.get("added"):
+            if not coords and (e.get("added") or e.get("berth") is False):   # an added section, or a berth-false part of a line
                 coords, gtype = clip(lines, e), "MultiLineString"
             if not coords:
                 continue
@@ -414,6 +416,7 @@ def geojson(sites: list[dict]) -> dict:
                                          "osm": f"https://www.openstreetmap.org/way/{e['way']}" if int(e["way"]) > 0 else None,
                                          "kind": e["kind"], "class": e["class"], "conf": e.get("conf"), "why": e.get("why"),
                                          "basis": e.get("basis"), "fixed": bool(e.get("fixed")), "added": bool(e.get("added")),
+                                         "berth": e.get("berth") is not False,
                                          "part": ({k: v for k, v in e["part"].items() if k != "polygon"}
                                                   if e.get("part") else None),
                                          "version": berths.NAVAL_VERSION,

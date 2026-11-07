@@ -158,7 +158,9 @@ def site_sections(out: Path, site: dict) -> dict[str, dict]:
         s["class"] = b.line_class(s["way_id"], float(s["lon"]), float(s["lat"]))
         s["conf"] = line_conf(b, site, s["way_id"], float(s["lon"]), float(s["lat"]))
         s["naval"] = s["class"] == "naval"
-        s["eligible"] = s["naval"] and s["length_m"] >= MIN_LENGTH_M
+        # naval-1 "berth": false (a naval line where no warship berths: a boat basin's shore, a jetty for boats): not evaluated
+        s["berth"] = not b.no_berth_at(s["way_id"], float(s["lon"]), float(s["lat"]))
+        s["eligible"] = s["naval"] and s["berth"] and s["length_m"] >= MIN_LENGTH_M
     return secs
 
 
@@ -424,7 +426,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     blind = blind_stretches(out, sid, lat0)
     orbit_of = scene_orbits(out, sid, est)
     cnt = {"answers": len(lab), "prefilled": sum(1 for a in lab if (a.get("note") or "").startswith("s2-prefill")),
-           "unknown_section": 0, "not_naval": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0, "other_day_of_scene": 0, "used": 0}
+           "unknown_section": 0, "not_naval": 0, "no_berth": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0, "other_day_of_scene": 0, "used": 0}
     rows = []
     for a in lab:
         s = secs.get(a["section_id"])
@@ -433,6 +435,9 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
             continue
         if not s["naval"]:
             cnt["not_naval"] += 1
+            continue
+        if not s["berth"]:
+            cnt["no_berth"] += 1
             continue
         if s["length_m"] < MIN_LENGTH_M:
             cnt["short"] += 1
@@ -483,7 +488,8 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     return {"site_id": sid, "name": NAMES.get(sid, site.get("name")), "freeze_utc": freeze, "calibrated": own, "truth": truth,
             "sample_note": ("標本内＝ラベルの日が凍結より前（est-2 の較正に使った期間）、標本外＝凍結以後" if own else
                             "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする"),
-            "sections": {"labelled": len(secs), "naval": sum(1 for s in secs.values() if s["naval"]), "eligible": n_el},
+            "sections": {"labelled": len(secs), "naval": sum(1 for s in secs.values() if s["naval"]),
+                         "no_berth": sum(1 for s in secs.values() if s["naval"] and not s["berth"]), "eligible": n_el},
             "labels": cnt, "scenes_judged": scenes,
             "pairing": {"scenes": len(scenes), "far_h": FAR_H, "far": len(far), "far_share": round(len(far) / len(rows), 3) if rows else None},
             "by_source": {src: {"n": sum(1 for r in rows if r["source"] == src),
@@ -591,7 +597,8 @@ def table(res: dict) -> list[dict]:
                      "n_near_oos": on["n"], "recall_near_oos": on["recall"], "precision_near_oos": on["precision"], "brier_near_oos": on["brier"],
                      "n_est2": r["by_source"]["est-2"]["n"], "n_recount": r["by_source"]["s1-recount"]["n"],
                      "scenes": r["pairing"]["scenes"], "far_share": r["pairing"]["far_share"],
-                     "not_naval": r["labels"]["not_naval"], "no_scene": r["labels"]["no_scene"] + r["labels"]["no_s1_pairing"],
+                     "not_naval": r["labels"]["not_naval"], "no_berth": r["labels"].get("no_berth", 0),
+                     "no_scene": r["labels"]["no_scene"] + r["labels"]["no_s1_pairing"],
                      "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"]})
     t = res["total"]["in_sample"]["min50"]
     to = res["total"]["out_of_sample"]["min50"]
@@ -611,7 +618,7 @@ def table(res: dict) -> list[dict]:
                  "n_near_oos": ton["n"], "recall_near_oos": ton["recall"], "precision_near_oos": ton["precision"], "brier_near_oos": ton["brier"],
                  "n_est2": res["total"]["by_source"]["est-2"]["n"], "n_recount": res["total"]["by_source"]["s1-recount"]["n"],
                  "scenes": sum(x["scenes"] for x in rows), "far_share": round(far / n_all, 3) if n_all else None,
-                 "not_naval": sum(x["not_naval"] for x in rows), "no_scene": sum(x["no_scene"] for x in rows),
+                 "not_naval": sum(x["not_naval"] for x in rows), "no_berth": sum(x["no_berth"] for x in rows), "no_scene": sum(x["no_scene"] for x in rows),
                  "other_day_of_scene": sum(x["other_day_of_scene"] for x in rows), "status": _status(t["n"], to["n"])})
     return rows
 
@@ -626,7 +633,7 @@ def meta(res: dict) -> dict:
                          "note": "本体（total・sites・table）は truth_source.body の正解、other_truth は他方の正解で同じ指標。s2＝S2 の日の答えを直近の S1 に対応、s1＝S1 の撮影そのものの答え（確認ページ ?s1=1）。python -m sat.eval_presence --truth s1 で入れ替わる",
                          **{k: TRUTH_NOTE[k] for k in TRUTHS}},
         "unit": "撮影×岸壁区間。区間は sat/s2_labels.sections() の約 150 m の岸壁線の片（確認ページの区間、湛江は labels/ZJG-s2-sections.geojson）",
-        "sections": f"naval-1（sat/berth_class/<地点>.json）で区間の中点の線の区分が naval（海軍の桟橋・岸壁。設定が足す区間を含む）で、区間の長さ（length_m）が {MIN_LENGTH_M:g} m 以上のもの。civil・unknown の線の区間と {MIN_LENGTH_M:g} m 未満の区間は数えない（labels.not_naval・labels.short）",
+        "sections": f"naval-1（sat/berth_class/<地点>.json）で区間の中点の線の区分が naval（海軍の桟橋・岸壁。設定が足す区間を含む）で、区分ファイルが berth false（海軍の区域だが艦の着かない線：艇溜まりの岸・小型艇の桟橋）としていない線で、区間の長さ（length_m）が {MIN_LENGTH_M:g} m 以上のもの。civil・unknown の線の区間、berth false の区間、{MIN_LENGTH_M:g} m 未満の区間は数えない（labels.not_naval・labels.no_berth・labels.short）",
         "truth": "所有者の目視（labels/<地点>-s2-answers.csv、-oos-answers.csv、湛江は ZJG-s2-labels.csv の verified 1 の行）：verified_occupied 1＝在、0＝不在。判断できない（verified 0）は除く。所有者の答えは船の長さを持たない（50 m 未満の船の着いた区間も「在」になる）ので、any_length（長さの規則なし）も併記する",
         "pairing": "ラベルの日（S2 の晴れの日）の S1 撮影＝確認セット（labels/<地点>/review*.json の days.s1_near[0]）の対応：前後 4 日以内で基準のある軌道の最も近い撮影（sat/s2_answers.eligible_days）。湛江は labels/ZJG-s2-s1-match.csv の s1_acquired_utc（sat/s2_labels.nearest_s1、同じ規則）。dt_h＝S1−S2（時間）、同じ日でも約 7 時間ずれ、船が入れ替わることがある",
         "judge": {
@@ -660,7 +667,7 @@ def meta(res: dict) -> dict:
                           "n_blind_oos・n_clear_oos・recall_clear_oos・precision_clear_oos": f"標本外のうち盲域（blind_share ≥ {BLIND_SHARE:g}）の升の数と、盲域でない升の数・再現率・適合率",
                           "n_other・recall_other・precision_other・brier_other": "他方の正解（truth_source.other）での標本外の同じ指標（s1 の正解は S1 の撮影そのものの答え）",
                           "scenes": "判定に使った S1 撮影の数", "far_share": f"|S1−S2| > {FAR_H:g} 時間の升の割合",
-                          "not_naval": "naval でない線の答え（除外）", "no_scene": "S1 の対応か保存が無い答え（除外）",
+                          "not_naval": "naval でない線の答え（除外）", "no_berth": "naval だが berth false の線の答え（除外）", "no_scene": "S1 の対応か保存が無い答え（除外）",
                           "prefilled（labels）": "s1 の正解のうち verified_note が s2-prefill（初期値のまま確認）の答えの数",
                           "other_day_of_scene": "同じ S1 撮影に対応した別のラベル日の答え（最も近い日だけ使う。除外）"},
         "table": table(res),

@@ -148,11 +148,18 @@ class EvaluateRepoTest(unittest.TestCase):
             used = {x["section_id"] for x in r["rows"]}
             for sec_id in used:
                 self.assertTrue(secs[sec_id]["naval"], f"{sid} {sec_id} is not on a naval line")
+                self.assertTrue(secs[sec_id]["berth"], f"{sid} {sec_id} is on a berth-false line")
                 self.assertGreaterEqual(secs[sec_id]["length_m"], ep.MIN_LENGTH_M)
             lab = r["labels"]
-            self.assertEqual(lab["answers"], lab["unknown_section"] + lab["not_naval"] + lab["short"] + lab["no_s1_pairing"] + lab["no_scene"]
-                             + lab["other_day_of_scene"] + lab["used"])
+            self.assertEqual(lab["answers"], lab["unknown_section"] + lab["not_naval"] + lab["no_berth"] + lab["short"] + lab["no_s1_pairing"]
+                             + lab["no_scene"] + lab["other_day_of_scene"] + lab["used"])
+            self.assertEqual(r["sections"]["no_berth"], sum(1 for s in secs.values() if s["naval"] and not s["berth"]))
             self.assertEqual(lab["used"], len(r["rows"]))
+        # Gu Zhenkou (A-1, 2026-11-07): the hooked jetty 582517902 and the yard shore 15387629:L:06 are out of the evaluation
+        q = self.res["sites"]["QGZ"]
+        self.assertEqual(q["sections"]["no_berth"], 3)
+        self.assertFalse({x["section_id"] for x in q["rows"]} & {"582517902:L:01", "582517902:R:00", "15387629:L:06"})
+        self.assertGreater(q["labels"]["no_berth"], 0)
 
     def test_rows_and_split(self):
         for sid, r in self.res["sites"].items():

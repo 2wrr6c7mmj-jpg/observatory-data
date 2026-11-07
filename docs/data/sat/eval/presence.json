@@ -1,6 +1,6 @@
 {
  "version": "eval-presence-2",
- "generated_utc": "2026-11-07T17:34:47Z",
+ "generated_utc": "2026-11-07T17:41:30Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
@@ -164,30 +164,30 @@
   },
   "out_of_sample": {
    "min50": {
-    "n": 330,
+    "n": 308,
     "tp": 51,
-    "fp": 40,
-    "fn": 39,
-    "tn": 200,
-    "recall": 0.567,
-    "precision": 0.56,
-    "accuracy": 0.761,
-    "brier": 0.24,
-    "base_rate": 0.273,
-    "mean_p": 0.275
+    "fp": 32,
+    "fn": 36,
+    "tn": 189,
+    "recall": 0.586,
+    "precision": 0.614,
+    "accuracy": 0.779,
+    "brier": 0.221,
+    "base_rate": 0.282,
+    "mean_p": 0.268
    },
    "any_length": {
-    "n": 330,
+    "n": 308,
     "tp": 54,
-    "fp": 47,
-    "fn": 36,
-    "tn": 193,
-    "recall": 0.6,
-    "precision": 0.535,
-    "accuracy": 0.748,
-    "brier": 0.252,
-    "base_rate": 0.273,
-    "mean_p": 0.305
+    "fp": 39,
+    "fn": 33,
+    "tn": 182,
+    "recall": 0.621,
+    "precision": 0.581,
+    "accuracy": 0.766,
+    "brier": 0.234,
+    "base_rate": 0.282,
+    "mean_p": 0.301
    },
    "by_note": {
     "prefill": {
@@ -217,103 +217,103 @@
      "mean_p": null
     },
     "manual": {
-     "n": 330,
+     "n": 308,
      "tp": 51,
-     "fp": 40,
-     "fn": 39,
-     "tn": 200,
-     "recall": 0.567,
-     "precision": 0.56,
-     "accuracy": 0.761,
-     "brier": 0.24,
-     "base_rate": 0.273,
-     "mean_p": 0.275
+     "fp": 32,
+     "fn": 36,
+     "tn": 189,
+     "recall": 0.586,
+     "precision": 0.614,
+     "accuracy": 0.779,
+     "brier": 0.221,
+     "base_rate": 0.282,
+     "mean_p": 0.268
     }
    },
    "near": {
     "far_h": 48.0,
     "min50": {
-     "n": 208,
+     "n": 192,
      "tp": 35,
-     "fp": 24,
-     "fn": 27,
-     "tn": 122,
-     "recall": 0.565,
-     "precision": 0.593,
-     "accuracy": 0.755,
-     "brier": 0.245,
-     "base_rate": 0.298,
-     "mean_p": 0.284
+     "fp": 18,
+     "fn": 25,
+     "tn": 114,
+     "recall": 0.583,
+     "precision": 0.66,
+     "accuracy": 0.776,
+     "brier": 0.224,
+     "base_rate": 0.312,
+     "mean_p": 0.276
     },
     "any_length": {
-     "n": 208,
+     "n": 192,
      "tp": 38,
-     "fp": 29,
-     "fn": 24,
-     "tn": 117,
-     "recall": 0.613,
-     "precision": 0.567,
-     "accuracy": 0.745,
-     "brier": 0.255,
-     "base_rate": 0.298,
-     "mean_p": 0.322
+     "fp": 23,
+     "fn": 22,
+     "tn": 109,
+     "recall": 0.633,
+     "precision": 0.623,
+     "accuracy": 0.766,
+     "brier": 0.234,
+     "base_rate": 0.312,
+     "mean_p": 0.318
     }
    },
    "by_blind": {
     "share": 0.5,
     "blind": {
-     "n": 55,
+     "n": 45,
      "tp": 7,
-     "fp": 5,
-     "fn": 21,
-     "tn": 22,
-     "recall": 0.25,
-     "precision": 0.583,
-     "accuracy": 0.527,
-     "brier": 0.473,
-     "base_rate": 0.509,
-     "mean_p": 0.218
+     "fp": 2,
+     "fn": 18,
+     "tn": 18,
+     "recall": 0.28,
+     "precision": 0.778,
+     "accuracy": 0.556,
+     "brier": 0.444,
+     "base_rate": 0.556,
+     "mean_p": 0.2
     },
     "clear": {
-     "n": 275,
+     "n": 263,
      "tp": 44,
-     "fp": 35,
+     "fp": 30,
      "fn": 18,
-     "tn": 178,
+     "tn": 171,
      "recall": 0.71,
-     "precision": 0.557,
-     "accuracy": 0.807,
-     "brier": 0.193,
-     "base_rate": 0.225,
-     "mean_p": 0.286
-    },
-    "clear_near": {
-     "n": 169,
-     "tp": 30,
-     "fp": 20,
-     "fn": 11,
-     "tn": 108,
-     "recall": 0.732,
-     "precision": 0.6,
+     "precision": 0.595,
      "accuracy": 0.817,
      "brier": 0.183,
-     "base_rate": 0.243,
-     "mean_p": 0.296
+     "base_rate": 0.236,
+     "mean_p": 0.28
+    },
+    "clear_near": {
+     "n": 160,
+     "tp": 30,
+     "fp": 17,
+     "fn": 11,
+     "tn": 102,
+     "recall": 0.732,
+     "precision": 0.638,
+     "accuracy": 0.825,
+     "brier": 0.175,
+     "base_rate": 0.256,
+     "mean_p": 0.294
     }
    },
    "by_conf": {
     "確認寄り": {
-     "n": 330,
+     "n": 308,
      "tp": 51,
-     "fp": 40,
-     "fn": 39,
-     "tn": 200,
-     "recall": 0.567,
-     "precision": 0.56,
-     "accuracy": 0.761,
-     "brier": 0.24,
-     "base_rate": 0.273,
-     "mean_p": 0.275
+     "fp": 32,
+     "fn": 36,
+     "tn": 189,
+     "recall": 0.586,
+     "precision": 0.614,
+     "accuracy": 0.779,
+     "brier": 0.221,
+     "base_rate": 0.282,
+     "mean_p": 0.268
     }
    }
   },
@@ -335,18 +335,18 @@
     }
    },
    "s1-recount": {
-    "n": 361,
+    "n": 339,
     "min50": {
-     "n": 361,
+     "n": 339,
      "tp": 88,
-     "fp": 42,
-     "fn": 39,
-     "tn": 192,
-     "recall": 0.693,
-     "precision": 0.677,
-     "accuracy": 0.776,
-     "brier": 0.224,
-     "base_rate": 0.352,
+     "fp": 34,
+     "fn": 36,
+     "tn": 181,
+     "recall": 0.71,
+     "precision": 0.721,
+     "accuracy": 0.794,
+     "brier": 0.206,
+     "base_rate": 0.366,
      "mean_p": 0.36
     }
    }
@@ -363,6 +363,7 @@
    "sections": {
     "labelled": 182,
     "naval": 82,
+    "no_berth": 0,
     "eligible": 82
    },
    "labels": {
@@ -370,6 +371,7 @@
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 20,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -1624,6 +1626,7 @@
    "sections": {
     "labelled": 27,
     "naval": 5,
+    "no_berth": 0,
     "eligible": 5
    },
    "labels": {
@@ -1631,6 +1634,7 @@
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 149,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -2305,6 +2309,7 @@
    "sections": {
     "labelled": 24,
     "naval": 18,
+    "no_berth": 0,
     "eligible": 18
    },
    "labels": {
@@ -2312,6 +2317,7 @@
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 48,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -4819,18 +4825,20 @@
    "sections": {
     "labelled": 24,
     "naval": 23,
-    "eligible": 23
+    "no_berth": 3,
+    "eligible": 20
    },
    "labels": {
     "answers": 178,
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 8,
+    "no_berth": 22,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
     "other_day_of_scene": 0,
-    "used": 170
+    "used": 148
    },
    "scenes_judged": [
     "2025-10-31T09:56:16Z",
@@ -4845,8 +4853,8 @@
    "pairing": {
     "scenes": 8,
     "far_h": 48.0,
-    "far": 44,
-    "far_share": 0.259
+    "far": 38,
+    "far_share": 0.257
    },
    "by_source": {
     "est-2": {
@@ -4879,32 +4887,32 @@
      }
     },
     "s1-recount": {
-     "n": 170,
+     "n": 148,
      "min50": {
-      "n": 170,
+      "n": 148,
       "tp": 35,
-      "fp": 24,
-      "fn": 31,
-      "tn": 80,
-      "recall": 0.53,
-      "precision": 0.593,
-      "accuracy": 0.676,
-      "brier": 0.324,
-      "base_rate": 0.388,
-      "mean_p": 0.347
+      "fp": 16,
+      "fn": 28,
+      "tn": 69,
+      "recall": 0.556,
+      "precision": 0.686,
+      "accuracy": 0.703,
+      "brier": 0.297,
+      "base_rate": 0.426,
+      "mean_p": 0.345
      },
      "any_length": {
-      "n": 170,
+      "n": 148,
       "tp": 38,
-      "fp": 27,
-      "fn": 28,
-      "tn": 77,
-      "recall": 0.576,
-      "precision": 0.585,
-      "accuracy": 0.676,
-      "brier": 0.324,
-      "base_rate": 0.388,
-      "mean_p": 0.382
+      "fp": 19,
+      "fn": 25,
+      "tn": 66,
+      "recall": 0.603,
+      "precision": 0.667,
+      "accuracy": 0.703,
+      "brier": 0.297,
+      "base_rate": 0.426,
+      "mean_p": 0.385
      }
     }
    },
@@ -5051,30 +5059,30 @@
    },
    "out_of_sample": {
     "min50": {
-     "n": 170,
+     "n": 148,
      "tp": 35,
-     "fp": 24,
-     "fn": 31,
-     "tn": 80,
-     "recall": 0.53,
-     "precision": 0.593,
-     "accuracy": 0.676,
-     "brier": 0.324,
-     "base_rate": 0.388,
-     "mean_p": 0.347
+     "fp": 16,
+     "fn": 28,
+     "tn": 69,
+     "recall": 0.556,
+     "precision": 0.686,
+     "accuracy": 0.703,
+     "brier": 0.297,
+     "base_rate": 0.426,
+     "mean_p": 0.345
     },
     "any_length": {
-     "n": 170,
+     "n": 148,
      "tp": 38,
-     "fp": 27,
-     "fn": 28,
-     "tn": 77,
-     "recall": 0.576,
-     "precision": 0.585,
-     "accuracy": 0.676,
-     "brier": 0.324,
-     "base_rate": 0.388,
-     "mean_p": 0.382
+     "fp": 19,
+     "fn": 25,
+     "tn": 66,
+     "recall": 0.603,
+     "precision": 0.667,
+     "accuracy": 0.703,
+     "brier": 0.297,
+     "base_rate": 0.426,
+     "mean_p": 0.385
     },
     "by_note": {
      "prefill": {
@@ -5104,125 +5112,110 @@
       "mean_p": null
      },
      "manual": {
-      "n": 170,
+      "n": 148,
       "tp": 35,
-      "fp": 24,
-      "fn": 31,
-      "tn": 80,
-      "recall": 0.53,
-      "precision": 0.593,
-      "accuracy": 0.676,
-      "brier": 0.324,
-      "base_rate": 0.388,
-      "mean_p": 0.347
+      "fp": 16,
+      "fn": 28,
+      "tn": 69,
+      "recall": 0.556,
+      "precision": 0.686,
+      "accuracy": 0.703,
+      "brier": 0.297,
+      "base_rate": 0.426,
+      "mean_p": 0.345
      }
     },
     "near": {
      "far_h": 48.0,
      "min50": {
-      "n": 126,
+      "n": 110,
       "tp": 23,
-      "fp": 19,
-      "fn": 24,
-      "tn": 60,
-      "recall": 0.489,
-      "precision": 0.548,
-      "accuracy": 0.659,
-      "brier": 0.341,
-      "base_rate": 0.373,
-      "mean_p": 0.333
+      "fp": 13,
+      "fn": 22,
+      "tn": 52,
+      "recall": 0.511,
+      "precision": 0.639,
+      "accuracy": 0.682,
+      "brier": 0.318,
+      "base_rate": 0.409,
+      "mean_p": 0.327
      },
      "any_length": {
-      "n": 126,
+      "n": 110,
       "tp": 26,
-      "fp": 22,
-      "fn": 21,
-      "tn": 57,
-      "recall": 0.553,
-      "precision": 0.542,
-      "accuracy": 0.659,
-      "brier": 0.341,
-      "base_rate": 0.373,
-      "mean_p": 0.381
+      "fp": 16,
+      "fn": 19,
+      "tn": 49,
+      "recall": 0.578,
+      "precision": 0.619,
+      "accuracy": 0.682,
+      "brier": 0.318,
+      "base_rate": 0.409,
+      "mean_p": 0.382
      }
     },
     "by_blind": {
      "share": 0.5,
      "blind": {
-      "n": 41,
+      "n": 31,
       "tp": 5,
-      "fp": 4,
-      "fn": 20,
-      "tn": 12,
-      "recall": 0.2,
-      "precision": 0.556,
-      "accuracy": 0.415,
-      "brier": 0.585,
-      "base_rate": 0.61,
-      "mean_p": 0.22
+      "fp": 1,
+      "fn": 17,
+      "tn": 8,
+      "recall": 0.227,
+      "precision": 0.833,
+      "accuracy": 0.419,
+      "brier": 0.581,
+      "base_rate": 0.71,
+      "mean_p": 0.194
      },
      "clear": {
-      "n": 129,
+      "n": 117,
       "tp": 30,
-      "fp": 20,
+      "fp": 15,
       "fn": 11,
-      "tn": 68,
+      "tn": 61,
       "recall": 0.732,
-      "precision": 0.6,
-      "accuracy": 0.76,
-      "brier": 0.24,
-      "base_rate": 0.318,
-      "mean_p": 0.388
+      "precision": 0.667,
+      "accuracy": 0.778,
+      "brier": 0.222,
+      "base_rate": 0.35,
+      "mean_p": 0.385
      },
      "clear_near": {
-      "n": 96,
+      "n": 87,
       "tp": 20,
-      "fp": 15,
+      "fp": 12,
       "fn": 9,
-      "tn": 52,
+      "tn": 46,
       "recall": 0.69,
-      "precision": 0.571,
-      "accuracy": 0.75,
-      "brier": 0.25,
-      "base_rate": 0.302,
-      "mean_p": 0.365
+      "precision": 0.625,
+      "accuracy": 0.759,
+      "brier": 0.241,
+      "base_rate": 0.333,
+      "mean_p": 0.368
      }
     },
     "by_conf": {
      "確認寄り": {
-      "n": 170,
+      "n": 148,
       "tp": 35,
-      "fp": 24,
-      "fn": 31,
-      "tn": 80,
-      "recall": 0.53,
-      "precision": 0.593,
-      "accuracy": 0.676,
-      "brier": 0.324,
-      "base_rate": 0.388,
-      "mean_p": 0.347
+      "fp": 16,
+      "fn": 28,
+      "tn": 69,
+      "recall": 0.556,
+      "precision": 0.686,
+      "accuracy": 0.703,
+      "brier": 0.297,
+      "base_rate": 0.426,
+      "mean_p": 0.345
      }
     }
    },
-   "status": "標本外 170 撮影×区間（較正の流用）",
+   "status": "標本外 148 撮影×区間（較正の流用）",
    "rows": [
     {
      "section_id": "15387629:L:05",
-     "date": "2025-11-01",
-     "s1": "2025-10-31T09:56:16Z",
-     "dt_h": -17.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2025-11-01",
      "s1": "2025-10-31T09:56:16Z",
      "dt_h": -17.0,
@@ -5447,36 +5440,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2025-11-01",
-     "s1": "2025-10-31T09:56:16Z",
-     "dt_h": -17.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 1.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2025-11-01",
-     "s1": "2025-10-31T09:56:16Z",
-     "dt_h": -17.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.5,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2025-11-01",
      "s1": "2025-10-31T09:56:16Z",
@@ -5508,21 +5471,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2025-11-26",
-     "s1": "2025-11-24T09:56:15Z",
-     "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2025-11-26",
      "s1": "2025-11-24T09:56:15Z",
      "dt_h": -41.0,
@@ -5762,21 +5710,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:L:01",
-     "date": "2025-11-26",
-     "s1": "2025-11-24T09:56:15Z",
-     "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "110",
-     "blind_share": 0.5,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2025-11-26",
      "s1": "2025-11-24T09:56:15Z",
@@ -5808,21 +5741,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2025-12-11",
      "s1": "2025-12-11T10:04:40Z",
      "dt_h": 7.1,
@@ -6077,36 +5995,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "70",
-     "blind_share": 1.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "130",
-     "blind_share": 0.19,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2025-12-11",
      "s1": "2025-12-11T10:04:40Z",
@@ -6147,21 +6035,6 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "50",
      "blind_share": 0.0,
      "line_conf": "確認寄り",
      "oos": true
@@ -6407,36 +6280,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 1.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.5,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-02-14",
      "s1": "2026-02-16T09:56:08Z",
@@ -6477,21 +6320,6 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
-     "date": "2026-04-10",
-     "s1": "2026-04-10T10:04:35Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "80",
      "blind_share": 0.0,
      "line_conf": "確認寄り",
      "oos": true
@@ -6737,36 +6565,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-04-10",
-     "s1": "2026-04-10T10:04:35Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 1.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-04-10",
-     "s1": "2026-04-10T10:04:35Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.19,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-04-10",
      "s1": "2026-04-10T10:04:35Z",
@@ -6798,21 +6596,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2026-04-25",
-     "s1": "2026-04-22T10:04:35Z",
-     "dt_h": -64.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2026-04-25",
      "s1": "2026-04-22T10:04:35Z",
      "dt_h": -64.9,
@@ -7067,36 +6850,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-04-25",
-     "s1": "2026-04-22T10:04:35Z",
-     "dt_h": -64.9,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 1.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-04-25",
-     "s1": "2026-04-22T10:04:35Z",
-     "dt_h": -64.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "110",
-     "blind_share": 0.19,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-04-25",
      "s1": "2026-04-22T10:04:35Z",
@@ -7137,21 +6890,6 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
-     "date": "2026-05-10",
-     "s1": "2026-05-11T09:56:07Z",
-     "dt_h": 31.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "60",
      "blind_share": 0.0,
      "line_conf": "確認寄り",
      "oos": true
@@ -7382,21 +7120,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:L:01",
-     "date": "2026-05-10",
-     "s1": "2026-05-11T09:56:07Z",
-     "dt_h": 31.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "90",
-     "blind_share": 0.5,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-05-10",
      "s1": "2026-05-11T09:56:07Z",
@@ -7428,21 +7151,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2026-09-22",
-     "s1": "2026-09-20T10:03:53Z",
-     "dt_h": -40.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2026-09-22",
      "s1": "2026-09-20T10:03:53Z",
      "dt_h": -40.9,
@@ -7697,36 +7405,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-09-22",
-     "s1": "2026-09-20T10:03:53Z",
-     "dt_h": -40.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 1.0,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-09-22",
-     "s1": "2026-09-20T10:03:53Z",
-     "dt_h": -40.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "blind_share": 0.19,
-     "line_conf": "確認寄り",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-09-22",
      "s1": "2026-09-20T10:03:53Z",
@@ -7768,6 +7446,7 @@
    "sections": {
     "labelled": 27,
     "naval": 11,
+    "no_berth": 0,
     "eligible": 11
    },
    "labels": {
@@ -7775,6 +7454,7 @@
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -8143,6 +7823,7 @@
    "sections": {
     "labelled": 24,
     "naval": 24,
+    "no_berth": 0,
     "eligible": 24
    },
    "labels": {
@@ -8150,6 +7831,7 @@
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -8518,6 +8200,7 @@
    "sections": {
     "labelled": 24,
     "naval": 24,
+    "no_berth": 0,
     "eligible": 24
    },
    "labels": {
@@ -8525,6 +8208,7 @@
     "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
