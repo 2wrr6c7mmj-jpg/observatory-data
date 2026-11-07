@@ -1,7 +1,8 @@
 name: Sentinel-1 recount probe (answered days)
 # 目視確認（SYL・SLP・QGZ）の答えの日の Sentinel-1 だけを取り直す probe（sat/s1_recount.py、ユーザー了承 2026-11-03、合計 40 PU まで）。
-# ops-4（2026-11-07、港が最優先・楡林→亜龍湾→古鎮口）：est-2 に既にある撮影は飛ばし（--skip-est2）、QGZ は答えの日に近い 4 撮影まで
-# （--max-scenes QGZ=4）。見込み SYL 4＋SLP 7＋QGZ 4＝15 撮影・約 38.3 PU。残る QGZ 4 撮影（約 7.6 PU）は次回（上限の見直し後）。
+# ops-4（2026-11-07、港が最優先・楡林→亜龍湾→古鎮口）：est-2 に既にある撮影は飛ばす（--skip-est2）。1 回目は QGZ を答えの日に近い
+# 4 撮影までに絞った（--max-scenes QGZ=4、見込み 38.3 PU）が、実際は 2 帯のため 15 撮影で 25.5 PU（見積もりの 2/3）だったので、
+# 2 回目で残る QGZ 4 撮影（約 5.1 PU）も 40 PU の内で取る。合計の上限は sat/s1_recount.py の MAX_PU_TOTAL が守る。
 # probe 用ブランチ（probe/sat-s1-recount-*）への push でだけ動く。main は読むだけで変えない。取得した σ0（float16 の npz）と
 # usage の行は同じ probe ブランチにだけ commit する（公開しない）。
 # PU：この仕事の合計の上限 40 PU（sat/s1_recount.py の MAX_PU_TOTAL）と、月の自主上限（全体 9,000・余裕 450・外洋 7,000 の予約、
@@ -52,7 +53,7 @@ jobs:
           rc=0
           python -m sat.s1_recount --site SYL SLP QGZ --raw probe-raw/s1-recount $GUARD_ARGS --ocean-cap "$OCEAN_CAP" \
             --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv --usage-out docs/data/sat/s1_recount_usage.csv \
-            --skip-est2 --max-scenes QGZ=4 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/recount.log" || rc=$?
+            --skip-est2 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/recount.log" || rc=$?
           cat "$RUNNER_TEMP/recount.log" "$RUNNER_TEMP/summary.json"
           exit $rc
       - name: Report (annotations)
