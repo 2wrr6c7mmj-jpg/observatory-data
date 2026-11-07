@@ -390,6 +390,7 @@ def geojson(sites: list[dict]) -> dict:
     """Every classed berth line as a LineString (the part of a coastline section only), for the eye check on a map."""
     feats = []
     counts = {}
+    since = {}
     for site in sites:
         c = berths.load_classes(site["id"])
         if c is None:
@@ -415,11 +416,16 @@ def geojson(sites: list[dict]) -> dict:
                                          "basis": e.get("basis"), "fixed": bool(e.get("fixed")), "added": bool(e.get("added")),
                                          "part": ({k: v for k, v in e["part"].items() if k != "polygon"}
                                                   if e.get("part") else None),
-                                         "version": berths.NAVAL_VERSION}})
+                                         "version": berths.NAVAL_VERSION,
+                                         "since_utc": berths.naval_since(site["id"])}})
         counts[site["id"]] = n
+        since[site["id"]] = berths.naval_since(site["id"])
+    # naval-gap-1: since_utc is the default start; a site in since_utc_by_site (berths.json naval_since) starts there
     return {"type": "FeatureCollection", "version": berths.NAVAL_VERSION, "since_utc": berths.NAVAL_SINCE,
+            "since_utc_by_site": since,
             "note": ("岸壁・桟橋の線の区分（naval＝海軍、civil＝民間、unknown＝不明）。見出しの数（港内・岸壁帯の候補、岸壁の占有、est-1・est-2、赤枠）"
-                     f"は {berths.NAVAL_SINCE} 以降の撮影で naval の線に沿うものだけ。区分の設定は sat/berth_class/<地点>.json、根拠は basis"),
+                     f"は naval-1 の始まり（既定 {berths.NAVAL_SINCE}、地点ごとの日は since_utc_by_site と各線の since_utc）"
+                     "以降の撮影で naval の線に沿うものだけ。区分の設定は sat/berth_class/<地点>.json、根拠は basis"),
             "credit": ["Data © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)", wen_credit()]
             + ([ESRI_CREDIT] if any("Esri" in " ".join(f["properties"]["basis"] or []) for f in feats) else []),
             "counts": counts, "features": feats}

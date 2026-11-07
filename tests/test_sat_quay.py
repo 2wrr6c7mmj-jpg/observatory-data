@@ -240,6 +240,48 @@ class RunQuayTest(unittest.TestCase):
             self.assertEqual(s2["new"], 0)
             self.assertEqual(cli2.processed, [])
 
+    def test_removed_scene_is_fetched_again_under_the_same_key(self):
+        """naval-gap-1: a published scene taken out of the rows (and status.json) is fetched again on the next run
+        and its rows come back once under the same key (site, acquired_utc, mask version), not as a second copy."""
+        now = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            mask, chip, lines_dir, bl_dir = self.setup_dirs(d)
+            out = d / "out"
+            store = run.Store(out, [SITE])
+            run.process_site(FakeClient(chip), store, SITE, mask, now, None, 100.0, 12, log=lambda *a: None,
+                             lines_dir=lines_dir, baseline_dir=bl_dir)
+            store.save({"run_utc": "2026-10-30T05:17:00Z", "requests": 3, "processing_units": 2.4,
+                        "pu_source": "header", "scenes": 2})
+            files = ("ship_counts.csv", "quay_counts.csv", "quay_sectors.csv")
+            before = {f: run.read_csv(out / f) for f in files}
+            gone = before["quay_counts.csv"][0]["acquired_utc"]          # the orbit-157 scene
+            for f, rows in before.items():
+                if rows:
+                    run.write_csv(out / f, [r for r in rows if r["acquired_utc"] != gone], list(rows[0].keys()))
+            st = json.loads((out / "status.json").read_text())
+            st["scenes"] = [x for x in st["scenes"] if x["acquired_utc"] != gone]
+            (out / "status.json").write_text(json.dumps(st), encoding="utf-8")
+            cli = FakeClient(chip)
+            store = run.Store(out, [SITE])
+            s = run.process_site(cli, store, SITE, mask, now, None, 100.0, 12, log=lambda *a: None,
+                                 lines_dir=lines_dir, baseline_dir=bl_dir)
+            store.save({"run_utc": "2026-10-30T06:17:00Z", "requests": cli.requests,
+                        "processing_units": cli.processing_units, "pu_source": "header", "scenes": 1})
+            self.assertEqual(s["new"], 1)                                # only the removed scene
+            self.assertEqual(len(cli.processed), 1)
+            for f in files:
+                after = run.read_csv(out / f)
+                keys = [(r["site_id"], r["acquired_utc"], r["mask_version"]) + ((r["sector_id"],) if "sector_id" in r else ())
+                        for r in after]
+                self.assertEqual(len(keys), len(set(keys)), f)
+                self.assertEqual(sorted(keys), sorted((r["site_id"], r["acquired_utc"], r["mask_version"])
+                                                      + ((r["sector_id"],) if "sector_id" in r else ()) for r in before[f]), f)
+            gj = json.loads((out / "quay" / "2026-10.geojson").read_text())
+            ids = [(f["properties"]["acquired_utc"], f["properties"].get("segment_id", i)) for i, f in enumerate(gj["features"])
+                   if f["properties"]["acquired_utc"] == gone]
+            self.assertEqual(len(ids), 1)                                # the pier's stretch, once
+
     def test_counted_scene_without_quay_is_fetched_again_once(self):
         now = datetime(2026, 10, 30, tzinfo=timezone.utc)
         with tempfile.TemporaryDirectory() as d:
