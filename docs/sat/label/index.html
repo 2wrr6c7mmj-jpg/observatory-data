@@ -60,8 +60,8 @@ const SITE = (q.get('site') || '').toUpperCase();
 const OOS = q.get('oos') === '1';
 const base = '../../data/sat/labels/';
 // Shown by place name; the code stays only in the URL and the CSV (machine keys).
-const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', ZJG: '湛江'};
-const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH'];
+const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', LSN: '大連・旅順', QDH: '青島港内', ZJG: '湛江'};
+const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH', 'LSN', 'QDH'];
 document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${NAMES[p]}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>';
 const CH = [['none', 'いない', 'n'], ['1', '1列', ''], ['2', '2列', ''], ['3', '3列+', ''], ['unsure', '判断できない', 'u']];
 let R = null, ans = {}, scene = {}, key = '';
