@@ -280,6 +280,18 @@ def metrics(rows: list[dict], key: str = "p") -> dict:
     return m
 
 
+def is_near(r: dict, far_h: float = FAR_H) -> bool:
+    """|S1 - S2| <= far_h hours (a pairing the ships are less likely to have changed in)."""
+    return r.get("dt_h") is not None and abs(float(r["dt_h"])) <= far_h
+
+
+def split_metrics(rows: list[dict]) -> dict:
+    """min50 / any_length of the rows, and the same of the near pairs only (|dt_h| <= FAR_H)."""
+    near = [r for r in rows if is_near(r)]
+    return {"min50": metrics(rows), "any_length": metrics(rows, "p_any"),
+            "near": {"far_h": FAR_H, "min50": metrics(near), "any_length": metrics(near, "p_any")}}
+
+
 def _freeze(site: dict) -> str:
     return (site.get("quay") or {}).get("label_freeze_utc") or "2026-10-27"
 
@@ -353,8 +365,7 @@ def evaluate_site(out: Path, site: dict) -> dict:
             "by_source": {src: {"n": sum(1 for r in rows if r["source"] == src),
                                 "min50": metrics([r for r in rows if r["source"] == src]),
                                 "any_length": metrics([r for r in rows if r["source"] == src], "p_any")} for src in SOURCES},
-            "in_sample": {"min50": metrics(ins), "any_length": metrics(ins, "p_any")},
-            "out_of_sample": {"min50": metrics(oos), "any_length": metrics(oos, "p_any")},
+            "in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos),
             "status": _status(len(ins), len(oos), own), "rows": rows}
 
 
@@ -379,8 +390,11 @@ def _status(n_in: int, n_oos: int, own: bool = True) -> str:
     return f"標本 {n_in} 撮影×区間（標本外 {n_oos}）"
 
 
-def evaluate(out: Path, sites: list[dict] | None = None) -> dict:
+def evaluate(out: Path, sites: list[dict] | None = None, now: datetime | None = None) -> dict:
+    """``now``: the time written as generated_utc (the daily run passes its own, so that two runs of one frozen time are
+    byte for byte the same; default the clock)."""
     sites = sites or load_sites()
+    now = now or datetime.now(timezone.utc)
     ids = []
     for s in sites:
         sid = s["id"]
@@ -391,11 +405,10 @@ def evaluate(out: Path, sites: list[dict] | None = None) -> dict:
     all_rows = [r for r in res.values() for r in r["rows"]]
     ins = [r for r in all_rows if not r["oos"]]
     oos = [r for r in all_rows if r["oos"]]
-    tot = {"in_sample": {"min50": metrics(ins), "any_length": metrics(ins, "p_any")},
-           "out_of_sample": {"min50": metrics(oos), "any_length": metrics(oos, "p_any")},
+    tot = {"in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos),
            "by_source": {src: {"n": sum(1 for r in all_rows if r["source"] == src), "min50": metrics([r for r in all_rows if r["source"] == src])}
                          for src in SOURCES}}
-    return {"version": EVAL_VERSION, "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    return {"version": EVAL_VERSION, "generated_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
             "min_length_m": MIN_LENGTH_M, "threshold": THRESHOLD, "total": tot, "sites": res}
 
@@ -405,22 +418,28 @@ def table(res: dict) -> list[dict]:
     rows = []
     for sid, r in res["sites"].items():
         m, o = r["in_sample"]["min50"], r["out_of_sample"]["min50"]
+        mn, on = r["in_sample"]["near"]["min50"], r["out_of_sample"]["near"]["min50"]
         rows.append({"site_id": sid, "name": r["name"], "calibrated": r["calibrated"], "sections_eligible": r["sections"]["eligible"],
                      "answers": r["labels"]["answers"],
                      "n": m["n"], "recall": m["recall"], "precision": m["precision"], "brier": m["brier"], "base_rate": m["base_rate"],
+                     "n_near": mn["n"], "recall_near": mn["recall"], "precision_near": mn["precision"], "brier_near": mn["brier"],
                      "n_oos": o["n"], "recall_oos": o["recall"], "precision_oos": o["precision"], "brier_oos": o["brier"],
+                     "n_near_oos": on["n"], "recall_near_oos": on["recall"], "precision_near_oos": on["precision"], "brier_near_oos": on["brier"],
                      "n_est2": r["by_source"]["est-2"]["n"], "n_recount": r["by_source"]["s1-recount"]["n"],
                      "scenes": r["pairing"]["scenes"], "far_share": r["pairing"]["far_share"],
                      "not_naval": r["labels"]["not_naval"], "no_scene": r["labels"]["no_scene"] + r["labels"]["no_s1_pairing"],
                      "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"]})
     t = res["total"]["in_sample"]["min50"]
     to = res["total"]["out_of_sample"]["min50"]
+    tn, ton = res["total"]["in_sample"]["near"]["min50"], res["total"]["out_of_sample"]["near"]["min50"]
     n_all = t["n"] + to["n"]
     far = sum(r["pairing"]["far"] for r in res["sites"].values())
     rows.append({"site_id": "ALL", "name": "全港", "calibrated": None, "sections_eligible": sum(x["sections_eligible"] for x in rows),
                  "answers": sum(x["answers"] for x in rows),
                  "n": t["n"], "recall": t["recall"], "precision": t["precision"], "brier": t["brier"], "base_rate": t["base_rate"],
+                 "n_near": tn["n"], "recall_near": tn["recall"], "precision_near": tn["precision"], "brier_near": tn["brier"],
                  "n_oos": to["n"], "recall_oos": to["recall"], "precision_oos": to["precision"], "brier_oos": to["brier"],
+                 "n_near_oos": ton["n"], "recall_near_oos": ton["recall"], "precision_near_oos": ton["precision"], "brier_near_oos": ton["brier"],
                  "n_est2": res["total"]["by_source"]["est-2"]["n"], "n_recount": res["total"]["by_source"]["s1-recount"]["n"],
                  "scenes": sum(x["scenes"] for x in rows), "far_share": round(far / n_all, 3) if n_all else None,
                  "not_naval": sum(x["not_naval"] for x in rows), "no_scene": sum(x["no_scene"] for x in rows),
@@ -453,11 +472,14 @@ def meta(res: dict) -> dict:
                                          "標本外＝凍結以後の日と、est-2 の重みを湛江から流用した港（calib_source が自港でない）の全部。港の数字は較正に使っていない正解での評価"),
             "by_source": "判定の出所別（est-2／s1-recount）の n と指標。湛江の見出しの数字は大半が s1-recount（S1 取り直しの生の占有の評価）で、est-2 の評価ではない",
             "pairing": f"scenes＝判定に使った S1 撮影の数、far_share＝|dt_h| > {FAR_H:g} 時間の升の割合。1 つの S1 撮影には最も近いラベル日だけを使う（他の日の升は labels.other_day_of_scene）",
+            "near": f"in_sample・out_of_sample の near＝|S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標（見出しの数字は全部の組。遠い組では船の入れ替わりが不一致に混じるので、近い組の数字を隣に置く）",
         },
         "table_columns": {"site_id": "地点", "name": "地名", "calibrated": "est-2 をその港の正解で較正したか（false＝湛江の流用、全部標本外）",
                           "sections_eligible": "対象の区間数（確認セットのうち naval・50 m 以上）", "answers": "所有者の答え（判断できないを除く）",
                           "n": "標本内の撮影×区間", "recall": "再現率", "precision": "適合率", "brier": "ブライア", "base_rate": "在の割合",
+                          "n_near・recall_near・precision_near・brier_near": f"標本内のうち |S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標",
                           "n_oos・recall_oos・precision_oos・brier_oos": "標本外の同じ指標",
+                          "n_near_oos・recall_near_oos・precision_near_oos・brier_near_oos": f"標本外のうち |S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標",
                           "n_est2 / n_recount": "判定の出所別の升の数（est-2 の区間片／湛江の S1 取り直しの占有）",
                           "scenes": "判定に使った S1 撮影の数", "far_share": f"|S1−S2| > {FAR_H:g} 時間の升の割合",
                           "not_naval": "naval でない線の答え（除外）", "no_scene": "S1 の対応か保存が無い答え（除外）",
@@ -534,9 +556,10 @@ def presence_table(out: Path, sites: list[dict] | None = None, days: int = SNAPS
     return res
 
 
-def snapshot(out: Path, sites: list[dict] | None = None) -> dict:
+def snapshot(out: Path, sites: list[dict] | None = None, now: datetime | None = None) -> dict:
     sites = sites or load_sites()
-    doc = {"version": EVAL_VERSION, "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    now = now or datetime.now(timezone.utc)
+    doc = {"version": EVAL_VERSION, "generated_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
            "days": SNAPSHOT_DAYS, "max_change": SNAPSHOT_MAX_CHANGE, "rules": rule_versions(sites),
            "min_site_cells": SNAPSHOT_MIN_SITE_CELLS,
            "note": ("回帰の見張り：規則（berths.json とそのハッシュ、naval-1 の区分ファイルのハッシュ、quay、岸壁線の版）が写しと違うとき、直近 30 日の撮影の在/不在"
@@ -549,22 +572,23 @@ def snapshot(out: Path, sites: list[dict] | None = None) -> dict:
     return doc
 
 
-def refresh(out: Path, sites: list[dict] | None = None, log=None) -> dict:
+def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime | None = None) -> dict:
     """The daily run (sat/run.py save): rewrite eval/presence.json and eval/meta.json from the stored files (PU 0), and the
     regression snapshot when its rule versions are those of the working tree (a rule change refreshes it by hand, after the
     guard has been looked at). Returns {"presence": n rows, "snapshot": "updated" | "kept" | "created"}."""
     sites = sites or load_sites()
-    res = evaluate(out, sites)
+    now = now or datetime.now(timezone.utc)
+    res = evaluate(out, sites, now)
     write(out, res)
     p = out / "eval" / SNAPSHOT_FILE
     state = "kept"
     if not p.exists():
-        snapshot(out, sites)
+        snapshot(out, sites, now)
         state = "created"
     else:
         old = json.loads(p.read_text(encoding="utf-8"))
         if old.get("rules") == rule_versions(sites):
-            snapshot(out, sites)
+            snapshot(out, sites, now)
             state = "updated"
     r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state}
     if log:
@@ -612,8 +636,10 @@ def main(argv=None) -> int:
     res = evaluate(a.out)
     write(a.out, res)
     for row in table(res):
-        print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}；標本外 n={row['n_oos']} "
-              f"再現率={row['recall_oos']} 適合率={row['precision_oos']} ブライア={row['brier_oos']}（est-2 {row['n_est2']}／取り直し {row['n_recount']}、"
+        print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}"
+              f"（近い組 n={row['n_near']} {row['recall_near']}／{row['precision_near']}／{row['brier_near']}）；標本外 n={row['n_oos']} "
+              f"再現率={row['recall_oos']} 適合率={row['precision_oos']} ブライア={row['brier_oos']}"
+              f"（近い組 n={row['n_near_oos']} {row['recall_near_oos']}／{row['precision_near_oos']}／{row['brier_near_oos']}）（est-2 {row['n_est2']}／取り直し {row['n_recount']}、"
               f"撮影 {row['scenes']}、海軍でない線 {row['not_naval']}、撮影なし {row['no_scene']}）", file=sys.stderr)
     return 0
 

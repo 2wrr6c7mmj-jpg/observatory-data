@@ -1,6 +1,6 @@
 {
  "version": "eval-presence-1",
- "generated_utc": "2026-11-07T12:27:43Z",
+ "generated_utc": "2026-11-07T13:08:58Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
@@ -31,6 +31,35 @@
     "brier": 0.053,
     "base_rate": 0.789,
     "mean_p": 0.842
+   },
+   "near": {
+    "far_h": 48.0,
+    "min50": {
+     "n": 51,
+     "tp": 39,
+     "fp": 2,
+     "fn": 1,
+     "tn": 9,
+     "recall": 0.975,
+     "precision": 0.951,
+     "accuracy": 0.941,
+     "brier": 0.059,
+     "base_rate": 0.784,
+     "mean_p": 0.804
+    },
+    "any_length": {
+     "n": 51,
+     "tp": 40,
+     "fp": 3,
+     "fn": 0,
+     "tn": 8,
+     "recall": 1.0,
+     "precision": 0.93,
+     "accuracy": 0.941,
+     "brier": 0.059,
+     "base_rate": 0.784,
+     "mean_p": 0.843
+    }
    }
   },
   "out_of_sample": {
@@ -59,6 +88,35 @@
     "brier": 0.243,
     "base_rate": 0.273,
     "mean_p": 0.284
+   },
+   "near": {
+    "far_h": 48.0,
+    "min50": {
+     "n": 208,
+     "tp": 34,
+     "fp": 19,
+     "fn": 28,
+     "tn": 127,
+     "recall": 0.548,
+     "precision": 0.642,
+     "accuracy": 0.774,
+     "brier": 0.226,
+     "base_rate": 0.298,
+     "mean_p": 0.255
+    },
+    "any_length": {
+     "n": 208,
+     "tp": 37,
+     "fp": 26,
+     "fn": 25,
+     "tn": 120,
+     "recall": 0.597,
+     "precision": 0.587,
+     "accuracy": 0.755,
+     "brier": 0.245,
+     "base_rate": 0.298,
+     "mean_p": 0.303
+    }
    }
   },
   "by_source": {
@@ -227,6 +285,35 @@
      "brier": 0.053,
      "base_rate": 0.789,
      "mean_p": 0.842
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 51,
+      "tp": 39,
+      "fp": 2,
+      "fn": 1,
+      "tn": 9,
+      "recall": 0.975,
+      "precision": 0.951,
+      "accuracy": 0.941,
+      "brier": 0.059,
+      "base_rate": 0.784,
+      "mean_p": 0.804
+     },
+     "any_length": {
+      "n": 51,
+      "tp": 40,
+      "fp": 3,
+      "fn": 0,
+      "tn": 8,
+      "recall": 1.0,
+      "precision": 0.93,
+      "accuracy": 0.941,
+      "brier": 0.059,
+      "base_rate": 0.784,
+      "mean_p": 0.843
+     }
     }
    },
    "out_of_sample": {
@@ -255,6 +342,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "status": "標本 57 撮影×区間（標本外 0）",
@@ -1122,6 +1238,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "out_of_sample": {
@@ -1150,6 +1295,35 @@
      "brier": 0.316,
      "base_rate": 0.368,
      "mean_p": 0.368
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 12,
+      "tp": 3,
+      "fp": 1,
+      "fn": 2,
+      "tn": 6,
+      "recall": 0.6,
+      "precision": 0.75,
+      "accuracy": 0.75,
+      "brier": 0.25,
+      "base_rate": 0.417,
+      "mean_p": 0.333
+     },
+     "any_length": {
+      "n": 12,
+      "tp": 3,
+      "fp": 2,
+      "fn": 2,
+      "tn": 5,
+      "recall": 0.6,
+      "precision": 0.6,
+      "accuracy": 0.667,
+      "brier": 0.333,
+      "base_rate": 0.417,
+      "mean_p": 0.417
+     }
     }
    },
    "status": "標本外 19 撮影×区間（較正の流用）",
@@ -1526,6 +1700,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "out_of_sample": {
@@ -1554,6 +1757,35 @@
      "brier": 0.143,
      "base_rate": 0.121,
      "mean_p": 0.175
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 70,
+      "tp": 9,
+      "fp": 2,
+      "fn": 1,
+      "tn": 58,
+      "recall": 0.9,
+      "precision": 0.818,
+      "accuracy": 0.957,
+      "brier": 0.043,
+      "base_rate": 0.143,
+      "mean_p": 0.157
+     },
+     "any_length": {
+      "n": 70,
+      "tp": 9,
+      "fp": 4,
+      "fn": 1,
+      "tn": 56,
+      "recall": 0.9,
+      "precision": 0.692,
+      "accuracy": 0.929,
+      "brier": 0.071,
+      "base_rate": 0.143,
+      "mean_p": 0.186
+     }
     }
    },
    "status": "標本外 141 撮影×区間（較正の流用）",
@@ -3516,6 +3748,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "out_of_sample": {
@@ -3544,6 +3805,35 @@
      "brier": 0.318,
      "base_rate": 0.388,
      "mean_p": 0.365
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 126,
+      "tp": 22,
+      "fp": 16,
+      "fn": 25,
+      "tn": 63,
+      "recall": 0.468,
+      "precision": 0.579,
+      "accuracy": 0.675,
+      "brier": 0.325,
+      "base_rate": 0.373,
+      "mean_p": 0.302
+     },
+     "any_length": {
+      "n": 126,
+      "tp": 25,
+      "fp": 20,
+      "fn": 22,
+      "tn": 59,
+      "recall": 0.532,
+      "precision": 0.556,
+      "accuracy": 0.667,
+      "brier": 0.333,
+      "base_rate": 0.373,
+      "mean_p": 0.357
+     }
     }
    },
    "status": "標本外 170 撮影×区間（較正の流用）",
@@ -5874,6 +6164,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "out_of_sample": {
@@ -5902,6 +6221,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "status": "標本 0",
@@ -6021,6 +6369,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "out_of_sample": {
@@ -6049,6 +6426,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "status": "標本 0",
@@ -6168,6 +6574,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "out_of_sample": {
@@ -6196,6 +6631,35 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     }
    },
    "status": "標本 0",

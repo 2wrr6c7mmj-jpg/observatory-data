@@ -16,7 +16,11 @@ Budget, explicit here and checked before every request (port_archive.LimitedClie
   branch's usage CSVs, ``--usage``; each record once), the port archive's usage (``--ports-usage``, one pool) and
   the reserve of the ocean (``--ocean-cap`` minus the ocean usage already in the files); and ``--budget-month``
   (2026-11): in any other UTC month nothing is sent;
-* the scenes already saved in ``--raw`` are not fetched again;
+* the scenes already saved in ``--raw`` are not fetched again, nor the scenes already in labels/<site>-s2-s1-match.csv
+  (``matched``: fetched on an earlier probe branch and merged; the chips stay on that branch, so cut the next probe branch from
+  it, probe/sat-s1-recount-ops4, when the chips are needed again);
+* ``MAX_PU_TOTAL`` counts the rows of ``--usage-out`` and of every gathered copy of s1_recount_usage.csv among ``--usage``
+  (each record once);
 * ``--skip-est2``: the scenes est-2 already judged (quay_est2/<site>.json; sat/eval_presence.py prefers est-2 for them,
   so a re-count adds no cell to the presence evaluation) are not fetched;
 * ``--max-scenes SITE=N``: at most N scenes of the site, the nearest to their label day (|dt_h| of the plan's per_day)
@@ -128,15 +132,37 @@ def read_csv(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-def spent(usage: list[dict]) -> float:
-    """PU of this job's earlier runs (rows of PROBE_VERSION)."""
-    return round(sum(float(r.get("processing_units") or 0) for r in usage if r.get("probe_version") == PROBE_VERSION), 3)
+def spent(usage: list[dict], copies: list[Path] = ()) -> float:
+    """PU of this job's earlier runs (rows of PROBE_VERSION): the rows of ``--usage-out`` and of every copy of
+    docs/data/sat/s1_recount_usage.csv gathered from the branches (``copies``: the other-*s1_recount* files of
+    port_archive.gather_usage), each record once (a probe branch cut from main holds the rows main holds)."""
+    from .port_archive import row_key
+    seen = {row_key(r) for r in usage}
+    rows = list(usage)
+    for p in copies:
+        for r in read_csv(Path(p)):
+            if row_key(r) not in seen:
+                seen.add(row_key(r))
+                rows.append(r)
+    return round(sum(float(r.get("processing_units") or 0) for r in rows if r.get("probe_version") == PROBE_VERSION), 3)
+
+
+def recount_copies(usage: list[Path]) -> list[Path]:
+    """The gathered copies of this job's usage among ``--usage`` (other-docs_data_sat_s1_recount_usage.csv--<n>.csv)."""
+    from .port_archive import usage_key
+    return [Path(u) for u in usage if usage_key(Path(u)).startswith("other-") and "s1_recount_usage" in usage_key(Path(u))]
+
+
+def matched_acquired(out: Path, site_id: str) -> set:
+    """The scenes whose features are already in labels/<site>-s2-s1-match.csv (s1_acquired_utc; on main after a merge):
+    fetched before, so not fetched again on a probe branch that lacks the chips."""
+    return {r["s1_acquired_utc"] for r in read_csv(out / "labels" / f"{site_id}-s2-s1-match.csv") if r.get("s1_acquired_utc")}
 
 
 def month_left(month: str, now: datetime, global_cap: float, global_margin: float, ocean_cap: float,
                usage: list[Path], ports_usage: list[Path]) -> dict:
     """PU left of the month's own caps for this job (port_archive.guard without the archive's own cap)."""
-    from .port_archive import union_usage, usage_key
+    from .port_archive import is_ocean_key, union_usage, usage_key
     if month != now.strftime("%Y-%m"):
         raise ValueError(f"上限は {month} の値（今は {now:%Y-%m}）")
     groups: dict = {}
@@ -144,7 +170,7 @@ def month_left(month: str, now: datetime, global_cap: float, global_margin: floa
         groups.setdefault(usage_key(Path(u)), []).append(Path(u))
     per = {k: union_usage(v, month) for k, v in groups.items()}
     other = sum(v[0] for v in per.values())
-    ocean = sum(v[0] for k, v in per.items() if k.startswith("other-") and "ocean" in k)
+    ocean = sum(v[0] for k, v in per.items() if is_ocean_key(k))
     reserve = max(0.0, ocean_cap - ocean)
     ports, _ = union_usage([Path(p) for p in ports_usage], month)
     left = global_cap - global_margin - other - reserve - ports
@@ -161,12 +187,16 @@ def fetch_site(client, site: dict, raw: Path, out: Path = OUT, log=print, skip_e
     p_plan = out / "labels" / site["id"] / "s1_recount_plan.json"
     plan = json.loads(p_plan.read_text(encoding="utf-8")) if p_plan.exists() else {}
     scenes, skipped, deferred = pick_scenes(plan, est2_acquired(out, site["id"]) if skip_est2 else frozenset(), max_scenes)
-    res = {"site_id": site["id"], "planned": len(plan.get("scenes", [])), "fetched": [], "had": [], "missing": [], "errors": [],
-           "skipped_est2": skipped, "deferred": deferred}
+    res = {"site_id": site["id"], "planned": len(plan.get("scenes", [])), "fetched": [], "had": [], "matched": [], "missing": [],
+           "errors": [], "skipped_est2": skipped, "deferred": deferred}
+    matched = matched_acquired(out, site["id"])
     for sc in scenes:
         p = raw_path(raw, site["id"], sc["acquired_utc"])
         if p.exists():
             res["had"].append(sc["acquired_utc"])
+            continue
+        if sc["acquired_utc"] in matched:
+            res["matched"].append(sc["acquired_utc"])
             continue
         t = cdse.parse_time(sc["acquired_utc"])
         acqs = cdse.acquisitions(client.catalog(grid.bbox, t - CATALOG_PAD, t + CATALOG_PAD))
@@ -340,7 +370,9 @@ def main(argv=None, client=None, sites=None, utcnow=lambda: datetime.now(timezon
         ap.error("required without --match: " + ", ".join("--" + k.replace("_", "-") for k in missing))
     limits = {}
     for x in a.max_scenes:
-        sid, _, n = x.partition("=")
+        sid, eq, n = x.partition("=")
+        if not sid or not eq or not n.isdigit():
+            ap.error(f"--max-scenes: SITE=N の形で（{x!r}）")
         limits[sid] = int(n)
     now = utcnow()
     if a.budget_month != BUDGET_MONTH or now.strftime("%Y-%m") != a.budget_month:
@@ -348,8 +380,9 @@ def main(argv=None, client=None, sites=None, utcnow=lambda: datetime.now(timezon
         return 1
     usage = read_csv(a.usage_out)
     ml = month_left(a.budget_month, now, a.global_cap, a.global_margin, a.ocean_cap, a.usage, a.ports_usage)
-    left = round(min(ml["left"], MAX_PU_TOTAL - spent(usage)), 3)
-    summ = {"probe_version": PROBE_VERSION, "max_pu_total": MAX_PU_TOTAL, "spent_before": spent(usage), "month": ml,
+    spent_before = spent(usage, recount_copies(a.usage))
+    left = round(min(ml["left"], MAX_PU_TOTAL - spent_before), 3)
+    summ = {"probe_version": PROBE_VERSION, "max_pu_total": MAX_PU_TOTAL, "spent_before": spent_before, "month": ml,
             "cap_this_run": left, "sites": []}
     if left <= 0:
         summ["error"] = "上限に達しているため取得しない"

@@ -1,8 +1,6 @@
 name: Sentinel-1 recount probe (answered days)
 # 目視確認（SYL・SLP・QGZ）の答えの日の Sentinel-1 だけを取り直す probe（sat/s1_recount.py、ユーザー了承 2026-11-03、合計 40 PU まで）。
-# ops-4（2026-11-07、港が最優先・楡林→亜龍湾→古鎮口）：est-2 に既にある撮影は飛ばす（--skip-est2）。1 回目は QGZ を答えの日に近い
-# 4 撮影までに絞った（--max-scenes QGZ=4、見込み 38.3 PU）が、実際は 2 帯のため 15 撮影で 25.5 PU（見積もりの 2/3）だったので、
-# 2 回目で残る QGZ 4 撮影（約 5.1 PU）も 40 PU の内で取る。合計の上限は sat/s1_recount.py の MAX_PU_TOTAL が守る。
+# est-2 に既にある撮影と labels/<港>-s2-s1-match.csv にある撮影は飛ばす（--skip-est2・matched）。経過は docs/data/sat/CHANGES.md。
 # probe 用ブランチ（probe/sat-s1-recount-*）への push でだけ動く。main は読むだけで変えない。取得した σ0（float16 の npz）と
 # usage の行は同じ probe ブランチにだけ commit する（公開しない）。
 # PU：この仕事の合計の上限 40 PU（sat/s1_recount.py の MAX_PU_TOTAL）と、月の自主上限（全体 9,000・余裕 450・外洋 7,000 の予約、

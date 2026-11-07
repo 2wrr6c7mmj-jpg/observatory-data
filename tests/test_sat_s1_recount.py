@@ -145,6 +145,41 @@ class RecountTest(unittest.TestCase):
             self.assertEqual(s["sites"][0]["planned"], 4)
             self.assertEqual(c.requests, 4)   # 2 catalog + 2 process
 
+    def test_matched_scenes_and_gathered_copies_count_as_done(self):
+        """A probe branch cut from main after the merge: no chips, but the match table names the scenes (not fetched again)
+        and the gathered copy of s1_recount_usage.csv carries the earlier PU (subtracted from the 40 PU)."""
+        T = ["2026-10-14T10:48:16Z", "2026-10-02T10:48:16Z"]
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            write_plan(d / "out", "TSR", T)
+            (d / "out" / "labels" / "TSR-s2-s1-match.csv").write_text(
+                "site_id,section_id,s2_date,s1_acquired_utc,s1_occupied\nTSR,1:L:00,2026-10-14,2026-10-14T10:48:16Z,1\n")
+            copy = d / "other-docs_data_sat_s1_recount_usage.csv--0.csv"
+            copy.write_text("run_utc,site_id,probe_version,requests,processing_units\n2026-11-07T12:23:15Z,SYL+SLP+QGZ,s1-recount-1,30,25.519\n")
+            # the same record also in --usage-out: counted once
+            (d / "out" / "s1_recount_usage.csv").write_text(
+                "run_utc,site_id,probe_version,requests,processing_units\n2026-11-07T12:23:15Z,SYL+SLP+QGZ,s1-recount-1,30,25.519\n")
+            c = Fake(40.0)
+            rc, s = self.run_main(d, extra=["--usage", str(copy)], client=c)
+            self.assertEqual(rc, 0)
+            self.assertEqual(s["spent_before"], 25.519)
+            self.assertEqual(s["cap_this_run"], round(40 - 25.519, 3))
+            self.assertEqual(s["sites"][0]["matched"], [T[0]])
+            self.assertEqual(s["sites"][0]["fetched"], [T[1]])
+            self.assertEqual(c.requests, 2)
+        self.assertEqual(r.recount_copies([Path("x/other-docs_data_sat_s1_recount_usage.csv--3.csv"), Path("x/other-docs_data_ocean_usage.csv--0.csv"),
+                                           Path("x/sat.csv")]), [Path("x/other-docs_data_sat_s1_recount_usage.csv--3.csv")])
+
+    def test_max_scenes_format_error(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            write_plan(d / "out", "TSR", ["2026-10-14T10:48:16Z"])
+            import contextlib
+            import io
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as cm:
+                self.run_main(d, extra=["--max-scenes", "TSR"], client=Fake(40.0))
+            self.assertEqual(cm.exception.code, 2)
+
     def test_match_builds_table_from_saved_chips(self):
         """--match (PU 0): a real site's geometry with a synthetic flat chip -> one row per review section x matched day,
         the owner's answers in the s2_* columns, MATCH_FIELDS as Zhanjiang's table."""
