@@ -1739,123 +1739,123 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-07T06:18:14Z",
+  "run_utc": "2026-11-07T11:56:03Z",
   "sites": [
    {
     "site_id": "ZJG",
-    "lookback_days": 7,
-    "catalog_items": 2,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 895.52
-   },
-   {
-    "site_id": "SYL",
-    "lookback_days": 7,
-    "catalog_items": 2,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 895.52
-   },
-   {
-    "site_id": "SLP",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 0,
     "acquisitions": 0,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 895.52
+    "budget_left_pu": 878.2
+   },
+   {
+    "site_id": "SYL",
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 878.2
+   },
+   {
+    "site_id": "SLP",
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "QGZ",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 891.73
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "ZDH",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 888.6
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "QDH",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 885.52
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "XSN",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 883.72
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "SWS",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 882.75
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "QJG",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 881.44
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "LSN",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
     "budget_left_pu": 878.2
    },
    {
     "site_id": "XMN",
-    "lookback_days": 7,
-    "catalog_items": 2,
-    "acquisitions": 2,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
     "new": 0,
     "counted": 0,
     "skipped": 0,
@@ -1864,7 +1864,7 @@
    },
    {
     "site_id": "STU",
-    "lookback_days": 7,
+    "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
     "new": 0,
@@ -1875,9 +1875,9 @@
    },
    {
     "site_id": "MAW",
-    "lookback_days": 7,
-    "catalog_items": 1,
-    "acquisitions": 1,
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
     "new": 0,
     "counted": 0,
     "skipped": 0,
@@ -1888,36 +1888,36 @@
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.009,
+    "requests": 2
    },
    {
     "site_id": "SYL",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.015,
+    "requests": 2
    },
    {
     "site_id": "SLP",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.012,
+    "requests": 2
    },
    {
     "site_id": "QGZ",
@@ -2031,16 +2031,16 @@
     "requests": 1
    }
   ],
-  "s2_requests": 13,
-  "s2_processing_units": 0.0,
-  "requests": 37,
-  "processing_units": 17.321,
+  "s2_requests": 16,
+  "s2_processing_units": 0.035,
+  "requests": 29,
+  "processing_units": 0.035,
   "pu_source": "header",
-  "scenes": 11,
-  "month_pu_before": 104.482,
+  "scenes": 0,
+  "month_pu_before": 121.803,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-07T06:18:14Z",
+ "updated_utc": "2026-11-07T11:56:03Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
