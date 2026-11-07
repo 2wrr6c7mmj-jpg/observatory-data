@@ -1,0 +1,1 @@
+{"site_id": "SLP", "acquired_utc": "2025-11-17T10:48:13Z", "platform": "sentinel-1c", "orbit_direction": "ascending", "relative_orbit": 157, "width": 529, "height": 631, "bbox": [109.665, 18.185, 109.715, 18.242], "processing_units": 1.6977895606892162, "probe_version": "s1-recount-1", "credit": "Contains modified Copernicus Sentinel data 2025"}
