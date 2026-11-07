@@ -53,9 +53,21 @@ def load_classes(site_id: str, d: Path | None = None) -> dict | None:
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
+def naval_since(site_id: str, conf: dict | None = None) -> str:
+    """The first acquisition date of the naval rule for a site: ``naval_since`` of its berths.json entry, else NAVAL_SINCE.
+
+    naval-gap-1 (2026-11-07, user: "think hard why the north ports show 0 and fix it"): berth-1 (from SINCE_UTC, 2026-11-01)
+    drops every coastline that is not listed in berths.json, and the naval quays that are only a coastline in OSM (and the
+    drawn piers) came back with the class file's added sections only from NAVAL_SINCE (2026-11-05). The scenes of
+    2026-11-01..04 of the sites without listed coastlines lost almost every naval quay (Lushun, Qingdao harbour, Xiangshan).
+    For those sites the naval rule starts with berth-1 (their gap scenes are fetched again once and replace their rows)."""
+    sc = ((conf if conf is not None else _CONF).get("sites") or {}).get(site_id) or {}
+    return str(sc.get("naval_since") or NAVAL_SINCE)
+
+
 def naval_active(site_id: str, acquired_utc: str, since: str | None = None) -> bool:
     """Is the naval rule applied to a scene of the site acquired at ``acquired_utc``? (a class file and the date)"""
-    since = since or NAVAL_SINCE
+    since = since or naval_since(site_id)
     return bool(acquired_utc) and acquired_utc[:10] >= since[:10] and (CLASS_DIR / f"{site_id}.json").exists()
 VERSION = _CONF["version"]
 SINCE_UTC = _CONF.get("since_utc")
@@ -117,6 +129,7 @@ class Berths:
         conf = conf if conf is not None else _CONF
         sc = (conf.get("sites") or {}).get(site["id"]) or {}
         self.site_id = site["id"]
+        self.naval_since = naval_since(site["id"], conf)   # naval-gap-1: the site's own start of naval-1
         self.keep_m = float(conf.get("keep_m", KEEP_M))
         self.tol_m = float(conf.get("own_tolerance_m", OWN_TOL_M))
         self.exclude = {str(w) for w in sc.get("exclude_ways") or []}
@@ -323,7 +336,7 @@ def feature_ok(b: Berths, props: dict, coords) -> bool:
     """A stored quay feature (quay/*.geojson) on a berth; from NAVAL_SINCE (naval-1) on a naval berth only."""
     if not b.stretch_ok(props.get("line_kind"), props.get("osm_way"), coords):
         return False
-    if b.classes and (props.get("acquired_utc") or "")[:10] >= NAVAL_SINCE:
+    if b.classes and (props.get("acquired_utc") or "")[:10] >= b.naval_since[:10]:
         return b.stretch_class(props.get("osm_way"), coords) == "naval"
     return True
 
@@ -337,11 +350,11 @@ def class_settings() -> dict:
         for e in c.get("lines") or []:
             n[e["class"]] = n.get(e["class"], 0) + 1
         sites[c["site"]] = {"lines": n, "lines_version": c.get("lines_version"), "confidence": c.get("confidence"),
-                            "note": c.get("note")}
+                            "note": c.get("note"), "since_utc": naval_since(c["site"])}
     return {"version": NAVAL_VERSION, "since_utc": NAVAL_SINCE, "files": "sat/berth_class/<地点>.json",
             "geojson": "berth_class.geojson",
             "rule": ("船が着く線を一本ずつ海軍（naval：海軍の区域の桟橋・岸壁、建造・整備中の艦の着く造船所の岸壁を含む）・民間（civil）・"
-                     "不明（unknown）に分ける。since_utc 以降の撮影では、見出しの数（ship_counts の harbour_candidates・quay_candidates、"
+                     "不明（unknown）に分ける。since_utc（地点ごとの sites.<地点>.since_utc が早い地点はその日）以降の撮影では、見出しの数（ship_counts の harbour_candidates・quay_candidates、"
                      "quay_counts の占有、est-1・est-2、赤枠）に海軍の線に沿うものだけを入れる。民間・不明の候補は detections の berth_class に"
                      "区分を付けて残し、件数は berth_class_counts.csv に別に出す。それより前の撮影の行は書き換えない"),
             "sites": sites}
@@ -351,4 +364,6 @@ def settings() -> dict:
     return {"version": VERSION, "since_utc": SINCE_UTC, "file": "sat/berths.json", "note": _CONF.get("note"),
             "keep_m": KEEP_M, "own_tolerance_m": OWN_TOL_M, "rules": _CONF.get("rules"),
             "sites": {k: {"coastline": v.get("coastline") or [], "exclude_ways": v.get("exclude_ways") or [],
-                          "note": v.get("note")} for k, v in (_CONF.get("sites") or {}).items()}}
+                          "note": v.get("note"),
+                          **({"naval_since": v["naval_since"], "naval_since_note": v.get("naval_since_note")}
+                             if v.get("naval_since") else {})} for k, v in (_CONF.get("sites") or {}).items()}}

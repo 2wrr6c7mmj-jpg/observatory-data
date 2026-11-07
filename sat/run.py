@@ -640,8 +640,11 @@ def series_breaks(sites: list[dict]) -> list[dict]:
             continue
         out.append({
             "site_id": site["id"], "kind": "naval", "from_mask_version": mask_tag(site), "to_mask_version": mask_tag(site),
-            "from_version": "全区分の岸壁", "to_version": berths.NAVAL_VERSION, "date_utc": berths.NAVAL_SINCE,
-            "note": (f"見出しの数を海軍の桟橋・岸壁に限定（{berths.NAVAL_SINCE} 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。"
+            "from_version": "全区分の岸壁", "to_version": berths.NAVAL_VERSION, "date_utc": berths.naval_since(site["id"]),
+            "note": (f"見出しの数を海軍の桟橋・岸壁に限定（{berths.naval_since(site['id'])} 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。"
+                     + (f"{berths.naval_since(site['id'])}〜{berths.NAVAL_SINCE} の撮影は、岸壁だけに絞る規則（{berths.VERSION}）で軍の岸壁"
+                        "（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。"
+                        if berths.naval_since(site["id"]) < berths.NAVAL_SINCE else "") +
                      "ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線"
                      "（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に"
                      "区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"),
@@ -963,7 +966,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                                    "件数は status.json の window_excluded、水面の区分は windows/<地点>.geojson）。band_m より遠い開けた水面の候補は"
                                    "港内の錨泊として anchorage_counts.csv に別に数える"),
             "berth_class_counts.csv": (f"{berths.NAVAL_VERSION}：岸壁の線の区分（海軍・民間・不明）ごとの数。1 行＝1 撮影×1 地点×1 範囲版"
-                                       f"（{berths.NAVAL_SINCE} 以降の撮影で、区分の設定 sat/berth_class/<地点>.json のある地点だけ）。"
+                                       f"（{berths.NAVAL_SINCE} 以降の撮影〔sat/berths.json の naval_since が早い地点はその日から〕で、区分の設定 sat/berth_class/<地点>.json のある地点だけ）。"
                                        f"harbour_*・quay_*＝候補の数（見出しの harbour_candidates・quay_candidates は *_naval と同じ。size-1（{SIZE_SINCE} 以降）は *_naval − *_small）、"
                                        "stretches_*＝岸壁の占有区間の数、occupied_max_*＝その上限の隻数の和（見出しの quay_counts は海軍の線だけ）"),
             "anchorage_counts.csv": ("win-1：港内の錨泊。1 行＝1 撮影×1 地点×1 範囲版。船が着く線から band_m より遠い港内水域の候補の数"

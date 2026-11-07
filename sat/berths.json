@@ -23,7 +23,7 @@
    ],
    "exclude_ways": []
   },
-  "QGZ": {
+  "QGZ": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", 
    "coastline": [
     {"way": 15241280, "sector": "A2", "note": "内港の岸壁（区画 A2 の名前）"},
     {"way": 15387629, "sector": "A2", "note": "同上"},
@@ -32,14 +32,14 @@
    ],
    "exclude_ways": []
   },
-  "ZDH": {
+  "ZDH": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", 
    "coastline": [
     {"way": 597183279, "sector": "A1", "note": "西岸の横付け岸壁 W1〜W4（区画 A1 の名前）"},
     {"way": 597183280, "sector": "A2", "note": "舟山水警区の岸壁（区画 A2 の名前）"}
    ],
    "exclude_ways": []
   },
-  "QJG": {
+  "QJG": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", 
    "coastline": [
     {"way": 43251729, "sector": "A1", "note": "潜水艦の桟橋が OSM に無く、岸壁線は海岸線だけ。区画 A1（桟橋の周り）の海岸線を手書きの線ができるまで仮に戻す（要 2部確認）"},
     {"way": 1036282785, "sector": "A1", "note": "同上"}
@@ -47,7 +47,10 @@
    "exclude_ways": [-1, -2],
    "note": "港内の突堤の線（QJG-quay-v3 の id −2、Esri World Imagery の目視判読 2026-11-05、sat/masks/QJG-manual.geojson。v2 の手書きの −1〔S2 の目測〕を置き換えた）は berth-1 では外し（−1 も保存済みの地物に残っていたときのため外したまま）、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
   },
-  "QDH": {"coastline": [], "exclude_ways": [-1, -2, -3, -4], "note": "西港区の桟橋 4 本（QDH-quay-v2 の id −1〜−4、Esri World Imagery の目視判読 2026-11-05、sat/masks/QDH-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QDH.json の added）から着く線にする"},
-  "MAW": {"coastline": [], "exclude_ways": [-1], "note": "手書きの造船所の岸壁（MAW-quay-v2 の id −1、sat/masks/MAW-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/MAW.json の added）から着く線にする"}
+  "QDH": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", "coastline": [], "exclude_ways": [-1, -2, -3, -4], "note": "西港区の桟橋 4 本（QDH-quay-v2 の id −1〜−4、Esri World Imagery の目視判読 2026-11-05、sat/masks/QDH-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QDH.json の added）から着く線にする"},
+  "MAW": {"coastline": [], "exclude_ways": [-1], "note": "手書きの造船所の岸壁（MAW-quay-v2 の id −1、sat/masks/MAW-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/MAW.json の added）から着く線にする"},
+  "LSN": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", "coastline": [], "exclude_ways": []},
+  "XSN": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", "coastline": [], "exclude_ways": []},
+  "SWS": {"naval_since": "2026-11-01", "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す", "coastline": [], "exclude_ways": []}
  }
 }
