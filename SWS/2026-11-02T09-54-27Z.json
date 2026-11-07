@@ -1,0 +1,83 @@
+{
+ "version": "raw-1",
+ "site_id": "SWS",
+ "acquired_utc": "2026-11-02T09:54:27Z",
+ "platform": "sentinel-1d",
+ "orbit_direction": "ascending",
+ "relative_orbit": 171,
+ "catalog_ids": [
+  "S1D_IW_GRDH_1SDV_20261102T095427_20261102T095452_005287_00A0E7_39D3_COG.SAFE"
+ ],
+ "retrieved_utc": "2026-11-07T06:20:25Z",
+ "processing_units": 0.965423583984375,
+ "chip": "2026-11-02T09-54-27Z.png",
+ "encoding": {
+  "format": "PNG 16-bit RGBA",
+  "bands": [
+   "VV",
+   "VH",
+   "localIncidenceAngle",
+   "dataMask"
+  ],
+  "db": "value / 800 - 50 (0 = no data)",
+  "lia_deg": "value / 100",
+  "with_lia": true
+ },
+ "bbox": [
+  121.48,
+  31.37,
+  121.52,
+  31.4
+ ],
+ "width": 380,
+ "height": 333,
+ "pixel_m": [
+  9.988839356587537,
+  10.01247225190427
+ ],
+ "mask": "../masks/SWS-land-v1.png",
+ "mask_version": "SWS-land-v1",
+ "coverage": 0.999,
+ "detector_version": "cfar-v1",
+ "detector_params": {
+  "pfa": 1e-05,
+  "guard_m": 70.0,
+  "background_m": 150.0,
+  "min_background_fraction": 0.25,
+  "min_pixels": 3,
+  "vh_min_ratio": 2.0,
+  "quay_band_m": 50.0
+ },
+ "detector_info": {
+  "valid_fraction": 0.9845,
+  "water_fraction": 0.0513,
+  "threshold_sigma": 4.265,
+  "guard_px": 7,
+  "outer_px": 22,
+  "hit_pixels": 22,
+  "clusters": 11,
+  "dropped_small": 9,
+  "dropped_vh": 1
+ },
+ "candidates": [
+  {
+   "row": 44.5,
+   "col": 357.5,
+   "rmin": 44,
+   "rmax": 45,
+   "cmin": 357,
+   "cmax": 358,
+   "pixels": 4,
+   "length_m": 20,
+   "width_m": 20,
+   "length_class": "lt50",
+   "zone": "quay",
+   "peak_vv_db": -9.2,
+   "contrast_vv_db": 7.3,
+   "vh_ratio_db": 3.4,
+   "lon": 121.51768421052631,
+   "lat": 31.395945945945943
+  }
+ ],
+ "attribution": "Contains modified Copernicus Sentinel data 2026; land mask (c) OpenStreetMap contributors, ODbL 1.0"
+}
