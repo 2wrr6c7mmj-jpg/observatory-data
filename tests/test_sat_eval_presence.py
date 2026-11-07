@@ -166,6 +166,8 @@ class EvaluateRepoTest(unittest.TestCase):
             self.assertEqual(r["in_sample"]["min50"]["n"] + r["out_of_sample"]["min50"]["n"], len(r["rows"]))
             o = r["out_of_sample"]
             self.assertEqual(o["by_blind"]["blind"]["n"] + o["by_blind"]["clear"]["n"], o["min50"]["n"])
+            self.assertEqual(sum(m["n"] for m in o["by_note"].values()), o["min50"]["n"])
+            self.assertEqual(r["labels"]["prefilled"], 0)   # the s2 truth has no prefilled answers
             self.assertEqual(sum(m["n"] for m in o["by_conf"].values()), o["min50"]["n"])
         tot = self.res["total"]["in_sample"]["min50"]["n"] + self.res["total"]["out_of_sample"]["min50"]["n"]
         self.assertEqual(tot, sum(len(r["rows"]) for r in self.res["sites"].values()))
@@ -205,6 +207,9 @@ class EvaluateRepoTest(unittest.TestCase):
             self.assertEqual(by[miss["s1_acquired_utc"]]["y"], 0)
             self.assertEqual(r["out_of_sample"]["min50"]["n"], 2)
             self.assertTrue(all(ep.is_near(x) for x in r["rows"]))
+            bn = r["out_of_sample"]["by_note"]
+            self.assertEqual((bn["prefill"]["n"], bn["manual"]["n"], bn["default"]["n"]), (1, 1, 0))
+            self.assertEqual(r["labels"]["prefilled"], 1)
             # the other truth (s2) is the usual evaluation of the same files
             self.assertEqual(res["other_truth"]["truth"], "s2")
             self.assertEqual(res["other_truth"]["sites"]["QGZ"]["out_of_sample"]["min50"]["n"],

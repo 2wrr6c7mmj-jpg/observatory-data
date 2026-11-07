@@ -1,6 +1,6 @@
 {
  "version": "eval-presence-2",
- "generated_utc": "2026-11-07T13:36:44Z",
+ "generated_utc": "2026-11-07T17:34:47Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
@@ -33,6 +33,47 @@
     "brier": 0.053,
     "base_rate": 0.789,
     "mean_p": 0.842
+   },
+   "by_note": {
+    "prefill": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "default": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "manual": {
+     "n": 57,
+     "tp": 43,
+     "fp": 2,
+     "fn": 2,
+     "tn": 10,
+     "recall": 0.956,
+     "precision": 0.956,
+     "accuracy": 0.93,
+     "brier": 0.07,
+     "base_rate": 0.789,
+     "mean_p": 0.789
+    }
    },
    "near": {
     "far_h": 48.0,
@@ -147,6 +188,47 @@
     "brier": 0.252,
     "base_rate": 0.273,
     "mean_p": 0.305
+   },
+   "by_note": {
+    "prefill": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "default": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "manual": {
+     "n": 330,
+     "tp": 51,
+     "fp": 40,
+     "fn": 39,
+     "tn": 200,
+     "recall": 0.567,
+     "precision": 0.56,
+     "accuracy": 0.761,
+     "brier": 0.24,
+     "base_rate": 0.273,
+     "mean_p": 0.275
+    }
    },
    "near": {
     "far_h": 48.0,
@@ -285,6 +367,7 @@
    },
    "labels": {
     "answers": 81,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 20,
     "short": 0,
@@ -403,6 +486,47 @@
      "base_rate": 0.789,
      "mean_p": 0.842
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 57,
+      "tp": 43,
+      "fp": 2,
+      "fn": 2,
+      "tn": 10,
+      "recall": 0.956,
+      "precision": 0.956,
+      "accuracy": 0.93,
+      "brier": 0.07,
+      "base_rate": 0.789,
+      "mean_p": 0.789
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -516,6 +640,47 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -1463,6 +1628,7 @@
    },
    "labels": {
     "answers": 176,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 149,
     "short": 0,
@@ -1571,6 +1737,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -1670,6 +1877,47 @@
      "brier": 0.316,
      "base_rate": 0.368,
      "mean_p": 0.368
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 19,
+      "tp": 4,
+      "fp": 2,
+      "fn": 3,
+      "tn": 10,
+      "recall": 0.571,
+      "precision": 0.667,
+      "accuracy": 0.737,
+      "brier": 0.263,
+      "base_rate": 0.368,
+      "mean_p": 0.316
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -2061,6 +2309,7 @@
    },
    "labels": {
     "answers": 189,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 48,
     "short": 0,
@@ -2172,6 +2421,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -2271,6 +2561,47 @@
      "brier": 0.157,
      "base_rate": 0.121,
      "mean_p": 0.203
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 141,
+      "tp": 12,
+      "fp": 14,
+      "fn": 5,
+      "tn": 110,
+      "recall": 0.706,
+      "precision": 0.462,
+      "accuracy": 0.865,
+      "brier": 0.135,
+      "base_rate": 0.121,
+      "mean_p": 0.182
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -4492,6 +4823,7 @@
    },
    "labels": {
     "answers": 178,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 8,
     "short": 0,
@@ -4603,6 +4935,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -4702,6 +5075,47 @@
      "brier": 0.324,
      "base_rate": 0.388,
      "mean_p": 0.382
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 170,
+      "tp": 35,
+      "fp": 24,
+      "fn": 31,
+      "tn": 80,
+      "recall": 0.53,
+      "precision": 0.593,
+      "accuracy": 0.676,
+      "brier": 0.324,
+      "base_rate": 0.388,
+      "mean_p": 0.347
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -7358,6 +7772,7 @@
    },
    "labels": {
     "answers": 0,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
     "short": 0,
@@ -7460,6 +7875,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -7559,6 +8015,47 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -7650,6 +8147,7 @@
    },
    "labels": {
     "answers": 0,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
     "short": 0,
@@ -7752,6 +8250,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -7851,6 +8390,47 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -7942,6 +8522,7 @@
    },
    "labels": {
     "answers": 0,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
     "short": 0,
@@ -8044,6 +8625,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -8143,6 +8765,47 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -8223,7 +8886,7 @@
  },
  "other_truth": {
   "truth": "s1",
-  "truth_note": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升",
+  "truth_note": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升（by_note で手動の升と分けて出す）",
   "total": {
    "in_sample": {
     "min50": {
@@ -8251,6 +8914,47 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -8351,6 +9055,47 @@
      "brier": null,
      "base_rate": null,
      "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
     },
     "near": {
      "far_h": 48.0,

@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-07T13:36:44Z",
+ "generated_utc": "2026-11-07T17:34:47Z",
  "version": "eval-presence-2",
  "files": {
   "presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）",
@@ -11,7 +11,7 @@
   "other": "s1",
   "note": "本体（total・sites・table）は truth_source.body の正解、other_truth は他方の正解で同じ指標。s2＝S2 の日の答えを直近の S1 に対応、s1＝S1 の撮影そのものの答え（確認ページ ?s1=1）。python -m sat.eval_presence --truth s1 で入れ替わる",
   "s2": "所有者の S2 の日の答え（labels/<地点>-s2-answers.csv ほか）を、その日に最も近い S1 撮影（前後 4 日）に対応させたもの。dt_h＝S1−S2",
-  "s1": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升"
+  "s1": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升（by_note で手動の升と分けて出す）"
  },
  "unit": "撮影×岸壁区間。区間は sat/s2_labels.sections() の約 150 m の岸壁線の片（確認ページの区間、湛江は labels/ZJG-s2-sections.geojson）",
  "sections": "naval-1（sat/berth_class/<地点>.json）で区間の中点の線の区分が naval（海軍の桟橋・岸壁。設定が足す区間を含む）で、区間の長さ（length_m）が 50 m 以上のもの。civil・unknown の線の区間と 50 m 未満の区間は数えない（labels.not_naval・labels.short）",
@@ -34,7 +34,8 @@
   "pairing": "scenes＝判定に使った S1 撮影の数、far_share＝|dt_h| > 48 時間の升の割合。1 つの S1 撮影には最も近いラベル日だけを使う（他の日の升は labels.other_day_of_scene）",
   "near": "in_sample・out_of_sample の near＝|S1−S2| ≤ 48 時間の組だけの同じ指標（見出しの数字は全部の組。遠い組では船の入れ替わりが不一致に混じるので、近い組の数字を隣に置く）",
   "by_blind": "升の blind_share（区間の線の点のうち、その撮影の軌道の盲域の片（quay/<地点>/blind.geojson：基準の VV p10 が内側の帯で −8 dB 超）から 20 m 以内の割合）が 0.5 以上を盲域（blind）、未満を clear として分けた min50 の指標。clear_near＝clear のうち近い組",
-  "by_conf": "升の line_conf（naval-1 の線の区分の確信：確認寄り／推定／fixed／unknown）ごとの min50 の指標"
+  "by_conf": "升の line_conf（naval-1 の線の区分の確信：確認寄り／推定／fixed／unknown）ごとの min50 の指標",
+  "by_note": "s1 の正解だけ：升の verified_note 別の min50 の指標。prefill＝S2 の答えを初期値のまま確認した升（s2-prefill。所有者が押していない）、default＝要 S2 の区間の既定を上書きしなかった升（在/不在の答えにはならないので通常 0）、manual＝所有者が押した升。prefill の升は S2 の時刻の答えの流用なので、S1 の時刻の正解としては manual より弱い（labels.prefilled に件数）"
  },
  "table_columns": {
   "site_id": "地点",
@@ -57,6 +58,7 @@
   "far_share": "|S1−S2| > 48 時間の升の割合",
   "not_naval": "naval でない線の答え（除外）",
   "no_scene": "S1 の対応か保存が無い答え（除外）",
+  "prefilled（labels）": "s1 の正解のうち verified_note が s2-prefill（初期値のまま確認）の答えの数",
   "other_day_of_scene": "同じ S1 撮影に対応した別のラベル日の答え（最も近い日だけ使う。除外）"
  },
  "table": [

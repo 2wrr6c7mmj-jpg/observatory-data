@@ -393,7 +393,10 @@ def split_metrics(rows: list[dict]) -> dict:
     BLIND_SHARE) and by the line's confidence."""
     near = [r for r in rows if is_near(r)]
     confs = sorted({r.get("line_conf") or "unknown" for r in rows})
+    notes = {"prefill": lambda n: n.startswith("s2-prefill"), "default": lambda n: n.startswith("s1-unreadable-default"),
+             "manual": lambda n: not (n.startswith("s2-prefill") or n.startswith("s1-unreadable-default"))}
     return {"min50": metrics(rows), "any_length": metrics(rows, "p_any"),
+            "by_note": {k: metrics([r for r in rows if f(r.get("note") or "")]) for k, f in notes.items()},
             "near": {"far_h": FAR_H, "min50": metrics(near), "any_length": metrics(near, "p_any")},
             "by_blind": {"share": BLIND_SHARE, "blind": metrics([r for r in rows if is_blind(r)]),
                          "clear": metrics([r for r in rows if not is_blind(r)]),
@@ -420,8 +423,8 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     lat0 = float((site.get("quay") or {}).get("est2_lat0") or site.get("center_lat") or 21.2)
     blind = blind_stretches(out, sid, lat0)
     orbit_of = scene_orbits(out, sid, est)
-    cnt = {"answers": len(lab), "unknown_section": 0, "not_naval": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0,
-           "other_day_of_scene": 0, "used": 0}
+    cnt = {"answers": len(lab), "prefilled": sum(1 for a in lab if (a.get("note") or "").startswith("s2-prefill")),
+           "unknown_section": 0, "not_naval": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0, "other_day_of_scene": 0, "used": 0}
     rows = []
     for a in lab:
         s = secs.get(a["section_id"])
@@ -525,7 +528,7 @@ def _status(n_in: int, n_oos: int, own: bool = True) -> str:
 
 
 TRUTH_NOTE = {"s2": "所有者の S2 の日の答え（labels/<地点>-s2-answers.csv ほか）を、その日に最も近い S1 撮影（前後 4 日）に対応させたもの。dt_h＝S1−S2",
-              "s1": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升"}
+              "s1": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升（by_note で手動の升と分けて出す）"}
 
 
 def evaluate_one(out: Path, sites: list[dict], truth: str) -> dict:
@@ -645,6 +648,7 @@ def meta(res: dict) -> dict:
             "near": f"in_sample・out_of_sample の near＝|S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標（見出しの数字は全部の組。遠い組では船の入れ替わりが不一致に混じるので、近い組の数字を隣に置く）",
             "by_blind": f"升の blind_share（区間の線の点のうち、その撮影の軌道の盲域の片（quay/<地点>/blind.geojson：基準の VV p10 が内側の帯で −8 dB 超）から {BLIND_MATCH_M:g} m 以内の割合）が {BLIND_SHARE:g} 以上を盲域（blind）、未満を clear として分けた min50 の指標。clear_near＝clear のうち近い組",
             "by_conf": "升の line_conf（naval-1 の線の区分の確信：確認寄り／推定／fixed／unknown）ごとの min50 の指標",
+            "by_note": "s1 の正解だけ：升の verified_note 別の min50 の指標。prefill＝S2 の答えを初期値のまま確認した升（s2-prefill。所有者が押していない）、default＝要 S2 の区間の既定を上書きしなかった升（在/不在の答えにはならないので通常 0）、manual＝所有者が押した升。prefill の升は S2 の時刻の答えの流用なので、S1 の時刻の正解としては manual より弱い（labels.prefilled に件数）",
         },
         "table_columns": {"site_id": "地点", "name": "地名", "calibrated": "est-2 をその港の正解で較正したか（false＝湛江の流用、全部標本外）",
                           "sections_eligible": "対象の区間数（確認セットのうち naval・50 m 以上）", "answers": "所有者の答え（判断できないを除く）",
@@ -657,6 +661,7 @@ def meta(res: dict) -> dict:
                           "n_other・recall_other・precision_other・brier_other": "他方の正解（truth_source.other）での標本外の同じ指標（s1 の正解は S1 の撮影そのものの答え）",
                           "scenes": "判定に使った S1 撮影の数", "far_share": f"|S1−S2| > {FAR_H:g} 時間の升の割合",
                           "not_naval": "naval でない線の答え（除外）", "no_scene": "S1 の対応か保存が無い答え（除外）",
+                          "prefilled（labels）": "s1 の正解のうち verified_note が s2-prefill（初期値のまま確認）の答えの数",
                           "other_day_of_scene": "同じ S1 撮影に対応した別のラベル日の答え（最も近い日だけ使う。除外）"},
         "table": table(res),
         "limits": [
