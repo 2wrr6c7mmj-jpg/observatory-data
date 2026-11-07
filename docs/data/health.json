@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-07T13:30:31Z",
+ "generated_utc": "2026-11-07T20:10:29Z",
  "state": "warn",
  "summary": {
-  "ok": 10,
-  "warn": 2,
+  "ok": 9,
+  "warn": 3,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-07T11:56:03Z",
-   "heartbeat_age_h": 1.6,
+   "heartbeat_age_h": 8.2,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -106,12 +106,18 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-07T10:40:46Z",
-   "heartbeat_age_h": 2.8,
+   "heartbeat_age_h": 9.5,
    "data_date": "2026-11-05",
    "data_date_tz": "JST",
-   "data_age_days": 2,
-   "state": "ok",
-   "reasons": [],
+   "data_age_days": 3,
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "data_old",
+     "text": "最新の日 2026-11-05（JST 今日−3。週末・祝日の可能性）"
+    }
+   ],
    "values": {
     "last_ok_utc": "2026-11-07T10:40:46Z",
     "last_run_started_utc": "2026-11-07T10:40:33Z",
@@ -129,10 +135,10 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-07T13:30:05Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 6.7,
    "data_date": "2026-11-07",
    "data_date_tz": "TWT",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -152,7 +158,7 @@
    "heartbeat_age_h": null,
    "data_date": "2026-10-30",
    "data_date_tz": "TWT",
-   "data_age_days": 8,
+   "data_age_days": 9,
    "state": "halt",
    "reasons": [
     {
@@ -173,16 +179,16 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-07T07:25:40Z",
-   "heartbeat_age_h": 6.1,
+   "heartbeat_age_h": 12.7,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
-   "data_age_days": 11,
+   "data_age_days": 12,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "release_old",
-     "text": "最新の公表 2026-10-27 から 11 日（手動取り込み待ちの可能性）"
+     "text": "最新の公表 2026-10-27 から 12 日（手動取り込み待ちの可能性）"
     }
    ],
    "values": {
@@ -197,7 +203,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-07T07:25:36Z",
-   "heartbeat_age_h": 6.1,
+   "heartbeat_age_h": 12.7,
    "data_date": "2026-11-07",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -215,7 +221,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-07T10:41:02Z",
-   "heartbeat_age_h": 2.8,
+   "heartbeat_age_h": 9.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
