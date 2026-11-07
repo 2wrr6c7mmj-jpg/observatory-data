@@ -68,6 +68,94 @@ class MetricsTest(unittest.TestCase):
             self.assertEqual(doc["generated_utc"], "2026-10-30T05:17:00Z")
 
 
+class Occ2JudgeTest(unittest.TestCase):
+    """eval-presence-3: the occ-2 judge beside the current one (pure Python: the rows come from quay_occ2/<site>/*.csv)."""
+
+    def test_auc(self):
+        self.assertEqual(ep.auc(_rows([(1, 0.9), (1, 0.6), (0, 0.7), (0, 0.1)])), 0.75)
+        self.assertEqual(ep.auc(_rows([(1, 0.5), (0, 0.5)])), 0.5)              # a tie counts half
+        self.assertIsNone(ep.auc(_rows([(0, 0.5), (0, 0.2)])))                  # one class only
+        self.assertEqual(ep.metrics(_rows([(1, 1.0), (0, 0.0)]))["auc"], 1.0)
+        self.assertIsNone(ep.metrics([])["auc"])
+
+    def test_occ2_metrics_on_the_cells_with_a_row(self):
+        rows = _rows([(1, 1.0), (1, 0.0), (0, 1.0), (0, 0.0), (1, 0.0)])
+        occ = [(0.9, 0.001, 1, ""), (0.8, 0.02, 0, "A"), (0.2, 0.6, 0, ""), (0.6, 0.2, 1, "D"), (None, None, None, "")]
+        for r, (po, pt, bl, a1), dt in zip(rows, occ, [-16.6, 88.6, 7.4, -64.6, 1.0]):
+            r.update(p_occ2=po, p_test_occ2=pt, occ2_blind=bl, a1_target=a1, dt_h=dt)
+        m = ep.occ2_metrics(rows)
+        self.assertEqual(m["n"], 4)                                               # the fifth cell has no occ-2 row
+        self.assertEqual((m["p_occ"]["tp"], m["p_occ"]["fp"], m["p_occ"]["fn"], m["p_occ"]["tn"]), (2, 1, 0, 1))
+        self.assertEqual((m["test"]["tp"], m["test"]["fp"]), (2, 0))             # p_test < 0.05 on the two present cells only
+        self.assertEqual(m["test"]["auc"], 1.0)                                  # ranked by p_test: present cells first
+        self.assertIsNone(m["test"]["brier"])
+        self.assertEqual(m["current"]["n"], 4)
+        self.assertEqual(m["current"]["recall"], 0.5)
+        self.assertEqual(m["near"]["p_occ"]["n"], 2)
+        self.assertEqual(m["by_blind"]["blind"]["p_occ"]["n"], 2)
+        self.assertEqual(m["excl_a1"]["n"], 2)
+        self.assertNotIn("_t05", rows[0])
+        sm = ep.split_metrics(rows)
+        self.assertEqual(sm["occ2"]["n"], 4)
+        self.assertIn("auc", sm["min50"])
+        cols = ep.occ2_columns(rows)
+        self.assertEqual((cols["n_occ2"], cols["recall_occ2"], cols["recall_cur_occ2"], cols["n_occ2_blind"]), (4, 1.0, 0.5, 2))
+
+    def test_rows_joined_from_quay_occ2_files(self):
+        """A quay_occ2 month file in the out dir: the evaluation row of that scene and section carries the occ-2 columns; a
+        section without a row carries None; nothing else of the row changes."""
+        from sat import occ2_schema as o2s
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            import shutil
+            for rel in ("labels/QGZ", "labels/QGZ-s2-answers.csv", "labels/QGZ-s2-s1-match.csv", "quay/QGZ", "quay_est2/QGZ.json"):
+                src = OUT / rel
+                if src.is_dir():
+                    shutil.copytree(src, out / rel, ignore=shutil.ignore_patterns("img", "s1", "*.webp"))
+                elif src.exists():
+                    (out / rel).parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy(src, out / rel)
+            site = next(s for s in ep.load_sites() if s["id"] == "QGZ")
+            base = ep.evaluate_site(out, site)
+            self.assertTrue(base["rows"])
+            self.assertTrue(all(r["p_occ2"] is None for r in base["rows"]))
+            self.assertEqual(base["out_of_sample"]["occ2"]["n"], 0)
+            target = base["rows"][0]
+            row = {k: None for k in o2s.FIELDS}
+            row.update(site_id="QGZ", acquired_utc=target["s1"], relative_orbit=171, orbit_direction="ascending", section_id=target["section_id"],
+                       kind="pier", face="toward", occ_version="occ-2", p_test=0.004, p_occ=0.81, t_stat=20.0, z_seed_ok=1, stretch_len_m=120.0,
+                       blind=0, ref_kind="time", edge_offset_m=-15.0, edge_source="ridge", pool_n=112, calib_source="none", in_sample="baseline")
+            o2s.save_rows(out, "QGZ", [row])
+            res = ep.evaluate_site(out, site)
+            got = next(r for r in res["rows"] if r["s1"] == target["s1"] and r["section_id"] == target["section_id"])
+            self.assertEqual((got["p_occ2"], got["p_test_occ2"], got["occ2_blind"], got["edge_offset_m"], got["edge_source"]), (0.81, 0.004, 0, -15.0, "ridge"))
+            self.assertEqual(got["p"], target["p"])
+            self.assertEqual(got["a1_target"], o2s.a1_target("QGZ", target["section_id"]))
+            self.assertEqual(sum(1 for r in res["rows"] if r["p_occ2"] is not None), 1)
+            self.assertEqual(res["in_sample"]["occ2"]["n"] + res["out_of_sample"]["occ2"]["n"], 1)
+            t = ep.table({"sites": {"QGZ": res}, "total": {"in_sample": res["in_sample"], "out_of_sample": res["out_of_sample"],
+                                                           "by_source": {s: {"n": 0} for s in ep.SOURCES}}})
+            self.assertEqual(t[0]["n_occ2"], 1)
+            self.assertEqual(t[-1]["n_occ2"], 1)
+
+    def test_repository_has_occ2_rows_for_the_recount_scenes(self):
+        """sat/eval_occ2 wrote the rows of the 19 re-count scenes (3 ports): the published evaluation carries them."""
+        res = ep.evaluate(OUT)
+        for sid, n_scenes in (("QGZ", 8), ("SLP", 7), ("SYL", 4)):
+            rows = [r for r in res["sites"][sid]["rows"] if r["p_occ2"] is not None]
+            self.assertTrue(rows, sid)
+            self.assertEqual(len({r["s1"] for r in rows}), n_scenes, sid)
+            m = ep.occ2_metrics(res["sites"][sid]["rows"])
+            self.assertEqual(m["n"], len(rows))
+            self.assertIsNotNone(m["test"]["auc"])
+        qgz = [r for r in res["sites"]["QGZ"]["rows"] if r["section_id"] == "1564921421:R:00"]
+        self.assertTrue(qgz and all(r["a1_target"] == "A" for r in qgz))
+        self.assertTrue(all(r["p_occ2"] is None for r in res["sites"]["ZJG"]["rows"]))    # Zhanjiang: no occ-2
+        occ = json.loads((EVAL / "occ2.json").read_text(encoding="utf-8"))
+        self.assertEqual(set(occ["sites"]), {"QGZ", "SLP", "SYL"})
+        self.assertIn("min2_noprior", occ["total"]["s2"]["variants"])
+
+
 class JudgeTest(unittest.TestCase):
     def test_est2_length_rule(self):
         st = {"p_real": 0.7, "ship_length_m": 42}

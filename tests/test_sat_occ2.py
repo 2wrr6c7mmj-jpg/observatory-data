@@ -263,6 +263,18 @@ class Occ2Test(unittest.TestCase):
         self.assertEqual(rec["status"], "no_pool")
         self.assertTrue(all(r["p_test"] is None and r["p_occ"] is None for r in rows))
 
+    def test_eval_occ2_helpers(self):
+        from sat import eval_occ2 as e2, occ2_schema as sch2
+        self.assertAlmostEqual(sch2.p_occ_from_test(0.05, 0.0, e2.NO_LABEL_CALIB), 0.5, places=9)   # anchored at the test's alpha
+        self.assertGreater(sch2.p_occ_from_test(0.001, 0.0, e2.NO_LABEL_CALIB), 0.8)   # sigmoid(3 - 1.3)
+        rows = [{"s1": "2026-02-16T09:56:08Z", "section_id": "a", "y": 1, "p": 0.0}, {"s1": "2026-02-16T09:56:08Z", "section_id": "b", "y": 0, "p": 0.0}]
+        var = [{"acquired_utc": "2026-02-16T09:56:08Z", "section_id": "a", "p_occ": 0.7, "p_test": 0.01, "blind": 0}]
+        j = e2.with_variant(rows, var)
+        self.assertEqual(len(j), 1)
+        self.assertEqual((j[0]["p_occ2"], j[0]["p_test_occ2"], j[0]["occ2_blind"]), (0.7, 0.01, 0))
+        self.assertEqual(set(e2.VARIANTS), {"min2", "w15", "min2_noprior", "min2_noridge"})
+        self.assertEqual(e2.DEFAULT, "min2")
+
     def test_helpers(self):
         self.assertAlmostEqual(occ2.norm_sf(0.0), 0.5, places=9)
         self.assertAlmostEqual(occ2.norm_isf(0.001), 3.0902, places=3)
