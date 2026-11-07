@@ -1,9 +1,11 @@
 {
- "version": "eval-presence-1",
- "generated_utc": "2026-11-07T17:33:45Z",
+ "version": "eval-presence-2",
+ "generated_utc": "2026-11-07T17:41:30Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
+ "truth": "s2",
+ "truth_note": "所有者の S2 の日の答え（labels/<地点>-s2-answers.csv ほか）を、その日に最も近い S1 撮影（前後 4 日）に対応させたもの。dt_h＝S1−S2",
  "total": {
   "in_sample": {
    "min50": {
@@ -31,6 +33,47 @@
     "brier": 0.053,
     "base_rate": 0.789,
     "mean_p": 0.842
+   },
+   "by_note": {
+    "prefill": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "default": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "manual": {
+     "n": 57,
+     "tp": 43,
+     "fp": 2,
+     "fn": 2,
+     "tn": 10,
+     "recall": 0.956,
+     "precision": 0.956,
+     "accuracy": 0.93,
+     "brier": 0.07,
+     "base_rate": 0.789,
+     "mean_p": 0.789
+    }
    },
    "near": {
     "far_h": 48.0,
@@ -60,62 +103,217 @@
      "base_rate": 0.784,
      "mean_p": 0.843
     }
+   },
+   "by_blind": {
+    "share": 0.5,
+    "blind": {
+     "n": 3,
+     "tp": 1,
+     "fp": 1,
+     "fn": 0,
+     "tn": 1,
+     "recall": 1.0,
+     "precision": 0.5,
+     "accuracy": 0.667,
+     "brier": 0.333,
+     "base_rate": 0.333,
+     "mean_p": 0.667
+    },
+    "clear": {
+     "n": 54,
+     "tp": 42,
+     "fp": 1,
+     "fn": 2,
+     "tn": 9,
+     "recall": 0.955,
+     "precision": 0.977,
+     "accuracy": 0.944,
+     "brier": 0.056,
+     "base_rate": 0.815,
+     "mean_p": 0.796
+    },
+    "clear_near": {
+     "n": 48,
+     "tp": 38,
+     "fp": 1,
+     "fn": 1,
+     "tn": 8,
+     "recall": 0.974,
+     "precision": 0.974,
+     "accuracy": 0.958,
+     "brier": 0.042,
+     "base_rate": 0.812,
+     "mean_p": 0.812
+    }
+   },
+   "by_conf": {
+    "確認寄り": {
+     "n": 57,
+     "tp": 43,
+     "fp": 2,
+     "fn": 2,
+     "tn": 10,
+     "recall": 0.956,
+     "precision": 0.956,
+     "accuracy": 0.93,
+     "brier": 0.07,
+     "base_rate": 0.789,
+     "mean_p": 0.789
+    }
    }
   },
   "out_of_sample": {
    "min50": {
     "n": 308,
-    "tp": 48,
-    "fp": 23,
-    "fn": 39,
-    "tn": 198,
-    "recall": 0.552,
-    "precision": 0.676,
-    "accuracy": 0.799,
-    "brier": 0.202,
+    "tp": 51,
+    "fp": 32,
+    "fn": 36,
+    "tn": 189,
+    "recall": 0.586,
+    "precision": 0.614,
+    "accuracy": 0.779,
+    "brier": 0.221,
     "base_rate": 0.282,
-    "mean_p": 0.229
+    "mean_p": 0.268
    },
    "any_length": {
     "n": 308,
-    "tp": 52,
-    "fp": 34,
-    "fn": 35,
-    "tn": 187,
-    "recall": 0.598,
-    "precision": 0.605,
-    "accuracy": 0.776,
-    "brier": 0.224,
+    "tp": 54,
+    "fp": 39,
+    "fn": 33,
+    "tn": 182,
+    "recall": 0.621,
+    "precision": 0.581,
+    "accuracy": 0.766,
+    "brier": 0.234,
     "base_rate": 0.282,
-    "mean_p": 0.278
+    "mean_p": 0.301
+   },
+   "by_note": {
+    "prefill": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "default": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "manual": {
+     "n": 308,
+     "tp": 51,
+     "fp": 32,
+     "fn": 36,
+     "tn": 189,
+     "recall": 0.586,
+     "precision": 0.614,
+     "accuracy": 0.779,
+     "brier": 0.221,
+     "base_rate": 0.282,
+     "mean_p": 0.268
+    }
    },
    "near": {
     "far_h": 48.0,
     "min50": {
      "n": 192,
-     "tp": 34,
-     "fp": 13,
-     "fn": 26,
-     "tn": 119,
-     "recall": 0.567,
-     "precision": 0.723,
-     "accuracy": 0.797,
-     "brier": 0.203,
-     "base_rate": 0.312,
-     "mean_p": 0.245
-    },
-    "any_length": {
-     "n": 192,
-     "tp": 37,
-     "fp": 20,
-     "fn": 23,
-     "tn": 112,
-     "recall": 0.617,
-     "precision": 0.649,
+     "tp": 35,
+     "fp": 18,
+     "fn": 25,
+     "tn": 114,
+     "recall": 0.583,
+     "precision": 0.66,
      "accuracy": 0.776,
      "brier": 0.224,
      "base_rate": 0.312,
-     "mean_p": 0.297
+     "mean_p": 0.276
+    },
+    "any_length": {
+     "n": 192,
+     "tp": 38,
+     "fp": 23,
+     "fn": 22,
+     "tn": 109,
+     "recall": 0.633,
+     "precision": 0.623,
+     "accuracy": 0.766,
+     "brier": 0.234,
+     "base_rate": 0.312,
+     "mean_p": 0.318
+    }
+   },
+   "by_blind": {
+    "share": 0.5,
+    "blind": {
+     "n": 45,
+     "tp": 7,
+     "fp": 2,
+     "fn": 18,
+     "tn": 18,
+     "recall": 0.28,
+     "precision": 0.778,
+     "accuracy": 0.556,
+     "brier": 0.444,
+     "base_rate": 0.556,
+     "mean_p": 0.2
+    },
+    "clear": {
+     "n": 263,
+     "tp": 44,
+     "fp": 30,
+     "fn": 18,
+     "tn": 171,
+     "recall": 0.71,
+     "precision": 0.595,
+     "accuracy": 0.817,
+     "brier": 0.183,
+     "base_rate": 0.236,
+     "mean_p": 0.28
+    },
+    "clear_near": {
+     "n": 160,
+     "tp": 30,
+     "fp": 17,
+     "fn": 11,
+     "tn": 102,
+     "recall": 0.732,
+     "precision": 0.638,
+     "accuracy": 0.825,
+     "brier": 0.175,
+     "base_rate": 0.256,
+     "mean_p": 0.294
+    }
+   },
+   "by_conf": {
+    "確認寄り": {
+     "n": 308,
+     "tp": 51,
+     "fp": 32,
+     "fn": 36,
+     "tn": 189,
+     "recall": 0.586,
+     "precision": 0.614,
+     "accuracy": 0.779,
+     "brier": 0.221,
+     "base_rate": 0.282,
+     "mean_p": 0.268
     }
    }
   },
@@ -140,16 +338,16 @@
     "n": 339,
     "min50": {
      "n": 339,
-     "tp": 85,
-     "fp": 25,
-     "fn": 39,
-     "tn": 190,
-     "recall": 0.685,
-     "precision": 0.773,
-     "accuracy": 0.811,
-     "brier": 0.189,
+     "tp": 88,
+     "fp": 34,
+     "fn": 36,
+     "tn": 181,
+     "recall": 0.71,
+     "precision": 0.721,
+     "accuracy": 0.794,
+     "brier": 0.206,
      "base_rate": 0.366,
-     "mean_p": 0.324
+     "mean_p": 0.36
     }
    }
   }
@@ -160,6 +358,7 @@
    "name": "湛江",
    "freeze_utc": "2026-10-27",
    "calibrated": true,
+   "truth": "s2",
    "sample_note": "標本内＝ラベルの日が凍結より前（est-2 の較正に使った期間）、標本外＝凍結以後",
    "sections": {
     "labelled": 182,
@@ -169,6 +368,7 @@
    },
    "labels": {
     "answers": 81,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 20,
     "no_berth": 0,
@@ -288,6 +488,47 @@
      "base_rate": 0.789,
      "mean_p": 0.842
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 57,
+      "tp": 43,
+      "fp": 2,
+      "fn": 2,
+      "tn": 10,
+      "recall": 0.956,
+      "precision": 0.956,
+      "accuracy": 0.93,
+      "brier": 0.07,
+      "base_rate": 0.789,
+      "mean_p": 0.789
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -315,6 +556,63 @@
       "brier": 0.059,
       "base_rate": 0.784,
       "mean_p": 0.843
+     }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 3,
+      "tp": 1,
+      "fp": 1,
+      "fn": 0,
+      "tn": 1,
+      "recall": 1.0,
+      "precision": 0.5,
+      "accuracy": 0.667,
+      "brier": 0.333,
+      "base_rate": 0.333,
+      "mean_p": 0.667
+     },
+     "clear": {
+      "n": 54,
+      "tp": 42,
+      "fp": 1,
+      "fn": 2,
+      "tn": 9,
+      "recall": 0.955,
+      "precision": 0.977,
+      "accuracy": 0.944,
+      "brier": 0.056,
+      "base_rate": 0.815,
+      "mean_p": 0.796
+     },
+     "clear_near": {
+      "n": 48,
+      "tp": 38,
+      "fp": 1,
+      "fn": 1,
+      "tn": 8,
+      "recall": 0.974,
+      "precision": 0.974,
+      "accuracy": 0.958,
+      "brier": 0.042,
+      "base_rate": 0.812,
+      "mean_p": 0.812
+     }
+    },
+    "by_conf": {
+     "確認寄り": {
+      "n": 57,
+      "tp": 43,
+      "fp": 2,
+      "fn": 2,
+      "tn": 10,
+      "recall": 0.956,
+      "precision": 0.956,
+      "accuracy": 0.93,
+      "brier": 0.07,
+      "base_rate": 0.789,
+      "mean_p": 0.789
      }
     }
    },
@@ -345,6 +643,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -373,7 +712,50 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "status": "標本 57 撮影×区間（標本外 0）",
    "rows": [
@@ -388,6 +770,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -401,6 +785,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -414,6 +800,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "110",
+     "blind_share": 0.25,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -427,6 +815,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "80",
+     "blind_share": 0.12,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -440,6 +830,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -453,6 +845,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -466,6 +860,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "130",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -479,6 +875,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "50",
+     "blind_share": 0.12,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -492,6 +890,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -505,6 +905,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -518,6 +920,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "120",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -531,6 +935,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": "40",
+     "blind_share": 0.67,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -544,6 +950,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -557,6 +965,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -570,6 +980,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "170",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -583,6 +995,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "60",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -596,6 +1010,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "80",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -609,6 +1025,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -622,6 +1040,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -635,6 +1055,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -648,6 +1070,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -661,6 +1085,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "90",
+     "blind_share": 0.36,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -674,6 +1100,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "80",
+     "blind_share": 0.12,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -687,6 +1115,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": "30",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -700,6 +1130,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -713,6 +1145,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "60",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -726,6 +1160,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -739,6 +1175,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -752,6 +1190,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -765,6 +1205,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -778,6 +1220,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -791,6 +1235,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -804,6 +1250,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -817,6 +1265,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -830,6 +1280,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "50",
+     "blind_share": 0.67,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -843,6 +1295,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -856,6 +1310,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -869,6 +1325,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -882,6 +1340,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.19,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -895,6 +1355,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "100",
+     "blind_share": 0.56,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -908,6 +1370,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -921,6 +1385,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -934,6 +1400,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -947,6 +1415,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -960,6 +1430,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -973,6 +1445,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -986,6 +1460,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -999,6 +1475,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1012,6 +1490,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1025,6 +1505,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1038,6 +1520,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1051,6 +1535,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1064,6 +1550,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 30,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1077,6 +1565,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1090,6 +1580,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 142,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1103,6 +1595,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 162,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     },
     {
@@ -1116,6 +1610,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 101,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": false
     }
    ]
@@ -1125,6 +1621,7 @@
    "name": "三亜・楡林",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
+   "truth": "s2",
    "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 27,
@@ -1134,6 +1631,7 @@
    },
    "labels": {
     "answers": 176,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 149,
     "no_berth": 0,
@@ -1190,16 +1688,16 @@
      "n": 15,
      "min50": {
       "n": 15,
-      "tp": 1,
-      "fp": 1,
-      "fn": 4,
-      "tn": 9,
-      "recall": 0.2,
+      "tp": 2,
+      "fp": 2,
+      "fn": 3,
+      "tn": 8,
+      "recall": 0.4,
       "precision": 0.5,
       "accuracy": 0.667,
       "brier": 0.333,
       "base_rate": 0.333,
-      "mean_p": 0.133
+      "mean_p": 0.267
      },
      "any_length": {
       "n": 15,
@@ -1243,6 +1741,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -1271,21 +1810,64 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "out_of_sample": {
     "min50": {
      "n": 19,
-     "tp": 3,
-     "fp": 1,
-     "fn": 4,
-     "tn": 11,
-     "recall": 0.429,
-     "precision": 0.75,
+     "tp": 4,
+     "fp": 2,
+     "fn": 3,
+     "tn": 10,
+     "recall": 0.571,
+     "precision": 0.667,
      "accuracy": 0.737,
      "brier": 0.263,
      "base_rate": 0.368,
-     "mean_p": 0.211
+     "mean_p": 0.316
     },
     "any_length": {
      "n": 19,
@@ -1299,6 +1881,47 @@
      "brier": 0.316,
      "base_rate": 0.368,
      "mean_p": 0.368
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 19,
+      "tp": 4,
+      "fp": 2,
+      "fn": 3,
+      "tn": 10,
+      "recall": 0.571,
+      "precision": 0.667,
+      "accuracy": 0.737,
+      "brier": 0.263,
+      "base_rate": 0.368,
+      "mean_p": 0.316
+     }
     },
     "near": {
      "far_h": 48.0,
@@ -1328,6 +1951,63 @@
       "base_rate": 0.417,
       "mean_p": 0.417
      }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 14,
+      "tp": 2,
+      "fp": 1,
+      "fn": 1,
+      "tn": 10,
+      "recall": 0.667,
+      "precision": 0.667,
+      "accuracy": 0.857,
+      "brier": 0.143,
+      "base_rate": 0.214,
+      "mean_p": 0.214
+     },
+     "clear": {
+      "n": 5,
+      "tp": 2,
+      "fp": 1,
+      "fn": 2,
+      "tn": 0,
+      "recall": 0.5,
+      "precision": 0.667,
+      "accuracy": 0.4,
+      "brier": 0.6,
+      "base_rate": 0.8,
+      "mean_p": 0.6
+     },
+     "clear_near": {
+      "n": 3,
+      "tp": 1,
+      "fp": 1,
+      "fn": 1,
+      "tn": 0,
+      "recall": 0.5,
+      "precision": 0.5,
+      "accuracy": 0.333,
+      "brier": 0.667,
+      "base_rate": 0.667,
+      "mean_p": 0.667
+     }
+    },
+    "by_conf": {
+     "確認寄り": {
+      "n": 19,
+      "tp": 4,
+      "fp": 2,
+      "fn": 3,
+      "tn": 10,
+      "recall": 0.571,
+      "precision": 0.667,
+      "accuracy": 0.737,
+      "brier": 0.263,
+      "base_rate": 0.368,
+      "mean_p": 0.316
+     }
     }
    },
    "status": "標本外 19 撮影×区間（較正の流用）",
@@ -1342,7 +2022,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "170",
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1356,6 +2038,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.83,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1369,6 +2053,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1382,6 +2068,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.93,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1392,9 +2080,11 @@
      "source": "s1-recount",
      "y": 1,
      "owner_c": "1",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "40",
+     "length_m": "50",
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1408,6 +2098,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.83,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1421,6 +2113,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1431,9 +2125,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "30",
+     "length_m": "50",
+     "blind_share": 0.93,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1447,6 +2143,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1460,6 +2158,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.83,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1473,6 +2173,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1485,7 +2187,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "60",
+     "length_m": "160",
+     "blind_share": 0.93,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1499,6 +2203,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1512,6 +2218,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.83,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1525,6 +2233,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1538,6 +2248,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 52,
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1551,6 +2263,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 20,
+     "blind_share": 0.83,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1564,6 +2278,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 57,
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1577,6 +2293,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.93,
+     "line_conf": "確認寄り",
      "oos": true
     }
    ]
@@ -1586,6 +2304,7 @@
    "name": "三亜・亜龍湾",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
+   "truth": "s2",
    "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
@@ -1595,6 +2314,7 @@
    },
    "labels": {
     "answers": 189,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 48,
     "no_berth": 0,
@@ -1654,29 +2374,29 @@
      "n": 124,
      "min50": {
       "n": 124,
-      "tp": 10,
-      "fp": 9,
-      "fn": 5,
-      "tn": 100,
-      "recall": 0.667,
-      "precision": 0.526,
-      "accuracy": 0.887,
-      "brier": 0.113,
+      "tp": 11,
+      "fp": 14,
+      "fn": 4,
+      "tn": 95,
+      "recall": 0.733,
+      "precision": 0.44,
+      "accuracy": 0.855,
+      "brier": 0.145,
       "base_rate": 0.121,
-      "mean_p": 0.153
+      "mean_p": 0.202
      },
      "any_length": {
       "n": 124,
-      "tp": 10,
-      "fp": 12,
-      "fn": 5,
-      "tn": 97,
-      "recall": 0.667,
-      "precision": 0.455,
-      "accuracy": 0.863,
-      "brier": 0.137,
+      "tp": 11,
+      "fp": 15,
+      "fn": 4,
+      "tn": 94,
+      "recall": 0.733,
+      "precision": 0.423,
+      "accuracy": 0.847,
+      "brier": 0.153,
       "base_rate": 0.121,
-      "mean_p": 0.177
+      "mean_p": 0.21
      }
     }
    },
@@ -1707,6 +2427,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -1735,51 +2496,122 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "out_of_sample": {
     "min50": {
      "n": 141,
-     "tp": 11,
-     "fp": 9,
-     "fn": 6,
-     "tn": 115,
-     "recall": 0.647,
-     "precision": 0.55,
-     "accuracy": 0.894,
-     "brier": 0.107,
+     "tp": 12,
+     "fp": 14,
+     "fn": 5,
+     "tn": 110,
+     "recall": 0.706,
+     "precision": 0.462,
+     "accuracy": 0.865,
+     "brier": 0.135,
      "base_rate": 0.121,
-     "mean_p": 0.14
+     "mean_p": 0.182
     },
     "any_length": {
      "n": 141,
-     "tp": 11,
-     "fp": 14,
-     "fn": 6,
-     "tn": 110,
-     "recall": 0.647,
-     "precision": 0.44,
-     "accuracy": 0.858,
-     "brier": 0.143,
+     "tp": 12,
+     "fp": 17,
+     "fn": 5,
+     "tn": 107,
+     "recall": 0.706,
+     "precision": 0.414,
+     "accuracy": 0.844,
+     "brier": 0.157,
      "base_rate": 0.121,
-     "mean_p": 0.175
+     "mean_p": 0.203
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 141,
+      "tp": 12,
+      "fp": 14,
+      "fn": 5,
+      "tn": 110,
+      "recall": 0.706,
+      "precision": 0.462,
+      "accuracy": 0.865,
+      "brier": 0.135,
+      "base_rate": 0.121,
+      "mean_p": 0.182
+     }
     },
     "near": {
      "far_h": 48.0,
      "min50": {
-      "n": 70,
-      "tp": 9,
-      "fp": 2,
-      "fn": 1,
-      "tn": 58,
-      "recall": 0.9,
-      "precision": 0.818,
-      "accuracy": 0.957,
-      "brier": 0.043,
-      "base_rate": 0.143,
-      "mean_p": 0.157
-     },
-     "any_length": {
       "n": 70,
       "tp": 9,
       "fp": 4,
@@ -1791,6 +2623,76 @@
       "brier": 0.071,
       "base_rate": 0.143,
       "mean_p": 0.186
+     },
+     "any_length": {
+      "n": 70,
+      "tp": 9,
+      "fp": 5,
+      "fn": 1,
+      "tn": 55,
+      "recall": 0.9,
+      "precision": 0.643,
+      "accuracy": 0.914,
+      "brier": 0.086,
+      "base_rate": 0.143,
+      "mean_p": 0.2
+     }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 141,
+      "tp": 12,
+      "fp": 14,
+      "fn": 5,
+      "tn": 110,
+      "recall": 0.706,
+      "precision": 0.462,
+      "accuracy": 0.865,
+      "brier": 0.135,
+      "base_rate": 0.121,
+      "mean_p": 0.182
+     },
+     "clear_near": {
+      "n": 70,
+      "tp": 9,
+      "fp": 4,
+      "fn": 1,
+      "tn": 56,
+      "recall": 0.9,
+      "precision": 0.692,
+      "accuracy": 0.929,
+      "brier": 0.071,
+      "base_rate": 0.143,
+      "mean_p": 0.186
+     }
+    },
+    "by_conf": {
+     "確認寄り": {
+      "n": 141,
+      "tp": 12,
+      "fp": 14,
+      "fn": 5,
+      "tn": 110,
+      "recall": 0.706,
+      "precision": 0.462,
+      "accuracy": 0.865,
+      "brier": 0.135,
+      "base_rate": 0.121,
+      "mean_p": 0.182
      }
     }
    },
@@ -1807,6 +2709,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1820,6 +2724,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1833,6 +2739,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1846,6 +2754,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1859,6 +2769,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1871,7 +2783,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "130",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1885,6 +2799,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1897,7 +2813,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "90",
+     "length_m": "270",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1908,9 +2826,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "40",
+     "length_m": "80",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1921,9 +2841,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1937,6 +2859,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1950,6 +2874,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1963,6 +2889,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1976,6 +2904,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -1989,6 +2919,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2002,6 +2934,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2015,6 +2949,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2028,6 +2964,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2041,6 +2979,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2054,6 +2994,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2067,6 +3009,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2080,6 +3024,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2092,7 +3038,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "350",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2106,6 +3054,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2118,7 +3068,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2132,6 +3084,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2145,6 +3099,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2158,6 +3114,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": "30",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2171,6 +3129,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2184,6 +3144,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2197,6 +3159,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2210,6 +3174,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2223,6 +3189,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2236,6 +3204,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2249,6 +3219,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2262,6 +3234,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2275,6 +3249,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2288,6 +3264,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2301,6 +3279,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2314,6 +3294,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2326,7 +3308,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "90",
+     "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2340,6 +3324,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2352,7 +3338,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "90",
+     "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2363,9 +3351,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "30",
+     "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2376,9 +3366,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2392,6 +3384,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2405,6 +3399,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2418,6 +3414,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2431,6 +3429,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2444,6 +3444,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2457,6 +3459,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2470,6 +3474,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2483,6 +3489,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2496,6 +3504,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2509,6 +3519,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2522,6 +3534,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2535,6 +3549,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2548,6 +3564,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2560,7 +3578,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "150",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2574,6 +3594,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2586,7 +3608,9 @@
      "owner_c": "2",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "110",
+     "length_m": "160",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2600,6 +3624,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2613,6 +3639,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2626,6 +3654,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2639,6 +3669,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2652,6 +3684,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2665,6 +3699,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2678,6 +3714,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2691,6 +3729,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2704,6 +3744,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2717,6 +3759,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2730,6 +3774,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2743,6 +3789,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2756,6 +3804,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2769,6 +3819,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2782,6 +3834,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2794,7 +3848,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "90",
+     "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2807,7 +3863,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "170",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2820,7 +3878,9 @@
      "owner_c": "2",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "110",
+     "length_m": "680",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2834,6 +3894,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2847,6 +3909,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2860,6 +3924,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2873,6 +3939,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2886,6 +3954,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2899,6 +3969,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2912,6 +3984,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2925,6 +3999,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2938,6 +4014,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2951,6 +4029,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2964,6 +4044,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2977,6 +4059,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -2990,6 +4074,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3003,6 +4089,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3016,23 +4104,12 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
      "section_id": "158981836:R:00",
-     "date": "2026-04-01",
-     "s1": "2026-03-29T10:48:10Z",
-     "dt_h": -64.6,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "90",
-     "oos": true
-    },
-    {
-     "section_id": "158981836:R:12",
      "date": "2026-04-01",
      "s1": "2026-03-29T10:48:10Z",
      "dt_h": -64.6,
@@ -3042,6 +4119,23 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "120",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "158981836:R:12",
+     "date": "2026-04-01",
+     "s1": "2026-03-29T10:48:10Z",
+     "dt_h": -64.6,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "130",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3055,6 +4149,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3068,6 +4164,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3081,6 +4179,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3094,6 +4194,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3107,6 +4209,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3120,6 +4224,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3133,6 +4239,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3146,6 +4254,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3159,6 +4269,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3172,6 +4284,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3185,6 +4299,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3198,6 +4314,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3211,6 +4329,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3224,6 +4344,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3237,6 +4359,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3250,6 +4374,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3262,7 +4388,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "130",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3276,6 +4404,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3286,9 +4416,11 @@
      "source": "s1-recount",
      "y": 1,
      "owner_c": "2",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "120",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3301,7 +4433,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "60",
+     "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3312,9 +4446,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3328,6 +4464,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3341,6 +4479,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3354,6 +4494,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3367,6 +4509,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3380,6 +4524,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3393,6 +4539,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3406,6 +4554,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3419,6 +4569,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3432,6 +4584,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3445,6 +4599,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 20,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3458,6 +4614,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3471,6 +4629,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 20,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3484,6 +4644,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3497,6 +4659,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3510,6 +4674,8 @@
      "p": 0.68,
      "p_any": 0.68,
      "length_m": 162,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3523,6 +4689,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3536,6 +4704,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3549,6 +4719,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3562,6 +4734,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3575,6 +4749,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3588,6 +4764,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3601,6 +4779,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3614,6 +4794,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3627,6 +4809,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     }
    ]
@@ -3636,6 +4820,7 @@
    "name": "青島・古鎮口",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
+   "truth": "s2",
    "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
@@ -3645,6 +4830,7 @@
    },
    "labels": {
     "answers": 178,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 8,
     "no_berth": 22,
@@ -3704,29 +4890,29 @@
      "n": 148,
      "min50": {
       "n": 148,
-      "tp": 34,
-      "fp": 13,
-      "fn": 29,
-      "tn": 72,
-      "recall": 0.54,
-      "precision": 0.723,
-      "accuracy": 0.716,
-      "brier": 0.284,
+      "tp": 35,
+      "fp": 16,
+      "fn": 28,
+      "tn": 69,
+      "recall": 0.556,
+      "precision": 0.686,
+      "accuracy": 0.703,
+      "brier": 0.297,
       "base_rate": 0.426,
-      "mean_p": 0.318
+      "mean_p": 0.345
      },
      "any_length": {
       "n": 148,
-      "tp": 37,
-      "fp": 17,
-      "fn": 26,
-      "tn": 68,
-      "recall": 0.587,
-      "precision": 0.685,
-      "accuracy": 0.709,
-      "brier": 0.291,
+      "tp": 38,
+      "fp": 19,
+      "fn": 25,
+      "tn": 66,
+      "recall": 0.603,
+      "precision": 0.667,
+      "accuracy": 0.703,
+      "brier": 0.297,
       "base_rate": 0.426,
-      "mean_p": 0.365
+      "mean_p": 0.385
      }
     }
    },
@@ -3757,6 +4943,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -3785,62 +5012,203 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "out_of_sample": {
     "min50": {
      "n": 148,
-     "tp": 34,
-     "fp": 13,
-     "fn": 29,
-     "tn": 72,
-     "recall": 0.54,
-     "precision": 0.723,
-     "accuracy": 0.716,
-     "brier": 0.284,
+     "tp": 35,
+     "fp": 16,
+     "fn": 28,
+     "tn": 69,
+     "recall": 0.556,
+     "precision": 0.686,
+     "accuracy": 0.703,
+     "brier": 0.297,
      "base_rate": 0.426,
-     "mean_p": 0.318
+     "mean_p": 0.345
     },
     "any_length": {
      "n": 148,
-     "tp": 37,
-     "fp": 17,
-     "fn": 26,
-     "tn": 68,
-     "recall": 0.587,
-     "precision": 0.685,
-     "accuracy": 0.709,
-     "brier": 0.291,
+     "tp": 38,
+     "fp": 19,
+     "fn": 25,
+     "tn": 66,
+     "recall": 0.603,
+     "precision": 0.667,
+     "accuracy": 0.703,
+     "brier": 0.297,
      "base_rate": 0.426,
-     "mean_p": 0.365
+     "mean_p": 0.385
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 148,
+      "tp": 35,
+      "fp": 16,
+      "fn": 28,
+      "tn": 69,
+      "recall": 0.556,
+      "precision": 0.686,
+      "accuracy": 0.703,
+      "brier": 0.297,
+      "base_rate": 0.426,
+      "mean_p": 0.345
+     }
     },
     "near": {
      "far_h": 48.0,
      "min50": {
       "n": 110,
-      "tp": 22,
-      "fp": 10,
-      "fn": 23,
-      "tn": 55,
-      "recall": 0.489,
-      "precision": 0.688,
-      "accuracy": 0.7,
-      "brier": 0.3,
+      "tp": 23,
+      "fp": 13,
+      "fn": 22,
+      "tn": 52,
+      "recall": 0.511,
+      "precision": 0.639,
+      "accuracy": 0.682,
+      "brier": 0.318,
       "base_rate": 0.409,
-      "mean_p": 0.291
+      "mean_p": 0.327
      },
      "any_length": {
       "n": 110,
-      "tp": 25,
-      "fp": 14,
-      "fn": 20,
-      "tn": 51,
-      "recall": 0.556,
-      "precision": 0.641,
-      "accuracy": 0.691,
-      "brier": 0.309,
+      "tp": 26,
+      "fp": 16,
+      "fn": 19,
+      "tn": 49,
+      "recall": 0.578,
+      "precision": 0.619,
+      "accuracy": 0.682,
+      "brier": 0.318,
       "base_rate": 0.409,
-      "mean_p": 0.355
+      "mean_p": 0.382
+     }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 31,
+      "tp": 5,
+      "fp": 1,
+      "fn": 17,
+      "tn": 8,
+      "recall": 0.227,
+      "precision": 0.833,
+      "accuracy": 0.419,
+      "brier": 0.581,
+      "base_rate": 0.71,
+      "mean_p": 0.194
+     },
+     "clear": {
+      "n": 117,
+      "tp": 30,
+      "fp": 15,
+      "fn": 11,
+      "tn": 61,
+      "recall": 0.732,
+      "precision": 0.667,
+      "accuracy": 0.778,
+      "brier": 0.222,
+      "base_rate": 0.35,
+      "mean_p": 0.385
+     },
+     "clear_near": {
+      "n": 87,
+      "tp": 20,
+      "fp": 12,
+      "fn": 9,
+      "tn": 46,
+      "recall": 0.69,
+      "precision": 0.625,
+      "accuracy": 0.759,
+      "brier": 0.241,
+      "base_rate": 0.333,
+      "mean_p": 0.368
+     }
+    },
+    "by_conf": {
+     "確認寄り": {
+      "n": 148,
+      "tp": 35,
+      "fp": 16,
+      "fn": 28,
+      "tn": 69,
+      "recall": 0.556,
+      "precision": 0.686,
+      "accuracy": 0.703,
+      "brier": 0.297,
+      "base_rate": 0.426,
+      "mean_p": 0.345
      }
     }
    },
@@ -3857,6 +5225,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3870,6 +5240,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3883,6 +5255,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3896,6 +5270,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "160",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3909,6 +5285,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3921,7 +5299,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "140",
+     "length_m": "300",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3935,6 +5315,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.36,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3947,7 +5329,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "50",
+     "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3961,6 +5345,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3974,6 +5360,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -3986,7 +5374,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "80",
+     "length_m": "60",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4000,6 +5390,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.6,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4013,6 +5405,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4023,9 +5417,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "240",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4038,7 +5434,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "330",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4052,6 +5450,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4064,7 +5464,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "130",
+     "length_m": "210",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4078,6 +5480,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4091,6 +5495,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4104,6 +5510,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4117,6 +5525,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4130,6 +5540,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4143,6 +5555,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4156,6 +5570,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": "40",
+     "blind_share": 0.36,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4168,7 +5584,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "50",
+     "length_m": "90",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4182,6 +5600,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4195,6 +5615,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4208,6 +5630,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.56,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4221,6 +5645,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4234,6 +5660,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.6,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4247,6 +5675,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4257,35 +5687,41 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "420",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "527583619:R:05",
+     "date": "2025-11-26",
+     "s1": "2025-11-24T09:56:15Z",
+     "dt_h": -41.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "350",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "694211538:L:01",
+     "date": "2025-11-26",
+     "s1": "2025-11-24T09:56:15Z",
+     "dt_h": -41.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "150",
-     "oos": true
-    },
-    {
-     "section_id": "527583619:R:05",
-     "date": "2025-11-26",
-     "s1": "2025-11-24T09:56:15Z",
-     "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "150",
-     "oos": true
-    },
-    {
-     "section_id": "694211538:L:01",
-     "date": "2025-11-26",
-     "s1": "2025-11-24T09:56:15Z",
-     "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4293,506 +5729,584 @@
      "date": "2025-11-26",
      "s1": "2025-11-24T09:56:15Z",
      "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "80",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:05",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15388243:L:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 1.0,
-     "length_m": "30",
-     "oos": true
-    },
-    {
-     "section_id": "1564921419:R:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "1564921419:L:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "160",
-     "oos": true
-    },
-    {
-     "section_id": "1564921421:R:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "1564921460:L:02",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848835:L:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "70",
-     "oos": true
-    },
-    {
-     "section_id": "219848836:L:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848837:L:02",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848837:L:07",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848839:L:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "50",
-     "oos": true
-    },
-    {
-     "section_id": "219848839:L:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "50",
-     "oos": true
-    },
-    {
-     "section_id": "219848840:L:16",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848841:L:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848841:L:07",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "527583619:R:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "527583619:R:05",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "694211538:L:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "694211538:L:04",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "70",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:05",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15388243:L:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "1564921419:R:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "1564921419:L:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "1564921421:R:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "1564921460:L:02",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848835:L:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848836:L:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "50",
-     "oos": true
-    },
-    {
-     "section_id": "219848837:L:02",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848837:L:07",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848839:L:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "140",
-     "oos": true
-    },
-    {
-     "section_id": "219848839:L:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "160",
-     "oos": true
-    },
-    {
-     "section_id": "219848840:L:16",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848841:L:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "219848841:L:07",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "527583619:R:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "130",
-     "oos": true
-    },
-    {
-     "section_id": "527583619:R:05",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "140",
-     "oos": true
-    },
-    {
-     "section_id": "694211538:L:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "140",
-     "oos": true
-    },
-    {
-     "section_id": "694211538:L:04",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
      "source": "s1-recount",
      "y": 1,
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "15387629:L:05",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "15388243:L:01",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 1.0,
+     "length_m": "30",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921419:R:00",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "160",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921460:L:02",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848835:L:00",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "70",
+     "blind_share": 0.29,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848836:L:01",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.25,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848837:L:02",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848837:L:07",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848839:L:00",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "70",
+     "blind_share": 0.18,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848839:L:01",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 1.0,
+     "length_m": "30",
+     "blind_share": 0.72,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848840:L:16",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848841:L:00",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.73,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848841:L:07",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "527583619:R:01",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "527583619:R:05",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "694211538:L:01",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "694211538:L:04",
+     "date": "2025-12-11",
+     "s1": "2025-12-11T10:04:40Z",
+     "dt_h": 7.1,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "100",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "15387629:L:05",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "15388243:L:01",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921419:R:00",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "1564921460:L:02",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848835:L:00",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.36,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848836:L:01",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "80",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848837:L:02",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848837:L:07",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848839:L:00",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "170",
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848839:L:01",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "130",
+     "blind_share": 0.56,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848840:L:16",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848841:L:00",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.6,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "219848841:L:07",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 0,
+     "owner_c": "0",
+     "p": 0.0,
+     "p_any": 0.0,
+     "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "527583619:R:01",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "350",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "527583619:R:05",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "330",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "694211538:L:01",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
+     "oos": true
+    },
+    {
+     "section_id": "694211538:L:04",
+     "date": "2026-02-14",
+     "s1": "2026-02-16T09:56:08Z",
+     "dt_h": 55.0,
+     "source": "s1-recount",
+     "y": 1,
+     "owner_c": "1",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "120",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4806,6 +6320,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4819,6 +6335,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4832,6 +6350,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4845,6 +6365,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4858,6 +6380,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4871,6 +6395,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4883,7 +6409,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "70",
+     "length_m": "80",
+     "blind_share": 0.29,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4897,6 +6425,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.25,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4910,6 +6440,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4923,6 +6455,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4936,6 +6470,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.18,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4949,6 +6485,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": "40",
+     "blind_share": 0.72,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4962,6 +6500,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4974,7 +6514,9 @@
      "owner_c": "1",
      "p": 0.0,
      "p_any": 0.0,
-     "length_m": "10",
+     "length_m": "0",
+     "blind_share": 0.73,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -4988,6 +6530,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5001,6 +6545,8 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": "40",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5013,7 +6559,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "330",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5026,7 +6574,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "60",
+     "length_m": "70",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5037,9 +6587,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "30",
+     "length_m": "60",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5053,6 +6605,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5066,6 +6620,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5079,6 +6635,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5092,6 +6650,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "140",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5105,6 +6665,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5118,6 +6680,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5131,6 +6695,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.29,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5143,7 +6709,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "80",
+     "length_m": "60",
+     "blind_share": 0.25,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5156,7 +6724,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "130",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5170,6 +6740,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5183,6 +6755,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "130",
+     "blind_share": 0.18,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5196,6 +6770,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.72,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5209,6 +6785,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5222,6 +6800,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.73,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5235,6 +6815,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5247,7 +6829,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "140",
+     "length_m": "360",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5260,7 +6844,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "250",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5274,6 +6860,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "140",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5286,7 +6874,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "80",
+     "length_m": "180",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5300,6 +6890,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5313,6 +6905,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5323,9 +6917,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "40",
+     "length_m": "50",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5339,6 +6935,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "170",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5352,6 +6950,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5362,9 +6962,11 @@
      "source": "s1-recount",
      "y": 1,
      "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "60",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5378,6 +6980,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5391,6 +6995,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5404,6 +7010,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5417,6 +7025,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.47,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5430,6 +7040,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.56,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5443,6 +7055,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5456,6 +7070,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.6,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5469,6 +7085,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5481,7 +7099,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "370",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5494,7 +7114,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "240",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5507,7 +7129,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "140",
+     "length_m": "170",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5520,7 +7144,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "110",
+     "length_m": "90",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5534,6 +7160,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5547,6 +7175,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5560,6 +7190,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5573,6 +7205,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 1.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5583,9 +7217,11 @@
      "source": "s1-recount",
      "y": 1,
      "owner_c": "1",
-     "p": 0.0,
+     "p": 1.0,
      "p_any": 1.0,
-     "length_m": "40",
+     "length_m": "50",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5599,6 +7235,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5609,9 +7247,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 1.0,
+     "p": 0.0,
      "p_any": 1.0,
-     "length_m": "60",
+     "length_m": "40",
+     "blind_share": 0.29,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5624,7 +7264,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "100",
+     "length_m": "190",
+     "blind_share": 0.25,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5638,6 +7280,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5651,6 +7295,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "50",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5664,6 +7310,8 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": "50",
+     "blind_share": 0.18,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5677,6 +7325,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.72,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5690,6 +7340,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.87,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5703,6 +7355,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.73,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5716,6 +7370,8 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5726,9 +7382,11 @@
      "source": "s1-recount",
      "y": 0,
      "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "20",
+     "p": 1.0,
+     "p_any": 1.0,
+     "length_m": "250",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5741,7 +7399,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "150",
+     "length_m": "340",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5754,7 +7414,9 @@
      "owner_c": "0",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "110",
+     "length_m": "130",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     },
     {
@@ -5767,7 +7429,9 @@
      "owner_c": "1",
      "p": 1.0,
      "p_any": 1.0,
-     "length_m": "60",
+     "length_m": "110",
+     "blind_share": 0.0,
+     "line_conf": "確認寄り",
      "oos": true
     }
    ]
@@ -5777,6 +7441,7 @@
    "name": "舟山・定海",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
+   "truth": "s2",
    "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 27,
@@ -5786,6 +7451,7 @@
    },
    "labels": {
     "answers": 0,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
     "no_berth": 0,
@@ -5889,6 +7555,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -5917,7 +7624,50 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "out_of_sample": {
     "min50": {
@@ -5946,6 +7696,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -5974,7 +7765,50 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "status": "標本 0",
    "rows": []
@@ -5984,6 +7818,7 @@
    "name": "青島港内",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
+   "truth": "s2",
    "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
@@ -5993,6 +7828,7 @@
    },
    "labels": {
     "answers": 0,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
     "no_berth": 0,
@@ -6096,6 +7932,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -6124,7 +8001,50 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "out_of_sample": {
     "min50": {
@@ -6153,6 +8073,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -6181,7 +8142,50 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "status": "標本 0",
    "rows": []
@@ -6191,6 +8195,7 @@
    "name": "大連・旅順",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
+   "truth": "s2",
    "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
@@ -6200,6 +8205,7 @@
    },
    "labels": {
     "answers": 0,
+    "prefilled": 0,
     "unknown_section": 0,
     "not_naval": 0,
     "no_berth": 0,
@@ -6303,6 +8309,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -6331,7 +8378,50 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "out_of_sample": {
     "min50": {
@@ -6360,6 +8450,47 @@
      "base_rate": null,
      "mean_p": null
     },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
     "near": {
      "far_h": 48.0,
      "min50": {
@@ -6388,10 +8519,376 @@
       "base_rate": null,
       "mean_p": null
      }
-    }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
    },
    "status": "標本 0",
    "rows": []
   }
+ },
+ "other_truth": {
+  "truth": "s1",
+  "truth_note": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升（by_note で手動の升と分けて出す）",
+  "total": {
+   "in_sample": {
+    "min50": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "any_length": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
+   },
+   "out_of_sample": {
+    "min50": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "any_length": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "by_note": {
+     "prefill": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "default": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "manual": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "near": {
+     "far_h": 48.0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_blind": {
+     "share": 0.5,
+     "blind": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "clear_near": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "by_conf": {}
+   },
+   "by_source": {
+    "est-2": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   }
+  },
+  "sites": {}
  }
 }

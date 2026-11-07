@@ -89,6 +89,11 @@ MATCH_FIELDS = [
     "s1_db_line_m", "s1_rafted", "s1_min", "s1_max", "s1_peak_dvv_db", "d_depth_m", "agree",
 ]
 SECTION_FIELDS = ["section_id", "way_id", "kind", "side", "sector", "length_m", "samples", "lon", "lat", "normal_az_deg"]
+# the ports' match table (sat/s1_recount.build_match, s1-match-2): MATCH_FIELDS + the full length of the stretch reaching into the
+# section (s1_stretch_len_m: the stretch of the same way and side overlapping the section by STRETCH_OVERLAP_M or more, its
+# length_m; the quantity the presence evaluation's length rule uses, as est-2's ship_length_m). Zhanjiang's table keeps MATCH_FIELDS.
+PORT_MATCH_FIELDS = MATCH_FIELDS + ["s1_stretch_len_m"]
+STRETCH_OVERLAP_M = 20.0
 
 
 # ---------------------------------------------------------------- sections
@@ -347,7 +352,8 @@ def s1_sections(secs: list[dict], q: dict, samples: list[dict], step: float, fac
         occ = in_run[idx] & sm["inner_hit"][idx]
         occ_len = int(occ.sum() * step)
         cov = float(sm["has"][idx].mean())
-        f = {"s1_coverage": round(cov, 2), "s1_occ_len_m": occ_len, "s1_occupied": int(occ_len >= OCC_MIN_M)}
+        f = {"s1_coverage": round(cov, 2), "s1_occ_len_m": occ_len, "s1_occupied": int(occ_len >= OCC_MIN_M),
+             "s1_stretch_len_m": int(best.get("length_m") or 0) if best is not None and best_ov * step >= STRETCH_OVERLAP_M else 0}
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for key, name in (("depth", "s1_depth_m"), ("depth13", "s1_depth_1x3_m")):

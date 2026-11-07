@@ -238,6 +238,8 @@ class ReviewSetTest(unittest.TestCase):
         h = (ROOT / "docs" / "sat" / "label" / "index.html").read_text(encoding="utf-8")
         self.assertNotRegex(h, r"mailto:|@[a-z0-9-]+\.[a-z]{2,}")
         self.assertIn("review.json", h)
+        self.assertIn("review-s1.json", h)        # the S1 check (?s1=1)
+        self.assertIn("s1_acquired_utc", h)
         self.assertIn("Copernicus Sentinel", h)
 
 
@@ -287,6 +289,94 @@ class EvalTest(unittest.TestCase):
             self.assertEqual(r["warship_interval"]["n"], 1)
             self.assertEqual(r["warship_interval"]["hit"], 0)     # 9 is outside 3-8
             self.assertLess(r["occupied"]["brier"], 0.01)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class S1CheckTest(unittest.TestCase):
+    """The S1 check (same-time truth, design 2026-11 §2): prepare --s1 from saved chips (a directory store, PU 0) and merge --s1."""
+
+    def test_prepare_s1_from_a_directory_store(self):
+        from sat.run import load_sites
+        from sat.grid import Grid
+        site = next(s for s in load_sites() if s["id"] == "QGZ")
+        src = ROOT / "docs" / "data" / "sat"
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            out = d / "out"
+            for rel in ("labels/QGZ/review.json", "labels/QGZ-s2-answers.csv"):
+                (out / rel).parent.mkdir(parents=True, exist_ok=True)
+                (out / rel).write_bytes((src / rel).read_bytes())
+            rv = json.loads((out / "labels" / "QGZ" / "review.json").read_text(encoding="utf-8"))
+            day = rv["days"][0]                                   # 2025-11-01 02:57Z, paired S1 2025-10-31 09:56Z (RO171)
+            g = Grid.for_site(site)
+            raw = d / "raw" / "QGZ"
+            raw.mkdir(parents=True)
+            vv, vh = np.full((g.height, g.width), -20.0, np.float16), np.full((g.height, g.width), -27.0, np.float16)
+            for acq, ro in (("2025-10-31T09:56:16Z", 171), ("2025-12-11T10:04:40Z", 69)):
+                stem = "s1-" + acq.replace(":", "-")
+                np.savez_compressed(raw / f"{stem}.npz", vv=vv, vh=vh)
+                (raw / f"{stem}.json").write_text(json.dumps({"site_id": "QGZ", "acquired_utc": acq, "relative_orbit": ro,
+                                                               "orbit_direction": "ascending", "platform": "sentinel-1a",
+                                                               "credit": "Contains modified Copernicus Sentinel data 2025"}))
+            np.savez_compressed(raw / "s1-2026-01-01T00-00-00Z.npz", vv=vv[:10, :10], vh=vh[:10, :10])   # another grid: skipped
+            r = s2_answers.prepare_s1("QGZ", out, s2_answers.RawStore(directory=d / "raw"), site=site, log=lambda m: None)
+            self.assertEqual((r["scenes"], r["sections"]), (2, len(rv["sections"])))
+            doc = json.loads((out / "labels" / "QGZ" / "review-s1.json").read_text(encoding="utf-8"))
+            self.assertEqual(doc["version"], s2_answers.S1_REVIEW_VERSION)
+            self.assertEqual(len(doc["skipped"]), 1)
+            sc = doc["scenes"][0]
+            self.assertEqual((sc["acquired_utc"], sc["relative_orbit"], sc["image"]), ("2025-10-31T09:56:16Z", "171", "s1/s1-2025-10-31T09-56-16Z.webp"))
+            self.assertTrue((out / "labels" / "QGZ" / sc["image"]).exists())
+            self.assertEqual((sc["s2"]["date"], sc["s2"]["dt_h"]), (day["date"], -17.0))   # S1 17 h before the S2 day
+            self.assertEqual(sc["grid"]["width"], g.width)
+            ans = {r["section_id"]: r for r in s2_answers.read_csv(out / "labels" / "QGZ-s2-answers.csv") if r["date"] == day["date"]}
+            for sid, v in sc["prefill"].items():                   # the owner's S2 answer within 48 h is the default
+                self.assertEqual(v, "present" if ans[sid]["verified_occupied"] == "1" else "absent")
+                self.assertEqual(ans[sid]["verified"], "1")
+            self.assertEqual(len(sc["prefill"]), sum(1 for a in ans.values() if a["verified"] == "1" and a["section_id"] in {s["id"] for s in rv["sections"]}))
+            # the readability mark per orbit, with its figures; a blind section (always-occupied pier, design §1.2) needs S2
+            for s in doc["sections"]:
+                for ro in ("69", "171"):
+                    m = s["s1"][ro]
+                    self.assertIn("readable", m)
+                    self.assertEqual(m["readable"], m["why"] == "")
+            blind = next(s for s in doc["sections"] if s["id"] == "219848841:L:00")
+            self.assertFalse(blind["s1"]["69"]["readable"])
+            self.assertIn("盲域", blind["s1"]["69"]["why"])
+            self.assertGreaterEqual(blind["s1"]["69"]["blind_share"], 0.5)
+            self.assertGreater(doc["minutes_estimate"], 0)
+            # a second run drops the picture of a chip no longer in the store
+            (raw / "s1-2025-12-11T10-04-40Z.npz").unlink()
+            s2_answers.prepare_s1("QGZ", out, s2_answers.RawStore(directory=d / "raw"), site=site, log=lambda m: None)
+            self.assertFalse((out / "labels" / "QGZ" / "s1" / "s1-2025-12-11T10-04-40Z.webp").exists())
+
+    def test_merge_s1_validates_and_replaces(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            rv = {"sections": [{"id": "1:L:00"}, {"id": "2:L:00"}],
+                  "scenes": [{"acquired_utc": "2026-01-10T10:00:00Z", "relative_orbit": "69", "s2": {"date": "2026-01-10", "dt_h": 7.0}},
+                             {"acquired_utc": "2026-01-22T10:00:00Z", "relative_orbit": "171", "s2": None}]}
+            (out / "labels" / "TNS").mkdir(parents=True)
+            (out / "labels" / "TNS" / "review-s1.json").write_text(json.dumps(rv))
+            f = out / "dl.csv"
+            F = s2_answers.S1_ANSWER_FIELDS
+            wcsv(f, [{"site_id": "TNS", "section_id": "1:L:00", "s1_acquired_utc": "2026-01-10T10:00:00Z", "verified": "1", "verified_occupied": "1", "verified_note": "s2-prefill"},
+                     {"site_id": "TNS", "section_id": "2:L:00", "s1_acquired_utc": "2026-01-10T10:00:00Z", "verified": "0", "verified_occupied": ""},
+                     {"site_id": "TNS", "section_id": "2:L:00", "s1_acquired_utc": "2026-01-22T10:00:00Z", "verified": "1", "verified_occupied": "0"},
+                     {"site_id": "TNS", "section_id": "9:L:00", "s1_acquired_utc": "2026-01-10T10:00:00Z", "verified": "1", "verified_occupied": "0"},
+                     {"site_id": "TNS", "section_id": "1:L:00", "s1_acquired_utc": "2026-02-01T10:00:00Z", "verified": "1", "verified_occupied": "0"},
+                     {"site_id": "TNS", "section_id": "1:L:00", "s1_acquired_utc": "2026-01-22T10:00:00Z", "verified": "1", "verified_occupied": "7"}], F)
+            r = s2_answers.merge_s1("TNS", f, out)
+            self.assertEqual((r["added"], r["replaced"], len(r["rejected"])), (3, 0, 3))
+            wcsv(f, [{"site_id": "TNS", "section_id": "1:L:00", "s1_acquired_utc": "2026-01-10T10:00:00Z", "verified": "1", "verified_occupied": "0"}], F)
+            r = s2_answers.merge_s1("TNS", f, out)
+            self.assertEqual((r["added"], r["replaced"], r["total"]), (0, 1, 3))
+            rows = list(csv.DictReader(io.StringIO((out / "labels" / "TNS-s1-answers.csv").read_text(encoding="utf-8"))))
+            self.assertEqual(list(rows[0].keys()), F)
+            by = {(x["section_id"], x["s1_acquired_utc"]): x for x in rows}
+            self.assertEqual((by[("1:L:00", "2026-01-10T10:00:00Z")]["verified_occupied"], by[("1:L:00", "2026-01-10T10:00:00Z")]["verified_note"]), ("0", ""))
+            self.assertEqual((by[("1:L:00", "2026-01-10T10:00:00Z")]["s2_date"], by[("1:L:00", "2026-01-10T10:00:00Z")]["dt_h"], by[("1:L:00", "2026-01-10T10:00:00Z")]["relative_orbit"]), ("2026-01-10", "7.0", "69"))
+            self.assertEqual((by[("2:L:00", "2026-01-22T10:00:00Z")]["s2_date"], by[("2:L:00", "2026-01-22T10:00:00Z")]["verified_by"]), ("", "owner"))
 
 
 if __name__ == "__main__":

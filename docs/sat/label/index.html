@@ -21,6 +21,14 @@ h1{font-size:1.3rem}
 .btns button{font-size:.78rem;padding:.15rem .35rem;border:1px solid #888;background:#eee;border-radius:3px;cursor:pointer}
 .btns button.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
 .btns button.on.u{background:#8a6d00;border-color:#8a6d00}
+.btns button.pre{background:#dce9fb;border-color:#9bb8e0;color:#1f4f8f}
+.btns button.pre.u{background:#f3e9c8;border-color:#c9b370;color:#6b5400}
+.pair{display:flex;gap:4px}
+.pair .cap{font-size:.72rem;color:#444;text-align:center}
+.pair .none{display:flex;align-items:center;justify-content:center;color:#888;font-size:.8rem;border:1px dashed #aaa;min-width:120px}
+.mark{font-size:.8rem;margin:.1rem 0 .3rem}
+.mark .ok{color:#1a6b2a}
+.mark .ng{color:#8a4a00}
 .tools button{font-size:.8rem;margin-right:.5rem}
 #bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #1f6feb;padding:.5rem 1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;z-index:5}
 #bar button{font-size:.95rem;padding:.35rem .8rem}
@@ -29,6 +37,7 @@ h1{font-size:1.3rem}
 </style>
 </head>
 <body>
+<div id="head-s2">
 <h1>岸壁の目視確認（Sentinel-2 自然色・試行）</h1>
 <p class="trial"><b>試行</b>：判断の材料を作るための確認ページです。ここでの答えは、船の数を推定する式（est-2）をこの港に合わせるための「正解」として使います。見えないものは無理に答えず「判断できない」で構いません（その行は使いません）。</p>
 <p class="ports" id="ports"></p>
@@ -41,6 +50,21 @@ h1{font-size:1.3rem}
 <li>答えはこのブラウザに自動で保存されます（閉じても続きから）。終わったら下の「答えを CSV でダウンロード」を押し、できたファイルを司令部に渡してください。</li>
 </ol>
 <p class="note">画像は Sentinel-2 L2A の自然色（B4・B3・B2、10 m）をそのまま 8 倍に拡大したもので、白と灰色の区別はつきにくいことがあります。船の色は聞きません（艦種の判断には使わない）。Contains modified Copernicus Sentinel data 2025, 2026。岸壁の線：© OpenStreetMap contributors（ODbL 1.0）。</p>
+</div>
+<div id="head-s1" hidden>
+<h1>岸壁の目視確認（Sentinel-1 の同じ時刻の正解・試行）</h1>
+<p class="trial"><b>試行</b>：S1（レーダー、疑似カラー）の撮影ごとに、同じ区間の直近の S2（自然色）を並べて見て、<b>S1 の時刻に船がいたか</b>を答えるページです。S2 の確認で付けた答えは S2 の日のもので、S1 とは最大 4 日ずれます。ここでの答えが S1 の判定の正解になります。</p>
+<p class="ports" id="ports-s1"></p>
+
+<h2>やること（1 港 15〜25 分）</h2>
+<ol>
+<li>区間ごとに、S1 の撮影が並びます。各升は左が S1（疑似カラー：空の岸壁や桟橋は細い青白い線、船は黄〜橙の太い塊）、右がその直近の S2 自然色（見出しに時間差）。水色の枠（水際から 120 m）の中に<b>50 m 以上の船がいるか</b>を答えます。黄色の線が岸壁（OSM）の線です。</li>
+<li><b>在</b>＝S1 の時刻に枠の中に船がいる／<b>不在</b>＝いない／<b>判断できない</b>＝S1 でも S2 でも見分けられない。</li>
+<li>薄い色のボタンは<b>初期値</b>です：S2 が 48 時間以内にある升はその S2 の答えが初期値として優先され、S2 が遠い（または無い）升のうち S1 で判断しにくい区間（見出しに「要 S2」）は「判断できない」が初期値になります。見出しの「S1 で判断できる／要 S2」の印は基準の明るさから機械的に付けた目安で、見て違えば押し直して構いません。初期値が合っていれば何も押さなくて構いません。違うときだけ押してください（押した答えは濃い色）。</li>
+<li>区間の見出しの「全撮影 不在」で一度に入れられます。答えはこのブラウザに自動で保存され、終わったら下の「答えを CSV でダウンロード」を押して司令部に渡してください（初期値のままの升も CSV に入ります）。</li>
+</ol>
+<p class="note">S1 は Sentinel-1 IW GRD（VV・VH、10 m）の疑似カラー（R＝VV、G＝VH、B＝VV−VH、固定レンジ、3×3 Lee）。S2 は L2A 自然色。Contains modified Copernicus Sentinel data 2025, 2026。岸壁の線：© OpenStreetMap contributors（ODbL 1.0）。</p>
+</div>
 
 <div id="scene" class="days"></div>
 <div id="main">読み込み中…</div>
@@ -54,37 +78,51 @@ h1{font-size:1.3rem}
 
 <script>
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
 'use strict';
 const q = new URLSearchParams(location.search);
 const SITE = (q.get('site') || '').toUpperCase();
 const OOS = q.get('oos') === '1';
+const S1 = q.get('s1') === '1';
 const base = '../../data/sat/labels/';
 // Shown by place name; the code stays only in the URL and the CSV (machine keys).
 const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', LSN: '大連・旅順', QDH: '青島港内', ZJG: '湛江'};
 const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH', 'LSN', 'QDH'];
-document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${NAMES[p]}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>';
-const CH = [['none', 'いない', 'n'], ['1', '1列', ''], ['2', '2列', ''], ['3', '3列+', ''], ['unsure', '判断できない', 'u']];
-let R = null, ans = {}, scene = {}, key = '';
-const $ = id => document.getElementById(id);
+document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${NAMES[p]}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>'
+  + '<br>S1 の同じ時刻の正解：' + ['QGZ', 'SLP', 'SYL'].map(p => `<a href="?site=${p}&s1=1">${NAMES[p]}</a>`).join('');
+document.getElementById('ports-s1').innerHTML = '港：' + ['QGZ', 'SLP', 'SYL'].map(p => `<a href="?site=${p}&s1=1">${NAMES[p]}</a>`).join('') + '<a href="?site=' + (SITE || 'QGZ') + '">S2 の確認に戻る</a>';
+if (S1) { $('head-s2').hidden = true; $('head-s1').hidden = false; document.title = '岸壁の目視確認（Sentinel-1 の同じ時刻の正解・試行）'; }
+const CH = S1 ? [['present', '在', ''], ['absent', '不在', 'n'], ['unsure', '判断できない', 'u']]
+  : [['none', 'いない', 'n'], ['1', '1列', ''], ['2', '2列', ''], ['3', '3列+', ''], ['unsure', '判断できない', 'u']];
+let R = null, ans = {}, scene = {}, key = '', UNITS = [];
 
 function load() {
   if (!/^[A-Z0-9]{2,4}$/.test(SITE)) { $('main').textContent = '上の港の名前を選んでください。'; return; }
-  fetch(base + SITE + '/' + (OOS ? 'review-oos.json' : 'review.json'), {cache: 'no-cache'})
+  fetch(base + SITE + '/' + (S1 ? 'review-s1.json' : OOS ? 'review-oos.json' : 'review.json'), {cache: 'no-cache'})
     .then(r => { if (!r.ok) throw 0; return r.json(); })
-    .then(j => { R = j; key = 's2rev:' + SITE + ':' + R.kind + ':' + R.version;
+    .then(j => { R = j; key = (S1 ? 's1rev:' : 's2rev:') + SITE + ':' + R.kind + ':' + R.version;
+      // the unit: a day (S2) or a scene (S1); .key is the machine key of the unit
+      UNITS = S1 ? R.scenes.map(u => ({...u, key: u.acquired_utc})) : R.days.map(u => ({...u, key: u.date}));
       try { const s = JSON.parse(localStorage.getItem(key) || '{}'); ans = s.ans || {}; scene = s.scene || {}; } catch (e) {}
       build(); })
-    .catch(() => { $('main').textContent = OOS ? 'この港の標本外の確認（2026-10-27 以降の晴れの日）はまだありません。' : 'この港の確認の材料はまだありません。'; });
+    .catch(() => { $('main').textContent = S1 ? 'この港の S1 の確認の材料はまだありません。' : OOS ? 'この港の標本外の確認（2026-10-27 以降の晴れの日）はまだありません。' : 'この港の確認の材料はまだありません。'; });
 }
+// S1: the default of a cell (shown faint): the owner's S2 answer within 48 h, else "cannot judge" for a section not readable in S1
+function readable(s, u) { const m = (s.s1 || {})[u.relative_orbit]; return !m || m.readable; }
+function dflt(s, u) { if (!S1) return undefined; const pf = (u.prefill || {})[s.id]; if (pf) return pf; return readable(s, u) ? undefined : 'unsure'; }
+function eff(s, u) { return ans[s.id + '|' + u.key] ?? dflt(s, u); }
+function fmtS1(u) { return `S1 ${u.acquired_utc.slice(0, 10)} ${u.acquired_utc.slice(11, 16)}Z 軌道${u.relative_orbit}${u.orbit_direction === 'ascending' ? '（上昇）' : u.orbit_direction === 'descending' ? '（下降）' : ''}`; }
+function fmtS2(u) { if (!u.s2) return `S2 なし（±${R.s2_window_days ?? 4} 日）`; const h = Math.round(Math.abs(u.s2.dt_h)); return `S2 ${u.s2.date}（S1 の ${h} h ${u.s2.dt_h >= 0 ? '前' : '後'}）`; }
 function save() { try { localStorage.setItem(key, JSON.stringify({ans, scene})); } catch (e) {} progress(); }
 function progress() {
-  const n = Object.keys(ans).length, N = R.sections.length * R.days.length;
-  $('prog').textContent = `${NAMES[R.site_id] ?? R.site_id}${OOS ? '（標本外）' : ''}：回答 ${n} / ${N}（約 ${R.minutes_estimate} 分）`;
+  const n = Object.keys(ans).length, N = R.sections.length * UNITS.length;
+  let m = 0; if (S1) R.sections.forEach(s => UNITS.forEach(u => { if (eff(s, u)) m++; }));
+  $('prog').textContent = `${NAMES[R.site_id] ?? R.site_id}${OOS ? '（標本外）' : S1 ? '（S1 の同じ時刻）' : ''}：回答 ${n} / ${N}` + (S1 ? `（初期値込み ${m}）` : '') + `（約 ${R.minutes_estimate} 分）`;
 }
 const imgs = {};
 function image(d) {
-  if (!imgs[d.date]) imgs[d.date] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + R.site_id + '/' + d.image; });
-  return imgs[d.date];
+  if (!imgs[d.image]) imgs[d.image] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + R.site_id + '/' + d.image; });
+  return imgs[d.image];
 }
 function px(d, lon, lat) { const g = d.grid; return [(lon - g.west) / (g.east - g.west) * g.width, (g.north - lat) / (g.north - g.south) * g.height]; }
 function draw(cv, s, d) {
@@ -92,8 +130,8 @@ function draw(cv, s, d) {
     const ctx = cv.getContext('2d'); const fr = s.frame.map(p => px(d, p[0], p[1]));
     const xs = fr.map(p => p[0]), ys = fr.map(p => p[1]); const pad = 6;
     const x0 = Math.floor(Math.min(...xs)) - pad, y0 = Math.floor(Math.min(...ys)) - pad;
-    const w = Math.ceil(Math.max(...xs)) + pad - x0, h = Math.ceil(Math.max(...ys)) + pad - y0;
-    const z = Math.max(2, Math.min(R.zoom, Math.floor(330 / Math.max(w, h))));
+    const w = Math.ceil(Math.max(...xs)) + pad - x0, h = Math.min(Math.ceil(Math.max(...ys)) + pad, d.grid.height) - y0;
+    const z = Math.max(2, Math.min(R.zoom, Math.floor((S1 ? 250 : 330) / Math.max(w, h))));
     cv.width = w * z; cv.height = h * z; cv.style.width = cv.width + 'px';
     ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
     if (im) ctx.drawImage(im, x0, y0, w, h, 0, 0, w * z, h * z);
@@ -114,7 +152,8 @@ function showOriginal(s, d) {
       document.addEventListener('keydown', e => { if (e.key === 'Escape') ov.style.display = 'none'; });
     }
     ov.style.display = 'flex';
-    ov.querySelector('#origCap').textContent = `${d.date} の元の写真（Sentinel-2 自然色、港の全体）。Contains modified Copernicus Sentinel data ${String(d.date).slice(0, 4)}`;
+    const when = d.date || d.acquired_utc;
+    ov.querySelector('#origCap').textContent = `${when} の元の${d.acquired_utc && !d.date ? '画像（Sentinel-1 疑似カラー' : '写真（Sentinel-2 自然色'}、港の全体）。Contains modified Copernicus Sentinel data ${String(when).slice(0, 4)}`;
     const cv = ov.querySelector('#origCv'), fb = ov.querySelector('#origFrame');
     const paintO = () => {
       if (!im) { cv.width = 1; cv.height = 1; return; }
@@ -144,37 +183,60 @@ function build() {
   }
   R.sections.forEach((s, i) => {
     const box = document.createElement('div'); box.className = 'sec';
-    box.innerHTML = `<h3>区間 ${i + 1} / ${R.sections.length} <small>OSM way ${esc(s.way)}・長さ ${esc(s.length_m)} m・${s.kind === 'pier' ? '桟橋' : '岸壁/海岸線'}・区画 ${esc(s.sector || '-')}</small></h3>
-      <div class="tools"><button type="button" data-all="none">全日いない</button><button type="button" data-all="unsure">全日 判断できない</button><button type="button" data-all="clear">この区間の答えを消す</button></div>`;
+    const marks = S1 ? Object.entries(s.s1 || {}).map(([ro, m]) => m.readable ? `<span class="ok">軌道${esc(ro)}：S1 で判断できる</span>` : `<span class="ng">軌道${esc(ro)}：要 S2（${esc(m.why)}）</span>`).join('　') : '';
+    box.innerHTML = `<h3>区間 ${i + 1} / ${R.sections.length} <small>OSM way ${esc(s.way)}・長さ ${esc(s.length_m)} m・${s.kind === 'pier' ? '桟橋' : '岸壁/海岸線'}・区画 ${esc(s.sector || '-')}</small></h3>`
+      + (S1 ? `<div class="mark">${marks}</div>` : '')
+      + (S1 ? `<div class="tools"><button type="button" data-all="absent">全撮影 不在</button><button type="button" data-all="unsure">全撮影 判断できない</button><button type="button" data-all="clear">この区間の答えを消す（初期値に戻す）</button></div>`
+            : `<div class="tools"><button type="button" data-all="none">全日いない</button><button type="button" data-all="unsure">全日 判断できない</button><button type="button" data-all="clear">この区間の答えを消す</button></div>`);
     const row = document.createElement('div'); row.className = 'row'; box.appendChild(row);
-    R.days.forEach(d => {
-      const k = s.id + '|' + d.date; const c = document.createElement('div'); c.className = 'cell';
-      c.innerHTML = `<canvas></canvas><div class="d">${esc(d.date)}${d.tile_cloud_pct ? '（タイル雲 ' + Math.round(Number(d.tile_cloud_pct)) + '%）' : ''}</div><div class="btns"></div><button type="button" class="orig" style="margin-top:2px;font-size:12px">元の写真</button>`;
-      c.querySelector('.orig').onclick = () => showOriginal(s, d); c.querySelector('canvas').style.cursor = 'zoom-in'; c.querySelector('canvas').onclick = () => showOriginal(s, d);
+    UNITS.forEach(d => {
+      const k = s.id + '|' + d.key; const c = document.createElement('div'); c.className = 'cell';
+      if (S1) {
+        c.innerHTML = `<div class="pair"><div><div class="cap">${esc(fmtS1(d))}</div><canvas class="c1"></canvas></div><div><div class="cap">${esc(fmtS2(d))}</div>${d.s2 ? '<canvas class="c2"></canvas>' : '<div class="none">S2 なし</div>'}</div></div><div class="btns"></div><button type="button" class="orig" style="margin-top:2px;font-size:12px">S1 の全体</button>${d.s2 ? '<button type="button" class="orig2" style="margin-top:2px;margin-left:4px;font-size:12px">S2 の全体</button>' : ''}`;
+        const c1 = c.querySelector('.c1'); c1.style.cursor = 'zoom-in'; c1.onclick = () => showOriginal(s, d); c.querySelector('.orig').onclick = () => showOriginal(s, d);
+        if (d.s2) { const c2 = c.querySelector('.c2'); c2.style.cursor = 'zoom-in'; c2.onclick = () => showOriginal(s, d.s2); c.querySelector('.orig2').onclick = () => showOriginal(s, d.s2); }
+      } else {
+        c.innerHTML = `<canvas></canvas><div class="d">${esc(d.date)}${d.tile_cloud_pct ? '（タイル雲 ' + Math.round(Number(d.tile_cloud_pct)) + '%）' : ''}</div><div class="btns"></div><button type="button" class="orig" style="margin-top:2px;font-size:12px">元の写真</button>`;
+        c.querySelector('.orig').onclick = () => showOriginal(s, d); c.querySelector('canvas').style.cursor = 'zoom-in'; c.querySelector('canvas').onclick = () => showOriginal(s, d);
+      }
       const b = c.querySelector('.btns');
       CH.forEach(([v, t, cl]) => { const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = t; bt.dataset.v = v;
         if (cl === 'u') bt.classList.add('u');
-        bt.onclick = () => { if (ans[k] === v) delete ans[k]; else ans[k] = v; paint(c, k); save(); }; b.appendChild(bt); });
-      row.appendChild(c); paint(c, k); draw(c.querySelector('canvas'), s, d);
+        bt.onclick = () => { if (ans[k] === v) delete ans[k]; else ans[k] = v; paint(c, k, s, d); save(); }; b.appendChild(bt); });
+      row.appendChild(c); paint(c, k, s, d);
+      if (S1) { draw(c.querySelector('.c1'), s, d); if (d.s2) draw(c.querySelector('.c2'), s, d.s2); } else draw(c.querySelector('canvas'), s, d);
     });
     box.querySelectorAll('[data-all]').forEach(bt => bt.onclick = () => {
-      R.days.forEach((d, j) => { const k = s.id + '|' + d.date; if (bt.dataset.all === 'clear') delete ans[k]; else ans[k] = bt.dataset.all; paint(row.children[j], k); });
+      UNITS.forEach((d, j) => { const k = s.id + '|' + d.key; if (bt.dataset.all === 'clear') delete ans[k]; else ans[k] = bt.dataset.all; paint(row.children[j], k, s, d); });
       save(); });
     main.appendChild(box);
   });
   progress();
 }
-function paint(c, k) { c.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === ans[k])); }
+function paint(c, k, s, d) {
+  const df = (S1 && ans[k] === undefined && s && d) ? dflt(s, d) : undefined;
+  c.querySelectorAll('button').forEach(b => { b.classList.toggle('on', b.dataset.v === ans[k]); b.classList.toggle('pre', df !== undefined && b.dataset.v === df); });
+}
 const MAP = {none: ['1', '0', '0'], '1': ['1', '1', '1'], '2': ['1', '1', '2'], '3': ['1', '1', '3'], unsure: ['0', '', '']};
 function download(name, text) {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type: 'text/csv;charset=utf-8'})); a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
 }
+const MAP1 = {present: ['1', '1'], absent: ['1', '0'], unsure: ['0', '']};
+const csvq = x => /[",\n]/.test(x) ? '"' + String(x).replace(/"/g, '""') + '"' : x;
 $('dl').onclick = () => {
-  const lines = ['site_id,section_id,date,verified,verified_occupied,verified_c,verified_color,verified_by,verified_note'];
-  let n = 0;
-  R.sections.forEach(s => R.days.forEach(d => { const v = ans[s.id + '|' + d.date]; if (!v) return; n++;
-    lines.push([R.site_id, s.id, d.date, ...MAP[v], '', '', ''].map(x => /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x).join(',')); }));
+  let n = 0, lines;
+  if (S1) {
+    // key (section_id, s1_acquired_utc); a cell left at its default goes out with verified_note s2-prefill / s1-unreadable-default
+    lines = ['site_id,section_id,s1_acquired_utc,relative_orbit,s2_date,dt_h,verified,verified_occupied,verified_by,verified_note'];
+    R.sections.forEach(s => UNITS.forEach(d => { const k = s.id + '|' + d.key; const v = eff(s, d); if (!v) return; n++;
+      const note = ans[k] !== undefined ? '' : ((d.prefill || {})[s.id] ? 's2-prefill' : 's1-unreadable-default');
+      lines.push([R.site_id, s.id, d.acquired_utc, d.relative_orbit, d.s2 ? d.s2.date : '', d.s2 ? d.s2.dt_h : '', ...MAP1[v], 'owner', note].map(x => csvq(x ?? '')).join(',')); }));
+  } else {
+    lines = ['site_id,section_id,date,verified,verified_occupied,verified_c,verified_color,verified_by,verified_note'];
+    R.sections.forEach(s => R.days.forEach(d => { const v = ans[s.id + '|' + d.date]; if (!v) return; n++;
+      lines.push([R.site_id, s.id, d.date, ...MAP[v], '', '', ''].map(csvq).join(',')); }));
+  }
   download(R.answers_file, lines.join('\n') + '\n');
   $('msg').textContent = `${n} 件を ${R.answers_file} に書き出しました。このファイルを司令部に渡してください。`;
 };
