@@ -77,6 +77,40 @@ class LineClassTest(unittest.TestCase):
         self.assertTrue(berths.feature_ok(b, nav, LINES["ways"][0]["coords"]))
 
 
+    def test_site_naval_since(self):
+        """naval-gap-1: a site's naval_since (sat/berths.json) starts naval-1 earlier; the others keep NAVAL_SINCE."""
+        conf = {**CONF, "sites": {"TNV": {"coastline": [], "exclude_ways": [-1], "naval_since": "2026-11-01"}}}
+        self.assertEqual(berths.naval_since("TNV", conf), "2026-11-01")
+        self.assertEqual(berths.naval_since("TNV", CONF), berths.NAVAL_SINCE)
+        self.assertEqual(berths.naval_since("NOPE", conf), berths.NAVAL_SINCE)
+        b = berths.Berths(SITE, LINES, conf, classes=CLASSES)
+        civil = {"line_kind": "pier", "osm_way": 2, "acquired_utc": "2026-11-02T10:00:00Z"}
+        self.assertFalse(berths.feature_ok(b, civil, LINES["ways"][1]["coords"]))   # naval-1 already on 11-02
+        self.assertTrue(berths.feature_ok(b, {**civil, "acquired_utc": "2026-10-31T10:00:00Z"}, LINES["ways"][1]["coords"]))
+
+    def test_gap_sites_in_berths_json(self):
+        """The sites of the 2026-11-01..04 gap start naval-1 with berth-1; Zhanjiang (golden) and the others do not move."""
+        for sid in ("LSN", "QDH", "QJG", "QGZ", "XSN", "ZDH", "SWS"):
+            self.assertEqual(berths.naval_since(sid), berths.SINCE_UTC, sid)
+            self.assertTrue(berths.naval_active(sid, "2026-11-02T09:56:32Z"), sid)
+        for sid in ("ZJG", "SYL", "SLP", "STU", "XMN", "MAW"):
+            self.assertEqual(berths.naval_since(sid), berths.NAVAL_SINCE, sid)
+            self.assertFalse(berths.naval_active(sid, "2026-11-02T09:56:32Z"), sid)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class NavalGapSeriesTest(unittest.TestCase):
+    def test_series_break_dates_per_site(self):
+        """meta.json: the naval series break of a gap site starts 2026-11-01 and says the gap scenes were counted again."""
+        from sat import run as srun
+        br = {b["site_id"]: b for b in srun.series_breaks(srun.load_sites()) if b.get("kind") == "naval"}
+        self.assertEqual(br["LSN"]["date_utc"], "2026-11-01")
+        self.assertIn("naval-gap-1", br["LSN"]["note"])
+        self.assertEqual(br["STU"]["date_utc"], berths.NAVAL_SINCE)
+        self.assertNotIn("naval-gap-1", br["STU"]["note"])
+        self.assertNotIn("ZJG", {k for k, v in br.items() if v["date_utc"] != berths.NAVAL_SINCE})
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class ClassifyNavalTest(unittest.TestCase):
     def test_candidates_by_date(self):
