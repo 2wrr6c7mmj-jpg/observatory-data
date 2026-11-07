@@ -173,6 +173,26 @@ class ClassFilesTest(unittest.TestCase):
                          "python -m sat.berth_class geojson で作り直す")
         self.assertTrue(any("OpenStreetMap" in c for c in have["credit"]))
         self.assertTrue(any("溫約瑟" in c for c in have["credit"]))
+        # naval-gap-1: the start of naval-1 per site (berths.json naval_since), on the file and on every line
+        self.assertEqual(have["since_utc_by_site"], json.loads(json.dumps(want["since_utc_by_site"])))
+        self.assertEqual(have["since_utc_by_site"]["LSN"], berths.naval_since("LSN"))
+        self.assertTrue(all(f["properties"]["since_utc"] == have["since_utc_by_site"][f["properties"]["site_id"]]
+                            for f in have["features"]))
+
+    def test_lushun_east_basin_south_quay(self):
+        """旅順の内港の東の泊地の南岸（2026-11-07 追加）：naval-1 の撮影でだけ着く線になり、区分は naval。"""
+        from sat import quay_lines
+        from sat.run import load_sites
+        site = next(s for s in load_sites() if s["id"] == "LSN")
+        lines = quay_lines.load("LSN", int(site.get("quay_lines_version", quay_lines.LINES_VERSION)))
+        pt = (121.2595, 38.7992)   # 南岸の岸壁の上
+        self.assertFalse(berths.Berths(site, lines, naval=False).point_ok("coastline", 696162852, *pt))
+        b = berths.Berths(site, lines, naval=True)
+        self.assertTrue(b.point_ok("coastline", 696162852, *pt))
+        self.assertEqual(b.line_class(696162852, *pt), "naval")
+        # outside the box: the north shore of the east basin (pier side) and the south shore west of the jetty stay off
+        for out in ((121.2595, 38.8010), (121.2560, 38.7995)):
+            self.assertFalse(b.point_ok("coastline", 696162852, *out), out)
 
 
 if __name__ == "__main__":
