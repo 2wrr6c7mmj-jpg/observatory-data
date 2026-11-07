@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-06T08:04:54Z",
+ "generated_utc": "2026-11-07T07:25:36Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -222,7 +222,7 @@
      "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
      "name": "Mir | Demo Flight",
      "status": "Go",
-     "net_utc": "2026-11-10T06:00:00Z",
+     "net_utc": "2026-11-11T05:00:00Z",
      "rocket": "Mir",
      "orbit": "LEO",
      "pad": "ADD Offshore launch platform"
@@ -598,6 +598,10 @@
      126.565
     ],
     [
+     19.099,
+     137.17
+    ],
+    [
      27.03,
      131.281
     ]
@@ -607,6 +611,7 @@
     "aviation:Z0840/26",
     "aviation:Q2648/26",
     "aviation:Z0834/26",
+    "maritime:NAVAREA XI 26-0498",
     "aviation:P5538/26"
    ],
    "method": "unaligned",
@@ -628,6 +633,55 @@
      "rocket": "Long March 8A",
      "orbit": "LEO",
      "pad": "Commercial LC-1"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-11T04:00Z",
+   "window_end_utc": "2026-11-30T09:34Z",
+   "areas": [
+    [
+     33.6,
+     125.6
+    ],
+    [
+     23.973,
+     134.392
+    ],
+    [
+     33.039,
+     126.565
+    ],
+    [
+     27.03,
+     131.281
+    ]
+   ],
+   "notices": [
+    "aviation:Z0844/26",
+    "aviation:Q2664/26",
+    "aviation:Z0843/26",
+    "aviation:P5590/26"
+   ],
+   "method": "unaligned",
+   "recorded_launches": [
+    {
+     "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
+     "name": "Long March 2F/G | Shenzhou 24",
+     "status": "TBD",
+     "net_utc": "2026-11-25T00:00:00Z",
+     "rocket": "Long March 2F/G",
+     "orbit": "LEO",
+     "pad": "Launch Area 91 (SLS-1 / 921)"
+    },
+    {
+     "ll2_id": "d66590ab-b273-47ff-b85a-608b62851b4b",
+     "name": "Long March 2D | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-11T11:40:00Z",
+     "rocket": "Long March 2D",
+     "orbit": "N/A",
+     "pad": "Launch Area 94 (SLS-2 / 603)"
     }
    ]
   },
@@ -868,13 +922,13 @@
   },
   {
    "ll2_id": "e91d1da2-819b-4523-95bf-39ac7daa871d",
-   "name": "Ceres-2 | Unknown Payload",
-   "status": "Go",
-   "net_utc": "2026-11-06T23:35:00Z",
+   "name": "Ceres-2 | 4 satellites",
+   "status": "Success",
+   "net_utc": "2026-11-06T23:37:00Z",
    "rocket": "Ceres-2",
    "provider": "Galactic Energy",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
+   "orbit": "SSO",
+   "mission_type": "Earth Science",
    "pad": "Launch Area 95A",
    "location": "Jiuquan Satellite Launch Center, People's Republic of China",
    "country": "CHN",
@@ -904,7 +958,7 @@
    "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
    "name": "Mir | Demo Flight",
    "status": "Go",
-   "net_utc": "2026-11-10T06:00:00Z",
+   "net_utc": "2026-11-11T05:00:00Z",
    "rocket": "Mir",
    "provider": "Agency for Defense Development",
    "orbit": "LEO",
@@ -932,7 +986,7 @@
    "lat": 40.960482,
    "lon": 100.298059,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/d66590ab-b273-47ff-b85a-608b62851b4b/",
-   "event_index": null
+   "event_index": 26
   },
   {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
@@ -983,7 +1037,7 @@
    "lat": 40.957893,
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
-   "event_index": null
+   "event_index": 26
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
