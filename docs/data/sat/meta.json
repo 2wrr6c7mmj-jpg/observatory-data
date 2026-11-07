@@ -2092,8 +2092,8 @@
    "to_mask_version": "QGZ-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZDH",
@@ -2102,8 +2102,8 @@
    "to_mask_version": "ZDH-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QJG",
@@ -2112,8 +2112,8 @@
    "to_mask_version": "QJG-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QDH",
@@ -2122,8 +2122,8 @@
    "to_mask_version": "QDH-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XSN",
@@ -2132,8 +2132,8 @@
    "to_mask_version": "XSN-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "LSN",
@@ -2142,8 +2142,8 @@
    "to_mask_version": "LSN-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SWS",
@@ -2152,8 +2152,8 @@
    "to_mask_version": "SWS-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XMN",
@@ -2362,7 +2362,7 @@
   "relative_orbit": "相対軌道（不明は空）",
   "incidence_deg": "入射角（地点の水域の中央値、度）",
   "harbour_candidates": "港内水域（岸壁帯を除く切り出し範囲の水域）の候補数。win-1（地点の windows.since_utc 以降の撮影）からは、海とつながり艦が入れる水面で、船が着く線から band_m 以内の候補だけ（外した候補は detections の window_excluded、件数は status.json の window_excluded、水面の区分は windows/<地点>.geojson）。band_m より遠い開けた水面の候補は港内の錨泊として anchorage_counts.csv に別に数える",
-  "berth_class_counts.csv": "naval-1：岸壁の線の区分（海軍・民間・不明）ごとの数。1 行＝1 撮影×1 地点×1 範囲版（2026-11-05 以降の撮影で、区分の設定 sat/berth_class/<地点>.json のある地点だけ）。harbour_*・quay_*＝候補の数（見出しの harbour_candidates・quay_candidates は *_naval と同じ。size-1（2026-11-06 以降）は *_naval − *_small）、stretches_*＝岸壁の占有区間の数、occupied_max_*＝その上限の隻数の和（見出しの quay_counts は海軍の線だけ）",
+  "berth_class_counts.csv": "naval-1：岸壁の線の区分（海軍・民間・不明）ごとの数。1 行＝1 撮影×1 地点×1 範囲版（2026-11-05 以降の撮影〔sat/berths.json の naval_since が早い地点はその日から〕で、区分の設定 sat/berth_class/<地点>.json のある地点だけ）。harbour_*・quay_*＝候補の数（見出しの harbour_candidates・quay_candidates は *_naval と同じ。size-1（2026-11-06 以降）は *_naval − *_small）、stretches_*＝岸壁の占有区間の数、occupied_max_*＝その上限の隻数の和（見出しの quay_counts は海軍の線だけ）",
   "anchorage_counts.csv": "win-1：港内の錨泊。1 行＝1 撮影×1 地点×1 範囲版。船が着く線から band_m より遠い港内水域の候補の数（anchorage_candidates、区画ごと by_sector、長さ 50 m 未満・以上）。岸壁の隻数とは別。窓の規則（windows.since_utc）以降の撮影だけ",
   "quay_candidates": "岸壁帯（陸マスクから 50 m 以内）の候補数。berth-1（2026-11-01〜、quay.berths）からは船が着く線に沿う候補だけ（着かない海岸線沿い・線の無い陸際の候補は detections の GeoJSON に残すが数えない。除いた数は status.json の quay_band_excluded）",
   "confirmed": "確認数（人が画像で確かめた数。未記入は空）",
@@ -2534,7 +2534,9 @@
       }
      ],
      "exclude_ways": [],
-     "note": null
+     "note": null,
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
     },
     "ZDH": {
      "coastline": [
@@ -2550,7 +2552,9 @@
       }
      ],
      "exclude_ways": [],
-     "note": null
+     "note": null,
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
     },
     "QJG": {
      "coastline": [
@@ -2569,7 +2573,9 @@
       -1,
       -2
      ],
-     "note": "港内の突堤の線（QJG-quay-v3 の id −2、Esri World Imagery の目視判読 2026-11-05、sat/masks/QJG-manual.geojson。v2 の手書きの −1〔S2 の目測〕を置き換えた）は berth-1 では外し（−1 も保存済みの地物に残っていたときのため外したまま）、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする"
+     "note": "港内の突堤の線（QJG-quay-v3 の id −2、Esri World Imagery の目視判読 2026-11-05、sat/masks/QJG-manual.geojson。v2 の手書きの −1〔S2 の目測〕を置き換えた）は berth-1 では外し（−1 も保存済みの地物に残っていたときのため外したまま）、naval-1（2026-11-05 以降の撮影、sat/berth_class/QJG.json の added）から着く線にする",
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
     },
     "QDH": {
      "coastline": [],
@@ -2579,7 +2585,9 @@
       -3,
       -4
      ],
-     "note": "西港区の桟橋 4 本（QDH-quay-v2 の id −1〜−4、Esri World Imagery の目視判読 2026-11-05、sat/masks/QDH-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QDH.json の added）から着く線にする"
+     "note": "西港区の桟橋 4 本（QDH-quay-v2 の id −1〜−4、Esri World Imagery の目視判読 2026-11-05、sat/masks/QDH-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/QDH.json の added）から着く線にする",
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
     },
     "MAW": {
      "coastline": [],
@@ -2587,6 +2595,27 @@
       -1
      ],
      "note": "手書きの造船所の岸壁（MAW-quay-v2 の id −1、sat/masks/MAW-manual.geojson）は berth-1 では外し、naval-1（2026-11-05 以降の撮影、sat/berth_class/MAW.json の added）から着く線にする"
+    },
+    "LSN": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
+    },
+    "XSN": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
+    },
+    "SWS": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-11-01",
+     "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
     }
    }
   },
@@ -2595,7 +2624,7 @@
    "since_utc": "2026-11-05",
    "files": "sat/berth_class/<地点>.json",
    "geojson": "berth_class.geojson",
-   "rule": "船が着く線を一本ずつ海軍（naval：海軍の区域の桟橋・岸壁、建造・整備中の艦の着く造船所の岸壁を含む）・民間（civil）・不明（unknown）に分ける。since_utc 以降の撮影では、見出しの数（ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠）に海軍の線に沿うものだけを入れる。民間・不明の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv に別に出す。それより前の撮影の行は書き換えない",
+   "rule": "船が着く線を一本ずつ海軍（naval：海軍の区域の桟橋・岸壁、建造・整備中の艦の着く造船所の岸壁を含む）・民間（civil）・不明（unknown）に分ける。since_utc（地点ごとの sites.<地点>.since_utc が早い地点はその日）以降の撮影では、見出しの数（ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠）に海軍の線に沿うものだけを入れる。民間・不明の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv に別に出す。それより前の撮影の行は書き換えない",
    "sites": {
     "LSN": {
      "lines": {
@@ -2605,7 +2634,8 @@
      },
      "lines_version": "LSN-quay-v1",
      "confidence": "中（内港は海軍の旅順基地。北岸の岸壁は OSM の軍の区域が無く、溫約瑟の地図の点と画像による推定）",
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "MAW": {
      "lines": {
@@ -2615,7 +2645,8 @@
      },
      "lines_version": "MAW-quay-v2",
      "confidence": "低〜中（造船所の岸壁は OSM の外形からの手書き。造船所の外の桟橋 4 本は根拠が無く不明）",
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-05"
     },
     "QDH": {
      "lines": {
@@ -2625,7 +2656,8 @@
      },
      "lines_version": "QDH-quay-v2",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "QGZ": {
      "lines": {
@@ -2635,7 +2667,8 @@
      },
      "lines_version": "QGZ-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "QJG": {
      "lines": {
@@ -2645,7 +2678,8 @@
      },
      "lines_version": "QJG-quay-v3",
      "confidence": "中（OSM の基地の区域と溫約瑟の地図で海軍。南の外海に面した海岸線を berth-1 が区画 A1 で戻しているのは 2部の確認待ちのまま）",
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "SLP": {
      "lines": {
@@ -2655,7 +2689,8 @@
      },
      "lines_version": "SLP-quay-v2",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-05"
     },
     "STU": {
      "lines": {
@@ -2665,7 +2700,8 @@
      },
      "lines_version": "STU-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-05"
     },
     "SWS": {
      "lines": {
@@ -2675,7 +2711,8 @@
      },
      "lines_version": "SWS-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "SYL": {
      "lines": {
@@ -2685,7 +2722,8 @@
      },
      "lines_version": "SYL-quay-v2",
      "confidence": "中（旧港・修理施設・西岸は OSM の海軍の区域で確認寄り。F1〜F5 の櫛形桟橋は不明のまま＝見出しに入らない）",
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-05"
     },
     "XMN": {
      "lines": {
@@ -2695,7 +2733,8 @@
      },
      "lines_version": "XMN-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-05"
     },
     "XSN": {
      "lines": {
@@ -2705,7 +2744,8 @@
      },
      "lines_version": "XSN-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "ZDH": {
      "lines": {
@@ -2715,7 +2755,8 @@
      },
      "lines_version": "ZDH-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-01"
     },
     "ZJG": {
      "lines": {
@@ -2725,7 +2766,8 @@
      },
      "lines_version": "ZJG-quay-v1",
      "confidence": null,
-     "note": null
+     "note": null,
+     "since_utc": "2026-11-05"
     }
    }
   },

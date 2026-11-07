@@ -1059,6 +1059,521 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "LSN",
+   "acquired_utc": "2026-11-01T22:03:46Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "relative_orbit": 76,
+   "mask_version": "LSN-land-v1",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261101T220346_20261101T220411_010149_014422_9160_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:35Z",
+   "processing_units": 1.61920166015625,
+   "coverage": 0.993,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 15
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 2,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9164,
+    "water_fraction": 0.196,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 349,
+    "clusters": 96,
+    "dropped_small": 64,
+    "dropped_vh": 9
+   },
+   "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "QDH",
+   "acquired_utc": "2026-11-01T22:04:36Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "relative_orbit": 76,
+   "mask_version": "QDH-land-v2",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261101T220436_20261101T220501_010149_014422_61A9_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:19:59Z",
+   "processing_units": 1.5418624877929688,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 24
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 7,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9061,
+    "water_fraction": 0.3602,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 602,
+    "clusters": 117,
+    "dropped_small": 71,
+    "dropped_vh": 10
+   },
+   "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "QJG",
+   "acquired_utc": "2026-11-01T22:04:36Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "relative_orbit": 76,
+   "mask_version": "QJG-land-v1",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261101T220436_20261101T220501_010149_014422_61A9_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:29Z",
+   "processing_units": 0.6591796875,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 6
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 9,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8568,
+    "water_fraction": 0.368,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 305,
+    "clusters": 40,
+    "dropped_small": 17,
+    "dropped_vh": 2
+   },
+   "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-11-01T22:05:01Z",
+   "platform": "sentinel-1c",
+   "orbit_direction": "descending",
+   "relative_orbit": 76,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1C_IW_GRDH_1SDV_20261101T220501_20261101T220526_010149_014422_DBBA_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:18:40Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 5,
+    "coastline": 0
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 3,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7564,
+    "water_fraction": 0.4463,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 685,
+    "clusters": 165,
+    "dropped_small": 116,
+    "dropped_vh": 9
+   },
+   "quay_result": "no_baseline"
+  },
+  {
+   "site_id": "XSN",
+   "acquired_utc": "2026-11-02T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "XSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095402_20261102T095427_005287_00A0E7_1865_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:15Z",
+   "processing_units": 1.801445007324219,
+   "coverage": 0.996,
+   "quay_band_excluded": {
+    "off_berth": 2,
+    "coastline": 24
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 31,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8723,
+    "water_fraction": 0.3688,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 770,
+    "clusters": 191,
+    "dropped_small": 99,
+    "dropped_vh": 27
+   },
+   "quay_excluded": {
+    "segments": 2,
+    "length_m": 120,
+    "max": 2,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "ZDH",
+   "acquired_utc": "2026-11-02T09:54:02Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "ZDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095402_20261102T095427_005287_00A0E7_1865_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:18:56Z",
+   "processing_units": 3.1217956542968746,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 14
+   },
+   "naval_excluded": {
+    "civil": 1,
+    "unknown": 27,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9635,
+    "water_fraction": 0.3468,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 1306,
+    "clusters": 191,
+    "dropped_small": 116,
+    "dropped_vh": 15
+   },
+   "quay_excluded": {
+    "segments": 13,
+    "length_m": 1150,
+    "max": 25,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 2,
+     "max": 2
+    },
+    "unknown": {
+     "segments": 7,
+     "max": 9
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "SWS",
+   "acquired_utc": "2026-11-02T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "SWS-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095427_20261102T095452_005287_00A0E7_39D3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:25Z",
+   "processing_units": 0.965423583984375,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 1,
+    "coastline": 0
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 0,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9845,
+    "water_fraction": 0.0513,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 22,
+    "clusters": 11,
+    "dropped_small": 9,
+    "dropped_vh": 1
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QDH",
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QDH-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095542_20261102T095607_005287_00A0E7_9217_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:04Z",
+   "processing_units": 1.5418624877929688,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 21
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 13,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9574,
+    "water_fraction": 0.4111,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 561,
+    "clusters": 133,
+    "dropped_small": 84,
+    "dropped_vh": 8
+   },
+   "quay_excluded": {
+    "segments": 22,
+    "length_m": 3090,
+    "max": 54,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 4,
+     "max": 4
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QGZ",
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QGZ-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095542_20261102T095607_005287_00A0E7_9217_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:18:46Z",
+   "processing_units": 1.8959197998046875,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 2,
+    "coastline": 2
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 4,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.7508,
+    "water_fraction": 0.4402,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 653,
+    "clusters": 168,
+    "dropped_small": 115,
+    "dropped_vh": 10
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "QJG",
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "QJG-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095542_20261102T095607_005287_00A0E7_9217_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:31Z",
+   "processing_units": 0.6591796875,
+   "coverage": 0.999,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 8
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 6,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.8859,
+    "water_fraction": 0.3952,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 473,
+    "clusters": 73,
+    "dropped_small": 39,
+    "dropped_vh": 2
+   },
+   "quay_excluded": {
+    "segments": 2,
+    "length_m": 70,
+    "max": 2,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "LSN",
+   "acquired_utc": "2026-11-02T09:56:32Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "LSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095632_20261102T095657_005287_00A0E7_98F3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-07T06:20:38Z",
+   "processing_units": 1.61920166015625,
+   "coverage": 0.998,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 26
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 6,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9822,
+    "water_fraction": 0.2595,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 572,
+    "clusters": 107,
+    "dropped_small": 56,
+    "dropped_vh": 10
+   },
+   "quay_excluded": {
+    "segments": 5,
+    "length_m": 590,
+    "max": 12,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "STU",
    "acquired_utc": "2026-11-05T10:16:50Z",
    "platform": "sentinel-1d",
@@ -1224,150 +1739,150 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-06T13:08:14Z",
+  "run_utc": "2026-11-07T06:18:14Z",
   "sites": [
    {
     "site_id": "ZJG",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 2,
     "acquisitions": 1,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 895.52
    },
    {
     "site_id": "SYL",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 2,
     "acquisitions": 1,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 895.52
    },
    {
     "site_id": "SLP",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 0,
     "acquisitions": 0,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 895.52
    },
    {
     "site_id": "QGZ",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 0,
-    "counted": 0,
+    "new": 2,
+    "counted": 2,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 891.73
    },
    {
     "site_id": "ZDH",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 888.6
    },
    {
     "site_id": "QDH",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 0,
-    "counted": 0,
+    "new": 2,
+    "counted": 2,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 885.52
    },
    {
     "site_id": "XSN",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 883.72
    },
    {
     "site_id": "SWS",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 882.75
    },
    {
     "site_id": "QJG",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 0,
-    "counted": 0,
+    "new": 2,
+    "counted": 2,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
+    "budget_left_pu": 881.44
    },
    {
     "site_id": "LSN",
-    "lookback_days": 6,
+    "lookback_days": 7,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 2,
+    "counted": 2,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 878.2
+   },
+   {
+    "site_id": "XMN",
+    "lookback_days": 7,
     "catalog_items": 2,
     "acquisitions": 2,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 898.57
-   },
-   {
-    "site_id": "XMN",
-    "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 897.22
+    "budget_left_pu": 878.2
    },
    {
     "site_id": "STU",
-    "lookback_days": 6,
+    "lookback_days": 7,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 895.55
-   },
-   {
-    "site_id": "MAW",
-    "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 895.55
+    "budget_left_pu": 878.2
+   },
+   {
+    "site_id": "MAW",
+    "lookback_days": 7,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 878.2
    }
   ],
   "s2": [
@@ -1406,14 +1921,14 @@
    },
    {
     "site_id": "QGZ",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.009,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "ZDH",
@@ -1428,14 +1943,14 @@
    },
    {
     "site_id": "QDH",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.007,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XSN",
@@ -1461,25 +1976,25 @@
    },
    {
     "site_id": "QJG",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.005,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "LSN",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.008,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XMN",
@@ -1494,14 +2009,14 @@
    },
    {
     "site_id": "STU",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.008,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "MAW",
@@ -1516,16 +2031,16 @@
     "requests": 1
    }
   ],
-  "s2_requests": 18,
-  "s2_processing_units": 0.036,
-  "requests": 33,
-  "processing_units": 3.05,
+  "s2_requests": 13,
+  "s2_processing_units": 0.0,
+  "requests": 37,
+  "processing_units": 17.321,
   "pu_source": "header",
-  "scenes": 2,
-  "month_pu_before": 101.432,
+  "scenes": 11,
+  "month_pu_before": 104.482,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-06T13:08:14Z",
+ "updated_utc": "2026-11-07T06:18:14Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
@@ -1968,8 +2483,8 @@
    "to_mask_version": "QGZ-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "ZDH",
@@ -1978,8 +2493,8 @@
    "to_mask_version": "ZDH-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QJG",
@@ -1988,8 +2503,8 @@
    "to_mask_version": "QJG-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "QDH",
@@ -1998,8 +2513,8 @@
    "to_mask_version": "QDH-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XSN",
@@ -2008,8 +2523,8 @@
    "to_mask_version": "XSN-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "LSN",
@@ -2018,8 +2533,8 @@
    "to_mask_version": "LSN-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "SWS",
@@ -2028,8 +2543,8 @@
    "to_mask_version": "SWS-land-v1",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
-   "date_utc": "2026-11-05",
-   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+   "date_utc": "2026-11-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-11-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
    "site_id": "XMN",
