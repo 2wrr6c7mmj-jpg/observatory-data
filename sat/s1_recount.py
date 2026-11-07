@@ -22,8 +22,9 @@ Budget, explicit here and checked before every request (port_archive.LimitedClie
 * ``--max-scenes SITE=N``: at most N scenes of the site, the nearest to their label day (|dt_h| of the plan's per_day)
   first; the rest are listed under ``deferred`` for a later run.
 
-Ops-4 (2026-11-07, the owner's priority: ports first, SYL -> SLP -> QGZ within the 40 PU): SYL 4 + SLP 7 (the 2026-10-14
-scene of both is in est-2) + QGZ 4 of 8, about 38.3 PU by the estimate; the other 4 QGZ scenes (about 7.6 PU) wait.
+Ops-4 (2026-11-07, the owner's priority: ports first, SYL -> SLP -> QGZ within the 40 PU): first run SYL 4 + SLP 7 (the
+2026-10-14 scene of both is in est-2) + QGZ 4 of 8 = 15 scenes, 25.5 PU by the header (the plan's estimate, 38.3 PU, counts
+3 bands; the request has 2, so a scene costs 2/3 of it); second run the other 4 QGZ scenes (about 5.1 PU).
 
 ``--match`` (no CDSE, PU 0): labels/<site>-s2-s1-match.csv from the saved chips, in the shape of Zhanjiang's table
 (sat/s2_labels.MATCH_FIELDS): one row per section the owner was asked about (labels/<site>/review*.json) x label day, with
@@ -37,7 +38,7 @@ The usage row (run_utc, site_id, probe_version, requests, processing_units) is a
 
     python -m sat.s1_recount --site SYL SLP QGZ --raw probe-raw/s1-recount --budget-month 2026-11 \
         --global-cap 9000 --global-margin 450 --ocean-cap 7000 --usage U/*.csv --ports-usage P/*.csv \
-        --usage-out docs/data/sat/s1_recount_usage.csv --skip-est2 --max-scenes QGZ=4
+        --usage-out docs/data/sat/s1_recount_usage.csv --skip-est2 [--max-scenes QGZ=4]
     python -m sat.s1_recount --match --site SYL SLP QGZ --raw probe-raw/s1-recount      # the match tables, PU 0
 """
 from __future__ import annotations
