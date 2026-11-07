@@ -99,6 +99,19 @@ class LineClassTest(unittest.TestCase):
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
+class NavalGapSeriesTest(unittest.TestCase):
+    def test_series_break_dates_per_site(self):
+        """meta.json: the naval series break of a gap site starts 2026-11-01 and says the gap scenes were counted again."""
+        from sat import run as srun
+        br = {b["site_id"]: b for b in srun.series_breaks(srun.load_sites()) if b.get("kind") == "naval"}
+        self.assertEqual(br["LSN"]["date_utc"], "2026-11-01")
+        self.assertIn("naval-gap-1", br["LSN"]["note"])
+        self.assertEqual(br["STU"]["date_utc"], berths.NAVAL_SINCE)
+        self.assertNotIn("naval-gap-1", br["STU"]["note"])
+        self.assertNotIn("ZJG", {k for k, v in br.items() if v["date_utc"] != berths.NAVAL_SINCE})
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
 class ClassifyNavalTest(unittest.TestCase):
     def test_candidates_by_date(self):
         from sat import run
