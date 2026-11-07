@@ -11,6 +11,8 @@ OSM quay lines as in Zhanjiang (sat/s2_labels.py sections()).
     python -m sat.s2_answers prepare --site ZJG --oos                    # out-of-sample days (from the freeze on)
     python -m sat.s2_answers merge   --site SYL --file ~/Downloads/SYL-s2-answers.csv
     python -m sat.s2_answers plan                                        # S1 re-fetch list and PU, every port with a review set
+    python -m sat.s2_answers prepare --s1 --site QGZ --raw-ref origin/probe/sat-s1-recount-ops4   # the S1 check (same-time truth)
+    python -m sat.s2_answers merge   --s1 --site QGZ --file ~/Downloads/QGZ-s1-answers.csv
 
 prepare   writes docs/data/sat/labels/<site>/review.json (days, candidate sections as pixel rings, the S1 scenes
           each day can be paired with), the pictures docs/data/sat/labels/<site>/img/<date>.webp (as archived,
@@ -24,6 +26,17 @@ plan      what has to be fetched again from Sentinel-1 for the answered days (no
 Candidate sections: the pieces whose stored Sentinel-1 stretches change between scenes come first (they
 carry the information on how many rows abreast), then the ones occupied every time, then never; at most
 two thirds of the picks from one OSM way is avoided by a round robin over the ways.
+
+The S1 check (``--s1``; design 設計_同日の正解と港の誤り検品 2026-11 §2, PU 0): the unit is one Sentinel-1 scene x one
+section. The raw chips of the re-count (probe-raw/s1-recount/<site>/s1-<stamp>.npz, VV and VH in dB, on a probe
+branch: ``--raw-ref``, or a directory: ``--raw-dir``) are drawn as the same false colour as the published pictures
+(sat/color.render, s1fc-1) into labels/<site>/s1/<stamp>.webp, and review-s1.json lists the scenes (acquired_utc,
+relative_orbit, image, the nearest Sentinel-2 day of the review set within +-4 days with its time difference) and the
+same sections as review.json, each with the mechanical "readable in S1 / needs S2" mark per orbit (§2.4: the baseline
+VV p10 of the inner band under READABLE["p10_max_db"], p90 - p10 at least READABLE["spread_min_db"], land under
+READABLE["land_max"] of the pixels off the edge; a blind section is never readable). The page docs/sat/label/?s1=1
+shows S1 and S2 side by side, asks present / absent / cannot judge, and pre-fills the owner's S2 answer when the S2
+day is within S1_PREFILL_H. ``merge --s1`` writes labels/<site>-s1-answers.csv, key (section_id, s1_acquired_utc).
 """
 from __future__ import annotations
 
@@ -41,6 +54,7 @@ import numpy as np
 
 from . import cdse, quay, quay_est2 as e2, quay_lines
 from .grid import Grid, m_per_deg
+from .s1_recount import RAW_SUBDIR
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
@@ -55,6 +69,14 @@ ANSWER_FIELDS = ["site_id", "section_id", "date", "verified", "verified_occupied
                  "verified_by", "verified_note"]
 SCENE_FIELDS = ["site_id", "date", "warships_60", "note"]
 CHOICES = {"unsure": ("0", "", ""), "none": ("1", "0", "0"), "1": ("1", "1", "1"), "2": ("1", "1", "2"), "3": ("1", "1", "3")}
+# the S1 check (same-time truth)
+S1_REVIEW_VERSION = "s1rev-1"
+S1_ANSWER_FIELDS = ["site_id", "section_id", "s1_acquired_utc", "relative_orbit", "s2_date", "dt_h", "verified", "verified_occupied",
+                    "verified_by", "verified_note"]
+S1_PREFILL_H = 48.0          # the owner's S2 answer is the default when the S2 day is within this of the S1 scene
+S1_S2_WINDOW_DAYS = 4.0      # the nearest S2 day shown beside the S1 scene
+READABLE = {"p10_max_db": -14.0, "spread_min_db": 8.0, "land_max": 0.4, "blind_p10_db": quay.BLIND_P10_DB, "blind_share_max": 0.5}
+SEC_PER_CELL = {"prefilled": 5, "read": 12}   # seconds per cell for the time estimate
 
 
 # ---------------------------------------------------------------- helpers
@@ -386,6 +408,220 @@ def plan_all(out: Path = OUT) -> dict:
     return res
 
 
+# ---------------------------------------------------------------- the S1 check (same-time truth, PU 0)
+def s1_answers_path(out: Path, site_id: str) -> Path:
+    return out / "labels" / f"{site_id}-s1-answers.csv"
+
+
+def s1_review_path(out: Path, site_id: str) -> Path:
+    return out / "labels" / site_id / "review-s1.json"
+
+
+class RawStore:
+    """The saved Sentinel-1 chips of the re-count (sat/s1_recount.save): <raw>/<site>/s1-<stamp>.npz + .json, on a git
+    ref (the probe branch, read with git show: nothing is checked out) or in a directory."""
+
+    def __init__(self, ref: str | None = None, directory: Path | None = None, repo: Path = ROOT, subdir: str = RAW_SUBDIR):
+        self.ref, self.dir, self.repo, self.subdir = ref, directory, repo, subdir
+
+    def _bytes(self, site_id: str, name: str) -> bytes | None:
+        if self.dir is not None:
+            p = self.dir / site_id / name
+            return p.read_bytes() if p.exists() else None
+        if self.ref:
+            r = subprocess.run(["git", "show", f"{self.ref}:{self.subdir}/{site_id}/{name}"], cwd=self.repo, capture_output=True)
+            return r.stdout if r.returncode == 0 else None
+        return None
+
+    def stems(self, site_id: str) -> list[str]:
+        """The chips of a site (s1-<stamp>), sorted."""
+        if self.dir is not None:
+            return sorted(p.stem for p in (self.dir / site_id).glob("s1-*.npz")) if (self.dir / site_id).is_dir() else []
+        if self.ref:
+            r = subprocess.run(["git", "ls-tree", "--name-only", f"{self.ref}:{self.subdir}/{site_id}"], cwd=self.repo, capture_output=True)
+            if r.returncode != 0:
+                return []
+            return sorted(n[:-4] for n in r.stdout.decode("utf-8").split() if n.startswith("s1-") and n.endswith(".npz"))
+        return []
+
+    def load(self, site_id: str, stem: str):
+        """(vv dB, vh dB, meta) or None."""
+        b = self._bytes(site_id, stem + ".npz")
+        if b is None:
+            return None
+        z = np.load(io.BytesIO(b))
+        m = self._bytes(site_id, stem + ".json")
+        return z["vv"].astype(np.float64), z["vh"].astype(np.float64), (json.loads(m.decode("utf-8")) if m else {})
+
+
+def readability(sec: dict, geom, mask, base: dict, rules: dict = READABLE) -> dict:
+    """The mechanical mark of one section under one orbit's baseline (§2.4): the baseline VV p10 of the inner band (its
+    median over the section) darker than ``p10_max_db``, the spread p90 - p10 at least ``spread_min_db``, land (the land
+    mask over the depth pixels 5-120 m off the edge) under ``land_max``, and the blind share (samples whose inner p10 is above
+    ``blind_p10_db``, as quay.blind_stretches) under ``blind_share_max``. Returns the figures and ``readable``."""
+    import warnings
+    from .osm_mask import WATER
+    pr = geom.profiles[sec["profile"]]
+    idx = np.asarray(sec["idx"])
+    ni = pr["n_inner"]
+    rr, cc, valid = pr["rr"][idx, :ni], pr["cc"][idx, :ni], pr["valid"][idx, :ni]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        p10 = np.where(valid, base["vv_p10"][rr, cc], np.nan)
+        p90 = np.where(valid, base["vv_p90"][rr, cc], np.nan)
+        smax = np.nanmax(p10, 1)
+        blind = float(np.mean(np.isfinite(smax) & (smax > rules["blind_p10_db"]))) if len(smax) else 1.0
+        med10 = float(np.nanmedian(p10)) if np.isfinite(p10).any() else None
+        med90 = float(np.nanmedian(p90)) if np.isfinite(p90).any() else None
+    drr, dcc = pr["drr"][idx], pr["dcc"][idx]
+    land = float(np.mean(mask[drr, dcc] != WATER))
+    why = []
+    if med10 is None or med10 >= rules["p10_max_db"]:
+        why.append("基準 p10 が明るい")
+    if med10 is None or med90 is None or med90 - med10 < rules["spread_min_db"]:
+        why.append("p90−p10 が小さい")
+    if land >= rules["land_max"]:
+        why.append("陸が多い")
+    if blind >= rules["blind_share_max"]:
+        why.append("盲域")
+    return {"p10_db": None if med10 is None else round(med10, 1), "p90_db": None if med90 is None else round(med90, 1),
+            "land_share": round(land, 2), "blind_share": round(blind, 2), "readable": not why, "why": "・".join(why)}
+
+
+def nearest_s2(days: list[dict], t: datetime, window_days: float = S1_S2_WINDOW_DAYS) -> dict | None:
+    """The review day nearest to ``t`` within the window: {date, image, grid, dt_h (S1 - S2, hours)}."""
+    best = None
+    for d in days:
+        dt = (t - cdse.parse_time(d["acquired_utc"])).total_seconds() / 3600.0
+        if abs(dt) <= window_days * 24 and (best is None or abs(dt) < abs(best["dt_h"])):
+            best = {"date": d["date"], "acquired_utc": d["acquired_utc"], "image": d["image"], "grid": d["grid"], "dt_h": round(dt, 1)}
+    return best
+
+
+def s2_prefill(answers: list[dict], section_ids: set, s2: dict | None, max_h: float = S1_PREFILL_H) -> dict:
+    """{section_id: "present" | "absent"} from the owner's S2 answers of the scene's S2 day when it is within ``max_h``."""
+    if s2 is None or abs(float(s2["dt_h"])) > max_h:
+        return {}
+    res = {}
+    for r in answers:
+        if r.get("date") == s2["date"] and r.get("section_id") in section_ids and r.get("verified") == "1":
+            res[r["section_id"]] = "present" if r.get("verified_occupied") == "1" else "absent"
+    return res
+
+
+def prepare_s1(site_id: str, out: Path = OUT, raw: RawStore | None = None, site: dict | None = None, log=print) -> dict:
+    """review-s1.json and labels/<site>/s1/<stamp>.webp from the saved chips (no CDSE). The sections are those of review.json
+    (the owner's S2 check); the scenes every chip of the site whose grid is the site's."""
+    from . import baseline as fbase
+    from . import color, s2_labels
+    from .osm_mask import MASK_DIR, load_mask
+    from .run import site_sectors, sector_of as _sector_of
+    site = site or site_config(site_id)
+    raw = raw or RawStore()
+    rv_path = review_path(out, site_id)
+    if not rv_path.exists():
+        log(f"{site_id}: review.json がない（先に prepare）")
+        return {"site_id": site_id, "scenes": 0}
+    rv = json.loads(rv_path.read_text(encoding="utf-8"))
+    grid = Grid.for_site(site)
+    mver = int(site.get("mask_version", 1))
+    mask, _ = load_mask(site_id, mver, MASK_DIR)
+    lines = quay_lines.load(site_id, int(site.get("quay_lines_version", quay_lines.LINES_VERSION)), MASK_DIR)
+    geom = quay.Geometry(grid, mask, lines)
+    sectors = site_sectors(site)
+    by_id = {sc["section_id"]: sc for sc in s2_labels.sections(geom, lambda lo, la: _sector_of(sectors, lo, la))}
+    bls = {}
+    for o in fbase.site_config(site)["orbits"]:
+        b = fbase.load(site, o, fbase.BASELINE_DIR)
+        if b is not None and (b[1].get("width"), b[1].get("height")) == (grid.width, grid.height):
+            bls[str(o)] = b[0]
+    ans = read_csv(answers_path(out, site_id))
+    sec_ids = {s["id"] for s in rv["sections"]}
+    sdir = out / "labels" / site_id / "s1"
+    sdir.mkdir(parents=True, exist_ok=True)
+    scenes, kept, skipped = [], set(), []
+    gdoc = {"west": grid.west, "south": grid.south, "east": grid.east, "north": grid.north, "width": grid.width, "height": grid.height}
+    for stem in raw.stems(site_id):
+        z = raw.load(site_id, stem)
+        if z is None:
+            continue
+        vv, vh, meta = z
+        if vv.shape != (grid.height, grid.width):
+            skipped.append(f"{stem}: {vv.shape[1]}x{vv.shape[0]} != grid {grid.width}x{grid.height}")
+            continue
+        acq = meta.get("acquired_utc") or (stem[3:13] + "T" + stem[14:22].replace("-", ":") + "Z")
+        ro = str(meta.get("relative_orbit", ""))
+        label = f"{site_id} S1 {acq} RO{ro} {meta.get('orbit_direction', '')}".strip()
+        credit = meta.get("credit") or f"Contains modified Copernicus Sentinel data {acq[:4]}"
+        full, _thumb = color.render(vv, vh, label, credit)
+        (sdir / f"{stem}.webp").write_bytes(full)
+        kept.add(stem)
+        s2 = nearest_s2(rv["days"], cdse.parse_time(acq))
+        scenes.append({"acquired_utc": acq, "relative_orbit": ro, "platform": meta.get("platform"), "orbit_direction": meta.get("orbit_direction"),
+                       "image": f"s1/{stem}.webp", "grid": gdoc, "s2": s2, "prefill": s2_prefill(ans, sec_ids, s2),
+                       "baseline": ro in bls})
+    for old in sdir.glob("*.webp"):
+        if old.stem not in kept:
+            old.unlink()
+    scenes.sort(key=lambda x: x["acquired_utc"])
+    out_secs = []
+    for s in rv["sections"]:
+        sc = by_id.get(s["id"])
+        marks = {}
+        for ro, base in bls.items():
+            marks[ro] = readability(sc, geom, mask, base) if sc is not None else {"readable": False, "why": "区間が今の線に無い"}
+        out_secs.append({**s, "s1": marks})
+    n_cells = len(out_secs) * len(scenes)
+    n_pre = sum(sum(1 for s in out_secs if s["id"] in sc["prefill"]) for sc in scenes)
+    minutes = round((n_pre * SEC_PER_CELL["prefilled"] + (n_cells - n_pre) * SEC_PER_CELL["read"]) / 60)
+    doc = {"version": S1_REVIEW_VERSION, "site_id": site_id, "name": site.get("name"), "kind": "s1", "frame_m": rv.get("frame_m", FRAME_M),
+           "zoom": rv.get("zoom", 8), "grid": gdoc, "scenes": scenes, "sections": out_secs, "cells": n_cells, "prefilled": n_pre,
+           "minutes_estimate": minutes, "prefill_h": S1_PREFILL_H, "s2_window_days": S1_S2_WINDOW_DAYS,
+           "answers_file": s1_answers_path(out, site_id).name, "color_version": color.COLOR_VERSION,
+           "credit": "Contains modified Copernicus Sentinel data " + ", ".join(sorted({x["acquired_utc"][:4] for x in scenes})),
+           "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）",
+           "readable_rule": {**READABLE, "note": ("S1 で判断できる区間の機械的な印（軌道ごと）：基準の VV p10（内側 0〜30 m）の区間の中央値が p10_max_db 未満、"
+                                                 "p90−p10 が spread_min_db 以上、水際から 120 m までの陸の割合が land_max 未満、盲域（p10 > blind_p10_db）の割合が "
+                                                 "blind_share_max 未満。満たさない区間は「要 S2」（既定は判断できない）。所有者は見て直せる")},
+           "skipped": skipped,
+           "selection": {"sections": "S2 の確認セット（review.json）と同じ区間", "scenes": "取り直しの S1（probe-raw/s1-recount）の全撮影のうち格子が今の地点のもの",
+                         "s2": f"各撮影の前後 {S1_S2_WINDOW_DAYS:g} 日以内で最も近い確認セットの S2 の日（無ければ null）",
+                         "prefill": f"S2 が {S1_PREFILL_H:g} 時間以内なら所有者の S2 の答えを初期値に（確認だけ）"}}
+    s1_review_path(out, site_id).write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    log(f"{site_id}: {len(scenes)} S1 scenes x {len(out_secs)} sections = {n_cells} cells ({n_pre} prefilled, about {minutes} min)"
+        + (f"; skipped {skipped}" if skipped else ""))
+    return {"site_id": site_id, "scenes": len(scenes), "sections": len(out_secs), "cells": n_cells, "prefilled": n_pre, "minutes": minutes}
+
+
+def merge_s1(site_id: str, file: Path, out: Path = OUT, by: str = "owner") -> dict:
+    """Add the page's S1 answers to labels/<site>-s1-answers.csv: key (section_id, s1_acquired_utc), the later answer replaces the
+    earlier; rows outside review-s1.json or with an unknown verified / occupied value are rejected and counted."""
+    rv = json.loads(s1_review_path(out, site_id).read_text(encoding="utf-8"))
+    secs = {s["id"] for s in rv["sections"]}
+    scenes = {s["acquired_utc"]: s for s in rv["scenes"]}
+    path = s1_answers_path(out, site_id)
+    cur = {(r["section_id"], r["s1_acquired_utc"]): r for r in read_csv(path)}
+    n_new = n_rep = 0
+    bad = []
+    for r in read_csv(file):
+        v, occ = (r.get("verified") or "").strip(), (r.get("verified_occupied") or "").strip()
+        acq = (r.get("s1_acquired_utc") or "").strip()
+        ok = r.get("section_id") in secs and acq in scenes and ((v == "0" and occ == "") or (v == "1" and occ in ("0", "1")))
+        if not ok:
+            bad.append(f"{r.get('section_id')}@{acq}")
+            continue
+        k = (r["section_id"], acq)
+        n_rep += k in cur
+        n_new += k not in cur
+        sc = scenes[acq]
+        cur[k] = {"site_id": site_id, "section_id": r["section_id"], "s1_acquired_utc": acq, "relative_orbit": sc.get("relative_orbit"),
+                  "s2_date": (sc.get("s2") or {}).get("date"), "dt_h": (sc.get("s2") or {}).get("dt_h"),
+                  "verified": v, "verified_occupied": occ, "verified_by": by, "verified_note": (r.get("verified_note") or "").strip()}
+    order = {s["id"]: i for i, s in enumerate(rv["sections"])}
+    write_csv(path, sorted(cur.values(), key=lambda r: (r["s1_acquired_utc"], order.get(r["section_id"], 0))), S1_ANSWER_FIELDS)
+    return {"site_id": site_id, "added": n_new, "replaced": n_rep, "rejected": bad, "total": len(cur)}
+
+
 # ---------------------------------------------------------------- merge
 def merge(site_id: str, file: Path, out: Path = OUT, oos: bool = False, by: str = "owner") -> dict:
     """Add a downloaded answers file to labels/<site>-s2-answers.csv (or -oos-answers.csv). Rows for a section or day outside
@@ -438,17 +674,25 @@ def main(argv=None) -> int:
     p.add_argument("--days", type=int, default=N_DAYS)
     p.add_argument("--sections", type=int, default=N_SECTIONS)
     p.add_argument("--naval-only", action="store_true", help="candidates: the sections on naval-1's naval lines only")
+    p.add_argument("--s1", action="store_true", help="the S1 check: review-s1.json and labels/<site>/s1/*.webp from the saved chips")
+    p.add_argument("--raw-ref", help="--s1: git ref holding probe-raw/s1-recount/<site>/ (e.g. origin/probe/sat-s1-recount-ops4)")
+    p.add_argument("--raw-dir", type=Path, help="--s1: directory holding <site>/s1-*.npz instead")
     m = sub.add_parser("merge")
     m.add_argument("--site", required=True)
     m.add_argument("--file", type=Path, required=True)
     m.add_argument("--out", type=Path, default=OUT)
     m.add_argument("--oos", action="store_true")
+    m.add_argument("--s1", action="store_true", help="the S1 check's answers -> labels/<site>-s1-answers.csv")
     pl = sub.add_parser("plan")
     pl.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args(argv)
-    if a.cmd == "prepare":
+    if a.cmd == "prepare" and a.s1:
+        print(json.dumps(prepare_s1(a.site, a.out, RawStore(a.raw_ref, a.raw_dir)), ensure_ascii=False))
+    elif a.cmd == "prepare":
         r = prepare(a.site, a.out, Archive(a.archive_ref, a.archive_dir), a.oos, a.days, a.sections, naval_only=a.naval_only)
         print(json.dumps({k: v for k, v in r.items() if k != "plan"}, ensure_ascii=False))
+    elif a.cmd == "merge" and a.s1:
+        print(json.dumps(merge_s1(a.site, a.file, a.out), ensure_ascii=False))
     elif a.cmd == "merge":
         print(json.dumps(merge(a.site, a.file, a.out, a.oos), ensure_ascii=False))
     else:

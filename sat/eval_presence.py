@@ -14,8 +14,10 @@ The judge's probability of "a ship of 50 m or more is present" on the section:
 * est-2 (quay_est2.json / quay_est2/<site>.json) when the scene is in it: the stretch of the same OSM way and side with the
   most points within SECTION_MATCH_M of the section (its line is the quay feature of the same ``n`` in quay/<site>/*.geojson);
   p = p_real when its ship_length_m >= MIN_LENGTH_M, else 0; no stretch: 0.
-* otherwise the stored Sentinel-1 re-count of Zhanjiang's labelled days (labels/ZJG-s2-s1-match.csv): p = 1 when s1_occupied
-  is 1 and s1_occ_len_m >= MIN_LENGTH_M, else 0 (a 0/1 judge: its Brier score is its error rate).
+* otherwise the stored Sentinel-1 re-count (labels/<site>-s2-s1-match.csv): p = 1 when the stretch that reaches into the
+  section (s1_stretch_len_m: the full length of the stretch, the same quantity as est-2's ship_length_m; ports, s1-match-2) is
+  MIN_LENGTH_M or longer, else 0; a table without that column (Zhanjiang, s1-match-1): s1_occupied 1 and s1_occ_len_m >=
+  MIN_LENGTH_M (the occupied length inside the section). A 0/1 judge: its Brier score is its error rate.
 * a scene stored in neither is not judged: the cell is counted under ``no_scene`` and left out of the metrics (an unstored scene
   is not "absent").
 
@@ -24,6 +26,14 @@ on) apart: confusion matrix at p >= 0.5 (tp, fp, fn, tn), recall = tp / (tp + fn
 the base rate of the owner's "present" and the judge's mean p. ``any_length`` repeats the metrics with the length rule off
 (the owner's label does not carry the length of the ship: a quay occupied by a boat under 50 m is "present" to the owner and
 "absent" to the 50 m target; this variant shows how much of the disagreement is that).
+
+Two truths (``--truth``, design 設計_同日の正解と港の誤り検品 2026-11 §2): ``s2`` (default, above) and ``s1``, the owner's answer
+at the Sentinel-1 scene itself (labels/<site>-s1-answers.csv of the S1 check page, key (section_id, s1_acquired_utc): no pairing,
+dt_h 0). presence.json carries the chosen truth as its body and the other under ``other_truth`` (metrics and rows), so both are
+always published side by side. Every row carries ``blind_share`` (the share of the section's line on a likely-blind stretch of
+the scene's orbit, quay/<site>/blind.geojson: the baseline VV p10 of the inner band above -8 dB) and ``line_conf`` (naval-1's
+confidence of the line: 確認寄り / 推定 / fixed / unknown), and the metrics are repeated by blind (blind_share >= BLIND_SHARE) /
+clear and by line confidence.
 
 Pure Python (no numpy, no CDSE: PU 0). Output docs/data/sat/eval/presence.json and docs/data/sat/eval/meta.json.
 
@@ -55,12 +65,15 @@ from . import berths
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
-EVAL_VERSION = "eval-presence-1"
+EVAL_VERSION = "eval-presence-2"   # eval-presence-1 + the s1 truth, blind / confidence splits, the stretch length rule of the re-count
 MIN_LENGTH_M = 50.0
 SECTION_MATCH_M = 20.0        # as sat/quay_est2.SECTION_MATCH_M (not imported: quay_est2 needs numpy)
 THRESHOLD = 0.5
 FAR_H = 48.0                  # |S1 - S2| beyond this is "far" in the pairing summary
 SOURCES = ("est-2", "s1-recount")
+TRUTHS = ("s2", "s1")
+BLIND_SHARE = 0.5             # a cell whose section lies on a blind stretch for at least this share is "blind"
+BLIND_MATCH_M = 20.0          # a point of the section line within this of a blind stretch of the same OSM way is blind
 NAMES = {"ZJG": "湛江", "SYL": "三亜・楡林", "SLP": "三亜・亜龍湾", "QGZ": "青島・古鎮口", "ZDH": "舟山・定海",
          "LSN": "大連・旅順", "QDH": "青島港内", "QJG": "青島・姜哥荘", "XSN": "象山", "SWS": "汕尾", "STU": "汕頭",
          "XMN": "厦門", "MAW": "馬尾"}
@@ -143,9 +156,66 @@ def site_sections(out: Path, site: dict) -> dict[str, dict]:
                                                 "lon": pr.get("lon", line[len(line) // 2][0]), "lat": pr.get("lat", line[len(line) // 2][1])})
     for s in secs.values():
         s["class"] = b.line_class(s["way_id"], float(s["lon"]), float(s["lat"]))
+        s["conf"] = line_conf(b, site, s["way_id"], float(s["lon"]), float(s["lat"]))
         s["naval"] = s["class"] == "naval"
         s["eligible"] = s["naval"] and s["length_m"] >= MIN_LENGTH_M
     return secs
+
+
+def line_conf(b: "berths.Berths", site: dict, way_id, lon: float, lat: float) -> str:
+    """naval-1's confidence of the line's class at (lon, lat): the entry's ``conf`` (確認寄り, 推定), "fixed" for a decision by
+    hand without one, "unknown" when the way has no entry (the same entry line_class picks)."""
+    areas = {x["id"]: x for x in (site.get("sectors") or [])}
+    for e in (b.classes or {}).get("lines") or []:
+        if str(e.get("way")) != str(way_id):
+            continue
+        part = e.get("part") or {}
+        if part.get("sector"):
+            area = areas.get(part["sector"], {"bbox": [0, 0, 0, 0]})
+        elif part.get("bbox") or part.get("polygon"):
+            area = part
+        else:
+            area = None
+        if area is None or berths._in_area(area, lon, lat):
+            return str(e.get("conf") or ("fixed" if e.get("fixed") else "unknown"))
+    return "unknown"
+
+
+def blind_stretches(out: Path, site_id: str, lat0: float) -> dict:
+    """{relative_orbit: [(osm_way, [(x, y), ...]), ...]} of the likely-blind stretches (quay/<site>/blind.geojson, or the shared
+    quay/blind.geojson), in metres (``_xy`` with the site's ``lat0``, the same as the sections)."""
+    p = out / "quay" / site_id / "blind.geojson"
+    if not p.exists():
+        p = out / "quay" / "blind.geojson"
+    if not p.exists():
+        return {}
+    res: dict = {}
+    for f in json.loads(p.read_text(encoding="utf-8"))["features"]:
+        pr = f["properties"]
+        if pr.get("site_id") != site_id:
+            continue
+        g = f["geometry"]
+        coords = [g["coordinates"]] if g["type"] == "Point" else g["coordinates"]
+        res.setdefault(str(pr.get("relative_orbit")), []).append((str(pr.get("osm_way")), _xy(coords, lat0)))
+    return res
+
+
+def blind_share(sec: dict, blind: dict, orbit, lat0: float) -> float | None:
+    """The share of the section's line points within BLIND_MATCH_M of a blind stretch of the same OSM way and orbit (None: the
+    orbit has no blind layer)."""
+    sts = blind.get(str(orbit))
+    if sts is None:
+        return None
+    pts = _xy(sec["line"], lat0)
+    if not pts:
+        return None
+    n = 0
+    for p in pts:
+        for way, line in sts:
+            if way == str(sec["way_id"]) and _min_dist(p, line) <= BLIND_MATCH_M:
+                n += 1
+                break
+    return round(n / len(pts), 2)
 
 
 # ---------------------------------------------------------------- the labels and their Sentinel-1 scene
@@ -164,6 +234,20 @@ def labels(out: Path, site_id: str) -> list[dict]:
     return list(seen.values())
 
 
+def labels_s1(out: Path, site_id: str) -> list[dict]:
+    """The owner's answers at the Sentinel-1 scene (labels/<site>-s1-answers.csv, the S1 check): {section_id, s1, y, s2_date, s2_dt_h};
+    verified 0 left out."""
+    rows = {}
+    for r in read_csv(out / "labels" / f"{site_id}-s1-answers.csv"):
+        if r.get("site_id", site_id) != site_id or r.get("verified") != "1" or not r.get("s1_acquired_utc"):
+            continue
+        rows[(r["section_id"], r["s1_acquired_utc"])] = {"section_id": r["section_id"], "s1": r["s1_acquired_utc"],
+                                                          "y": 1 if r.get("verified_occupied") == "1" else 0,
+                                                          "s2_date": r.get("s2_date") or None, "s2_dt_h": float(r["dt_h"]) if r.get("dt_h") else None,
+                                                          "note": r.get("verified_note") or ""}
+    return list(rows.values())
+
+
 def s1_of_days(out: Path, site_id: str) -> dict:
     """{date: (s1 acquired_utc, dt_h)} from the review sets (s1_near[0])."""
     res = {}
@@ -178,9 +262,10 @@ def s1_of_days(out: Path, site_id: str) -> dict:
     return res
 
 
-def s1_match(out: Path, site_id: str) -> dict:
-    """Zhanjiang's re-count: {(section_id, date): row} of labels/<site>-s2-s1-match.csv."""
-    return {(r["section_id"], r["s2_date"]): r for r in read_csv(out / "labels" / f"{site_id}-s2-s1-match.csv")}
+def s1_match(out: Path, site_id: str, by_scene: bool = False) -> dict:
+    """The re-count: {(section_id, s2 date): row} of labels/<site>-s2-s1-match.csv (``by_scene``: keyed by (section_id, s1_acquired_utc))."""
+    k = "s1_acquired_utc" if by_scene else "s2_date"
+    return {(r["section_id"], r[k]): r for r in read_csv(out / "labels" / f"{site_id}-s2-s1-match.csv")}
 
 
 # ---------------------------------------------------------------- the judge
@@ -252,13 +337,27 @@ def judge_est2(st: dict | None, min_len: float) -> float:
 
 
 def judge_recount(r: dict | None, min_len: float) -> float | None:
+    """The re-count's presence. With ``s1_stretch_len_m`` (ports, s1-match-2): the full length of the stretch reaching into the
+    section against ``min_len`` (the length rule on the whole stretch, as est-2's ship_length_m: a 60 m ship across a section
+    border is present on both sides); without it (Zhanjiang): s1_occupied and the occupied length inside the section."""
     if r is None or r.get("s1_occupied") in (None, ""):
         return None
+    if "s1_stretch_len_m" in r:
+        n = float(r.get("s1_stretch_len_m") or 0)
+        if n <= 0 and r["s1_occupied"] != "1":
+            return 0.0
+        return 1.0 if n >= min_len or (not min_len and r["s1_occupied"] == "1") else 0.0
     if r["s1_occupied"] != "1":
         return 0.0
     if min_len and float(r.get("s1_occ_len_m") or 0) < min_len:
         return 0.0
     return 1.0
+
+
+def recount_length(r: dict | None):
+    if r is None:
+        return None
+    return (r.get("s1_stretch_len_m") if "s1_stretch_len_m" in r else r.get("s1_occ_len_m")) or None
 
 
 # ---------------------------------------------------------------- metrics
@@ -285,11 +384,21 @@ def is_near(r: dict, far_h: float = FAR_H) -> bool:
     return r.get("dt_h") is not None and abs(float(r["dt_h"])) <= far_h
 
 
+def is_blind(r: dict, share: float = BLIND_SHARE) -> bool:
+    return r.get("blind_share") is not None and float(r["blind_share"]) >= share
+
+
 def split_metrics(rows: list[dict]) -> dict:
-    """min50 / any_length of the rows, and the same of the near pairs only (|dt_h| <= FAR_H)."""
+    """min50 / any_length of the rows, the same of the near pairs only (|dt_h| <= FAR_H), and min50 by blind / clear (blind_share >=
+    BLIND_SHARE) and by the line's confidence."""
     near = [r for r in rows if is_near(r)]
+    confs = sorted({r.get("line_conf") or "unknown" for r in rows})
     return {"min50": metrics(rows), "any_length": metrics(rows, "p_any"),
-            "near": {"far_h": FAR_H, "min50": metrics(near), "any_length": metrics(near, "p_any")}}
+            "near": {"far_h": FAR_H, "min50": metrics(near), "any_length": metrics(near, "p_any")},
+            "by_blind": {"share": BLIND_SHARE, "blind": metrics([r for r in rows if is_blind(r)]),
+                         "clear": metrics([r for r in rows if not is_blind(r)]),
+                         "clear_near": metrics([r for r in near if not is_blind(r)])},
+            "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs}}
 
 
 def _freeze(site: dict) -> str:
@@ -297,17 +406,20 @@ def _freeze(site: dict) -> str:
 
 
 # ---------------------------------------------------------------- one site
-def evaluate_site(out: Path, site: dict) -> dict:
+def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     sid = site["id"]
     freeze = _freeze(site)
     secs = site_sections(out, site)
-    lab = labels(out, sid)
-    days = s1_of_days(out, sid)
-    match = s1_match(out, sid)
+    s1_truth = truth == "s1"
+    lab = labels_s1(out, sid) if s1_truth else labels(out, sid)
+    days = {} if s1_truth else s1_of_days(out, sid)
+    match = s1_match(out, sid, by_scene=s1_truth)
     est = est2_scenes(out, sid)
     feats = quay_features(out, sid)
     own = calibrated(out, sid)
     lat0 = float((site.get("quay") or {}).get("est2_lat0") or site.get("center_lat") or 21.2)
+    blind = blind_stretches(out, sid, lat0)
+    orbit_of = scene_orbits(out, sid, est)
     cnt = {"answers": len(lab), "unknown_section": 0, "not_naval": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0,
            "other_day_of_scene": 0, "used": 0}
     rows = []
@@ -322,14 +434,18 @@ def evaluate_site(out: Path, site: dict) -> dict:
         if s["length_m"] < MIN_LENGTH_M:
             cnt["short"] += 1
             continue
-        mr = match.get((a["section_id"], a["date"]))
-        if a["date"] in days:
-            s1, dt = days[a["date"]]
-        elif mr is not None and mr.get("s1_acquired_utc"):
-            s1, dt = mr["s1_acquired_utc"], float(mr["dt_h"]) if mr.get("dt_h") else None
+        if s1_truth:
+            s1, dt = a["s1"], 0.0
+            mr = match.get((a["section_id"], s1))
         else:
-            cnt["no_s1_pairing"] += 1
-            continue
+            mr = match.get((a["section_id"], a["date"]))
+            if a["date"] in days:
+                s1, dt = days[a["date"]]
+            elif mr is not None and mr.get("s1_acquired_utc"):
+                s1, dt = mr["s1_acquired_utc"], float(mr["dt_h"]) if mr.get("dt_h") else None
+            else:
+                cnt["no_s1_pairing"] += 1
+                continue
         sc = est.get(s1)
         if sc is not None:
             fs = scene_features(feats, sc)
@@ -339,13 +455,18 @@ def evaluate_site(out: Path, site: dict) -> dict:
             length = None if st is None else st.get("ship_length_m")
         else:
             p, p_any = judge_recount(mr, MIN_LENGTH_M), judge_recount(mr, 0.0)
-            src, length = "s1-recount", None if mr is None else (mr.get("s1_occ_len_m") or None)
+            src, length = "s1-recount", recount_length(mr)
             if p is None:
                 cnt["no_scene"] += 1
                 continue
-        rows.append({"section_id": a["section_id"], "date": a["date"], "s1": s1, "dt_h": dt, "source": src, "y": a["y"],
-                     "owner_c": a["verified_c"], "p": round(p, 3), "p_any": round(p_any, 3), "length_m": length,
-                     "oos": (not own) or a["date"] >= freeze})
+        orbit = orbit_of.get(s1) or (mr or {}).get("relative_orbit")
+        row = {"section_id": a["section_id"], "date": a.get("date") or s1[:10], "s1": s1, "dt_h": dt, "source": src, "y": a["y"],
+               "owner_c": a.get("verified_c", ""), "p": round(p, 3), "p_any": round(p_any, 3), "length_m": length,
+               "blind_share": blind_share(s, blind, orbit, lat0), "line_conf": s.get("conf") or "unknown",
+               "oos": (not own) or (a.get("date") or s1[:10]) >= freeze}
+        if s1_truth:
+            row.update(s2_date=a.get("s2_date"), s2_dt_h=a.get("s2_dt_h"), note=a.get("note") or "")
+        rows.append(row)
     # one label day per Sentinel-1 scene: the nearest in time (two S2 days within +-4 days of the same S1 scene would count
     # the same judgement twice); the other days' rows are dropped
     rows, dropped = nearest_day_per_scene(rows)
@@ -356,7 +477,7 @@ def evaluate_site(out: Path, site: dict) -> dict:
     n_el = sum(1 for s in secs.values() if s["eligible"])
     scenes = sorted({r["s1"] for r in rows})
     far = [r for r in rows if r["dt_h"] is not None and abs(float(r["dt_h"])) > FAR_H]
-    return {"site_id": sid, "name": NAMES.get(sid, site.get("name")), "freeze_utc": freeze, "calibrated": own,
+    return {"site_id": sid, "name": NAMES.get(sid, site.get("name")), "freeze_utc": freeze, "calibrated": own, "truth": truth,
             "sample_note": ("標本内＝ラベルの日が凍結より前（est-2 の較正に使った期間）、標本外＝凍結以後" if own else
                             "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする"),
             "sections": {"labelled": len(secs), "naval": sum(1 for s in secs.values() if s["naval"]), "eligible": n_el},
@@ -367,6 +488,19 @@ def evaluate_site(out: Path, site: dict) -> dict:
                                 "any_length": metrics([r for r in rows if r["source"] == src], "p_any")} for src in SOURCES},
             "in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos),
             "status": _status(len(ins), len(oos), own), "rows": rows}
+
+
+def scene_orbits(out: Path, site_id: str, est: dict) -> dict:
+    """{acquired_utc: relative_orbit} of the scenes: est-2's scenes and the review sets' pairings."""
+    res = {k: str(v.get("relative_orbit")) for k, v in est.items() if v.get("relative_orbit") is not None}
+    for name in ("review.json", "review-oos.json"):
+        p = out / "labels" / site_id / name
+        if not p.exists():
+            continue
+        for d in json.loads(p.read_text(encoding="utf-8"))["days"]:
+            for a in d.get("s1_near") or []:
+                res.setdefault(a["acquired_utc"], str(a.get("relative_orbit")))
+    return res
 
 
 def nearest_day_per_scene(rows: list[dict]) -> tuple[list[dict], int]:
@@ -390,37 +524,64 @@ def _status(n_in: int, n_oos: int, own: bool = True) -> str:
     return f"標本 {n_in} 撮影×区間（標本外 {n_oos}）"
 
 
-def evaluate(out: Path, sites: list[dict] | None = None, now: datetime | None = None) -> dict:
-    """``now``: the time written as generated_utc (the daily run passes its own, so that two runs of one frozen time are
-    byte for byte the same; default the clock)."""
-    sites = sites or load_sites()
-    now = now or datetime.now(timezone.utc)
+TRUTH_NOTE = {"s2": "所有者の S2 の日の答え（labels/<地点>-s2-answers.csv ほか）を、その日に最も近い S1 撮影（前後 4 日）に対応させたもの。dt_h＝S1−S2",
+              "s1": "所有者が S1 の撮影そのものを見て答えたもの（labels/<地点>-s1-answers.csv、確認ページ ?s1=1：S1 の疑似カラーと直近の S2 の 2 枚組）。鍵 (section_id, s1_acquired_utc)、dt_h 0。s2_date・s2_dt_h は並べて見た S2 の日とその時間差、note s2-prefill＝S2 の答えを初期値のまま確認した升"}
+
+
+def evaluate_one(out: Path, sites: list[dict], truth: str) -> dict:
+    """{sites, total} of one truth (``s2`` or ``s1``)."""
     ids = []
     for s in sites:
         sid = s["id"]
-        if (out / "labels" / sid / "review.json").exists() or (out / "labels" / f"{sid}-s2-labels.csv").exists() or \
-                (out / "labels" / f"{sid}-s2-answers.csv").exists():
+        if truth == "s1":
+            has = (out / "labels" / f"{sid}-s1-answers.csv").exists()
+        else:
+            has = (out / "labels" / sid / "review.json").exists() or (out / "labels" / f"{sid}-s2-labels.csv").exists() or \
+                (out / "labels" / f"{sid}-s2-answers.csv").exists()
+        if has:
             ids.append(sid)
-    res = {sid: evaluate_site(out, next(s for s in sites if s["id"] == sid)) for sid in ids}
+    res = {sid: evaluate_site(out, next(s for s in sites if s["id"] == sid), truth) for sid in ids}
     all_rows = [r for r in res.values() for r in r["rows"]]
     ins = [r for r in all_rows if not r["oos"]]
     oos = [r for r in all_rows if r["oos"]]
     tot = {"in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos),
            "by_source": {src: {"n": sum(1 for r in all_rows if r["source"] == src), "min50": metrics([r for r in all_rows if r["source"] == src])}
                          for src in SOURCES}}
+    return {"truth": truth, "truth_note": TRUTH_NOTE[truth], "total": tot, "sites": res}
+
+
+def evaluate(out: Path, sites: list[dict] | None = None, now: datetime | None = None, truth: str = "s2") -> dict:
+    """``now``: the time written as generated_utc (the daily run passes its own, so that two runs of one frozen time are
+    byte for byte the same; default the clock). ``truth``: s2 (the S2 day's answer paired to the nearest S1 scene) or s1 (the
+    answer at the S1 scene itself); the other truth's result is carried under ``other_truth``."""
+    if truth not in TRUTHS:
+        raise ValueError(f"truth: {TRUTHS}")
+    sites = sites or load_sites()
+    now = now or datetime.now(timezone.utc)
+    main_ = evaluate_one(out, sites, truth)
+    other = evaluate_one(out, sites, "s1" if truth == "s2" else "s2")
     return {"version": EVAL_VERSION, "generated_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
-            "min_length_m": MIN_LENGTH_M, "threshold": THRESHOLD, "total": tot, "sites": res}
+            "min_length_m": MIN_LENGTH_M, "threshold": THRESHOLD, "truth": truth, "truth_note": main_["truth_note"],
+            "total": main_["total"], "sites": main_["sites"],
+            "other_truth": {"truth": other["truth"], "truth_note": other["truth_note"], "total": other["total"],
+                            "sites": {sid: {k: v for k, v in r.items()} for sid, r in other["sites"].items()}}}
 
 
 # ---------------------------------------------------------------- meta
 def table(res: dict) -> list[dict]:
     rows = []
+    other = (res.get("other_truth") or {}).get("sites") or {}
     for sid, r in res["sites"].items():
         m, o = r["in_sample"]["min50"], r["out_of_sample"]["min50"]
         mn, on = r["in_sample"]["near"]["min50"], r["out_of_sample"]["near"]["min50"]
+        ob = r["out_of_sample"]["by_blind"]
+        ot = (other.get(sid) or {}).get("out_of_sample", {}).get("min50") or {"n": 0, "recall": None, "precision": None, "brier": None}
         rows.append({"site_id": sid, "name": r["name"], "calibrated": r["calibrated"], "sections_eligible": r["sections"]["eligible"],
                      "answers": r["labels"]["answers"],
+                     "n_blind_oos": ob["blind"]["n"], "n_clear_oos": ob["clear"]["n"], "recall_clear_oos": ob["clear"]["recall"],
+                     "precision_clear_oos": ob["clear"]["precision"],
+                     "n_other": ot["n"], "recall_other": ot["recall"], "precision_other": ot["precision"], "brier_other": ot["brier"],
                      "n": m["n"], "recall": m["recall"], "precision": m["precision"], "brier": m["brier"], "base_rate": m["base_rate"],
                      "n_near": mn["n"], "recall_near": mn["recall"], "precision_near": mn["precision"], "brier_near": mn["brier"],
                      "n_oos": o["n"], "recall_oos": o["recall"], "precision_oos": o["precision"], "brier_oos": o["brier"],
@@ -434,8 +595,13 @@ def table(res: dict) -> list[dict]:
     tn, ton = res["total"]["in_sample"]["near"]["min50"], res["total"]["out_of_sample"]["near"]["min50"]
     n_all = t["n"] + to["n"]
     far = sum(r["pairing"]["far"] for r in res["sites"].values())
+    tob = res["total"]["out_of_sample"]["by_blind"]
+    tot_other = (res.get("other_truth") or {}).get("total", {}).get("out_of_sample", {}).get("min50") or {"n": 0, "recall": None, "precision": None, "brier": None}
     rows.append({"site_id": "ALL", "name": "全港", "calibrated": None, "sections_eligible": sum(x["sections_eligible"] for x in rows),
                  "answers": sum(x["answers"] for x in rows),
+                 "n_blind_oos": tob["blind"]["n"], "n_clear_oos": tob["clear"]["n"], "recall_clear_oos": tob["clear"]["recall"],
+                 "precision_clear_oos": tob["clear"]["precision"],
+                 "n_other": tot_other["n"], "recall_other": tot_other["recall"], "precision_other": tot_other["precision"], "brier_other": tot_other["brier"],
                  "n": t["n"], "recall": t["recall"], "precision": t["precision"], "brier": t["brier"], "base_rate": t["base_rate"],
                  "n_near": tn["n"], "recall_near": tn["recall"], "precision_near": tn["precision"], "brier_near": tn["brier"],
                  "n_oos": to["n"], "recall_oos": to["recall"], "precision_oos": to["precision"], "brier_oos": to["brier"],
@@ -453,13 +619,17 @@ def meta(res: dict) -> dict:
         "version": EVAL_VERSION,
         "files": {"presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）", "meta.json": "この定義と港別の表（table）"},
         "target": res["target"],
+        "truth_source": {"body": res.get("truth", "s2"), "other": (res.get("other_truth") or {}).get("truth"),
+                         "note": "本体（total・sites・table）は truth_source.body の正解、other_truth は他方の正解で同じ指標。s2＝S2 の日の答えを直近の S1 に対応、s1＝S1 の撮影そのものの答え（確認ページ ?s1=1）。python -m sat.eval_presence --truth s1 で入れ替わる",
+                         **{k: TRUTH_NOTE[k] for k in TRUTHS}},
         "unit": "撮影×岸壁区間。区間は sat/s2_labels.sections() の約 150 m の岸壁線の片（確認ページの区間、湛江は labels/ZJG-s2-sections.geojson）",
         "sections": f"naval-1（sat/berth_class/<地点>.json）で区間の中点の線の区分が naval（海軍の桟橋・岸壁。設定が足す区間を含む）で、区間の長さ（length_m）が {MIN_LENGTH_M:g} m 以上のもの。civil・unknown の線の区間と {MIN_LENGTH_M:g} m 未満の区間は数えない（labels.not_naval・labels.short）",
         "truth": "所有者の目視（labels/<地点>-s2-answers.csv、-oos-answers.csv、湛江は ZJG-s2-labels.csv の verified 1 の行）：verified_occupied 1＝在、0＝不在。判断できない（verified 0）は除く。所有者の答えは船の長さを持たない（50 m 未満の船の着いた区間も「在」になる）ので、any_length（長さの規則なし）も併記する",
         "pairing": "ラベルの日（S2 の晴れの日）の S1 撮影＝確認セット（labels/<地点>/review*.json の days.s1_near[0]）の対応：前後 4 日以内で基準のある軌道の最も近い撮影（sat/s2_answers.eligible_days）。湛江は labels/ZJG-s2-s1-match.csv の s1_acquired_utc（sat/s2_labels.nearest_s1、同じ規則）。dt_h＝S1−S2（時間）、同じ日でも約 7 時間ずれ、船が入れ替わることがある",
         "judge": {
             "est-2": f"その撮影が quay_est2.json・quay_est2/<地点>.json にあるとき：区間と同じ OSM の線・向きで {SECTION_MATCH_M:g} m 以内の点が最も多い区間片（stretch）。p＝p_real（ship_length_m ≥ {MIN_LENGTH_M:g} m のとき、未満は 0）。片が無ければ 0",
-            "s1-recount": f"est-2 に無い撮影（湛江のラベル日の S1 取り直し、labels/ZJG-s2-s1-match.csv）：s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0（0/1 の判定：ブライアは誤り率に等しい）",
+            "s1-recount": (f"est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に 20 m 以上かかる片の全長 s1_stretch_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0"
+                           f"（港の表、s1-match-2。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m。0/1 の判定：ブライアは誤り率に等しい"),
             "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
         },
         "metrics": {
@@ -473,6 +643,8 @@ def meta(res: dict) -> dict:
             "by_source": "判定の出所別（est-2／s1-recount）の n と指標。湛江の見出しの数字は大半が s1-recount（S1 取り直しの生の占有の評価）で、est-2 の評価ではない",
             "pairing": f"scenes＝判定に使った S1 撮影の数、far_share＝|dt_h| > {FAR_H:g} 時間の升の割合。1 つの S1 撮影には最も近いラベル日だけを使う（他の日の升は labels.other_day_of_scene）",
             "near": f"in_sample・out_of_sample の near＝|S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標（見出しの数字は全部の組。遠い組では船の入れ替わりが不一致に混じるので、近い組の数字を隣に置く）",
+            "by_blind": f"升の blind_share（区間の線の点のうち、その撮影の軌道の盲域の片（quay/<地点>/blind.geojson：基準の VV p10 が内側の帯で −8 dB 超）から {BLIND_MATCH_M:g} m 以内の割合）が {BLIND_SHARE:g} 以上を盲域（blind）、未満を clear として分けた min50 の指標。clear_near＝clear のうち近い組",
+            "by_conf": "升の line_conf（naval-1 の線の区分の確信：確認寄り／推定／fixed／unknown）ごとの min50 の指標",
         },
         "table_columns": {"site_id": "地点", "name": "地名", "calibrated": "est-2 をその港の正解で較正したか（false＝湛江の流用、全部標本外）",
                           "sections_eligible": "対象の区間数（確認セットのうち naval・50 m 以上）", "answers": "所有者の答え（判断できないを除く）",
@@ -480,15 +652,17 @@ def meta(res: dict) -> dict:
                           "n_near・recall_near・precision_near・brier_near": f"標本内のうち |S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標",
                           "n_oos・recall_oos・precision_oos・brier_oos": "標本外の同じ指標",
                           "n_near_oos・recall_near_oos・precision_near_oos・brier_near_oos": f"標本外のうち |S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標",
-                          "n_est2 / n_recount": "判定の出所別の升の数（est-2 の区間片／湛江の S1 取り直しの占有）",
+                          "n_est2 / n_recount": "判定の出所別の升の数（est-2 の区間片／S1 取り直しの占有）",
+                          "n_blind_oos・n_clear_oos・recall_clear_oos・precision_clear_oos": f"標本外のうち盲域（blind_share ≥ {BLIND_SHARE:g}）の升の数と、盲域でない升の数・再現率・適合率",
+                          "n_other・recall_other・precision_other・brier_other": "他方の正解（truth_source.other）での標本外の同じ指標（s1 の正解は S1 の撮影そのものの答え）",
                           "scenes": "判定に使った S1 撮影の数", "far_share": f"|S1−S2| > {FAR_H:g} 時間の升の割合",
                           "not_naval": "naval でない線の答え（除外）", "no_scene": "S1 の対応か保存が無い答え（除外）",
                           "other_day_of_scene": "同じ S1 撮影に対応した別のラベル日の答え（最も近い日だけ使う。除外）"},
         "table": table(res),
         "limits": [
             "湛江の見出しの数字（n の大半が s1-recount）は S1 取り直しの占有（quay-v1 の規則）の評価で、est-2 の評価は n_est2 の升だけ。両方の判定を混ぜて一つの指標にしている",
-            f"{MIN_LENGTH_M:g} m の規則は出所で別の量に当たる：est-2 は艦の長さの推定（ship_length_m、区間をまたぐ片の全長）、s1-recount は区間の中の占有の長さ（s1_occ_len_m）。"
-            "60 m の艦が区間の境にまたがると s1_occ_len_m は 30／30 に割れて両区間が「不在」になる（湛江 2026-01-03 の見逃しがこの型）。所有者の答えは区間に少しでも船が入れば「在」",
+            f"{MIN_LENGTH_M:g} m の規則：est-2 は艦の長さの推定（ship_length_m、区間をまたぐ片の全長）、港の s1-recount も片の全長（s1_stretch_len_m、区間に 20 m 以上かかる片）。"
+            "湛江の s1-recount の表（s1-match-1）だけは区間の中の占有の長さ（s1_occ_len_m）のままで、60 m の艦が区間の境にまたがると 30／30 に割れて両区間が「不在」になる（湛江 2026-01-03 の見逃しがこの型）",
             "標本が小さい港の数字は目安。n が 20 未満の再現率・適合率は一桁の件数で動く",
             "三亜・楡林、三亜・亜龍湾、青島・古鎮口、舟山・定海の確認セットは naval-1 より前に組んだため、海軍の線でない区間が多い（not_naval）。大連・旅順と青島港内の確認セットは naval の線だけで組んだ（s2_answers prepare --naval-only）が、答えはまだ無い",
             "所有者のラベルは S2（03 UTC 頃）、判定は S1（10 UTC 頃、最大 4 日差）：時刻差の入れ替わりは判定の誤りに数えられる",
@@ -625,6 +799,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="presence / absence of a 50 m warship at the naval quays: the judge against the owner's labels (no fetch)")
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--snapshot", action="store_true", help="refresh eval/presence_snapshot.json (the regression guard) instead")
+    ap.add_argument("--truth", choices=TRUTHS, default="s2", help="the truth of the body of presence.json (the other one goes under other_truth)")
     a = ap.parse_args(argv)
     if a.snapshot:
         old = a.out / "eval" / SNAPSHOT_FILE
@@ -633,14 +808,16 @@ def main(argv=None) -> int:
         cmp = compare_tables(before, doc["table"])
         print(json.dumps({"scenes": {k: len(v) for k, v in doc["table"].items()}, "changed_vs_previous": cmp}, ensure_ascii=False), file=sys.stderr)
         return 0
-    res = evaluate(a.out)
+    res = evaluate(a.out, truth=a.truth)
     write(a.out, res)
+    print(f"正解 {res['truth']}（other_truth {res['other_truth']['truth']}）", file=sys.stderr)
     for row in table(res):
         print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}"
               f"（近い組 n={row['n_near']} {row['recall_near']}／{row['precision_near']}／{row['brier_near']}）；標本外 n={row['n_oos']} "
               f"再現率={row['recall_oos']} 適合率={row['precision_oos']} ブライア={row['brier_oos']}"
               f"（近い組 n={row['n_near_oos']} {row['recall_near_oos']}／{row['precision_near_oos']}／{row['brier_near_oos']}）（est-2 {row['n_est2']}／取り直し {row['n_recount']}、"
-              f"撮影 {row['scenes']}、海軍でない線 {row['not_naval']}、撮影なし {row['no_scene']}）", file=sys.stderr)
+              f"撮影 {row['scenes']}、海軍でない線 {row['not_naval']}、撮影なし {row['no_scene']}；標本外 盲域 {row['n_blind_oos']}・非盲域 {row['n_clear_oos']} "
+              f"{row['recall_clear_oos']}／{row['precision_clear_oos']}；他方の正解 n={row['n_other']} {row['recall_other']}／{row['precision_other']}）", file=sys.stderr)
     return 0
 
 

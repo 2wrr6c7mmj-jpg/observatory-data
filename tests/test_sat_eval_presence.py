@@ -84,6 +84,37 @@ class JudgeTest(unittest.TestCase):
         self.assertIsNone(ep.judge_recount({"s1_occupied": "", "s1_occ_len_m": ""}, 50.0))   # no coverage: not judged
         self.assertIsNone(ep.judge_recount(None, 50.0))
 
+    def test_recount_rule_on_the_whole_stretch(self):
+        """s1-match-2 (ports): the length rule on the full length of the stretch reaching into the section (E type: a 60 m
+        ship across a section border, 30 / 30 m inside, is present on both sides); Zhanjiang's table (no column) as before."""
+        self.assertEqual(ep.judge_recount({"s1_occupied": "0", "s1_occ_len_m": "30", "s1_stretch_len_m": "60"}, 50.0), 1.0)
+        self.assertEqual(ep.judge_recount({"s1_occupied": "1", "s1_occ_len_m": "40", "s1_stretch_len_m": "40"}, 50.0), 0.0)
+        self.assertEqual(ep.judge_recount({"s1_occupied": "1", "s1_occ_len_m": "40", "s1_stretch_len_m": "40"}, 0.0), 1.0)
+        self.assertEqual(ep.judge_recount({"s1_occupied": "0", "s1_occ_len_m": "0", "s1_stretch_len_m": "0"}, 0.0), 0.0)
+        self.assertEqual(ep.judge_recount({"s1_occupied": "0", "s1_occ_len_m": "10", "s1_stretch_len_m": ""}, 50.0), 0.0)
+        self.assertIsNone(ep.judge_recount({"s1_occupied": "", "s1_occ_len_m": "", "s1_stretch_len_m": ""}, 50.0))
+        self.assertEqual(ep.recount_length({"s1_occ_len_m": "30", "s1_stretch_len_m": "60"}), "60")
+        self.assertEqual(ep.recount_length({"s1_occ_len_m": "30"}), "30")
+
+    def test_blind_share_and_line_conf(self):
+        lat0 = 35.72
+        sec = {"way_id": 219848841, "line": [[119.9880 + i * 0.00011, 35.7260] for i in range(10)]}   # 10 points, ~10 m apart
+        blind = {"69": [("219848841", ep._xy([[119.9880, 35.72601], [119.98820, 35.72601]], lat0))],   # the first 4 points (within 20 m)
+                 "171": [("1", ep._xy([[119.9880, 35.7260]], lat0))]}                                  # another way
+        self.assertEqual(ep.blind_share(sec, blind, 69, lat0), 0.4)
+        self.assertEqual(ep.blind_share(sec, blind, "171", lat0), 0.0)
+        self.assertIsNone(ep.blind_share(sec, blind, 3, lat0))
+        self.assertTrue(ep.is_blind({"blind_share": 0.6}) and not ep.is_blind({"blind_share": 0.4}) and not ep.is_blind({"blind_share": None}))
+        site = {"id": "T", "sectors": [{"id": "A", "bbox": [0, 0, 1, 1]}]}
+        cls = {"default": "unknown", "lines": [{"way": 1, "class": "naval", "conf": "確認寄り"}, {"way": 2, "class": "naval", "fixed": True},
+                                               {"way": 3, "class": "naval", "conf": "推定", "part": {"sector": "A"}}]}
+        b = berths.Berths(site, {"ways": []}, classes=cls, naval=True)
+        self.assertEqual(ep.line_conf(b, site, 1, 0.5, 0.5), "確認寄り")
+        self.assertEqual(ep.line_conf(b, site, 2, 0.5, 0.5), "fixed")
+        self.assertEqual(ep.line_conf(b, site, 3, 0.5, 0.5), "推定")
+        self.assertEqual(ep.line_conf(b, site, 3, 5.0, 5.0), "unknown")   # outside the part
+        self.assertEqual(ep.line_conf(b, site, 9, 0.5, 0.5), "unknown")
+
     def test_stretch_pairs_by_feature_n_not_position(self):
         # a 150 m section along a parallel; two features of the scene, est-2 kept only the second (n=7)
         lat0 = 21.0
@@ -130,9 +161,58 @@ class EvaluateRepoTest(unittest.TestCase):
                 self.assertTrue(0.0 <= x["p"] <= 1.0 and 0.0 <= x["p_any"] <= 1.0)
                 self.assertIn(x["source"], ("est-2", "s1-recount"))
                 self.assertEqual(x["oos"], (not r["calibrated"]) or x["date"] >= r["freeze_utc"])
+                self.assertIn("blind_share", x)
+                self.assertIn(x["line_conf"], ("確認寄り", "推定", "fixed", "unknown"))
             self.assertEqual(r["in_sample"]["min50"]["n"] + r["out_of_sample"]["min50"]["n"], len(r["rows"]))
+            o = r["out_of_sample"]
+            self.assertEqual(o["by_blind"]["blind"]["n"] + o["by_blind"]["clear"]["n"], o["min50"]["n"])
+            self.assertEqual(sum(m["n"] for m in o["by_conf"].values()), o["min50"]["n"])
         tot = self.res["total"]["in_sample"]["min50"]["n"] + self.res["total"]["out_of_sample"]["min50"]["n"]
         self.assertEqual(tot, sum(len(r["rows"]) for r in self.res["sites"].values()))
+        # Gu Zhenkou: the always-occupied piers (design 2026-11 §1.2, B type) are blind cells, and the clear cells do better
+        qgz = self.res["sites"]["QGZ"]["out_of_sample"]["by_blind"]
+        self.assertGreater(qgz["blind"]["n"], 0)
+        self.assertGreater(qgz["clear"]["min50"]["recall"] if "min50" in qgz["clear"] else qgz["clear"]["recall"], self.res["sites"]["QGZ"]["out_of_sample"]["min50"]["recall"])
+
+    def test_truth_s1_and_other_truth(self):
+        """--truth s1: the owner's answers at the S1 scene itself (labels/<site>-s1-answers.csv) judged at that scene, no pairing;
+        the other truth is carried beside the body. Built on a copy of Gu Zhenkou's files with two S1 answers."""
+        self.assertEqual(self.res["truth"], "s2")
+        self.assertEqual(self.res["other_truth"]["truth"], "s1")
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            for rel in ("labels/QGZ/review.json", "labels/QGZ-s2-answers.csv", "labels/QGZ-s2-s1-match.csv", "quay/QGZ/blind.geojson"):
+                (out / rel).parent.mkdir(parents=True, exist_ok=True)
+                (out / rel).write_bytes((OUT / rel).read_bytes())
+            rows = ep.read_csv(OUT / "labels" / "QGZ-s2-s1-match.csv")
+            hit = next(r for r in rows if r["s1_occupied"] == "1" and r["section_id"] == "219848839:L:01")
+            miss = next(r for r in rows if r["s1_occupied"] == "0" and r["section_id"] == "219848839:L:01")
+            (out / "labels" / "QGZ-s1-answers.csv").write_text(
+                "site_id,section_id,s1_acquired_utc,relative_orbit,s2_date,dt_h,verified,verified_occupied,verified_by,verified_note\n"
+                f"QGZ,219848839:L:01,{hit['s1_acquired_utc']},{hit['relative_orbit']},{hit['s2_date']},{hit['dt_h']},1,1,owner,s2-prefill\n"
+                f"QGZ,219848839:L:01,{miss['s1_acquired_utc']},{miss['relative_orbit']},{miss['s2_date']},{miss['dt_h']},1,0,owner,\n"
+                "QGZ,219848839:L:01,2020-01-01T00:00:00Z,69,,,1,1,owner,\n"        # a scene without a stored judgement: no_scene
+                "QGZ,219848839:L:01,2026-01-01T00:00:00Z,69,,,0,,owner,\n", encoding="utf-8")   # cannot judge: left out
+            site = next(s for s in ep.load_sites() if s["id"] == "QGZ")
+            res = ep.evaluate(out, [site], truth="s1")
+            self.assertEqual(res["truth"], "s1")
+            r = res["sites"]["QGZ"]
+            self.assertEqual(r["labels"]["answers"], 3)
+            self.assertEqual(r["labels"]["no_scene"], 1)
+            self.assertEqual(len(r["rows"]), 2)
+            by = {x["s1"]: x for x in r["rows"]}
+            self.assertEqual((by[hit["s1_acquired_utc"]]["y"], by[hit["s1_acquired_utc"]]["dt_h"], by[hit["s1_acquired_utc"]]["note"]), (1, 0.0, "s2-prefill"))
+            self.assertEqual(by[miss["s1_acquired_utc"]]["y"], 0)
+            self.assertEqual(r["out_of_sample"]["min50"]["n"], 2)
+            self.assertTrue(all(ep.is_near(x) for x in r["rows"]))
+            # the other truth (s2) is the usual evaluation of the same files
+            self.assertEqual(res["other_truth"]["truth"], "s2")
+            self.assertEqual(res["other_truth"]["sites"]["QGZ"]["out_of_sample"]["min50"]["n"],
+                             self.res["sites"]["QGZ"]["out_of_sample"]["min50"]["n"])
+            t = ep.table(res)
+            self.assertEqual(t[0]["n_other"], self.res["sites"]["QGZ"]["out_of_sample"]["min50"]["n"])
+            with self.assertRaises(ValueError):
+                ep.evaluate(out, [site], truth="x")
 
     def test_zhanjiang_has_a_sample_and_the_new_review_sets_are_listed(self):
         self.assertGreater(self.res["sites"]["ZJG"]["in_sample"]["min50"]["n"], 0)

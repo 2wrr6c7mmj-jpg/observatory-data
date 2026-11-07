@@ -182,7 +182,7 @@ class RecountTest(unittest.TestCase):
 
     def test_match_builds_table_from_saved_chips(self):
         """--match (PU 0): a real site's geometry with a synthetic flat chip -> one row per review section x matched day,
-        the owner's answers in the s2_* columns, MATCH_FIELDS as Zhanjiang's table."""
+        the owner's answers in the s2_* columns, PORT_MATCH_FIELDS (Zhanjiang's MATCH_FIELDS + s1_stretch_len_m)."""
         from sat.run import load_sites
         from sat import s2_labels
         site = next(s for s in load_sites() if s["id"] == "SYL")
@@ -211,7 +211,7 @@ class RecountTest(unittest.TestCase):
             self.assertEqual(rc, 0)
             summ = json.loads(buf.getvalue())["match"][0]
             rows = list(csv.DictReader((out / "labels" / "SYL-s2-s1-match.csv").read_text(encoding="utf-8").splitlines()))
-            self.assertEqual(list(rows[0].keys()), s2_labels.MATCH_FIELDS)
+            self.assertEqual(list(rows[0].keys()), s2_labels.PORT_MATCH_FIELDS)
             self.assertEqual(len(rows), len(rv["sections"]))
             self.assertEqual(summ["scenes"], [acq])
             byid = {x["section_id"]: x for x in rows}

@@ -32,7 +32,7 @@ Ops-4 (2026-11-07, the owner's priority: ports first, SYL -> SLP -> QGZ within t
 
 ``--match`` (no CDSE, PU 0): labels/<site>-s2-s1-match.csv from the saved chips, in the shape of Zhanjiang's table
 (sat/s2_labels.MATCH_FIELDS): one row per section the owner was asked about (labels/<site>/review*.json) x label day, with
-the Sentinel-1 features of the day's paired scene (sat/s2_labels.s1_sections: s1_occupied, s1_occ_len_m, depth, face) and
+the Sentinel-1 features of the day's paired scene (sat/s2_labels.s1_sections: s1_occupied, s1_occ_len_m, s1_stretch_len_m, depth, face) and
 the owner's answer in the s2_* columns (s2_status "owner", s2_occupied = verified_occupied, s2_c = verified_c; blank when
 not answered or "cannot judge"). ``agree`` compares the owner and S1 where the section's coverage is >= 0.5. A summary goes
 to labels/<site>/s1_recount_match.json. sat/eval_presence.py reads the table for the scenes est-2 does not hold.
@@ -61,6 +61,7 @@ from . import cdse
 from .grid import Grid
 
 PROBE_VERSION = "s1-recount-1"
+RAW_SUBDIR = "probe-raw/s1-recount"   # where the chips are saved on the probe branch (--raw), read again by sat/s2_answers --s1
 MAX_PU_TOTAL = 40.0          # the owner's consent: about 37 PU (SYL 16.09 + SLP 20.38), with a little room
 BUDGET_MONTH = "2026-11"     # the month the cap was set for
 ROOT = Path(__file__).resolve().parent.parent
@@ -226,7 +227,7 @@ def fetch_site(client, site: dict, raw: Path, out: Path = OUT, log=print, skip_e
 
 
 # ---------------------------------------------------------------- the match table (no CDSE)
-MATCH_VERSION = "s1-match-1"
+MATCH_VERSION = "s1-match-2"   # s1-match-1 + s1_stretch_len_m (s2_labels.PORT_MATCH_FIELDS)
 
 
 def review_days(out: Path, site_id: str) -> tuple[list[dict], set]:
@@ -332,7 +333,7 @@ def build_match(site: dict, raw: Path, out: Path = OUT, mask_dir=None, baseline_
     summ["attribution"] = "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）"
     ldir = out / "labels"
     if rows:
-        s2_labels._write(ldir / f"{sid}-s2-s1-match.csv", rows, s2_labels.MATCH_FIELDS)
+        s2_labels._write(ldir / f"{sid}-s2-s1-match.csv", rows, s2_labels.PORT_MATCH_FIELDS)
     (ldir / sid).mkdir(parents=True, exist_ok=True)
     (ldir / sid / "s1_recount_match.json").write_text(json.dumps(summ, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     log(f"{sid}: {len(summ['scenes'])} scenes, {len(summ['days_matched'])} days, {len(rows)} rows, "
