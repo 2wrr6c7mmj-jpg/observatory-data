@@ -1,64 +1,98 @@
 {
  "version": "eval-presence-1",
- "generated_utc": "2026-11-07T10:51:19Z",
+ "generated_utc": "2026-11-07T11:53:47Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
  "total": {
   "in_sample": {
    "min50": {
-    "n": 86,
-    "tp": 51,
-    "fp": 3,
-    "fn": 3,
-    "tn": 29,
-    "recall": 0.944,
-    "precision": 0.944,
+    "n": 57,
+    "tp": 43,
+    "fp": 2,
+    "fn": 2,
+    "tn": 10,
+    "recall": 0.956,
+    "precision": 0.956,
     "accuracy": 0.93,
-    "brier": 0.071,
-    "base_rate": 0.628,
-    "mean_p": 0.624
+    "brier": 0.07,
+    "base_rate": 0.789,
+    "mean_p": 0.789
    },
    "any_length": {
-    "n": 86,
-    "tp": 53,
-    "fp": 8,
-    "fn": 1,
-    "tn": 24,
-    "recall": 0.981,
-    "precision": 0.869,
-    "accuracy": 0.895,
-    "brier": 0.106,
-    "base_rate": 0.628,
-    "mean_p": 0.706
+    "n": 57,
+    "tp": 45,
+    "fp": 3,
+    "fn": 0,
+    "tn": 9,
+    "recall": 1.0,
+    "precision": 0.938,
+    "accuracy": 0.947,
+    "brier": 0.053,
+    "base_rate": 0.789,
+    "mean_p": 0.842
    }
   },
   "out_of_sample": {
    "min50": {
-    "n": 0,
-    "tp": 0,
+    "n": 21,
+    "tp": 3,
     "fp": 0,
-    "fn": 0,
-    "tn": 0,
-    "recall": null,
-    "precision": null,
-    "accuracy": null,
-    "brier": null,
-    "base_rate": null,
-    "mean_p": null
+    "fn": 1,
+    "tn": 17,
+    "recall": 0.75,
+    "precision": 1.0,
+    "accuracy": 0.952,
+    "brier": 0.052,
+    "base_rate": 0.19,
+    "mean_p": 0.128
    },
    "any_length": {
-    "n": 0,
-    "tp": 0,
-    "fp": 0,
-    "fn": 0,
-    "tn": 0,
-    "recall": null,
-    "precision": null,
-    "accuracy": null,
-    "brier": null,
-    "base_rate": null,
-    "mean_p": null
+    "n": 21,
+    "tp": 3,
+    "fp": 3,
+    "fn": 1,
+    "tn": 14,
+    "recall": 0.75,
+    "precision": 0.5,
+    "accuracy": 0.81,
+    "brier": 0.195,
+    "base_rate": 0.19,
+    "mean_p": 0.27
+   }
+  },
+  "by_source": {
+   "est-2": {
+    "n": 26,
+    "min50": {
+     "n": 26,
+     "tp": 6,
+     "fp": 0,
+     "fn": 2,
+     "tn": 18,
+     "recall": 0.75,
+     "precision": 1.0,
+     "accuracy": 0.923,
+     "brier": 0.081,
+     "base_rate": 0.308,
+     "mean_p": 0.218
+    }
+   },
+   "s1-recount": {
+    "n": 52,
+    "min50": {
+     "n": 52,
+     "tp": 40,
+     "fp": 2,
+     "fn": 1,
+     "tn": 9,
+     "recall": 0.976,
+     "precision": 0.952,
+     "accuracy": 0.942,
+     "brier": 0.058,
+     "base_rate": 0.788,
+     "mean_p": 0.808
+    }
    }
   }
  },
@@ -67,6 +101,8 @@
    "site_id": "ZJG",
    "name": "湛江",
    "freeze_utc": "2026-10-27",
+   "calibrated": true,
+   "sample_note": "標本内＝ラベルの日が凍結より前（est-2 の較正に使った期間）、標本外＝凍結以後",
    "sections": {
     "labelled": 182,
     "naval": 82,
@@ -79,7 +115,8 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
-    "used": 61
+    "other_day_of_scene": 4,
+    "used": 57
    },
    "scenes_judged": [
     "2025-11-11T10:49:48Z",
@@ -98,32 +135,98 @@
     "2026-09-02T10:49:00Z",
     "2026-10-26T10:48:45Z"
    ],
+   "pairing": {
+    "scenes": 15,
+    "far_h": 48.0,
+    "far": 6,
+    "far_share": 0.105
+   },
+   "by_source": {
+    "est-2": {
+     "n": 5,
+     "min50": {
+      "n": 5,
+      "tp": 3,
+      "fp": 0,
+      "fn": 1,
+      "tn": 1,
+      "recall": 0.75,
+      "precision": 1.0,
+      "accuracy": 0.8,
+      "brier": 0.2,
+      "base_rate": 0.8,
+      "mean_p": 0.6
+     },
+     "any_length": {
+      "n": 5,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "tn": 1,
+      "recall": 1.0,
+      "precision": 1.0,
+      "accuracy": 1.0,
+      "brier": 0.0,
+      "base_rate": 0.8,
+      "mean_p": 0.8
+     }
+    },
+    "s1-recount": {
+     "n": 52,
+     "min50": {
+      "n": 52,
+      "tp": 40,
+      "fp": 2,
+      "fn": 1,
+      "tn": 9,
+      "recall": 0.976,
+      "precision": 0.952,
+      "accuracy": 0.942,
+      "brier": 0.058,
+      "base_rate": 0.788,
+      "mean_p": 0.808
+     },
+     "any_length": {
+      "n": 52,
+      "tp": 41,
+      "fp": 3,
+      "fn": 0,
+      "tn": 8,
+      "recall": 1.0,
+      "precision": 0.932,
+      "accuracy": 0.942,
+      "brier": 0.058,
+      "base_rate": 0.788,
+      "mean_p": 0.846
+     }
+    }
+   },
    "in_sample": {
     "min50": {
-     "n": 61,
-     "tp": 47,
+     "n": 57,
+     "tp": 43,
      "fp": 2,
      "fn": 2,
      "tn": 10,
-     "recall": 0.959,
-     "precision": 0.959,
-     "accuracy": 0.934,
-     "brier": 0.066,
-     "base_rate": 0.803,
-     "mean_p": 0.803
+     "recall": 0.956,
+     "precision": 0.956,
+     "accuracy": 0.93,
+     "brier": 0.07,
+     "base_rate": 0.789,
+     "mean_p": 0.789
     },
     "any_length": {
-     "n": 61,
-     "tp": 49,
+     "n": 57,
+     "tp": 45,
      "fp": 3,
      "fn": 0,
      "tn": 9,
      "recall": 1.0,
-     "precision": 0.942,
-     "accuracy": 0.951,
-     "brier": 0.049,
-     "base_rate": 0.803,
-     "mean_p": 0.852
+     "precision": 0.938,
+     "accuracy": 0.947,
+     "brier": 0.053,
+     "base_rate": 0.789,
+     "mean_p": 0.842
     }
    },
    "out_of_sample": {
@@ -154,7 +257,7 @@
      "mean_p": null
     }
    },
-   "status": "標本 61 撮影×区間（標本外 0）",
+   "status": "標本 57 撮影×区間（標本外 0）",
    "rows": [
     {
      "section_id": "218404500:R:12",
@@ -651,58 +754,6 @@
      "oos": false
     },
     {
-     "section_id": "218401620:L:02",
-     "date": "2026-04-06",
-     "s1": "2026-04-04T10:49:40Z",
-     "dt_h": -40.5,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "140",
-     "oos": false
-    },
-    {
-     "section_id": "218404500:R:11",
-     "date": "2026-04-06",
-     "s1": "2026-04-04T10:49:40Z",
-     "dt_h": -40.5,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "2",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "140",
-     "oos": false
-    },
-    {
-     "section_id": "218404500:R:12",
-     "date": "2026-04-06",
-     "s1": "2026-04-04T10:49:40Z",
-     "dt_h": -40.5,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "2",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "160",
-     "oos": false
-    },
-    {
-     "section_id": "218404500:R:13",
-     "date": "2026-04-06",
-     "s1": "2026-04-04T10:49:40Z",
-     "dt_h": -40.5,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "2",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "160",
-     "oos": false
-    },
-    {
      "section_id": "218404499:R:00",
      "date": "2026-04-11",
      "s1": "2026-04-11T10:41:40Z",
@@ -955,6 +1006,8 @@
    "site_id": "SYL",
    "name": "三亜・楡林",
    "freeze_utc": "2026-11-15",
+   "calibrated": false,
+   "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 27,
     "naval": 5,
@@ -967,68 +1020,135 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 19,
-    "used": 8
+    "other_day_of_scene": 4,
+    "used": 4
    },
    "scenes_judged": [
     "2026-10-14T10:48:16Z"
    ],
+   "pairing": {
+    "scenes": 1,
+    "far_h": 48.0,
+    "far": 0,
+    "far_share": 0.0
+   },
+   "by_source": {
+    "est-2": {
+     "n": 4,
+     "min50": {
+      "n": 4,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "tn": 2,
+      "recall": 1.0,
+      "precision": 1.0,
+      "accuracy": 1.0,
+      "brier": 0.0,
+      "base_rate": 0.5,
+      "mean_p": 0.5
+     },
+     "any_length": {
+      "n": 4,
+      "tp": 2,
+      "fp": 1,
+      "fn": 0,
+      "tn": 1,
+      "recall": 1.0,
+      "precision": 0.667,
+      "accuracy": 0.75,
+      "brier": 0.25,
+      "base_rate": 0.5,
+      "mean_p": 0.75
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   },
    "in_sample": {
     "min50": {
-     "n": 8,
-     "tp": 3,
-     "fp": 1,
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
      "fn": 0,
-     "tn": 4,
-     "recall": 1.0,
-     "precision": 0.75,
-     "accuracy": 0.875,
-     "brier": 0.125,
-     "base_rate": 0.375,
-     "mean_p": 0.5
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
     },
     "any_length": {
-     "n": 8,
-     "tp": 3,
-     "fp": 3,
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
      "fn": 0,
-     "tn": 2,
-     "recall": 1.0,
-     "precision": 0.5,
-     "accuracy": 0.625,
-     "brier": 0.375,
-     "base_rate": 0.375,
-     "mean_p": 0.75
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
     }
    },
    "out_of_sample": {
     "min50": {
-     "n": 0,
-     "tp": 0,
+     "n": 4,
+     "tp": 2,
      "fp": 0,
      "fn": 0,
-     "tn": 0,
-     "recall": null,
-     "precision": null,
-     "accuracy": null,
-     "brier": null,
-     "base_rate": null,
-     "mean_p": null
+     "tn": 2,
+     "recall": 1.0,
+     "precision": 1.0,
+     "accuracy": 1.0,
+     "brier": 0.0,
+     "base_rate": 0.5,
+     "mean_p": 0.5
     },
     "any_length": {
-     "n": 0,
-     "tp": 0,
-     "fp": 0,
+     "n": 4,
+     "tp": 2,
+     "fp": 1,
      "fn": 0,
-     "tn": 0,
-     "recall": null,
-     "precision": null,
-     "accuracy": null,
-     "brier": null,
-     "base_rate": null,
-     "mean_p": null
+     "tn": 1,
+     "recall": 1.0,
+     "precision": 0.667,
+     "accuracy": 0.75,
+     "brier": 0.25,
+     "base_rate": 0.5,
+     "mean_p": 0.75
     }
    },
-   "status": "標本 8 撮影×区間（標本外 0）",
+   "status": "標本外 4 撮影×区間（較正の流用）",
    "rows": [
     {
      "section_id": "1366235102:R:04",
@@ -1041,7 +1161,7 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 52,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1366235102:L:01",
@@ -1054,7 +1174,7 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 20,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1565266188:L:01",
@@ -1067,7 +1187,7 @@
      "p": 1.0,
      "p_any": 1.0,
      "length_m": 57,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1565266188:L:04",
@@ -1080,59 +1200,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
-    },
-    {
-     "section_id": "1366235102:R:04",
-     "date": "2026-10-18",
-     "s1": "2026-10-14T10:48:16Z",
-     "dt_h": -88.6,
-     "source": "est-2",
-     "y": 1,
-     "owner_c": "1",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": 52,
-     "oos": false
-    },
-    {
-     "section_id": "1366235102:L:01",
-     "date": "2026-10-18",
-     "s1": "2026-10-14T10:48:16Z",
-     "dt_h": -88.6,
-     "source": "est-2",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 1.0,
-     "length_m": 20,
-     "oos": false
-    },
-    {
-     "section_id": "1565266188:L:01",
-     "date": "2026-10-18",
-     "s1": "2026-10-14T10:48:16Z",
-     "dt_h": -88.6,
-     "source": "est-2",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": 57,
-     "oos": false
-    },
-    {
-     "section_id": "1565266188:L:04",
-     "date": "2026-10-18",
-     "s1": "2026-10-14T10:48:16Z",
-     "dt_h": -88.6,
-     "source": "est-2",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": null,
-     "oos": false
+     "oos": true
     }
    ]
   },
@@ -1140,6 +1208,8 @@
    "site_id": "SLP",
    "name": "三亜・亜龍湾",
    "freeze_utc": "2026-11-15",
+   "calibrated": false,
+   "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
     "naval": 18,
@@ -1152,12 +1222,107 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 124,
+    "other_day_of_scene": 0,
     "used": 17
    },
    "scenes_judged": [
     "2026-10-14T10:48:16Z"
    ],
+   "pairing": {
+    "scenes": 1,
+    "far_h": 48.0,
+    "far": 17,
+    "far_share": 1.0
+   },
+   "by_source": {
+    "est-2": {
+     "n": 17,
+     "min50": {
+      "n": 17,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "tn": 15,
+      "recall": 0.5,
+      "precision": 1.0,
+      "accuracy": 0.941,
+      "brier": 0.065,
+      "base_rate": 0.118,
+      "mean_p": 0.04
+     },
+     "any_length": {
+      "n": 17,
+      "tp": 1,
+      "fp": 2,
+      "fn": 1,
+      "tn": 13,
+      "recall": 0.5,
+      "precision": 0.333,
+      "accuracy": 0.824,
+      "brier": 0.182,
+      "base_rate": 0.118,
+      "mean_p": 0.158
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   },
    "in_sample": {
+    "min50": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    },
+    "any_length": {
+     "n": 0,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": null,
+     "precision": null,
+     "accuracy": null,
+     "brier": null,
+     "base_rate": null,
+     "mean_p": null
+    }
+   },
+   "out_of_sample": {
     "min50": {
      "n": 17,
      "tp": 1,
@@ -1185,35 +1350,7 @@
      "mean_p": 0.158
     }
    },
-   "out_of_sample": {
-    "min50": {
-     "n": 0,
-     "tp": 0,
-     "fp": 0,
-     "fn": 0,
-     "tn": 0,
-     "recall": null,
-     "precision": null,
-     "accuracy": null,
-     "brier": null,
-     "base_rate": null,
-     "mean_p": null
-    },
-    "any_length": {
-     "n": 0,
-     "tp": 0,
-     "fp": 0,
-     "fn": 0,
-     "tn": 0,
-     "recall": null,
-     "precision": null,
-     "accuracy": null,
-     "brier": null,
-     "base_rate": null,
-     "mean_p": null
-    }
-   },
-   "status": "標本 17 撮影×区間（標本外 0）",
+   "status": "標本外 17 撮影×区間（較正の流用）",
    "rows": [
     {
      "section_id": "1112325436:R:00",
@@ -1226,7 +1363,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1112325436:L:00",
@@ -1239,7 +1376,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1185822323:R:00",
@@ -1252,7 +1389,7 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 20,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1185822323:R:01",
@@ -1265,7 +1402,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1366235753:L:00",
@@ -1278,7 +1415,7 @@
      "p": 0.0,
      "p_any": 1.0,
      "length_m": 20,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "1366235753:L:01",
@@ -1291,7 +1428,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "158981836:R:00",
@@ -1304,7 +1441,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "158981837:R:06",
@@ -1317,7 +1454,7 @@
      "p": 0.68,
      "p_any": 0.68,
      "length_m": 162,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360728:R:02",
@@ -1330,7 +1467,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360728:R:03",
@@ -1343,7 +1480,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360733:L:00",
@@ -1356,7 +1493,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360733:L:02",
@@ -1369,7 +1506,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360735:L:00",
@@ -1382,7 +1519,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360735:L:01",
@@ -1395,7 +1532,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360737:L:00",
@@ -1408,7 +1545,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360737:L:02",
@@ -1421,7 +1558,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     },
     {
      "section_id": "230360738:L:01",
@@ -1434,7 +1571,7 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": null,
-     "oos": false
+     "oos": true
     }
    ]
   },
@@ -1442,6 +1579,8 @@
    "site_id": "QGZ",
    "name": "青島・古鎮口",
    "freeze_utc": "2026-11-15",
+   "calibrated": false,
+   "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
     "naval": 23,
@@ -1454,9 +1593,76 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 170,
+    "other_day_of_scene": 0,
     "used": 0
    },
    "scenes_judged": [],
+   "pairing": {
+    "scenes": 0,
+    "far_h": 48.0,
+    "far": 0,
+    "far_share": null
+   },
+   "by_source": {
+    "est-2": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   },
    "in_sample": {
     "min50": {
      "n": 0,
@@ -1520,6 +1726,8 @@
    "site_id": "ZDH",
    "name": "舟山・定海",
    "freeze_utc": "2026-11-15",
+   "calibrated": false,
+   "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 27,
     "naval": 11,
@@ -1532,9 +1740,76 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
+    "other_day_of_scene": 0,
     "used": 0
    },
    "scenes_judged": [],
+   "pairing": {
+    "scenes": 0,
+    "far_h": 48.0,
+    "far": 0,
+    "far_share": null
+   },
+   "by_source": {
+    "est-2": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   },
    "in_sample": {
     "min50": {
      "n": 0,
@@ -1598,6 +1873,8 @@
    "site_id": "QDH",
    "name": "青島港内",
    "freeze_utc": "2026-11-15",
+   "calibrated": false,
+   "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
     "naval": 24,
@@ -1610,9 +1887,76 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
+    "other_day_of_scene": 0,
     "used": 0
    },
    "scenes_judged": [],
+   "pairing": {
+    "scenes": 0,
+    "far_h": 48.0,
+    "far": 0,
+    "far_share": null
+   },
+   "by_source": {
+    "est-2": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   },
    "in_sample": {
     "min50": {
      "n": 0,
@@ -1676,6 +2020,8 @@
    "site_id": "LSN",
    "name": "大連・旅順",
    "freeze_utc": "2026-11-15",
+   "calibrated": false,
+   "sample_note": "est-2 はこの港の正解で較正していない（湛江の重みの流用）ので、全部を標本外とする",
    "sections": {
     "labelled": 24,
     "naval": 24,
@@ -1688,9 +2034,76 @@
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
+    "other_day_of_scene": 0,
     "used": 0
    },
    "scenes_judged": [],
+   "pairing": {
+    "scenes": 0,
+    "far_h": 48.0,
+    "far": 0,
+    "far_share": null
+   },
+   "by_source": {
+    "est-2": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    },
+    "s1-recount": {
+     "n": 0,
+     "min50": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     },
+     "any_length": {
+      "n": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "recall": null,
+      "precision": null,
+      "accuracy": null,
+      "brier": null,
+      "base_rate": null,
+      "mean_p": null
+     }
+    }
+   },
    "in_sample": {
     "min50": {
      "n": 0,

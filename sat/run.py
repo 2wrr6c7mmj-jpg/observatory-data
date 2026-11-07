@@ -472,6 +472,12 @@ class Store:
             except Exception as e:  # noqa: BLE001
                 print(f"est-2: {type(e).__name__}: {e}", file=sys.stderr)
         self.save_sectors(est2)
+        try:  # A-0: the presence evaluation (eval/presence.json, eval/meta.json) and its regression snapshot, from the stored
+            # files only (PU 0, pure Python); as est-2 above, an error here never stops the run
+            from . import eval_presence
+            eval_presence.refresh(self.out, self.sites, log=lambda m: print(m, file=sys.stderr))
+        except Exception as e:  # noqa: BLE001
+            print(f"eval_presence: {type(e).__name__}: {e}", file=sys.stderr)
         # quay/blind.geojson: the shared-layout sites (Zhanjiang) as before; a per_site site in quay/<site>/blind.geojson
         groups: dict[str, list] = {}
         group_sites: dict[str, list] = {}
@@ -774,7 +780,8 @@ def presence_eval_ref(out: Path) -> dict:
         d = json.loads(p.read_text(encoding="utf-8"))
         return {"file": "eval/presence.json", "meta": "eval/meta.json", "version": d.get("version"), "target": d.get("target"),
                 "status": {sid: r.get("status") for sid, r in d.get("sites", {}).items()},
-                "note": "海軍の岸壁（naval の線、50 m 以上）の撮影×区間ごとの在/不在を所有者の目視と突き合わせた評価票（再現率・適合率・ブライア、港別と全体、標本内/標本外）。定義と港別の表は eval/meta.json"}
+                "note": ("海軍の岸壁（naval の線、50 m 以上）の撮影×区間ごとの在/不在を所有者の目視と突き合わせた評価票（再現率・適合率・ブライア、港別と全体、"
+                         "判定の出所別）。毎日の実行が保存済みのファイルから作り直す（PU 0）。定義と港別の表は eval/meta.json")}
     except (OSError, ValueError):
         return {"file": None, "status": "未実行（python -m sat.eval_presence）"}
 

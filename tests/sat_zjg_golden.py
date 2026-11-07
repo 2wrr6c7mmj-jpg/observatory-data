@@ -36,7 +36,10 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "docs" / "data" / "sat"
 OLD_FILES = ROOT / "tests" / "fixtures" / "sat_main_9e86565"
 NEW_ONLY = ("sectors.py",)          # modules that did not exist before PR-1
-NEW_FILES = {"quay_sectors.csv"}    # outputs that did not exist before PR-1
+# eval/: the presence evaluation of plan A (A-0, sat/eval_presence.py) and its regression snapshot, rewritten by every
+# save from the stored files (PU 0); not a count of Zhanjiang's scenes
+EVAL_FILES = {"eval/presence.json", "eval/meta.json", "eval/presence_snapshot.json"}
+NEW_FILES = {"quay_sectors.csv"} | EVAL_FILES    # outputs that did not exist before PR-1
 # berth-1 (2026-11-01, the user's instruction: shores where ships never berth are left out of the counts):
 # an intended change of Zhanjiang's outputs. Only these files may differ from 9e86565; inside them the rows
 # of the past scenes stay the same (never rewritten) except est-2, which is recomputed for every scene.
@@ -246,7 +249,7 @@ def compare(tmp: Path, windows_since: str | None = None) -> tuple[dict, dict]:
 # by exactly the candidates and stretches counted apart as civil or unknown.
 NAVAL_CHANGED = {"ship_counts.csv", "detections/2026-11.geojson", "status.json", "quay/2026-11.geojson",
                  "quay/ZJG-zone-prior.json", "quay_counts.csv", "quay_est2.csv", "quay_est2.json", "quay_sectors.csv",
-                 "windows/ZJG.geojson", "anchorage_counts.csv"}
+                 "windows/ZJG.geojson", "anchorage_counts.csv"} | EVAL_FILES   # eval/: est-2 of the scenes changes, and the time stamp
 NAVAL_NEW_FILES = {"berth_class_counts.csv"}
 
 

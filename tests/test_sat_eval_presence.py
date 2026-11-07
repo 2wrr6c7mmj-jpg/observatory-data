@@ -91,7 +91,8 @@ class EvaluateRepoTest(unittest.TestCase):
                 self.assertTrue(secs[sec_id]["naval"], f"{sid} {sec_id} is not on a naval line")
                 self.assertGreaterEqual(secs[sec_id]["length_m"], ep.MIN_LENGTH_M)
             lab = r["labels"]
-            self.assertEqual(lab["answers"], lab["unknown_section"] + lab["not_naval"] + lab["short"] + lab["no_s1_pairing"] + lab["no_scene"] + lab["used"])
+            self.assertEqual(lab["answers"], lab["unknown_section"] + lab["not_naval"] + lab["short"] + lab["no_s1_pairing"] + lab["no_scene"]
+                             + lab["other_day_of_scene"] + lab["used"])
             self.assertEqual(lab["used"], len(r["rows"]))
 
     def test_rows_and_split(self):
@@ -100,7 +101,7 @@ class EvaluateRepoTest(unittest.TestCase):
                 self.assertIn(x["y"], (0, 1))
                 self.assertTrue(0.0 <= x["p"] <= 1.0 and 0.0 <= x["p_any"] <= 1.0)
                 self.assertIn(x["source"], ("est-2", "s1-recount"))
-                self.assertEqual(x["oos"], x["date"] >= r["freeze_utc"])
+                self.assertEqual(x["oos"], (not r["calibrated"]) or x["date"] >= r["freeze_utc"])
             self.assertEqual(r["in_sample"]["min50"]["n"] + r["out_of_sample"]["min50"]["n"], len(r["rows"]))
         tot = self.res["total"]["in_sample"]["min50"]["n"] + self.res["total"]["out_of_sample"]["min50"]["n"]
         self.assertEqual(tot, sum(len(r["rows"]) for r in self.res["sites"].values()))
@@ -113,18 +114,53 @@ class EvaluateRepoTest(unittest.TestCase):
             self.assertTrue(rv["selection"]["naval_only"])
             self.assertEqual(self.res["sites"][sid]["sections"]["naval"], len(rv["sections"]))
 
-    def test_published_files_match(self):
-        """docs/data/sat/eval/presence.json and meta.json are what the code writes for the committed data (apart from the time)."""
+    def test_published_files_are_consistent(self):
+        """docs/data/sat/eval/presence.json and meta.json: the code's version and shape, and the table of meta.json is the table of
+        presence.json. Not an exact match with a fresh evaluation: the daily run (sat/run.py save -> eval_presence.refresh)
+        rewrites both from the stored files, so the committed copy may lag the data by a day without failing the collect workflows."""
         pub = json.loads((EVAL / "presence.json").read_text(encoding="utf-8"))
-        a = {k: v for k, v in pub.items() if k != "generated_utc"}
-        b = {k: v for k, v in self.res.items() if k != "generated_utc"}
-        self.assertEqual(a, b, "run python -m sat.eval_presence and commit docs/data/sat/eval/")
+        self.assertEqual(pub["version"], ep.EVAL_VERSION)
+        self.assertEqual(set(pub["sites"]), set(self.res["sites"]))
+        for r in pub["sites"].values():
+            for k in ("calibrated", "by_source", "pairing", "in_sample", "out_of_sample", "rows"):
+                self.assertIn(k, r)
         meta = json.loads((EVAL / "meta.json").read_text(encoding="utf-8"))
-        self.assertEqual(meta["table"], ep.table(self.res))
+        self.assertEqual(meta["table"], ep.table(pub))
+        self.assertEqual(meta["version"], ep.EVAL_VERSION)
+        self.assertIn("attribution", meta)
         names = {r["site_id"]: r["name"] for r in meta["table"]}
         self.assertEqual(names["ZJG"], "湛江")
         self.assertEqual(names["LSN"], "大連・旅順")
         self.assertEqual(names["ALL"], "全港")
+
+    def test_one_label_day_per_scene_and_sources(self):
+        for sid, r in self.res["sites"].items():
+            days_of = {}
+            for x in r["rows"]:
+                days_of.setdefault(x["s1"], set()).add(x["date"])
+            for s1, days in days_of.items():
+                self.assertEqual(len(days), 1, f"{sid} {s1} judged against {sorted(days)}")
+            self.assertEqual(r["pairing"]["scenes"], len(days_of))
+            self.assertEqual(sum(v["n"] for v in r["by_source"].values()), len(r["rows"]))
+            if not r["calibrated"]:   # borrowed weights: nothing of this port is in sample
+                self.assertEqual(r["in_sample"]["min50"]["n"], 0)
+        zjg = self.res["sites"]["ZJG"]
+        self.assertTrue(zjg["calibrated"])
+        self.assertEqual(set(zjg["by_source"]), set(ep.SOURCES))
+        self.assertGreater(zjg["by_source"]["s1-recount"]["n"], 0)   # the labelled days before 2026-10 have only the re-count
+
+    def test_nearest_day_per_scene(self):
+        rows = [{"s1": "a", "date": "2026-04-03", "dt_h": 30.0}, {"s1": "a", "date": "2026-04-06", "dt_h": -40.0},
+                {"s1": "a", "date": "2026-04-03", "dt_h": 30.0}, {"s1": "b", "date": "2026-05-01", "dt_h": None}]
+        keep, dropped = ep.nearest_day_per_scene(rows)
+        self.assertEqual(dropped, 1)
+        self.assertEqual([(r["s1"], r["date"]) for r in keep], [("a", "2026-04-03"), ("a", "2026-04-03"), ("b", "2026-05-01")])
+
+    def test_scene_features_by_mask_version(self):
+        feats = {("t", "X-land-v1"): [{"n": 1}], ("t", "X-land-v2"): [{"n": 2}]}
+        self.assertEqual(ep.scene_features(feats, {"acquired_utc": "t", "mask_version": "X-land-v2"}), [{"n": 2}])
+        self.assertEqual(len(ep.scene_features(feats, {"acquired_utc": "t"})), 2)
+        self.assertEqual(ep.scene_features(feats, {"acquired_utc": "t", "mask_version": "X-land-v3"}), [])
 
     def test_place_names_in_meta(self):
         meta = json.loads((EVAL / "meta.json").read_text(encoding="utf-8"))
@@ -161,30 +197,72 @@ class PresenceTableTest(unittest.TestCase):
 
 class RegressionGuardTest(unittest.TestCase):
     """The rules of the working tree against docs/data/sat/eval/presence_snapshot.json: the judge's presence (est-2, p >= 0.5,
-    50 m) on the labelled naval sections of the stored scenes of the last 30 days. More than a fifth of the common cells
-    changed (presence flipped, or a section that is naval in one version only) fails: a PR that changes berths.json, a
-    naval-1 class file, the quay lines or the quay version has to show the change is intended, refresh the snapshot
-    (python -m sat.eval_presence --snapshot) and write the number of changed cells in the PR."""
+    50 m) on the labelled naval sections of the stored scenes of the last 30 days. Checked only when a rule version differs from
+    the snapshot's (berths.json and its hash, a naval-1 class file, the quay version, a site's quay lines): then more than a
+    fifth of the common cells changed, in all or in any site with at least 30 common cells, fails, and so does a site whose
+    snapshot scenes are mostly missing from the stored files (a stale snapshot). The daily run refreshes the snapshot while
+    the rules are unchanged; a PR that changes a rule refreshes it by hand (python -m sat.eval_presence --snapshot) once the
+    change is understood, and writes the number of changed cells in the PR."""
 
     def test_presence_within_a_fifth_of_the_snapshot(self):
         p = EVAL / ep.SNAPSHOT_FILE
         if not p.exists():
             self.skipTest("no snapshot: python -m sat.eval_presence --snapshot")
         snap = json.loads(p.read_text(encoding="utf-8"))
-        cur = ep.presence_table(OUT, days=snap.get("days", ep.SNAPSHOT_DAYS))
-        # the snapshot's scenes: recompute them even when they fell out of the 30-day window since
-        since = min((min(v) for v in snap["table"].values() if v), default=None)
-        if since:
-            cur = ep.presence_table(OUT, since=since)
-        cmp = ep.compare_tables(snap["table"], cur)
-        if cmp["cells"] == 0:
-            self.skipTest("the snapshot and the stored scenes share no scene: refresh with python -m sat.eval_presence --snapshot")
         rules_now = ep.rule_versions()
         changed_rules = {k: (snap["rules"].get(k), rules_now.get(k)) for k in rules_now if snap["rules"].get(k) != rules_now.get(k)}
-        msg = (f"在/不在が写しと {cmp['changed']}/{cmp['cells']} 升（{cmp['share']:.0%}）違う（上限 {snap.get('max_change', ep.SNAPSHOT_MAX_CHANGE):.0%}）。"
-               f"変わった規則: {changed_rules or 'なし'}; 港別: { {k: v['share'] for k, v in cmp['sites'].items()} }。"
-               "意図した変更なら python -m sat.eval_presence --snapshot で写しを更新し、PR に升の数を書く")
-        self.assertLessEqual(cmp["share"], snap.get("max_change", ep.SNAPSHOT_MAX_CHANGE), msg)
+        if not changed_rules:
+            self.skipTest("the rules are those of the snapshot: nothing to compare (the daily run keeps the snapshot current)")
+        since = min((min(v) for v in snap["table"].values() if v), default=None)
+        cur = ep.presence_table(OUT, since=since) if since else {}
+        cmp = ep.compare_tables(snap["table"], cur)
+        limit = snap.get("max_change", ep.SNAPSHOT_MAX_CHANGE)
+        min_cells = snap.get("min_site_cells", ep.SNAPSHOT_MIN_SITE_CELLS)
+        hint = f"変わった規則: {changed_rules}。意図した変更なら python -m sat.eval_presence --snapshot で写しを更新し、PR に升の数を書く"
+        for sid, c in cmp["sites"].items():
+            if c["scenes_old"]:
+                self.assertGreaterEqual(c["scenes"], c["scenes_old"] / 2,
+                                        f"{sid}: 写しの撮影 {c['scenes_old']} のうち {c['scenes']} しか保存に無い（写しが古い）。{hint}")
+            if c["cells"] >= min_cells:
+                self.assertLessEqual(c["share"], limit, f"{sid}: 在/不在が写しと {c['changed']}/{c['cells']} 升（{c['share']:.0%}）違う（上限 {limit:.0%}）。{hint}")
+        self.assertGreater(cmp["cells"], 0, f"写しと共通の升が無い。{hint}")
+        self.assertLessEqual(cmp["share"], limit,
+                             f"全体で在/不在が写しと {cmp['changed']}/{cmp['cells']} 升（{cmp['share']:.0%}）違う（上限 {limit:.0%}）。港別: "
+                             f"{ {k: v['share'] for k, v in cmp['sites'].items()} }。{hint}")
+
+    def test_guard_fires_on_a_simulated_rule_change(self):
+        """With Zhanjiang's unclassed lines read as naval, the table differs from the snapshot by far more than a fifth."""
+        p = EVAL / ep.SNAPSHOT_FILE
+        if not p.exists():
+            self.skipTest("no snapshot")
+        snap = json.loads(p.read_text(encoding="utf-8"))
+        orig = berths.load_classes
+
+        def fake(site_id, d=None):
+            c = orig(site_id, d)
+            return dict(c, default="naval") if c and site_id == "ZJG" else c
+        berths.load_classes = fake
+        try:
+            cur = ep.presence_table(OUT, [s for s in ep.load_sites() if s["id"] == "ZJG"], since=min(snap["table"]["ZJG"]))
+        finally:
+            berths.load_classes = orig
+        c = ep.compare_tables({"ZJG": snap["table"]["ZJG"]}, cur)["sites"]["ZJG"]
+        self.assertGreater(c["share"], ep.SNAPSHOT_MAX_CHANGE)
+
+    def test_refresh_keeps_a_snapshot_of_other_rules(self):
+        """refresh() rewrites presence.json; the snapshot only when its rule versions are the working tree's."""
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            (out / "eval").mkdir()
+            (out / "eval" / ep.SNAPSHOT_FILE).write_text(json.dumps({"rules": {"berths": "other"}, "table": {}}), encoding="utf-8")
+            r = ep.refresh(out, [s for s in ep.load_sites() if s["id"] == "SLP"])
+            self.assertEqual(r["snapshot"], "kept")
+            self.assertEqual(json.loads((out / "eval" / ep.SNAPSHOT_FILE).read_text(encoding="utf-8"))["rules"], {"berths": "other"})
+            self.assertTrue((out / "eval" / "presence.json").exists())
+            self.assertTrue((out / "eval" / "meta.json").exists())
+            (out / "eval" / ep.SNAPSHOT_FILE).unlink()
+            self.assertEqual(ep.refresh(out, [s for s in ep.load_sites() if s["id"] == "SLP"])["snapshot"], "created")
+            self.assertEqual(ep.refresh(out, [s for s in ep.load_sites() if s["id"] == "SLP"])["snapshot"], "updated")
 
 
 if __name__ == "__main__":
