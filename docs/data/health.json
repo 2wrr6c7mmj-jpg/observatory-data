@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-06T23:51:58Z",
- "state": "warn",
+ "generated_utc": "2026-11-07T05:50:15Z",
+ "state": "alert",
  "summary": {
   "ok": 10,
-  "warn": 2,
-  "alert": 0,
+  "warn": 1,
+  "alert": 1,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -71,11 +71,11 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-06T13:08:14Z",
-   "heartbeat_age_h": 10.7,
+   "heartbeat_age_h": 16.7,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
-   "state": "warn",
+   "data_age_days": 2,
+   "state": "alert",
    "reasons": [
     {
      "level": "warn",
@@ -85,7 +85,42 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SLP：最新の撮影 2026-10-26 から 11 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-10-26 から 12 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "QGZ：最新の撮影 2026-10-26 から 12 日（撮影の抜け）"
+    },
+    {
+     "level": "alert",
+     "code": "scene_old",
+     "text": "ZDH：最新の撮影 2026-10-21 から 17 日（≥14 日）"
+    },
+    {
+     "level": "alert",
+     "code": "scene_old",
+     "text": "QJG：最新の撮影 2026-10-21 から 17 日（≥14 日）"
+    },
+    {
+     "level": "alert",
+     "code": "scene_old",
+     "text": "QDH：最新の撮影 2026-10-21 から 17 日（≥14 日）"
+    },
+    {
+     "level": "alert",
+     "code": "scene_old",
+     "text": "XSN：最新の撮影 2026-10-21 から 17 日（≥14 日）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "LSN：最新の撮影 2026-10-28 から 10 日（撮影の抜け）"
+    },
+    {
+     "level": "alert",
+     "code": "scene_old",
+     "text": "SWS：最新の撮影 2026-10-21 から 17 日（≥14 日）"
     },
     {
      "level": "warn",
@@ -106,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-06T11:29:43Z",
-   "heartbeat_age_h": 12.4,
+   "heartbeat_age_h": 18.3,
    "data_date": "2026-11-05",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -129,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-06T14:34:53Z",
-   "heartbeat_age_h": 9.3,
+   "heartbeat_age_h": 15.3,
    "data_date": "2026-11-06",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +208,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-06T08:04:57Z",
-   "heartbeat_age_h": 15.8,
+   "heartbeat_age_h": 21.8,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 11,
@@ -197,10 +232,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-06T08:04:54Z",
-   "heartbeat_age_h": 15.8,
+   "heartbeat_age_h": 21.8,
    "data_date": "2026-11-06",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -215,7 +250,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-06T11:30:04Z",
-   "heartbeat_age_h": 12.4,
+   "heartbeat_age_h": 18.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -321,16 +356,16 @@
     "trial": true,
     "mask_version": "QGZ-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:55:42Z",
+     "acquired_utc": "2026-10-26T10:03:53Z",
      "version": "est-1",
-     "mode": 50,
-     "p10": 44,
-     "p90": 57,
-     "warship_mode": 25,
-     "warship_p10": 20,
-     "warship_p90": 32,
+     "mode": 44,
+     "p10": 37,
+     "p90": 51,
+     "warship_mode": 24,
+     "warship_p10": 19,
+     "warship_p90": 29,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -340,16 +375,16 @@
     "trial": true,
     "mask_version": "ZDH-land-v2",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:02Z",
+     "acquired_utc": "2026-10-21T09:54:02Z",
      "version": "est-1",
-     "mode": 30,
-     "p10": 25,
-     "p90": 34,
-     "warship_mode": 17,
-     "warship_p10": 14,
-     "warship_p90": 20,
+     "mode": 63,
+     "p10": 55,
+     "p90": 73,
+     "warship_mode": 30,
+     "warship_p10": 25,
+     "warship_p90": 35,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -359,16 +394,16 @@
     "trial": true,
     "mask_version": "QJG-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:55:42Z",
+     "acquired_utc": "2026-10-21T09:55:42Z",
      "version": "est-1",
      "mode": 5,
-     "p10": 3,
-     "p90": 5,
+     "p10": 4,
+     "p90": 6,
      "warship_mode": 1,
-     "warship_p10": 1,
+     "warship_p10": 0,
      "warship_p90": 3,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -378,16 +413,16 @@
     "trial": true,
     "mask_version": "QDH-land-v2",
     "est1": {
-     "acquired_utc": "2026-11-02T09:55:42Z",
+     "acquired_utc": "2026-10-21T09:55:42Z",
      "version": "est-1",
-     "mode": 2,
-     "p10": 1,
-     "p90": 4,
-     "warship_mode": 0,
-     "warship_p10": 0,
-     "warship_p90": 1,
+     "mode": 41,
+     "p10": 36,
+     "p90": 48,
+     "warship_mode": 13,
+     "warship_p10": 9,
+     "warship_p90": 17,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -397,16 +432,16 @@
     "trial": true,
     "mask_version": "XSN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:02Z",
+     "acquired_utc": "2026-10-21T09:54:02Z",
      "version": "est-1",
-     "mode": 0,
-     "p10": 0,
-     "p90": 0,
+     "mode": 1,
+     "p10": 1,
+     "p90": 2,
      "warship_mode": 0,
      "warship_p10": 0,
-     "warship_p90": 0,
+     "warship_p90": 1,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -416,16 +451,16 @@
     "trial": true,
     "mask_version": "LSN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:56:32Z",
+     "acquired_utc": "2026-10-28T09:48:11Z",
      "version": "est-1",
-     "mode": 3,
-     "p10": 2,
-     "p90": 4,
-     "warship_mode": 0,
-     "warship_p10": 0,
-     "warship_p90": 1,
+     "mode": 70,
+     "p10": 62,
+     "p90": 80,
+     "warship_mode": 25,
+     "warship_p10": 20,
+     "warship_p90": 31,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -435,7 +470,7 @@
     "trial": true,
     "mask_version": "SWS-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:27Z",
+     "acquired_utc": "2026-10-21T09:54:27Z",
      "version": "est-1",
      "mode": 0,
      "p10": 0,
@@ -444,7 +479,7 @@
      "warship_p10": 0,
      "warship_p90": 0,
      "credibility": 3,
-     "in_sample": ""
+     "in_sample": "baseline"
     }
    },
    {
@@ -718,25 +753,25 @@
     "mask_version": "SLP-land-v2"
    },
    "QGZ": {
-    "acquired_utc": "2026-11-02T09:55:42Z",
+    "acquired_utc": "2026-10-26T10:03:53Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 171,
-    "coverage": 0.999,
+    "relative_orbit": 69,
+    "coverage": 0.996,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "QGZ-land-v1"
    },
    "ZDH": {
-    "acquired_utc": "2026-11-02T09:54:02Z",
+    "acquired_utc": "2026-10-21T09:54:02Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
-    "coverage": 0.999,
+    "coverage": 1.0,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "ZDH-land-v2"
    },
    "QJG": {
-    "acquired_utc": "2026-11-02T09:55:42Z",
+    "acquired_utc": "2026-10-21T09:55:42Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 0.999,
@@ -745,7 +780,7 @@
     "mask_version": "QJG-land-v1"
    },
    "QDH": {
-    "acquired_utc": "2026-11-02T09:55:42Z",
+    "acquired_utc": "2026-10-21T09:55:42Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 1.0,
@@ -754,28 +789,28 @@
     "mask_version": "QDH-land-v2"
    },
    "XSN": {
-    "acquired_utc": "2026-11-02T09:54:02Z",
+    "acquired_utc": "2026-10-21T09:54:02Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
-    "coverage": 0.996,
+    "coverage": 0.998,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "XSN-land-v1"
    },
    "LSN": {
-    "acquired_utc": "2026-11-02T09:56:32Z",
+    "acquired_utc": "2026-10-28T09:48:11Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 171,
+    "relative_orbit": 98,
     "coverage": 0.998,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "LSN-land-v1"
    },
    "SWS": {
-    "acquired_utc": "2026-11-02T09:54:27Z",
+    "acquired_utc": "2026-10-21T09:54:27Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
-    "coverage": 0.999,
+    "coverage": 1.0,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "SWS-land-v1"
