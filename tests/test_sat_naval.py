@@ -190,6 +190,9 @@ class ClassFilesTest(unittest.TestCase):
         b = berths.Berths(site, lines, naval=True)
         self.assertTrue(b.point_ok("coastline", 696162852, *pt))
         self.assertEqual(b.line_class(696162852, *pt), "naval")
+        # outside the box: the north shore of the east basin (pier side) and the south shore west of the jetty stay off
+        for out in ((121.2595, 38.8010), (121.2560, 38.7995)):
+            self.assertFalse(b.point_ok("coastline", 696162852, *out), out)
 
 
 if __name__ == "__main__":

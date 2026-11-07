@@ -417,7 +417,9 @@ def geojson(sites: list[dict]) -> dict:
                                          "part": ({k: v for k, v in e["part"].items() if k != "polygon"}
                                                   if e.get("part") else None),
                                          "version": berths.NAVAL_VERSION,
-                                         "since_utc": berths.naval_since(site["id"])}})
+                                         "since_utc": berths.naval_since(site["id"]),
+                                         # a line added later than since_utc: the scenes processed before this date lack it
+                                         **({"added_utc": e["added_utc"]} if e.get("added_utc") else {})}})
         counts[site["id"]] = n
         since[site["id"]] = berths.naval_since(site["id"])
     # naval-gap-1: since_utc is the default start; a site in since_utc_by_site (berths.json naval_since) starts there
