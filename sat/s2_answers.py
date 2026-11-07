@@ -7,6 +7,7 @@ archived (sat/port_archive.py, natural colour, PU 0 to look at them), the sectio
 OSM quay lines as in Zhanjiang (sat/s2_labels.py sections()).
 
     python -m sat.s2_answers prepare --site SYL --archive-ref origin/probe/ports-s2ext-ops3
+    python -m sat.s2_answers prepare --site LSN --archive-ref origin/probe/ports-s2ext-ops3 --naval-only   # naval lines only (A-0)
     python -m sat.s2_answers prepare --site ZJG --oos                    # out-of-sample days (from the freeze on)
     python -m sat.s2_answers merge   --site SYL --file ~/Downloads/SYL-s2-answers.csv
     python -m sat.s2_answers plan                                        # S1 re-fetch list and PU, every port with a review set
@@ -228,10 +229,14 @@ def site_config(site_id: str) -> dict:
 
 
 def prepare(site_id: str, out: Path = OUT, archive: Archive | None = None, oos: bool = False,
-            n_days: int = N_DAYS, n_sections: int = N_SECTIONS, site: dict | None = None, log=print) -> dict:
+            n_days: int = N_DAYS, n_sections: int = N_SECTIONS, site: dict | None = None, log=print,
+            naval_only: bool = False) -> dict:
+    """``naval_only`` (plan A, A-0): only the sections on a line classed naval by naval-1 (sat/berth_class/<site>.json, with
+    the sections the class file adds) are candidates, so that the owner's answers all serve the presence evaluation
+    (sat/eval_presence.py) of the naval quays."""
     from .osm_mask import MASK_DIR, load_mask
     from .run import site_sectors, sector_of as _sector_of
-    from . import s2_labels
+    from . import berths, s2_labels
     site = site or site_config(site_id)
     grid = Grid.for_site(site)
     q = site.get("quay") or {}
@@ -301,7 +306,11 @@ def prepare(site_id: str, out: Path = OUT, archive: Archive | None = None, oos: 
     freq = stored_stretch_frequency(out, site_id, secs, lat0)
     if days_info and len(days_info) < n_days:   # fewer days: more sections, so that the owner's work stays about the same
         n_sections = min(40, int(round(n_sections * n_days / len(days_info))))
-    chosen = pick_sections(secs, freq, n_sections, allowed=inside)
+    allowed = inside
+    if naval_only:
+        b = berths.Berths(site, lines, naval=True)
+        secs = [sc for sc in secs if b.line_class(sc["way_id"], sc["lon"], sc["lat"]) == "naval"]
+    chosen = pick_sections(secs, freq, n_sections, allowed=allowed)
     out_secs = []
     for sc in chosen:
         ring = section_rings(geom, sc, grid)
@@ -325,7 +334,9 @@ def prepare(site_id: str, out: Path = OUT, archive: Archive | None = None, oos: 
            "credit": "Contains modified Copernicus Sentinel data 2025, 2026", "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）",
            "selection": {"sections": f"保存済みの S1 の区間（同じ OSM の線・向き 20 m 以内）が撮影ごとに変わる区間を先に、次にいつも占有、最後にいつも空。OSM の線ごとに順番に取る（最大 {n_sections}）",
                          "days": f"S2 の晴れの日（凍結 {freeze} {'以後' if oos else 'より前'}）のうち" + ("" if oos else "、前後 4 日以内に基準のある軌道の S1 があるものから、期間に等間隔で最大 " + str(n_days) + " 日"),
-                         "candidate_sections": len(secs), "eligible_days": len(elig)}}
+                         "candidate_sections": len(secs), "eligible_days": len(elig),
+                         "naval_only": naval_only,
+                         **({"naval_only_note": "naval-1 で naval の線（設定が足す区間を含む）の区間だけを候補にした（在/不在の評価票 eval/presence.json の対象に合わせる）"} if naval_only else {})}}
     review_path(out, site_id, oos).write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     stored = {r["acquired_utc"] for r in read_csv(out / "quay_counts.csv") if r["site_id"] == site_id}
     plan = s1_plan(doc, site, grid, stored) if not oos else None
@@ -426,6 +437,7 @@ def main(argv=None) -> int:
     p.add_argument("--oos", action="store_true")
     p.add_argument("--days", type=int, default=N_DAYS)
     p.add_argument("--sections", type=int, default=N_SECTIONS)
+    p.add_argument("--naval-only", action="store_true", help="candidates: the sections on naval-1's naval lines only")
     m = sub.add_parser("merge")
     m.add_argument("--site", required=True)
     m.add_argument("--file", type=Path, required=True)
@@ -435,7 +447,7 @@ def main(argv=None) -> int:
     pl.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args(argv)
     if a.cmd == "prepare":
-        r = prepare(a.site, a.out, Archive(a.archive_ref, a.archive_dir), a.oos, a.days, a.sections)
+        r = prepare(a.site, a.out, Archive(a.archive_ref, a.archive_dir), a.oos, a.days, a.sections, naval_only=a.naval_only)
         print(json.dumps({k: v for k, v in r.items() if k != "plan"}, ensure_ascii=False))
     elif a.cmd == "merge":
         print(json.dumps(merge(a.site, a.file, a.out, a.oos), ensure_ascii=False))
