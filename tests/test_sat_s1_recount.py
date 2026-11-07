@@ -51,10 +51,13 @@ class Fake(LimitedClient if np is not None else object):   # no numpy in the col
         return {"x-processingunits-spent": str(est)}, chip(out["height"], out["width"])
 
 
-def write_plan(out: Path, sid: str, times):
+def write_plan(out: Path, sid: str, times, dts=None):
     d = out / "labels" / sid
-    d.mkdir(parents=True)
-    (d / "s1_recount_plan.json").write_text(json.dumps({"scenes": [{"acquired_utc": t, "relative_orbit": "157"} for t in times]}))
+    d.mkdir(parents=True, exist_ok=True)
+    plan = {"scenes": [{"acquired_utc": t, "relative_orbit": "157"} for t in times]}
+    if dts:
+        plan["per_day"] = [{"date": t[:10], "s1": t, "dt_h": dt} for t, dt in zip(times, dts)]
+    (d / "s1_recount_plan.json").write_text(json.dumps(plan))
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -118,6 +121,70 @@ class RecountTest(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(r.main(args, client=Fake(40.0), sites=[SITE], utcnow=lambda: NOW), 1)
             self.assertFalse((d / "raw").exists())
+
+    def test_skip_est2_and_max_scenes(self):
+        T = ["2026-10-14T10:48:16Z", "2026-10-02T10:48:16Z", "2026-09-20T10:48:16Z", "2026-09-08T10:48:16Z"]
+        plan = {"scenes": [{"acquired_utc": t, "relative_orbit": "157"} for t in T],
+                "per_day": [{"date": t[:10], "s1": t, "dt_h": dt} for t, dt in zip(T, [-88.6, 7.4, -31.0, 55.0])]}
+        scenes, skipped, deferred = r.pick_scenes(plan, {T[1]}, 2)
+        self.assertEqual([sc["acquired_utc"] for sc in scenes], [T[2], T[3]])   # nearest first, est-2's scene out
+        self.assertEqual((skipped, deferred), ([T[1]], [T[0]]))
+        scenes, skipped, deferred = r.pick_scenes({"scenes": plan["scenes"]})      # no per_day: the plan's order
+        self.assertEqual([sc["acquired_utc"] for sc in scenes], T)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            write_plan(d / "out", "TSR", T, [-88.6, 7.4, -31.0, 55.0])
+            (d / "out" / "quay_est2").mkdir()
+            (d / "out" / "quay_est2" / "TSR.json").write_text(json.dumps({"scenes": [{"site_id": "TSR", "acquired_utc": T[1]}]}))
+            c = Fake(40.0)
+            rc, s = self.run_main(d, extra=["--skip-est2", "--max-scenes", "TSR=2"], client=c)
+            self.assertEqual(rc, 0)
+            self.assertEqual(s["sites"][0]["fetched"], [T[2], T[3]])
+            self.assertEqual(s["sites"][0]["skipped_est2"], [T[1]])
+            self.assertEqual(s["sites"][0]["deferred"], [T[0]])
+            self.assertEqual(s["sites"][0]["planned"], 4)
+            self.assertEqual(c.requests, 4)   # 2 catalog + 2 process
+
+    def test_match_builds_table_from_saved_chips(self):
+        """--match (PU 0): a real site's geometry with a synthetic flat chip -> one row per review section x matched day,
+        the owner's answers in the s2_* columns, MATCH_FIELDS as Zhanjiang's table."""
+        from sat.run import load_sites
+        from sat import s2_labels
+        site = next(s for s in load_sites() if s["id"] == "SYL")
+        root = Path(__file__).resolve().parent.parent / "docs" / "data" / "sat"
+        rv = json.loads((root / "labels" / "SYL" / "review.json").read_text(encoding="utf-8"))
+        day = rv["days"][0]
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            out = d / "out"
+            (out / "labels" / "SYL").mkdir(parents=True)
+            (out / "labels" / "SYL" / "review.json").write_text(json.dumps({"days": [day], "sections": rv["sections"]}))
+            sec = rv["sections"][0]["id"]
+            (out / "labels" / "SYL-s2-answers.csv").write_text(
+                "site_id,section_id,date,verified,verified_occupied,verified_c,verified_color,verified_by,verified_note\n"
+                f"SYL,{sec},{day['date']},1,0,0,,owner,\n"
+                f"SYL,{rv['sections'][1]['id']},{day['date']},0,,,,owner,\n")
+            g = Grid.for_site(site)
+            acq = day["s1_near"][0]["acquired_utc"]
+            r.save(r.raw_path(d / "raw", "SYL", acq), np.full((g.height, g.width), -20.0), np.full((g.height, g.width), -27.0),
+                   {"orbit_direction": "ascending", "relative_orbit": "157"})
+            import contextlib
+            import io
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(io.StringIO()):
+                rc = r.main(["--match", "--site", "SYL", "--out", str(out), "--raw", str(d / "raw")], sites=[site])
+            self.assertEqual(rc, 0)
+            summ = json.loads(buf.getvalue())["match"][0]
+            rows = list(csv.DictReader((out / "labels" / "SYL-s2-s1-match.csv").read_text(encoding="utf-8").splitlines()))
+            self.assertEqual(list(rows[0].keys()), s2_labels.MATCH_FIELDS)
+            self.assertEqual(len(rows), len(rv["sections"]))
+            self.assertEqual(summ["scenes"], [acq])
+            byid = {x["section_id"]: x for x in rows}
+            self.assertEqual((byid[sec]["s2_status"], byid[sec]["s2_occupied"], byid[sec]["s1_occupied"]), ("owner", "0", "0"))
+            self.assertEqual(byid[sec]["agree"], "1")
+            self.assertEqual(byid[rv["sections"][1]["id"]]["s2_occupied"], "")   # cannot judge: blank
+            self.assertEqual(byid[rv["sections"][2]["id"]]["s2_status"], "")     # not answered
+            self.assertTrue((out / "labels" / "SYL" / "s1_recount_match.json").exists())
 
     def test_month_left(self):
         with tempfile.TemporaryDirectory() as d:
