@@ -427,7 +427,8 @@ def occ2_metrics(rows: list[dict]) -> dict:
         r["_t05"] = 1.0 if (pt is not None and pt < TEST_ALPHA) else 0.0
         r["_negp"] = 1.0 - (pt if pt is not None else 1.0)   # the test's ranking (higher = more surely present), for its AUC
 
-    def tm(rs):   # the test alone: the confusion at p_test < TEST_ALPHA, the AUC of the ranking by p_test
+    def tm(rs):   # the test alone, on the cells that have a test (a blind cell without its own empty days has none): the confusion
+        rs = [r for r in rs if r.get("p_test_occ2") is not None]   # at p_test < TEST_ALPHA, the AUC of the ranking by p_test
         m = metrics(rs, "_t05")
         m["auc"] = auc(rs, "_negp")
         m["brier"] = None   # a 0/1 cut of a p-value has no Brier worth reading
@@ -743,7 +744,7 @@ def meta(res: dict) -> dict:
             "by_blind": f"升の blind_share（区間の線の点のうち、その撮影の軌道の盲域の片（quay/<地点>/blind.geojson：基準の VV p10 が内側の帯で −8 dB 超）から {BLIND_MATCH_M:g} m 以内の割合）が {BLIND_SHARE:g} 以上を盲域（blind）、未満を clear として分けた min50 の指標。clear_near＝clear のうち近い組",
             "by_conf": "升の line_conf（naval-1 の線の区分の確信：確認寄り／推定／fixed／unknown）ごとの min50 の指標",
             "auc": "ROC-AUC（Mann-Whitney、同値は半分）。0/1 の判定では精度の平均に近い",
-            "occ2": (f"occ-2 の行のある升だけの指標：p_occ（p_occ2 ≥ {THRESHOLD:g}）、test（p_test_occ2 < {TEST_ALPHA:g} を在）、current（同じ升の現行の判定）。"
+            "occ2": (f"occ-2 の行のある升だけの指標：p_occ（p_occ2 ≥ {THRESHOLD:g}）、test（p_test_occ2 のある升だけ：< {TEST_ALPHA:g} を在。盲域で区間別の参照の無い升は検定が無く p_occ＝blind_prior）、current（同じ升の現行の判定）。"
                      f"near＝|S1−S2| ≤ {FAR_H:g} 時間、by_blind＝occ-2 の盲域（occ2_blind）で分けた同じ 3 つ、excl_a1＝A-1 対象の区間（a1_target）を除いた同じ 3 つ。"
                      "取り直しの 19 撮影の行は sat/eval_occ2 が書いた（較正前、全部が凍結前の答え＝較正に使う標本なので in-sample の数字）。"
                      "較正前の仮置き a＝logit(事前) では p_occ ≥ 事前 が常に成り立ち、事前 ≥ 0.5 の港では p_occ ≥ 0.5 が全升で在になる：較正（occ2-4）までは test の列（p_test）を読む。"

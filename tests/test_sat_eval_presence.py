@@ -87,6 +87,10 @@ class Occ2JudgeTest(unittest.TestCase):
         self.assertEqual(m["n"], 4)                                               # the fifth cell has no occ-2 row
         self.assertEqual((m["p_occ"]["tp"], m["p_occ"]["fp"], m["p_occ"]["fn"], m["p_occ"]["tn"]), (2, 1, 0, 1))
         self.assertEqual((m["test"]["tp"], m["test"]["fp"]), (2, 0))             # p_test < 0.05 on the two present cells only
+        rows[3]["p_test_occ2"] = None                                             # a blind cell without a test: left out of "test" only
+        m2 = ep.occ2_metrics(rows)
+        self.assertEqual((m2["test"]["n"], m2["p_occ"]["n"]), (3, 4))
+        rows[3]["p_test_occ2"] = 0.2
         self.assertEqual(m["test"]["auc"], 1.0)                                  # ranked by p_test: present cells first
         self.assertIsNone(m["test"]["brier"])
         self.assertEqual(m["current"]["n"], 4)
@@ -153,7 +157,7 @@ class Occ2JudgeTest(unittest.TestCase):
         self.assertTrue(all(r["p_occ2"] is None for r in res["sites"]["ZJG"]["rows"]))    # Zhanjiang: no occ-2
         occ = json.loads((EVAL / "occ2.json").read_text(encoding="utf-8"))
         self.assertEqual(set(occ["sites"]), {"QGZ", "SLP", "SYL"})
-        self.assertIn("min2_noprior", occ["total"]["s2"]["variants"])
+        self.assertTrue({"noprior", "2b", "min2"} <= set(occ["total"]["s2"]["variants"]))
 
 
 class JudgeTest(unittest.TestCase):

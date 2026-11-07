@@ -43,8 +43,13 @@ DEFAULTS = {
     "blind_p10_db": -8.0,          # §2.3 the current blind rule (inner p10 above this) is kept ...
     "blind_ref_pct": 90.0,         # ... and a section whose inner p10 median is above the p90 of the same-face, same-kind non-blind sections is blind too
     "blind_ref_min": 5,            # a face x kind group this small borrows the same-face group, then all non-blind sections
+    "blind_test": "section",       # a blind section is tested only against its own empty days (section reference, occ2-2b); without them
+                                   # p_test is empty and p_occ = blind_prior. "spatial": the p90 reference of the design's §2.3 (1部の審査で棄却:
+                                   # the definition and the reference are the same quantity, so an empty blind berth still tests "present")
     "blind_prior_default": 0.5,    # §2.3 blind_prior without a label history
     "lambda_blind": 0.5,           # §2.3 p_occ = (1 - lambda) p_occ(test) + lambda blind_prior
+    "no_seed_floor_p": 0.1,        # §1.3-4 the seed is a requirement: without a seed sample in the best window p_test is floored here (> alpha)
+    "section_ref_min_days": 2,     # occ2-2b: a section's own empty days (the owner's "absent" within 48 h, LOO) shift the null's centre when at least this many
     "ridge_search_m": (-40.0, 30.0),  # §3.1 across the OSM line, land side negative, every 5 m
     "ridge_step_m": 5.0,
     "ridge_rel_db": 3.0,           # the ridge is this much above the value ridge_check_m waterward
@@ -66,12 +71,14 @@ FIELDS = [
     "blind", "blind_prior", "ref_kind",
     "edge_offset_m", "edge_source",
     "delta_vv_db", "delta_vh_db", "sigma_vv_db", "sigma_vh_db", "enl_vv", "enl_vh", "pool_n",
-    "calib_source", "in_sample",
+    "calib_source", "baseline_period",
 ]
 KEY = ("site_id", "acquired_utc", "section_id")
 FLOAT_FIELDS = ("p_test", "p_occ", "t_stat", "stretch_len_m", "stretch_depth_m", "blind_prior", "edge_offset_m",
                 "delta_vv_db", "delta_vh_db", "sigma_vv_db", "sigma_vh_db", "enl_vv", "enl_vh")
 INT_FIELDS = ("relative_orbit", "z_seed_ok", "blind", "pool_n")
+REF_KINDS = ("time", "section", "prior", "spatial")   # the reference of the row's test: the pixel's own p10 / own p10 shifted by the section's
+                                                      # empty days / no test, p_occ = blind_prior / the design's spatial p90 (option)
 
 # the sections of the inspection (設計_同日の正解と港の誤り検品 §1.2) that only A-1 (the line map) can fix: A = line geometry
 # (a phantom line, pixels taken by a line 2 m away), D = boat basins and small jetties. Marked in the evaluation, never used
