@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-07T07:26:58Z",
+ "generated_utc": "2026-11-07T10:41:08Z",
  "state": "warn",
  "summary": {
-  "ok": 10,
-  "warn": 2,
+  "ok": 9,
+  "warn": 3,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-07T06:18:14Z",
-   "heartbeat_age_h": 1.1,
+   "heartbeat_age_h": 4.4,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -105,22 +105,22 @@
    "name": "海上保安庁 尖閣周辺",
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
-   "heartbeat_utc": "2026-11-06T11:29:43Z",
-   "heartbeat_age_h": 20.0,
+   "heartbeat_utc": "2026-11-07T10:40:46Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-11-05",
    "data_date_tz": "JST",
    "data_age_days": 2,
    "state": "ok",
    "reasons": [],
    "values": {
-    "last_ok_utc": "2026-11-06T11:29:43Z",
-    "last_run_started_utc": "2026-11-06T11:29:31Z",
+    "last_ok_utc": "2026-11-07T10:40:46Z",
+    "last_run_started_utc": "2026-11-07T10:40:33Z",
     "last_run_result": "ok",
     "not_ok_runs": 0,
     "robots": "https://www.kaiho.mlit.go.jp/robots.txt: HTTP 404, no robots.txt (all allowed)",
     "days": 5166,
-    "fetched": 1,
-    "not_modified": 0
+    "fetched": 0,
+    "not_modified": 1
    }
   },
   {
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-06T14:34:53Z",
-   "heartbeat_age_h": 16.9,
+   "heartbeat_age_h": 20.1,
    "data_date": "2026-11-06",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +173,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-07T07:25:40Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 3.3,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 11,
@@ -197,7 +197,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-07T07:25:36Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 3.3,
    "data_date": "2026-11-07",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -215,16 +215,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-07T07:25:58Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 3.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-07T07:25:58Z が入力の更新 2026-11-07T10:40:46Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-07T07:26:13Z",
-    "newest_input_utc": "2026-11-07T07:25:40Z"
+    "newest_input_utc": "2026-11-07T10:40:46Z"
    }
   },
   {
@@ -560,15 +566,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-06T11:29:09Z",
+   "last_success_started_utc": "2026-11-07T10:40:16Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42210588849,
-    "started_utc": "2026-11-06T11:29:09Z",
+    "id": 42364928694,
+    "started_utc": "2026-11-07T10:40:16Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42210588849",
-    "delay_h": 7.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42364928694",
+    "delay_h": 7.0
    },
    "consecutive_failures": 0
   },
@@ -629,11 +635,11 @@
    "last_success_started_utc": "2026-11-07T07:25:58Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 42351258050,
-    "started_utc": "2026-11-07T07:25:58Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42351258050"
+    "id": 42364984247,
+    "started_utc": "2026-11-07T10:41:02Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42364984247"
    },
    "consecutive_failures": 0
   },
