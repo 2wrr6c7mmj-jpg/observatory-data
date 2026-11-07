@@ -40,6 +40,34 @@ class MetricsTest(unittest.TestCase):
         self.assertEqual(m["tn"], 2)
 
 
+    def test_near_pairs_metrics_beside_all(self):
+        """near: the same metrics of the pairs with |S1 - S2| <= FAR_H only; the headline keeps every pair."""
+        rows = _rows([(1, 1.0), (1, 0.0), (0, 1.0), (0, 0.0)])
+        for r, dt in zip(rows, [-16.6, 88.6, 7.4, -64.6]):
+            r["dt_h"] = dt
+            r["p_any"] = r["p"]
+        sm = ep.split_metrics(rows)
+        self.assertEqual(sm["min50"]["n"], 4)
+        self.assertEqual(sm["near"]["far_h"], ep.FAR_H)
+        self.assertEqual(sm["near"]["min50"]["n"], 2)                     # -16.6 h and 7.4 h
+        self.assertEqual((sm["near"]["min50"]["tp"], sm["near"]["min50"]["fp"]), (1, 1))
+        self.assertEqual(sm["min50"]["recall"], 0.5)
+        self.assertEqual(sm["near"]["min50"]["recall"], 1.0)
+        rows[0]["dt_h"] = None                                             # no pairing time: not near
+        self.assertEqual(ep.split_metrics(rows)["near"]["min50"]["n"], 1)
+        t = ep.table({"sites": {}, "total": {"in_sample": sm, "out_of_sample": sm, "by_source": {s: {"n": 0} for s in ep.SOURCES}}})
+        self.assertEqual((t[0]["n"], t[0]["n_near"], t[0]["n_near_oos"], t[0]["recall_near_oos"]), (4, 2, 2, 1.0))
+
+    def test_generated_utc_from_the_given_time(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as d:
+            now = datetime(2026, 10, 30, 5, 17, tzinfo=timezone.utc)
+            res = ep.evaluate(Path(d), sites=[], now=now)
+            self.assertEqual(res["generated_utc"], "2026-10-30T05:17:00Z")
+            doc = ep.snapshot(Path(d), sites=[], now=now)
+            self.assertEqual(doc["generated_utc"], "2026-10-30T05:17:00Z")
+
+
 class JudgeTest(unittest.TestCase):
     def test_est2_length_rule(self):
         st = {"p_real": 0.7, "ship_length_m": 42}

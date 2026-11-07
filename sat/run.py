@@ -475,7 +475,7 @@ class Store:
         try:  # A-0: the presence evaluation (eval/presence.json, eval/meta.json) and its regression snapshot, from the stored
             # files only (PU 0, pure Python); as est-2 above, an error here never stops the run
             from . import eval_presence
-            eval_presence.refresh(self.out, self.sites, log=lambda m: print(m, file=sys.stderr))
+            eval_presence.refresh(self.out, self.sites, log=lambda m: print(m, file=sys.stderr), now=datetime.now(timezone.utc))
         except Exception as e:  # noqa: BLE001
             print(f"eval_presence: {type(e).__name__}: {e}", file=sys.stderr)
         # quay/blind.geojson: the shared-layout sites (Zhanjiang) as before; a per_site site in quay/<site>/blind.geojson

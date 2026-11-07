@@ -246,6 +246,24 @@ class PortsUsageTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 pa.guard("2026-09", now, 4750, 9995, 50, 4600, [], [])
 
+    def test_guard_other_usage_that_is_not_the_ocean(self):
+        """An other-* copy that is not the ocean's (the S1 re-count's usage) counts against the month's total, not against the
+        ocean's reserve (before: every other-* copy was taken for the ocean, so its PU was given back as a smaller reserve)."""
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            oc = d / "other-docs_data_ocean_usage.csv--0.csv"
+            oc.write_text("run_utc,site_id,probe_version,requests,processing_units\n2026-11-02T02:00:00Z,x,o,5,1000\n")
+            rc = d / "other-docs_data_sat_s1_recount_usage.csv--1.csv"
+            rc.write_text("run_utc,site_id,probe_version,requests,processing_units\n2026-11-07T12:23:15Z,SYL+SLP+QGZ,s1-recount-1,30,30\n")
+            now = datetime(2026, 11, 7, tzinfo=timezone.utc)
+            g = pa.guard("2026-11", now, 4750, 9000, 450, 7000, [oc, rc], [])
+            self.assertEqual(g["other_pu"], 1030)
+            self.assertEqual(g["reserve"], 6000)                       # 7,000 - the ocean's 1,000 only
+            self.assertEqual(g["cap"], 9000 - 450 - 1030 - 6000)       # the re-count's 30 PU come off the ports' room
+            self.assertTrue(pa.is_ocean_key("other-docs_data_ocean_usage.csv"))
+            self.assertFalse(pa.is_ocean_key("other-docs_data_sat_s1_recount_usage.csv"))
+            self.assertFalse(pa.is_ocean_key("ports-SYL"))
+
     def test_diverged_branches_and_ports_usage_csv(self):
         """Two branches cut from one, each adding its own rows; a row only in ports_usage.csv (the SLP v2
         baseline of probe/ports-slp2-ops3); a row in both ports_usage.csv and ports/<site>/usage.csv."""

@@ -256,6 +256,13 @@ def usage_key(path: Path) -> str:
     return path.name
 
 
+def is_ocean_key(key: str) -> bool:
+    """Is a usage key (``usage_key``) a copy of the ocean's usage (docs/data/ocean/usage.csv; ocean/cfar_probe.OCEAN_USAGE_KEY)?
+    The other ``other-*`` copies (e.g. the S1 re-count's docs/data/sat/s1_recount_usage.csv) are not the ocean's: their PU
+    count against the month's total but not against the ocean's reserve."""
+    return key.startswith("other-") and "ocean" in key
+
+
 def row_key(r: dict) -> tuple:
     """The record a usage row stands for, the same on every copy of it.
 
@@ -323,7 +330,7 @@ def guard(month: str, now: datetime, cap: float, global_cap: float, global_margi
     other_pu = sum(v[0] for v in per_file.values())
     other_req = sum(v[1] for v in per_file.values())
     if ocean_cap is not None:
-        ocean_pu = sum(v[0] for k, v in per_file.items() if k.startswith("other-"))
+        ocean_pu = sum(v[0] for k, v in per_file.items() if is_ocean_key(k))
         reserve = max(reserve, round(ocean_cap - ocean_pu, 1))
     done_pu, done_req = union_usage(ports_usage, month)
     left = min(cap - done_pu, global_cap - global_margin - other_pu - reserve - done_pu)
