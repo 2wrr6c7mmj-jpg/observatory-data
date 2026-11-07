@@ -1,6 +1,6 @@
 {
  "version": "eval-presence-1",
- "generated_utc": "2026-11-07T13:08:58Z",
+ "generated_utc": "2026-11-07T13:49:50Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
@@ -64,58 +64,58 @@
   },
   "out_of_sample": {
    "min50": {
-    "n": 330,
+    "n": 308,
     "tp": 48,
-    "fp": 31,
-    "fn": 42,
-    "tn": 209,
-    "recall": 0.533,
-    "precision": 0.608,
-    "accuracy": 0.779,
-    "brier": 0.222,
-    "base_rate": 0.273,
-    "mean_p": 0.238
+    "fp": 23,
+    "fn": 39,
+    "tn": 198,
+    "recall": 0.552,
+    "precision": 0.676,
+    "accuracy": 0.799,
+    "brier": 0.202,
+    "base_rate": 0.282,
+    "mean_p": 0.229
    },
    "any_length": {
-    "n": 330,
+    "n": 308,
     "tp": 52,
-    "fp": 42,
-    "fn": 38,
-    "tn": 198,
-    "recall": 0.578,
-    "precision": 0.553,
-    "accuracy": 0.758,
-    "brier": 0.243,
-    "base_rate": 0.273,
-    "mean_p": 0.284
+    "fp": 34,
+    "fn": 35,
+    "tn": 187,
+    "recall": 0.598,
+    "precision": 0.605,
+    "accuracy": 0.776,
+    "brier": 0.224,
+    "base_rate": 0.282,
+    "mean_p": 0.278
    },
    "near": {
     "far_h": 48.0,
     "min50": {
-     "n": 208,
+     "n": 192,
      "tp": 34,
-     "fp": 19,
-     "fn": 28,
-     "tn": 127,
-     "recall": 0.548,
-     "precision": 0.642,
-     "accuracy": 0.774,
-     "brier": 0.226,
-     "base_rate": 0.298,
-     "mean_p": 0.255
+     "fp": 13,
+     "fn": 26,
+     "tn": 119,
+     "recall": 0.567,
+     "precision": 0.723,
+     "accuracy": 0.797,
+     "brier": 0.203,
+     "base_rate": 0.312,
+     "mean_p": 0.245
     },
     "any_length": {
-     "n": 208,
+     "n": 192,
      "tp": 37,
-     "fp": 26,
-     "fn": 25,
-     "tn": 120,
-     "recall": 0.597,
-     "precision": 0.587,
-     "accuracy": 0.755,
-     "brier": 0.245,
-     "base_rate": 0.298,
-     "mean_p": 0.303
+     "fp": 20,
+     "fn": 23,
+     "tn": 112,
+     "recall": 0.617,
+     "precision": 0.649,
+     "accuracy": 0.776,
+     "brier": 0.224,
+     "base_rate": 0.312,
+     "mean_p": 0.297
     }
    }
   },
@@ -137,19 +137,19 @@
     }
    },
    "s1-recount": {
-    "n": 361,
+    "n": 339,
     "min50": {
-     "n": 361,
+     "n": 339,
      "tp": 85,
-     "fp": 33,
-     "fn": 42,
-     "tn": 201,
-     "recall": 0.669,
-     "precision": 0.72,
-     "accuracy": 0.792,
-     "brier": 0.208,
-     "base_rate": 0.352,
-     "mean_p": 0.327
+     "fp": 25,
+     "fn": 39,
+     "tn": 190,
+     "recall": 0.685,
+     "precision": 0.773,
+     "accuracy": 0.811,
+     "brier": 0.189,
+     "base_rate": 0.366,
+     "mean_p": 0.324
     }
    }
   }
@@ -164,12 +164,14 @@
    "sections": {
     "labelled": 182,
     "naval": 82,
+    "no_berth": 0,
     "eligible": 82
    },
    "labels": {
     "answers": 81,
     "unknown_section": 0,
     "not_naval": 20,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -1127,12 +1129,14 @@
    "sections": {
     "labelled": 27,
     "naval": 5,
+    "no_berth": 0,
     "eligible": 5
    },
    "labels": {
     "answers": 176,
     "unknown_section": 0,
     "not_naval": 149,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -1586,12 +1590,14 @@
    "sections": {
     "labelled": 24,
     "naval": 18,
+    "no_berth": 0,
     "eligible": 18
    },
    "labels": {
     "answers": 189,
     "unknown_section": 0,
     "not_naval": 48,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -3634,17 +3640,19 @@
    "sections": {
     "labelled": 24,
     "naval": 23,
-    "eligible": 23
+    "no_berth": 3,
+    "eligible": 20
    },
    "labels": {
     "answers": 178,
     "unknown_section": 0,
     "not_naval": 8,
+    "no_berth": 22,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
     "other_day_of_scene": 0,
-    "used": 170
+    "used": 148
    },
    "scenes_judged": [
     "2025-10-31T09:56:16Z",
@@ -3659,8 +3667,8 @@
    "pairing": {
     "scenes": 8,
     "far_h": 48.0,
-    "far": 44,
-    "far_share": 0.259
+    "far": 38,
+    "far_share": 0.257
    },
    "by_source": {
     "est-2": {
@@ -3693,31 +3701,31 @@
      }
     },
     "s1-recount": {
-     "n": 170,
+     "n": 148,
      "min50": {
-      "n": 170,
+      "n": 148,
       "tp": 34,
-      "fp": 21,
-      "fn": 32,
-      "tn": 83,
-      "recall": 0.515,
-      "precision": 0.618,
-      "accuracy": 0.688,
-      "brier": 0.312,
-      "base_rate": 0.388,
-      "mean_p": 0.324
+      "fp": 13,
+      "fn": 29,
+      "tn": 72,
+      "recall": 0.54,
+      "precision": 0.723,
+      "accuracy": 0.716,
+      "brier": 0.284,
+      "base_rate": 0.426,
+      "mean_p": 0.318
      },
      "any_length": {
-      "n": 170,
+      "n": 148,
       "tp": 37,
-      "fp": 25,
-      "fn": 29,
-      "tn": 79,
-      "recall": 0.561,
-      "precision": 0.597,
-      "accuracy": 0.682,
-      "brier": 0.318,
-      "base_rate": 0.388,
+      "fp": 17,
+      "fn": 26,
+      "tn": 68,
+      "recall": 0.587,
+      "precision": 0.685,
+      "accuracy": 0.709,
+      "brier": 0.291,
+      "base_rate": 0.426,
       "mean_p": 0.365
      }
     }
@@ -3781,78 +3789,65 @@
    },
    "out_of_sample": {
     "min50": {
-     "n": 170,
+     "n": 148,
      "tp": 34,
-     "fp": 21,
-     "fn": 32,
-     "tn": 83,
-     "recall": 0.515,
-     "precision": 0.618,
-     "accuracy": 0.688,
-     "brier": 0.312,
-     "base_rate": 0.388,
-     "mean_p": 0.324
+     "fp": 13,
+     "fn": 29,
+     "tn": 72,
+     "recall": 0.54,
+     "precision": 0.723,
+     "accuracy": 0.716,
+     "brier": 0.284,
+     "base_rate": 0.426,
+     "mean_p": 0.318
     },
     "any_length": {
-     "n": 170,
+     "n": 148,
      "tp": 37,
-     "fp": 25,
-     "fn": 29,
-     "tn": 79,
-     "recall": 0.561,
-     "precision": 0.597,
-     "accuracy": 0.682,
-     "brier": 0.318,
-     "base_rate": 0.388,
+     "fp": 17,
+     "fn": 26,
+     "tn": 68,
+     "recall": 0.587,
+     "precision": 0.685,
+     "accuracy": 0.709,
+     "brier": 0.291,
+     "base_rate": 0.426,
      "mean_p": 0.365
     },
     "near": {
      "far_h": 48.0,
      "min50": {
-      "n": 126,
+      "n": 110,
       "tp": 22,
-      "fp": 16,
-      "fn": 25,
-      "tn": 63,
-      "recall": 0.468,
-      "precision": 0.579,
-      "accuracy": 0.675,
-      "brier": 0.325,
-      "base_rate": 0.373,
-      "mean_p": 0.302
+      "fp": 10,
+      "fn": 23,
+      "tn": 55,
+      "recall": 0.489,
+      "precision": 0.688,
+      "accuracy": 0.7,
+      "brier": 0.3,
+      "base_rate": 0.409,
+      "mean_p": 0.291
      },
      "any_length": {
-      "n": 126,
+      "n": 110,
       "tp": 25,
-      "fp": 20,
-      "fn": 22,
-      "tn": 59,
-      "recall": 0.532,
-      "precision": 0.556,
-      "accuracy": 0.667,
-      "brier": 0.333,
-      "base_rate": 0.373,
-      "mean_p": 0.357
+      "fp": 14,
+      "fn": 20,
+      "tn": 51,
+      "recall": 0.556,
+      "precision": 0.641,
+      "accuracy": 0.691,
+      "brier": 0.309,
+      "base_rate": 0.409,
+      "mean_p": 0.355
      }
     }
    },
-   "status": "標本外 170 撮影×区間（較正の流用）",
+   "status": "標本外 148 撮影×区間（較正の流用）",
    "rows": [
     {
      "section_id": "15387629:L:05",
-     "date": "2025-11-01",
-     "s1": "2025-10-31T09:56:16Z",
-     "dt_h": -17.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2025-11-01",
      "s1": "2025-10-31T09:56:16Z",
      "dt_h": -17.0,
@@ -4047,32 +4042,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2025-11-01",
-     "s1": "2025-10-31T09:56:16Z",
-     "dt_h": -17.0,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2025-11-01",
-     "s1": "2025-10-31T09:56:16Z",
-     "dt_h": -17.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2025-11-01",
      "s1": "2025-10-31T09:56:16Z",
@@ -4100,19 +4069,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2025-11-26",
-     "s1": "2025-11-24T09:56:15Z",
-     "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2025-11-26",
      "s1": "2025-11-24T09:56:15Z",
      "dt_h": -41.0,
@@ -4320,19 +4276,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:L:01",
-     "date": "2025-11-26",
-     "s1": "2025-11-24T09:56:15Z",
-     "dt_h": -41.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "110",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2025-11-26",
      "s1": "2025-11-24T09:56:15Z",
@@ -4360,19 +4303,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2025-12-11",
      "s1": "2025-12-11T10:04:40Z",
      "dt_h": 7.1,
@@ -4593,32 +4523,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "50",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2025-12-11",
-     "s1": "2025-12-11T10:04:40Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "120",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2025-12-11",
      "s1": "2025-12-11T10:04:40Z",
@@ -4655,19 +4559,6 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "50",
      "oos": true
     },
     {
@@ -4879,32 +4770,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-02-14",
-     "s1": "2026-02-16T09:56:08Z",
-     "dt_h": 55.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-02-14",
      "s1": "2026-02-16T09:56:08Z",
@@ -4941,19 +4806,6 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
-     "date": "2026-04-10",
-     "s1": "2026-04-10T10:04:35Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "80",
      "oos": true
     },
     {
@@ -5165,32 +5017,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-04-10",
-     "s1": "2026-04-10T10:04:35Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-04-10",
-     "s1": "2026-04-10T10:04:35Z",
-     "dt_h": 7.1,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-04-10",
      "s1": "2026-04-10T10:04:35Z",
@@ -5218,19 +5044,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2026-04-25",
-     "s1": "2026-04-22T10:04:35Z",
-     "dt_h": -64.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2026-04-25",
      "s1": "2026-04-22T10:04:35Z",
      "dt_h": -64.9,
@@ -5451,32 +5264,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-04-25",
-     "s1": "2026-04-22T10:04:35Z",
-     "dt_h": -64.9,
-     "source": "s1-recount",
-     "y": 1,
-     "owner_c": "1",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-04-25",
-     "s1": "2026-04-22T10:04:35Z",
-     "dt_h": -64.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "130",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-04-25",
      "s1": "2026-04-22T10:04:35Z",
@@ -5513,19 +5300,6 @@
      "p": 0.0,
      "p_any": 0.0,
      "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
-     "date": "2026-05-10",
-     "s1": "2026-05-11T09:56:07Z",
-     "dt_h": 31.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "60",
      "oos": true
     },
     {
@@ -5724,19 +5498,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:L:01",
-     "date": "2026-05-10",
-     "s1": "2026-05-11T09:56:07Z",
-     "dt_h": 31.0,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 1.0,
-     "p_any": 1.0,
-     "length_m": "90",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-05-10",
      "s1": "2026-05-11T09:56:07Z",
@@ -5764,19 +5525,6 @@
     },
     {
      "section_id": "15387629:L:05",
-     "date": "2026-09-22",
-     "s1": "2026-09-20T10:03:53Z",
-     "dt_h": -40.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "15387629:L:06",
      "date": "2026-09-22",
      "s1": "2026-09-20T10:03:53Z",
      "dt_h": -40.9,
@@ -5997,32 +5745,6 @@
      "oos": true
     },
     {
-     "section_id": "582517902:R:00",
-     "date": "2026-09-22",
-     "s1": "2026-09-20T10:03:53Z",
-     "dt_h": -40.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
-     "section_id": "582517902:L:01",
-     "date": "2026-09-22",
-     "s1": "2026-09-20T10:03:53Z",
-     "dt_h": -40.9,
-     "source": "s1-recount",
-     "y": 0,
-     "owner_c": "0",
-     "p": 0.0,
-     "p_any": 0.0,
-     "length_m": "0",
-     "oos": true
-    },
-    {
      "section_id": "694211538:L:01",
      "date": "2026-09-22",
      "s1": "2026-09-20T10:03:53Z",
@@ -6059,12 +5781,14 @@
    "sections": {
     "labelled": 27,
     "naval": 11,
+    "no_berth": 0,
     "eligible": 11
    },
    "labels": {
     "answers": 0,
     "unknown_section": 0,
     "not_naval": 0,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -6264,12 +5988,14 @@
    "sections": {
     "labelled": 24,
     "naval": 24,
+    "no_berth": 0,
     "eligible": 24
    },
    "labels": {
     "answers": 0,
     "unknown_section": 0,
     "not_naval": 0,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,
@@ -6469,12 +6195,14 @@
    "sections": {
     "labelled": 24,
     "naval": 24,
+    "no_berth": 0,
     "eligible": 24
    },
    "labels": {
     "answers": 0,
     "unknown_section": 0,
     "not_naval": 0,
+    "no_berth": 0,
     "short": 0,
     "no_s1_pairing": 0,
     "no_scene": 0,

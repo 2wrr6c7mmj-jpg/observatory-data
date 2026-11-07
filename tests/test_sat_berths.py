@@ -105,6 +105,48 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(run.site_status(SITES["ZJG"])["quay"]["berths"]["berth_lines"], 12)
 
 
+class NoBerthTest(unittest.TestCase):
+    """naval-1 "berth": false (2026-11-07, A-1): a naval line where no warship berths is not a berth in the naval variant (the
+    whole way, or the part), keeps its class, and stays a berth-1 berth before NAVAL_SINCE. Pure Python."""
+
+    def test_rule(self):
+        site = {"id": "T", "sectors": [{"id": "A", "bbox": [0, 0, 1, 1]}]}
+        lines = {"ways": [{"id": 1, "kind": "pier", "coords": [[0.1, 0.1], [0.2, 0.1]]}, {"id": 2, "kind": "coastline", "coords": [[0.1, 0.5], [0.9, 0.5]]},
+                          {"id": 3, "kind": "pier", "coords": [[0.3, 0.3], [0.4, 0.3]]}]}
+        cls = {"default": "unknown", "lines": [
+            {"way": 1, "kind": "pier", "class": "naval", "berth": False, "fixed": True},
+            {"way": 2, "kind": "coastline", "class": "naval", "berth": False, "part": {"bbox": [0.0, 0.4, 0.5, 0.6]}},
+            {"way": 2, "kind": "coastline", "class": "naval", "part": {"sector": "A"}},
+            {"way": 3, "kind": "pier", "class": "naval"}]}
+        conf = {"sites": {"T": {"coastline": [{"way": 2, "sector": "A"}]}}}
+        nv = berths.Berths(site, lines, conf=conf, classes=cls, naval=True)
+        b1 = berths.Berths(site, lines, conf=conf, classes=cls, naval=False)
+        self.assertFalse(nv.point_ok("pier", 1, 0.15, 0.1))          # the whole jetty: no berth
+        self.assertTrue(b1.point_ok("pier", 1, 0.15, 0.1))           # berth-1 (before naval-1): as before
+        self.assertEqual(nv.line_class(1, 0.15, 0.1), "naval")       # the class stays
+        self.assertFalse(nv.point_ok("coastline", 2, 0.2, 0.5))      # the part of the shore in the bbox: no berth
+        self.assertTrue(nv.point_ok("coastline", 2, 0.8, 0.5))       # the rest of the shore: a berth (berths.json / sector A)
+        self.assertTrue(b1.point_ok("coastline", 2, 0.2, 0.5))
+        self.assertTrue(nv.point_ok("pier", 3, 0.35, 0.3))
+        self.assertFalse(berths.feature_ok(nv, {"line_kind": "pier", "osm_way": 1, "acquired_utc": "2026-11-07T10:00:00Z"}, [[0.1, 0.1], [0.2, 0.1]]))
+        self.assertTrue(berths.feature_ok(nv, {"line_kind": "pier", "osm_way": 3, "acquired_utc": "2026-11-07T10:00:00Z"}, [[0.3, 0.3], [0.4, 0.3]]))
+        self.assertEqual(nv.counts()["no_berth_parts"], 2)
+        self.assertEqual(b1.counts()["no_berth_parts"], 0)
+
+    def test_gu_zhenkou_file(self):
+        """The hooked jetty 582517902 and the work-yard shore of 15387629 (section L:06) are berth false with a basis."""
+        site = SITES["QGZ"]
+        nv = berths.Berths(site, lines_of(site), naval=True)
+        self.assertFalse(nv.point_ok("pier", 582517902, 119.97859, 35.73081))
+        self.assertEqual(nv.line_class(582517902, 119.97859, 35.73081), "naval")
+        self.assertFalse(nv.point_ok("coastline", 15387629, 119.96573, 35.73866))   # L:06, the yard shore
+        self.assertTrue(nv.point_ok("coastline", 15387629, 119.96455, 35.73951))    # L:05 next to it: still a berth (sector A2)
+        cls = berths.load_classes("QGZ")
+        for e in cls["lines"]:
+            if e.get("berth") is False:
+                self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), e["way"])
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class EsriPiersTest(unittest.TestCase):
     """naval-1 (2026-11-05): the piers read from Esri World Imagery (QDH -1..-4, QJG -2 in place of the S2 line -1) are

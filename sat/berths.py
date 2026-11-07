@@ -150,8 +150,25 @@ class Berths:
         # naval=True (scenes from NAVAL_SINCE): the berth sections the class file adds ("added": true, e.g. a naval quay
         # that is only a coastline in OSM) are berth lines too; before that date the berth lines stay those of berth-1
         self.naval = bool(naval and self.classes)
+        # naval-1 "berth": false (2026-11-07, A-1): a line in the naval area where no warship berths (a boat basin's shore, a
+        # small hooked jetty for boats and tenders) keeps its class but is not a berth from NAVAL_SINCE: not counted, not
+        # judged, not evaluated (the owner's label there is "present" for boats). The part (sector / bbox / polygon) limits it.
+        self.no_berth: dict[str, list[dict | None]] = {}
         if self.naval:
             for e in self.classes.get("lines") or []:
+                if e.get("berth") is False:
+                    part = e.get("part") or {}
+                    if part.get("sector"):
+                        area = areas.get(part["sector"], {"bbox": [0, 0, 0, 0]})
+                    elif part.get("bbox") or part.get("polygon"):
+                        area = part
+                    else:
+                        area = None
+                    self.no_berth.setdefault(str(e["way"]), []).append(area)
+        if self.naval:
+            for e in self.classes.get("lines") or []:
+                if e.get("berth") is False:
+                    continue
                 if e.get("added") and e.get("kind") in BERTH_KINDS:
                     self.exclude.discard(str(e["way"]))   # a drawn line kept out of berth-1, a berth from NAVAL_SINCE
                 elif e.get("added"):
@@ -184,10 +201,14 @@ class Berths:
         lon, lat = _mid(coords)
         return self.line_class(way_id, lon, lat)
 
+    def no_berth_at(self, way_id, lon: float, lat: float) -> bool:
+        """naval-1: is (lon, lat) of the line on a part the class file marks ``"berth": false``?"""
+        return any(a is None or _in_area(a, lon, lat) for a in self.no_berth.get(str(way_id), []))
+
     def point_ok(self, kind: str | None, way_id, lon: float, lat: float) -> bool:
         """Is the line ``way_id`` (of ``kind``) a berth at (lon, lat)?"""
         w = str(way_id)
-        if w in self.exclude:
+        if w in self.exclude or self.no_berth_at(w, lon, lat):
             return False
         if kind in BERTH_KINDS:
             return True
@@ -204,7 +225,7 @@ class Berths:
         """Berth lines of the site: {"berth_lines", "coastline_sections", "excluded_ways"}."""
         n = sum(1 for w in self.lines.get("ways", []) if w["kind"] in BERTH_KINDS and str(w.get("id")) not in self.exclude)
         return {"berth_lines": n, "coastline_sections": sum(len(v) for v in self.allow.values()),
-                "excluded_ways": sorted(self.exclude)}
+                "excluded_ways": sorted(self.exclude), "no_berth_parts": sum(len(v) for v in self.no_berth.values())}
 
     def _segments(self):
         """Line pieces (<= DENSIFY_M) in metres around the site's first point: (a, b, is_berth)."""
