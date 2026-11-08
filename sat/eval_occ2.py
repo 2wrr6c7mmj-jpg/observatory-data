@@ -237,20 +237,24 @@ def md_tables(res: dict) -> str:
                      f"| {nr['p_occ']['n']} | {fmt(nr['current']['recall'])}／{fmt(nr['current']['precision'])} "
                      f"| {fmt(nr['p_occ']['recall'])}／{fmt(nr['p_occ']['precision'])}／{fmt(nr['p_occ']['auc'])} | {bl['p_occ']['n']} "
                      f"| {fmt(bl['current']['recall'])} → {fmt(bl['p_occ']['recall'])} | {fmt(ex['p_occ']['recall'])}／{fmt(ex['p_occ']['precision'])} |")
-    lines.append(f"\n### 正解を事前に使わない occ-2（a＝log10({ep.TEST_ALPHA:g})：p_test＝{ep.TEST_ALPHA:g} で p_occ＝0.5、盲域の事前 0.5）：pool の参照だけ（noprior）と区間別の空の参照（2b）、現行と同じ升\n")
-    lines.append("| 港 | 升 | 判定 | 全体 再現率／適合率／ブライア／AUC | 検定 p<0.05 再現率／適合率／AUC(p_test) | 48 h 升 | 48 h 再現率／適合率／AUC | 盲域 升 | 盲域 再現率／適合率 | 非盲域 升 | 非盲域 再現率／適合率／AUC | A-1 除外 再現率／適合率 |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
-    for sid, b in list(res["sites"].items()) + [("ALL", res["total"])]:
-        name = ep.NAMES.get(sid, sid) if sid != "ALL" else "全港"
-        for label, var, key in (("現行", "noprior", "current"), ("noprior", "noprior", "p_occ"), ("2b", "2b", "p_occ")):
-            m = b["s2"]["variants"][var]
-            o, nr, bl, cl, ex = m[key], m["near"][key], m["by_blind"]["blind"][key], m["by_blind"]["clear"][key], m["excl_a1"][key]
-            t = m["test"]
-            test_s = "–" if key == "current" else f"{fmt(t['recall'])}／{fmt(t['precision'])}／{fmt(t['auc'])}"
-            lines.append(f"| {name} | {m['n']} | {label} | {fmt(o['recall'])}／{fmt(o['precision'])}／{fmt(o['brier'])}／{fmt(o['auc'])} "
-                         f"| {test_s} "
-                         f"| {nr['n']} | {fmt(nr['recall'])}／{fmt(nr['precision'])}／{fmt(nr['auc'])} | {bl['n']} | {fmt(bl['recall'])}／{fmt(bl['precision'])} "
-                         f"| {cl['n']} | {fmt(cl['recall'])}／{fmt(cl['precision'])}／{fmt(cl['auc'])} | {fmt(ex['recall'])}／{fmt(ex['precision'])} |")
+    for truth, title in (("s2", "s2 の正解（S2 の日の答えを直近の S1 に対応、dt_h あり）"), ("s1", "s1 の正解（S1 の撮影そのものの答え、|dt|＝0。古鎮口のみ）")):
+        blocks = [(sid, b) for sid, b in res["sites"].items() if truth in b] + ([("ALL", res["total"])] if truth in res["total"] else [])
+        if not blocks:
+            continue
+        lines.append(f"\n### {title}：正解を事前に使わない occ-2（a＝log10({ep.TEST_ALPHA:g})：p_test＝{ep.TEST_ALPHA:g} で p_occ＝0.5、盲域の事前 0.5）、pool の参照だけ（noprior）と区間別の空の参照（2b）、現行と同じ升\n")
+        lines.append("| 港 | 升 | 判定 | 全体 再現率／適合率／ブライア／AUC | 検定 p<0.05 再現率／適合率／AUC(p_test) | 48 h 升 | 48 h 再現率／適合率／AUC | 盲域 升 | 盲域 再現率／適合率 | 非盲域 升 | 非盲域 再現率／適合率／AUC | A-1 除外 再現率／適合率 |")
+        lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+        for sid, b in blocks:
+            name = ep.NAMES.get(sid, sid) if sid != "ALL" else "全港"
+            for label, var, key in (("現行", "noprior", "current"), ("noprior", "noprior", "p_occ"), ("2b", "2b", "p_occ")):
+                m = b[truth]["variants"][var]
+                o, nr, bl, cl, ex = m[key], m["near"][key], m["by_blind"]["blind"][key], m["by_blind"]["clear"][key], m["excl_a1"][key]
+                t = m["test"]
+                test_s = "–" if key == "current" else f"{fmt(t['recall'])}／{fmt(t['precision'])}／{fmt(t['auc'])}"
+                lines.append(f"| {name} | {m['n']} | {label} | {fmt(o['recall'])}／{fmt(o['precision'])}／{fmt(o['brier'])}／{fmt(o['auc'])} "
+                             f"| {test_s} "
+                             f"| {nr['n']} | {fmt(nr['recall'])}／{fmt(nr['precision'])}／{fmt(nr['auc'])} | {bl['n']} | {fmt(bl['recall'])}／{fmt(bl['precision'])} "
+                             f"| {cl['n']} | {fmt(cl['recall'])}／{fmt(cl['precision'])}／{fmt(cl['auc'])} | {fmt(ex['recall'])}／{fmt(ex['precision'])} |")
     lines.append("\n### 尾根の縁（§3.1）あり／なし（noprior、同じ升）\n")
     lines.append("| 港 | 升 | 尾根あり 検定 AUC(p_test) | なし | 尾根あり p<0.05 再現率／適合率 | なし | 尾根で帯を動かした区間（軌道別、全撮影で同じ） |")
     lines.append("|---|---|---|---|---|---|---|")
@@ -288,7 +292,7 @@ def main(argv=None) -> int:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     res = {"version": EVAL_VERSION, "generated_utc": now, "occ_version": o2s.OCC_VERSION, "raw_ref": None if a.raw else a.raw_ref,
            "settings": occ2.settings(), "sites": {}, "total": {}}
-    all_rows_s2, all_var_s2 = [], {v: [] for v in list(VARIANTS) + list(DERIVED)}
+    all_rows_s2, all_var_s2, all_rows_s1 = [], {v: [] for v in list(VARIANTS) + list(DERIVED)}, []
     recs_all = {}
     with tempfile.TemporaryDirectory() as td:
         for sid in ids:
@@ -309,13 +313,17 @@ def main(argv=None) -> int:
                 if a.no_write:
                     ev1["rows"] = with_variant(ev1["rows"], rows[DEFAULT])
                 blk["s1"] = site_block(ev1, rows)
+                all_rows_s1.extend(ev1["rows"])
             res["sites"][sid] = blk
             all_rows_s2.extend(ev["rows"])
             for v in all_var_s2:
                 all_var_s2[v].extend(rows[v])
     res["total"] = {"s2": site_block({"rows": all_rows_s2}, all_var_s2)}
+    if all_rows_s1:
+        res["total"]["s1"] = site_block({"rows": all_rows_s1}, all_var_s2)
     res["records"] = recs_all
     res["notes"] = [
+        "s1 の正解（labels/<港>-s1-answers.csv、S1 の撮影そのものの答え）がある港は、区間別の空の参照の不在の日もその答えから取り（|dt|＝0）、s1 のブロックに同じ指標を出す（古鎮口 192 升、2026-11-08）",
         "較正前：p_occ は a=logit(事前：その港の所有者の在の割合)・b=1・c=0 の仮置き、盲域は所有者の答えの在の割合（(在+1)/(答え+2)）を blind_prior に λ=0.5 で混合。"
         "どちらも正解から取った値なので、ここの数字は in-sample（較正に使う標本の数字）",
         "升は eval_presence と同じ（確認セットの区間×ラベル日の S1、naval・berth・50 m 以上、1 撮影 1 ラベル日）。current は同じ升の現行の判定（est-2／s1-recount）",
