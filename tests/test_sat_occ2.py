@@ -297,6 +297,9 @@ class Occ2Test(unittest.TestCase):
             self.assertGreater(scenes[a]["p_test"], 0.05, a)   # back to the null
             self.assertIn("ref-own-absent-days", scenes[a]["calib_source"])
         self.assertLess(scenes[acqs[3]]["p_test"], 0.01)       # the ship still stands out
+        # only_blind (variant 2c): a clear section is left alone
+        rows_c = {a: [dict(r) for r in rs] for a, rs in rows_by.items()}
+        self.assertEqual(occ2.apply_section_reference(rows_c, recs_by, off, only_blind=True), 0)
         # a section with fewer empty days keeps the pool reference
         off1 = occ2.section_offsets(rows_by, recs_by, {sec["section_id"]: set(acqs[:2])})
         self.assertNotIn((acqs[0], sec["section_id"]), off1)
@@ -326,7 +329,7 @@ class Occ2Test(unittest.TestCase):
         self.assertEqual(len(j), 1)
         self.assertEqual((j[0]["p_occ2"], j[0]["p_test_occ2"], j[0]["occ2_blind"]), (0.7, 0.01, 0))
         self.assertEqual(set(e2.VARIANTS), {"min2", "w15", "noprior", "noridge"})
-        self.assertEqual(set(e2.DERIVED), {"2b"})
+        self.assertEqual(set(e2.DERIVED), {"2b", "2c"})
         self.assertEqual(e2.DEFAULT, "min2")
         ab = e2.absent_days({"QGZ-s2-s1-match.csv": [{"section_id": "a", "s2_occupied": "0", "dt_h": "-17.0", "s1_acquired_utc": "x"},
                                                     {"section_id": "a", "s2_occupied": "0", "dt_h": "70.0", "s1_acquired_utc": "y"},

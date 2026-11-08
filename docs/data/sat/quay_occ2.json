@@ -1,6 +1,6 @@
 {
  "version": "occ-2",
- "generated_utc": "2026-11-08T02:02:36Z",
+ "generated_utc": "2026-11-08T02:13:08Z",
  "settings": {
   "version": "occ-2",
   "pool_inner_m": 30.0,
@@ -698,7 +698,8 @@
    "section_ref_cells": {
     "min2": 118,
     "w15": 118,
-    "2b": 118
+    "2b": 118,
+    "2c": 28
    },
    "ridge_sections_by_orbit": [
     {
@@ -1245,7 +1246,8 @@
    "section_ref_cells": {
     "min2": 109,
     "w15": 109,
-    "2b": 109
+    "2b": 109,
+    "2c": 19
    },
    "ridge_sections_by_orbit": [
     {
@@ -1583,7 +1585,8 @@
    "section_ref_cells": {
     "min2": 4,
     "w15": 4,
-    "2b": 4
+    "2b": 4,
+    "2c": 4
    },
    "ridge_sections_by_orbit": [
     {

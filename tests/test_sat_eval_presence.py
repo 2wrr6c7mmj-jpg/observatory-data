@@ -157,7 +157,7 @@ class Occ2JudgeTest(unittest.TestCase):
         self.assertTrue(all(r["p_occ2"] is None for r in res["sites"]["ZJG"]["rows"]))    # Zhanjiang: no occ-2
         occ = json.loads((EVAL / "occ2.json").read_text(encoding="utf-8"))
         self.assertEqual(set(occ["sites"]), {"QGZ", "SLP", "SYL"})
-        self.assertTrue({"noprior", "2b", "min2"} <= set(occ["total"]["s2"]["variants"]))
+        self.assertTrue({"noprior", "2b", "2c", "min2"} <= set(occ["total"]["s2"]["variants"]))
 
 
 class JudgeTest(unittest.TestCase):

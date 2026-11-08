@@ -515,8 +515,10 @@ def section_offsets(rows_by_scene: dict, recs_by_scene: dict, absent: dict, min_
 
 
 def apply_section_reference(rows_by_scene: dict, recs_by_scene: dict, offsets: dict, cfg: dict | None = None,
-                            calib: dict | None = None, blind_prior: dict | None = None, source_tag: str = "ref-own-absent-days") -> int:
-    """Re-test the rows that have an offset: T - offset against the scene's pool null (ref_kind section). Returns the count."""
+                            calib: dict | None = None, blind_prior: dict | None = None, source_tag: str = "ref-own-absent-days",
+                            only_blind: bool = False) -> int:
+    """Re-test the rows that have an offset: T - offset against the scene's pool null (ref_kind section). ``only_blind``: the
+    blind rows only (variant 2c: the clear sections keep the pool reference). Returns the count."""
     cfg = {**DEFAULTS, **(cfg or {})}
     blind_prior = blind_prior or {}
     n = 0
@@ -528,7 +530,7 @@ def apply_section_reference(rows_by_scene: dict, recs_by_scene: dict, offsets: d
         mt, st = float(rec["t_centre"]), float(rec["t_sigma"])
         for r in rows:
             off = offsets.get((acq, r["section_id"]))
-            if off is None or r.get("t_stat") is None or r.get("ref_kind") == "spatial":
+            if off is None or r.get("t_stat") is None or r.get("ref_kind") == "spatial" or (only_blind and not r.get("blind")):
                 continue
             t_adj = float(r["t_stat"]) - off
             p = folded_tail_p(t_pool, t_adj, mt, st) if len(t_pool) >= cfg["pool_min_sections"] else norm_sf((t_adj - mt) / st)

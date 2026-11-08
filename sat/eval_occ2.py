@@ -57,7 +57,7 @@ VARIANTS = {"min2": {"cfg": {"depth_mode": "min2"}, "labels": True, "section_ref
             "w15": {"cfg": {"depth_mode": "w15"}, "labels": True, "section_ref": True},
             "noprior": {"cfg": {"depth_mode": "min2"}, "labels": False, "section_ref": False},
             "noridge": {"cfg": {"depth_mode": "min2", "ridge_rel_db": 99.0}, "labels": False, "section_ref": False}}
-DERIVED = {"2b": "noprior"}
+DERIVED = {"2b": ("noprior", False), "2c": ("noprior", True)}   # (base variant, section reference on the blind sections only)
 DEFAULT = "min2"
 ABSENT_MAX_H = 48.0
 
@@ -172,7 +172,7 @@ def run_site(site: dict, out: Path, scenes: list, variants=VARIANTS, derived=DER
             f"尾根 {recs[-1]['ridge_sections']} Δ {recs[-1].get('delta_vv_db')}／{recs[-1].get('delta_vh_db')} σ {recs[-1].get('sigma_vv_db')}／{recs[-1].get('sigma_vh_db')} "
             f"ENL {recs[-1]['enl_vv']}／{recs[-1]['enl_vh']} T 帰無 {recs[-1].get('t_centre')}±{recs[-1].get('t_sigma')} {recs[-1].get('status')}")
     # the section reference (occ2-2b): the derived variants first (from the base variant's rows before its own shift)
-    for name, base_v in derived.items():
+    for name, (base_v, _only) in derived.items():
         rows[name] = [dict(r) for r in rows[base_v]]
         recs_by[name] = recs_by[base_v]
         calibs[name] = calibs[base_v]
@@ -185,8 +185,10 @@ def run_site(site: dict, out: Path, scenes: list, variants=VARIANTS, derived=DER
         for r in rows[v]:
             by_scene.setdefault(r["acquired_utc"], []).append(r)
         offs = occ2.section_offsets(by_scene, recs_by[v], absent)
-        n_ref[v] = occ2.apply_section_reference(by_scene, recs_by[v], offs, cfg=(spec or variants[derived[v]])["cfg"], calib=calibs[v],
-                                                blind_prior=blind_prior if calibs[v].get("source") == "prior-own-labels" else {})
+        base_cfg = (spec or variants[derived[v][0]])["cfg"]
+        n_ref[v] = occ2.apply_section_reference(by_scene, recs_by[v], offs, cfg=base_cfg, calib=calibs[v],
+                                                blind_prior=blind_prior if calibs[v].get("source") == "prior-own-labels" else {},
+                                                only_blind=bool(spec is None and derived[v][1]))
     log(f"{sid}: 不在の日のある区間 {sum(1 for v in absent.values() if len(v) >= 2)}（答え {sum(len(v) for v in absent.values())}）、区間別参照を当てた升 {n_ref}")
     ridge = sorted({(r.get("relative_orbit"), r.get("ridge_sections")) for r in recs})
     info = {"prior": round(base, 3), "blind_prior": {k: round(v, 3) for k, v in sorted(blind_prior.items())}, "sections_eligible": len(elig_ids),
@@ -241,12 +243,12 @@ def md_tables(res: dict) -> str:
         blocks = [(sid, b) for sid, b in res["sites"].items() if truth in b] + ([("ALL", res["total"])] if truth in res["total"] else [])
         if not blocks:
             continue
-        lines.append(f"\n### {title}：正解を事前に使わない occ-2（a＝log10({ep.TEST_ALPHA:g})：p_test＝{ep.TEST_ALPHA:g} で p_occ＝0.5、盲域の事前 0.5）、pool の参照だけ（noprior）と区間別の空の参照（2b）、現行と同じ升\n")
+        lines.append(f"\n### {title}：正解を事前に使わない occ-2（a＝log10({ep.TEST_ALPHA:g})：p_test＝{ep.TEST_ALPHA:g} で p_occ＝0.5、盲域の事前 0.5）、pool の参照だけ（noprior）、区間別の空の参照（2b：全区間、2c：盲域だけ）、現行と同じ升\n")
         lines.append("| 港 | 升 | 判定 | 全体 再現率／適合率／ブライア／AUC | 検定 p<0.05 再現率／適合率／AUC(p_test) | 48 h 升 | 48 h 再現率／適合率／AUC | 盲域 升 | 盲域 再現率／適合率 | 非盲域 升 | 非盲域 再現率／適合率／AUC | A-1 除外 再現率／適合率 |")
         lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
         for sid, b in blocks:
             name = ep.NAMES.get(sid, sid) if sid != "ALL" else "全港"
-            for label, var, key in (("現行", "noprior", "current"), ("noprior", "noprior", "p_occ"), ("2b", "2b", "p_occ")):
+            for label, var, key in (("現行", "noprior", "current"), ("noprior", "noprior", "p_occ"), ("2b", "2b", "p_occ"), ("2c", "2c", "p_occ")):
                 m = b[truth]["variants"][var]
                 o, nr, bl, cl, ex = m[key], m["near"][key], m["by_blind"]["blind"][key], m["by_blind"]["clear"][key], m["excl_a1"][key]
                 t = m["test"]
@@ -330,7 +332,8 @@ def main(argv=None) -> int:
         "test は検定だけ（p_test < 0.05 を在）、p_occ は p_occ ≥ 0.5 を在。AUC は順位だけで決まるので p_occ と p_test で同じ（盲域の混合の分だけ違う）",
         "variants：min2＝奥行き 5〜25 m（toward は 5〜35 m）の隣り合う 2 画素の対の min の最大＋区間別の空の参照（既定、quay_occ2 の行。事前と盲域の事前は所有者の答え）、"
         "w15＝1 画素目と 2 画素目の 0.5／0.5 加重（同じ事前・参照）、"
-        f"noprior＝正解を事前に使わず pool の参照だけ（a＝log10({ep.TEST_ALPHA:g})：p_test＝{ep.TEST_ALPHA:g} で p_occ＝0.5、盲域の事前 0.5）、2b＝noprior＋区間別の空の参照（所有者の不在の日、当該撮影は除く）、"
+        f"noprior＝正解を事前に使わず pool の参照だけ（a＝log10({ep.TEST_ALPHA:g})：p_test＝{ep.TEST_ALPHA:g} で p_occ＝0.5、盲域の事前 0.5）、2b＝noprior＋区間別の空の参照（所有者の不在の日、当該撮影は除く、全区間）、"
+        "2c＝区間別の参照を盲域にだけ当て（無い盲域は blind_prior のみ）、非盲域は pool の参照のまま（種の要求は共通）、"
         "noridge＝noprior で尾根の縁を切る。test の AUC は p_test の順位（連続）、p_occ の AUC は p_occ の順位",
         "盲域：区間別の参照（不在の日 2 以上）があるときだけ検定し、無ければ p_test 空欄・p_occ＝盲域の事前（不在とは出さない）。設計 §2.3 の空間の p90 を参照にする検定は 1部の審査で棄却"
         "（盲域の定義と参照が同じ量なので、空でも構造的に在になる：#87 の初版では盲域 56 升が tp29 fp14 fn12 tn1、AUC(p_test) 0.49）",
