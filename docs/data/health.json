@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-07T23:06:56Z",
+ "generated_utc": "2026-11-08T05:52:47Z",
  "state": "warn",
  "summary": {
   "ok": 9,
@@ -71,10 +71,10 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-07T11:56:03Z",
-   "heartbeat_age_h": 11.2,
+   "heartbeat_age_h": 17.9,
    "data_date": "2026-11-05",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 3,
    "state": "warn",
    "reasons": [
     {
@@ -85,7 +85,7 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SLP：最新の撮影 2026-10-26 から 12 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-10-26 から 13 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -106,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-07T10:40:46Z",
-   "heartbeat_age_h": 12.4,
+   "heartbeat_age_h": 19.2,
    "data_date": "2026-11-05",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -135,7 +135,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-07T13:30:05Z",
-   "heartbeat_age_h": 9.6,
+   "heartbeat_age_h": 16.4,
    "data_date": "2026-11-07",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -179,7 +179,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-07T07:25:40Z",
-   "heartbeat_age_h": 15.7,
+   "heartbeat_age_h": 22.5,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 12,
@@ -203,10 +203,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-07T07:25:36Z",
-   "heartbeat_age_h": 15.7,
+   "heartbeat_age_h": 22.5,
    "data_date": "2026-11-07",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -221,7 +221,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-07T10:41:02Z",
-   "heartbeat_age_h": 12.4,
+   "heartbeat_age_h": 19.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -822,8 +822,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-07",
-   "version": "s1-recount-1 / s1-match-1 / eval-presence-1（数え方は変えない）"
+   "date": "2026-11-08",
+   "version": "occ-2 / eval-presence-3 / eval-occ2-1（数え方は変えない。別系列、較正前）"
   }
  },
  "credits": [
