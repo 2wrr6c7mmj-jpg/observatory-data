@@ -19,11 +19,16 @@ Method (設計書_occ-2 2026-11-08, 2部):
    T = the largest sum of five consecutive s_i (50 m, the shortest ship) over a window that covers at least 20 m of the
    section (a ship across a section border is taken whole). The null of T is the pool sections' own T: the lower half
    folded about the median, empirical within its range and a normal tail beyond. p_test = P(T >= T_obs | empty).
-   The seed: at least one sample of the best window has s_i above the null's 1 - seed_p quantile (z_seed); without it the
-   p used for p_occ is floored (no_seed_floor_p).
+   The seed is a requirement: at least one sample of the best window has s_i above the null's 1 - seed_p quantile
+   (z_seed); without it p_test is floored at no_seed_floor_p (z_seed_ok 0 in the row).
 3. Blind sections (§2.3). A section whose inner p10 median is above the p90 of the same-face, same-kind non-blind sections
-   (or above the fixed blind_p10_db) is blind: its reference is that p90 (spatial, the upper bound of "empty") instead
-   of its own p10, and p_occ mixes with blind_prior (lambda).
+   (or above the fixed blind_p10_db) is blind. It is tested only against its own empty days (the section reference below,
+   occ2-2b); without them p_test is empty and p_occ = blind_prior (ref_kind prior). The design's spatial p90 reference is
+   kept as an option (blind_test "spatial"): 1部's review of #87 showed it tests every blind berth "present" (the blind
+   definition and the reference are the same quantity).
+3b. Section reference (occ2-2b, 設計 §2.1 third item). The owner's "absent" days of a section (within 48 h of the scene)
+   give its own empty T's; the median of their deviation from each scene's null centre (the scene itself left out) is the
+   section's offset, subtracted from T before the test (ref_kind section). Needs section_ref_min_days such days.
 4. The edge (§3.1). The baseline p10 across the OSM line (-40 .. +30 m, median over the section's samples) has a ridge
    (a local maximum 3 dB above the value 20 m waterward) where the quay's double-bounce line is: the band starts 10 m
    waterward of it (edge_source ridge, edge_offset_m = the ridge's offset from the line). Otherwise the land mask's edge
@@ -51,7 +56,6 @@ from .grid import dilate
 from .occ2_schema import DEFAULTS, FIELDS, OCC_VERSION, p_occ_from_test
 from .osm_mask import LAND, WATER
 
-NO_SEED_FLOOR_P = 0.1   # without a seed sample in the best window, p_test is floored at this for p_occ
 
 
 # ---------------------------------------------------------------- normal distribution (scalar helpers)
@@ -245,13 +249,14 @@ def _group_ref(groups: dict, face: str, kind: str, pct: float, min_n: int):
 def run_scene(geom: quay.Geometry, mask: np.ndarray, sections: list[dict], layers: dict, vv_db: np.ndarray, vh_db: np.ndarray,
               acq: dict, lines: dict | None = None, cfg: dict | None = None, eligible=None, blind_prior: dict | None = None,
               look_az_deg: float | None = None, presmoothed: bool = False, calib: dict | None = None,
-              in_sample: str = "") -> tuple[list[dict], dict]:
+              baseline_period: str = "") -> tuple[list[dict], dict]:
     """The occ-2 rows of one scene and the scene's record (pool statistics).
 
     ``sections``: s2_labels.sections(geom); ``eligible``: f(section) -> bool (the naval berth sections; None: every
     section of min_section_m); ``blind_prior``: {section_id: P(present)} of the blind sections (default
     blind_prior_default); ``acq``: site_id, acquired_utc, relative_orbit, orbit_direction; ``calib``: the calibration
-    (occ2_schema DEFAULTS["calib"] keys). ``presmoothed``: vv_db / vh_db are 3x3 means already."""
+    (occ2_schema DEFAULTS["calib"] keys). ``presmoothed``: vv_db / vh_db are 3x3 means already. ``baseline_period``: the
+    scene's place in the baseline (sat/run.in_sample: "tuning" / "baseline" / "", recorded in the row)."""
     cfg = {**DEFAULTS, **(cfg or {})}
     step = geom.cfg["step_m"]
     sampler = Sampler(geom, mask, lines, cfg)
@@ -318,7 +323,7 @@ def run_scene(geom: quay.Geometry, mask: np.ndarray, sections: list[dict], layer
         rr, cc, valid = sampler.pixels(d["sec"]["profile"], d["idx"], edge[:, None] + offs[None, :])
         xv = np.where(valid, svv[rr, cc], np.nan)
         xh = np.where(valid, svh[rr, cc], np.nan)
-        if d["blind"] and d["ref"] is not None:
+        if d["blind"] and d["ref"] is not None and cfg["blind_test"] == "spatial":
             d["dvv"], d["dvh"], d["ref_kind"] = xv - d["ref"][0], xh - d["ref"][1], "spatial"
         else:
             d["dvv"], d["dvh"], d["ref_kind"] = xv - p10v[rr, cc], xh - p10h[rr, cc], "time"
@@ -337,7 +342,7 @@ def run_scene(geom: quay.Geometry, mask: np.ndarray, sections: list[dict], layer
            **water, "sigma_floor_vv_db": sig_floor_vv, "sigma_floor_vh_db": sig_floor_vh}
     if min(nvv, nvh) < cfg["pool_min_samples"]:
         rec.update(status="no_pool")
-        rows = [_row(acq, d, None, None, None, None, 0, None, None, rec, cfg, calib, in_sample, blind_prior) for d in secs]
+        rows = [_row(acq, d, None, None, None, None, 0, None, None, rec, cfg, calib, baseline_period, blind_prior) for d in secs]
         return rows, rec
     rec["delta_raw_vv_db"], rec["delta_raw_vh_db"] = dvv0, dvh0
     if water.get("water_lift_vv_db") is not None:       # §8: the water's lift is a floor of Delta
@@ -408,7 +413,7 @@ def run_scene(geom: quay.Geometry, mask: np.ndarray, sections: list[dict], layer
     z_seed = ms + norm_isf(cfg["seed_p"]) * ss
     z_on = ms + norm_isf(cfg["on_p"]) * ss
     rec.update(s_centre=ms, s_sigma=ss, t_centre=mt, t_sigma=st, t_null=t_null_src, z_seed=z_seed, z_on=z_on,
-               seed_db_vv=dvv0 + z_seed * svv0, status="ok")
+               seed_db_vv=dvv0 + z_seed * svv0, status="ok", t_pool=[round(float(t), 3) for t in t_pool])
 
     # stretches along each profile (§3.2)
     on_prof: dict = {}
@@ -444,31 +449,99 @@ def run_scene(geom: quay.Geometry, mask: np.ndarray, sections: list[dict], layer
         if p_test is not None and np.isnan(p_test):
             p_test = None
         rows.append(_row(acq, d, p_test, d["T"] if np.isfinite(d["T"]) else None, seed_ok, best_len if best_len else 0.0,
-                         1 if d["blind"] else 0, depth, (dvv0, dvh0, svv0, svh0), rec, cfg, calib, in_sample, blind_prior))
+                         1 if d["blind"] else 0, depth, (dvv0, dvh0, svv0, svh0), rec, cfg, calib, baseline_period, blind_prior))
     return rows, rec
 
 
-def _row(acq, d, p_test, t_stat, seed_ok, stretch_len, blind, depth, null, rec, cfg, calib, in_sample, blind_prior) -> dict:
+def finalize(row: dict, p_raw, cfg: dict, calib: dict | None, blind_prior: dict) -> dict:
+    """p_test and p_occ of a row from the raw test p: the seed requirement (floor without a seed), a blind section without a
+    section reference gets no test (ref_kind prior, p_occ = blind_prior), otherwise the placeholder calibration and, for a
+    blind section, the mixture with its prior."""
+    seed_ok = row.get("z_seed_ok")
+    blind = bool(row.get("blind"))
+    prior = blind_prior.get(row["section_id"], cfg["blind_prior_default"]) if blind else None
+    row["blind_prior"] = prior
+    if p_raw is not None and not np.isfinite(p_raw):
+        p_raw = None
+    if blind and row.get("ref_kind") == "time" and cfg["blind_test"] != "spatial":
+        row["ref_kind"], row["p_test"], row["p_occ"] = "prior", None, prior
+        return row
+    p = p_raw
+    if p is not None and seed_ok == 0:
+        p = max(p, cfg["no_seed_floor_p"])
+    row["p_test"] = p
+    row["p_occ"] = p_occ_from_test(p, row.get("stretch_len_m"), calib, blind=blind, blind_prior=prior, lam=cfg["lambda_blind"])
+    return row
+
+
+def _row(acq, d, p_test, t_stat, seed_ok, stretch_len, blind, depth, null, rec, cfg, calib, baseline_period, blind_prior) -> dict:
     sec = d["sec"]
-    p_eff = p_test
-    if p_test is not None and seed_ok == 0:
-        p_eff = max(p_test, NO_SEED_FLOOR_P)
-    prior = blind_prior.get(sec["section_id"], cfg["blind_prior_default"]) if blind else None
-    p_occ = p_occ_from_test(p_eff, stretch_len, calib, blind=bool(blind), blind_prior=prior, lam=cfg["lambda_blind"])
     c = {**DEFAULTS["calib"], **(calib or {})}
     row = {k: None for k in FIELDS}
     row.update({
         "site_id": acq.get("site_id"), "acquired_utc": acq.get("acquired_utc"), "relative_orbit": acq.get("relative_orbit"),
         "orbit_direction": acq.get("orbit_direction"), "section_id": sec["section_id"], "kind": sec["kind"], "face": d["face"],
-        "occ_version": OCC_VERSION, "p_test": p_test, "p_occ": p_occ, "t_stat": t_stat, "z_seed_ok": seed_ok,
-        "stretch_len_m": stretch_len, "stretch_depth_m": depth, "blind": blind, "blind_prior": prior,
+        "occ_version": OCC_VERSION, "p_test": None, "p_occ": None, "t_stat": t_stat, "z_seed_ok": seed_ok,
+        "stretch_len_m": stretch_len, "stretch_depth_m": depth, "blind": blind, "blind_prior": None,
         "ref_kind": d.get("ref_kind"), "edge_offset_m": d.get("edge_offset_m"), "edge_source": d.get("edge_source"),
         "delta_vv_db": null[0] if null else None, "delta_vh_db": null[1] if null else None,
         "sigma_vv_db": null[2] if null else None, "sigma_vh_db": null[3] if null else None,
         "enl_vv": rec.get("enl_vv"), "enl_vh": rec.get("enl_vh"), "pool_n": rec.get("pool_n"),
-        "calib_source": c.get("source", "none"), "in_sample": in_sample,
+        "calib_source": c.get("source", "none"), "baseline_period": baseline_period,
     })
-    return row
+    return finalize(row, p_test, cfg, calib, blind_prior)
+
+
+# ---------------------------------------------------------------- the section reference (occ2-2b)
+def section_offsets(rows_by_scene: dict, recs_by_scene: dict, absent: dict, min_days: int = DEFAULTS["section_ref_min_days"]) -> dict:
+    """{(acquired_utc, section_id): offset} — the median, over the section's empty scenes other than this one (LOO), of
+    T - the scene's null centre. ``absent``: {section_id: set of acquired_utc the owner called absent}. Only scenes with a
+    record (status ok) count; a section needs ``min_days`` such scenes."""
+    dev: dict = {}
+    for acq, rows in rows_by_scene.items():
+        rec = recs_by_scene.get(acq) or {}
+        if rec.get("status") != "ok" or rec.get("t_centre") is None:
+            continue
+        for r in rows:
+            if r.get("t_stat") is not None and acq in absent.get(r["section_id"], ()):
+                dev.setdefault(r["section_id"], {})[acq] = float(r["t_stat"]) - float(rec["t_centre"])
+    out = {}
+    for sid, by in dev.items():
+        for acq in rows_by_scene:
+            others = [v for a, v in by.items() if a != acq]
+            if len(others) >= min_days:
+                out[(acq, sid)] = float(np.median(others))
+    return out
+
+
+def apply_section_reference(rows_by_scene: dict, recs_by_scene: dict, offsets: dict, cfg: dict | None = None,
+                            calib: dict | None = None, blind_prior: dict | None = None, source_tag: str = "ref-own-absent-days",
+                            only_blind: bool = False) -> int:
+    """Re-test the rows that have an offset: T - offset against the scene's pool null (ref_kind section). ``only_blind``: the
+    blind rows only (variant 2c: the clear sections keep the pool reference). Returns the count."""
+    cfg = {**DEFAULTS, **(cfg or {})}
+    blind_prior = blind_prior or {}
+    n = 0
+    for acq, rows in rows_by_scene.items():
+        rec = recs_by_scene.get(acq) or {}
+        if rec.get("status") != "ok":
+            continue
+        t_pool = np.asarray(rec.get("t_pool") or [], float)
+        mt, st = float(rec["t_centre"]), float(rec["t_sigma"])
+        for r in rows:
+            off = offsets.get((acq, r["section_id"]))
+            if off is None or r.get("t_stat") is None or r.get("ref_kind") == "spatial" or (only_blind and not r.get("blind")):
+                continue
+            t_adj = float(r["t_stat"]) - off
+            p = folded_tail_p(t_pool, t_adj, mt, st) if len(t_pool) >= cfg["pool_min_sections"] else norm_sf((t_adj - mt) / st)
+            r["ref_kind"] = "section"
+            r["t_stat"] = t_adj
+            finalize(r, p, cfg, calib, blind_prior)
+            r["ref_kind"] = "section"
+            base = r.get("calib_source") or "none"
+            r["calib_source"] = base if source_tag in base else (source_tag if base == "none" else f"{base};{source_tag}")
+            n += 1
+    return n
 
 
 def eligible_naval(bt, min_m: float = DEFAULTS["min_section_m"]):
@@ -484,4 +557,4 @@ def eligible_naval(bt, min_m: float = DEFAULTS["min_section_m"]):
 
 def settings(cfg: dict | None = None) -> dict:
     from .occ2_schema import settings as _s
-    return {**_s(cfg), "no_seed_floor_p": NO_SEED_FLOOR_P}
+    return _s(cfg)

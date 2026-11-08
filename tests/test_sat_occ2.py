@@ -30,7 +30,7 @@ class SchemaTest(unittest.TestCase):
     def test_fields_and_settings(self):
         for k in ("site_id", "acquired_utc", "section_id", "p_test", "p_occ", "t_stat", "z_seed_ok", "stretch_len_m", "blind",
                   "blind_prior", "ref_kind", "edge_offset_m", "edge_source", "delta_vv_db", "sigma_vh_db", "enl_vv", "pool_n",
-                  "calib_source", "in_sample"):
+                  "calib_source", "baseline_period"):
             self.assertIn(k, sch.FIELDS)
         self.assertEqual(sch.OCC_VERSION, "occ-2")
         st = sch.settings()
@@ -56,7 +56,7 @@ class SchemaTest(unittest.TestCase):
                   section_id="219848841:L:00", kind="pier", face="toward", occ_version="occ-2", p_test=0.00012345, p_occ=0.8125,
                   t_stat=23.456, z_seed_ok=1, stretch_len_m=130.0, stretch_depth_m=35.0, blind=1, blind_prior=0.9, ref_kind="spatial",
                   edge_offset_m=-15.0, edge_source="ridge", delta_vv_db=4.33, delta_vh_db=4.4, sigma_vv_db=2.77, sigma_vh_db=3.06,
-                  enl_vv=15.9, enl_vh=6.6, pool_n=112, calib_source="none", in_sample="baseline")
+                  enl_vv=15.9, enl_vh=6.6, pool_n=112, calib_source="none", baseline_period="baseline")
         r2 = {**r1, "section_id": "219848841:L:01", "p_test": None, "p_occ": None, "t_stat": None, "blind": 0, "blind_prior": None}
         with tempfile.TemporaryDirectory() as d:
             out = Path(d)
@@ -165,9 +165,15 @@ class Occ2Test(unittest.TestCase):
         self.assertAlmostEqual(rec5["delta_vh_db"] - rec0["delta_vh_db"], 5.0, places=2)
         p0 = [r["p_test"] for r in rows0]
         p5 = [r["p_test"] for r in rows5]
-        for a, b in zip(p0, p5):
+        for a, b, r in zip(p0, p5, rows0):
+            if r["blind"]:                 # a blind section without its own empty days has no test (ref_kind prior)
+                self.assertIsNone(a)
+                self.assertEqual(r["ref_kind"], "prior")
+                continue
             self.assertIsNotNone(a)
             self.assertAlmostEqual(a, b, places=4)
+        p0 = [p for p in p0 if p is not None]
+        self.assertGreaterEqual(len(p0), 10)
         self.assertLessEqual(sum(1 for p in p0 if p < 0.05) / len(p0), 0.2)
         self.assertLessEqual(sum(1 for p in p0 if p < 0.01), 1)
 
@@ -185,7 +191,7 @@ class Occ2Test(unittest.TestCase):
         self.assertLessEqual(r["stretch_len_m"], 200.0)
         self.assertGreater(r["p_occ"], 0.8)
         # the pier sections are untouched
-        others = [x["p_test"] for x in rows if x["kind"] == "pier"]
+        others = [x["p_test"] for x in rows if x["kind"] == "pier" and x["p_test"] is not None]
         self.assertLessEqual(sum(1 for p in others if p < 0.01), 1)
 
     def test_c_one_pixel_bright_edge_is_not_a_ship(self):
@@ -222,32 +228,82 @@ class Occ2Test(unittest.TestCase):
         self.assertEqual(r_no["edge_source"], "mask")
         self.assertGreater(r_no["p_test"], 0.01)
 
-    def test_e_blind_section_by_the_spatial_reference(self):
-        """(e) a berth taken in the baseline (its p10 is a ship): blind, referenced to the clear sections of its face and kind,
-        and the ship of the day is found there; its own p10 would have hidden it."""
+    def _blind_setup(self):
         base = {k: v.copy() for k, v in self.base.items()}
         cvv = self.cvv.copy()
         cvh = self.cvh.copy()
         cvv[17:20, 12:27] = 5.0     # a ship always at the north side of the first pier, 150 m
         cvh[17:20, 12:27] = -1.0
         base["vv_p10"], base["vh_p10"] = baseline.smooth_db(cvv), baseline.smooth_db(cvh)
+        return base, cvv, cvh
+
+    def test_e_blind_section(self):
+        """(e) a berth taken in the baseline (its p10 is a ship) is blind by the spatial rule (its inner p10 median above the p90 of
+        the clear sections of its face and kind). Default (occ2-2b): no test without its own empty days, p_occ = blind_prior, never
+        "absent". Option blind_test spatial (the design's §2.3): the p90 reference finds the ship of the day."""
+        base, cvv, cvh = self._blind_setup()
         vv, vh = noisy(cvv, cvh)
-        rows, rec = self.run_scene(vv, vh, base=base, blind_prior={})
+        rows, rec = self.run_scene(vv, vh, base=base, blind_prior={s["section_id"]: 0.9 for s in self.secs})
         blind = [r for r in rows if r["blind"] == 1]
         self.assertGreaterEqual(len(blind), 1)
-        r = next(r for r in blind if r["kind"] == "pier" and r["section_id"].startswith("2:"))
-        self.assertEqual(r["ref_kind"], "spatial")
+        r = next(r for r in blind if r["kind"] == "pier" and r["section_id"].startswith("2:R"))   # side R is the north side here
+        self.assertEqual(r["ref_kind"], "prior")
+        self.assertIsNone(r["p_test"])
+        self.assertEqual(r["p_occ"], 0.9)
+        self.assertIsNotNone(r["t_stat"])             # the statistic is still computed (the section reference uses it)
         self.assertIsNone(r["edge_offset_m"])        # no ridge search on a blind section
-        self.assertLess(r["p_test"], 0.01)
-        self.assertGreaterEqual(r["stretch_len_m"], 100.0)
-        # p_occ mixes with the prior (default 0.5, lambda 0.5): never above 0.75 before the calibration
-        self.assertLessEqual(r["p_occ"], 0.75 + 1e-9)
-        self.assertGreater(r["p_occ"], 0.7)
+        rows_s, _ = self.run_scene(vv, vh, base=base, blind_prior={}, cfg={"blind_test": "spatial"})
+        r_s = next(x for x in rows_s if x["section_id"] == r["section_id"])
+        self.assertEqual(r_s["ref_kind"], "spatial")
+        self.assertLess(r_s["p_test"], 0.01)
+        self.assertGreaterEqual(r_s["stretch_len_m"], 100.0)
+        self.assertLessEqual(r_s["p_occ"], 0.75 + 1e-9)   # mixed with the prior 0.5, lambda 0.5
         # the same section against its own p10 (the blind rules switched off): nothing to see
         rows_t, _ = self.run_scene(vv, vh, base=base, cfg={"blind_p10_db": 99.0, "blind_ref_min": 10 ** 6})
         r_t = next(x for x in rows_t if x["section_id"] == r["section_id"])
         self.assertEqual(r_t["ref_kind"], "time")
         self.assertGreater(r_t["p_test"], 0.05)
+
+    def test_section_reference_shifts_the_null_centre(self):
+        """occ2-2b: a section that is brighter than the pool on every day (a permanent structure not in the baseline) tests "present"
+        against the pool; its own empty days (LOO) give its offset and the test comes back to the null. A real ship on another day
+        stays significant after the shift."""
+        sec = coast_section(self.secs, 57)
+        pr = self.geom.profiles[sec["profile"]]
+        rows_by, recs_by = {}, {}
+        scenes = {}
+        for k, seed in enumerate((1, 2, 3, 4)):
+            vv, vh = noisy(self.cvv, self.cvh, seed=seed)
+            vv[50:65, 10:12] += 9.0      # the permanent bias on the section's band: 150 m, two pixels deep
+            vh[50:65, 10:12] += 9.0
+            if k == 3:
+                vv[52:63, 10:12] = 5.0   # and on the last day a ship
+                vh[52:63, 10:12] = -1.0
+            acq = {**ACQ, "acquired_utc": f"2026-03-0{k + 1}T10:48:00Z"}
+            rows, rec = occ2.run_scene(self.geom, self.mask, self.secs, self.base, vv, vh, acq, lines=self.lines)
+            rows_by[acq["acquired_utc"]], recs_by[acq["acquired_utc"]] = rows, rec
+            scenes[acq["acquired_utc"]] = next(r for r in rows if r["section_id"] == sec["section_id"])
+        acqs = sorted(rows_by)
+        for a in acqs[:3]:
+            self.assertLess(scenes[a]["p_test"], 0.05, a)      # the bias alone tests present against the pool
+        absent = {sec["section_id"]: set(acqs[:3])}             # the owner: empty on the first three days
+        off = occ2.section_offsets(rows_by, recs_by, absent)
+        self.assertEqual(set(off), {(a, sec["section_id"]) for a in acqs})   # LOO: each of the three has two others; the fourth has three
+        self.assertGreater(off[(acqs[0], sec["section_id"])], 5.0)
+        n = occ2.apply_section_reference(rows_by, recs_by, off)
+        self.assertEqual(n, 4)
+        for a in acqs[:3]:
+            self.assertEqual(scenes[a]["ref_kind"], "section")
+            self.assertGreater(scenes[a]["p_test"], 0.05, a)   # back to the null
+            self.assertIn("ref-own-absent-days", scenes[a]["calib_source"])
+        self.assertLess(scenes[acqs[3]]["p_test"], 0.01)       # the ship still stands out
+        # only_blind (variant 2c): a clear section is left alone
+        rows_c = {a: [dict(r) for r in rs] for a, rs in rows_by.items()}
+        self.assertEqual(occ2.apply_section_reference(rows_c, recs_by, off, only_blind=True), 0)
+        # a section with fewer empty days keeps the pool reference
+        off1 = occ2.section_offsets(rows_by, recs_by, {sec["section_id"]: set(acqs[:2])})
+        self.assertNotIn((acqs[0], sec["section_id"]), off1)
+        self.assertIn((acqs[3], sec["section_id"]), off1)
 
     def test_depth_mode_w15_and_no_pool(self):
         vv, vh = noisy(self.cvv, self.cvh)
@@ -262,6 +318,23 @@ class Occ2Test(unittest.TestCase):
         rows, rec = self.run_scene(vv, vh, secs=few, cfg={"pool_min_samples": 10 ** 6})
         self.assertEqual(rec["status"], "no_pool")
         self.assertTrue(all(r["p_test"] is None and r["p_occ"] is None for r in rows))
+
+    def test_eval_occ2_helpers(self):
+        from sat import eval_occ2 as e2, occ2_schema as sch2
+        self.assertAlmostEqual(sch2.p_occ_from_test(0.05, 0.0, e2.NO_LABEL_CALIB), 0.5, places=9)   # anchored at the test's alpha
+        self.assertGreater(sch2.p_occ_from_test(0.001, 0.0, e2.NO_LABEL_CALIB), 0.8)   # sigmoid(3 - 1.3)
+        rows = [{"s1": "2026-02-16T09:56:08Z", "section_id": "a", "y": 1, "p": 0.0}, {"s1": "2026-02-16T09:56:08Z", "section_id": "b", "y": 0, "p": 0.0}]
+        var = [{"acquired_utc": "2026-02-16T09:56:08Z", "section_id": "a", "p_occ": 0.7, "p_test": 0.01, "blind": 0}]
+        j = e2.with_variant(rows, var)
+        self.assertEqual(len(j), 1)
+        self.assertEqual((j[0]["p_occ2"], j[0]["p_test_occ2"], j[0]["occ2_blind"]), (0.7, 0.01, 0))
+        self.assertEqual(set(e2.VARIANTS), {"min2", "w15", "noprior", "noridge"})
+        self.assertEqual(set(e2.DERIVED), {"2b", "2c"})
+        self.assertEqual(e2.DEFAULT, "min2")
+        ab = e2.absent_days({"QGZ-s2-s1-match.csv": [{"section_id": "a", "s2_occupied": "0", "dt_h": "-17.0", "s1_acquired_utc": "x"},
+                                                    {"section_id": "a", "s2_occupied": "0", "dt_h": "70.0", "s1_acquired_utc": "y"},
+                                                    {"section_id": "b", "s2_occupied": "1", "dt_h": "1.0", "s1_acquired_utc": "x"}]})
+        self.assertEqual(ab, {"a": {"x"}})
 
     def test_helpers(self):
         self.assertAlmostEqual(occ2.norm_sf(0.0), 0.5, places=9)

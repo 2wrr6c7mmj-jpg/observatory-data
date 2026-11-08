@@ -35,6 +35,16 @@ the scene's orbit, quay/<site>/blind.geojson: the baseline VV p10 of the inner b
 confidence of the line: 確認寄り / 推定 / fixed / unknown), and the metrics are repeated by blind (blind_share >= BLIND_SHARE) /
 clear and by line confidence.
 
+occ-2 (eval-presence-3, 設計書_occ-2 §4.3・§5): when the scene has occ-2 rows (docs/data/sat/quay_occ2/<site>/YYYY-MM.csv,
+sat/occ2_schema; the evaluation sat/eval_occ2.py writes them for the re-count scenes, the daily flow later) every row also
+carries the occ-2 judge beside the current one: ``p_occ2`` (the occupation probability, before the calibration a placeholder
+a = logit(prior), b = 1, c = 0), ``p_test_occ2`` (the test's P(T >= T_obs | empty)), ``occ2_blind`` (occ-2's own blind flag:
+spatial reference), ``edge_offset_m`` / ``edge_source`` (the baseline's ridge) and ``a1_target`` (a section the inspection
+left to A-1, the line map: A = line geometry, D = boat basins; sat/occ2_schema.A1_TARGETS). The metrics blocks carry an
+``occ2`` entry with occ-2's numbers and the current judge's numbers on the same cells (the body ``p`` stays the current judge;
+nothing of the published presence changes where occ-2 has no rows). ``auc`` (ROC-AUC, Mann-Whitney, ties half) is in every
+metrics block.
+
 Pure Python (no numpy, no CDSE: PU 0). Output docs/data/sat/eval/presence.json and docs/data/sat/eval/meta.json.
 
 Regression guard (tests/test_sat_eval_presence.py): ``presence_table`` is the judge's presence (p >= 0.5, 50 m) of every stored
@@ -62,15 +72,17 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import berths
+from . import occ2_schema as o2s
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
-EVAL_VERSION = "eval-presence-2"   # eval-presence-1 + the s1 truth, blind / confidence splits, the stretch length rule of the re-count
+EVAL_VERSION = "eval-presence-3"   # eval-presence-2 + the occ-2 judge beside the current one (p_occ2, p_test_occ2), AUC in the metrics
 MIN_LENGTH_M = 50.0
 SECTION_MATCH_M = 20.0        # as sat/quay_est2.SECTION_MATCH_M (not imported: quay_est2 needs numpy)
 THRESHOLD = 0.5
 FAR_H = 48.0                  # |S1 - S2| beyond this is "far" in the pairing summary
 SOURCES = ("est-2", "s1-recount")
+TEST_ALPHA = 0.05             # occ-2: a cell is "present" by the test alone when p_test < this (beside p_occ >= THRESHOLD)
 TRUTHS = ("s2", "s1")
 BLIND_SHARE = 0.5             # a cell whose section lies on a blind stretch for at least this share is "blind"
 BLIND_MATCH_M = 20.0          # a point of the section line within this of a blind stretch of the same OSM way is blind
@@ -366,7 +378,7 @@ def recount_length(r: dict | None):
 def metrics(rows: list[dict], key: str = "p") -> dict:
     n = len(rows)
     m = {"n": n, "tp": 0, "fp": 0, "fn": 0, "tn": 0, "recall": None, "precision": None, "accuracy": None, "brier": None,
-         "base_rate": None, "mean_p": None}
+         "base_rate": None, "mean_p": None, "auc": None}
     if not n:
         return m
     for r in rows:
@@ -378,7 +390,23 @@ def metrics(rows: list[dict], key: str = "p") -> dict:
     m["brier"] = round(sum((r[key] - r["y"]) ** 2 for r in rows) / n, 3)
     m["base_rate"] = round(sum(r["y"] for r in rows) / n, 3)
     m["mean_p"] = round(sum(r[key] for r in rows) / n, 3)
+    m["auc"] = auc(rows, key)
     return m
+
+
+def auc(rows: list[dict], key: str = "p"):
+    """ROC-AUC by Mann-Whitney (ties count half); None without both classes."""
+    pos = sorted(float(r[key]) for r in rows if r["y"])
+    neg = sorted(float(r[key]) for r in rows if not r["y"])
+    if not pos or not neg:
+        return None
+    import bisect
+    s = 0.0
+    for p in pos:
+        lo = bisect.bisect_left(neg, p)
+        hi = bisect.bisect_right(neg, p)
+        s += lo + 0.5 * (hi - lo)
+    return round(s / (len(pos) * len(neg)), 3)
 
 
 def is_near(r: dict, far_h: float = FAR_H) -> bool:
@@ -390,9 +418,40 @@ def is_blind(r: dict, share: float = BLIND_SHARE) -> bool:
     return r.get("blind_share") is not None and float(r["blind_share"]) >= share
 
 
+def occ2_metrics(rows: list[dict]) -> dict:
+    """occ-2 on the cells that have an occ-2 row, beside the current judge on the same cells: p_occ (min50 at THRESHOLD),
+    the test alone (p_test < TEST_ALPHA), near pairs, blind / clear by occ-2's own flag, and without the A-1 sections."""
+    o = [r for r in rows if r.get("p_occ2") is not None]
+    for r in o:
+        pt = r.get("p_test_occ2")
+        r["_t05"] = 1.0 if (pt is not None and pt < TEST_ALPHA) else 0.0
+        r["_negp"] = 1.0 - (pt if pt is not None else 1.0)   # the test's ranking (higher = more surely present), for its AUC
+
+    def tm(rs):   # the test alone, on the cells that have a test (a blind cell without its own empty days has none): the confusion
+        rs = [r for r in rs if r.get("p_test_occ2") is not None]   # at p_test < TEST_ALPHA, the AUC of the ranking by p_test
+        m = metrics(rs, "_t05")
+        m["auc"] = auc(rs, "_negp")
+        m["brier"] = None   # a 0/1 cut of a p-value has no Brier worth reading
+        return m
+    near = [r for r in o if is_near(r)]
+    blind = [r for r in o if r.get("occ2_blind")]
+    clear = [r for r in o if not r.get("occ2_blind")]
+    no_a1 = [r for r in o if not r.get("a1_target")]
+    res = {"n": len(o), "alpha": TEST_ALPHA,
+           "p_occ": metrics(o, "p_occ2"), "test": tm(o), "current": metrics(o),
+           "near": {"far_h": FAR_H, "p_occ": metrics(near, "p_occ2"), "test": tm(near), "current": metrics(near)},
+           "by_blind": {"blind": {"p_occ": metrics(blind, "p_occ2"), "test": tm(blind), "current": metrics(blind)},
+                        "clear": {"p_occ": metrics(clear, "p_occ2"), "test": tm(clear), "current": metrics(clear)}},
+           "excl_a1": {"n": len(no_a1), "p_occ": metrics(no_a1, "p_occ2"), "test": tm(no_a1), "current": metrics(no_a1)}}
+    for r in o:
+        r.pop("_t05", None)
+        r.pop("_negp", None)
+    return res
+
+
 def split_metrics(rows: list[dict]) -> dict:
-    """min50 / any_length of the rows, the same of the near pairs only (|dt_h| <= FAR_H), and min50 by blind / clear (blind_share >=
-    BLIND_SHARE) and by the line's confidence."""
+    """min50 / any_length of the rows, the same of the near pairs only (|dt_h| <= FAR_H), min50 by blind / clear (blind_share >=
+    BLIND_SHARE) and by the line's confidence, and occ-2 beside the current judge on the cells that have an occ-2 row."""
     near = [r for r in rows if is_near(r)]
     confs = sorted({r.get("line_conf") or "unknown" for r in rows})
     notes = {"prefill": lambda n: n.startswith("s2-prefill"), "default": lambda n: n.startswith("s1-unreadable-default"),
@@ -403,7 +462,8 @@ def split_metrics(rows: list[dict]) -> dict:
             "by_blind": {"share": BLIND_SHARE, "blind": metrics([r for r in rows if is_blind(r)]),
                          "clear": metrics([r for r in rows if not is_blind(r)]),
                          "clear_near": metrics([r for r in near if not is_blind(r)])},
-            "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs}}
+            "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs},
+            "occ2": occ2_metrics(rows)}
 
 
 def _freeze(site: dict) -> str:
@@ -425,6 +485,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     lat0 = float((site.get("quay") or {}).get("est2_lat0") or site.get("center_lat") or 21.2)
     blind = blind_stretches(out, sid, lat0)
     orbit_of = scene_orbits(out, sid, est)
+    occ2 = o2s.load_site_rows(out, sid)
     cnt = {"answers": len(lab), "prefilled": sum(1 for a in lab if (a.get("note") or "").startswith("s2-prefill")),
            "unknown_section": 0, "not_naval": 0, "no_berth": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0, "other_day_of_scene": 0, "used": 0}
     rows = []
@@ -474,6 +535,12 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
                "oos": (not own) or (a.get("date") or s1[:10]) >= freeze}
         if s1_truth:
             row.update(s2_date=a.get("s2_date"), s2_dt_h=a.get("s2_dt_h"), note=a.get("note") or "")
+        o2 = occ2.get(s1, {}).get(a["section_id"])
+        row.update(p_occ2=None if o2 is None or o2.get("p_occ") is None else round(float(o2["p_occ"]), 3),
+                   p_test_occ2=None if o2 is None or o2.get("p_test") is None else float(o2["p_test"]),
+                   occ2_blind=None if o2 is None else o2.get("blind"), edge_offset_m=None if o2 is None else o2.get("edge_offset_m"),
+                   edge_source=None if o2 is None else o2.get("edge_source"), occ2_len_m=None if o2 is None else o2.get("stretch_len_m"),
+                   a1_target=o2s.a1_target(sid, a["section_id"]))
         rows.append(row)
     # one label day per Sentinel-1 scene: the nearest in time (two S2 days within +-4 days of the same S1 scene would count
     # the same judgement twice); the other days' rows are dropped
@@ -578,6 +645,22 @@ def evaluate(out: Path, sites: list[dict] | None = None, now: datetime | None = 
 
 
 # ---------------------------------------------------------------- meta
+def occ2_columns(rows: list[dict]) -> dict:
+    """The occ-2 columns of the table from the rows of a site (or of all): occ-2 and the current judge on the same cells."""
+    m = occ2_metrics(rows)
+
+    def pick(block, tag):
+        return {f"recall_{tag}": block["recall"], f"precision_{tag}": block["precision"], f"brier_{tag}": block["brier"], f"auc_{tag}": block["auc"]}
+    out = {"n_occ2": m["n"], **pick(m["p_occ"], "occ2"), **pick(m["current"], "cur_occ2"),
+           "recall_occ2_test": m["test"]["recall"], "precision_occ2_test": m["test"]["precision"],
+           "n_occ2_near": m["near"]["p_occ"]["n"], **pick(m["near"]["p_occ"], "occ2_near"), **pick(m["near"]["current"], "cur_occ2_near"),
+           "n_occ2_blind": m["by_blind"]["blind"]["p_occ"]["n"], "recall_occ2_blind": m["by_blind"]["blind"]["p_occ"]["recall"],
+           "recall_cur_occ2_blind": m["by_blind"]["blind"]["current"]["recall"],
+           "n_occ2_excl_a1": m["excl_a1"]["n"], "recall_occ2_excl_a1": m["excl_a1"]["p_occ"]["recall"],
+           "precision_occ2_excl_a1": m["excl_a1"]["p_occ"]["precision"]}
+    return out
+
+
 def table(res: dict) -> list[dict]:
     rows = []
     other = (res.get("other_truth") or {}).get("sites") or {}
@@ -599,7 +682,7 @@ def table(res: dict) -> list[dict]:
                      "scenes": r["pairing"]["scenes"], "far_share": r["pairing"]["far_share"],
                      "not_naval": r["labels"]["not_naval"], "no_berth": r["labels"].get("no_berth", 0),
                      "no_scene": r["labels"]["no_scene"] + r["labels"]["no_s1_pairing"],
-                     "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"]})
+                     "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"], **occ2_columns(r.get("rows") or [])})
     t = res["total"]["in_sample"]["min50"]
     to = res["total"]["out_of_sample"]["min50"]
     tn, ton = res["total"]["in_sample"]["near"]["min50"], res["total"]["out_of_sample"]["near"]["min50"]
@@ -619,7 +702,8 @@ def table(res: dict) -> list[dict]:
                  "n_est2": res["total"]["by_source"]["est-2"]["n"], "n_recount": res["total"]["by_source"]["s1-recount"]["n"],
                  "scenes": sum(x["scenes"] for x in rows), "far_share": round(far / n_all, 3) if n_all else None,
                  "not_naval": sum(x["not_naval"] for x in rows), "no_berth": sum(x["no_berth"] for x in rows), "no_scene": sum(x["no_scene"] for x in rows),
-                 "other_day_of_scene": sum(x["other_day_of_scene"] for x in rows), "status": _status(t["n"], to["n"])})
+                 "other_day_of_scene": sum(x["other_day_of_scene"] for x in rows), "status": _status(t["n"], to["n"]),
+                 **occ2_columns([x for r in res["sites"].values() for x in (r.get("rows") or [])])})
     return rows
 
 
@@ -641,6 +725,10 @@ def meta(res: dict) -> dict:
             "s1-recount": (f"est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に 20 m 以上かかる片の全長 s1_stretch_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0"
                            f"（港の表、s1-match-2。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m。0/1 の判定：ブライアは誤り率に等しい"),
             "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
+            "occ-2": (f"撮影に occ-2 の行（quay_occ2/<地点>/YYYY-MM.csv、sat/occ2）があれば、升に p_occ2（占有の確率。較正前は a=logit(事前)・b=1・c=0 の仮置き、"
+                      f"盲域は blind_prior と λ=0.5 で混合）、p_test_occ2（検定の有意確率 P(T ≥ T_obs | 空)）、occ2_blind（occ-2 の盲域：空間の参照）、"
+                      f"edge_offset_m・edge_source（基準 p10 の尾根の縁）、a1_target（検品 §1.2 で A-1 の線の地図に残した区間：A＝線の幾何、D＝艇溜まり）を併記。"
+                      f"本体の p は現行の判定のまま。occ-2 の指標は各ブロックの occ2（p_occ ≥ {THRESHOLD:g}、検定だけ p_test < {TEST_ALPHA:g}、同じ升の現行 current）"),
         },
         "metrics": {
             "confusion": f"p ≥ {THRESHOLD:g} を「在」として tp・fp・fn・tn",
@@ -655,6 +743,12 @@ def meta(res: dict) -> dict:
             "near": f"in_sample・out_of_sample の near＝|S1−S2| ≤ {FAR_H:g} 時間の組だけの同じ指標（見出しの数字は全部の組。遠い組では船の入れ替わりが不一致に混じるので、近い組の数字を隣に置く）",
             "by_blind": f"升の blind_share（区間の線の点のうち、その撮影の軌道の盲域の片（quay/<地点>/blind.geojson：基準の VV p10 が内側の帯で −8 dB 超）から {BLIND_MATCH_M:g} m 以内の割合）が {BLIND_SHARE:g} 以上を盲域（blind）、未満を clear として分けた min50 の指標。clear_near＝clear のうち近い組",
             "by_conf": "升の line_conf（naval-1 の線の区分の確信：確認寄り／推定／fixed／unknown）ごとの min50 の指標",
+            "auc": "ROC-AUC（Mann-Whitney、同値は半分）。0/1 の判定では精度の平均に近い",
+            "occ2": (f"occ-2 の行のある升だけの指標：p_occ（p_occ2 ≥ {THRESHOLD:g}）、test（p_test_occ2 のある升だけ：< {TEST_ALPHA:g} を在。盲域で区間別の参照の無い升は検定が無く p_occ＝blind_prior）、current（同じ升の現行の判定）。"
+                     f"near＝|S1−S2| ≤ {FAR_H:g} 時間、by_blind＝occ-2 の盲域（occ2_blind）で分けた同じ 3 つ、excl_a1＝A-1 対象の区間（a1_target）を除いた同じ 3 つ。"
+                     "取り直しの 19 撮影の行は sat/eval_occ2 が書いた（較正前、全部が凍結前の答え＝較正に使う標本なので in-sample の数字）。"
+                     "較正前の仮置き a＝logit(事前) では p_occ ≥ 事前 が常に成り立ち、事前 ≥ 0.5 の港では p_occ ≥ 0.5 が全升で在になる：較正（occ2-4）までは test の列（p_test）を読む。"
+                     "正解を使わない変種（事前 0.5・盲域の事前 0.5）との比較は eval/occ2.json"),
             "by_note": "s1 の正解だけ：升の verified_note 別の min50 の指標。prefill＝S2 の答えを初期値のまま確認した升（s2-prefill。所有者が押していない）、default＝要 S2 の区間の既定を上書きしなかった升（在/不在の答えにはならないので通常 0）、manual＝所有者が押した升。prefill の升は S2 の時刻の答えの流用なので、S1 の時刻の正解としては manual より弱い（labels.prefilled に件数）",
         },
         "table_columns": {"site_id": "地点", "name": "地名", "calibrated": "est-2 をその港の正解で較正したか（false＝湛江の流用、全部標本外）",
@@ -669,7 +763,13 @@ def meta(res: dict) -> dict:
                           "scenes": "判定に使った S1 撮影の数", "far_share": f"|S1−S2| > {FAR_H:g} 時間の升の割合",
                           "not_naval": "naval でない線の答え（除外）", "no_berth": "naval だが berth false の線の答え（除外）", "no_scene": "S1 の対応か保存が無い答え（除外）",
                           "prefilled（labels）": "s1 の正解のうち verified_note が s2-prefill（初期値のまま確認）の答えの数",
-                          "other_day_of_scene": "同じ S1 撮影に対応した別のラベル日の答え（最も近い日だけ使う。除外）"},
+                          "other_day_of_scene": "同じ S1 撮影に対応した別のラベル日の答え（最も近い日だけ使う。除外）",
+                          "n_occ2・recall_occ2・precision_occ2・brier_occ2・auc_occ2": f"occ-2 の行のある升（標本内外とも）の数と、p_occ2 ≥ {THRESHOLD:g} の再現率・適合率・ブライア・AUC",
+                          "recall_cur_occ2・precision_cur_occ2・brier_cur_occ2・auc_cur_occ2": "同じ升での現行の判定（est-2／s1-recount）の同じ指標",
+                          "recall_occ2_test・precision_occ2_test": f"検定だけ（p_test_occ2 < {TEST_ALPHA:g} を在）の再現率・適合率",
+                          "n_occ2_near・…_occ2_near・…_cur_occ2_near": f"occ-2 の行のある升のうち |S1−S2| ≤ {FAR_H:g} 時間の同じ指標（occ-2 と現行）",
+                          "n_occ2_blind・recall_occ2_blind・recall_cur_occ2_blind": "occ-2 の盲域（occ2_blind）の升の数と再現率（occ-2 と現行）",
+                          "n_occ2_excl_a1・recall_occ2_excl_a1・precision_occ2_excl_a1": "A-1 対象の区間を除いた occ-2 の再現率・適合率"},
         "table": table(res),
         "limits": [
             "湛江の見出しの数字（n の大半が s1-recount）は S1 取り直しの占有（quay-v1 の規則）の評価で、est-2 の評価は n_est2 の升だけ。両方の判定を混ぜて一つの指標にしている",
