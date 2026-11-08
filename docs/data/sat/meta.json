@@ -102,6 +102,7 @@
      "excluded_ways": [
       "971239820"
      ],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    }
@@ -280,6 +281,7 @@
      "berth_lines": 14,
      "coastline_sections": 2,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -429,6 +431,7 @@
      "berth_lines": 10,
      "coastline_sections": 0,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -550,6 +553,7 @@
      "berth_lines": 13,
      "coastline_sections": 4,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -690,6 +694,7 @@
      "berth_lines": 39,
      "coastline_sections": 2,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -821,6 +826,7 @@
       "-1",
       "-2"
      ],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -928,6 +934,7 @@
       "-3",
       "-4"
      ],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -1053,6 +1060,7 @@
      "berth_lines": 10,
      "coastline_sections": 0,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -1162,6 +1170,7 @@
      "berth_lines": 10,
      "coastline_sections": 0,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -1265,6 +1274,7 @@
      "berth_lines": 23,
      "coastline_sections": 0,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -1386,6 +1396,7 @@
      "berth_lines": 73,
      "coastline_sections": 0,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -1505,6 +1516,7 @@
      "berth_lines": 23,
      "coastline_sections": 0,
      "excluded_ways": [],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -1626,6 +1638,7 @@
      "excluded_ways": [
       "-1"
      ],
+     "no_berth_parts": 0,
      "version": "berth-1"
     }
    },
@@ -2661,13 +2674,13 @@
     },
     "QGZ": {
      "lines": {
-      "naval": 17,
+      "naval": 18,
       "civil": 0,
       "unknown": 0
      },
      "lines_version": "QGZ-quay-v1",
      "confidence": null,
-     "note": null,
+     "note": "berth false の線（2026-11-07、A-1）：海軍の区域にあるが艦の着かない線（鉤形の小桟橋 582517902、内港北西の作業場の岸 15387629 の一部）。区分は naval のまま、naval-1 の適用日以降は岸壁として数えず・判定せず・評価票にも入れない（sat/berths.py Berths.no_berth） 同じ way に複数の項があるときは最初に当たった項の class・conf が使われる（順序依存）。berth false の判定は順序に依らない",
      "since_utc": "2026-11-01"
     },
     "QJG": {
@@ -7263,6 +7276,22 @@
     "ZJG": "標本 0"
    },
    "note": "凍結（2026-10-27）より後の撮影を所有者の新しい目視ラベルと突き合わせた評価。標本 0＝まだ凍結後の撮影か答えが無い"
+  },
+  "presence_evaluation": {
+   "file": "eval/presence.json",
+   "meta": "eval/meta.json",
+   "version": "eval-presence-3",
+   "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
+   "status": {
+    "ZJG": "標本 57 撮影×区間（標本外 0）",
+    "SYL": "標本外 19 撮影×区間（較正の流用）",
+    "SLP": "標本外 141 撮影×区間（較正の流用）",
+    "QGZ": "標本外 148 撮影×区間（較正の流用）",
+    "ZDH": "標本 0",
+    "QDH": "標本 0",
+    "LSN": "標本 0"
+   },
+   "note": "海軍の岸壁（naval の線、50 m 以上）の撮影×区間ごとの在/不在を所有者の目視と突き合わせた評価票（再現率・適合率・ブライア、港別と全体、判定の出所別）。毎日の実行が保存済みのファイルから作り直す（PU 0）。定義と港別の表は eval/meta.json"
   },
   "baselines": [
    {

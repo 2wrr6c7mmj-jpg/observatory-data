@@ -1,3 +1,7 @@
 site_id,acquired_utc,platform,orbit_direction,relative_orbit,mask_version,window_version,anchorage_candidates,by_sector,len_lt50,len_ge50
 STU,2026-11-05T10:16:50Z,sentinel-1d,ascending,40,STU-land-v1,win-1,11,A1:0;A2:0;B:11,9,2
 XMN,2026-11-05T10:16:50Z,sentinel-1d,ascending,40,XMN-land-v1,win-1,9,A1:0;B:9,5,4
+QGZ,2026-11-07T10:03:53Z,sentinel-1d,ascending,69,QGZ-land-v1,win-1,6,A1:0;A2:2;B:4,4,2
+SLP,2026-11-07T10:48:16Z,sentinel-1c,ascending,157,SLP-land-v2,win-1,15,A2:0;A1:2;A3:0;B:13,7,8
+SYL,2026-11-07T10:48:16Z,sentinel-1c,ascending,157,SYL-land-v2,win-1,16,A1:1;Y1:0;A2:2;A3:2;X1:0;B:11,9,7
+ZJG,2026-11-07T10:48:45Z,sentinel-1c,ascending,157,ZJG-land-v2,win-1,15,A:5;B:10,9,6
