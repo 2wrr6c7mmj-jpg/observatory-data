@@ -42,6 +42,7 @@ class ZhanjiangUnchangedTest(unittest.TestCase):
         self.assertEqual(unexpected, [], "湛江の出力が berth-1 以外で変わった")
         # berth-1: the past rows are never rewritten; the new scenes count only the berth lines
         self.assertEqual(old["past"], new["past"])
+        self.assertEqual(new["past_kept"], {"quay_counts.csv": True, "ship_counts.csv": True})   # every column, size-1 too
         self.assertTrue(all(k == "pier" and w != 971239820 for k, w in new["new_lines"]), new["new_lines"])
         self.assertIn("coastline", {k for k, _ in old["new_lines"]})
         for o, n in zip(old["new_quay"], new["new_quay"]):
@@ -96,6 +97,7 @@ class ZhanjiangWindowsTest(unittest.TestCase):
         added = sorted(k for k in set(new["files"]) - set(old["files"]) if not k.startswith("chips/"))
         self.assertEqual(added, sorted(sat_zjg_golden.NEW_FILES | sat_zjg_golden.WINDOW_NEW_FILES))
         self.assertEqual(old["past"], new["past"])            # rows of the earlier scenes never rewritten
+        self.assertEqual(new["past_kept"], {"quay_counts.csv": True, "ship_counts.csv": True})
         reasons = ("land", "pond", "enclosed")
         for o, n, w, c, oc, a in zip(old["new_ship"], new["new_ship"], new["window_excluded"], new["candidates"],
                                      old["candidates"], new["anchorage_rows"]):
