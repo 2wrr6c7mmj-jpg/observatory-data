@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-08T07:35:35Z",
+ "generated_utc": "2026-11-09T08:13:18Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -939,9 +939,9 @@
   },
   {
    "ll2_id": "a2423132-f965-423f-8b03-6891b775dc54",
-   "name": "Long March 12 | SatNet LEO Group TBD?",
-   "status": "Go",
-   "net_utc": "2026-11-08T20:25:00Z",
+   "name": "Long March 12 | SatNet LEO Group 29",
+   "status": "Success",
+   "net_utc": "2026-11-08T20:24:00Z",
    "rocket": "Long March 12",
    "provider": "China Aerospace Science and Technology Corporation",
    "orbit": "LEO",
