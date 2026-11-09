@@ -89,11 +89,24 @@ MATCH_FIELDS = [
     "s1_db_line_m", "s1_rafted", "s1_min", "s1_max", "s1_peak_dvv_db", "d_depth_m", "agree",
 ]
 SECTION_FIELDS = ["section_id", "way_id", "kind", "side", "sector", "length_m", "samples", "lon", "lat", "normal_az_deg"]
-# the ports' match table (sat/s1_recount.build_match, s1-match-2): MATCH_FIELDS + the full length of the stretch reaching into the
-# section (s1_stretch_len_m: the stretch of the same way and side overlapping the section by STRETCH_OVERLAP_M or more, its
-# length_m; the quantity the presence evaluation's length rule uses, as est-2's ship_length_m). Zhanjiang's table keeps MATCH_FIELDS.
+# the ports' match table (sat/s1_recount.build_match, s1-match-3): MATCH_FIELDS + the full length of the stretch that belongs to the
+# section (s1_stretch_len_m: its length_m; the quantity the presence evaluation's length rule uses, as est-2's ship_length_m).
+# Zhanjiang's table keeps MATCH_FIELDS.
+# assign-2 (2026-11-10, 検品_古鎮口の非盲域の外れ §2.1 527583619:R:01): a stretch of the same way and side belongs to a section
+# when STRETCH_INSIDE_M of it (or the whole section, when the section is shorter) lies inside the section, or its midpoint
+# does. Until s1-match-2 (assign-1) an overlap of 20 m was enough, so a 240 m ship of the next section made this one present.
+# A ship across a border still counts: on the side of its midpoint, and on both when 50 m of it lies on each.
 PORT_MATCH_FIELDS = MATCH_FIELDS + ["s1_stretch_len_m"]
-STRETCH_OVERLAP_M = 20.0
+STRETCH_ASSIGN = "assign-2"
+STRETCH_INSIDE_M = 50.0
+
+
+def stretch_belongs(a: int, b: int, n: int, idx, step: float) -> tuple[bool, int]:
+    """(does the stretch of samples [a, b) of a profile of n samples belong to the section of samples idx, samples inside)."""
+    inside = set(int(i) for i in idx)
+    ov = sum(1 for i in range(a, b) if i % n in inside)
+    need = min(STRETCH_INSIDE_M, len(inside) * step)
+    return ov > 0 and (ov * step >= need or (a + (b - a) // 2) % n in inside), ov
 
 
 # ---------------------------------------------------------------- sections
@@ -341,19 +354,21 @@ def s1_sections(secs: list[dict], q: dict, samples: list[dict], step: float, fac
         idx = sc["idx"]
         n = len(sm["inner_hit"])
         in_run = np.zeros(n, bool)
-        best, best_ov = None, 0
+        best, best_ov, own_len = None, 0, 0
         for sg in stretch.get((sc["way_id"], sc["side"]), []):
             a, b = sg["idx"]
             ii = np.arange(a, b) % n
             in_run[ii] = True
-            ov = len(set(ii.tolist()) & set(idx.tolist()))
+            belongs, ov = stretch_belongs(int(a), int(b), n, idx, step)
+            if belongs:   # assign-2: the longest stretch that belongs to the section
+                own_len = max(own_len, int(sg.get("length_m") or 0))
             if ov > best_ov:
                 best, best_ov = sg, ov
         occ = in_run[idx] & sm["inner_hit"][idx]
         occ_len = int(occ.sum() * step)
         cov = float(sm["has"][idx].mean())
         f = {"s1_coverage": round(cov, 2), "s1_occ_len_m": occ_len, "s1_occupied": int(occ_len >= OCC_MIN_M),
-             "s1_stretch_len_m": int(best.get("length_m") or 0) if best is not None and best_ov * step >= STRETCH_OVERLAP_M else 0}
+             "s1_stretch_len_m": own_len}
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for key, name in (("depth", "s1_depth_m"), ("depth13", "s1_depth_1x3_m")):

@@ -172,5 +172,27 @@ class S2LabelsTest(unittest.TestCase):
             self.assertAlmostEqual(float(u[0]["s2_processing_units"]), 9 * 1.5, places=3)
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
+class StretchAssignTest(unittest.TestCase):
+    """assign-2 (s1-match-3): which stretch of a profile belongs to a section (検品_古鎮口 §2.1, 527583619:R:01)."""
+
+    def test_stretch_belongs(self):
+        step, n = 10.0, 100
+        idx = list(range(20, 35))                       # a 150 m section
+        b = lambda a_, b_, i=idx: s2_labels.stretch_belongs(a_, b_, n, i, step)
+        self.assertEqual(b(33, 57), (False, 2))         # a 240 m stretch of the next section, 20 m inside
+        self.assertEqual(b(30, 54), (True, 5))          # 50 m inside
+        self.assertEqual(b(31, 37), (True, 4))          # a 60 m ship across the border, midpoint (34) inside
+        self.assertEqual(b(33, 39), (False, 2))         # the same ship 20 m further: midpoint (36) in the next section
+        self.assertEqual(b(40, 50), (False, 0))
+        self.assertEqual(b(0, 24, [5, 6, 7]), (True, 3))   # a 30 m section under a long stretch: all of it
+        self.assertEqual(b(95, 105, [0, 1, 2, 3, 4, 5]), (True, 5))   # a closed profile: the stretch wraps
+        self.assertEqual((s2_labels.STRETCH_ASSIGN, s2_labels.STRETCH_INSIDE_M), ("assign-2", 50.0))
+
+    def test_same_numbers_as_the_evaluation(self):
+        from sat import eval_presence as ep
+        self.assertEqual((ep.STRETCH_ASSIGN, ep.STRETCH_INSIDE_M), (s2_labels.STRETCH_ASSIGN, s2_labels.STRETCH_INSIDE_M))
+
+
 if __name__ == "__main__":
     unittest.main()

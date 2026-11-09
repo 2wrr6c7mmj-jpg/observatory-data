@@ -227,7 +227,7 @@ def fetch_site(client, site: dict, raw: Path, out: Path = OUT, log=print, skip_e
 
 
 # ---------------------------------------------------------------- the match table (no CDSE)
-MATCH_VERSION = "s1-match-2"   # s1-match-1 + s1_stretch_len_m (s2_labels.PORT_MATCH_FIELDS)
+MATCH_VERSION = "s1-match-3"   # s1-match-2 (s1-match-1 + s1_stretch_len_m) with the stretch assigned by s2_labels.STRETCH_ASSIGN (assign-2)
 
 
 def review_days(out: Path, site_id: str) -> tuple[list[dict], set]:

@@ -15,7 +15,7 @@ The judge's probability of "a ship of 50 m or more is present" on the section:
   most points within SECTION_MATCH_M of the section (its line is the quay feature of the same ``n`` in quay/<site>/*.geojson);
   p = p_real when its ship_length_m >= MIN_LENGTH_M, else 0; no stretch: 0.
 * otherwise the stored Sentinel-1 re-count (labels/<site>-s2-s1-match.csv): p = 1 when the stretch that reaches into the
-  section (s1_stretch_len_m: the full length of the stretch, the same quantity as est-2's ship_length_m; ports, s1-match-2) is
+  section (s1_stretch_len_m: the full length of the stretch, the same quantity as est-2's ship_length_m; ports, s1-match-3) is
   MIN_LENGTH_M or longer, else 0; a table without that column (Zhanjiang, s1-match-1): s1_occupied 1 and s1_occ_len_m >=
   MIN_LENGTH_M (the occupied length inside the section). A 0/1 judge: its Brier score is its error rate.
 * a scene stored in neither is not judged: the cell is counted under ``no_scene`` and left out of the metrics (an unstored scene
@@ -76,9 +76,13 @@ from . import occ2_schema as o2s
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
-EVAL_VERSION = "eval-presence-3"   # eval-presence-2 + the occ-2 judge beside the current one (p_occ2, p_test_occ2), AUC in the metrics
+EVAL_VERSION = "eval-presence-4"   # eval-presence-3 (occ-2 beside the current judge, AUC) + assign-2: which stretch belongs to a section (ports)
 MIN_LENGTH_M = 50.0
 SECTION_MATCH_M = 20.0        # as sat/quay_est2.SECTION_MATCH_M (not imported: quay_est2 needs numpy)
+# assign-2 (2026-11-10): which stretch belongs to a section; the same rule and numbers as sat/s2_labels (not imported: numpy)
+STRETCH_ASSIGN = "assign-2"
+STRETCH_INSIDE_M = 50.0
+ASSIGN_1_SITES = ("ZJG",)       # Zhanjiang keeps assign-1 (its calibration and its evaluation were made with it)
 THRESHOLD = 0.5
 FAR_H = 48.0                  # |S1 - S2| beyond this is "far" in the pairing summary
 SOURCES = ("est-2", "s1-recount")
@@ -325,18 +329,38 @@ def calibrated(out: Path, site_id: str) -> bool:
     return src in (None, "", "self", site_id)
 
 
-def stretch_of_section(sec: dict, feats: list[dict], stretches: list[dict], lat0: float):
+def _midpoint(line: list[tuple[float, float]]) -> tuple[float, float]:
+    """The point halfway along a polyline (metres)."""
+    seg = [math.hypot(bx - ax, by - ay) for (ax, ay), (bx, by) in zip(line, line[1:])]
+    half, run = sum(seg) / 2.0, 0.0
+    for d, (a, b) in zip(seg, zip(line, line[1:])):
+        if d > 0 and run + d >= half:
+            t = (half - run) / d
+            return a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])
+        run += d
+    return line[len(line) // 2]
+
+
+def stretch_of_section(sec: dict, feats: list[dict], stretches: list[dict], lat0: float, assign: str = STRETCH_ASSIGN):
     """The est-2 stretch (same OSM way and side, the most points within SECTION_MATCH_M) or None. A stretch carries no
     geometry: its ``n`` is the ``n`` of the scene's quay feature (quay/<site>/*.geojson), whose line is used. est-2 keeps
-    fewer stretches than the scene has features (berth-1 / naval-1 drop some), so the pairing is by ``n``, not by position."""
+    fewer stretches than the scene has features (berth-1 / naval-1 drop some), so the pairing is by ``n``, not by position.
+    ``assign`` assign-2 (the ports, as sat/s2_labels.stretch_belongs): only a stretch that belongs to the section, i.e.
+    STRETCH_INSIDE_M of the section's line (or all of it, when shorter) lies along the stretch, or the stretch's midpoint lies
+    on the section. assign-1 (Zhanjiang, unchanged): any stretch with a point of the section within SECTION_MATCH_M."""
     sxy = _xy(sec["line"], lat0)
     by_n = {f.get("n"): f for f in feats}
+    spacing = float(sec.get("length_m") or 0) / max(len(sxy), 1) or 10.0
+    need = min(STRETCH_INSIDE_M, len(sxy) * spacing)
     best = None
     for st in stretches:
         f = by_n.get(st.get("n"))
         if f is None or str(st.get("osm_way")) != str(sec["way_id"]) or int(st.get("side", _side(f))) != int(sec["side"]):
             continue
-        n = sum(1 for p in sxy if _min_dist(p, _xy(f["coords"], lat0)) <= SECTION_MATCH_M)
+        fxy = _xy(f["coords"], lat0)
+        n = sum(1 for p in sxy if _min_dist(p, fxy) <= SECTION_MATCH_M)
+        if n and assign != "assign-1" and not (n * spacing >= need or _min_dist(_midpoint(fxy), sxy) <= SECTION_MATCH_M / 2):
+            continue
         if n and (best is None or n > best[0]):
             best = (n, st)
     return best[1] if best else None
@@ -351,9 +375,10 @@ def judge_est2(st: dict | None, min_len: float) -> float:
 
 
 def judge_recount(r: dict | None, min_len: float) -> float | None:
-    """The re-count's presence. With ``s1_stretch_len_m`` (ports, s1-match-2): the full length of the stretch reaching into the
-    section against ``min_len`` (the length rule on the whole stretch, as est-2's ship_length_m: a 60 m ship across a section
-    border is present on both sides); without it (Zhanjiang): s1_occupied and the occupied length inside the section."""
+    """The re-count's presence. With ``s1_stretch_len_m`` (ports, s1-match-3): the full length of the stretch that belongs to the
+    section (assign-2, sat/s2_labels.stretch_belongs) against ``min_len`` (the length rule on the whole stretch, as est-2's
+    ship_length_m: a 60 m ship across a section border is present on the side of its midpoint); without it (Zhanjiang):
+    s1_occupied and the occupied length inside the section."""
     if r is None or r.get("s1_occupied") in (None, ""):
         return None
     if "s1_stretch_len_m" in r:
@@ -519,7 +544,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
         if sc is not None:
             fs = scene_features(feats, sc)
             sts = sc.get("stretches") or []
-            st = stretch_of_section(s, fs, sts, lat0) if fs else None
+            st = stretch_of_section(s, fs, sts, lat0, "assign-1" if sid in ASSIGN_1_SITES else STRETCH_ASSIGN) if fs else None
             p, p_any, src = judge_est2(st, MIN_LENGTH_M), judge_est2(st, 0.0), "est-2"
             length = None if st is None else st.get("ship_length_m")
         else:
@@ -721,9 +746,9 @@ def meta(res: dict) -> dict:
         "truth": "所有者の目視（labels/<地点>-s2-answers.csv、-oos-answers.csv、湛江は ZJG-s2-labels.csv の verified 1 の行）：verified_occupied 1＝在、0＝不在。判断できない（verified 0）は除く。所有者の答えは船の長さを持たない（50 m 未満の船の着いた区間も「在」になる）ので、any_length（長さの規則なし）も併記する",
         "pairing": "ラベルの日（S2 の晴れの日）の S1 撮影＝確認セット（labels/<地点>/review*.json の days.s1_near[0]）の対応：前後 4 日以内で基準のある軌道の最も近い撮影（sat/s2_answers.eligible_days）。湛江は labels/ZJG-s2-s1-match.csv の s1_acquired_utc（sat/s2_labels.nearest_s1、同じ規則）。dt_h＝S1−S2（時間）、同じ日でも約 7 時間ずれ、船が入れ替わることがある",
         "judge": {
-            "est-2": f"その撮影が quay_est2.json・quay_est2/<地点>.json にあるとき：区間と同じ OSM の線・向きで {SECTION_MATCH_M:g} m 以内の点が最も多い区間片（stretch）。p＝p_real（ship_length_m ≥ {MIN_LENGTH_M:g} m のとき、未満は 0）。片が無ければ 0",
-            "s1-recount": (f"est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に 20 m 以上かかる片の全長 s1_stretch_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0"
-                           f"（港の表、s1-match-2。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m。0/1 の判定：ブライアは誤り率に等しい"),
+            "est-2": f"その撮影が quay_est2.json・quay_est2/<地点>.json にあるとき：区間と同じ OSM の線・向きで {SECTION_MATCH_M:g} m 以内の点が最も多い区間片（stretch）のうち、その区間に属する片（{STRETCH_ASSIGN}：区間内に {STRETCH_INSIDE_M:g} m 以上あるか、片の中点が区間内。湛江は従来どおり 1 点でも掛かれば可）。p＝p_real（ship_length_m ≥ {MIN_LENGTH_M:g} m のとき、未満は 0）。片が無ければ 0",
+            "s1-recount": (f"est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に属する片（{STRETCH_ASSIGN}：区間内に {STRETCH_INSIDE_M:g} m 以上あるか、片の中点が区間内。2026-11-10 までは 20 m 掛かれば可）の全長 s1_stretch_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0"
+                           f"（港の表、s1-match-3。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は中点のある側で在、両側に {STRETCH_INSIDE_M:g} m 以上あれば両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m。0/1 の判定：ブライアは誤り率に等しい"),
             "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
             "occ-2": (f"撮影に occ-2 の行（quay_occ2/<地点>/YYYY-MM.csv、sat/occ2）があれば、升に p_occ2（占有の確率。較正前は a=logit(事前)・b=1・c=0 の仮置き、"
                       f"盲域は blind_prior と λ=0.5 で混合）、p_test_occ2（検定の有意確率 P(T ≥ T_obs | 空)）、occ2_blind（occ-2 の盲域：空間の参照）、"
@@ -773,7 +798,7 @@ def meta(res: dict) -> dict:
         "table": table(res),
         "limits": [
             "湛江の見出しの数字（n の大半が s1-recount）は S1 取り直しの占有（quay-v1 の規則）の評価で、est-2 の評価は n_est2 の升だけ。両方の判定を混ぜて一つの指標にしている",
-            f"{MIN_LENGTH_M:g} m の規則：est-2 は艦の長さの推定（ship_length_m、区間をまたぐ片の全長）、港の s1-recount も片の全長（s1_stretch_len_m、区間に 20 m 以上かかる片）。"
+            f"{MIN_LENGTH_M:g} m の規則：est-2 は艦の長さの推定（ship_length_m、区間をまたぐ片の全長）、港の s1-recount も片の全長（s1_stretch_len_m、区間に属する片）。"
             "湛江の s1-recount の表（s1-match-1）だけは区間の中の占有の長さ（s1_occ_len_m）のままで、60 m の艦が区間の境にまたがると 30／30 に割れて両区間が「不在」になる（湛江 2026-01-03 の見逃しがこの型）",
             "標本が小さい港の数字は目安。n が 20 未満の再現率・適合率は一桁の件数で動く",
             "三亜・楡林、三亜・亜龍湾、青島・古鎮口、舟山・定海の確認セットは naval-1 より前に組んだため、海軍の線でない区間が多い（not_naval）。大連・旅順と青島港内の確認セットは naval の線だけで組んだ（s2_answers prepare --naval-only）が、答えはまだ無い",
@@ -834,7 +859,7 @@ def presence_table(out: Path, sites: list[dict] | None = None, days: int = SNAPS
             sts = est[acq].get("stretches") or []
             row = {}
             for sec_id, sec in secs.items():
-                st = stretch_of_section(sec, fs, sts, lat0) if fs else None
+                st = stretch_of_section(sec, fs, sts, lat0, "assign-1" if sid in ASSIGN_1_SITES else STRETCH_ASSIGN) if fs else None
                 row[sec_id] = int(judge_est2(st, MIN_LENGTH_M) >= THRESHOLD)
             tab[acq] = row
         if tab:
