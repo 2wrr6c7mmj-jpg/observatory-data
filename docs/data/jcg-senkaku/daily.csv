@@ -5160,8 +5160,11 @@ date,contiguous_zone,territorial_sea,ts_entries,subject,check,window_start_utc,w
 2026-10-29,4,0,,中国海警局に所属する船舶等,match,2026-10-28T15:00:00Z,2026-10-29T15:00:00Z,2026-10-31,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_10.pdf,2026-11-02T00:22:21Z,2026-11-02T11:40:58Z,2
 2026-10-30,4,0,,中国海警局に所属する船舶等,match,2026-10-29T15:00:00Z,2026-10-30T15:00:00Z,2026-10-31,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_10.pdf,2026-11-02T00:22:21Z,2026-11-02T11:40:58Z,2
 2026-10-31,4,0,,中国海警局に所属する船舶等,match,2026-10-30T15:00:00Z,2026-10-31T15:00:00Z,2026-10-31,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_10.pdf,2026-11-02T00:22:21Z,2026-11-02T11:40:58Z,2
-2026-11-01,8,0,,中国海警局に所属する船舶等,match,2026-10-31T15:00:00Z,2026-11-01T15:00:00Z,2026-11-05,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-05T23:48:44Z,2026-11-06T11:29:43Z,2
-2026-11-02,4,0,,中国海警局に所属する船舶等,match,2026-11-01T15:00:00Z,2026-11-02T15:00:00Z,2026-11-05,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-05T23:48:44Z,2026-11-06T11:29:43Z,2
-2026-11-03,4,0,,中国海警局に所属する船舶等,match,2026-11-02T15:00:00Z,2026-11-03T15:00:00Z,2026-11-05,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-05T23:48:44Z,2026-11-06T11:29:43Z,2
-2026-11-04,4,0,,中国海警局に所属する船舶等,match,2026-11-03T15:00:00Z,2026-11-04T15:00:00Z,2026-11-05,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-05T23:48:44Z,2026-11-06T11:29:43Z,2
-2026-11-05,4,0,,中国海警局に所属する船舶等,match,2026-11-04T15:00:00Z,2026-11-05T15:00:00Z,2026-11-05,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-05T23:48:44Z,2026-11-06T11:29:43Z,2
+2026-11-01,8,0,,中国海警局に所属する船舶等,match,2026-10-31T15:00:00Z,2026-11-01T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-02,4,0,,中国海警局に所属する船舶等,match,2026-11-01T15:00:00Z,2026-11-02T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-03,4,0,,中国海警局に所属する船舶等,match,2026-11-02T15:00:00Z,2026-11-03T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-04,4,0,,中国海警局に所属する船舶等,match,2026-11-03T15:00:00Z,2026-11-04T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-05,4,0,,中国海警局に所属する船舶等,match,2026-11-04T15:00:00Z,2026-11-05T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-06,4,0,,中国海警局に所属する船舶等,match,2026-11-05T15:00:00Z,2026-11-06T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-07,4,0,,中国海警局に所属する船舶等,match,2026-11-06T15:00:00Z,2026-11-07T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
+2026-11-08,4,0,,中国海警局に所属する船舶等,match,2026-11-07T15:00:00Z,2026-11-08T15:00:00Z,2026-11-08,https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf,2026-11-09T00:18:11Z,2026-11-09T12:07:13Z,2
