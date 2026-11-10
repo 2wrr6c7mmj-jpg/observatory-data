@@ -66,6 +66,21 @@ class BlindPrior(unittest.TestCase):
         self.assertEqual(bp.p_blind(ans, "a", exclude_s1={"2026-01-08"}), round(7 / 9, 3))                    # 6/7
         self.assertNotIn("z", ans)
         self.assertEqual(bp.build(d, "TST")["answers"], "s2")
+        # the AI's provisional answers: used only while the owner has given none, and marked "ai"
+        ai = Path(tempfile.mkdtemp())
+        (ai / "labels").mkdir()
+        (ai / "labels" / "TST-ai-answers.csv").write_text(
+            "site_id,section_id,date,verified,verified_occupied,verified_by,verified_note\n" +
+            "".join(f"TST,q,2026-01-{day:02d},1,1,ai,x\n" for day in range(1, 9)), encoding="utf-8")
+        self.assertEqual(bp.answers_source(ai, "TST"), "ai")
+        self.assertEqual(bp.p_blind(bp.answers(ai, "TST"), "q"), 0.9)
+        self.assertEqual(bp.build(ai, "TST")["answers"], "ai")
+        (ai / "labels" / "TST-s2-answers.csv").write_text("site_id,section_id,date,verified,verified_occupied\nTST,q,2026-01-01,1,0\n", encoding="utf-8")
+        self.assertEqual(bp.answers_source(ai, "TST"), "s2")           # the owner's answers replace the AI's table
+        self.assertEqual(bp.p_blind(bp.answers(ai, "TST"), "q"), 0.0)
+        self.assertEqual(ep.labels(ai, "TST"), [{"section_id": "q", "date": "2026-01-01", "y": 0, "verified_c": "", "source": "TST-s2-answers.csv"}])
+        (ai / "labels" / "TST-s2-answers.csv").unlink()
+        self.assertEqual(ep.labels(ai, "TST"), [])                      # the AI's answers are never the truth of the evaluation
         # the S1 check wins when the site has one; no answers at all: no table
         self.assertEqual(bp.answers_source(_answers([("a", 1, 1, 1)]), "TST"), "s1")
         self.assertIsNone(bp.answers_source(Path(tempfile.mkdtemp()), "TST"))
