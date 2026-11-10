@@ -995,14 +995,31 @@ def naval50_sum(stretches: list[dict], min_len: float = MIN_LENGTH_M) -> tuple[i
     return n, total
 
 
-def naval50_counts(out: Path, sites: list[dict] | None = None) -> list[dict]:
+NAVAL50_BOX_DIR = "quay_naval50"   # <site>.json: where the counted stretches are (for the red frames on the colour image)
+NAVAL50_BOX_SCENES = 10            # the newest scenes kept there (the colour images keep the same number)
+NAVAL50_BOX_PAD_M = 15.0           # a stretch is a line along the quay: its frame is the line's bounds widened by this much
+
+
+def stretch_box(coords, pad_m: float = NAVAL50_BOX_PAD_M) -> list[float] | None:
+    """[west, south, east, north] of a stretch's line (LineString or MultiLineString coordinates), widened by ``pad_m``."""
+    pts = [c for c in coords if isinstance(c[0], (int, float))] or [c for part in coords for c in part]
+    if not pts:
+        return None
+    lons, lats = [c[0] for c in pts], [c[1] for c in pts]
+    dlat = pad_m / 111320.0
+    dlon = dlat / max(0.1, math.cos(math.radians((min(lats) + max(lats)) / 2)))
+    return [round(min(lons) - dlon, 6), round(min(lats) - dlat, 6), round(max(lons) + dlon, 6), round(max(lats) + dlat, 6)]
+
+
+def naval50_counts(out: Path, sites: list[dict] | None = None, boxes: dict | None = None) -> list[dict]:
     """naval50-1 (user's decision 2026-11-11: "a ship of 50 m or more seen at a naval pier or quay is a warship; no discount"):
     for every stored est-2 scene, the ships of the stretches on a naval berth line (naval-1, the berth rule of the working tree)
     whose ship length is MIN_LENGTH_M or more, counted without est-2's class weights and sector roles:
     ``warship_50`` = round(sum of k x c_mean x p_real), k = the ships end to end in the stretch, c_mean = the expected number
     abreast, p_real = est-2's probability that the stretch is a real ship (smear). ``stretches_50`` = the stretches counted,
     ``warship_est2`` = est-2's own median (class weights, sector roles: the discounted number), ``ships_all`` = est-2's median of
-    all ships of any length. The map shows warship_50; est-2's files are not touched."""
+    all ships of any length. The map shows warship_50; est-2's files are not touched.
+    ``boxes`` (a dict, filled when given): {site_id: {acquired_utc: [{n, box_lonlat, ships, length_m}]}} of the stretches counted."""
     sites = sites or load_sites()
     rows = []
     for site in sites:
@@ -1019,6 +1036,11 @@ def naval50_counts(out: Path, sites: list[dict] | None = None) -> list[dict]:
                     if fs.get(st.get("n")) is not None and berths.feature_ok(b, fs[st.get("n")], fs[st.get("n")]["coords"])]
             min_len = NAVAL50_MIN_LEN.get(sid, MIN_LENGTH_M)
             n50, total = naval50_sum(kept, min_len)
+            if boxes is not None:
+                boxes.setdefault(sid, {})[acq] = [
+                    {"n": st.get("n"), "box_lonlat": stretch_box(fs[st.get("n")]["coords"]),
+                     "ships": round(naval50_sum([st], min_len)[1], 2), "length_m": st.get("ship_length_m")}
+                    for st in kept if naval50_sum([st], min_len)[0]]
             rows.append({"site_id": sid, "acquired_utc": acq, "naval50_version": NAVAL50_VERSION, "stretches_50": n50,
                          "warship_50": int(total + 0.5), "warship_est2": (sc.get("warship") or {}).get("median"),
                          "ships_all": (sc.get("ships") or {}).get("median"), "min_length_m": f"{min_len:g}"})
@@ -1027,13 +1049,37 @@ def naval50_counts(out: Path, sites: list[dict] | None = None) -> list[dict]:
 
 def write_naval50(out: Path, sites: list[dict] | None = None) -> int:
     """Write quay_naval50.csv (all sites, all stored scenes, rewritten whole: PU 0). Returns the number of rows (no file when 0)."""
-    rows = naval50_counts(out, sites)
+    boxes: dict = {}
+    rows = naval50_counts(out, sites, boxes)
     if rows:
         with (out / NAVAL50_FILE).open("w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=NAVAL50_COLUMNS, lineterminator="\n")
             w.writeheader()
             w.writerows(rows)
+        write_naval50_boxes(out, rows, boxes)
     return len(rows)
+
+
+def naval50_box_doc(site_id: str, rows: list[dict], scenes: dict) -> dict:
+    """quay_naval50/<site>.json: the newest NAVAL50_BOX_SCENES scenes of a site, each with its count and the counted stretches."""
+    mine = {r["acquired_utc"]: r for r in rows if r["site_id"] == site_id}
+    keep = sorted(mine)[-NAVAL50_BOX_SCENES:]
+    return {"version": NAVAL50_VERSION, "site_id": site_id, "min_length_m": float(mine[keep[-1]]["min_length_m"]) if keep else None,
+            "note": "box_lonlat は数えた片（軍の着く線の上で、船の長さが線引き以上）の線の範囲を 15 m 広げた四角 [西, 南, 東, 北]。"
+                    "ships はその片の隻数（縦に並ぶ数 × 横抱きの期待値 × 実在の確率）。船体の輪郭ではない",
+            "scenes": {a: {"warship_50": mine[a]["warship_50"], "boxes": scenes.get(a, [])} for a in keep}}
+
+
+def write_naval50_boxes(out: Path, rows: list[dict], boxes: dict) -> int:
+    """Write quay_naval50/<site>.json for every site with rows (rewritten whole: PU 0). Returns the number of files."""
+    d = out / NAVAL50_BOX_DIR
+    d.mkdir(parents=True, exist_ok=True)
+    n = 0
+    for sid in sorted({r["site_id"] for r in rows}):
+        doc = naval50_box_doc(sid, rows, boxes.get(sid, {}))
+        (d / f"{sid}.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        n += 1
+    return n
 
 
 def compare_tables(old: dict, new: dict) -> dict:

@@ -48,6 +48,32 @@ class Naval50(unittest.TestCase):
         for r in pub:
             self.assertEqual(r, mine.get((r["site_id"], r["acquired_utc"])), f"{r['site_id']} {r['acquired_utc']}")
 
+    def test_boxes_of_the_counted_stretches(self):
+        boxes = {}
+        rows = ep.naval50_counts(ep.OUT, boxes=boxes)
+        if not rows:
+            self.skipTest("no stored est-2 scenes")
+        for r in rows:
+            bs = boxes[r["site_id"]][r["acquired_utc"]]
+            self.assertEqual(len(bs), r["stretches_50"])                          # one frame per counted stretch
+            self.assertLessEqual(abs(sum(b["ships"] for b in bs) - r["warship_50"]), 0.5 + 0.005 * len(bs) + 1e-9)
+            for b in bs:
+                w, s, e, n = b["box_lonlat"]
+                self.assertTrue(w < e and s < n)
+        sid = rows[-1]["site_id"]
+        doc = ep.naval50_box_doc(sid, rows, boxes[sid])
+        self.assertLessEqual(len(doc["scenes"]), ep.NAVAL50_BOX_SCENES)
+        last = max(r["acquired_utc"] for r in rows if r["site_id"] == sid)
+        self.assertIn(last, doc["scenes"])                                        # the newest scene is always there
+
+    def test_stretch_box(self):
+        w, s, e, n = ep.stretch_box([[120.0, 35.0], [120.001, 35.0]], 15.0)      # a line along a parallel still gets a height
+        self.assertAlmostEqual((n - s) * 111320, 30, delta=1)
+        self.assertLess(w, 120.0)
+        self.assertGreater(e, 120.001)
+        self.assertEqual(ep.stretch_box([[[120.0, 35.0], [120.001, 35.001]]], 0.0), [120.0, 35.0, 120.001, 35.001])
+        self.assertIsNone(ep.stretch_box([]))
+
     def test_nothing_written_without_scenes(self):
         with tempfile.TemporaryDirectory() as d:
             self.assertEqual(ep.write_naval50(Path(d)), 0)
