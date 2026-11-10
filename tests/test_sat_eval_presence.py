@@ -270,8 +270,10 @@ class EvaluateRepoTest(unittest.TestCase):
             self.assertEqual(lab["used"], len(r["rows"]))
         # Gu Zhenkou (A-1, 2026-11-07): the hooked jetty 582517902 and the yard shore 15387629:L:06 are out of the evaluation
         q = self.res["sites"]["QGZ"]
-        self.assertEqual(q["sections"]["no_berth"], 3)
-        self.assertFalse({x["section_id"] for x in q["rows"]} & {"582517902:L:01", "582517902:R:00", "15387629:L:06"})
+        # and four more of 2026-11-10 (structures bright in every scene, the owner's answer 8/8 absent)
+        self.assertEqual(q["sections"]["no_berth"], 7)
+        self.assertFalse({x["section_id"] for x in q["rows"]} & {"582517902:L:01", "582517902:R:00", "15387629:L:06", "15388243:L:15",
+                                                                 "219848837:L:02", "219848837:L:07", "1564921419:R:00"})
         self.assertGreater(q["labels"]["no_berth"], 0)
 
     def test_rows_and_split(self):

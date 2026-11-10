@@ -141,7 +141,15 @@ class NoBerthTest(unittest.TestCase):
         self.assertEqual(nv.line_class(582517902, 119.97859, 35.73081), "naval")
         self.assertFalse(nv.point_ok("coastline", 15387629, 119.96573, 35.73866))   # L:06, the yard shore
         self.assertTrue(nv.point_ok("coastline", 15387629, 119.96455, 35.73951))    # L:05 next to it: still a berth (sector A2)
+        # A-1 of 2026-11-10 (検品_古鎮口の非盲域の外れ §2.1): four sections where no ship berths, by the midpoint of the section
+        for way, lon, lat in ((15388243, 119.987205, 35.720096), (219848837, 119.969684, 35.725118),
+                              (219848837, 119.964851, 35.731194), (1564921419, 119.968165, 35.726132)):
+            self.assertFalse(nv.point_ok("pier", way, lon, lat), way)
+            self.assertEqual(nv.line_class(way, lon, lat), "naval")
+        self.assertTrue(nv.point_ok("pier", 15388243, 119.980372, 35.716429))       # 15388243:L:01: still a berth
+        self.assertTrue(nv.point_ok("pier", 1564921419, 119.968889, 35.725746))     # 1564921419:L:00, 60 m east of R:00
         cls = berths.load_classes("QGZ")
+        self.assertEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), 6)
         for e in cls["lines"]:
             if e.get("berth") is False:
                 self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), e["way"])
