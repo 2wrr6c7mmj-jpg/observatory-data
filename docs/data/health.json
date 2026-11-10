@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-10T02:29:45Z",
+ "generated_utc": "2026-11-10T08:32:58Z",
  "state": "warn",
  "summary": {
-  "ok": 9,
-  "warn": 3,
+  "ok": 8,
+  "warn": 4,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-08T12:07:56Z",
-   "heartbeat_age_h": 38.4,
+   "heartbeat_age_h": 44.4,
    "data_date": "2026-11-07",
    "data_date_tz": "UTC",
    "data_age_days": 3,
@@ -80,7 +80,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の処理（updated_utc）から 38 h（>30 h：遅延）"
+     "text": "最後の処理（updated_utc）から 44 h（>30 h：遅延）"
     },
     {
      "level": "warn",
@@ -141,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-09T12:07:13Z",
-   "heartbeat_age_h": 14.4,
+   "heartbeat_age_h": 20.4,
    "data_date": "2026-11-08",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -164,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-09T16:49:38Z",
-   "heartbeat_age_h": 9.7,
+   "heartbeat_age_h": 15.7,
    "data_date": "2026-11-09",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -207,8 +207,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "manual",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-09T08:13:24Z",
-   "heartbeat_age_h": 18.3,
+   "heartbeat_utc": "2026-11-10T08:32:31Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 14,
@@ -231,17 +231,17 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-09T08:13:18Z",
-   "heartbeat_age_h": 18.3,
-   "data_date": "2026-11-09",
+   "heartbeat_utc": "2026-11-10T08:32:26Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-10",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-09T08:13:18Z",
-    "notam_watch_last_seen_utc": "2026-11-09T08:13:18Z",
-    "ll2_last_retrieved_utc": "2026-11-09T08:13:15Z"
+    "notices_last_retrieved_utc": "2026-11-10T08:32:25Z",
+    "notam_watch_last_seen_utc": "2026-11-10T08:32:25Z",
+    "ll2_last_retrieved_utc": "2026-11-10T08:32:22Z"
    }
   },
   {
@@ -250,16 +250,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-09T12:07:31Z",
-   "heartbeat_age_h": 14.4,
+   "heartbeat_age_h": 20.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-09T12:07:31Z が入力の更新 2026-11-10T08:32:31Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-09T12:07:48Z",
-    "newest_input_utc": "2026-11-09T12:07:13Z"
+    "newest_input_utc": "2026-11-10T08:32:31Z"
    }
   },
   {
@@ -548,7 +554,7 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 6,
+   "open_or_upcoming_windows": 7,
    "open_now": 2,
    "next_start": {
     "site": null,
@@ -556,7 +562,7 @@
     "window_start_utc": "2026-11-11T04:00Z",
     "window_end_utc": "2026-11-30T09:34Z"
    },
-   "active_notices": 32
+   "active_notices": 39
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -573,15 +579,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-09T08:12:56Z",
+   "last_success_started_utc": "2026-11-10T08:32:03Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42584319032,
-    "started_utc": "2026-11-09T08:12:56Z",
+    "id": 42783385741,
+    "started_utc": "2026-11-10T08:32:03Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42584319032",
-    "delay_h": 6.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42783385741",
+    "delay_h": 7.2
    },
    "consecutive_failures": 0
   },
@@ -670,11 +676,11 @@
    "last_success_started_utc": "2026-11-09T12:07:31Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 42614389257,
-    "started_utc": "2026-11-09T12:07:31Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42614389257"
+    "id": 42783484464,
+    "started_utc": "2026-11-10T08:32:50Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42783484464"
    },
    "consecutive_failures": 0
   },
