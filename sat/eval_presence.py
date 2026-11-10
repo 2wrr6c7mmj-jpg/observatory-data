@@ -749,6 +749,10 @@ def meta(res: dict) -> dict:
         "generated_utc": res["generated_utc"],
         "version": EVAL_VERSION,
         "files": {"presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）", "meta.json": "この定義と港別の表（table）",
+                  f"../{NAVAL50_FILE}": (f"{NAVAL50_VERSION}：地図の札の数。撮影ごとに、軍の着く線（naval-1）の上の片のうち船の長さが {MIN_LENGTH_M:g} m 以上のものを、"
+                                         "艦種の重みや区画の役割で割り引かずに数える（ユーザーの決定 2026-11-11）。warship_50＝Σ k×c_mean×p_real の四捨五入"
+                                         "（k＝縦に並ぶ数、c_mean＝横抱きの列数の期待値、p_real＝にじみでない確率）、stretches_50＝数えた片の数、"
+                                         "warship_est2＝est-2 の中央値（割り引いた数）、ships_all＝全長・全種の中央値"),
                   f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
                                                  "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
                                                  "地図の札は est-2 の warship_median にこれを足す。answers＝常在の表の出所（s1＝同日の答え、s2＝S2 の日の答え）。答えのある港だけ")},
@@ -919,9 +923,10 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
         if old.get("rules") == rule_versions(sites):
             snapshot(out, sites, now)
             state = "updated"
-    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites)}
+    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites),
+         "naval50": write_naval50(out, sites)}
     if log:
-        log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行")
+        log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行")
     return r
 
 
@@ -969,6 +974,62 @@ def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
     return {sid: len(rows) for sid, rows in res.items()}
 
 
+NAVAL50_FILE = "quay_naval50.csv"
+NAVAL50_VERSION = "naval50-1"
+NAVAL50_COLUMNS = ("site_id", "acquired_utc", "naval50_version", "stretches_50", "warship_50", "warship_est2", "ships_all")
+
+
+def naval50_sum(stretches: list[dict], min_len: float = MIN_LENGTH_M) -> tuple[int, float]:
+    """(stretches of ``min_len`` or more, their ships = sum of k x c_mean x p_real) of est-2 stretches already on naval berths."""
+    n, total = 0, 0.0
+    for st in stretches:
+        if float(st.get("ship_length_m") or 0) < min_len:
+            continue
+        n += 1
+        total += float(st.get("k") or 1) * float(st.get("c_mean") or 1) * float(1 if st.get("p_real") is None else st["p_real"])
+    return n, total
+
+
+def naval50_counts(out: Path, sites: list[dict] | None = None) -> list[dict]:
+    """naval50-1 (user's decision 2026-11-11: "a ship of 50 m or more seen at a naval pier or quay is a warship; no discount"):
+    for every stored est-2 scene, the ships of the stretches on a naval berth line (naval-1, the berth rule of the working tree)
+    whose ship length is MIN_LENGTH_M or more, counted without est-2's class weights and sector roles:
+    ``warship_50`` = round(sum of k x c_mean x p_real), k = the ships end to end in the stretch, c_mean = the expected number
+    abreast, p_real = est-2's probability that the stretch is a real ship (smear). ``stretches_50`` = the stretches counted,
+    ``warship_est2`` = est-2's own median (class weights, sector roles: the discounted number), ``ships_all`` = est-2's median of
+    all ships of any length. The map shows warship_50; est-2's files are not touched."""
+    sites = sites or load_sites()
+    rows = []
+    for site in sites:
+        sid = site["id"]
+        est = est2_scenes(out, sid)
+        if not est:
+            continue
+        b = berths.Berths(site, load_lines(site), naval=True)
+        feats = quay_features(out, sid)
+        for acq in sorted(est):
+            sc = est[acq]
+            fs = {f.get("n"): f for f in scene_features(feats, sc)}
+            kept = [st for st in sc.get("stretches") or []
+                    if fs.get(st.get("n")) is not None and berths.feature_ok(b, fs[st.get("n")], fs[st.get("n")]["coords"])]
+            n50, total = naval50_sum(kept)
+            rows.append({"site_id": sid, "acquired_utc": acq, "naval50_version": NAVAL50_VERSION, "stretches_50": n50,
+                         "warship_50": int(total + 0.5), "warship_est2": (sc.get("warship") or {}).get("median"),
+                         "ships_all": (sc.get("ships") or {}).get("median")})
+    return rows
+
+
+def write_naval50(out: Path, sites: list[dict] | None = None) -> int:
+    """Write quay_naval50.csv (all sites, all stored scenes, rewritten whole: PU 0). Returns the number of rows (no file when 0)."""
+    rows = naval50_counts(out, sites)
+    if rows:
+        with (out / NAVAL50_FILE).open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=NAVAL50_COLUMNS, lineterminator="\n")
+            w.writeheader()
+            w.writerows(rows)
+    return len(rows)
+
+
 def compare_tables(old: dict, new: dict) -> dict:
     """Common scenes: cells changed (presence flipped, or a section only in one table) over the union of cells, per site and in all."""
     sites, n_all, c_all = {}, 0, 0
@@ -1010,6 +1071,7 @@ def main(argv=None) -> int:
     res = evaluate(a.out, truth=a.truth)
     write(a.out, res)
     write_blind(a.out)
+    write_naval50(a.out)
     print(f"正解 {res['truth']}（other_truth {res['other_truth']['truth']}）", file=sys.stderr)
     for row in table(res):
         print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}"
