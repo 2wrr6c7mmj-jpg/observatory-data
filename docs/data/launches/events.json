@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-09T08:13:18Z",
+ "generated_utc": "2026-11-10T08:32:26Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -682,8 +682,46 @@
      "rocket": "Long March 2D",
      "orbit": "N/A",
      "pad": "Launch Area 94 (SLS-2 / 603)"
+    },
+    {
+     "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
+     "name": "Kuaizhou 11 | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-12T19:50:00Z",
+     "rocket": "Kuaizhou 11",
+     "orbit": "N/A",
+     "pad": "Launch Area 95A"
     }
    ]
+  },
+  {
+   "window_start_utc": "2026-11-13T04:00Z",
+   "window_end_utc": "2026-11-30T09:34Z",
+   "areas": [
+    [
+     33.6,
+     125.6
+    ],
+    [
+     23.973,
+     134.392
+    ],
+    [
+     33.039,
+     126.565
+    ],
+    [
+     27.03,
+     131.281
+    ]
+   ],
+   "notices": [
+    "aviation:Z0857/26",
+    "aviation:Q2688/26",
+    "aviation:Z0856/26",
+    "aviation:P5642/26"
+   ],
+   "method": "unaligned"
   },
   {
    "window_start_utc": "2026-11-13T22:00Z",
@@ -986,6 +1024,23 @@
    "lat": 40.960482,
    "lon": 100.298059,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/d66590ab-b273-47ff-b85a-608b62851b4b/",
+   "event_index": 26
+  },
+  {
+   "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
+   "name": "Kuaizhou 11 | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-12T19:50:00Z",
+   "rocket": "Kuaizhou 11",
+   "provider": "ExPace",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Area 95A",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.969117,
+   "lon": 100.343333,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
    "event_index": 26
   },
   {
