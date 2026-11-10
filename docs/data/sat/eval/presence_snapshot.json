@@ -1,6 +1,6 @@
 {
  "days": 30,
- "generated_utc": "2026-11-10T13:47:08Z",
+ "generated_utc": "2026-11-10T15:36:01Z",
  "max_change": 0.2,
  "min_site_cells": 30,
  "note": "回帰の見張り：規則（berths.json とそのハッシュ、naval-1 の区分ファイルのハッシュ、quay、岸壁線の版）が写しと違うとき、直近 30 日の撮影の在/不在（est-2、p ≥ 0.5、50 m 以上、確認セットの naval の区間）を写しと比べ、共通の升の 2 割を超えて変わると（全体、または升が 30 以上の港のどれか）tests/test_sat_eval_presence.py が失敗する。写しの撮影のうち半分未満しか見つからない港があっても失敗（写しが古い）。規則の版が同じ日は毎日の実行（sat/run.py）が写しを更新する。規則を変えた PR では python -m sat.eval_presence --snapshot で写しを更新し、変わった升の数を PR に書く",
@@ -945,5 +945,5 @@
    }
   }
  },
- "version": "eval-presence-4"
+ "version": "eval-presence-5"
 }

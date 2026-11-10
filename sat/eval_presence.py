@@ -72,11 +72,12 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import berths
+from . import blind_prior as bp
 from . import occ2_schema as o2s
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
-EVAL_VERSION = "eval-presence-4"   # eval-presence-3 (occ-2 beside the current judge, AUC) + assign-2: which stretch belongs to a section (ports)
+EVAL_VERSION = "eval-presence-5"   # eval-presence-4 (occ-2 beside the judge, AUC, assign-2) + blind-1 beside the judge (resident sections, sat/blind_prior)
 MIN_LENGTH_M = 50.0
 SECTION_MATCH_M = 20.0        # as sat/quay_est2.SECTION_MATCH_M (not imported: quay_est2 needs numpy)
 # assign-2 (2026-11-10): which stretch belongs to a section; the same rule and numbers as sat/s2_labels (not imported: numpy)
@@ -474,6 +475,14 @@ def occ2_metrics(rows: list[dict]) -> dict:
     return res
 
 
+def blind1_metrics(rows: list[dict]) -> dict:
+    """blind-1 beside the current judge: p_blind1 = max(p, the section's resident probability from the owner's other S1 scenes)."""
+    b = [r for r in rows if r.get("p_blind1") is not None]
+    res = [r for r in b if r.get("p_resident")]
+    return {"version": bp.VERSION, "n": len(b), "n_resident": len(res), "min50": metrics(b, "p_blind1"), "current": metrics(b),
+            "resident": {"p_blind1": metrics(res, "p_blind1"), "current": metrics(res)}}
+
+
 def split_metrics(rows: list[dict]) -> dict:
     """min50 / any_length of the rows, the same of the near pairs only (|dt_h| <= FAR_H), min50 by blind / clear (blind_share >=
     BLIND_SHARE) and by the line's confidence, and occ-2 beside the current judge on the cells that have an occ-2 row."""
@@ -488,7 +497,7 @@ def split_metrics(rows: list[dict]) -> dict:
                          "clear": metrics([r for r in rows if not is_blind(r)]),
                          "clear_near": metrics([r for r in near if not is_blind(r)])},
             "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs},
-            "occ2": occ2_metrics(rows)}
+            "occ2": occ2_metrics(rows), "blind1": blind1_metrics(rows)}
 
 
 def _freeze(site: dict) -> str:
@@ -511,6 +520,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     blind = blind_stretches(out, sid, lat0)
     orbit_of = scene_orbits(out, sid, est)
     occ2 = o2s.load_site_rows(out, sid)
+    resident = bp.answers(out, sid)   # blind-1: the owner's S1 answers per section (the judged scene is left out below)
     cnt = {"answers": len(lab), "prefilled": sum(1 for a in lab if (a.get("note") or "").startswith("s2-prefill")),
            "unknown_section": 0, "not_naval": 0, "no_berth": 0, "short": 0, "no_s1_pairing": 0, "no_scene": 0, "other_day_of_scene": 0, "used": 0}
     rows = []
@@ -560,6 +570,8 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
                "oos": (not own) or (a.get("date") or s1[:10]) >= freeze}
         if s1_truth:
             row.update(s2_date=a.get("s2_date"), s2_dt_h=a.get("s2_dt_h"), note=a.get("note") or "")
+        pb = bp.p_blind(resident, a["section_id"], exclude_s1=s1)
+        row.update(p_resident=pb, p_blind1=round(max(p, pb), 3))
         o2 = occ2.get(s1, {}).get(a["section_id"])
         row.update(p_occ2=None if o2 is None or o2.get("p_occ") is None else round(float(o2["p_occ"]), 3),
                    p_test_occ2=None if o2 is None or o2.get("p_test") is None else float(o2["p_test"]),
@@ -749,6 +761,9 @@ def meta(res: dict) -> dict:
             "est-2": f"その撮影が quay_est2.json・quay_est2/<地点>.json にあるとき：区間と同じ OSM の線・向きで {SECTION_MATCH_M:g} m 以内の点が最も多い区間片（stretch）のうち、その区間に属する片（{STRETCH_ASSIGN}：区間内に {STRETCH_INSIDE_M:g} m 以上あるか、片の中点が区間内。湛江は従来どおり 1 点でも掛かれば可）。p＝p_real（ship_length_m ≥ {MIN_LENGTH_M:g} m のとき、未満は 0）。片が無ければ 0",
             "s1-recount": (f"est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に属する片（{STRETCH_ASSIGN}：区間内に {STRETCH_INSIDE_M:g} m 以上あるか、片の中点が区間内。2026-11-10 までは 20 m 掛かれば可）の全長 s1_stretch_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0"
                            f"（港の表、s1-match-3。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は中点のある側で在、両側に {STRETCH_INSIDE_M:g} m 以上あれば両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m。0/1 の判定：ブライアは誤り率に等しい"),
+            "blind-1": (f"{bp.VERSION}（sat/blind_prior）：区間の常在度を併記。所有者の同日の答え（labels/<地点>-s1-answers.csv）で、判定する撮影を除いて {bp.MIN_ANSWERS} 撮影以上あり、"
+                        f"在の割合が {bp.RESIDENT_MIN:g} 以上の区間は p_resident＝(在＋1)／(答え＋2)、ほかは 0。p_blind1＝max(p, p_resident)。本体の p は現行の判定のまま。"
+                        f"指標は各ブロックの blind1（min50＝p_blind1、current＝同じ升の現行、resident＝常在の升だけ）。対象は軍艦で稼働状態は問わない"),
             "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
             "occ-2": (f"撮影に occ-2 の行（quay_occ2/<地点>/YYYY-MM.csv、sat/occ2）があれば、升に p_occ2（占有の確率。較正前は a=logit(事前)・b=1・c=0 の仮置き、"
                       f"盲域は blind_prior と λ=0.5 で混合）、p_test_occ2（検定の有意確率 P(T ≥ T_obs | 空)）、occ2_blind（occ-2 の盲域：空間の参照）、"
