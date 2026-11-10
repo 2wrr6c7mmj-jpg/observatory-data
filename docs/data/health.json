@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-10T11:46:54Z",
- "state": "warn",
+ "generated_utc": "2026-11-10T13:49:51Z",
+ "state": "alert",
  "summary": {
   "ok": 9,
-  "warn": 3,
-  "alert": 0,
+  "warn": 2,
+  "alert": 1,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -70,23 +70,13 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-08T12:07:56Z",
-   "heartbeat_age_h": 47.6,
-   "data_date": "2026-11-07",
+   "heartbeat_utc": "2026-11-10T13:41:54Z",
+   "heartbeat_age_h": 0.1,
+   "data_date": "2026-11-09",
    "data_date_tz": "UTC",
-   "data_age_days": 3,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
-    {
-     "level": "warn",
-     "code": "heartbeat_late",
-     "text": "最後の処理（updated_utc）から 48 h（>30 h：遅延）"
-    },
-    {
-     "level": "warn",
-     "code": "orbit_gap",
-     "text": "ZJG：撮影の抜け ro84 11-08（同じ軌道 12 日ごとの期待に対して）"
-    },
     {
      "level": "warn",
      "code": "scene_old",
@@ -110,11 +100,6 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "LSN：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
      "text": "SWS：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
     },
     {
@@ -124,10 +109,10 @@
     }
    ],
    "values": {
-    "latest_acquired_utc": "2026-11-07T10:48:45Z",
-    "last_run_utc": "2026-11-08T12:07:56Z",
+    "latest_acquired_utc": "2026-11-09T09:48:11Z",
+    "last_run_utc": "2026-11-10T13:41:54Z",
     "last_run_errors": 0,
-    "last_run_scenes": 4
+    "last_run_scenes": 2
    }
   },
   {
@@ -136,7 +121,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-10T11:45:43Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.1,
    "data_date": "2026-11-09",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -159,7 +144,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-09T16:49:38Z",
-   "heartbeat_age_h": 19.0,
+   "heartbeat_age_h": 21.0,
    "data_date": "2026-11-09",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -203,7 +188,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-10T08:32:31Z",
-   "heartbeat_age_h": 3.2,
+   "heartbeat_age_h": 5.3,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 14,
@@ -227,7 +212,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-10T08:32:26Z",
-   "heartbeat_age_h": 3.2,
+   "heartbeat_age_h": 5.3,
    "data_date": "2026-11-10",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -245,7 +230,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-10T11:46:05Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -283,26 +268,26 @@
     "trial": true,
     "mask_version": "ZJG-land-v2",
     "est1": {
-     "acquired_utc": "2026-11-07T10:48:45Z",
+     "acquired_utc": "2026-11-08T10:41:00Z",
      "version": "est-1",
-     "mode": 19,
-     "p10": 16,
-     "p90": 23,
-     "warship_mode": 15,
-     "warship_p10": 13,
-     "warship_p90": 18,
-     "credibility": 3,
+     "mode": 29,
+     "p10": 24,
+     "p90": 35,
+     "warship_mode": 20,
+     "warship_p10": 16,
+     "warship_p90": 24,
+     "credibility": 4,
      "in_sample": ""
     },
     "est2": {
-     "acquired_utc": "2026-11-07T10:48:45Z",
+     "acquired_utc": "2026-11-08T10:41:00Z",
      "version": "est-2.1",
-     "warship_median": 15,
+     "warship_median": 16,
      "warship_p10": 13,
-     "warship_p90": 18,
-     "ships_median": 24,
-     "ships_p10": 22,
-     "ships_p90": 26,
+     "warship_p90": 19,
+     "ships_median": 34,
+     "ships_p10": 32,
+     "ships_p90": 37,
      "in_sample": ""
     }
    },
@@ -446,14 +431,14 @@
     "trial": true,
     "mask_version": "LSN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:56:32Z",
+     "acquired_utc": "2026-11-09T09:48:11Z",
      "version": "est-1",
-     "mode": 7,
-     "p10": 5,
-     "p90": 10,
-     "warship_mode": 3,
-     "warship_p10": 1,
-     "warship_p90": 4,
+     "mode": 19,
+     "p10": 16,
+     "p90": 22,
+     "warship_mode": 7,
+     "warship_p10": 4,
+     "warship_p90": 9,
      "credibility": 3,
      "in_sample": ""
     }
@@ -610,25 +595,25 @@
    "sources": [
     "sat"
    ],
-   "state": "warn",
+   "state": "alert",
    "reasons": [
     {
-     "level": "warn",
+     "level": "alert",
      "code": "failed",
-     "text": "schedule の実行 2026-11-09T14:00:16Z が failure"
+     "text": "schedule の実行 2026-11-10T13:34:49Z が failure（2 回続けて）"
     }
    ],
    "last_success_started_utc": "2026-11-08T11:59:08Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42630448864,
-    "started_utc": "2026-11-09T14:00:16Z",
+    "id": 42825811635,
+    "started_utc": "2026-11-10T13:34:49Z",
     "status": "completed",
     "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42630448864",
-    "delay_h": 8.7
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42825811635",
+    "delay_h": 8.3
    },
-   "consecutive_failures": 1
+   "consecutive_failures": 2
   },
   {
    "file": "pla-tracker.yml",
@@ -700,12 +685,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 132.472,
-   "usage_csv_requests": 445,
-   "usage_csv_runs": 13,
-   "status_month_pu_before": 121.838,
-   "status_last_run_utc": "2026-11-08T12:07:56Z",
-   "usage_csv_pu_before_last_run": 121.838,
+   "usage_csv_pu": 135.987,
+   "usage_csv_requests": 472,
+   "usage_csv_runs": 14,
+   "status_month_pu_before": 132.472,
+   "status_last_run_utc": "2026-11-10T13:41:54Z",
+   "usage_csv_pu_before_last_run": 132.472,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -723,21 +708,14 @@
     "interval_days": 12,
     "site_id": "ZJG",
     "level": "info"
-   },
-   {
-    "relative_orbit": 84,
-    "expected_utc": "2026-11-08T10:41:00Z",
-    "interval_days": 12,
-    "site_id": "ZJG",
-    "level": "warn"
    }
   ],
   "latest_scene": {
    "ZJG": {
-    "acquired_utc": "2026-11-07T10:48:45Z",
-    "platform": "sentinel-1c",
-    "relative_orbit": 157,
-    "coverage": 0.999,
+    "acquired_utc": "2026-11-08T10:41:00Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 84,
+    "coverage": 0.998,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "ZJG-land-v2"
@@ -806,10 +784,10 @@
     "mask_version": "XSN-land-v1"
    },
    "LSN": {
-    "acquired_utc": "2026-11-02T09:56:32Z",
+    "acquired_utc": "2026-11-09T09:48:11Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 171,
-    "coverage": 0.998,
+    "relative_orbit": 98,
+    "coverage": 0.997,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "LSN-land-v1"
