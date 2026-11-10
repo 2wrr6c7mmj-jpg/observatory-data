@@ -755,7 +755,7 @@ def meta(res: dict) -> dict:
                                          "warship_est2＝est-2 の中央値（割り引いた数）、ships_all＝全長・全種の中央値"),
                   f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
                                                  "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
-                                                 "地図の札は est-2 の warship_median にこれを足す。answers＝常在の表の出所（s1＝同日の答え、s2＝S2 の日の答え）。答えのある港だけ")},
+                                                 "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）")},
         "target": res["target"],
         "truth_source": {"body": res.get("truth", "s2"), "other": (res.get("other_truth") or {}).get("truth"),
                          "note": "本体（total・sites・table）は truth_source.body の正解、other_truth は他方の正解で同じ指標。s2＝S2 の日の答えを直近の S1 に対応、s1＝S1 の撮影そのものの答え（確認ページ ?s1=1）。python -m sat.eval_presence --truth s1 で入れ替わる",

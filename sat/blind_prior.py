@@ -37,6 +37,10 @@ RESIDENT_MIN = 0.75    # share of "present" among them for a resident section
 
 S1_FILE = "{site}-s1-answers.csv"                       # the S1 check (the same scene): preferred
 S2_FILES = ("{site}-s2-answers.csv", "{site}-oos-answers.csv")   # the S2 day's answers: used when the site has no S1 check
+# A provisional table by the AI (user's instruction 2026-11-11: "make a provisional table; write that it is the AI's judgement"):
+# the AI's reading of the stored S2 days of the review set and of high-resolution imagery, for a site the owner has not answered
+# yet. Used only when the site has neither S1 nor S2 answers of the owner, and never as the truth of the evaluation.
+AI_FILES = ("{site}-ai-answers.csv",)
 
 
 def _rows(p: Path):
@@ -47,12 +51,15 @@ def _rows(p: Path):
 
 
 def answers_source(out: Path, site_id: str) -> str | None:
-    """"s1" (labels/<site>-s1-answers.csv), "s2" (the S2 day's answers) or None: where the site's resident table comes from."""
+    """"s1" (labels/<site>-s1-answers.csv), "s2" (the S2 day's answers), "ai" (the AI's provisional answers, only when the owner
+    has given none) or None: where the site's resident table comes from."""
     lab = Path(out) / "labels"
     if any(r.get("verified") == "1" and r.get("s1_acquired_utc") for r in _rows(lab / S1_FILE.format(site=site_id))):
         return "s1"
     if any(r.get("verified") == "1" and r.get("date") for n in S2_FILES for r in _rows(lab / n.format(site=site_id))):
         return "s2"
+    if any(r.get("verified") == "1" and r.get("date") for n in AI_FILES for r in _rows(lab / n.format(site=site_id))):
+        return "ai"
     return None
 
 
@@ -68,8 +75,8 @@ def answers(out: Path, site_id: str) -> dict[str, list[tuple[str, int]]]:
             if r.get("site_id", site_id) != site_id or r.get("verified") != "1" or not r.get("s1_acquired_utc"):
                 continue
             seen[(r["section_id"], r["s1_acquired_utc"])] = 1 if r.get("verified_occupied") == "1" else 0
-    elif src == "s2":
-        for n in S2_FILES:
+    elif src in ("s2", "ai"):
+        for n in (S2_FILES if src == "s2" else AI_FILES):
             for r in _rows(lab / n.format(site=site_id)):
                 if r.get("site_id", site_id) != site_id or r.get("verified") != "1" or not r.get("date"):
                     continue
@@ -100,7 +107,8 @@ def build(out: Path, site_id: str) -> dict:
     src = answers_source(out, site_id)
     return {"version": VERSION, "site_id": site_id, "answers": src,
             "source": (f"labels/{site_id}-s1-answers.csv（所有者の同日の答え、verified 1）" if src == "s1" else
-                       f"labels/{site_id}-s2-answers.csv・-oos-answers.csv（所有者の S2 の日の答え、verified 1。同日の答えが無い港）"),
+                       f"labels/{site_id}-s2-answers.csv・-oos-answers.csv（所有者の S2 の日の答え、verified 1。同日の答えが無い港）" if src == "s2" else
+                       f"labels/{site_id}-ai-answers.csv（AI の判断：保存済みの S2 の日と高解像度写真の目視。所有者の答えが入るまでの仮の表）"),
             "rule": f"答えが {MIN_ANSWERS} 撮影以上あり、在の割合が {RESIDENT_MIN:g} 以上の区間＝常在。p_blind＝(在＋1)／(答え＋2)、常在でなければ 0",
             "target": "軍艦（50 m 以上の水上艦）。稼働状態は問わない。構造物・艀・浮体は所有者の答えで不在",
             "scenes": sorted({key for rs in ans.values() for key, _ in rs}), "n_resident": sum(1 for s in secs.values() if s["resident"]),
