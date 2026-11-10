@@ -177,7 +177,7 @@ class JudgeTest(unittest.TestCase):
         self.assertIsNone(ep.judge_recount(None, 50.0))
 
     def test_recount_rule_on_the_whole_stretch(self):
-        """s1-match-2 (ports): the length rule on the full length of the stretch reaching into the section (E type: a 60 m
+        """s1-match-3 (ports): the length rule on the full length of the stretch that belongs to the section (E type: a 60 m
         ship across a section border, 30 / 30 m inside, is present on both sides); Zhanjiang's table (no column) as before."""
         self.assertEqual(ep.judge_recount({"s1_occupied": "0", "s1_occ_len_m": "30", "s1_stretch_len_m": "60"}, 50.0), 1.0)
         self.assertEqual(ep.judge_recount({"s1_occupied": "1", "s1_occ_len_m": "40", "s1_stretch_len_m": "40"}, 50.0), 0.0)
@@ -223,6 +223,27 @@ class JudgeTest(unittest.TestCase):
         # a stretch far from the section (300 m east)
         far = [{"n": 7, "osm_way": 11, "face": "11+", "coords": [[110.003 + i * 0.0001, 21.0] for i in range(5)]}]
         self.assertIsNone(ep.stretch_of_section(sec, far, sts, lat0))
+
+    def test_assign_2_a_stretch_of_the_next_section_does_not_count(self):
+        # 検品_古鎮口 §2.1 (527583619:R:01): a 240 m ship of the next section reaching 20 m into this one made it present
+        lat0 = 21.0
+        step = 0.0001     # about 10.4 m at 21N
+        sec = {"way_id": 11, "side": 1, "length_m": 150, "line": [[110.0 + i * step, 21.0] for i in range(15)]}
+        def feat(n, first, count):
+            return {"n": n, "osm_way": 11, "face": "11+", "coords": [[110.0 + (first + i) * step, 21.0] for i in range(count)]}
+        st = lambda n: [{"n": n, "osm_way": 11, "side": 1, "p_real": 0.9, "ship_length_m": 240}]
+        reach = feat(1, 13, 24)       # 20 m inside, midpoint 115 m beyond the section's end
+        self.assertIsNone(ep.stretch_of_section(sec, [reach], st(1), lat0))
+        self.assertEqual(ep.stretch_of_section(sec, [reach], st(1), lat0, "assign-1")["n"], 1)    # Zhanjiang's rule, as before
+        half = feat(2, 9, 24)         # 60 m inside: belongs to both sections
+        self.assertEqual(ep.stretch_of_section(sec, [half], st(2), lat0)["n"], 2)
+        across = feat(3, 11, 7)       # a 60 m ship across the border, 40 m inside, midpoint inside
+        self.assertEqual(ep.stretch_of_section(sec, [across], st(3), lat0)["n"], 3)
+        beyond = feat(4, 13, 7)       # the same ship 20 m further: midpoint in the next section
+        self.assertIsNone(ep.stretch_of_section(sec, [beyond], st(4), lat0))
+        short = {**sec, "length_m": 30, "line": sec["line"][:3]}     # a 30 m section under a long stretch: all of it is covered
+        self.assertEqual(ep.stretch_of_section(short, [feat(5, 0, 24)], st(5), lat0)["n"], 5)
+        self.assertEqual((ep.STRETCH_ASSIGN, ep.STRETCH_INSIDE_M, ep.ASSIGN_1_SITES), ("assign-2", 50.0, ("ZJG",)))
 
 
 class EvaluateRepoTest(unittest.TestCase):
