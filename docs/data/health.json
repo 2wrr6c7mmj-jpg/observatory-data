@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-09T18:42:09Z",
+ "generated_utc": "2026-11-10T02:29:45Z",
  "state": "warn",
  "summary": {
   "ok": 9,
@@ -71,21 +71,56 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-08T12:07:56Z",
-   "heartbeat_age_h": 30.6,
+   "heartbeat_age_h": 38.4,
    "data_date": "2026-11-07",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 3,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の処理（updated_utc）から 31 h（>30 h：遅延）"
+     "text": "最後の処理（updated_utc）から 38 h（>30 h：遅延）"
     },
     {
      "level": "warn",
      "code": "orbit_gap",
      "text": "ZJG：撮影の抜け ro84 10-27（同じ軌道 12 日ごとの期待に対して）"
+    },
+    {
+     "level": "warn",
+     "code": "orbit_gap",
+     "text": "ZJG：撮影の抜け ro84 11-08（同じ軌道 12 日ごとの期待に対して）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "ZDH：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "QJG：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "QDH：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "XSN：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "LSN：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "SWS：最新の撮影 2026-11-02 から 8 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -106,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-09T12:07:13Z",
-   "heartbeat_age_h": 6.6,
+   "heartbeat_age_h": 14.4,
    "data_date": "2026-11-08",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -129,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-09T16:49:38Z",
-   "heartbeat_age_h": 1.9,
+   "heartbeat_age_h": 9.7,
    "data_date": "2026-11-09",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +208,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-09T08:13:24Z",
-   "heartbeat_age_h": 10.5,
+   "heartbeat_age_h": 18.3,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 14,
@@ -197,10 +232,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-09T08:13:18Z",
-   "heartbeat_age_h": 10.5,
+   "heartbeat_age_h": 18.3,
    "data_date": "2026-11-09",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -215,7 +250,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-09T12:07:31Z",
-   "heartbeat_age_h": 6.6,
+   "heartbeat_age_h": 14.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -513,15 +548,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 7,
+   "open_or_upcoming_windows": 6,
    "open_now": 2,
    "next_start": {
     "site": null,
     "country": null,
-    "window_start_utc": "2026-11-10T00:00Z",
+    "window_start_utc": "2026-11-11T04:00Z",
     "window_end_utc": "2026-11-30T09:34Z"
    },
-   "active_notices": 33
+   "active_notices": 32
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -653,15 +688,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-08T23:05:38Z",
+   "last_success_started_utc": "2026-11-10T02:22:05Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42533462181,
-    "started_utc": "2026-11-08T23:05:38Z",
+    "id": 42742261664,
+    "started_utc": "2026-11-10T02:22:05Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42533462181",
-    "delay_h": 3.4
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42742261664",
+    "delay_h": 6.7
    },
    "consecutive_failures": 0
   }
@@ -690,6 +725,13 @@
    {
     "relative_orbit": 84,
     "expected_utc": "2026-10-27T10:41:00Z",
+    "interval_days": 12,
+    "site_id": "ZJG",
+    "level": "warn"
+   },
+   {
+    "relative_orbit": 84,
+    "expected_utc": "2026-11-08T10:41:00Z",
     "interval_days": 12,
     "site_id": "ZJG",
     "level": "warn"
