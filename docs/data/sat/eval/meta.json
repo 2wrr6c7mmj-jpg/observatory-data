@@ -1,6 +1,6 @@
 {
- "generated_utc": "2026-11-10T13:47:08Z",
- "version": "eval-presence-4",
+ "generated_utc": "2026-11-10T15:36:01Z",
+ "version": "eval-presence-5",
  "files": {
   "presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）",
   "meta.json": "この定義と港別の表（table）"
@@ -20,6 +20,7 @@
  "judge": {
   "est-2": "その撮影が quay_est2.json・quay_est2/<地点>.json にあるとき：区間と同じ OSM の線・向きで 20 m 以内の点が最も多い区間片（stretch）のうち、その区間に属する片（assign-2：区間内に 50 m 以上あるか、片の中点が区間内。湛江は従来どおり 1 点でも掛かれば可）。p＝p_real（ship_length_m ≥ 50 m のとき、未満は 0）。片が無ければ 0",
   "s1-recount": "est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に属する片（assign-2：区間内に 50 m 以上あるか、片の中点が区間内。2026-11-10 までは 20 m 掛かれば可）の全長 s1_stretch_len_m ≥ 50 m で 1、それ以外 0（港の表、s1-match-3。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は中点のある側で在、両側に 50 m 以上あれば両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ 50 m。0/1 の判定：ブライアは誤り率に等しい",
+  "blind-1": "blind-1（sat/blind_prior）：区間の常在度を併記。所有者の同日の答え（labels/<地点>-s1-answers.csv）で、判定する撮影を除いて 3 撮影以上あり、在の割合が 0.75 以上の区間は p_resident＝(在＋1)／(答え＋2)、ほかは 0。p_blind1＝max(p, p_resident)。本体の p は現行の判定のまま。指標は各ブロックの blind1（min50＝p_blind1、current＝同じ升の現行、resident＝常在の升だけ）。対象は軍艦で稼働状態は問わない",
   "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
   "occ-2": "撮影に occ-2 の行（quay_occ2/<地点>/YYYY-MM.csv、sat/occ2）があれば、升に p_occ2（占有の確率。較正前は a=logit(事前)・b=1・c=0 の仮置き、盲域は blind_prior と λ=0.5 で混合）、p_test_occ2（検定の有意確率 P(T ≥ T_obs | 空)）、occ2_blind（occ-2 の盲域：空間の参照）、edge_offset_m・edge_source（基準 p10 の尾根の縁）、a1_target（検品 §1.2 で A-1 の線の地図に残した区間：A＝線の幾何、D＝艇溜まり）を併記。本体の p は現行の判定のまま。occ-2 の指標は各ブロックの occ2（p_occ ≥ 0.5、検定だけ p_test < 0.05、同じ升の現行 current）"
  },
