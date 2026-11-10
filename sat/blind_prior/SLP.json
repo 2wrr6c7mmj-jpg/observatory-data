@@ -1,0 +1,165 @@
+{
+ "version": "blind-1",
+ "site_id": "SLP",
+ "answers": "s2",
+ "source": "labels/SLP-s2-answers.csv・-oos-answers.csv（所有者の S2 の日の答え、verified 1。同日の答えが無い港）",
+ "rule": "答えが 3 撮影以上あり、在の割合が 0.75 以上の区間＝常在。p_blind＝(在＋1)／(答え＋2)、常在でなければ 0",
+ "target": "軍艦（50 m 以上の水上艦）。稼働状態は問わない。構造物・艀・浮体は所有者の答えで不在",
+ "scenes": [
+  "2025-04-16",
+  "2025-11-17",
+  "2025-12-27",
+  "2026-01-03",
+  "2026-02-20",
+  "2026-04-01",
+  "2026-05-31",
+  "2026-10-18"
+ ],
+ "n_resident": 1,
+ "sections": {
+  "1112325436:L:00": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "1112325436:R:00": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "1185822323:R:00": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "1185822323:R:01": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "1366235753:L:00": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "1366235753:L:01": {
+   "present": 0,
+   "answers": 7,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "14125006:L:23": {
+   "present": 3,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "14125006:L:51": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "14125866:L:01": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "14125866:L:03": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "14126402:L:01": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "14126554:L:03": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "158981836:R:00": {
+   "present": 4,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "158981836:R:12": {
+   "present": 5,
+   "answers": 7,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "158981837:R:06": {
+   "present": 7,
+   "answers": 8,
+   "resident": true,
+   "p_blind": 0.8
+  },
+  "230360728:R:02": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360728:R:03": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360733:L:00": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360733:L:02": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360735:L:00": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360735:L:01": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360737:L:00": {
+   "present": 0,
+   "answers": 7,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360737:L:02": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "230360738:L:01": {
+   "present": 1,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  }
+ }
+}

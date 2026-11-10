@@ -570,7 +570,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
                "oos": (not own) or (a.get("date") or s1[:10]) >= freeze}
         if s1_truth:
             row.update(s2_date=a.get("s2_date"), s2_dt_h=a.get("s2_dt_h"), note=a.get("note") or "")
-        pb = bp.p_blind(resident, a["section_id"], exclude_s1=s1)
+        pb = bp.p_blind(resident, a["section_id"], exclude_s1={s1, a.get("date") or s1[:10], a.get("s2_date") or ""})
         row.update(p_resident=pb, p_blind1=round(max(p, pb), 3))
         o2 = occ2.get(s1, {}).get(a["section_id"])
         row.update(p_occ2=None if o2 is None or o2.get("p_occ") is None else round(float(o2["p_occ"]), 3),
@@ -748,7 +748,10 @@ def meta(res: dict) -> dict:
     return {
         "generated_utc": res["generated_utc"],
         "version": EVAL_VERSION,
-        "files": {"presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）", "meta.json": "この定義と港別の表（table）"},
+        "files": {"presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）", "meta.json": "この定義と港別の表（table）",
+                  f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
+                                                 "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
+                                                 "地図の札は est-2 の warship_median にこれを足す。answers＝常在の表の出所（s1＝同日の答え、s2＝S2 の日の答え）。答えのある港だけ")},
         "target": res["target"],
         "truth_source": {"body": res.get("truth", "s2"), "other": (res.get("other_truth") or {}).get("truth"),
                          "note": "本体（total・sites・table）は truth_source.body の正解、other_truth は他方の正解で同じ指標。s2＝S2 の日の答えを直近の S1 に対応、s1＝S1 の撮影そのものの答え（確認ページ ?s1=1）。python -m sat.eval_presence --truth s1 で入れ替わる",
@@ -916,10 +919,54 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
         if old.get("rules") == rule_versions(sites):
             snapshot(out, sites, now)
             state = "updated"
-    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state}
+    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites)}
     if log:
-        log(f"eval/presence.json: {r['presence']} 升、写し {state}")
+        log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行")
     return r
+
+
+BLIND_DIR = "quay_blind"
+BLIND_COLUMNS = ("site_id", "acquired_utc", "blind_version", "answers", "resident_sections", "resident_seen", "warship_blind")
+
+
+def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
+    """blind-1 (2/3): {site_id: [row, ...]} for every stored est-2 scene of the sites that have a resident table (the owner's
+    answers, sat/blind_prior): the resident sections among the eligible ones, how many of them the count saw (the judge's
+    presence, as presence_table) and ``warship_blind``: the sum of the resident probability of the ones it did not see, rounded.
+    One section (about 150 m) stands for one warship of 50 m or more: a lower bound, ships abreast are not counted. The number is
+    added to est-2's warship_median for the map; est-2's own files are not touched."""
+    sites = sites or load_sites()
+    res: dict = {}
+    for site in sites:
+        sid = site["id"]
+        ans = bp.answers(out, sid)
+        prior = {sec: bp.p_blind(ans, sec) for sec in ans}
+        prior = {k: v for k, v in prior.items() if v > 0}
+        if not prior:
+            continue
+        tab = presence_table(out, [site], since="").get(sid) or {}
+        rows = []
+        for acq in sorted(tab):
+            mine = [k for k in sorted(prior) if k in tab[acq]]
+            rows.append({"site_id": sid, "acquired_utc": acq, "blind_version": bp.VERSION, "answers": bp.answers_source(out, sid),
+                         "resident_sections": len(mine), "resident_seen": sum(tab[acq][k] for k in mine),
+                         "warship_blind": int(sum(prior[k] for k in mine if not tab[acq][k]) + 0.5)})
+        if rows:
+            res[sid] = rows
+    return res
+
+
+def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
+    """Write quay_blind/<site>.csv (all stored scenes, rewritten whole: PU 0). Returns {site_id: number of rows}."""
+    res = blind_counts(out, sites)
+    for sid, rows in res.items():
+        d = out / BLIND_DIR
+        d.mkdir(parents=True, exist_ok=True)
+        with (d / f"{sid}.csv").open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=BLIND_COLUMNS, lineterminator="\n")
+            w.writeheader()
+            w.writerows(rows)
+    return {sid: len(rows) for sid, rows in res.items()}
 
 
 def compare_tables(old: dict, new: dict) -> dict:
@@ -962,6 +1009,7 @@ def main(argv=None) -> int:
         return 0
     res = evaluate(a.out, truth=a.truth)
     write(a.out, res)
+    write_blind(a.out)
     print(f"正解 {res['truth']}（other_truth {res['other_truth']['truth']}）", file=sys.stderr)
     for row in table(res):
         print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}"
