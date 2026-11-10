@@ -2674,13 +2674,13 @@
     },
     "QGZ": {
      "lines": {
-      "naval": 18,
+      "naval": 22,
       "civil": 0,
       "unknown": 0
      },
      "lines_version": "QGZ-quay-v1",
      "confidence": null,
-     "note": "berth false の線（2026-11-07、A-1）：海軍の区域にあるが艦の着かない線（鉤形の小桟橋 582517902、内港北西の作業場の岸 15387629 の一部）。区分は naval のまま、naval-1 の適用日以降は岸壁として数えず・判定せず・評価票にも入れない（sat/berths.py Berths.no_berth） 同じ way に複数の項があるときは最初に当たった項の class・conf が使われる（順序依存）。berth false の判定は順序に依らない",
+     "note": "berth false の線（2026-11-07、A-1）：海軍の区域にあるが艦の着かない線（鉤形の小桟橋 582517902、内港北西の作業場の岸 15387629 の一部。2026-11-10 追加：15388243 の区間 L:15、219848837 の区間 L:02・L:07、1564921419 の区間 R:00）。区分は naval のまま、naval-1 の適用日以降は岸壁として数えず・判定せず・評価票にも入れない（sat/berths.py Berths.no_berth） 同じ way に複数の項があるときは最初に当たった項の class・conf が使われる（順序依存）。berth false の判定は順序に依らない",
      "since_utc": "2026-11-01"
     },
     "QJG": {
@@ -7280,13 +7280,13 @@
   "presence_evaluation": {
    "file": "eval/presence.json",
    "meta": "eval/meta.json",
-   "version": "eval-presence-3",
+   "version": "eval-presence-4",
    "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
    "status": {
     "ZJG": "標本 57 撮影×区間（標本外 0）",
     "SYL": "標本外 19 撮影×区間（較正の流用）",
     "SLP": "標本外 141 撮影×区間（較正の流用）",
-    "QGZ": "標本外 148 撮影×区間（較正の流用）",
+    "QGZ": "標本外 124 撮影×区間（較正の流用）",
     "ZDH": "標本 0",
     "QDH": "標本 0",
     "LSN": "標本 0"

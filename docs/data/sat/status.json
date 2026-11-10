@@ -2064,54 +2064,218 @@
     "version": "naval-1"
    },
    "quay_result": "counted"
+  },
+  {
+   "site_id": "ZJG",
+   "acquired_utc": "2026-11-08T10:41:00Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 84,
+   "mask_version": "ZJG-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261108T104100_20261108T104125_005375_00A3F8_FB3D_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-10T13:41:56Z",
+   "processing_units": 1.8388748168945312,
+   "coverage": 0.998,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 7
+   },
+   "fixed": {
+    "structure": 3,
+    "registry": 0,
+    "registry_over_guard": 0,
+    "guarded": 0,
+    "point": 0,
+    "field": 0,
+    "high": 15,
+    "medium": 14,
+    "low": 2,
+    "no_baseline": 0,
+    "guarded_by": {
+     "naval_long": 0,
+     "naval_near": 0,
+     "yard_site": 0,
+     "yard_sector": 0,
+     "yard_line": 0
+    },
+    "version": "fix-2",
+    "revision": 2,
+    "registry_hash": ""
+   },
+   "window_excluded": {
+    "land": 0,
+    "pond": 2,
+    "enclosed": 1,
+    "anchorage": 11,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 1,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9386,
+    "water_fraction": 0.2654,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 536,
+    "clusters": 92,
+    "dropped_small": 52,
+    "dropped_vh": 6
+   },
+   "quay_excluded": {
+    "segments": 8,
+    "length_m": 720,
+    "max": 15,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "LSN",
+   "acquired_utc": "2026-11-09T09:48:11Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 98,
+   "mask_version": "LSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261109T094811_20261109T094828_005389_00A46F_3A96_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-10T13:42:24Z",
+   "processing_units": 1.61920166015625,
+   "coverage": 0.997,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 27
+   },
+   "fixed": {
+    "structure": 0,
+    "registry": 0,
+    "registry_over_guard": 0,
+    "guarded": 0,
+    "point": 0,
+    "field": 0,
+    "high": 9,
+    "medium": 27,
+    "low": 5,
+    "no_baseline": 0,
+    "guarded_by": {
+     "naval_long": 0,
+     "naval_near": 0,
+     "yard_site": 0,
+     "yard_sector": 0,
+     "yard_line": 0
+    },
+    "version": "fix-2",
+    "revision": 2,
+    "registry_hash": ""
+   },
+   "window_excluded": {
+    "land": 1,
+    "pond": 2,
+    "enclosed": 0,
+    "anchorage": 4,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 0,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9439,
+    "water_fraction": 0.23,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 483,
+    "clusters": 101,
+    "dropped_small": 54,
+    "dropped_vh": 6
+   },
+   "quay_excluded": {
+    "segments": 21,
+    "length_m": 3120,
+    "max": 57,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-08T12:07:56Z",
+  "run_utc": "2026-11-10T13:41:54Z",
   "sites": [
    {
     "site_id": "ZJG",
     "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
+    "catalog_items": 2,
+    "acquisitions": 2,
     "new": 1,
     "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 876.32
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "SYL",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 873.11
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "SLP",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 870.56
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "QGZ",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "ZDH",
@@ -2122,7 +2286,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "QDH",
@@ -2133,7 +2297,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "XSN",
@@ -2144,7 +2308,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "SWS",
@@ -2155,7 +2319,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "QJG",
@@ -2166,18 +2330,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 865.69
    },
    {
     "site_id": "LSN",
     "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 864.07
    },
    {
     "site_id": "XMN",
@@ -2188,7 +2352,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 864.07
    },
    {
     "site_id": "STU",
@@ -2199,7 +2363,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 864.07
    },
    {
     "site_id": "MAW",
@@ -2210,165 +2374,75 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 868.66
+    "budget_left_pu": 864.07
    }
   ],
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "SYL",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "SLP",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "QGZ",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "ZDH",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "QDH",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 1,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "XSN",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "SWS",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 1,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "QJG",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 1,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "LSN",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 1,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "XMN",
-    "days": 1,
-    "clear": 1,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 1.131,
-    "requests": 3
-   },
-   {
-    "site_id": "STU",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "MAW",
     "days": 1,
     "clear": 0,
     "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "older_mask": 1,
-    "processing_units": 0.005,
+    "processing_units": 0.009,
+    "requests": 2
+   },
+   {
+    "site_id": "SYL",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.015,
+    "requests": 2
+   },
+   {
+    "site_id": "SLP",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.012,
+    "requests": 2
+   },
+   {
+    "site_id": "QGZ",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "ZDH",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.014,
     "requests": 2
    }
   ],
-  "s2_requests": 16,
-  "s2_processing_units": 1.136,
-  "requests": 33,
-  "processing_units": 10.634,
+  "error": "Sentinel Hub がアクセスを拒否（HTTP 403）。アカウントの権限か無料枠を確かめてください: {\"error\":{\"status\":403,\"reason\":\"Forbidden\",\"message\":\"Invalid or expired account.\",\"code\":\"COMMON_INSUFFICIENT_PERMISSIONS\"}}",
+  "requests": 27,
+  "processing_units": 3.515,
   "pu_source": "header",
-  "scenes": 4,
-  "month_pu_before": 121.838,
+  "scenes": 2,
+  "month_pu_before": 132.472,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-08T12:07:56Z",
+ "updated_utc": "2026-11-10T13:41:54Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
