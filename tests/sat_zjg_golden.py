@@ -168,9 +168,18 @@ def rows_of(name):
     with (out / name).open(encoding="utf-8") as f:
         return list(csv.DictReader(f))
 sha = lambda x: hashlib.sha256(json.dumps(x, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
-ADDED_COLS = ("harbour_small", "quay_small")   # size-1 (2026-11-06): new columns, empty in the past rows
-past = {n: sha([{k: v for k, v in r.items() if not (k in ADDED_COLS and v == "")} for r in rows_of(n) if is_past(r)])
+# size-1 (2026-11-06): columns the code of 9e86565 does not know and drops when it rewrites the file. Empty in the rows
+# before size-1, filled in Zhanjiang's own daily scenes since 2026-11-07 (a past row here from the run of 2026-11-08):
+# the old/new comparison of the past rows leaves these columns out, and ``past_kept`` checks them on the new code.
+ADDED_COLS = ("harbour_small", "quay_small")
+past = {n: sha([{k: v for k, v in r.items() if k not in ADDED_COLS} for r in rows_of(n) if is_past(r)])
         for n in ("quay_counts.csv", "ship_counts.csv")}
+def src_rows(name):
+    with (src / name).open(encoding="utf-8") as f:
+        return [r for r in csv.DictReader(f) if is_past(r)]
+# every column of the past rows, as copied in: True when this code rewrote none of them (False for 9e86565: no size-1 columns)
+past_kept = {n: [{k: v for k, v in r.items() if v != ""} for r in rows_of(n) if is_past(r)]
+                == [{k: v for k, v in r.items() if v != ""} for r in src_rows(n)] for n in ("quay_counts.csv", "ship_counts.csv")}
 new_quay = [{k: r.get(k) for k in ("acquired_utc", "relative_orbit", "quay_version", "occupied_min", "occupied_max",
                                    "sector_a_min", "sector_a_max", "sector_b_min", "sector_b_max", "est_mode", "est_warship_mode")}
             for r in rows_of("quay_counts.csv") if is_fake(r)]
@@ -199,7 +208,7 @@ print(json.dumps({"rc": rc, "files": files, "class_rows": class_rows, "naval_can
                   "quay_results": [s.get("quay_result") for s in scenes],
                   "excluded": [{k: s.get(k) for k in ("quay_excluded", "quay_band_excluded")} for s in scenes],
                   "window_excluded": [s.get("window_excluded") for s in scenes], "candidates": cand, "anchorage_rows": anch,
-                  "past": past, "new_quay": new_quay, "new_ship": new_ship, "new_lines": new_lines,
+                  "past": past, "past_kept": past_kept, "new_quay": new_quay, "new_ship": new_ship, "new_lines": new_lines,
                   "est2_version": sorted({r["est2_version"] for r in e2}), "est2_rows": len(e2),
                   "est2_warship": [(r["acquired_utc"], r["warship_median"]) for r in e2]}, ensure_ascii=False))
 '''
@@ -271,9 +280,10 @@ def main() -> int:
     added = sorted(k for k in set(n) - set(o) if not k.startswith("chips/"))  # chips/ = the site's chip index (new)
     removed = sorted(set(o) - set(n))
     unexpected = sorted(set(differ) - BERTH_CHANGED)
-    ok = not unexpected and added == sorted(NEW_FILES) and not removed and old["past"] == new["past"]
+    ok = (not unexpected and added == sorted(NEW_FILES) and not removed and old["past"] == new["past"]
+          and all(new["past_kept"].values()))
     print(json.dumps({"files": len(o), "differ": differ, "unexpected": unexpected, "added": added,
-                      "expected_added": sorted(NEW_FILES), "removed": removed, "past_rows_same": old["past"] == new["past"],
+                      "expected_added": sorted(NEW_FILES), "removed": removed, "past_rows_same": old["past"] == new["past"], "past_kept": new["past_kept"],
                       "quay_results": new["quay_results"], "old_quay": old["new_quay"], "new_quay": new["new_quay"],
                       "old_ship": old["new_ship"], "new_ship": new["new_ship"], "old_lines": old["new_lines"],
                       "new_lines": new["new_lines"], "excluded": new["excluded"], "ok": ok}, ensure_ascii=False))
@@ -284,7 +294,8 @@ def main() -> int:
     differ = sorted(k for k in set(a["files"]) & set(b["files"]) if a["files"][k] != b["files"][k] and not k.startswith("chips/"))
     added = sorted(k for k in set(b["files"]) - set(a["files"]) if not k.startswith("chips/"))
     unexpected = sorted(set(differ) - NAVAL_CHANGED)
-    ok = not unexpected and added == sorted(NAVAL_NEW_FILES) and a["past"] == b["past"]
+    ok = (not unexpected and added == sorted(NAVAL_NEW_FILES) and a["past"] == b["past"]
+          and all(a["past_kept"].values()) and all(b["past_kept"].values()))
     print(json.dumps({"naval": True, "differ": differ, "unexpected": unexpected, "added": added,
                       "win_ship": a["new_ship"], "naval_ship": b["new_ship"], "class_rows": b["class_rows"],
                       "win_quay": a["new_quay"], "naval_quay": b["new_quay"], "ok": ok}, ensure_ascii=False))
