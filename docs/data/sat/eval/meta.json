@@ -1,9 +1,10 @@
 {
- "generated_utc": "2026-11-10T15:54:11Z",
+ "generated_utc": "2026-11-10T17:34:01Z",
  "version": "eval-presence-5",
  "files": {
   "presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）",
   "meta.json": "この定義と港別の表（table）",
+  "../quay_naval50.csv": "naval50-1：地図の札の数。撮影ごとに、軍の着く線（naval-1）の上の片のうち船の長さが 50 m 以上のものを、艦種の重みや区画の役割で割り引かずに数える（ユーザーの決定 2026-11-11）。warship_50＝Σ k×c_mean×p_real の四捨五入（k＝縦に並ぶ数、c_mean＝横抱きの列数の期待値、p_real＝にじみでない確率）、stretches_50＝数えた片の数、warship_est2＝est-2 の中央値（割り引いた数）、ships_all＝全長・全種の中央値",
   "../quay_blind/<地点>.csv": "blind-1：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。地図の札は est-2 の warship_median にこれを足す。answers＝常在の表の出所（s1＝同日の答え、s2＝S2 の日の答え）。答えのある港だけ"
  },
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
