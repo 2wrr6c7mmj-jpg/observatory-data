@@ -18,6 +18,18 @@ class Naval50(unittest.TestCase):
         self.assertEqual(n, 4)
         self.assertAlmostEqual(total, 1.11 + 3.0 + 0.6 + 1.0)
         self.assertEqual(ep.naval50_sum([]), (0, 0.0))
+        # a lower line (the maritime garrison ports, 40 m): the 44 m boats count, the 37 m ones do not
+        boats = [{"ship_length_m": 44, "k": 4, "c_mean": 1.05, "p_real": 1.0}, {"ship_length_m": 37, "k": 3, "c_mean": 1.0, "p_real": 1.0}]
+        self.assertEqual(ep.naval50_sum(boats), (0, 0.0))
+        n, total = ep.naval50_sum(boats, 40.0)
+        self.assertEqual(n, 1)
+        self.assertAlmostEqual(total, 4.2)
+
+    def test_length_line_per_site(self):
+        self.assertEqual(set(ep.NAVAL50_MIN_LEN), {"STU", "XMN", "SWS"})          # the maritime garrison ports only
+        self.assertTrue(all(v == 40.0 for v in ep.NAVAL50_MIN_LEN.values()))
+        for r in ep.naval50_counts(ep.OUT):
+            self.assertEqual(r["min_length_m"], "40" if r["site_id"] in ep.NAVAL50_MIN_LEN else "50", r["site_id"])
 
     def test_stored_scenes(self):
         rows = ep.naval50_counts(ep.OUT)

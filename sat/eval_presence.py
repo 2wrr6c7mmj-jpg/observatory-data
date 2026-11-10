@@ -752,7 +752,8 @@ def meta(res: dict) -> dict:
                   f"../{NAVAL50_FILE}": (f"{NAVAL50_VERSION}：地図の札の数。撮影ごとに、軍の着く線（naval-1）の上の片のうち船の長さが {MIN_LENGTH_M:g} m 以上のものを、"
                                          "艦種の重みや区画の役割で割り引かずに数える（ユーザーの決定 2026-11-11）。warship_50＝Σ k×c_mean×p_real の四捨五入"
                                          "（k＝縦に並ぶ数、c_mean＝横抱きの列数の期待値、p_real＝にじみでない確率）、stretches_50＝数えた片の数、"
-                                         "warship_est2＝est-2 の中央値（割り引いた数）、ships_all＝全長・全種の中央値"),
+                                         "warship_est2＝est-2 の中央値（割り引いた数）、ships_all＝全長・全種の中央値、min_length_m＝その港の長さの線引き"
+                                         f"（既定 {MIN_LENGTH_M:g} m。水警区の港 {'・'.join(sorted(NAVAL50_MIN_LEN))} は {min(NAVAL50_MIN_LEN.values()):g} m：022 型ミサイル艇など小型の戦闘艦艇が主のため。列名は warship_50 のまま）"),
                   f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
                                                  "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
                                                  "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）")},
@@ -975,8 +976,12 @@ def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
 
 
 NAVAL50_FILE = "quay_naval50.csv"
-NAVAL50_VERSION = "naval50-1"
-NAVAL50_COLUMNS = ("site_id", "acquired_utc", "naval50_version", "stretches_50", "warship_50", "warship_est2", "ships_all")
+NAVAL50_VERSION = "naval50-2"   # naval50-1 + the length line per site (NAVAL50_MIN_LEN) and the column min_length_m
+NAVAL50_COLUMNS = ("site_id", "acquired_utc", "naval50_version", "stretches_50", "warship_50", "warship_est2", "ships_all", "min_length_m")
+# The length line of a site when it is not MIN_LENGTH_M. The maritime garrison ports (水警区: the navy's coastal patrol units, not
+# the coast guard) are home to small combatants: the Type 022 missile boat is about 43 m, and at Shantou 20 ships were seen on the
+# naval berths against 2 of 50 m or more. User's decision 2026-11-11: lower the line to 40 m for these ports only.
+NAVAL50_MIN_LEN = {"STU": 40.0, "XMN": 40.0, "SWS": 40.0}
 
 
 def naval50_sum(stretches: list[dict], min_len: float = MIN_LENGTH_M) -> tuple[int, float]:
@@ -1012,10 +1017,11 @@ def naval50_counts(out: Path, sites: list[dict] | None = None) -> list[dict]:
             fs = {f.get("n"): f for f in scene_features(feats, sc)}
             kept = [st for st in sc.get("stretches") or []
                     if fs.get(st.get("n")) is not None and berths.feature_ok(b, fs[st.get("n")], fs[st.get("n")]["coords"])]
-            n50, total = naval50_sum(kept)
+            min_len = NAVAL50_MIN_LEN.get(sid, MIN_LENGTH_M)
+            n50, total = naval50_sum(kept, min_len)
             rows.append({"site_id": sid, "acquired_utc": acq, "naval50_version": NAVAL50_VERSION, "stretches_50": n50,
                          "warship_50": int(total + 0.5), "warship_est2": (sc.get("warship") or {}).get("median"),
-                         "ships_all": (sc.get("ships") or {}).get("median")})
+                         "ships_all": (sc.get("ships") or {}).get("median"), "min_length_m": f"{min_len:g}"})
     return rows
 
 

@@ -1,0 +1,51 @@
+{
+ "version": "blind-1",
+ "site_id": "QDH",
+ "answers": "ai",
+ "source": "labels/QDH-ai-answers.csv（AI の判断：保存済みの S2 の日と高解像度写真の目視。所有者の答えが入るまでの仮の表）",
+ "rule": "答えが 3 撮影以上あり、在の割合が 0.75 以上の区間＝常在。p_blind＝(在＋1)／(答え＋2)、常在でなければ 0",
+ "target": "軍艦（50 m 以上の水上艦）。稼働状態は問わない。構造物・艀・浮体は所有者の答えで不在",
+ "scenes": [
+  "2025-11-01",
+  "2025-11-28",
+  "2025-12-28",
+  "2026-02-14",
+  "2026-04-30",
+  "2026-09-04",
+  "2026-09-29",
+  "2026-10-21"
+ ],
+ "n_resident": 2,
+ "sections": {
+  "69732073:L:22": {
+   "present": 8,
+   "answers": 8,
+   "resident": true,
+   "p_blind": 0.9
+  },
+  "69732073:L:23": {
+   "present": 8,
+   "answers": 8,
+   "resident": true,
+   "p_blind": 0.9
+  },
+  "69732073:L:26": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "69732073:L:28": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  },
+  "69732073:L:29": {
+   "present": 0,
+   "answers": 8,
+   "resident": false,
+   "p_blind": 0.0
+  }
+ }
+}
