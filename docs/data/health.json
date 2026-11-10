@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-10T15:13:05Z",
+ "generated_utc": "2026-11-10T21:46:28Z",
  "state": "alert",
  "summary": {
   "ok": 9,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-10T13:41:54Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_age_h": 8.1,
    "data_date": "2026-11-09",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -121,7 +121,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-10T11:45:43Z",
-   "heartbeat_age_h": 3.5,
+   "heartbeat_age_h": 10.0,
    "data_date": "2026-11-09",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -144,10 +144,10 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-10T15:12:31Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 6.6,
    "data_date": "2026-11-10",
    "data_date_tz": "TWT",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -167,7 +167,7 @@
    "heartbeat_age_h": null,
    "data_date": "2026-10-30",
    "data_date_tz": "TWT",
-   "data_age_days": 11,
+   "data_age_days": 12,
    "state": "halt",
    "reasons": [
     {
@@ -188,7 +188,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-10T08:32:31Z",
-   "heartbeat_age_h": 6.7,
+   "heartbeat_age_h": 13.2,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 15,
@@ -212,7 +212,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-10T08:32:26Z",
-   "heartbeat_age_h": 6.7,
+   "heartbeat_age_h": 13.2,
    "data_date": "2026-11-10",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -230,7 +230,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-10T11:46:05Z",
-   "heartbeat_age_h": 3.5,
+   "heartbeat_age_h": 10.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -837,8 +837,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-08",
-   "version": "occ-2 / eval-presence-3 / eval-occ2-1（数え方は変えない。別系列、較正前）"
+   "date": "2026-11-11",
+   "version": "naval50-2 のまま（数え方は変えない）"
   }
  },
  "credits": [
