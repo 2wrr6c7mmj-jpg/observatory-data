@@ -51,6 +51,49 @@ class BlindPrior(unittest.TestCase):
         for p in sorted(bp.PRIOR_DIR.glob("*.json")):
             self.assertEqual(json.loads(p.read_text(encoding="utf-8")), bp.build(bp.OUT, p.stem), p.name)
 
+    def test_exclude_a_set_of_keys_and_s2_answers(self):
+        # a site without an S1 check: the S2 day's answers (key = the day); the judged cell's own day is left out
+        d = Path(tempfile.mkdtemp())
+        (d / "labels").mkdir()
+        (d / "labels" / "TST-s2-answers.csv").write_text(
+            "site_id,section_id,date,verified,verified_occupied\n" +
+            "".join(f"TST,a,2026-01-{day:02d},1,{1 if day <= 6 else 0}\n" for day in range(1, 9)) +
+            "TST,z,2026-01-01,0,1\n", encoding="utf-8")
+        self.assertEqual(bp.answers_source(d, "TST"), "s2")
+        ans = bp.answers(d, "TST")
+        self.assertEqual(bp.p_blind(ans, "a"), 0.7)
+        self.assertEqual(bp.p_blind(ans, "a", exclude_s1={"2026-01-01T10:00:00Z", "2026-01-01", ""}), 0.0)   # 5/7
+        self.assertEqual(bp.p_blind(ans, "a", exclude_s1={"2026-01-08"}), round(7 / 9, 3))                    # 6/7
+        self.assertNotIn("z", ans)
+        self.assertEqual(bp.build(d, "TST")["answers"], "s2")
+        # the S1 check wins when the site has one; no answers at all: no table
+        self.assertEqual(bp.answers_source(_answers([("a", 1, 1, 1)]), "TST"), "s1")
+        self.assertIsNone(bp.answers_source(Path(tempfile.mkdtemp()), "TST"))
+
+    def test_scene_counts_for_the_map(self):
+        res = ep.blind_counts(ep.OUT)
+        self.assertNotIn("ZJG", res)                      # Zhanjiang has no resident table: nothing is written for it
+        if not res:
+            self.skipTest("no site with answers")
+        for sid, rows in res.items():
+            prior = {k: v["p_blind"] for k, v in bp.build(ep.OUT, sid)["sections"].items() if v["resident"]}
+            for r in rows:
+                self.assertEqual(tuple(r), ep.BLIND_COLUMNS)
+                self.assertLessEqual(r["resident_seen"], r["resident_sections"])
+                self.assertLessEqual(r["resident_sections"], len(prior))
+                self.assertLessEqual(r["warship_blind"], r["resident_sections"] - r["resident_seen"])   # at most one ship per unseen section
+            # the published rows are the ones this code gives for the same scenes (a scene stored after the last refresh may be
+            # missing from the file: the daily run rewrites it, and a missing row must not stop the daily tests)
+            p = ep.OUT / ep.BLIND_DIR / f"{sid}.csv"
+            mine = {r["acquired_utc"]: {k: str(v) for k, v in r.items()} for r in rows}
+            pub = ep.read_csv(p)
+            self.assertTrue(pub, p.name)
+            for r in pub:
+                self.assertEqual(r, mine.get(r["acquired_utc"]), f"{p.name} {r['acquired_utc']}")
+        with tempfile.TemporaryDirectory() as d:          # an output folder without answers: no files
+            self.assertEqual(ep.write_blind(Path(d)), {})
+            self.assertFalse((Path(d) / ep.BLIND_DIR).exists())
+
     def test_beside_the_current_judge(self):
         rows = [{"y": 1, "p": 0.0, "p_any": 0.0, "p_resident": 0.9, "p_blind1": 0.9},    # a resident quay the count missed
                 {"y": 1, "p": 1.0, "p_any": 1.0, "p_resident": 0.0, "p_blind1": 1.0},

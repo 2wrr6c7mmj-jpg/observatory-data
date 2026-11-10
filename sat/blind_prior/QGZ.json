@@ -1,6 +1,7 @@
 {
  "version": "blind-1",
  "site_id": "QGZ",
+ "answers": "s1",
  "source": "labels/QGZ-s1-answers.csv（所有者の同日の答え、verified 1）",
  "rule": "答えが 3 撮影以上あり、在の割合が 0.75 以上の区間＝常在。p_blind＝(在＋1)／(答え＋2)、常在でなければ 0",
  "target": "軍艦（50 m 以上の水上艦）。稼働状態は問わない。構造物・艀・浮体は所有者の答えで不在",
