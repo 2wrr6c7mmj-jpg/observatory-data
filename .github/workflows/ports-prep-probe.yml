@@ -1,0 +1,41 @@
+name: PLAN ports prep probe (OSM only, PU 0)
+# 新しい港を毎日の取得に入れる前に要る OSM のデータ（tools/ports_prep.py）を取る probe。作業環境から Overpass に届かないため。
+# 陸マスク・岸壁線・周りの軍と港の区域（岸壁の軍・民の区分の根拠）の 3 つ。Copernicus は使わない（PU 0、秘密情報なし）。
+# probe/ports-prep-* ブランチへの push でだけ動く。対象は sat/sites.json のうち、その版の陸マスクがまだ無い港。
+# 結果（sat/masks/・probe-raw/）は同じ probe ブランチにだけ commit する。main は変えない。取り込むかは確かめてから PR で決める。
+on:
+  push:
+    branches: ['probe/ports-prep-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-ports-prep
+  cancel-in-progress: false
+jobs:
+  prep:
+    if: ${{ !contains(github.event.head_commit.message, '[ports-prep-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Land masks, quay lines and areas from OSM (one request at a time, 25 s apart)
+        run: |
+          python -m tools.ports_prep --sleep 25 2>&1 | tee "$RUNNER_TEMP/prep.log"
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text prep-log "$RUNNER_TEMP/prep.log"
+      - name: Commit to this probe branch only
+        if: always()
+        run: |
+          git add sat/masks probe-raw/berth-osm probe-raw/ports-prep
+          if git diff --cached --quiet; then exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 新しい港の陸マスク・岸壁線・周りの区域（OSM） [ports-prep-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
