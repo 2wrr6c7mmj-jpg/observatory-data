@@ -1801,18 +1801,19 @@
     "band_m": 80,
     "min_channel_m": 30
    },
+   "mask_water": "osm_polygons",
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
     {
      "id": "A1",
-     "name": "崖門水道の東岸の桟橋（約 900 m、岸と平行）",
+     "name": "崖門水道の東岸の桟橋（約 900 m、岸と平行）と北の小桟橋",
      "role": "naval",
      "bbox": [
-      113.072,
-      22.271,
+      113.071,
+      22.27,
       113.079,
-      22.283
+      22.289
      ],
      "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
     }
@@ -1886,6 +1887,7 @@
     "band_m": 80,
     "min_channel_m": 30
    },
+   "mask_water": "osm_polygons",
    "mask_version": 1,
    "quay_lines_version": 1,
    "sectors": [
@@ -2076,7 +2078,7 @@
       122.138,
       37.5145
      ],
-     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：確認寄りの推定（区画は仮）"
     }
    ],
    "sector_rest": {
@@ -2110,13 +2112,24 @@
    "home_unit": "護衛艦第 12 支隊",
    "sources": [
     {
+     "title": "OpenStreetMap way/1316037555「威海水警区」",
+     "url": "https://www.openstreetmap.org/way/1316037555",
+     "bbox": [
+      122.126,
+      37.5096,
+      122.1376,
+      37.5148
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0。tools/ports_prep.py の取得（probe/ports-prep-new-hq、2026-11-12）"
+    },
+    {
      "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0009「威海水警區」",
      "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
      "coord": "37.5128N 122.1365E",
      "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
     }
    ],
-   "note": "2026-11-12 追加（試行）。護衛艦第 12 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：溫約瑟の点（威海水警區）と、10 m の概観の桟橋。OSM の軍の地物は取得に失敗して未確認。概観では艦の影を確かめられていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。桟橋の型・艦種の重みは既定値（default-by-role）、est-2 の較正は湛江の流用（calib_source＝ZJG）。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+   "note": "2026-11-12 追加（試行）。護衛艦第 12 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「威海水警区」の区域（港の北岸と西岸）と桟橋 3 本。溫約瑟の点も同じ港。10 m の概観では艦の影を確かめられていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。桟橋の型・艦種の重みは既定値（default-by-role）、est-2 の較正は湛江の流用（calib_source＝ZJG）。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
   },
   {
    "id": "HYD",
@@ -2196,80 +2209,6 @@
     }
    ],
    "note": "2026-11-12 追加（試行）。護衛艦第 11 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：部隊の駐屯地が長海県の海洋島（中国語版 Wikipedia・知乎）。10 m の概観で太平湾の北西に桟橋 2 本。OSM に軍の区域は無く（雷達站 3 つだけ）、この桟橋が軍のものという裏付けは無い。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。桟橋の型・艦種の重みは既定値（default-by-role）、est-2 の較正は湛江の流用（calib_source＝ZJG）。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
-  },
-  {
-   "id": "CTU",
-   "name": "舟山・長塗（掃雷艦第 9 大隊）",
-   "group": "寧波舟山",
-   "kind": "naval",
-   "bbox": [
-    122.275,
-    30.2415,
-    122.297,
-    30.2605
-   ],
-   "center_lat": 30.251,
-   "center_lon": 122.286,
-   "pixel_m": 10,
-   "windows": {
-    "version": "win-1",
-    "since_utc": "2026-11-12",
-    "band_m": 80,
-    "min_channel_m": 30
-   },
-   "mask_version": 1,
-   "quay_lines_version": 1,
-   "sectors": [
-    {
-     "id": "A1",
-     "name": "長塗の水道の北岸（運動場のある施設の前の岸壁）",
-     "role": "naval",
-     "bbox": [
-      122.281,
-      30.2495,
-      122.291,
-      30.2535
-     ],
-     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
-    }
-   ],
-   "sector_rest": {
-    "id": "B",
-    "name": "それ以外",
-    "role": "other"
-   },
-   "baseline": {
-    "orbits": [],
-    "lookback_days": 365,
-    "max_scenes": 30,
-    "min_scenes": 24,
-    "note": "基準はまだ無い（probe/ports-baseline-new-* で作る）。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
-   },
-   "quay": {
-    "tuning_scenes": [],
-    "label_freeze_utc": "2026-12-15",
-    "class_weights": "CTU"
-   },
-   "s2": {
-    "enabled": true
-   },
-   "enabled": true,
-   "priority": 2,
-   "daily": false,
-   "publish": "trial",
-   "layout": "per_site",
-   "png": false,
-   "pu_month_cap": 6,
-   "provisional": true,
-   "home_unit": "掃雷艦第 9 大隊",
-   "sources": [
-    {
-     "title": "Wikipedia 中国語版「中国人民解放军东部战区海军」（部隊の駐屯地の記載、検索結果の抜粋で確認）",
-     "url": "https://zh.wikipedia.org/zh-hans/%E4%B8%9C%E6%B5%B7%E8%88%B0%E9%98%9F",
-     "note": "駐屯地の地名だけ。桟橋の位置は書いていない"
-    }
-   ],
-   "note": "2026-11-12 追加（試行）。掃雷艦第 9 大隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：部隊の駐屯地が長塗（中国語版 Wikipedia）。10 m の概観で水道の北岸に運動場のある施設と岸壁。OSM の軍の地物は取得に失敗して未確認で、桟橋の特定はできていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。桟橋の型・艦種の重みは既定値（default-by-role）、est-2 の較正は湛江の流用（calib_source＝ZJG）。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
   }
  ]
 }

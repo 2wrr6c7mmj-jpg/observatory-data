@@ -1,5 +1,5 @@
 {
- "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。 2026-10-30 追加：呉淞 SWS、南シナ海の美済 MIS・渚碧 SUB・永暑 FCR・永興 WDY（reef: true は海上の小範囲。礁の上の構造物は陸マスクの陸・構造物として固定物扱い、礁湖・港内の船を数える）。小さい 4 礁は OSM の地物が無く（南薫礁の礁の外形だけ）、今回は取らない。 2026-10-30 追加：滬東中華 HDZ、武船重工 WCS（OSM）。 2026-11-12 追加：監視範囲の外にあった配属部隊の軍港 12（PDG・NDS・DXE・BHI・XCD・LYG・JMN・HPU・HKG・WHI・HYD・CTU）。基準を作るために置く。",
+ "note": "湛江以外の中国海軍の主要な港（アーカイブ取得の試行、sat/port_archive.py）。形式は sat/sites.json と同じ（bbox は [西, 南, 東, 北]、10 m 格子）。毎日の処理（sat/run.py）はこのファイルを読まない。範囲は公開情報の座標を中心に、岸壁が入る最小限の矩形（約 4〜7 km 四方）として仮に置いたもの（provisional）。OSM の陸マスク（桟橋・防波堤）と最初の画像で岸壁が範囲内にあるかを確かめるまで、公開画面の地図には出さない。priority 1 を先に取り、2 は枠が足りる場合だけ取る。 2026-10-30 追加：SYL・ZDH・QDH を v2 に直した（旧版の結果はブランチに残す）。象山・広州（黄埔・龍穴）・廈門・汕頭・馬尾を追加。寧徳（三都澳）は海軍の地物の名前の付いた公開の座標を確かめられず取らない。 2026-10-30 追加：呉淞 SWS、南シナ海の美済 MIS・渚碧 SUB・永暑 FCR・永興 WDY（reef: true は海上の小範囲。礁の上の構造物は陸マスクの陸・構造物として固定物扱い、礁湖・港内の船を数える）。小さい 4 礁は OSM の地物が無く（南薫礁の礁の外形だけ）、今回は取らない。 2026-10-30 追加：滬東中華 HDZ、武船重工 WCS（OSM）。 2026-11-12 追加：監視範囲の外にあった配属部隊の軍港 11（PDG・NDS・DXE・BHI・XCD・LYG・JMN・HPU・HKG・WHI・HYD）。基準を作るために置く。",
  "sites": [
   {
    "id": "SYL",
@@ -1178,6 +1178,7 @@
    "center_lat": 22.279,
    "center_lon": 113.075,
    "pixel_m": 10,
+   "mask_water": "osm_polygons",
    "mask_version": 1,
    "enabled": true,
    "provisional": true,
@@ -1215,6 +1216,7 @@
    "center_lat": 23.0895,
    "center_lon": 113.421,
    "pixel_m": 10,
+   "mask_water": "osm_polygons",
    "mask_version": 1,
    "enabled": true,
    "provisional": true,
@@ -1302,13 +1304,24 @@
    "priority": 2,
    "sources": [
     {
+     "title": "OpenStreetMap way/1316037555「威海水警区」",
+     "url": "https://www.openstreetmap.org/way/1316037555",
+     "bbox": [
+      122.126,
+      37.5096,
+      122.1376,
+      37.5148
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0。tools/ports_prep.py の取得（probe/ports-prep-new-hq、2026-11-12）"
+    },
+    {
      "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0009「威海水警區」",
      "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
      "coord": "37.5128N 122.1365E",
      "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
     }
    ],
-   "note": "2026-11-12 追加。護衛艦第 12 支隊の軍港。位置の根拠：溫約瑟の点（威海水警區）と、10 m の概観の桟橋。OSM の軍の地物は取得に失敗して未確認。概観では艦の影を確かめられていない。基準（bl-1）を作るために置く（12 か月のアーカイブは取らない）"
+   "note": "2026-11-12 追加。護衛艦第 12 支隊の軍港。位置の根拠：OSM に「威海水警区」の区域（港の北岸と西岸）と桟橋 3 本。溫約瑟の点も同じ港。10 m の概観では艦の影を確かめられていない。基準（bl-1）を作るために置く（12 か月のアーカイブは取らない）"
   },
   {
    "id": "HYD",
@@ -1340,32 +1353,6 @@
     }
    ],
    "note": "2026-11-12 追加。護衛艦第 11 支隊の軍港。位置の根拠：部隊の駐屯地が長海県の海洋島（中国語版 Wikipedia・知乎）。10 m の概観で太平湾の北西に桟橋 2 本。OSM に軍の区域は無く（雷達站 3 つだけ）、この桟橋が軍のものという裏付けは無い。基準（bl-1）を作るために置く（12 か月のアーカイブは取らない）"
-  },
-  {
-   "id": "CTU",
-   "name": "舟山・長塗（掃雷艦第 9 大隊）",
-   "group": "寧波舟山",
-   "bbox": [
-    122.275,
-    30.2415,
-    122.297,
-    30.2605
-   ],
-   "center_lat": 30.251,
-   "center_lon": 122.286,
-   "pixel_m": 10,
-   "mask_version": 1,
-   "enabled": true,
-   "provisional": true,
-   "priority": 2,
-   "sources": [
-    {
-     "title": "Wikipedia 中国語版「中国人民解放军东部战区海军」（部隊の駐屯地の記載、検索結果の抜粋で確認）",
-     "url": "https://zh.wikipedia.org/zh-hans/%E4%B8%9C%E6%B5%B7%E8%88%B0%E9%98%9F",
-     "note": "駐屯地の地名だけ。桟橋の位置は書いていない"
-    }
-   ],
-   "note": "2026-11-12 追加。掃雷艦第 9 大隊の軍港。位置の根拠：部隊の駐屯地が長塗（中国語版 Wikipedia）。10 m の概観で水道の北岸に運動場のある施設と岸壁。OSM の軍の地物は取得に失敗して未確認で、桟橋の特定はできていない。基準（bl-1）を作るために置く（12 か月のアーカイブは取らない）"
   }
  ]
 }
