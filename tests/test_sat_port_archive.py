@@ -715,6 +715,7 @@ if __name__ == "__main__":
     unittest.main()
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
 class LocatePiersTest(unittest.TestCase):
     """locate-2: military outlines and every pier (named or not) for placing a port's range."""
 
