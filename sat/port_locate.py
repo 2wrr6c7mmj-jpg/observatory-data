@@ -3,8 +3,11 @@
 For each region of sat/port_regions.json (a wide box, about 15-40 km):
 - OpenStreetMap (Overpass): military=naval_base / landuse=military / industrial=shipyard / man_made=pier
   with a name, and their centres and outlines (a public source with coordinates).
-- One Sentinel-2 L2A natural-colour overview at ``--m`` metres (least cloudy mosaic of the last 120 days,
-  B04/B03/B02, about 1-3 PU) with a 0.01 degree grid, labels every 0.05 degree, and the OSM outlines drawn.
+- Every man_made=pier / quay / breakwater, named or not (locate-2): where ships can lie. Kept apart from the
+  named features (``piers``: those of 80 m or more, the longest first).
+- One Sentinel-2 L2A natural-colour overview at ``--m`` metres, or the region's own ``m`` (least cloudy mosaic
+  of the last 120 days, B04/B03/B02, about 1-4 PU) with a 0.01 degree grid, labels every 0.05 degree, the
+  military outlines (red) and the piers (cyan lines) drawn.
 
     python -m sat.port_locate --out DIR --budget-month YYYY-MM --cap PU --global-cap PU --ocean-cap PU \
         [--global-margin PU] [--usage CSV ...] [--ports-usage CSV ...] [--m 30]
@@ -53,7 +56,7 @@ def overpass_query(b: list[float]) -> str:
             f'nwr["industrial"="shipyard"]{bb};'
             f'nwr["landuse"="industrial"]["name"~"船|Shipyard|shipyard|Shipbuilding"]{bb};'
             f'nwr["natural"~"^(reef|island|islet)$"]["name"]{bb};'
-            f'nwr["man_made"~"^(pier|breakwater)$"]["name"]{bb};'
+            f'way["man_made"~"^(pier|quay|breakwater)$"]{bb};'
             f');out tags geom;')
 
 
@@ -82,21 +85,65 @@ def outlines(el: dict) -> list[list[tuple[float, float]]]:
     return []
 
 
+PIER_MIN_M = 80.0
+PIERS_KEPT = 150
+
+
+def _length_m(pts: list[tuple[float, float]]) -> float:
+    if len(pts) < 2:
+        return 0.0
+    mlat, mlon = m_per_deg(sum(p[1] for p in pts) / len(pts))
+    return float(sum(np.hypot((b[0] - a[0]) * mlon, (b[1] - a[1]) * mlat) for a, b in zip(pts, pts[1:])))
+
+
+def _is_pier(tags: dict) -> bool:
+    return tags.get("man_made") in ("pier", "quay", "breakwater")
+
+
 def summarize(osm: dict) -> list[dict]:
+    """Named features and military / shipyard areas (not the unnamed piers: see ``piers``)."""
     out = []
     for el in osm.get("elements") or []:
         tags = el.get("tags") or {}
+        if _is_pier(tags) and not tags.get("name"):
+            continue
         pts = [p for o in outlines(el) for p in o]
         if not pts:
             continue
         lon = [p[0] for p in pts]
         lat = [p[1] for p in pts]
-        out.append({"osm": f"{el['type']}/{el['id']}", "name": tags.get("name") or tags.get("name:en") or "",
-                    "tags": {k: v for k, v in tags.items() if k in ("military", "landuse", "industrial", "name:en", "operator")},
-                    "center": [round((min(lon) + max(lon)) / 2, 5), round((min(lat) + max(lat)) / 2, 5)],
-                    "bbox": [round(min(lon), 5), round(min(lat), 5), round(max(lon), 5), round(max(lat), 5)]})
+        item = {"osm": f"{el['type']}/{el['id']}", "name": tags.get("name") or tags.get("name:en") or "",
+                "tags": {k: v for k, v in tags.items() if k in ("military", "landuse", "industrial", "name:en", "operator")},
+                "center": [round((min(lon) + max(lon)) / 2, 5), round((min(lat) + max(lat)) / 2, 5)],
+                "bbox": [round(min(lon), 5), round(min(lat), 5), round(max(lon), 5), round(max(lat), 5)]}
+        if tags.get("military") or tags.get("landuse") == "military":
+            ring = max(outlines(el), key=len)
+            step = max(1, len(ring) // 60)
+            item["outline"] = [[round(x, 5), round(y, 5)] for x, y in ring[::step]]
+        out.append(item)
     out.sort(key=lambda x: (x["tags"].get("military") is None, -((x["bbox"][2] - x["bbox"][0]) * (x["bbox"][3] - x["bbox"][1]))))
     return out
+
+
+def piers(osm: dict) -> list[dict]:
+    """Every pier, quay and breakwater of PIER_MIN_M or more (a closed way counts half its outline), the longest first."""
+    out = []
+    for el in osm.get("elements") or []:
+        tags = el.get("tags") or {}
+        if el.get("type") != "way" or not _is_pier(tags) or not el.get("geometry"):
+            continue
+        pts = [(p["lon"], p["lat"]) for p in el["geometry"]]
+        length = _length_m(pts)
+        if len(pts) > 2 and pts[0] == pts[-1]:
+            length /= 2
+        if length < PIER_MIN_M:
+            continue
+        step = max(1, len(pts) // 12)
+        line = pts[::step] + ([pts[-1]] if (len(pts) - 1) % step else [])
+        out.append({"osm": f"way/{el['id']}", "kind": tags["man_made"], "name": tags.get("name") or "", "length_m": round(length),
+                    "line": [[round(x, 5), round(y, 5)] for x, y in line]})
+    out.sort(key=lambda x: -x["length_m"])
+    return out[:PIERS_KEPT]
 
 
 def overview(client, b: list[float], m: float, now: datetime) -> tuple[np.ndarray, float]:
@@ -115,7 +162,7 @@ def overview(client, b: list[float], m: float, now: datetime) -> tuple[np.ndarra
     return png.decode(data), pu
 
 
-def draw(rgb: np.ndarray, b: list[float], feats: list[dict], title: str, credit: str = "") -> bytes:
+def draw(rgb: np.ndarray, b: list[float], feats: list[dict], title: str, credit: str = "", pier_lines: list[dict] | None = None) -> bytes:
     from PIL import Image, ImageDraw
     from .color import _font
     h, w = rgb.shape[:2]
@@ -137,10 +184,16 @@ def draw(rgb: np.ndarray, b: list[float], feats: list[dict], title: str, credit:
         d.line([(0, y), (w, y)], fill=(255, 255, 0) if major else (120, 120, 0), width=1)
         if major:
             d.text((2, y + 2), f"{k / 100:.2f}N", fill=(255, 255, 0), font=font)
+    for p in pier_lines or []:
+        if len(p["line"]) > 1:
+            d.line([(X(x), Y(y)) for x, y in p["line"]], fill=(0, 255, 255), width=1)
     for i, f in enumerate(feats[:40]):
         col = (255, 60, 60) if f["tags"].get("military") or f["tags"].get("landuse") == "military" else (60, 200, 255)
         x0, y0, x1, y1 = X(f["bbox"][0]), Y(f["bbox"][3]), X(f["bbox"][2]), Y(f["bbox"][1])
-        d.rectangle([x0, y0, max(x1, x0 + 2), max(y1, y0 + 2)], outline=col, width=2)
+        if len(f.get("outline") or []) > 2:
+            d.line([(X(x), Y(y)) for x, y in f["outline"]] + [(X(f["outline"][0][0]), Y(f["outline"][0][1]))], fill=col, width=1)
+        else:
+            d.rectangle([x0, y0, max(x1, x0 + 2), max(y1, y0 + 2)], outline=col, width=1)
         d.text((x0 + 2, y1 + 1), str(i + 1), fill=col, font=font)
     d.text((4, h - 30 if credit else h - 16), title, fill=(255, 255, 255), font=font)
     if credit:
@@ -187,18 +240,22 @@ def main(argv=None) -> int:
         if (args.only and r["id"] not in args.only) or (not args.only and r.get("done")):
             continue
         b = r["bbox"]
+        m = float(r.get("m") or args.m)
         try:
-            feats = summarize(fetch(b))
+            osm = fetch(b)
+            feats, lines = summarize(osm), piers(osm)
         except Exception as e:
-            feats = []
+            feats, lines = [], []
             print(f"{r['id']}: OSM 失敗 {str(e)[:200]}", file=sys.stderr)
         time.sleep(10)
         pu = None
         stop = None
         try:
-            rgb, pu = overview(client, b, args.m, now)
-            (args.out / f"{r['id']}.webp").write_bytes(draw(rgb, b, feats, f"{r['id']} {r.get('name', '')} S2 L2A leastCC {OVERVIEW_DAYS}d",
-                                                            overview_credit(now)))
+            rgb, pu = overview(client, b, m, now)
+            (args.out / f"{r['id']}.webp").write_bytes(draw(rgb, b, feats, f"{r['id']} S2 L2A leastCC {OVERVIEW_DAYS}d {m:g} m",
+                                                            overview_credit(now), lines))
+            # the same picture without the drawing, to look at the piers themselves
+            (args.out / f"{r['id']}-plain.webp").write_bytes(draw(rgb, b, [], f"{r['id']} {m:g} m", overview_credit(now)))
         except pa.BudgetStop as e:
             stop = str(e)
             print(f"{r['id']}: {e}", file=sys.stderr)
@@ -206,8 +263,8 @@ def main(argv=None) -> int:
             raise
         except Exception as e:
             print(f"{r['id']}: S2 失敗 {str(e)[:200]}", file=sys.stderr)
-        res.append({"id": r["id"], "bbox": b, "pu": pu, "features": feats[:60]})
-        print(f"{r['id']}: OSM {len(feats)} 件、S2 {pu} PU", file=sys.stderr)
+        res.append({"id": r["id"], "bbox": b, "m": m, "pu": pu, "features": feats[:60], "piers": lines})
+        print(f"{r['id']}: OSM {len(feats)} 件・桟橋 {len(lines)} 本、S2 {pu} PU", file=sys.stderr)
         if stop:
             break
     prev = args.out / "locate.json"

@@ -1,0 +1,143 @@
+{
+ "site": "PDG",
+ "name": "上海・浦東（登陸艦第 5 支隊）",
+ "version": "naval-1",
+ "lines_version": "PDG-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-11T23:07:04Z",
+ "osm_base": "2026-11-11T22:19:28Z",
+ "osm_bbox": [
+  121.668,
+  31.2755,
+  121.734,
+  31.3345
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 494856183,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 727312449,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 816463224,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 821416111,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1203420081,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1237764831「登5支」（landuse=military）に含まれる",
+    "溫約瑟の地図 wen-0065「浦東基地(建造中)」まで 61 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1203420082,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM に区域は無いが、海軍の区画の中で溫約瑟の地図の海軍の地点に近い",
+   "basis": [
+    "溫約瑟の地図 wen-0065「浦東基地(建造中)」まで 514 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1203420083,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1237764831「登5支」（landuse=military）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1203420084,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 1203420082）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 1203420082（naval）と 5 m 以内で接続",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1203420085,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "海軍の線（way 1203420083）とつながる同じ桟橋の一部（OSM で別の way）",
+   "basis": [
+    "way 1203420083（naval）と 5 m 以内で接続",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1204087072,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "推定",
+   "why": "OSM に区域は無いが、海軍の区画の中で溫約瑟の地図の海軍の地点に近い",
+   "basis": [
+    "溫約瑟の地図 wen-0065「浦東基地(建造中)」まで 232 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 1489199494,
+   "kind": "quay",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1237764831「登5支」（landuse=military）に接する（23 m）",
+    "溫約瑟の地図 wen-0065「浦東基地(建造中)」まで 80 m",
+    "区画 A1（role naval）"
+   ]
+  }
+ ]
+}

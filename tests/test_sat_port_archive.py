@@ -118,7 +118,9 @@ class Clock:
         self.t += s
 
 
-GRADUATED_DAILY = {"SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"}  # 日次の地点になった港（sat/ports.json には範囲・マスクの一致のためだけに残る）
+GRADUATED_DAILY = {"SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW",
+                   # 2026-11-12：配属の表で監視範囲の外にあった部隊の軍港 11（基準のためだけに ports.json にある）
+                   "PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI", "HYD"}  # 日次の地点になった港（sat/ports.json には範囲・マスクの一致のためだけに残る）
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -711,3 +713,51 @@ class RunPortTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LocatePiersTest(unittest.TestCase):
+    """locate-2: military outlines and every pier (named or not) for placing a port's range."""
+
+    OSM = {"elements": [
+        {"type": "way", "id": 1, "tags": {"landuse": "military", "name": "某基地"},
+         "geometry": [{"lon": 120.0, "lat": 30.0}, {"lon": 120.01, "lat": 30.0}, {"lon": 120.01, "lat": 30.01}, {"lon": 120.0, "lat": 30.0}]},
+        {"type": "way", "id": 2, "tags": {"man_made": "pier"},      # unnamed, about 333 m
+         "geometry": [{"lon": 120.0, "lat": 30.0}, {"lon": 120.0, "lat": 30.003}]},
+        {"type": "way", "id": 3, "tags": {"man_made": "pier"},      # too short (about 33 m)
+         "geometry": [{"lon": 120.0, "lat": 30.0}, {"lon": 120.0, "lat": 30.0003}]},
+        {"type": "way", "id": 4, "tags": {"man_made": "quay", "name": "一号码头"},   # named: in both lists
+         "geometry": [{"lon": 120.0, "lat": 30.0}, {"lon": 120.002, "lat": 30.0}]},
+    ]}
+
+    def test_summary_keeps_named_and_military_with_outline(self):
+        from sat import port_locate as pl
+        feats = pl.summarize(self.OSM)
+        self.assertEqual([f["osm"] for f in feats], ["way/1", "way/4"])
+        self.assertEqual(len(feats[0]["outline"]), 4)
+        self.assertNotIn("outline", feats[1])
+
+    def test_piers_by_length(self):
+        from sat import port_locate as pl
+        got = pl.piers(self.OSM)
+        self.assertEqual([p["osm"] for p in got], ["way/2", "way/4"])
+        self.assertAlmostEqual(got[0]["length_m"], 333, delta=3)
+        self.assertEqual(got[1]["name"], "一号码头")
+
+    def test_query_asks_for_unnamed_piers(self):
+        from sat import port_locate as pl
+        q = pl.overpass_query([120.0, 30.0, 120.1, 30.1])
+        self.assertIn('way["man_made"~"^(pier|quay|breakwater)$"](30.0,120.0,30.1,120.1);', q)
+
+    def test_new_regions_are_small_enough(self):
+        from sat import port_locate as pl
+        from sat.grid import m_per_deg
+        regions = json.loads(pl.REGIONS_FILE.read_text(encoding="utf-8"))["regions"]
+        todo = [r for r in regions if not r.get("done")]
+        total = 0.0
+        for r in todo:
+            b, m = r["bbox"], float(r.get("m") or 30)
+            mlat, mlon = m_per_deg((b[1] + b[3]) / 2)
+            w, h = (b[2] - b[0]) * mlon / m, (b[3] - b[1]) * mlat / m
+            self.assertLessEqual(max(w, h), 2500, r["id"])     # the Process API's limit per side
+            total += w * h / 262144
+        self.assertLess(total, 60, "the overviews of the regions still to do, in PU")

@@ -1270,6 +1270,970 @@
     }
    ],
    "note": "試行（publish＝trial、試行ページのみ）・設定だけ（daily＝false）。毎日の実行に足りないもの：岸壁線 MAW-quay-v1（OSM、probe の sat/quay_lines.py で取得。作業環境から Overpass に届かないため未取得）。陸マスク MAW-land-v1（OSM、2026-10-30、probe/ports-baseline-oct-ops3 の docs/data/sat/ports/masks/ からそのまま）と基準は sat/ に入れた。範囲は港のアーカイブ（sat/ports.json）のまま。陸マスクは 2部の S2 との重ね合わせの確認がまだ。pu_month_cap 9 PU／月＝毎日の取得の月の見込み（S1 約 1.7 撮影／月×1.02 PU＋S2 約 7.3 日／月×(0.03＋0.35×0.85) PU＝約 4.1 PU）の約 2 倍（初回の 30 日さかのぼりを含む。2026-08〜10 の港のアーカイブの撮影数から）。区画は仮（naval 1 つと残り B。2部の調査が出たら直す）。桟橋の型・艦種の重みは湛江の値を流用（est-2 の較正も湛江、calib_source＝ZJG）。"
+  },
+  {
+   "id": "PDG",
+   "name": "上海・浦東（登陸艦第 5 支隊）",
+   "group": "上海",
+   "kind": "naval",
+   "bbox": [
+    121.688,
+    31.2955,
+    121.714,
+    31.3145
+   ],
+   "center_lat": 31.305,
+   "center_lon": 121.701,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "長江南岸の桟橋（約 1.4 km、岸と平行）と連絡橋",
+     "role": "naval",
+     "bbox": [
+      121.694,
+      31.298,
+      121.712,
+      31.313
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：確認寄りの推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-12-06〜2026-11-02、確度 3、probe/ports-baseline-new-hq（fea133b）） は PDG-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "PDG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "provisional": true,
+   "home_unit": "登陸艦第 5 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1237764831「登5支」",
+     "url": "https://www.openstreetmap.org/way/1237764831",
+     "bbox": [
+      121.68769,
+      31.29289,
+      121.70698,
+      31.30851
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0065「浦東基地(建造中)」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "31.3047N 121.697E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。登陸艦第 5 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「登5支」の軍の区域。10 m の概観で桟橋の川側に灰色の大型艦が複数並ぶ。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "NDS",
+   "name": "寧徳・三都澳（護衛艦第 15 支隊）",
+   "group": "寧徳",
+   "kind": "naval",
+   "bbox": [
+    119.674,
+    26.605,
+    119.696,
+    26.624
+   ],
+   "center_lat": 26.6145,
+   "center_lon": 119.685,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "南岸（城澳）の桟橋（約 850 m、連絡橋 3 本）",
+     "role": "naval",
+     "bbox": [
+      119.679,
+      26.612,
+      119.693,
+      26.62
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     142
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro142-bl-1（24 撮影、2026-01-09〜2026-10-31、確度 3、probe/ports-baseline-new-hq（fea133b）） は NDS-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "NDS"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "provisional": true,
+   "home_unit": "護衛艦第 15 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/853052454「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/853052454",
+     "bbox": [
+      119.68021,
+      26.60999,
+      119.68537,
+      26.61562
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0084「三都島基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "26.6376N 119.6869E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。護衛艦第 15 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に名前の無い軍の区域（営舎・運動場）と桟橋。三都島の南岸の軍の区域（way/853052450）は小さな桟橋だけで範囲に入れていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。軌道 69 の基準は 23 撮影で 24 に届かないので使わない（軌道 142 だけ）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "DXE",
+   "name": "寧波・大榭島（潜水艦第 22 支隊）",
+   "group": "寧波舟山",
+   "kind": "naval",
+   "bbox": [
+    121.95,
+    29.887,
+    121.982,
+    29.906
+   ],
+   "center_lat": 29.8965,
+   "center_lon": 121.966,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "大榭島の南岸の桟橋の並び（水道の北側）",
+     "role": "naval",
+     "bbox": [
+      121.954,
+      29.8955,
+      121.979,
+      29.9
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     171
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro171-bl-1（24 撮影、2025-12-30〜2026-11-02、確度 3、probe/ports-baseline-new-hq（fea133b）） は DXE-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "DXE"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "provisional": true,
+   "home_unit": "潜水艦第 22 支隊",
+   "sources": [
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0032「大榭島基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "29.8979N 121.963E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    },
+    {
+     "title": "OpenStreetMap way/1106950499「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/1106950499",
+     "bbox": [
+      121.95054,
+      29.90241,
+      121.95937,
+      29.90595
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。潜水艦第 22 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：溫約瑟の点と、10 m の概観で島の南岸に短い桟橋が並び細長い影が付く。OSM の軍の区域（way/1106950499）は島の内陸。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。区画 A1 の桟橋 8 本のうち 3 本は溫約瑟の点から 600 m を超えるので、同じ桟橋群として手で海軍（推定）にした（sat/berth_class/DXE.json）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "BHI",
+   "name": "北海（護衛艦第 18 支隊）",
+   "group": "北海",
+   "kind": "naval",
+   "bbox": [
+    109.064,
+    21.478,
+    109.084,
+    21.497
+   ],
+   "center_lat": 21.4875,
+   "center_lon": 109.074,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "地角の北端の T 字の桟橋",
+     "role": "naval",
+     "bbox": [
+      109.07,
+      21.4845,
+      109.079,
+      21.4895
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：確認寄りの推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     157
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro157-bl-1（24 撮影、2026-06-22〜2026-11-07、確度 3、probe/ports-baseline-new-hq（fea133b）） は BHI-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "BHI"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "護衛艦第 18 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1362984051「南部战区海军护卫舰第18支队」",
+     "url": "https://www.openstreetmap.org/way/1362984051",
+     "bbox": [
+      109.072,
+      21.4834,
+      109.0787,
+      21.48808
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0013「北海水警區」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "21.4703N 109.0462E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。護衛艦第 18 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「南部战区海军护卫舰第18支队」の区域と桟橋（way/1124328210、約 860 m）。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "XCD",
+   "name": "台山・下川島（潜水艦第 52 支隊）",
+   "group": "江門",
+   "kind": "naval",
+   "bbox": [
+    112.54,
+    21.59,
+    112.56,
+    21.609
+   ],
+   "center_lat": 21.5995,
+   "center_lon": 112.55,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "防波堤の内の桟橋 4 本",
+     "role": "naval",
+     "bbox": [
+      112.546,
+      21.595,
+      112.555,
+      21.604
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：確認寄りの推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     84,
+     11
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro84-bl-1（21 撮影、2026-01-05〜2026-11-08、確度 4、probe/ports-baseline-new-hq（fea133b））、ro11-bl-1（22 撮影、2025-12-31〜2026-11-03、確度 4、probe/ports-baseline-new2-hq（94c1bbf）） は XCD-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かないが、この港はどの軌道も 2026 年からの撮影しか無いので確度 4 で使う（24 に届いたら作り直す）。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "XCD"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "潜水艦第 52 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1077975921「下川岛基地」",
+     "url": "https://www.openstreetmap.org/way/1077975921",
+     "bbox": [
+      112.53572,
+      21.58878,
+      112.55687,
+      21.60857
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0018「台山下川島基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "21.5972N 112.5509E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。潜水艦第 52 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「下川岛基地」の区域と桟橋 4 本（121〜179 m）。溫約瑟の点も同じ湾。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。基準は 2 軌道とも 24 撮影に届かない（21・22 撮影、2026 年からの撮影しか無い）ので確度 4。24 に届いたら作り直す。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "LYG",
+   "name": "連雲港・連島（護衛艦第 13 支隊）",
+   "group": "連雲港",
+   "kind": "naval",
+   "bbox": [
+    119.447,
+    34.7445,
+    119.47,
+    34.7635
+   ],
+   "center_lat": 34.754,
+   "center_lon": 119.4585,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "西連島の南岸の桟橋 2 本",
+     "role": "naval",
+     "bbox": [
+      119.454,
+      34.75,
+      119.463,
+      34.758
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     69
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro69-bl-1（24 撮影、2025-10-24〜2026-11-07、確度 3、probe/ports-baseline-new-hq（fea133b）） は LYG-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "LYG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "護衛艦第 13 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1029933272「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/1029933272",
+     "bbox": [
+      119.4559,
+      34.75156,
+      119.46239,
+      34.75702
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。護衛艦第 13 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に名前の無い軍の区域（営舎・運動場）と桟橋 2 本（約 250 m・450 m）。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "JMN",
+   "name": "江門・崖門（掃雷艦第 10 大隊）",
+   "group": "江門",
+   "kind": "naval",
+   "bbox": [
+    113.065,
+    22.268,
+    113.085,
+    22.29
+   ],
+   "center_lat": 22.279,
+   "center_lon": 113.075,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_water": "osm_polygons",
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "崖門水道の東岸の桟橋（約 900 m、岸と平行）と北の小桟橋",
+     "role": "naval",
+     "bbox": [
+      113.071,
+      22.27,
+      113.079,
+      22.289
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     11
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro11-bl-1（24 撮影、2025-12-31〜2026-11-03、確度 3、probe/ports-baseline-new-hq（fea133b）） は JMN-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "JMN"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "provisional": true,
+   "home_unit": "掃雷艦第 10 大隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1091741553「（名前なし、military=base）」",
+     "url": "https://www.openstreetmap.org/way/1091741553",
+     "bbox": [
+      113.07374,
+      22.27255,
+      113.08113,
+      22.28863
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "Wikipedia 中国語版「中国人民解放军南部战区海军」（部隊の駐屯地の記載、検索結果の抜粋で確認）",
+     "url": "https://zh.wikipedia.org/zh-hans/%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B0%91%E8%A7%A3%E6%94%BE%E5%86%9B%E5%8D%97%E9%83%A8%E6%88%98%E5%8C%BA%E6%B5%B7%E5%86%9B",
+     "note": "駐屯地の地名だけ。桟橋の位置は書いていない"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。掃雷艦第 10 大隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に名前の無い軍の基地（military=base）と桟橋 2 本（約 940 m・860 m）。部隊の駐屯地は「江門新会」としか分からず、この基地がそれという裏付けは位置だけ。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "HPU",
+   "name": "広州・黄埔（護衛艦第 17 支隊）",
+   "group": "広州",
+   "kind": "naval",
+   "bbox": [
+    113.41,
+    23.08,
+    113.432,
+    23.099
+   ],
+   "center_lat": 23.0895,
+   "center_lon": 113.421,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_water": "osm_polygons",
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "長洲島の北岸の岸壁（4801 工場の並び）",
+     "role": "naval",
+     "bbox": [
+      113.414,
+      23.0875,
+      113.429,
+      23.0925
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     11
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro11-bl-1（24 撮影、2025-12-31〜2026-11-03、確度 3、probe/ports-baseline-new-hq（fea133b）） は HPU-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "HPU"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "護衛艦第 17 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/469207090「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/469207090",
+     "bbox": [
+      113.41691,
+      23.08036,
+      113.42332,
+      23.08981
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/469207123「中国人民解放军海军海军4801工厂」",
+     "url": "https://www.openstreetmap.org/way/469207123",
+     "bbox": [
+      113.42185,
+      23.08614,
+      113.42726,
+      23.09029
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0011「廣州水警區」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "23.089N 113.4174E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。護衛艦第 17 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM の軍の区域（way/469207090）と海軍 4801 工場が長洲島の北岸。溫約瑟の点も北岸。島の南東岸の区域（way/469207101）は名前が「中国海监第八支队」で、岸壁の船も白いので入れていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。岸壁の線は OSM の軍の区域（way/469207123・way/469207090）の外形の川に面した縁から引いた 3 本（sat/masks/HPU-manual.geojson、OSM に岸壁の線が無い）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "HKG",
+   "name": "香港・昂船洲（駐香港部隊）",
+   "group": "香港",
+   "kind": "naval",
+   "bbox": [
+    114.126,
+    22.307,
+    114.146,
+    22.326
+   ],
+   "center_lat": 22.3165,
+   "center_lon": 114.136,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "昂船洲の南岸の四角い港池",
+     "role": "naval",
+     "bbox": [
+      114.132,
+      22.3135,
+      114.139,
+      22.3195
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：確認寄りの推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     113,
+     11
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro113-bl-1（24 撮影、2026-01-07〜2026-11-10、確度 3、probe/ports-baseline-new-hq（fea133b））、ro11-bl-1（24 撮影、2025-12-31〜2026-11-03、確度 3、probe/ports-baseline-new2-hq（94c1bbf）） は HKG-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "HKG"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "駐香港部隊艦艇大隊",
+   "sources": [
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0027「駐港部隊 昂船洲海陸兩軍基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "22.3189N 114.1354E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    },
+    {
+     "title": "Wikipedia 中国語版「昂船洲海軍基地」",
+     "url": "https://zh.wikipedia.org/wiki/%E6%98%82%E8%88%B9%E6%B4%B2%E6%B5%B7%E8%BB%8D%E5%9F%BA%E5%9C%B0",
+     "note": "基地の所在"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。駐香港部隊艦艇大隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：昂船洲海軍基地（中国語版 Wikipedia、溫約瑟の点）。10 m の概観で防波堤に囲まれた港池。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。港池の岸は OSM で海岸線だけなので、区画 A1 の中の海岸線を岸壁に戻した（sat/berths.json）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "WHI",
+   "name": "威海（護衛艦第 12 支隊）",
+   "group": "威海",
+   "kind": "naval",
+   "bbox": [
+    122.12,
+    37.5015,
+    122.144,
+    37.5205
+   ],
+   "center_lat": 37.511,
+   "center_lon": 122.132,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "威海湾の北岸の港（東の桟橋 約 550 m と西の桟橋）",
+     "role": "naval",
+     "bbox": [
+      122.126,
+      37.5075,
+      122.138,
+      37.5145
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：確認寄りの推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     98
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro98-bl-1（24 撮影、2026-01-30〜2026-11-09、確度 3、probe/ports-baseline-new-hq（fea133b）） は WHI-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "WHI"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "護衛艦第 12 支隊",
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1316037555「威海水警区」",
+     "url": "https://www.openstreetmap.org/way/1316037555",
+     "bbox": [
+      122.126,
+      37.5096,
+      122.1376,
+      37.5148
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0。tools/ports_prep.py の取得（probe/ports-prep-new-hq、2026-11-12）"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0009「威海水警區」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "37.5128N 122.1365E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。護衛艦第 12 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「威海水警区」の区域（港の北岸と西岸）と桟橋 3 本。溫約瑟の点も同じ港。10 m の概観では艦の影を確かめられていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
+  },
+  {
+   "id": "HYD",
+   "name": "大連・海洋島（護衛艦第 11 支隊）",
+   "group": "大連",
+   "kind": "naval",
+   "bbox": [
+    123.144,
+    39.0585,
+    123.168,
+    39.0775
+   ],
+   "center_lat": 39.068,
+   "center_lon": 123.156,
+   "pixel_m": 10,
+   "windows": {
+    "version": "win-1",
+    "since_utc": "2026-10-01",
+    "band_m": 80,
+    "min_channel_m": 30
+   },
+   "mask_version": 1,
+   "quay_lines_version": 1,
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "太平湾の北西の岬の桟橋 2 本（約 200 m）",
+     "role": "naval",
+     "bbox": [
+      123.152,
+      39.0655,
+      123.158,
+      39.0705
+     ],
+     "source": "S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12）の目視と下の sources。確度：推定（区画は仮）"
+    }
+   ],
+   "sector_rest": {
+    "id": "B",
+    "name": "それ以外",
+    "role": "other"
+   },
+   "baseline": {
+    "orbits": [
+     98,
+     25
+    ],
+    "lookback_days": 365,
+    "max_scenes": 30,
+    "min_scenes": 24,
+    "note": "ro98-bl-1（24 撮影、2026-01-30〜2026-11-09、確度 3、probe/ports-baseline-new-hq（fea133b））、ro25-bl-1（24 撮影、2026-01-25〜2026-11-04、確度 3、probe/ports-baseline-new2-hq（94c1bbf）） は HYD-land-v1 で作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+   },
+   "quay": {
+    "tuning_scenes": [],
+    "label_freeze_utc": "2026-12-15",
+    "class_weights": "HYD"
+   },
+   "s2": {
+    "enabled": true
+   },
+   "enabled": true,
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "provisional": true,
+   "home_unit": "護衛艦第 11 支隊",
+   "sources": [
+    {
+     "title": "Wikipedia 中国語版「中国人民解放军北部战区海军」（部隊の駐屯地の記載、検索結果の抜粋で確認）",
+     "url": "https://zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B0%91%E8%A7%A3%E6%94%BE%E5%86%9B%E5%8C%97%E9%83%A8%E6%88%98%E5%8C%BA%E6%B5%B7%E5%86%9B",
+     "note": "駐屯地の地名だけ。桟橋の位置は書いていない"
+    },
+    {
+     "title": "OpenStreetMap node/13987965885「海洋岛雷达站(南)」ほか 2 つ",
+     "url": "https://www.openstreetmap.org/node/13987965885",
+     "note": "島に軍の地物があることだけ（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ],
+   "note": "2026-11-12 追加（試行）。護衛艦第 11 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：部隊の駐屯地が長海県の海洋島（中国語版 Wikipedia・知乎）。10 m の概観で太平湾の北西に桟橋 2 本。OSM に軍の区域は無く（雷達站だけ）、この桟橋が軍のものという裏付けは無い。旅客船の発着所（西の防波堤の先端）と漁港（湾の南東）とは別の場所。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。桟橋 2 本は OSM で海岸線の一部なので、桟橋の箱だけを岸壁に戻し、区分は海軍（推定、根拠は弱い：sat/berth_class/HYD.json）。西の防波堤は旅客船の発着所（OSM amenity=ferry_terminal）なので戻していない。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）"
   }
  ]
 }

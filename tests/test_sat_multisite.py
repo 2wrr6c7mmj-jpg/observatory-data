@@ -21,6 +21,10 @@ if np is not None:
     from tests import sat_zjg_golden
     from tests.test_sat_quay import FakeClient, scene_parts, ships
 
+# 2026-11-12: the home ports of the units the roster had outside every watched range, in the order of sites.json
+ROSTER_PORTS = ["PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI", "HYD"]
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class ZhanjiangUnchangedTest(unittest.TestCase):
     """The code before PR-1 (9e86565) and this code, on the same scenario and the same machine
@@ -498,14 +502,15 @@ class SanyaSitesTest(unittest.TestCase):
             self.assertEqual(bl[1]["credibility"], "3")
             self.assertEqual(meta["quay"]["est2_calib_source"], "ZJG" if quay_est2._P else "placeholder")
         self.assertEqual({"SYL": 40, "SLP": 30}, {sid: s[sid]["pu_month_cap"] for sid in ("SYL", "SLP")})
-        self.assertEqual({"ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"}, {y["id"] for y in run.load_sites() if run.runs_daily(y)})
+        self.assertEqual({"ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"} | set(ROSTER_PORTS),
+                         {y["id"] for y in run.load_sites() if run.runs_daily(y)})
 
     def test_blind_stretches_in_own_folder(self):
         """quay/blind.geojson keeps the shared-layout site (Zhanjiang) only; the new ports get their own file."""
         with tempfile.TemporaryDirectory() as d:
             out = Path(d)
             # SYL daily as in sites.json (the other ports are daily too but kept out here: each geometry takes seconds to a minute)
-            out_ids = ("SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW")
+            out_ids = ("SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW", *ROSTER_PORTS)
             sites = [{**x, "daily": False} if x["id"] in out_ids else x for x in run.load_sites()]
             # blind stretches are summarised for daily sites only: ports with daily false give none
             self.assertEqual(run.blind_summary([x for x in sites if x["id"] in out_ids]), [])
@@ -654,7 +659,8 @@ class QingdaoZhoushanSitesTest(unittest.TestCase):
                 self.assertEqual((int(bl["scenes"]), bl["credibility"]), (24, "3"))
                 self.assertEqual(sum(1 for sc in bl["scene_list"] if sc.get("used")), 24)
                 self.assertIn("Copernicus Sentinel data", bl["credit"])
-        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)], ["ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"])
+        self.assertEqual([y["id"] for y in run.load_sites() if run.runs_daily(y)],
+                         ["ZJG", "SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW"] + ROSTER_PORTS)
 
     def test_sectors(self):
         s = self.sites()
@@ -873,13 +879,133 @@ class AllPortsTest(unittest.TestCase):
         """Every site's cap together (plus Zhanjiang's ~25 PU a month) stays well inside the run's 1,000 PU (aim: 600)."""
         s = self.sites()
         caps = {sid: x["pu_month_cap"] for sid, x in s.items() if sid != "ZJG"}
-        self.assertEqual(set(caps), set(self.EXPECT) | {"SYL", "SLP", "QGZ", "ZDH"})
+        self.assertEqual(set(caps), set(self.EXPECT) | {"SYL", "SLP", "QGZ", "ZDH"} | set(RosterPortsTest.EXPECT))
         self.assertLessEqual(sum(caps.values()) + 25, 600)
         self.assertLess(sum(caps.values()) + 25, run.MONTHLY_PU_CAP)
         # only the sites with all three (mask, baseline per orbit, quay lines) are daily
         for sid, x in s.items():
             ready = run.site_meta(x)["quay"]["ready"] and Grid.for_site(x) is not None
             self.assertEqual(run.runs_daily(x), ready, sid)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class RosterPortsTest(unittest.TestCase):
+    """2026-11-12：配属の表（docs/data/ref/plan-fleet.csv）で監視範囲の外にあった部隊の軍港 11。位置の特定（sat/port_locate.py
+    locate-2）→ 陸マスク・岸壁線・周りの区域（tools/ports_prep.py）→ 基準（probe/ports-baseline-new-hq・new2-hq）→ 区分。
+    daily true。下川島 XCD だけ基準が 24 撮影に届かず確度 4（どの軌道も 2026 年からの撮影しか無い）。"""
+
+    EXPECT = {  # site: (baseline orbits, their credibility, pu_month_cap)
+        "PDG": ([171], "3", 8), "NDS": ([142], "3", 8), "DXE": ([171], "3", 8), "BHI": ([157], "3", 6),
+        "XCD": ([84, 11], "4", 6), "LYG": ([69], "3", 6), "JMN": ([11], "3", 8), "HPU": ([11], "3", 6),
+        "HKG": ([113, 11], "3", 6), "WHI": ([98], "3", 6), "HYD": ([98, 25], "3", 6),
+    }
+
+    def setUp(self):
+        self.assertEqual(list(self.EXPECT), ROSTER_PORTS)
+        self.sites = {s["id"]: s for s in run.load_sites()}
+        root = Path(__file__).resolve().parents[1]
+        self.root = root
+        self.ports = {p["id"]: p for p in json.loads((root / "sat" / "ports.json").read_text(encoding="utf-8"))["sites"]}
+
+    def test_settings_masks_baselines(self):
+        from sat import berths
+        for sid, (orbits, cred, cap) in self.EXPECT.items():
+            x = self.sites[sid]
+            self.assertEqual((x["kind"], x["publish"], x["layout"], x["png"], x["mask_version"], x["quay_lines_version"],
+                              x["provisional"], x["pu_month_cap"]), ("naval", "trial", "per_site", False, 1, 1, True, cap), sid)
+            self.assertIs(x["daily"], True, sid)
+            run.validate_site(x)
+            for k in ("bbox", "center_lat", "center_lon", "mask_version", "sources"):
+                self.assertEqual(x[k], self.ports[sid][k], (sid, k))
+            self.assertEqual([c["role"] for c in run.site_sectors(x)], ["naval", "other"], sid)
+            self.assertIn("区画は仮", x["sectors"][0]["source"], sid)
+            self.assertTrue(x["home_unit"], sid)
+            self.assertTrue(x["sources"] and all(c["url"].startswith("https://") for c in x["sources"]), sid)
+            # the rules hold from the first backfilled scene (30 days): windows and naval-1
+            self.assertEqual(x["windows"]["since_utc"], "2026-10-01", sid)
+            self.assertEqual(berths.naval_since(sid), "2026-10-01", sid)
+            lines = quay_lines.load(sid, 1)
+            self.assertEqual((lines["version"], lines["bbox"]), (f"{sid}-quay-v1", x["bbox"]), sid)
+            self.assertIn("ODbL", lines["license"])
+            self.assertEqual(sum(lines["counts"].values()), len(lines["ways"]), sid)
+            mask, info = run.load_mask(sid, 1)
+            g = Grid.for_site(x)
+            self.assertEqual(mask.shape, (g.height, g.width), sid)
+            self.assertEqual(info["bbox"], x["bbox"], sid)
+            self.assertEqual(x["baseline"]["orbits"], orbits, sid)
+            for o in orbits:
+                bl = baseline.load(x, o)[1]
+                self.assertEqual((bl["mask_version"], bl["bbox"], bl["width"], bl["height"]),
+                                 (run.mask_tag(x), x["bbox"], g.width, g.height), (sid, o))
+                self.assertEqual(bl["credibility"], cred, (sid, o))
+                self.assertTrue(24 == int(bl["scenes"]) if cred == "3" else 21 <= int(bl["scenes"]) < 24, (sid, o))
+                self.assertIn("Copernicus Sentinel data", bl["credit"])
+            meta = run.site_meta(x)
+            self.assertEqual(meta["quay"]["baselines_present"], orbits, sid)
+            self.assertEqual(meta["quay"]["lacks"], [], sid)
+            self.assertTrue(meta["quay"]["ready"], sid)
+            self.assertEqual(meta["mode"], "毎日の取得")
+            self.assertTrue(run.runs_daily(x), sid)
+
+    def test_naval_berths_in_the_naval_sector(self):
+        """Every port has a naval berth line whose points lie in sector A1 (else the headline could never count a ship)."""
+        from sat import berths
+        for sid in self.EXPECT:
+            x = self.sites[sid]
+            a = x["sectors"][0]["bbox"]
+            lines = quay_lines.load(sid, 1)
+            b = berths.Berths(x, lines, naval=True)
+            self.assertIsNotNone(b.classes, sid)
+            hit = 0
+            for w in lines["ways"]:
+                for lon, lat in w["coords"]:
+                    if (a[0] <= lon <= a[2] and a[1] <= lat <= a[3] and b.point_ok(w["kind"], w["id"], lon, lat)
+                            and b.line_class(w["id"], lon, lat) == "naval"):
+                        hit += 1
+            self.assertGreater(hit, 1, sid)
+
+    def test_drawn_and_restored_lines(self):
+        from sat import berths
+        # Huangpu: a river bank without a coastline way; three quay lines follow the outlines of OSM's military areas
+        lines = quay_lines.load("HPU", 1)
+        self.assertEqual(sorted(w["id"] for w in lines["ways"] if w["id"] < 0), [-3, -2, -1])
+        self.assertEqual(lines["manual"]["ids"], [-1, -2, -3])
+        gj = json.loads((self.root / lines["manual"]["file"]).read_text(encoding="utf-8"))
+        drawn = {w["id"]: w["coords"] for w in lines["ways"] if w["id"] < 0}
+        for f in gj["features"]:
+            self.assertEqual(f["geometry"]["coordinates"], drawn[f["properties"]["id"]])
+            self.assertIn("OpenStreetMap way/", f["properties"]["source"])
+        self.assertEqual(run.manual_line_credits(self.sites["HPU"]), [])   # from OSM outlines: no imagery credit
+        # Stonecutters and Haiyang Island: the berths are coastline in OSM, put back by sat/berths.json
+        for sid, way in (("HKG", 110774390), ("HYD", 16381313)):
+            b = berths.Berths(self.sites[sid], quay_lines.load(sid, 1), naval=True)
+            self.assertEqual(b.counts()["coastline_sections"], 1, sid)
+            self.assertIn(str(way), b.allow, sid)
+        # Haiyang Island: only the two piers come back, not the breakwater with the ferry landing
+        b = berths.Berths(self.sites["HYD"], quay_lines.load("HYD", 1), naval=True)
+        self.assertTrue(b.point_ok("coastline", 16381313, 123.154171, 39.06845))    # the tip of the west pier
+        self.assertFalse(b.point_ok("coastline", 16381313, 123.152434, 39.070246))  # the ferry landing
+
+    def test_class_weights_from_the_roster(self):
+        from tools import port_roster
+        t = json.loads((self.root / "sat" / "ship_classes.json").read_text(encoding="utf-8"))
+        ids = {c["id"] for c in t["classes"]}
+        roster = port_roster.build(port_roster.load_rows()) if hasattr(port_roster, "load_rows") else json.loads(
+            (self.root / "docs" / "data" / "ref" / "port-roster.json").read_text(encoding="utf-8"))
+        for sid in self.EXPECT:
+            st = t["sites"][sid]
+            self.assertEqual((st["fleet"], st["status"], st["version"]), (f"{sid}-roster", "roster", "est-1b-202611-roster"), sid)
+            fl = t["fleets"][st["fleet"]]
+            self.assertEqual(set(st["w"]), set(fl), sid)
+            self.assertTrue(set(fl) <= ids and all(w == 1.0 for w in st["w"].values()), sid)
+            # the ships of the prior are the ships assigned to the port (the tugs are a placeholder on top)
+            self.assertEqual(sum(v["count"] for k, v in fl.items() if k != "TUG"), roster["sites"][sid]["assigned"], sid)
+            i = quay_est.site_weights_info(sid)
+            self.assertEqual((i["own"], i["status"], i["conf_level"]), (True, "roster", 3), sid)
+            self.assertEqual(self.sites[sid]["quay"]["class_weights"], sid)
+        # the theatre tables and the sites before are as they were
+        self.assertNotIn("073A", t["fleets"]["east"])
+        self.assertNotIn("072A", t["fleets"]["east"])
 
 
 if __name__ == "__main__":

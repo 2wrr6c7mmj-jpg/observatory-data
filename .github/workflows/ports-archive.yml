@@ -30,8 +30,13 @@ env:
   PLAN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-yards-') && '--only HDZ WCS --proportional' || startsWith(github.ref_name, 'probe/ports-s2ext-') && '--only SLP XSN ZDH --proportional --s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only --max-pu 800 --only SYL SLP QGZ QJG XSN LSN HLD DLS SJN ZDH QDH' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730 --max-pu 134 --only SUB FCR WDY --proportional' || '' }}
   # probe/ports-baseline-fill-*: 基準の不足した軌道だけ、さかのぼり 24 か月で 24 撮影まで（この実行 300 PU）
   # probe/ports-baseline-oct-*: 上限 9,995 への引き上げ分（港 +550 PU）。QGZ 69・171 を 24 枚に、優先 2 の港、造船所の主軌道（この順）
-  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
-  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
+  # probe/ports-baseline-new2-*: 新しい港の 2 本目の軌道（下川島 11・三都澳 69・昂船洲 11・海洋島 25）。下川島の軌道 84 は 21 撮影で 24 に届かなかった。上限 60 PU
+  # probe/ports-baseline-new-*: 2026-11-12 に足した 11 港（監視範囲の外にあった配属部隊の軍港）。撮影の多い軌道 1 本ずつ、
+  # さかのぼり 24 か月で最新 30 撮影まで（1 撮影 約 0.33〜0.5 PU、見込み 計 約 120 PU）。陸マスクは sat/masks のもの（tools/ports_prep.py）
+  BASELINE_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-new2-') && '--only XCD NDS HKG HYD --orbits XCD:11 NDS:69 HKG:11 HYD:25 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-new-') && '--only PDG NDS DXE BHI XCD LYG JMN HPU HKG WHI HYD --orbits PDG:top1 NDS:top1 DXE:top1 BHI:top1 XCD:top1 LYG:top1 JMN:top1 HPU:top1 HKG:top1 WHI:top1 HYD:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '--only SYL QGZ LSN --orbits SYL:157:26 QGZ:69,171 LSN:3,171 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '--only HLD HDZ WCS --orbits HLD:98/26 HDZ:top1 WCS:top1 --lookback 730' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '--only QGZ QDH QJG XMN STU MAW DLS SJN HLD GZH LXD --orbits QGZ:69/25,171/26 QDH:171,3 QJG:171,3 XMN:top2 STU:40 MAW:142 DLS:top1 SJN:top1 HLD:top1 GZH:top1 LXD:top1 --lookback 730' || '--only SYL SLP QGZ ZDH XSN LSN SWS' }}
+  BASELINE_MAX: ${{ startsWith(github.ref_name, 'probe/ports-baseline-new2-') && '60' || startsWith(github.ref_name, 'probe/ports-baseline-new-') && '200' || startsWith(github.ref_name, 'probe/ports-baseline-fill-') && '300' || startsWith(github.ref_name, 'probe/ports-baseline-oct-') && '550' || startsWith(github.ref_name, 'probe/ports-baseline-yards-') && '400' || '800' }}
+  # 基準の前の陸マスク：probe/ports-baseline-new-* は新しい港だけ（ほかの港のマスクを Overpass から作り直さない）
+  MASK_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-baseline-new2-') && '--port XCD NDS HKG HYD' || startsWith(github.ref_name, 'probe/ports-baseline-new-') && '--port PDG NDS DXE BHI XCD LYG JMN HPU HKG WHI HYD' || '' }}
   # 合計ガード（2026-11 だけ有効、10-31 司令部）：港の上限 300（SLP v2 の撮り直し 140・QGZ の予備 70・QDH の S2 60・余り 30）、
   # 全体 9,000、余裕 450（湛江・4 港・造船所の毎日の分と usage に残らない probe）、外洋 7,000（定期監視、11-02 ユーザー決定で 3,500 から引き上げ）。
   # 根拠：claude/配分案_2026-11 の CDSE.md・claude/設計書_外洋の定期監視（2026-11）.md §6。
@@ -140,7 +145,7 @@ jobs:
             --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv --ocean-cap "$OCEAN_CAP" --max-pu "$BASELINE_MAX" --only NONE | tee "$RUNNER_TEMP/cap-summary.json"
           echo "cap=$(python -c "import json,sys; print(json.load(open(sys.argv[1]))['cap_pu'])" "$RUNNER_TEMP/cap.json")" >> "$GITHUB_OUTPUT"
       - name: Land masks (missing only; sat/masks first, then OSM)
-        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks || true
+        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks $MASK_ARGS || true
       - name: Baselines
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}

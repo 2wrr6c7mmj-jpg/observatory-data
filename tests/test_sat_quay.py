@@ -383,7 +383,10 @@ class RunQuayTest(unittest.TestCase):
         self.assertEqual({k: v for k, v in orbits.items() if k != "ZJG"},
                          {"SYL": {157}, "SLP": {157}, "QGZ": {69, 171}, "ZDH": {171},
                           "QJG": {171}, "QDH": {171}, "XSN": {171}, "LSN": {171, 98}, "SWS": {171},
-                          "XMN": {40, 142}, "STU": {40}, "MAW": {142}})
+                          "XMN": {40, 142}, "STU": {40}, "MAW": {142},
+                          # 2026-11-12: the eleven ports of the roster (XCD: both orbits below 24 scenes, credibility 4)
+                          "PDG": {171}, "NDS": {142}, "DXE": {171}, "BHI": {157}, "XCD": {84, 11}, "LYG": {69},
+                          "JMN": {11}, "HPU": {11}, "HKG": {113, 11}, "WHI": {98}, "HYD": {98, 25}})
         self.assertIn("quay_counts.csv", m["files"])
         self.assertIn("quay_lines", m["attribution"])
         self.assertEqual(sorted(m["quay"]["tuning"]["scenes"]["ZJG"])[0], "2026-10-02T10:48:45Z")

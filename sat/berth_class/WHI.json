@@ -1,0 +1,59 @@
+{
+ "site": "WHI",
+ "name": "威海（護衛艦第 12 支隊）",
+ "version": "naval-1",
+ "lines_version": "WHI-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-11T23:07:05Z",
+ "osm_base": "2026-11-11T22:52:01Z",
+ "osm_bbox": [
+  122.1,
+  37.4815,
+  122.164,
+  37.5405
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 816371007,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1316037555「威海水警区」（landuse=military）に含まれる",
+    "溫約瑟の地図 wen-0009「威海水警區」まで 15 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 816371008,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1316037555「威海水警区」（landuse=military）に接する（0 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 816371009,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1316037555「威海水警区」（landuse=military）に接する（0 m）",
+    "OSM way/1447083900「威海船厂」（landuse=military）に接する（12 m）",
+    "区画 A1（role naval）"
+   ]
+  }
+ ]
+}

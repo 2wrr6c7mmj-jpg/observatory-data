@@ -1,0 +1,45 @@
+{
+ "site": "NDS",
+ "name": "寧徳・三都澳（護衛艦第 15 支隊）",
+ "version": "naval-1",
+ "lines_version": "NDS-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-11T23:07:04Z",
+ "osm_base": "2026-11-11T22:23:35Z",
+ "osm_bbox": [
+  119.654,
+  26.585,
+  119.716,
+  26.644
+ ],
+ "confidence": null,
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 822132064,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 822132065,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/853052454（landuse=military）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  }
+ ]
+}
