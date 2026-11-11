@@ -7280,7 +7280,7 @@
   "presence_evaluation": {
    "file": "eval/presence.json",
    "meta": "eval/meta.json",
-   "version": "eval-presence-4",
+   "version": "eval-presence-5",
    "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
    "status": {
     "ZJG": "標本 57 撮影×区間（標本外 0）",

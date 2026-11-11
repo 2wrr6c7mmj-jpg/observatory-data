@@ -2231,18 +2231,18 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-10T13:41:54Z",
+  "run_utc": "2026-11-11T12:56:54Z",
   "sites": [
    {
     "site_id": "ZJG",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "SYL",
@@ -2253,7 +2253,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "SLP",
@@ -2264,7 +2264,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "QGZ",
@@ -2275,7 +2275,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "ZDH",
@@ -2286,7 +2286,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "QDH",
@@ -2297,7 +2297,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "XSN",
@@ -2308,7 +2308,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "SWS",
@@ -2319,7 +2319,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "QJG",
@@ -2330,40 +2330,40 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 865.69
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "LSN",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.07
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "XMN",
     "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
+    "catalog_items": 0,
+    "acquisitions": 0,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.07
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "STU",
     "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
+    "catalog_items": 0,
+    "acquisitions": 0,
     "new": 0,
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.07
+    "budget_left_pu": 864.01
    },
    {
     "site_id": "MAW",
@@ -2374,45 +2374,12 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.07
+    "budget_left_pu": 864.01
    }
   ],
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.009,
-    "requests": 2
-   },
-   {
-    "site_id": "SYL",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.015,
-    "requests": 2
-   },
-   {
-    "site_id": "SLP",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.012,
-    "requests": 2
-   },
-   {
-    "site_id": "QGZ",
     "days": 0,
     "clear": 0,
     "cloudy": 0,
@@ -2423,26 +2390,149 @@
     "requests": 1
    },
    {
-    "site_id": "ZDH",
+    "site_id": "SYL",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "SLP",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QGZ",
     "days": 1,
     "clear": 0,
     "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.014,
+    "processing_units": 0.009,
     "requests": 2
+   },
+   {
+    "site_id": "ZDH",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QDH",
+    "days": 2,
+    "clear": 1,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 1.299,
+    "requests": 4
+   },
+   {
+    "site_id": "XSN",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.008,
+    "requests": 2
+   },
+   {
+    "site_id": "SWS",
+    "days": 1,
+    "clear": 1,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.81,
+    "requests": 3
+   },
+   {
+    "site_id": "QJG",
+    "days": 2,
+    "clear": 1,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.559,
+    "requests": 4
+   },
+   {
+    "site_id": "LSN",
+    "days": 2,
+    "clear": 2,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 2.714,
+    "requests": 5
+   },
+   {
+    "site_id": "XMN",
+    "days": 1,
+    "clear": 1,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 1.131,
+    "requests": 3
+   },
+   {
+    "site_id": "STU",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.008,
+    "requests": 2
+   },
+   {
+    "site_id": "MAW",
+    "days": 1,
+    "clear": 1,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "older_mask": 1,
+    "processing_units": 0.851,
+    "requests": 3
    }
   ],
-  "error": "Sentinel Hub がアクセスを拒否（HTTP 403）。アカウントの権限か無料枠を確かめてください: {\"error\":{\"status\":403,\"reason\":\"Forbidden\",\"message\":\"Invalid or expired account.\",\"code\":\"COMMON_INSUFFICIENT_PERMISSIONS\"}}",
-  "requests": 27,
-  "processing_units": 3.515,
+  "s2_requests": 32,
+  "s2_processing_units": 7.389,
+  "requests": 45,
+  "processing_units": 7.389,
   "pu_source": "header",
-  "scenes": 2,
-  "month_pu_before": 132.472,
+  "scenes": 0,
+  "month_pu_before": 135.987,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-10T13:41:54Z",
+ "updated_utc": "2026-11-11T12:56:54Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
