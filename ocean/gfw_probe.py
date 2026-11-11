@@ -90,59 +90,61 @@ def describe(name, status, raw, secs, headers):
         print("   row", json.dumps({k: ("…" if k in HIDE and r[k] else r[k]) for k in r}, ensure_ascii=False)[:330])
 
 
-def cells(token, bbox, days, matched):
-    status, raw, _, _ = ask(token, bbox, days, {"group-by": "FLAG", "filters[0]": f"matched='{matched}'"}, False)
-    if status != 200:
-        print("cells", matched, "HTTP", status, raw[:200])
-        return []
-    return [(float(r["lat"]), float(r["lon"]), str(r.get("date")), float(r.get("detections") or 0)) for r in rows_of(json.loads(raw)) if "lat" in r]
+def presence(token, bbox, days, hours):
+    q = {"spatial-resolution": "HIGH", "temporal-resolution": "HOURLY", "group-by": "FLAG", "datasets[0]": "public-global-presence:latest",
+         "date-range": days, "format": "JSON"}
+    url = URL + "?" + urllib.parse.urlencode(q)
+    req = urllib.request.Request(url, data=json.dumps({"geojson": json.loads(region(bbox))}).encode(), method="POST", headers={
+        "Authorization": "Bearer " + token, "Content-Type": "application/json", "User-Agent": "observatory-data/1"})
+    try:
+        with urllib.request.urlopen(req, timeout=170) as r:
+            doc = json.loads(r.read())
+    except Exception as e:  # noqa: BLE001
+        print("presence failed", type(e).__name__, getattr(e, "code", ""))
+        return None
+    out = {}
+    for r in rows_of(doc):
+        d = str(r.get("date"))
+        if d in hours:
+            out.setdefault(d, []).append((float(r["lat"]), float(r["lon"]), str(r.get("flag") or "?")))
+    return out
 
 
 def main():
-    token = os.environ.get("GFW_API_TOKEN", "").strip()
-    if not token:
-        print("GFW_API_TOKEN がない")
-        return 1
-    import collections
+    """Check of the no_ais marks: is there an AIS position (GFW presence, same hour) beside a candidate GFW left unmatched?"""
     import math
-    for area, bbox, day, nxt in (("TSN", [119.5, 25.3, 121.0, 26.5], "2026-10-31", "2026-11-01"),
-                                 ("TSM", [119.3, 23.9, 120.4, 26.2], "2026-10-31", "2026-11-01"),
-                                 ("OKI", None, "2026-11-05", "2026-11-06"), ("SENKAKU", [123.3, 25.4, 124.0, 26.2], "2026-11-08", "2026-11-09")):
-        cfg = {a["id"]: a for a in json.load(open("ocean/monitor.json", encoding="utf-8"))["areas"]}
-        bbox = cfg[area]["bbox"]
-        gj = json.load(open(f"docs/data/ocean/monitor/candidates/{day}.geojson", encoding="utf-8"))
-        cand = [(f["geometry"]["coordinates"][1], f["geometry"]["coordinates"][0], f["properties"]["class"], f["properties"]["acquired_utc"])
-                for f in gj["features"] if f["properties"].get("area") == area]
-        t, f_ = cells(token, bbox, f"{day},{nxt}", "true"), cells(token, bbox, f"{day},{nxt}", "false")
-        time.sleep(2)
-        hours = collections.Counter(c[2] for c in t + f_)
-        print(f"## {area} {day}: ours {len(cand)} (A {sum(1 for c in cand if c[2] == 'A')}), acquired {sorted({c[3] for c in cand})}; GFW matched cells {len(t)} det {sum(c[3] for c in t):g}, unmatched cells {len(f_)} det {sum(c[3] for c in f_):g}; hours {dict(hours)}")
-        allc = [(c[0], c[1], "T") for c in t] + [(c[0], c[1], "F") for c in f_]
-        if not allc or not cand:
-            continue
-        off = collections.Counter()
-        res = {}
-        for name, (ola, olo) in (("centre", (0.0, 0.0)), ("corner", (0.005, 0.005))):
-            n = collections.Counter()
-            for la, lo, cl, _ in cand:
-                best = min(allc, key=lambda c: math.hypot((c[0] + ola - la) * 110.6, (c[1] + olo - lo) * 111.3 * math.cos(math.radians(la))))
-                d = math.hypot((best[0] + ola - la) * 110.6, (best[1] + olo - lo) * 111.3 * math.cos(math.radians(la)))
-                if name == "centre" and d < 3:
-                    off[(round((la - best[0]) / 0.0025) * 0.0025, round((lo - best[1]) / 0.0025) * 0.0025)] += 1
-                for lim in (0.8, 1.2, 2.0):
-                    if d <= lim:
-                        n[(cl, lim, best[2])] += 1
-            res[name] = dict(sorted(n.items()))
-        print("   offsets ours-minus-cell (deg, 0.0025 bins):", sorted(off.items(), key=lambda kv: -kv[1])[:14])
-        dl = [la - min(allc, key=lambda c: abs(c[0] - la) + abs(c[1] - lo))[0] for la, lo, _, _ in cand]
-        print("   centre:", res["centre"])
-        print("   corner:", res["corner"])
-        # how many GFW cells have one of ours within 1.2 km (corner assumption)
-        hit = collections.Counter()
-        for c in allc:
-            d = min(math.hypot((c[0] + 0.005 - la) * 110.6, (c[1] + 0.005 - lo) * 111.3 * math.cos(math.radians(la))) for la, lo, _, _ in cand)
-            hit[(c[2], d <= 1.2)] += 1
-        print("   GFW cells with one of ours within 1.2 km (corner):", dict(hit))
+    from datetime import datetime, timedelta, timezone
+    token = os.environ.get("GFW_API_TOKEN", "").strip()
+    cfg = {a["id"]: a for a in json.load(open("ocean/monitor.json", encoding="utf-8"))["areas"]}
+    def km(a, b, c, d):
+        return math.hypot((c - a) * 110.57, (d - b) * 111.32 * math.cos(math.radians((a + c) / 2)))
+    for area, day in (("OKI", "2026-11-05"), ("TWE_S", "2026-11-01"), ("TSS", "2026-11-03")):
+        m = json.load(open(f"docs/data/ocean/gfw/matches/{day}.json", encoding="utf-8"))
+        for ps in m["passes"]:
+            if ps["area"] != area:
+                continue
+            t = datetime.strptime(ps["acquired_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            h0 = t.strftime("%Y-%m-%d %H:00")
+            hours = {h0, (t - timedelta(hours=1)).strftime("%Y-%m-%d %H:00"), (t + timedelta(hours=1)).strftime("%Y-%m-%d %H:00")}
+            nxt = (t + timedelta(days=1)).strftime("%Y-%m-%d")
+            pr = presence(token, cfg[area]["bbox"], f"{day},{nxt}", hours)
+            time.sleep(2)
+            if pr is None:
+                continue
+            same = pr.get(h0, [])
+            print(f"## {area} {ps['acquired_utc']}: presence cells in the pass's hour {len(same)}, hours {dict((k, len(v)) for k, v in sorted(pr.items()))}")
+            for mark in ("no_ais", "ais", "none"):
+                ds = []
+                for lon, lat, cls, mk in ps["candidates"]:
+                    if cls != "A" or mk != mark or not same:
+                        continue
+                    best = min(same, key=lambda c: km(lat, lon, c[0], c[1]))
+                    ds.append((round(km(lat, lon, best[0], best[1]), 1), best[2], round(lat, 2), round(lon, 2)))
+                ds.sort()
+                n = len(ds)
+                print(f"   {mark}: n {n}, within 1 km {sum(1 for d in ds if d[0] <= 1)}, 3 km {sum(1 for d in ds if d[0] <= 3)}, 10 km {sum(1 for d in ds if d[0] <= 10)}")
+                if mark != "ais":
+                    print("     ", [(d[0], d[1], d[2], d[3]) for d in ds][:20])
     return 0
 
 
