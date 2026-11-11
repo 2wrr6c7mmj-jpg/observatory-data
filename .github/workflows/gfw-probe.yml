@@ -1,0 +1,29 @@
+name: GFW probe
+# Global Fishing Watch の 4Wings report（Sentinel-1 の船の検出、AIS 一致／不一致）の応答の形を確かめる（probe のみ）。
+# probe 用ブランチへの push で動く。データは commit しない。結果は注釈に出す（船の識別子は出さない）。
+on:
+  push:
+    branches: ['probe/gfw-*']
+permissions:
+  contents: read
+concurrency:
+  group: probe-gfw
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe
+        env:
+          GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
+        run: |
+          set -o pipefail
+          python -m ocean.gfw_probe 2>&1 | tee "$RUNNER_TEMP/probe.log"
+      - name: Report (annotations)
+        if: always()
+        run: python -m sat.annotate text gfw-probe "$RUNNER_TEMP/probe.log"
