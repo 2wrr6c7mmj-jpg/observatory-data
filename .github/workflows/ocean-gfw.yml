@@ -1,0 +1,55 @@
+name: Ocean GFW match
+# 外洋の定期監視の候補に、Global Fishing Watch（GFW）の Sentinel-1 の検出と AIS の一致の有無の印を付ける（ocean/gfw_match.py）。
+# GFW に出るのは撮影の約 5 日後なので、毎日 1 回、照合できる撮影だけを処理する。
+# 公開（main への commit）は docs/data/ocean/gfw/ だけ（候補ごとの印と件数）。GFW の行・船の識別子は保存も公開もしない。テストが通ったときだけ。
+# CDSE には接続しない（PU 0）。secret GFW_API_TOKEN が無いときは ::notice を出して何もせず成功で終わる。
+# push 前に git pull --rebase を 3 回までやり直す。
+on:
+  schedule:
+    - cron: '47 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  # 書き込み先 docs/data/ocean/gfw/ は他のどのワークフローとも別
+  group: ocean-gfw
+  cancel-in-progress: false
+jobs:
+  match:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        id: tests
+        run: python -m unittest tests.test_ocean_gfw_match -v
+      - name: Match (docs/data/ocean/gfw only)
+        id: match
+        env:
+          GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
+        run: python -m ocean.gfw_match --monitor docs/data/ocean/monitor --out docs/data/ocean/gfw
+      - name: Publish (docs/data/ocean/gfw only)
+        if: ${{ steps.tests.outcome == 'success' && steps.match.outcome == 'success' }}
+        run: |
+          [ -d docs/data/ocean/gfw ] && git add -A -- docs/data/ocean/gfw
+          other="$(git status --porcelain | grep -v -E '^.. docs/data/ocean/gfw/' || true)"
+          if [ -n "$other" ]; then echo "::error title=ocean-gfw::書き込み先の外が変わった（公開しない）: $other"; exit 1; fi
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: 外洋の候補の AIS の一致 (GFW) ($(date -u +%Y-%m-%d)) [ocean-gfw]"
+          for i in 1 2 3; do
+            git push origin HEAD:main && break
+            [ "$i" = 3 ] && break
+            sleep $((i * 10))
+            git pull -q --rebase origin main
+          done
+          git fetch -q origin main
+          git merge-base --is-ancestor HEAD origin/main || { echo "::error title=ocean-gfw::push できなかった"; exit 1; }
+          echo "::notice title=ocean-gfw-commit::$(git rev-parse HEAD)"

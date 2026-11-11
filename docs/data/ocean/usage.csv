@@ -6,3 +6,4 @@ run_utc,requests,processing_units,pu_source,scenes,units,probe_version,note
 2026-11-07T22:59:16Z,64,250.469,header,1,19,ocean-monitor-3,monitor 40 m
 2026-11-08T23:09:16Z,49,235.441,header,1,13,ocean-monitor-3,monitor 40 m
 2026-11-10T02:26:31Z,22,57.965,header,1,7,ocean-monitor-3,monitor 40 m
+2026-11-11T00:17:36Z,32,106.101,header,2,17,ocean-monitor-3,monitor 40 m

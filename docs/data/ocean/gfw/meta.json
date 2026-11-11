@@ -1,0 +1,30 @@
+{
+ "version": "gfw-match-1",
+ "attribution": "Powered by Global Fishing Watch. https://globalfishingwatch.org",
+ "source": "AIS との一致：Global Fishing Watch の Sentinel-1 の船の検出（public-global-sar-presence、CC BY-NC 4.0）。候補：Contains modified Copernicus Sentinel data",
+ "dataset": "public-global-sar-presence:latest",
+ "license": "Global Fishing Watch の API のデータは CC BY-NC 4.0（非商用）。公開物に「Powered by Global Fishing Watch.」を表示する",
+ "marks": {
+  "ais": "候補から 0.8 km 以内に、GFW が AIS と一致させた検出がある（AIS を出していた船）",
+  "no_ais": "候補から 0.8 km 以内に、GFW が AIS と一致させられなかった検出がある（GFW も船と見たが、合う AIS の航跡がない）",
+  "none": "GFW の検出がない（こちらの誤検出・固定物か、GFW の見逃し）"
+ },
+ "method": "外洋の定期監視（docs/data/ocean/monitor/candidates/）の撮影ごとに、域の範囲・撮影の時刻の GFW の検出（0.01° の格子、AIS 一致と不一致の別）を 4Wings report で取り、候補の位置を格子の中心と比べる。両方が 0.8 km 以内なら近い方。GFW に出るのは撮影の約 5 日後。出てから 4 日は毎日照合し直す。21 日たっても GFW に検出がない撮影は no_gfw（印なし）",
+ "statuses": {
+  "done": "照合した",
+  "waiting": "GFW にまだその撮影の検出がない",
+  "no_gfw": "GFW に検出がないまま期限を過ぎた（印なし）"
+ },
+ "limits": [
+  "GFW の一致は確率による突き合わせ。AIS を出している船が no_ais になることも、その逆もある。",
+  "格子は 0.01°（約 1 km）。船が混んだ所では隣の船の印が付くことがある。",
+  "GFW の受信網が弱い海では、AIS を出していても no_ais になりやすい。",
+  "no_ais は軍艦とは限らない（AIS を切った漁船・商船、AIS の義務がない船を含む）。艦種・国籍は分からない。",
+  "GFW の行そのもの、船の識別子（MMSI・船名など）は保存も公開もしない。"
+ ],
+ "files": {
+  "passes.json": "域×撮影ごとの照合の状態と件数",
+  "series.json": "照合の済んだ撮影の件数の時系列",
+  "matches/YYYY-MM-DD.json": "撮影日（UTC）ごとの候補の印（[経度, 緯度, クラス, 印]）"
+ }
+}
