@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-11T14:42:23Z",
+ "generated_utc": "2026-11-11T16:04:56Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-11T12:56:54Z",
-   "heartbeat_age_h": 1.8,
+   "heartbeat_age_h": 3.1,
    "data_date": "2026-11-09",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -121,10 +121,10 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-11T11:26:42Z",
-   "heartbeat_age_h": 3.3,
+   "heartbeat_age_h": 4.6,
    "data_date": "2026-11-10",
    "data_date_tz": "JST",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -144,10 +144,10 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-11T14:41:50Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.4,
    "data_date": "2026-11-11",
    "data_date_tz": "TWT",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -167,7 +167,7 @@
    "heartbeat_age_h": null,
    "data_date": "2026-10-30",
    "data_date_tz": "TWT",
-   "data_age_days": 12,
+   "data_age_days": 13,
    "state": "halt",
    "reasons": [
     {
@@ -188,16 +188,16 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-11T07:53:07Z",
-   "heartbeat_age_h": 6.8,
+   "heartbeat_age_h": 8.2,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
-   "data_age_days": 15,
+   "data_age_days": 16,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "release_old",
-     "text": "最新の公表 2026-10-27 から 15 日（手動取り込み待ちの可能性）"
+     "text": "最新の公表 2026-10-27 から 16 日（手動取り込み待ちの可能性）"
     }
    ],
    "values": {
@@ -212,7 +212,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-11T07:53:01Z",
-   "heartbeat_age_h": 6.8,
+   "heartbeat_age_h": 8.2,
    "data_date": "2026-11-11",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -230,7 +230,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-11T11:27:03Z",
-   "heartbeat_age_h": 3.3,
+   "heartbeat_age_h": 4.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
