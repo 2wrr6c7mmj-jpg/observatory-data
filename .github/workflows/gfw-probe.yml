@@ -23,7 +23,13 @@ jobs:
           GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
         run: |
           set -o pipefail
-          python -m ocean.gfw_probe 2>&1 | tee "$RUNNER_TEMP/probe.log"
+          python -m ocean.gfw_match --monitor docs/data/ocean/monitor --out "$RUNNER_TEMP/gfw" 2>&1 | tee "$RUNNER_TEMP/probe.log"
+          python - <<'PY' | tee -a "$RUNNER_TEMP/probe.log"
+          import json, os
+          d = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "gfw", "passes.json")))
+          for e in d["passes"]:
+              print(e["area"], e["acquired_utc"][:16], e["status"], "A", e.get("A_ais"), e.get("A_no_ais"), e.get("A_none"), "B", e.get("B_ais"), e.get("B_no_ais"), e.get("B_none"), "gfw", e["gfw_cells_ais"], e["gfw_cells_no_ais"])
+          PY
       - name: Report (annotations)
         if: always()
         run: python -m sat.annotate text gfw-probe "$RUNNER_TEMP/probe.log"
