@@ -90,25 +90,59 @@ def describe(name, status, raw, secs, headers):
         print("   row", json.dumps({k: ("…" if k in HIDE and r[k] else r[k]) for k in r}, ensure_ascii=False)[:330])
 
 
+def cells(token, bbox, days, matched):
+    status, raw, _, _ = ask(token, bbox, days, {"group-by": "FLAG", "filters[0]": f"matched='{matched}'"}, False)
+    if status != 200:
+        print("cells", matched, "HTTP", status, raw[:200])
+        return []
+    return [(float(r["lat"]), float(r["lon"]), str(r.get("date")), float(r.get("detections") or 0)) for r in rows_of(json.loads(raw)) if "lat" in r]
+
+
 def main():
     token = os.environ.get("GFW_API_TOKEN", "").strip()
     if not token:
         print("GFW_API_TOKEN がない")
         return 1
-    bbox, days = [119.5, 25.3, 121.0, 26.5], "2026-10-31,2026-11-01"   # TSN, the pass of 2026-10-31
-    variants = [
-        ("matched=false group FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'"}, False),
-        ("matched=true group FLAG", {"group-by": "FLAG", "filters[0]": "matched='true'"}, False),
-        ("matched=false no group", {"filters[0]": "matched='false'"}, False),
-        ("all no group", {}, False),
-        ("matched=true group VESSEL_ID", {"group-by": "VESSEL_ID", "filters[0]": "matched='true'"}, False),
-        ("matched=false LOW DAILY FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'", "temporal-resolution": "DAILY", "spatial-resolution": "LOW"}, False),
-        ("v4.0 matched=false FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'", "datasets[0]": "public-global-sar-presence:v4.0"}, False),
-        ("presence (AIS) all FLAG", {"group-by": "FLAG", "datasets[0]": "public-global-presence:latest"}, False),
-    ]
-    for name, extra, as_string in variants:
-        describe(name, *ask(token, bbox, days, extra, as_string))
-        time.sleep(3)
+    import collections
+    import math
+    for area, bbox, day, nxt in (("TSN", [119.5, 25.3, 121.0, 26.5], "2026-10-31", "2026-11-01"),
+                                 ("TSM", [119.3, 23.9, 120.4, 26.2], "2026-10-31", "2026-11-01"),
+                                 ("OKI", None, "2026-11-05", "2026-11-06"), ("SENKAKU", [123.3, 25.4, 124.0, 26.2], "2026-11-08", "2026-11-09")):
+        cfg = {a["id"]: a for a in json.load(open("ocean/monitor.json", encoding="utf-8"))["areas"]}
+        bbox = cfg[area]["bbox"]
+        gj = json.load(open(f"docs/data/ocean/monitor/candidates/{day}.geojson", encoding="utf-8"))
+        cand = [(f["geometry"]["coordinates"][1], f["geometry"]["coordinates"][0], f["properties"]["class"], f["properties"]["acquired_utc"])
+                for f in gj["features"] if f["properties"].get("area") == area]
+        t, f_ = cells(token, bbox, f"{day},{nxt}", "true"), cells(token, bbox, f"{day},{nxt}", "false")
+        time.sleep(2)
+        hours = collections.Counter(c[2] for c in t + f_)
+        print(f"## {area} {day}: ours {len(cand)} (A {sum(1 for c in cand if c[2] == 'A')}), acquired {sorted({c[3] for c in cand})}; GFW matched cells {len(t)} det {sum(c[3] for c in t):g}, unmatched cells {len(f_)} det {sum(c[3] for c in f_):g}; hours {dict(hours)}")
+        allc = [(c[0], c[1], "T") for c in t] + [(c[0], c[1], "F") for c in f_]
+        if not allc or not cand:
+            continue
+        off = collections.Counter()
+        res = {}
+        for name, (ola, olo) in (("centre", (0.0, 0.0)), ("corner", (0.005, 0.005))):
+            n = collections.Counter()
+            for la, lo, cl, _ in cand:
+                best = min(allc, key=lambda c: math.hypot((c[0] + ola - la) * 110.6, (c[1] + olo - lo) * 111.3 * math.cos(math.radians(la))))
+                d = math.hypot((best[0] + ola - la) * 110.6, (best[1] + olo - lo) * 111.3 * math.cos(math.radians(la)))
+                if name == "centre" and d < 3:
+                    off[(round((la - best[0]) / 0.0025) * 0.0025, round((lo - best[1]) / 0.0025) * 0.0025)] += 1
+                for lim in (0.8, 1.2, 2.0):
+                    if d <= lim:
+                        n[(cl, lim, best[2])] += 1
+            res[name] = dict(sorted(n.items()))
+        print("   offsets ours-minus-cell (deg, 0.0025 bins):", sorted(off.items(), key=lambda kv: -kv[1])[:14])
+        dl = [la - min(allc, key=lambda c: abs(c[0] - la) + abs(c[1] - lo))[0] for la, lo, _, _ in cand]
+        print("   centre:", res["centre"])
+        print("   corner:", res["corner"])
+        # how many GFW cells have one of ours within 1.2 km (corner assumption)
+        hit = collections.Counter()
+        for c in allc:
+            d = min(math.hypot((c[0] + 0.005 - la) * 110.6, (c[1] + 0.005 - lo) * 111.3 * math.cos(math.radians(la))) for la, lo, _, _ in cand)
+            hit[(c[2], d <= 1.2)] += 1
+        print("   GFW cells with one of ours within 1.2 km (corner):", dict(hit))
     return 0
 
 
