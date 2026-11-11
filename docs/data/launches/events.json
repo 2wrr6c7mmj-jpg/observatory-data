@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-10T08:32:26Z",
+ "generated_utc": "2026-11-11T07:53:01Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -222,7 +222,7 @@
      "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
      "name": "Mir | Demo Flight",
      "status": "Go",
-     "net_utc": "2026-11-11T05:00:00Z",
+     "net_utc": "2026-11-13T05:00:00Z",
      "rocket": "Mir",
      "orbit": "LEO",
      "pad": "ADD Offshore launch platform"
@@ -711,6 +711,10 @@
      126.565
     ],
     [
+     19.099,
+     137.17
+    ],
+    [
      27.03,
      131.281
     ]
@@ -719,26 +723,34 @@
     "aviation:Z0857/26",
     "aviation:Q2688/26",
     "aviation:Z0856/26",
+    "maritime:NAVAREA XI 26-0508",
     "aviation:P5642/26"
    ],
    "method": "unaligned"
   },
   {
    "window_start_utc": "2026-11-13T22:00Z",
-   "window_end_utc": "2026-11-14T09:00Z",
+   "window_end_utc": "2026-11-20T05:01Z",
    "areas": [
     [
      42.885,
      141.474
+    ],
+    [
+     26.709,
+     154.739
+    ],
+    [
+     23.389,
+     143.945
     ]
    ],
    "notices": [
-    "aviation:P5506/26"
+    "aviation:P5506/26",
+    "aviation:P5648/26",
+    "aviation:Q2693/26"
    ],
-   "method": "nearest-only",
-   "site": "平壌周辺",
-   "country": "KP",
-   "distance_km": 1386
+   "method": "unaligned"
   },
   {
    "window_start_utc": "2026-11-20T10:30Z",
@@ -993,23 +1005,6 @@
    "event_index": null
   },
   {
-   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-   "name": "Mir | Demo Flight",
-   "status": "Go",
-   "net_utc": "2026-11-11T05:00:00Z",
-   "rocket": "Mir",
-   "provider": "Agency for Defense Development",
-   "orbit": "LEO",
-   "mission_type": "Test Flight",
-   "pad": "ADD Offshore launch platform",
-   "location": "Sea Launch",
-   "country": "???",
-   "lat": 33.216667,
-   "lon": 126.366667,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
-   "event_index": 8
-  },
-  {
    "ll2_id": "d66590ab-b273-47ff-b85a-608b62851b4b",
    "name": "Long March 2D | Unknown Payload",
    "status": "Go",
@@ -1042,6 +1037,23 @@
    "lon": 100.343333,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
    "event_index": 26
+  },
+  {
+   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+   "name": "Mir | Demo Flight",
+   "status": "Go",
+   "net_utc": "2026-11-13T05:00:00Z",
+   "rocket": "Mir",
+   "provider": "Agency for Defense Development",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "pad": "ADD Offshore launch platform",
+   "location": "Sea Launch",
+   "country": "???",
+   "lat": 33.216667,
+   "lon": 126.366667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
+   "event_index": 8
   },
   {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
