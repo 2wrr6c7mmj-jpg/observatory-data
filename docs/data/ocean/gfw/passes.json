@@ -80,7 +80,7 @@
   {
    "area": "MYK",
    "acquired_utc": "2026-11-03T09:44:02Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 2,
    "gfw_cells_no_ais": 0,
    "status": "done",
@@ -95,7 +95,7 @@
   {
    "area": "SAKI_S",
    "acquired_utc": "2026-11-03T09:44:02Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 0,
    "gfw_cells_no_ais": 1,
    "status": "done",
@@ -110,7 +110,7 @@
   {
    "area": "HKS",
    "acquired_utc": "2026-11-03T10:32:47Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 289,
    "gfw_cells_no_ais": 19,
    "status": "done",
@@ -125,7 +125,7 @@
   {
    "area": "BASHI",
    "acquired_utc": "2026-11-03T21:51:23Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 5,
    "gfw_cells_no_ais": 1,
    "status": "done",
@@ -140,7 +140,7 @@
   {
    "area": "TSS",
    "acquired_utc": "2026-11-03T21:51:23Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 84,
    "gfw_cells_no_ais": 13,
    "status": "done",
@@ -155,7 +155,7 @@
   {
    "area": "OKI",
    "acquired_utc": "2026-11-05T09:28:05Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 44,
    "gfw_cells_no_ais": 67,
    "status": "done",
@@ -170,7 +170,7 @@
   {
    "area": "TSW",
    "acquired_utc": "2026-11-05T10:16:50Z",
-   "checked_utc": "2026-11-11T00:41:06Z",
+   "checked_utc": "2026-11-11T11:28:10Z",
    "gfw_cells_ais": 253,
    "gfw_cells_no_ais": 68,
    "status": "done",
