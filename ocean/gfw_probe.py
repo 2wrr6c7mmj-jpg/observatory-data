@@ -97,12 +97,14 @@ def main():
         return 1
     bbox, days = [119.5, 25.3, 121.0, 26.5], "2026-10-31,2026-11-01"   # TSN, the pass of 2026-10-31
     variants = [
-        ("matched=true group VESSEL_ID", {"group-by": "VESSEL_ID", "filters[0]": "matched='true'"}, True),
-        ("matched=false group FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'"}, True),
-        ("matched=false no group", {"filters[0]": "matched='false'"}, True),
-        ("all group FLAG", {"group-by": "FLAG"}, True),
-        ("matched=true VESSEL_ID geojson object", {"group-by": "VESSEL_ID", "filters[0]": "matched='true'"}, False),
-        ("matched=false DAILY FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'", "temporal-resolution": "DAILY"}, True),
+        ("matched=false group FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'"}, False),
+        ("matched=true group FLAG", {"group-by": "FLAG", "filters[0]": "matched='true'"}, False),
+        ("matched=false no group", {"filters[0]": "matched='false'"}, False),
+        ("all no group", {}, False),
+        ("matched=true group VESSEL_ID", {"group-by": "VESSEL_ID", "filters[0]": "matched='true'"}, False),
+        ("matched=false LOW DAILY FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'", "temporal-resolution": "DAILY", "spatial-resolution": "LOW"}, False),
+        ("v4.0 matched=false FLAG", {"group-by": "FLAG", "filters[0]": "matched='false'", "datasets[0]": "public-global-sar-presence:v4.0"}, False),
+        ("presence (AIS) all FLAG", {"group-by": "FLAG", "datasets[0]": "public-global-presence:latest"}, False),
     ]
     for name, extra, as_string in variants:
         describe(name, *ask(token, bbox, days, extra, as_string))
