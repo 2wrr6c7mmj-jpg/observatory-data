@@ -35,7 +35,7 @@ class PortRosterTest(unittest.TestCase):
 
     def test_assigned_counts(self):
         got = {k: v['assigned'] for k, v in self.data['sites'].items()}
-        self.assertEqual(got, {'ZJG': 15, 'SYL': 14, 'SLP': 30, 'QGZ': 17, 'QDH': 9, 'QJG': 3, 'LSN': 25,
+        self.assertEqual(got, {'ZJG': 15, 'SYL': 14, 'SLP': 30, 'QGZ': 17, 'QDH': 9, 'QJG': 3, 'LSN': 23,
                                'ZDH': 32, 'XSN': 6, 'SWS': 8, 'XMN': 6, 'STU': 0})
         stu = self.data['sites']['STU']['units'][0]
         self.assertEqual(stu['short'], 12)

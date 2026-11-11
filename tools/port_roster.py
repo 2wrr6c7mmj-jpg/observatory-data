@@ -75,7 +75,7 @@ SITES: dict[str, dict] = {
         'in': [
             ('潜水艦第2基地', pick('Sanya-Longpo', '2nd Submarine Base'), '龍坡'),
             ('駆逐艦第9支隊', pick('Sanya', '9th Destroyer Flotilla'), '亜龍湾'),
-            ('空母（山東・福建）', pick('Sanya', types={'CV'}), '母港は三亜（亜龍湾の空母の桟橋）。福建は楡池に停泊した時期がある'),
+            ('空母（山東・福建）', pick('Sanya', types={'CV'}), '母港は三亜（山東は楡林とも）。桟橋は区画 A2（大型艦・空母の桟橋）と見た判断で、未確認。福建は楡池に停泊した時期がある'),
         ],
         'other': [],
     },
@@ -94,10 +94,9 @@ SITES: dict[str, dict] = {
     'LSN': {
         'in': [
             ('駆逐艦第10支隊', pick('Lushun', '10th Destroyer Flotilla'), '旅順口東港'),
-            ('054AG型（鄂爾多斯・臨汾）', pick('Lushun', '', {'FFG'}), '大連某軍港・北部戦区。支隊は不明'),
             ('潜水艦第12支隊', pick('Lushun', '12th Submarine Flotilla'), '旅順口'),
         ],
-        'other': [],
+        'other': [('054AG型（鄂爾多斯・臨汾）', pick('Lushun', '', {'FFG'}), '大連某軍港・北部戦区。支隊と岸壁は未確認')],
     },
     'ZDH': {
         'in': [
