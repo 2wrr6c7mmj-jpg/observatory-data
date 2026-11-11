@@ -1,7 +1,7 @@
 {
  "version":"ocean-monitor-3",
  "config_version":"ocean-monitor-3",
- "generated_utc":"2026-11-10T02:26:31Z",
+ "generated_utc":"2026-11-11T00:17:36Z",
  "attribution":"Contains modified Copernicus Sentinel data 2026; land and fixed objects © OpenStreetMap contributors, ODbL 1.0",
  "credits":[
   "Contains modified Copernicus Sentinel data (Copernicus Sentinel-1, ESA; CDSE Sentinel Hub)",
@@ -381,6 +381,6 @@
   "static_learned.json":"学習した固定物",
   "held/":"公開を保留した域の passes.json・static_learned.json・candidates・coverage・series.json（サイトは読まない。検品用）"
  },
- "passes":22,
+ "passes":24,
  "static_learned_points":0
 }
