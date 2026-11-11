@@ -1,0 +1,335 @@
+{
+ "dataset": "ref/port-roster",
+ "version": "roster-3",
+ "kind": "参照データ（公開情報からの推定。うちの観測ではない）",
+ "basis": "中国海軍の港別艦艇配置（改訂3、2026-11-12）。docs/data/ref/plan-fleet.csv",
+ "min_length_m": 50,
+ "rule": "assigned は、その港の監視範囲に駐屯地がある部隊の、全長 50 m 以上の艦の数（潜水艦を含む）。other は母港が同じで岸壁が範囲にあるか確かめていない部隊（assigned に足さない）。所属と在泊は別で、出港中・整備中・他港への寄港でずれる",
+ "src_legend": {
+  "CM": "中国国営メディア（新華社・央視・環球時報・環球網・中新社・解放軍報・人民海軍・中国軍号）",
+  "ZW": "Wikipedia 中国語版（2026-08〜09 の版、検索結果の抜粋で確認）",
+  "ZH": "知乎の編制まとめ（2023〜2026、検索結果の抜粋）",
+  "TX": "腾訊新聞・網易・新浪の軍事記事",
+  "WP": "Wikipedia 英語版（2026-11 取得）",
+  "GS": "GlobalSecurity 編成表",
+  "NN": "Naval News",
+  "USNI": "USNI News",
+  "AR": "Army Recognition",
+  "DSA": "Defence Security Asia",
+  "TWZ": "The War Zone",
+  "ORF": "ORF Special Report 234（2024-10）",
+  "CDB": "china-defense blog",
+  "CK": "学習知識（未検証。ほかの出典と併記の行だけ）"
+ },
+ "types_ja": {
+  "CV": "空母",
+  "LHD": "強襲揚陸艦",
+  "LPD": "揚陸艦（ドック型）",
+  "DDG": "駆逐艦",
+  "FFG": "フリゲート",
+  "FFL": "コルベット",
+  "LST": "戦車揚陸艦",
+  "LSM": "中型揚陸艦",
+  "SSBN": "弾道ミサイル原潜",
+  "SSN": "攻撃型原潜",
+  "SSK": "通常動力潜水艦",
+  "AOR": "補給艦",
+  "AKS": "島嶼補給艦",
+  "AGI": "情報収集艦",
+  "MCM": "掃海艦艇",
+  "PTG": "ミサイル艇"
+ },
+ "sites": {
+  "ZJG": {
+   "assigned": 15,
+   "units": [
+    {
+     "name": "駆逐艦第2支隊",
+     "n": 15,
+     "types": {
+      "DDG": 9,
+      "FFG": 6
+     },
+     "where": "麻斜（中国語版 Wikipedia・知乎）"
+    }
+   ],
+   "other": [
+    {
+     "name": "登陸艦第6支隊",
+     "n": 25,
+     "types": {
+      "LHD": 2,
+      "LPD": 5,
+      "LSM": 6,
+      "LST": 12
+     },
+     "where": "湛江。岸壁の場所は未確認",
+     "low": 6
+    },
+    {
+     "name": "作戦支援艦第3支隊",
+     "n": 14,
+     "types": {
+      "AGI": 3,
+      "AKS": 4,
+      "AOR": 7
+     },
+     "where": "湛江の赤坎。範囲の外の可能性",
+     "low": 1
+    }
+   ]
+  },
+  "SYL": {
+   "assigned": 14,
+   "units": [
+    {
+     "name": "潜水艦第32支隊",
+     "n": 8,
+     "types": {
+      "SSK": 8
+     },
+     "where": "楡林"
+    },
+    {
+     "name": "護衛艦第19支隊",
+     "n": 6,
+     "types": {
+      "FFG": 4,
+      "FFL": 2
+     },
+     "where": "楡林"
+    }
+   ],
+   "other": []
+  },
+  "SLP": {
+   "assigned": 30,
+   "units": [
+    {
+     "name": "潜水艦第2基地",
+     "n": 11,
+     "types": {
+      "SSBN": 6,
+      "SSN": 5
+     },
+     "where": "龍坡",
+     "low": 5
+    },
+    {
+     "name": "駆逐艦第9支隊",
+     "n": 17,
+     "types": {
+      "DDG": 12,
+      "FFG": 5
+     },
+     "where": "亜龍湾"
+    },
+    {
+     "name": "空母（山東・福建）",
+     "n": 2,
+     "types": {
+      "CV": 2
+     },
+     "where": "母港は三亜（亜龍湾の空母の桟橋）。福建は楡池に停泊した時期がある"
+    }
+   ],
+   "other": []
+  },
+  "QGZ": {
+   "assigned": 17,
+   "units": [
+    {
+     "name": "駆逐艦第1支隊",
+     "n": 16,
+     "types": {
+      "DDG": 11,
+      "FFG": 5
+     },
+     "where": "古鎮口",
+     "low": 1
+    },
+    {
+     "name": "空母（遼寧）",
+     "n": 1,
+     "types": {
+      "CV": 1
+     },
+     "where": "楡池（古鎮口）"
+    }
+   ],
+   "other": [
+    {
+     "name": "作戦支援艦第1支隊",
+     "n": 7,
+     "types": {
+      "AGI": 3,
+      "AOR": 4
+     },
+     "where": "青島。岸壁の場所は未確認"
+    },
+    {
+     "name": "登陸艦第1大隊",
+     "n": 2,
+     "types": {
+      "LST": 2
+     },
+     "where": "青島。岸壁の場所は未確認"
+    }
+   ]
+  },
+  "QDH": {
+   "assigned": 9,
+   "units": [
+    {
+     "name": "潜水艦第2支隊",
+     "n": 9,
+     "types": {
+      "SSK": 9
+     },
+     "where": "青島の市北"
+    }
+   ],
+   "other": []
+  },
+  "QJG": {
+   "assigned": 3,
+   "units": [
+    {
+     "name": "潜水艦第1基地",
+     "n": 3,
+     "types": {
+      "SSN": 3
+     },
+     "where": "姜各庄",
+     "low": 3
+    }
+   ],
+   "other": []
+  },
+  "LSN": {
+   "assigned": 25,
+   "units": [
+    {
+     "name": "駆逐艦第10支隊",
+     "n": 13,
+     "types": {
+      "DDG": 8,
+      "FFG": 5
+     },
+     "where": "旅順口東港",
+     "low": 4
+    },
+    {
+     "name": "054AG型（鄂爾多斯・臨汾）",
+     "n": 2,
+     "types": {
+      "FFG": 2
+     },
+     "where": "大連某軍港・北部戦区。支隊は不明",
+     "low": 1
+    },
+    {
+     "name": "潜水艦第12支隊",
+     "n": 10,
+     "types": {
+      "SSK": 10
+     },
+     "where": "旅順口"
+    }
+   ],
+   "other": []
+  },
+  "ZDH": {
+   "assigned": 32,
+   "units": [
+    {
+     "name": "駆逐艦第3支隊",
+     "n": 15,
+     "types": {
+      "DDG": 10,
+      "FFG": 5
+     },
+     "where": "舟山の定海"
+    },
+    {
+     "name": "駆逐艦第6支隊",
+     "n": 17,
+     "types": {
+      "DDG": 11,
+      "FFG": 6
+     },
+     "where": "舟山の定海"
+    }
+   ],
+   "other": [
+    {
+     "name": "作戦支援艦第2支隊",
+     "n": 6,
+     "types": {
+      "AGI": 3,
+      "AOR": 3
+     },
+     "where": "舟山。岸壁の場所は未確認"
+    }
+   ]
+  },
+  "XSN": {
+   "assigned": 6,
+   "units": [
+    {
+     "name": "潜水艦第42支隊",
+     "n": 6,
+     "types": {
+      "SSK": 6
+     },
+     "where": "象山"
+    }
+   ],
+   "other": []
+  },
+  "SWS": {
+   "assigned": 8,
+   "units": [
+    {
+     "name": "護衛艦第14支隊",
+     "n": 8,
+     "types": {
+      "FFG": 1,
+      "FFL": 7
+     },
+     "where": "呉淞"
+    }
+   ],
+   "other": []
+  },
+  "XMN": {
+   "assigned": 6,
+   "units": [
+    {
+     "name": "護衛艦第16支隊",
+     "n": 6,
+     "types": {
+      "FFG": 2,
+      "FFL": 4
+     },
+     "where": "廈門"
+    }
+   ],
+   "other": []
+  },
+  "STU": {
+   "assigned": 0,
+   "units": [
+    {
+     "name": "導弾艇第34大隊",
+     "n": 0,
+     "types": {},
+     "where": "汕頭の礐石。022型（42.6 m）は 50 m 未満",
+     "short": 12,
+     "low": 12
+    }
+   ],
+   "other": []
+  }
+ }
+}
