@@ -1,0 +1,12 @@
+run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s1_processing_units,s2_processing_units,cap_pu,archive_version
+2026-11-11T23:07:17Z,BHI,26,5.306,header,,,,5.306,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,DXE,25,7.959,header,,,,7.959,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,HKG,26,5.281,header,,,,5.281,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,HPU,25,5.768,header,,,,5.768,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,HYD,26,5.357,header,,,,5.357,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,JMN,25,6.136,header,,,,6.136,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,LYG,25,5.435,header,,,,5.435,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,NDS,26,5.641,header,,,,5.641,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,PDG,25,6.388,header,,,,6.388,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,WHI,25,5.46,header,,,,5.46,,200.0,baseline-bl-1
+2026-11-11T23:07:17Z,XCD,26,5.306,header,,,,5.306,,200.0,baseline-bl-1

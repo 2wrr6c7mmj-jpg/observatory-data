@@ -1,0 +1,346 @@
+{
+ "run_utc": "2026-11-11T23:07:17Z",
+ "cap_pu": 200.0,
+ "ports": [
+  {
+   "site_id": "PDG",
+   "mask_version": "PDG-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "171": 56
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "171": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2025-12-06T09:54:58Z",
+     "last_utc": "2026-11-02T09:54:27Z",
+     "png_bytes": {
+      "vv_p10": 20686,
+      "vv_p90": 20960,
+      "vh_p10": 23040
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 6.388,
+   "requests": 25
+  },
+  {
+   "site_id": "NDS",
+   "mask_version": "NDS-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "142": 62,
+    "69": 60
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "142": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2026-01-09T10:10:08Z",
+     "last_utc": "2026-10-31T10:09:26Z",
+     "png_bytes": {
+      "vv_p10": 17729,
+      "vv_p90": 16562,
+      "vh_p10": 19440
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 5.641,
+   "requests": 26
+  },
+  {
+   "site_id": "DXE",
+   "mask_version": "DXE-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "171": 58
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "171": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2025-12-30T09:54:31Z",
+     "last_utc": "2026-11-02T09:54:02Z",
+     "png_bytes": {
+      "vv_p10": 23499,
+      "vv_p90": 23821,
+      "vh_p10": 24552
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 7.959,
+   "requests": 25
+  },
+  {
+   "site_id": "BHI",
+   "mask_version": "BHI-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "157": 105
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "157": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2026-06-22T10:48:54Z",
+     "last_utc": "2026-11-07T10:48:45Z",
+     "png_bytes": {
+      "vv_p10": 22776,
+      "vv_p90": 22349,
+      "vh_p10": 24758
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 5.306,
+   "requests": 26
+  },
+  {
+   "site_id": "XCD",
+   "mask_version": "XCD-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "11": 53,
+    "84": 57
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "84": {
+     "scenes": 21,
+     "used": 21,
+     "built": true,
+     "credibility": "4",
+     "first_utc": "2026-01-05T10:41:42Z",
+     "last_utc": "2026-11-08T10:41:00Z",
+     "png_bytes": {
+      "vv_p10": 24074,
+      "vv_p90": 21788,
+      "vh_p10": 26223
+     },
+     "older_than_12_months": 0,
+     "enough": false
+    }
+   },
+   "processing_units": 5.306,
+   "requests": 26
+  },
+  {
+   "site_id": "LYG",
+   "mask_version": "LYG-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "69": 52,
+    "76": 13
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "69": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2025-10-24T10:04:18Z",
+     "last_utc": "2026-11-07T10:03:28Z",
+     "png_bytes": {
+      "vv_p10": 18422,
+      "vv_p90": 17121,
+      "vh_p10": 19860
+     },
+     "older_than_12_months": 2,
+     "enough": true
+    }
+   },
+   "processing_units": 5.435,
+   "requests": 25
+  },
+  {
+   "site_id": "JMN",
+   "mask_version": "JMN-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "11": 52
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "11": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2025-12-31T10:33:30Z",
+     "last_utc": "2026-11-03T10:32:47Z",
+     "png_bytes": {
+      "vv_p10": 20991,
+      "vv_p90": 20729,
+      "vh_p10": 23173
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 6.136,
+   "requests": 25
+  },
+  {
+   "site_id": "HPU",
+   "mask_version": "HPU-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "11": 52
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "11": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2025-12-31T10:33:59Z",
+     "last_utc": "2026-11-03T10:33:16Z",
+     "png_bytes": {
+      "vv_p10": 17171,
+      "vv_p90": 17858,
+      "vh_p10": 17732
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 5.768,
+   "requests": 25
+  },
+  {
+   "site_id": "HKG",
+   "mask_version": "HKG-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "11": 52,
+    "113": 59
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "113": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2026-01-07T10:25:16Z",
+     "last_utc": "2026-11-10T10:24:50Z",
+     "png_bytes": {
+      "vv_p10": 19103,
+      "vv_p90": 18120,
+      "vh_p10": 20548
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 5.281,
+   "requests": 26
+  },
+  {
+   "site_id": "WHI",
+   "mask_version": "WHI-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "3": 16,
+    "98": 63
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "98": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2026-01-30T09:48:35Z",
+     "last_utc": "2026-11-09T09:47:42Z",
+     "png_bytes": {
+      "vv_p10": 15969,
+      "vv_p90": 15188,
+      "vh_p10": 17622
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 5.46,
+   "requests": 25
+  },
+  {
+   "site_id": "HYD",
+   "mask_version": "HYD-land-v1",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "105": 38,
+    "25": 59,
+    "3": 16,
+    "98": 61
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "98": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2026-01-30T09:49:00Z",
+     "last_utc": "2026-11-09T09:48:11Z",
+     "png_bytes": {
+      "vv_p10": 21754,
+      "vv_p90": 22099,
+      "vh_p10": 23024
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 5.357,
+   "requests": 26
+  }
+ ],
+ "processing_units": 64.037,
+ "requests": 280
+}
