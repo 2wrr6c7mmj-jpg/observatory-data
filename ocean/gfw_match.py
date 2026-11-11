@@ -39,6 +39,7 @@ LAG_DAYS = 5           # GFW serves detections up to five days ago
 RECHECK_DAYS = 4       # a pass is matched again each day for this long after it first becomes due (late arrivals)
 GIVE_UP_DAYS = 21      # a pass GFW still has nothing for is left as it is after this
 PAUSE_S = 1.0          # one report at a time per token
+USER_AGENT = "observatory-data/1"
 
 
 class GfwError(Exception):
@@ -86,7 +87,7 @@ def http_report(token: str, bbox, days: str, matched: bool, timeout: float = 150
          "date-range": days, "format": "JSON", "filters[0]": f"matched='{'true' if matched else 'false'}'"}
     req = urllib.request.Request(URL + "?" + urllib.parse.urlencode(q), data=json.dumps({"geojson": region(bbox)}).encode(),
                                  method="POST", headers={"Authorization": "Bearer " + token, "Content-Type": "application/json",
-                                                         "User-Agent": "observatory-data"})
+                                                         "User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read())
