@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-11T11:27:55Z",
- "state": "alert",
+ "generated_utc": "2026-11-11T13:00:57Z",
+ "state": "warn",
  "summary": {
-  "ok": 9,
+  "ok": 10,
   "warn": 2,
-  "alert": 1,
+  "alert": 0,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -70,8 +70,8 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-10T13:41:54Z",
-   "heartbeat_age_h": 21.8,
+   "heartbeat_utc": "2026-11-11T12:56:54Z",
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-11-09",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -110,9 +110,9 @@
    ],
    "values": {
     "latest_acquired_utc": "2026-11-09T09:48:11Z",
-    "last_run_utc": "2026-11-10T13:41:54Z",
+    "last_run_utc": "2026-11-11T12:56:54Z",
     "last_run_errors": 0,
-    "last_run_scenes": 2
+    "last_run_scenes": 0
    }
   },
   {
@@ -121,7 +121,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-11T11:26:42Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.6,
    "data_date": "2026-11-10",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -144,7 +144,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-10T15:12:31Z",
-   "heartbeat_age_h": 20.3,
+   "heartbeat_age_h": 21.8,
    "data_date": "2026-11-10",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -188,7 +188,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-11T07:53:07Z",
-   "heartbeat_age_h": 3.6,
+   "heartbeat_age_h": 5.1,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 15,
@@ -212,7 +212,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-11T07:53:01Z",
-   "heartbeat_age_h": 3.6,
+   "heartbeat_age_h": 5.1,
    "data_date": "2026-11-11",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -230,7 +230,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-11T11:27:03Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -595,25 +595,19 @@
    "sources": [
     "sat"
    ],
-   "state": "alert",
-   "reasons": [
-    {
-     "level": "alert",
-     "code": "failed",
-     "text": "schedule の実行 2026-11-10T13:34:49Z が failure（2 回続けて）"
-    }
-   ],
-   "last_success_started_utc": "2026-11-08T11:59:08Z",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-11T12:48:03Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 42825811635,
-    "started_utc": "2026-11-10T13:34:49Z",
+    "id": 43023472128,
+    "started_utc": "2026-11-11T12:48:03Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/42825811635",
-    "delay_h": 8.3
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43023472128",
+    "delay_h": 7.5
    },
-   "consecutive_failures": 2
+   "consecutive_failures": 0
   },
   {
    "file": "pla-tracker.yml",
@@ -685,12 +679,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 135.987,
-   "usage_csv_requests": 472,
-   "usage_csv_runs": 14,
-   "status_month_pu_before": 132.472,
-   "status_last_run_utc": "2026-11-10T13:41:54Z",
-   "usage_csv_pu_before_last_run": 132.472,
+   "usage_csv_pu": 143.376,
+   "usage_csv_requests": 517,
+   "usage_csv_runs": 15,
+   "status_month_pu_before": 135.987,
+   "status_last_run_utc": "2026-11-11T12:56:54Z",
+   "usage_csv_pu_before_last_run": 135.987,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
