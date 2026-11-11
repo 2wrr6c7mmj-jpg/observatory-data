@@ -1,0 +1,259 @@
+fleet,home_port,port_conf,type,class,pennant,name,unit,count,src
+NTN,Qingdao,high,CV,Type 001,16,Liaoning,,1,CK+NN
+NTN,Qingdao,medium,DDG,Type 055,101,Nanchang,1st Destroyer Flotilla,1,WP+NN+ZW+CM
+NTN,Qingdao,medium,DDG,Type 055,102,Lhasa,1st Destroyer Flotilla,1,WP+NN+ZW
+NTN,Qingdao,medium,DDG,Type 055,103,Anshan,1st Destroyer Flotilla,1,WP+NN+ZW
+NTN,Qingdao,medium,DDG,Type 055,104,Wuxi,1st Destroyer Flotilla,1,WP+NN+ZW
+NTN,Qingdao,medium,DDG,Type 052D,117,Xining,1st Destroyer Flotilla,1,WP+ZW+CM
+NTN,Qingdao,medium,DDG,Type 052D,118,Urumqi,1st Destroyer Flotilla,1,WP+ZW
+NTN,Lushun,medium,DDG,Type 052D,119,Guiyang,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,medium,DDG,Type 052D,120,Chengdu,10th Destroyer Flotilla,1,WP+ZH
+NTN,Qingdao,medium,DDG,Type 052,113,Qingdao,1st Destroyer Flotilla,1,WP+CM
+NTN,Qingdao,medium,FFG,Type 054A,538,Yantai,1st Destroyer Flotilla,1,WP+ZW
+NTN,Qingdao,medium,FFG,Type 054A,546,Yancheng,1st Destroyer Flotilla,1,WP+ZW
+NTN,Qingdao,medium,FFG,Type 054A,547,Linyi,1st Destroyer Flotilla,1,WP+ZW
+NTN,Qingdao,medium,FFG,Type 054A,550,Weifang,1st Destroyer Flotilla,1,WP+ZW+CM
+NTN,Lushun,medium,FFG,Type 054A,576,Daqing,10th Destroyer Flotilla,1,WP+ZW
+NTN,Lushun,medium,FFG,Type 054A,579,Handan,10th Destroyer Flotilla,1,WP+ZW
+NTN,Lushun,low,FFG,Type 054A,539,Wuhu,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,low,FFG,Type 054A,598,Rizhao,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,low,FFG,Type 054A,542,Zaozhuang,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,medium,FFG,Type 054AG,580,Ordos,,1,CM
+NTN,Lushun,low,FFG,Type 054AG,543,Linfen,,1,CM+TX
+NTN,Qingdao,medium,FFG,Type 054B,545,Luohe,1st Destroyer Flotilla,1,NN+ZW
+NTN,Lushun,medium,DDG,Type 052D,121,Qiqihar,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,medium,DDG,Type 052D,122,Tangshan,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,medium,DDG,Type 052D,123,Huainan,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,medium,DDG,Type 052D,124,Kaifeng,10th Destroyer Flotilla,1,WP+ZH
+NTN,Lushun,low,DDG,Type 052D,125,Cangzhou,10th Destroyer Flotilla,1,WP+ZW
+NTN,Lushun,medium,DDG,Type 052D,126,Heze,10th Destroyer Flotilla,1,WP+AR+ZH
+NTN,Qingdao,medium,DDG,Type 052D,127,Zhumadian,1st Destroyer Flotilla,1,WP+AR+ZW
+NTN,Qingdao,low,DDG,Type 052D,128,Ganzi,1st Destroyer Flotilla,1,WP+ZW
+NTN,Qingdao,medium,DDG,Type 051C,115,Shenyang,1st Destroyer Flotilla,1,WP+ZH
+NTN,Qingdao,medium,DDG,Type 051C,116,Shijiazhuang,1st Destroyer Flotilla,1,WP+ZH
+NTN,Dalian-Haiyangdao,medium,FFL,Type 056A,600,Songyuan,11th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Dalian-Haiyangdao,medium,FFL,Type 056A,602,Pingdingshan,11th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,medium,FFL,Type 056A,603,Dingzhou,12th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,medium,FFL,Type 056A,604,Mudanjiang,12th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,medium,FFL,Type 056A,605,Zhangjiakou,12th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,medium,FFL,Type 056A,606,Xinji,12th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,low,FFL,Type 056A,607,Dongying,12th Frigate Flotilla,1,WP+ZH
+NTN,Dalian-Haiyangdao,medium,FFL,Type 056A,650,Wuhai,11th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Dalian-Haiyangdao,medium,FFL,Type 056A,654,Zhangye,11th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,medium,FFL,Type 056A,655,Huangshi,12th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Weihai,medium,FFL,Type 056A,656,Qinhuangdao,12th Frigate Flotilla,1,WP+ZW+ZH
+NTN,Qingdao,medium,LST,Type 072A,921,Tianzhushan,1st Landing Ship Squadron,1,WP+ZW+ZH
+NTN,Qingdao,medium,LST,Type 072A,922,Daqingshan,1st Landing Ship Squadron,1,WP+ZW+ZH
+NTN,Qingdao-Jianggezhuang,low,SSN,Type 093/093A/093B,,,1st Submarine Base,3,ORF
+NTN,Qingdao,medium,SSK,Type 039/039G,,,2nd Submarine Flotilla,9,ZW
+NTN,Lushun,medium,SSK,Type 039B and others,,,12th Submarine Flotilla,10,ZW+ZH
+NTN,Qingdao,medium,AOR,Type 903A,889,Taihu,1st Combat Support Ship Flotilla,1,WP
+NTN,Qingdao,medium,AOR,Type 903A,902,Dongpinghu,1st Combat Support Ship Flotilla,1,WP
+NTN,Qingdao,medium,AOR,Type 903A,903,Kekexilihu,1st Combat Support Ship Flotilla,1,WP
+NTN,Qingdao,medium,AOR,Type 901,901,Hulunhu,1st Combat Support Ship Flotilla,1,CM
+NTN,Qingdao,medium,AGI,Type 815G,794,Tianlangxing,1st Combat Support Ship Flotilla,1,WP+ZW
+NTN,Qingdao,medium,AGI,Type 815A,796,Kaiyangxing,1st Combat Support Ship Flotilla,1,WP+ZW
+NTN,Qingdao,medium,AGI,Type 815A,799,Jinxing,1st Combat Support Ship Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 055,109,Dongguan,3rd Destroyer Flotilla,1,WP+CM+ZW
+ETN,Zhoushan,medium,DDG,Type 055,110,Anqing,6th Destroyer Flotilla,1,WP+CM+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,154,Xiamen,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,155,Nanjing,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,156,Zibo,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,157,Lishui,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,131,Taiyuan,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,132,Suzhou,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,134,Shaoxing,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,133,Baotou,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,135,Dazhou,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052D,158,Suzhou,6th Destroyer Flotilla,1,WP+ZW+CM
+ETN,Zhoushan,medium,DDG,Type 052D,159,Rikaze,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,DDG,Type 052C,150,Changchun,6th Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,medium,DDG,Type 052C,151,Zhengzhou,6th Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,medium,DDG,Type 052C,152,Jinan,6th Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,medium,DDG,Type 052C,153,Xi'an,6th Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,high,DDG,Project 956E,136,Hangzhou,3rd Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,high,DDG,Project 956E,137,Fuzhou,3rd Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,high,DDG,Project 956EM,138,Taizhou,3rd Destroyer Flotilla,1,WP+ZH
+ETN,Zhoushan,high,DDG,Project 956EM,139,Ningbo,3rd Destroyer Flotilla,1,WP+ZH
+ETN,Ningde,medium,FFG,Type 054,525,Ma'anshan,15th Frigate Flotilla,1,ZW+ZH
+ETN,Ningde,medium,FFG,Type 054,526,Wenzhou,15th Frigate Flotilla,1,ZW+ZH
+ETN,Zhoushan,medium,FFG,Type 054A,529,Zhoushan,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,530,Xuzhou,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,548,Yiyang,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,549,Changzhou,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,577,Huanggang,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,578,Yangzhou,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,532,Jingzhou,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,531,Xiangtan,3rd Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,515,Binzhou,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,599,Anyang,6th Destroyer Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,FFG,Type 054A,533,Nantong,3rd Destroyer Flotilla,1,WP+ZH
+ETN,Xiamen,medium,FFG,Type 054A,522,Ziyang,16th Frigate Flotilla,1,WP+ZW+TX
+ETN,Ningde,medium,FFG,Type 054A,534,Baoji,15th Frigate Flotilla,1,CM+ZH+TX
+ETN,Ningde,medium,FFG,Type 054A,537,Yixing,15th Frigate Flotilla,1,WP+ZH+TX
+ETN,Shanghai,medium,FFG,Type 054A,516,Huaibei,14th Frigate Flotilla,1,WP+ZW+CM
+ETN,Ningde,low,FFG,Type 054A,517,Quzhou,15th Frigate Flotilla,1,CM+ZW+ZH
+ETN,Ningde,low,FFG,Type 054AG,519,Fuyang,15th Frigate Flotilla,1,ZW+TX
+ETN,Lianyungang,low,FFG,Type 054AG,535,Yuxi,13th Frigate Flotilla,1,ZW+TX
+ETN,Ningde,low,FFG,Type 054AG,510,Ningde,15th Frigate Flotilla,1,CM+ZW
+ETN,Xiamen,medium,FFG,Type 054A,523,Honghe,16th Frigate Flotilla,1,WP+ZW+TX
+ETN,Zhoushan,medium,AOR,Type 903,886,Qiandaohu,2nd Combat Support Ship Flotilla,1,WP
+ETN,Zhoushan,medium,AOR,Type 903A,890,Chaohu,2nd Combat Support Ship Flotilla,1,WP
+ETN,Zhoushan,medium,AOR,Type 903A,904,Gaoyouhu,2nd Combat Support Ship Flotilla,1,WP
+ETN,Zhoushan,medium,AGI,Type 815,791,Beijixing,2nd Combat Support Ship Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,AGI,Type 815G,795,Tianshuxing,2nd Combat Support Ship Flotilla,1,WP+ZW
+ETN,Zhoushan,medium,AGI,Type 815A,798,Yuhengxing,2nd Combat Support Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LHD,Type 075,32,Guangxi,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LHD,Type 075,33,Anhui,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LPD,Type 071,988,Yimengshan,5th Landing Ship Flotilla,1,WP
+ETN,Shanghai,medium,LPD,Type 071,980,Longhushan,5th Landing Ship Flotilla,1,WP
+ETN,Shanghai,medium,LPD,Type 071,986,Simingshan,5th Landing Ship Flotilla,1,WP
+ETN,Shanghai,medium,LST,Type 072A,973,Baxianshan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072A,974,Wuyishan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072A,975,Culaishan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072A,977,Wutaishan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072A,976,Tianmushan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072A,981,Dabieshan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072A,982,Taihangshan,5th Landing Ship Flotilla,1,WP+ZW
+ETN,Shanghai,medium,LST,Type 072III,970,Yandangshan,5th Landing Ship Flotilla,1,ZW+ZH
+ETN,Shanghai,medium,LST,Type 072III,971,Jiuhuashan,5th Landing Ship Flotilla,1,ZW+ZH
+ETN,Shanghai,medium,LST,Type 072III,972,Huanggangshan,5th Landing Ship Flotilla,1,ZW+ZH
+ETN,Shanghai,medium,LST,Type 072III,939,Putuoshan,5th Landing Ship Flotilla,1,ZW+ZH
+ETN,Shanghai,medium,LST,Type 072III,940,Tiantaishan,5th Landing Ship Flotilla,1,ZW+ZH
+ETN,Shanghai,low,LST,Type 072II,,,5th Landing Ship Flotilla,3,WP
+ETN,Shanghai,low,LSM,Type 073A,941,Shengshan,5th Landing Ship Flotilla,1,ZW
+ETN,Shanghai,low,LSM,Type 073A,942,Lushan,5th Landing Ship Flotilla,1,ZW
+ETN,Shanghai,low,LSM,Type 073A,943,Mengshan,5th Landing Ship Flotilla,1,ZW
+ETN,Shanghai,low,LSM,Type 073A,944,Yushan,5th Landing Ship Flotilla,1,ZW
+ETN,Lianyungang,medium,FFL,Type 056A,608,Liaocheng,13th Frigate Flotilla,1,WP+ZW
+ETN,Ningde,low,FFL,Type 056A,609,Shizuishan,15th Frigate Flotilla,1,WP
+ETN,Shanghai,medium,FFL,Type 056A,610,Shuozhou,14th Frigate Flotilla,1,WP+ZW
+ETN,Shanghai,medium,FFL,Type 056A,611,Lu'an,14th Frigate Flotilla,1,WP+ZW
+ETN,Ningde,medium,FFL,Type 056A,615,Xiaogan,15th Frigate Flotilla,1,WP+ZW+TX
+ETN,Shanghai,medium,FFL,Type 056A,616,Tai'an,14th Frigate Flotilla,1,WP+ZW
+ETN,Xiamen,medium,FFL,Type 056A,617,Jingdezhen,16th Frigate Flotilla,1,WP+ZW
+ETN,Xiamen,medium,FFL,Type 056A,618,Shangqiu,16th Frigate Flotilla,1,WP+ZW
+ETN,Ningde,low,FFL,Type 056A,619,Nanyang,15th Frigate Flotilla,1,WP
+ETN,Shanghai,medium,FFL,Type 056A,636,Jining,14th Frigate Flotilla,1,WP+ZW
+ETN,Shanghai,medium,FFL,Type 056A,637,Shiyan,14th Frigate Flotilla,1,WP+ZW
+ETN,Shanghai,medium,FFL,Type 056A,638,Sanmenxia,14th Frigate Flotilla,1,WP+ZW
+ETN,Shanghai,medium,FFL,Type 056A,639,Zhuzhou,14th Frigate Flotilla,1,WP+ZW
+ETN,Ningde,medium,FFL,Type 056A,640,Ezhou,15th Frigate Flotilla,1,WP+ZW+TX
+ETN,Ningde,medium,FFL,Type 056A,641,Yiwu,15th Frigate Flotilla,1,WP+ZW+TX
+ETN,Ningde,medium,FFL,Type 056A,642,Deyang,15th Frigate Flotilla,1,WP+ZW+CM
+ETN,Ningde,medium,FFL,Type 056A,643,Yichun,15th Frigate Flotilla,1,WP+ZW+TX
+ETN,Xiamen,medium,FFL,Type 056A,645,Xuancheng,16th Frigate Flotilla,1,WP+ZW
+ETN,Xiamen,medium,FFL,Type 056A,644,Tongren,16th Frigate Flotilla,1,WP+ZW
+ETN,Ningbo-Daxie,medium,SSK,Type 039A/039B,,,22nd Submarine Flotilla,10,ZW+ZH
+ETN,Ningbo-Xiangshan,medium,SSK,Project 636/636M,,,42nd Submarine Flotilla,6,ZW+ZH
+STN,Zhanjiang,medium,DDG,Type 052D,161,Hohhot,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,DDG,Type 052D,162,Nanning,2nd Destroyer Flotilla,1,WP+ZW+CM
+STN,Zhanjiang,medium,DDG,Type 052D,163,Jiaozuo,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,DDG,Type 052D,164,Guilin,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,DDG,Type 052D,165,Zhanjiang,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,DDG,Type 052D,166,Weinan,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,DDG,Type 052B,168,Guangzhou,2nd Destroyer Flotilla,1,WP+ZH
+STN,Zhanjiang,medium,DDG,Type 052B,169,Wuhan,2nd Destroyer Flotilla,1,WP+ZH
+STN,Zhanjiang,medium,DDG,Type 051B,167,Shenzhen,2nd Destroyer Flotilla,1,WP+ZH
+STN,Zhanjiang,medium,FFG,Type 054A,568,Hengyang,2nd Destroyer Flotilla,1,WP+ZW+CM
+STN,Zhanjiang,medium,FFG,Type 054A,569,Yulin,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,FFG,Type 054A,570,Huangshan,2nd Destroyer Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,FFG,Type 054A,571,Yuncheng,2nd Destroyer Flotilla,1,WP+ZW
+STN,Beihai,low,FFG,Type 054AG,501,Shihezi,18th Frigate Flotilla,1,CM+ZW
+STN,Sanya,medium,FFG,Type 054A,572,Hengshui,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,FFG,Type 054B,555,Qinzhou,9th Destroyer Flotilla,1,NN+ZW
+STN,Zhanjiang,medium,LHD,Type 075,31,Hainan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,medium,LHD,Type 075,34,Hubei,6th Landing Ship Flotilla,1,WP+NN+CM
+STN,Zhanjiang,medium,LPD,Type 071,998,Kunlunshan,6th Landing Ship Flotilla,1,WP+CM
+STN,Zhanjiang,medium,LPD,Type 071,999,Jinggangshan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,medium,LPD,Type 071,989,Changbaishan,6th Landing Ship Flotilla,1,WP+CM
+STN,Zhanjiang,medium,LPD,Type 071,987,Wuzhishan,6th Landing Ship Flotilla,1,WP+CM
+STN,Zhanjiang,medium,LPD,Type 071,985,Qilianshan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,medium,LST,Type 072A,992,Huadingshan,6th Landing Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,LST,Type 072A,993,Luoxiaoshan,6th Landing Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,LST,Type 072A,994,Daiyunshan,6th Landing Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,LST,Type 072A,995,Wanyangshan,6th Landing Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,LST,Type 072A,996,Laotieshan,6th Landing Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,LST,Type 072A,997,Yunwushan,6th Landing Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,LST,Type 072III,991,Emeishan,6th Landing Ship Flotilla,1,ZH+WP
+STN,Zhanjiang,medium,LST,Type 072III,934,Danxiashan,6th Landing Ship Flotilla,1,ZH+WP
+STN,Zhanjiang,medium,LST,Type 072III,935,Xuefengshan,6th Landing Ship Flotilla,1,ZH+WP
+STN,Zhanjiang,medium,LST,Type 072III,936,Haiyangshan,6th Landing Ship Flotilla,1,ZH+WP
+STN,Zhanjiang,medium,LST,Type 072III,937,Qingchengshan,6th Landing Ship Flotilla,1,ZH+WP
+STN,Zhanjiang,medium,LST,Type 072III,938,Lvliangshan,6th Landing Ship Flotilla,1,ZH+WP
+STN,Zhanjiang,low,LSM,Type 073A,945,Huashan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,low,LSM,Type 073A,946,Songshan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,low,LSM,Type 073A,947,Lushan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,low,LSM,Type 073A,948,Xueshan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,low,LSM,Type 073A,949,Hengshan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,low,LSM,Type 073A,950,Taishan,6th Landing Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AOR,Type 903,887,Weishanhu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AOR,Type 903A,906,Honghu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AOR,Type 903A,907,Luomahu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AOR,Type 903A,892,Dongjianghu,3rd Combat Support Ship Flotilla,1,NN+CDB
+STN,Zhanjiang,medium,AOR,Type 903A,893,Wulunguhu,3rd Combat Support Ship Flotilla,1,CM+NN
+STN,Zhanjiang,medium,AOR,Type 901,905,Chaganhu,3rd Combat Support Ship Flotilla,1,WP+ZW+ZH
+STN,Zhanjiang,medium,AOR,Type 908,885,Qinghaihu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,low,AKS,Type 904,883,Dongtinghu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AKS,Type 904A,888,Fuxianhu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AKS,Type 904B,961,Junshanhu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AKS,Type 904B,962,Luguhu,3rd Combat Support Ship Flotilla,1,WP
+STN,Zhanjiang,medium,AGI,Type 815G,792,Haiwangxing,3rd Combat Support Ship Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,AGI,Type 815G,793,Tianwangxing,3rd Combat Support Ship Flotilla,1,WP+ZW
+STN,Zhanjiang,medium,AGI,Type 815A,797,Tianquanxing,3rd Combat Support Ship Flotilla,1,WP+ZW
+STN,Sanya,high,CV,Type 002,17,Shandong,,1,CK+USNI
+STN,Sanya,high,CV,Type 003,18,Fujian,,1,CK+CM
+STN,Sanya,medium,DDG,Type 055,105,Dalian,9th Destroyer Flotilla,1,WP+NN+ZW+CM
+STN,Sanya,medium,DDG,Type 055,106,Yan'an,9th Destroyer Flotilla,1,WP+NN+ZW
+STN,Sanya,medium,DDG,Type 055,107,Zunyi,9th Destroyer Flotilla,1,WP+NN+ZW
+STN,Sanya,medium,DDG,Type 055,108,Xianyang,9th Destroyer Flotilla,1,WP+NN+ZW
+STN,Sanya,medium,DDG,Type 052D,172,Kunming,9th Destroyer Flotilla,1,WP+ZW+CM
+STN,Sanya,medium,DDG,Type 052D,173,Changsha,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,DDG,Type 052D,174,Hefei,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,DDG,Type 052D,175,Yinchuan,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,DDG,Type 052D,176,Loudi,9th Destroyer Flotilla,1,WP+ZW+CM
+STN,Sanya,medium,DDG,Type 052D,177,Tongchuan,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,DDG,Type 052C,170,Lanzhou,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,DDG,Type 052C,171,Haikou,9th Destroyer Flotilla,1,WP+CM
+STN,Zhanjiang,medium,FFG,Type 054A,536,Xuchang,2nd Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,FFG,Type 054A,573,Liuzhou,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,FFG,Type 054A,574,Sanya,9th Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,FFG,Type 054A,575,Yueyang,9th Destroyer Flotilla,1,WP+ZW+CM
+STN,Zhanjiang,medium,FFG,Type 054A,500,Xianning,2nd Destroyer Flotilla,1,WP+ZW
+STN,Sanya,medium,FFG,Type 054A,551,Bayannao'er,19th Frigate Flotilla,1,WP+ZW+TX
+STN,Sanya,medium,FFG,Type 054A,552,Chenzhou,19th Frigate Flotilla,1,WP+ZW+TX
+STN,Sanya,medium,FFG,Type 054A,553,Dali,19th Frigate Flotilla,1,WP+ZW+CM
+STN,Sanya,medium,FFG,Type 054A,554,Tongliao,19th Frigate Flotilla,1,WP+ZW+TX
+STN,Sanya-Longpo,medium,SSBN,Type 094,,,2nd Submarine Base,6,WP+ORF
+STN,Sanya-Longpo,low,SSN,Type 093/093A/093B,,,2nd Submarine Base,5,ORF
+STN,Sanya-Yulin,medium,SSK,Type 039G; Project 636M,,,32nd Submarine Flotilla,8,ZW+ZH
+STN,Xiachuan,medium,SSK,Type 035B/039B,,,52nd Submarine Flotilla,6,ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,620,Ganzhou,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,621,Panzhihua,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,622,Guang'an,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,623,Wenshan,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,624,Suizhou,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,625,Bazhong,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,626,Wuzhou,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,627,Enshi,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,628,Yongzhou,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,629,Tongling,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,630,Aba,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Beihai,medium,FFL,Type 056A,631,Tianmen,18th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,646,Suining,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,medium,FFL,Type 056A,647,Nanchong,17th Frigate Flotilla,1,WP+ZW+ZH
+STN,Guangzhou,low,FFL,Type 056A,648,Hanzhong,17th Frigate Flotilla,1,WP+ZH
+STN,Guangzhou,low,FFL,Type 056A,649,Guangyuan,17th Frigate Flotilla,1,WP+ZH
+STN,Hong Kong,medium,FFL,Type 056A,666,Suqian,Hong Kong Garrison Vessel Squadron,1,WP+ZW+TX
+STN,Hong Kong,medium,FFL,Type 056A,667,Jingmen,Hong Kong Garrison Vessel Squadron,1,WP+ZW+TX
+STN,Sanya,medium,FFL,Type 056A,668,Qujing,19th Frigate Flotilla,1,WP+ZW
+STN,Sanya,medium,FFL,Type 056A,669,Liupanshui,19th Frigate Flotilla,1,WP+ZW
+UNK,UNK,low,LHD,Type 076,51,Sichuan,,1,WP+TWZ
+NTN,Dalian,medium,MCM,Type 081A/082II,,,11th Minesweeper Squadron,8,ZW
+ETN,Shanghai,medium,MCM,Type 081/082II,,,4th Minesweeper Squadron,4,ZW
+ETN,Zhoushan-Changtu,low,MCM,Type 081A/082II/082I,,,9th Minesweeper Squadron,8,ZW+ZH
+STN,Jiangmen,medium,MCM,Type 081/081A/082II,,,10th Minesweeper Squadron,10,ZW+ZH
+STN,Zhanjiang-Xuwen,low,MCM,Type 082I,,,76th Minesweeper Squadron,6,ZH
+ETN,Shanghai/Zhoushan/Fujian,low,PTG,Type 022,,,3 Missile Boat Squadrons,36,ZH+ZW
+STN,Shangchuan,medium,PTG,Type 022,,,33rd Missile Boat Squadron,12,ZH+ZW
+STN,Shantou,low,PTG,Type 022,,,34th Missile Boat Squadron,12,ZH
