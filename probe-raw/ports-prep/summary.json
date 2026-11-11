@@ -1,0 +1,377 @@
+{
+ "run_utc": "2026-11-11T23:01:14Z",
+ "sites": {
+  "PDG": {
+   "mask": {
+    "version": "PDG-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 1,
+    "structure_ways": 22,
+    "water_areas": null,
+    "water_fraction": 0.5718,
+    "land_fraction": 0.3728,
+    "structure_fraction": 0.0554,
+    "osm_base": "2026-11-11T22:15:20Z"
+   },
+   "lines": {
+    "version": "PDG-quay-v1",
+    "counts": {
+     "pier": 10,
+     "quay": 1,
+     "coastline": 1
+    }
+   },
+   "areas": {
+    "features": 20,
+    "military": 4,
+    "military_names": [
+     "上川雷达站",
+     "登5支",
+     "",
+     ""
+    ]
+   }
+  },
+  "NDS": {
+   "mask": {
+    "version": "NDS-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 1,
+    "structure_ways": 3,
+    "water_areas": null,
+    "water_fraction": 0.5089,
+    "land_fraction": 0.4704,
+    "structure_fraction": 0.0206,
+    "osm_base": "2026-11-11T22:20:28Z"
+   },
+   "lines": {
+    "version": "NDS-quay-v1",
+    "counts": {
+     "pier": 2,
+     "quay": 0,
+     "coastline": 1
+    }
+   },
+   "areas": {
+    "features": 79,
+    "military": 6,
+    "military_names": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   }
+  },
+  "DXE": {
+   "mask": {
+    "version": "DXE-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 5,
+    "structure_ways": 28,
+    "water_areas": null,
+    "water_fraction": 0.3736,
+    "land_fraction": 0.6078,
+    "structure_fraction": 0.0186,
+    "osm_base": "2026-11-11T22:25:35Z"
+   },
+   "lines": {
+    "version": "DXE-quay-v1",
+    "counts": {
+     "pier": 21,
+     "quay": 0,
+     "coastline": 5
+    }
+   },
+   "areas": {
+    "features": 64,
+    "military": 2,
+    "military_names": [
+     "",
+     ""
+    ]
+   }
+  },
+  "BHI": {
+   "mask": {
+    "version": "BHI-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 2,
+    "structure_ways": 3,
+    "water_areas": null,
+    "water_fraction": 0.7991,
+    "land_fraction": 0.1866,
+    "structure_fraction": 0.0143,
+    "osm_base": "2026-11-11T22:28:37Z"
+   },
+   "lines": {
+    "version": "BHI-quay-v1",
+    "counts": {
+     "pier": 3,
+     "quay": 0,
+     "coastline": 2
+    }
+   },
+   "areas": {
+    "features": 12,
+    "military": 1,
+    "military_names": [
+     "南部战区海军护卫舰第18支队"
+    ]
+   }
+  },
+  "XCD": {
+   "mask": {
+    "version": "XCD-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 7,
+    "structure_ways": 6,
+    "water_areas": null,
+    "water_fraction": 0.7552,
+    "land_fraction": 0.2385,
+    "structure_fraction": 0.0063,
+    "osm_base": "2026-11-11T22:31:44Z"
+   },
+   "lines": {
+    "version": "XCD-quay-v1",
+    "counts": {
+     "pier": 5,
+     "quay": 0,
+     "coastline": 7
+    }
+   },
+   "areas": {
+    "features": 7,
+    "military": 2,
+    "military_names": [
+     "南部战区大澳湾基地",
+     "下川岛基地"
+    ]
+   }
+  },
+  "LYG": {
+   "mask": {
+    "version": "LYG-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 3,
+    "structure_ways": 11,
+    "water_areas": null,
+    "water_fraction": 0.5322,
+    "land_fraction": 0.4563,
+    "structure_fraction": 0.0115,
+    "osm_base": "2026-11-11T22:35:44Z"
+   },
+   "lines": {
+    "version": "LYG-quay-v1",
+    "counts": {
+     "pier": 9,
+     "quay": 1,
+     "coastline": 3
+    }
+   },
+   "areas": {
+    "features": 42,
+    "military": 3,
+    "military_names": [
+     "",
+     "",
+     ""
+    ]
+   }
+  },
+  "JMN": {
+   "mask": {
+    "version": "JMN-land-v1",
+    "water_polygons": true,
+    "switched_to_water_polygons": true,
+    "coastline_ways": 0,
+    "structure_ways": 15,
+    "water_areas": 5,
+    "water_fraction": 0.5254,
+    "land_fraction": 0.4559,
+    "structure_fraction": 0.0187,
+    "osm_base": "2026-11-11T22:39:47Z"
+   },
+   "lines": {
+    "version": "JMN-quay-v1",
+    "counts": {
+     "pier": 14,
+     "quay": 0,
+     "coastline": 0
+    }
+   },
+   "areas": {
+    "features": 22,
+    "military": 1,
+    "military_names": [
+     ""
+    ]
+   }
+  },
+  "HPU": {
+   "mask": {
+    "version": "HPU-land-v1",
+    "water_polygons": true,
+    "switched_to_water_polygons": true,
+    "coastline_ways": 0,
+    "structure_ways": 20,
+    "water_areas": 5,
+    "water_fraction": 0.378,
+    "land_fraction": 0.618,
+    "structure_fraction": 0.004,
+    "osm_base": "2026-11-11T22:43:50Z"
+   },
+   "lines": {
+    "version": "HPU-quay-v1",
+    "counts": {
+     "pier": 16,
+     "quay": 0,
+     "coastline": 0
+    }
+   },
+   "areas": {
+    "features": 52,
+    "military": 6,
+    "military_names": [
+     "",
+     "",
+     "",
+     "中国海监第八支队",
+     "中国人民解放军海军海军4801工厂",
+     "广东海警局"
+    ]
+   }
+  },
+  "HKG": {
+   "mask": {
+    "version": "HKG-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 7,
+    "structure_ways": 37,
+    "water_areas": null,
+    "water_fraction": 0.5913,
+    "land_fraction": 0.4064,
+    "structure_fraction": 0.0023,
+    "osm_base": "2026-11-11T22:47:56Z"
+   },
+   "lines": {
+    "version": "HKG-quay-v1",
+    "counts": {
+     "pier": 2,
+     "quay": 3,
+     "coastline": 7
+    }
+   },
+   "areas": {
+    "features": 62,
+    "military": 2,
+    "military_names": [
+     "",
+     "琵琶山政府爆炸品倉庫 Piper's Hill Government Explosive Depot"
+    ]
+   }
+  },
+  "WHI": {
+   "mask": {
+    "version": "WHI-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 6,
+    "structure_ways": 6,
+    "water_areas": null,
+    "water_fraction": 0.4895,
+    "land_fraction": 0.5014,
+    "structure_fraction": 0.0091,
+    "osm_base": "2026-11-11T22:51:00Z"
+   },
+   "lines": {
+    "version": "WHI-quay-v1",
+    "counts": {
+     "pier": 3,
+     "quay": 0,
+     "coastline": 6
+    }
+   },
+   "areas": {
+    "features": 15,
+    "military": 7,
+    "military_names": [
+     "松顶雷达站",
+     "威海水警区",
+     "威海船厂",
+     "松顶雷达站",
+     "戚家山基地",
+     "戚家山基地",
+     ""
+    ]
+   }
+  },
+  "HYD": {
+   "mask": {
+    "version": "HYD-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 1,
+    "structure_ways": 0,
+    "water_areas": null,
+    "water_fraction": 0.6112,
+    "land_fraction": 0.3888,
+    "structure_fraction": 0.0,
+    "osm_base": "2026-11-11T22:54:06Z"
+   },
+   "lines": {
+    "version": "HYD-quay-v1",
+    "counts": {
+     "pier": 0,
+     "quay": 0,
+     "coastline": 1
+    }
+   },
+   "areas": {
+    "features": 5,
+    "military": 2,
+    "military_names": [
+     "海洋岛雷达站(南)",
+     "海洋岛雷达站(西)"
+    ]
+   }
+  },
+  "CTU": {
+   "mask": {
+    "version": "CTU-land-v1",
+    "water_polygons": false,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 3,
+    "structure_ways": 32,
+    "water_areas": null,
+    "water_fraction": 0.2543,
+    "land_fraction": 0.7318,
+    "structure_fraction": 0.0139,
+    "osm_base": "2026-11-11T22:57:06Z"
+   },
+   "lines": {
+    "version": "CTU-quay-v1",
+    "counts": {
+     "pier": 32,
+     "quay": 0,
+     "coastline": 3
+    }
+   },
+   "areas": {
+    "features": 70,
+    "military": 0,
+    "military_names": []
+   }
+  }
+ },
+ "failed": []
+}
