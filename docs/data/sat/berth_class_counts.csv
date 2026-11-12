@@ -1,10 +1,12 @@
 site_id,acquired_utc,platform,orbit_direction,relative_orbit,mask_version,naval_version,harbour_naval,harbour_civil,harbour_unknown,quay_naval,quay_civil,quay_unknown,stretches_naval,stretches_civil,stretches_unknown,occupied_max_naval,occupied_max_civil,occupied_max_unknown
+PDG,2026-10-21T09:54:27Z,sentinel-1d,ascending,171,PDG-land-v1,naval-1,0,0,0,7,0,2,8,0,0,19,0,0
 LSN,2026-11-01T22:03:46Z,sentinel-1c,descending,76,LSN-land-v1,naval-1,0,0,2,6,0,0,,,,,,
 QDH,2026-11-01T22:04:36Z,sentinel-1c,descending,76,QDH-land-v2,naval-1,0,0,6,5,0,1,,,,,,
 QJG,2026-11-01T22:04:36Z,sentinel-1c,descending,76,QJG-land-v1,naval-1,1,0,9,5,0,0,,,,,,
 QGZ,2026-11-01T22:05:01Z,sentinel-1c,descending,76,QGZ-land-v1,naval-1,1,0,3,31,0,0,,,,,,
 XSN,2026-11-02T09:54:02Z,sentinel-1d,ascending,171,XSN-land-v1,naval-1,0,0,31,8,0,0,0,0,0,0,0,0
 ZDH,2026-11-02T09:54:02Z,sentinel-1d,ascending,171,ZDH-land-v2,naval-1,0,0,13,18,1,14,10,2,7,35,2,9
+PDG,2026-11-02T09:54:27Z,sentinel-1d,ascending,171,PDG-land-v1,naval-1,0,0,0,7,0,3,8,0,5,20,0,8
 SWS,2026-11-02T09:54:27Z,sentinel-1d,ascending,171,SWS-land-v1,naval-1,0,0,0,0,0,0,0,0,0,0,0,0
 QDH,2026-11-02T09:55:42Z,sentinel-1d,ascending,171,QDH-land-v2,naval-1,0,0,10,7,0,3,1,0,4,5,0,4
 QGZ,2026-11-02T09:55:42Z,sentinel-1d,ascending,171,QGZ-land-v1,naval-1,1,0,4,34,0,0,45,0,0,76,0,0

@@ -1,6 +1,6 @@
 {
  "dataset": "sat",
- "title": "Sentinel-1 による港内の艦船候補数（試行：湛江・三亜・楡林（楡林海軍基地）・三亜・亜龍湾（龍坡、潜水艦基地）・青島・古鎮口（楡池海軍基地）・舟山・定海（東海艦隊）・青島・姜哥荘（第 1 潜水艦基地）・青島港内の海軍区域・象山（潜水艦基地）・大連・旅順（旅順港）・上海・呉淞（上海水警区）・廈門（廈門水警区）・汕頭（汕頭水警区）・福州・馬尾（造船所））",
+ "title": "Sentinel-1 による港内の艦船候補数（試行：湛江・三亜・楡林（楡林海軍基地）・三亜・亜龍湾（龍坡、潜水艦基地）・青島・古鎮口（楡池海軍基地）・舟山・定海（東海艦隊）・青島・姜哥荘（第 1 潜水艦基地）・青島港内の海軍区域・象山（潜水艦基地）・大連・旅順（旅順港）・上海・呉淞（上海水警区）・廈門（廈門水警区）・汕頭（汕頭水警区）・福州・馬尾（造船所）・上海・浦東（登陸艦第 5 支隊）・寧徳・三都澳（護衛艦第 15 支隊）・寧波・大榭島（潜水艦第 22 支隊）・北海（護衛艦第 18 支隊）・台山・下川島（潜水艦第 52 支隊）・連雲港・連島（護衛艦第 13 支隊）・江門・崖門（掃雷艦第 10 大隊）・広州・黄埔（護衛艦第 17 支隊）・香港・昂船洲（駐香港部隊）・威海（護衛艦第 12 支隊））",
  "status": "試行（陸マスクのみ。固定物マスクは 20 シーン蓄積後）。湛江（ZJG）は 2026-10-30 に監視範囲を v2（東岸の軍港を中心とする矩形）に変えた。ZJG-land-v1 の行と ZJG-land-v2 の行は範囲が違うため直接比べない（series_breaks）",
  "sites": [
   {
@@ -1660,6 +1660,1025 @@
      "note": "馬尾の旧福州船政局の跡に近代の造船所が再建された。座標は出典になし"
     }
    ]
+  },
+  {
+   "id": "PDG",
+   "name": "上海・浦東（登陸艦第 5 支隊）",
+   "mask_version": "PDG-land-v1",
+   "bbox": [
+    121.688,
+    31.2955,
+    121.714,
+    31.3145
+   ],
+   "width_px": 248,
+   "height_px": 211,
+   "area_km2": 5.2,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。登陸艦第 5 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「登5支」の軍の区域。10 m の概観で桟橋の川側に灰色の大型艦が複数並ぶ。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "長江南岸の桟橋（約 1.4 km、岸と平行）と連絡橋",
+     "bbox": [
+      121.694,
+      31.298,
+      121.712,
+      31.313
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "上海",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     171
+    ],
+    "baselines_present": [
+     171
+    ],
+    "lines_version": "PDG-quay-v1",
+    "class_weights": {
+     "site_key": "PDG",
+     "own": true,
+     "fleet": "PDG-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（登陸艦第5支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.PDG-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "072A",
+      "071",
+      "075",
+      "TUG",
+      "073A"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 11,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1237764831「登5支」",
+     "url": "https://www.openstreetmap.org/way/1237764831",
+     "bbox": [
+      121.68769,
+      31.29289,
+      121.70698,
+      31.30851
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0065「浦東基地(建造中)」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "31.3047N 121.697E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ]
+  },
+  {
+   "id": "NDS",
+   "name": "寧徳・三都澳（護衛艦第 15 支隊）",
+   "mask_version": "NDS-land-v1",
+   "bbox": [
+    119.674,
+    26.605,
+    119.696,
+    26.624
+   ],
+   "width_px": 219,
+   "height_px": 211,
+   "area_km2": 4.6,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。護衛艦第 15 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に名前の無い軍の区域（営舎・運動場）と桟橋。三都島の南岸の軍の区域（way/853052450）は小さな桟橋だけで範囲に入れていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。軌道 69 の基準は 23 撮影で 24 に届かないので使わない（軌道 142 だけ）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "南岸（城澳）の桟橋（約 850 m、連絡橋 3 本）",
+     "bbox": [
+      119.679,
+      26.612,
+      119.693,
+      26.62
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "寧徳",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     142
+    ],
+    "baselines_present": [
+     142
+    ],
+    "lines_version": "NDS-quay-v1",
+    "class_weights": {
+     "site_key": "NDS",
+     "own": true,
+     "fleet": "NDS-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第15支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.NDS-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "054A",
+      "054A+",
+      "056A",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 2,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/853052454「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/853052454",
+     "bbox": [
+      119.68021,
+      26.60999,
+      119.68537,
+      26.61562
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0084「三都島基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "26.6376N 119.6869E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ]
+  },
+  {
+   "id": "DXE",
+   "name": "寧波・大榭島（潜水艦第 22 支隊）",
+   "mask_version": "DXE-land-v1",
+   "bbox": [
+    121.95,
+    29.887,
+    121.982,
+    29.906
+   ],
+   "width_px": 309,
+   "height_px": 211,
+   "area_km2": 6.5,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。潜水艦第 22 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：溫約瑟の点と、10 m の概観で島の南岸に短い桟橋が並び細長い影が付く。OSM の軍の区域（way/1106950499）は島の内陸。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。区画 A1 の桟橋 8 本のうち 3 本は溫約瑟の点から 600 m を超えるので、同じ桟橋群として手で海軍（推定）にした（sat/berth_class/DXE.json）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "大榭島の南岸の桟橋の並び（水道の北側）",
+     "bbox": [
+      121.954,
+      29.8955,
+      121.979,
+      29.9
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "寧波舟山",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     171
+    ],
+    "baselines_present": [
+     171
+    ],
+    "lines_version": "DXE-quay-v1",
+    "class_weights": {
+     "site_key": "DXE",
+     "own": true,
+     "fleet": "DXE-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（潜水艦第22支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.DXE-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "039AB",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 21,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0032「大榭島基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "29.8979N 121.963E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    },
+    {
+     "title": "OpenStreetMap way/1106950499「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/1106950499",
+     "bbox": [
+      121.95054,
+      29.90241,
+      121.95937,
+      29.90595
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ]
+  },
+  {
+   "id": "BHI",
+   "name": "北海（護衛艦第 18 支隊）",
+   "mask_version": "BHI-land-v1",
+   "bbox": [
+    109.064,
+    21.478,
+    109.084,
+    21.497
+   ],
+   "width_px": 207,
+   "height_px": 210,
+   "area_km2": 4.4,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。護衛艦第 18 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「南部战区海军护卫舰第18支队」の区域と桟橋（way/1124328210、約 860 m）。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "地角の北端の T 字の桟橋",
+     "bbox": [
+      109.07,
+      21.4845,
+      109.079,
+      21.4895
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "北海",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     157
+    ],
+    "baselines_present": [
+     157
+    ],
+    "lines_version": "BHI-quay-v1",
+    "class_weights": {
+     "site_key": "BHI",
+     "own": true,
+     "fleet": "BHI-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第18支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.BHI-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "054A+",
+      "056A",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 3,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1362984051「南部战区海军护卫舰第18支队」",
+     "url": "https://www.openstreetmap.org/way/1362984051",
+     "bbox": [
+      109.072,
+      21.4834,
+      109.0787,
+      21.48808
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0013「北海水警區」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "21.4703N 109.0462E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ]
+  },
+  {
+   "id": "XCD",
+   "name": "台山・下川島（潜水艦第 52 支隊）",
+   "mask_version": "XCD-land-v1",
+   "bbox": [
+    112.54,
+    21.59,
+    112.56,
+    21.609
+   ],
+   "width_px": 207,
+   "height_px": 210,
+   "area_km2": 4.4,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。潜水艦第 52 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「下川岛基地」の区域と桟橋 4 本（121〜179 m）。溫約瑟の点も同じ湾。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。基準は 2 軌道とも 24 撮影に届かない（21・22 撮影、2026 年からの撮影しか無い）ので確度 4。24 に届いたら作り直す。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "防波堤の内の桟橋 4 本",
+     "bbox": [
+      112.546,
+      21.595,
+      112.555,
+      21.604
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "江門",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     84,
+     11
+    ],
+    "baselines_present": [
+     84,
+     11
+    ],
+    "lines_version": "XCD-quay-v1",
+    "class_weights": {
+     "site_key": "XCD",
+     "own": true,
+     "fleet": "XCD-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（潜水艦第52支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.XCD-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "039AB",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 5,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1077975921「下川岛基地」",
+     "url": "https://www.openstreetmap.org/way/1077975921",
+     "bbox": [
+      112.53572,
+      21.58878,
+      112.55687,
+      21.60857
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0018「台山下川島基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "21.5972N 112.5509E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ]
+  },
+  {
+   "id": "LYG",
+   "name": "連雲港・連島（護衛艦第 13 支隊）",
+   "mask_version": "LYG-land-v1",
+   "bbox": [
+    119.447,
+    34.7445,
+    119.47,
+    34.7635
+   ],
+   "width_px": 211,
+   "height_px": 211,
+   "area_km2": 4.4,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。護衛艦第 13 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に名前の無い軍の区域（営舎・運動場）と桟橋 2 本（約 250 m・450 m）。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "西連島の南岸の桟橋 2 本",
+     "bbox": [
+      119.454,
+      34.75,
+      119.463,
+      34.758
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "連雲港",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     69
+    ],
+    "baselines_present": [
+     69
+    ],
+    "lines_version": "LYG-quay-v1",
+    "class_weights": {
+     "site_key": "LYG",
+     "own": true,
+     "fleet": "LYG-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第13支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.LYG-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "054A+",
+      "056A",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 10,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1029933272「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/1029933272",
+     "bbox": [
+      119.4559,
+      34.75156,
+      119.46239,
+      34.75702
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    }
+   ]
+  },
+  {
+   "id": "JMN",
+   "name": "江門・崖門（掃雷艦第 10 大隊）",
+   "mask_version": "JMN-land-v1",
+   "bbox": [
+    113.065,
+    22.268,
+    113.085,
+    22.29
+   ],
+   "width_px": 206,
+   "height_px": 244,
+   "area_km2": 5.0,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。掃雷艦第 10 大隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に名前の無い軍の基地（military=base）と桟橋 2 本（約 940 m・860 m）。部隊の駐屯地は「江門新会」としか分からず、この基地がそれという裏付けは位置だけ。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 8 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "崖門水道の東岸の桟橋（約 900 m、岸と平行）と北の小桟橋",
+     "bbox": [
+      113.071,
+      22.27,
+      113.079,
+      22.289
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "江門",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 8,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     11
+    ],
+    "baselines_present": [
+     11
+    ],
+    "lines_version": "JMN-quay-v1",
+    "class_weights": {
+     "site_key": "JMN",
+     "own": true,
+     "fleet": "JMN-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（掃雷艦第10大隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.JMN-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "MCM",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 14,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1091741553「（名前なし、military=base）」",
+     "url": "https://www.openstreetmap.org/way/1091741553",
+     "bbox": [
+      113.07374,
+      22.27255,
+      113.08113,
+      22.28863
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "Wikipedia 中国語版「中国人民解放军南部战区海军」（部隊の駐屯地の記載、検索結果の抜粋で確認）",
+     "url": "https://zh.wikipedia.org/zh-hans/%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B0%91%E8%A7%A3%E6%94%BE%E5%86%9B%E5%8D%97%E9%83%A8%E6%88%98%E5%8C%BA%E6%B5%B7%E5%86%9B",
+     "note": "駐屯地の地名だけ。桟橋の位置は書いていない"
+    }
+   ]
+  },
+  {
+   "id": "HPU",
+   "name": "広州・黄埔（護衛艦第 17 支隊）",
+   "mask_version": "HPU-land-v1",
+   "bbox": [
+    113.41,
+    23.08,
+    113.432,
+    23.099
+   ],
+   "width_px": 225,
+   "height_px": 210,
+   "area_km2": 4.7,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。護衛艦第 17 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM の軍の区域（way/469207090）と海軍 4801 工場が長洲島の北岸。溫約瑟の点も北岸。島の南東岸の区域（way/469207101）は名前が「中国海监第八支队」で、岸壁の船も白いので入れていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。岸壁の線は OSM の軍の区域（way/469207123・way/469207090）の外形の川に面した縁から引いた 3 本（sat/masks/HPU-manual.geojson、OSM に岸壁の線が無い）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "長洲島の北岸の岸壁（4801 工場の並び）",
+     "bbox": [
+      113.414,
+      23.0875,
+      113.429,
+      23.0925
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "広州",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     11
+    ],
+    "baselines_present": [
+     11
+    ],
+    "lines_version": "HPU-quay-v1",
+    "class_weights": {
+     "site_key": "HPU",
+     "own": true,
+     "fleet": "HPU-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第17支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.HPU-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "056A",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 19,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/469207090「（名前なし、landuse=military）」",
+     "url": "https://www.openstreetmap.org/way/469207090",
+     "bbox": [
+      113.41691,
+      23.08036,
+      113.42332,
+      23.08981
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "OpenStreetMap way/469207123「中国人民解放军海军海军4801工厂」",
+     "url": "https://www.openstreetmap.org/way/469207123",
+     "bbox": [
+      113.42185,
+      23.08614,
+      113.42726,
+      23.09029
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0011「廣州水警區」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "23.089N 113.4174E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ]
+  },
+  {
+   "id": "HKG",
+   "name": "香港・昂船洲（駐香港部隊）",
+   "mask_version": "HKG-land-v1",
+   "bbox": [
+    114.126,
+    22.307,
+    114.146,
+    22.326
+   ],
+   "width_px": 206,
+   "height_px": 210,
+   "area_km2": 4.3,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。駐香港部隊艦艇大隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：昂船洲海軍基地（中国語版 Wikipedia、溫約瑟の点）。10 m の概観で防波堤に囲まれた港池。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。港池の岸は OSM で海岸線だけなので、区画 A1 の中の海岸線を岸壁に戻した（sat/berths.json）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "昂船洲の南岸の四角い港池",
+     "bbox": [
+      114.132,
+      22.3135,
+      114.139,
+      22.3195
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "香港",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     113,
+     11
+    ],
+    "baselines_present": [
+     113,
+     11
+    ],
+    "lines_version": "HKG-quay-v1",
+    "class_weights": {
+     "site_key": "HKG",
+     "own": true,
+     "fleet": "HKG-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（駐香港部隊艦艇大隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.HKG-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "056A",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 5,
+     "coastline_sections": 1,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0027「駐港部隊 昂船洲海陸兩軍基地」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "22.3189N 114.1354E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    },
+    {
+     "title": "Wikipedia 中国語版「昂船洲海軍基地」",
+     "url": "https://zh.wikipedia.org/wiki/%E6%98%82%E8%88%B9%E6%B4%B2%E6%B5%B7%E8%BB%8D%E5%9F%BA%E5%9C%B0",
+     "note": "基地の所在"
+    }
+   ]
+  },
+  {
+   "id": "WHI",
+   "name": "威海（護衛艦第 12 支隊）",
+   "mask_version": "WHI-land-v1",
+   "bbox": [
+    122.12,
+    37.5015,
+    122.144,
+    37.5205
+   ],
+   "width_px": 212,
+   "height_px": 211,
+   "area_km2": 4.5,
+   "provisional": true,
+   "note": "2026-11-12 追加（試行）。護衛艦第 12 支隊の軍港（配属の表 docs/data/ref/plan-fleet.csv で監視範囲の外にあった部隊）。位置の根拠：OSM に「威海水警区」の区域（港の北岸と西岸）と桟橋 3 本。溫約瑟の点も同じ港。10 m の概観では艦の影を確かめられていない。範囲は桟橋の周りに絞った仮のもの（provisional）。区画は naval 1 つと残り B。艦種の事前分布は配属の表から（sat/ship_classes.json の status＝roster）、桟橋の型は既定値、est-2 の較正は湛江の流用（calib_source＝ZJG）。窓の規則（win-1）と海軍の桟橋・岸壁に限る規則（naval-1、sat/berths.json の naval_since）は初回のさかのぼりの撮影から効かせる。pu_month_cap 6 PU／月は毎日の取得の見込みの約 2 倍（初回の 30 日さかのぼりを含む）",
+   "sectors": [
+    {
+     "id": "A1",
+     "name": "威海湾の北岸の港（東の桟橋 約 550 m と西の桟橋）",
+     "bbox": [
+      122.126,
+      37.5075,
+      122.138,
+      37.5145
+     ],
+     "role": "naval"
+    },
+    {
+     "id": "B",
+     "name": "それ以外",
+     "bbox": null,
+     "role": "other"
+    }
+   ],
+   "kind": "naval",
+   "group": "威海",
+   "priority": 2,
+   "daily": true,
+   "publish": "trial",
+   "mode": "毎日の取得",
+   "layout": "per_site",
+   "png": false,
+   "pu_month_cap": 6,
+   "quay": {
+    "ready": true,
+    "lacks": [],
+    "baseline_orbits": [
+     98
+    ],
+    "baselines_present": [
+     98
+    ],
+    "lines_version": "WHI-quay-v1",
+    "class_weights": {
+     "site_key": "WHI",
+     "own": true,
+     "fleet": "WHI-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第12支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.WHI-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "classes": [
+      "056A",
+      "TUG"
+     ]
+    },
+    "classes_version": "est-1b",
+    "est2_calib_source": "ZJG",
+    "est2_calib_note": "湛江の較正を流用（この港では未較正）",
+    "est2_calib_label": "湛江流用（未較正）",
+    "est2_calib_n": 0,
+    "label_freeze_utc": "2026-12-15",
+    "berths": {
+     "berth_lines": 3,
+     "coastline_sections": 0,
+     "excluded_ways": [],
+     "no_berth_parts": 0,
+     "version": "berth-1"
+    }
+   },
+   "sources": [
+    {
+     "title": "OpenStreetMap way/1316037555「威海水警区」",
+     "url": "https://www.openstreetmap.org/way/1316037555",
+     "bbox": [
+      122.126,
+      37.5096,
+      122.1376,
+      37.5148
+     ],
+     "note": "OSM の地物の外形（S2 L2A の 10 m の概観と OSM（sat/port_locate.py locate-2、probe/ports-locate-hq-nov、2026-11-12））。© OpenStreetMap contributors, ODbL 1.0。tools/ports_prep.py の取得（probe/ports-prep-new-hq、2026-11-12）"
+    },
+    {
+     "title": "溫約瑟「中國人民解放軍基地及設施」（docs/data/ref/wen-pla-bases.geojson） wen-0009「威海水警區」",
+     "url": "https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq",
+     "coord": "37.5128N 122.1365E",
+     "note": "点の位置だけ。出典は docs/data/ref/wen-pla-bases.meta.json"
+    }
+   ]
   }
  ],
  "sites_note": "複数港の土台（multi-site PR-1）。publish＝trial の地点は試行ページだけで扱い、公開の地図には出さない。daily＝false の地点は設定だけで毎日の取得をしない（岸壁線・基準がそろってから有効にする）。kind・priority・pu_month_cap・区画の role は sat/sites.json。湛江（ZJG）のファイルの場所と列は従来どおり",
@@ -1809,6 +2828,106 @@
    "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
   },
   {
+   "site_id": "PDG",
+   "kind": "berth_only",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "berth_only",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "berth_only",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "berth_only",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "berth_only",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "berth_only",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "berth_only",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "berth_only",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "berth_only",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "berth_only",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
    "site_id": "ZJG",
    "kind": "size",
    "from_mask_version": "ZJG-land-v2",
@@ -2069,6 +3188,206 @@
    "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
+   "site_id": "PDG",
+   "kind": "size",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "PDG",
+   "kind": "fixed",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "size",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "fixed",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "size",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "fixed",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "size",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "fixed",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "size",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "fixed",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "size",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "fixed",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "size",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "fixed",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "size",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "fixed",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "size",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "fixed",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "size",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "fixed",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
    "site_id": "ZJG",
    "kind": "naval",
    "from_mask_version": "ZJG-land-v2",
@@ -2199,6 +3518,106 @@
    "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
+   "site_id": "PDG",
+   "kind": "naval",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "naval",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "naval",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "naval",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "naval",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "naval",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "naval",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "naval",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "naval",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "naval",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
    "site_id": "ZJG",
    "kind": "windows",
    "from_mask_version": "ZJG-land-v2",
@@ -2327,6 +3746,106 @@
    "to_version": "win-1",
    "date_utc": "2026-11-04",
    "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "PDG",
+   "kind": "windows",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "windows",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "windows",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "windows",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "windows",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "windows",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "windows",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "windows",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "windows",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "windows",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
   }
  ],
  "source": {
@@ -2629,6 +4148,82 @@
      "note": null,
      "naval_since": "2026-11-01",
      "naval_since_note": "naval-gap-1（2026-11-07）：berth-1 の始まり（2026-11-01）から naval-1 を効かせる。2026-11-01〜04 の撮影は、OSM で海岸線だけの軍の岸壁（区分の設定の added）と手書きの桟橋が berth-1 で外れ、naval-1 で戻る前の谷間になっていた（旅順・青島港内・象山などの 11-01・11-02 の撮影で、岸壁帯の候補の 8〜9 割が「海岸線」として外れた）。谷間の撮影は 2026-11-07 に一度だけ取り直して数え直す"
+    },
+    "HKG": {
+     "coastline": [
+      {
+       "way": 110774390,
+       "sector": "A1",
+       "note": "昂船洲の港池の岸（区画 A1）。OSM では港池の岸壁・防波堤が海岸線 1 本だけで、桟橋・岸壁の線が無い"
+      }
+     ],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "PDG": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "NDS": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "DXE": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "BHI": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "XCD": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "LYG": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "JMN": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "HPU": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
+    },
+    "WHI": {
+     "coastline": [],
+     "exclude_ways": [],
+     "note": null,
+     "naval_since": "2026-10-01",
+     "naval_since_note": "2026-11-12 に加えた港：naval-1 を初回の 30 日さかのぼりの撮影（2026-10 中旬〜）から効かせる（区分の設定 sat/berth_class は最初からある）"
     }
    }
   },
@@ -2639,6 +4234,61 @@
    "geojson": "berth_class.geojson",
    "rule": "船が着く線を一本ずつ海軍（naval：海軍の区域の桟橋・岸壁、建造・整備中の艦の着く造船所の岸壁を含む）・民間（civil）・不明（unknown）に分ける。since_utc（地点ごとの sites.<地点>.since_utc が早い地点はその日）以降の撮影では、見出しの数（ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠）に海軍の線に沿うものだけを入れる。民間・不明の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv に別に出す。それより前の撮影の行は書き換えない",
    "sites": {
+    "BHI": {
+     "lines": {
+      "naval": 1,
+      "civil": 0,
+      "unknown": 2
+     },
+     "lines_version": "BHI-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
+    "DXE": {
+     "lines": {
+      "naval": 8,
+      "civil": 0,
+      "unknown": 13
+     },
+     "lines_version": "DXE-quay-v1",
+     "confidence": "中（溫約瑟の地図の点と桟橋の形による推定。OSM の軍の区域は桟橋の岸に無い）",
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
+    "HKG": {
+     "lines": {
+      "naval": 1,
+      "civil": 1,
+      "unknown": 4
+     },
+     "lines_version": "HKG-quay-v1",
+     "confidence": "中（溫約瑟の地図の点と、昂船洲の海軍基地として広く知られた港池。OSM に軍の区域は無い）",
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
+    "HPU": {
+     "lines": {
+      "naval": 9,
+      "civil": 8,
+      "unknown": 2
+     },
+     "lines_version": "HPU-quay-v1",
+     "confidence": "中（OSM の軍の区域の外形から引いた線。艦の着く区間は初回の撮影で確かめる）",
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
+    "JMN": {
+     "lines": {
+      "naval": 14,
+      "civil": 0,
+      "unknown": 0
+     },
+     "lines_version": "JMN-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
     "LSN": {
      "lines": {
       "naval": 14,
@@ -2650,6 +4300,17 @@
      "note": null,
      "since_utc": "2026-11-01"
     },
+    "LYG": {
+     "lines": {
+      "naval": 4,
+      "civil": 0,
+      "unknown": 6
+     },
+     "lines_version": "LYG-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
     "MAW": {
      "lines": {
       "naval": 1,
@@ -2660,6 +4321,28 @@
      "confidence": "低〜中（造船所の岸壁は OSM の外形からの手書き。造船所の外の桟橋 4 本は根拠が無く不明）",
      "note": null,
      "since_utc": "2026-11-05"
+    },
+    "NDS": {
+     "lines": {
+      "naval": 1,
+      "civil": 0,
+      "unknown": 1
+     },
+     "lines_version": "NDS-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
+    "PDG": {
+     "lines": {
+      "naval": 7,
+      "civil": 0,
+      "unknown": 4
+     },
+     "lines_version": "PDG-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
     },
     "QDH": {
      "lines": {
@@ -2737,6 +4420,28 @@
      "confidence": "中（旧港・修理施設・西岸は OSM の海軍の区域で確認寄り。F1〜F5 の櫛形桟橋は不明のまま＝見出しに入らない）",
      "note": null,
      "since_utc": "2026-11-05"
+    },
+    "WHI": {
+     "lines": {
+      "naval": 3,
+      "civil": 0,
+      "unknown": 0
+     },
+     "lines_version": "WHI-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
+    },
+    "XCD": {
+     "lines": {
+      "naval": 5,
+      "civil": 0,
+      "unknown": 0
+     },
+     "lines_version": "XCD-quay-v1",
+     "confidence": null,
+     "note": null,
+     "since_utc": "2026-10-01"
     },
     "XMN": {
      "lines": {
@@ -6080,6 +7785,447 @@
        "note": "全長は未確認（約 156 m、2部の概数）。東部戦区（136〜139）。定海 ZDH の重みに入る（PR-3a）"
       }
      ]
+    },
+    "PDG": {
+     "fleet": "PDG-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（登陸艦第5支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.PDG-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "072A",
+       "name": "072A 型戦車揚陸艦",
+       "length_m": 120.0,
+       "length_conf": "確認",
+       "count": 15,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_072A_landing_ship"
+      },
+      {
+       "id": "071",
+       "name": "071 型ドック型揚陸艦",
+       "length_m": 210.0,
+       "length_conf": "確認",
+       "count": 3,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "X",
+       "source": "https://en.wikipedia.org/wiki/Type_071_amphibious_transport_dock"
+      },
+      {
+       "id": "075",
+       "name": "075 型強襲揚陸艦",
+       "length_m": 232.0,
+       "length_conf": "確認",
+       "count": 2,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "X",
+       "source": "https://en.wikipedia.org/wiki/Type_075_landing_helicopter_dock"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 4,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      },
+      {
+       "id": "073A",
+       "name": "073A 型中型揚陸艦",
+       "length_m": 87.0,
+       "length_conf": "未確認",
+       "count": 4,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_073_landing_ship",
+       "note": "全長は未確認（約 87 m の概数）。東部戦区の登陸艦第 5 支隊（上海・浦東 PDG）の配属に入る（roster、2026-11-12）。戦区の在籍（fleets.south・north・east）には入れていないので、ほかの港の事前分布は変わらない"
+      }
+     ]
+    },
+    "NDS": {
+     "fleet": "NDS-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第15支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.NDS-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "054A",
+       "name": "054A 型フリゲート",
+       "length_m": 134.0,
+       "length_conf": "確認",
+       "count": 5,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate"
+      },
+      {
+       "id": "054A+",
+       "name": "054A 型フリゲート（改良型）",
+       "length_m": 134.0,
+       "length_conf": "未確認",
+       "count": 2,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+       "note": "全長は未確認（054A と同じと仮定）"
+      },
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 7,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 4,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "DXE": {
+     "fleet": "DXE-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（潜水艦第22支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.DXE-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "039AB",
+       "name": "039A/B 型潜水艦",
+       "length_m": 78.0,
+       "length_conf": "推定",
+       "count": 10,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
+       "kind": "submarine"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 3,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "BHI": {
+     "fleet": "BHI-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第18支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.BHI-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "054A+",
+       "name": "054A 型フリゲート（改良型）",
+       "length_m": 134.0,
+       "length_conf": "未確認",
+       "count": 1,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+       "note": "全長は未確認（054A と同じと仮定）"
+      },
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 7,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 3,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "XCD": {
+     "fleet": "XCD-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（潜水艦第52支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.XCD-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "039AB",
+       "name": "039A/B 型潜水艦",
+       "length_m": 78.0,
+       "length_conf": "推定",
+       "count": 6,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_039A_submarine",
+       "kind": "submarine"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 3,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "LYG": {
+     "fleet": "LYG-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第13支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.LYG-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "054A+",
+       "name": "054A 型フリゲート（改良型）",
+       "length_m": 134.0,
+       "length_conf": "未確認",
+       "count": 1,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "M",
+       "source": "https://en.wikipedia.org/wiki/Type_054A_frigate",
+       "note": "全長は未確認（054A と同じと仮定）"
+      },
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 1,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 2,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "JMN": {
+     "fleet": "JMN-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（掃雷艦第10大隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.JMN-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "MCM",
+       "name": "掃海艇",
+       "length_m": 60.0,
+       "length_conf": "未確認",
+       "count": 10,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_081_minesweeper",
+       "note": "全長は未確認（約 60 m の仮定。艦型も特定していない）"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 3,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "HPU": {
+     "fleet": "HPU-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第17支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.HPU-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 9,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 4,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "HKG": {
+     "fleet": "HKG-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（駐香港部隊艦艇大隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.HKG-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 2,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 2,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
+    },
+    "WHI": {
+     "fleet": "WHI-roster",
+     "w_conf": "推定（配属の表から。港ごとの調査なし）",
+     "status": "roster",
+     "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第12支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.WHI-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
+     "conf_level": 3,
+     "version": "est-1b-202611-roster",
+     "classes": [
+      {
+       "id": "056A",
+       "name": "056A 型コルベット",
+       "length_m": 90.0,
+       "length_conf": "確認",
+       "count": 7,
+       "count_conf": "推定",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "S",
+       "source": "https://en.wikipedia.org/wiki/Type_056_corvette"
+      },
+      {
+       "id": "TUG",
+       "name": "タグ・作業船",
+       "length_m": 40.0,
+       "length_conf": "推定",
+       "count": 3,
+       "count_conf": "未確認",
+       "w": 1.0,
+       "w_conf": "推定（配属の表から。港ごとの調査なし）",
+       "group": "T",
+       "source": "（出典なし。港の作業船の一般的な大きさからの推定）",
+       "note": "出典なし（全長・隻数・重みとも推定）"
+      }
+     ]
     }
    },
    "class_table_version": "est-1b",
@@ -7480,6 +9626,138 @@
     "last_utc": "2026-10-07T10:09:26Z",
     "credibility": "3",
     "file": "sat/baselines/MAW-land-v2/ro142-bl-1.json"
+   },
+   {
+    "site_id": "PDG",
+    "mask_version": "PDG-land-v1",
+    "relative_orbit": 171,
+    "version": "ro171-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-12-06T09:54:58Z",
+    "last_utc": "2026-11-02T09:54:27Z",
+    "credibility": "3",
+    "file": "sat/baselines/PDG-land-v1/ro171-bl-1.json"
+   },
+   {
+    "site_id": "NDS",
+    "mask_version": "NDS-land-v1",
+    "relative_orbit": 142,
+    "version": "ro142-bl-1",
+    "scenes": 24,
+    "first_utc": "2026-01-09T10:10:08Z",
+    "last_utc": "2026-10-31T10:09:26Z",
+    "credibility": "3",
+    "file": "sat/baselines/NDS-land-v1/ro142-bl-1.json"
+   },
+   {
+    "site_id": "DXE",
+    "mask_version": "DXE-land-v1",
+    "relative_orbit": 171,
+    "version": "ro171-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-12-30T09:54:31Z",
+    "last_utc": "2026-11-02T09:54:02Z",
+    "credibility": "3",
+    "file": "sat/baselines/DXE-land-v1/ro171-bl-1.json"
+   },
+   {
+    "site_id": "BHI",
+    "mask_version": "BHI-land-v1",
+    "relative_orbit": 157,
+    "version": "ro157-bl-1",
+    "scenes": 24,
+    "first_utc": "2026-06-22T10:48:54Z",
+    "last_utc": "2026-11-07T10:48:45Z",
+    "credibility": "3",
+    "file": "sat/baselines/BHI-land-v1/ro157-bl-1.json"
+   },
+   {
+    "site_id": "XCD",
+    "mask_version": "XCD-land-v1",
+    "relative_orbit": 84,
+    "version": "ro84-bl-1",
+    "scenes": 21,
+    "first_utc": "2026-01-05T10:41:42Z",
+    "last_utc": "2026-11-08T10:41:00Z",
+    "credibility": "4",
+    "file": "sat/baselines/XCD-land-v1/ro84-bl-1.json"
+   },
+   {
+    "site_id": "XCD",
+    "mask_version": "XCD-land-v1",
+    "relative_orbit": 11,
+    "version": "ro11-bl-1",
+    "scenes": 22,
+    "first_utc": "2025-12-31T10:33:30Z",
+    "last_utc": "2026-11-03T10:32:47Z",
+    "credibility": "4",
+    "file": "sat/baselines/XCD-land-v1/ro11-bl-1.json"
+   },
+   {
+    "site_id": "LYG",
+    "mask_version": "LYG-land-v1",
+    "relative_orbit": 69,
+    "version": "ro69-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-10-24T10:04:18Z",
+    "last_utc": "2026-11-07T10:03:28Z",
+    "credibility": "3",
+    "file": "sat/baselines/LYG-land-v1/ro69-bl-1.json"
+   },
+   {
+    "site_id": "JMN",
+    "mask_version": "JMN-land-v1",
+    "relative_orbit": 11,
+    "version": "ro11-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-12-31T10:33:30Z",
+    "last_utc": "2026-11-03T10:32:47Z",
+    "credibility": "3",
+    "file": "sat/baselines/JMN-land-v1/ro11-bl-1.json"
+   },
+   {
+    "site_id": "HPU",
+    "mask_version": "HPU-land-v1",
+    "relative_orbit": 11,
+    "version": "ro11-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-12-31T10:33:59Z",
+    "last_utc": "2026-11-03T10:33:16Z",
+    "credibility": "3",
+    "file": "sat/baselines/HPU-land-v1/ro11-bl-1.json"
+   },
+   {
+    "site_id": "HKG",
+    "mask_version": "HKG-land-v1",
+    "relative_orbit": 113,
+    "version": "ro113-bl-1",
+    "scenes": 24,
+    "first_utc": "2026-01-07T10:25:16Z",
+    "last_utc": "2026-11-10T10:24:50Z",
+    "credibility": "3",
+    "file": "sat/baselines/HKG-land-v1/ro113-bl-1.json"
+   },
+   {
+    "site_id": "HKG",
+    "mask_version": "HKG-land-v1",
+    "relative_orbit": 11,
+    "version": "ro11-bl-1",
+    "scenes": 24,
+    "first_utc": "2025-12-31T10:33:30Z",
+    "last_utc": "2026-11-03T10:32:47Z",
+    "credibility": "3",
+    "file": "sat/baselines/HKG-land-v1/ro11-bl-1.json"
+   },
+   {
+    "site_id": "WHI",
+    "mask_version": "WHI-land-v1",
+    "relative_orbit": 98,
+    "version": "ro98-bl-1",
+    "scenes": 24,
+    "first_utc": "2026-01-30T09:48:35Z",
+    "last_utc": "2026-11-09T09:47:42Z",
+    "credibility": "3",
+    "file": "sat/baselines/WHI-land-v1/ro98-bl-1.json"
    }
   ],
   "change_image": {
@@ -7736,6 +10014,150 @@
     "share": 0.366,
     "strict_m": 110,
     "stretches": 7
+   },
+   {
+    "site_id": "PDG",
+    "mask_version": "PDG-land-v1",
+    "relative_orbit": 171,
+    "baseline_version": "ro171-bl-1",
+    "lines_version": "PDG-quay-v1",
+    "total_m": 18360,
+    "blind_m": 1140,
+    "share": 0.062,
+    "strict_m": 440,
+    "stretches": 43
+   },
+   {
+    "site_id": "NDS",
+    "mask_version": "NDS-land-v1",
+    "relative_orbit": 142,
+    "baseline_version": "ro142-bl-1",
+    "lines_version": "NDS-quay-v1",
+    "total_m": 9640,
+    "blind_m": 190,
+    "share": 0.02,
+    "strict_m": 20,
+    "stretches": 10
+   },
+   {
+    "site_id": "DXE",
+    "mask_version": "DXE-land-v1",
+    "relative_orbit": 171,
+    "baseline_version": "ro171-bl-1",
+    "lines_version": "DXE-quay-v1",
+    "total_m": 16910,
+    "blind_m": 3500,
+    "share": 0.207,
+    "strict_m": 1490,
+    "stretches": 103
+   },
+   {
+    "site_id": "BHI",
+    "mask_version": "BHI-land-v1",
+    "relative_orbit": 157,
+    "baseline_version": "ro157-bl-1",
+    "lines_version": "BHI-quay-v1",
+    "total_m": 8330,
+    "blind_m": 970,
+    "share": 0.116,
+    "strict_m": 450,
+    "stretches": 19
+   },
+   {
+    "site_id": "XCD",
+    "mask_version": "XCD-land-v1",
+    "relative_orbit": 84,
+    "baseline_version": "ro84-bl-1",
+    "lines_version": "XCD-quay-v1",
+    "total_m": 7910,
+    "blind_m": 70,
+    "share": 0.009,
+    "strict_m": 0,
+    "stretches": 5
+   },
+   {
+    "site_id": "XCD",
+    "mask_version": "XCD-land-v1",
+    "relative_orbit": 11,
+    "baseline_version": "ro11-bl-1",
+    "lines_version": "XCD-quay-v1",
+    "total_m": 7910,
+    "blind_m": 430,
+    "share": 0.054,
+    "strict_m": 20,
+    "stretches": 11
+   },
+   {
+    "site_id": "LYG",
+    "mask_version": "LYG-land-v1",
+    "relative_orbit": 69,
+    "baseline_version": "ro69-bl-1",
+    "lines_version": "LYG-quay-v1",
+    "total_m": 7970,
+    "blind_m": 790,
+    "share": 0.099,
+    "strict_m": 200,
+    "stretches": 26
+   },
+   {
+    "site_id": "JMN",
+    "mask_version": "JMN-land-v1",
+    "relative_orbit": 11,
+    "baseline_version": "ro11-bl-1",
+    "lines_version": "JMN-quay-v1",
+    "total_m": 6080,
+    "blind_m": 1380,
+    "share": 0.227,
+    "strict_m": 430,
+    "stretches": 56
+   },
+   {
+    "site_id": "HPU",
+    "mask_version": "HPU-land-v1",
+    "relative_orbit": 11,
+    "baseline_version": "ro11-bl-1",
+    "lines_version": "HPU-quay-v1",
+    "total_m": 1700,
+    "blind_m": 1080,
+    "share": 0.635,
+    "strict_m": 800,
+    "stretches": 28
+   },
+   {
+    "site_id": "HKG",
+    "mask_version": "HKG-land-v1",
+    "relative_orbit": 113,
+    "baseline_version": "ro113-bl-1",
+    "lines_version": "HKG-quay-v1",
+    "total_m": 8800,
+    "blind_m": 3500,
+    "share": 0.398,
+    "strict_m": 1590,
+    "stretches": 67
+   },
+   {
+    "site_id": "HKG",
+    "mask_version": "HKG-land-v1",
+    "relative_orbit": 11,
+    "baseline_version": "ro11-bl-1",
+    "lines_version": "HKG-quay-v1",
+    "total_m": 8800,
+    "blind_m": 3500,
+    "share": 0.398,
+    "strict_m": 1940,
+    "stretches": 63
+   },
+   {
+    "site_id": "WHI",
+    "mask_version": "WHI-land-v1",
+    "relative_orbit": 98,
+    "baseline_version": "ro98-bl-1",
+    "lines_version": "WHI-quay-v1",
+    "total_m": 6720,
+    "blind_m": 390,
+    "share": 0.058,
+    "strict_m": 150,
+    "stretches": 14
    }
   ],
   "blind_note": "内側の帯（水際から 0〜30 m）の最大で基準の VV p10 が −8 dB を超える区間は、基準に船（または構造物）が入っていて数えられない可能性が高い。total_m＝水側のある線の全長、blind_m＝その区間の長さの合計、share＝割合（判定は帯の 3 画素の最大なので、岸壁自体のにじみも拾う多めの値）。strict_m＝帯の 3 画素すべてが −8 dB を超える長さ（少なめの値）。線は quay/blind.geojson",

@@ -601,6 +601,66 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "PDG",
+   "acquired_utc": "2026-10-21T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "PDG-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095427_20261021T095452_005112_009AE4_24D0_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-12T03:04:13Z",
+   "processing_units": 0.39923095703125,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 1
+   },
+   "window_excluded": {
+    "land": 3,
+    "pond": 1,
+    "enclosed": 0,
+    "anchorage": 3,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 2,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.964,
+    "water_fraction": 0.5369,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 324,
+    "clusters": 42,
+    "dropped_small": 24,
+    "dropped_vh": 1
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "SWS",
    "acquired_utc": "2026-10-21T09:54:27Z",
    "platform": "sentinel-1d",
@@ -1303,6 +1363,66 @@
     "unknown": {
      "segments": 7,
      "max": 9
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "PDG",
+   "acquired_utc": "2026-11-02T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "PDG-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095427_20261102T095452_005287_00A0E7_39D3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-12T03:04:16Z",
+   "processing_units": 0.39923095703125,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 0
+   },
+   "window_excluded": {
+    "land": 3,
+    "pond": 0,
+    "enclosed": 0,
+    "anchorage": 4,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 3,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9607,
+    "water_fraction": 0.5338,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 327,
+    "clusters": 45,
+    "dropped_small": 24,
+    "dropped_vh": 4
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 5,
+     "max": 8
     },
     "version": "naval-1"
    },
@@ -2231,7 +2351,7 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-11T12:56:54Z",
+  "run_utc": "2026-11-12T03:04:01Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -2242,7 +2362,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "SYL",
@@ -2253,7 +2373,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "SLP",
@@ -2264,7 +2384,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "QGZ",
@@ -2275,7 +2395,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "ZDH",
@@ -2286,7 +2406,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "QDH",
@@ -2297,7 +2417,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "XSN",
@@ -2308,7 +2428,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "SWS",
@@ -2319,7 +2439,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "QJG",
@@ -2330,7 +2450,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "LSN",
@@ -2341,7 +2461,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "XMN",
@@ -2352,7 +2472,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "STU",
@@ -2363,7 +2483,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
    },
    {
     "site_id": "MAW",
@@ -2374,7 +2494,54 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 864.01
+    "budget_left_pu": 856.62
+   },
+   {
+    "site_id": "PDG",
+    "lookback_days": 30,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 2,
+    "counted": 2,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 855.83
+   },
+   {
+    "site_id": "NDS",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "DXE",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "BHI",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "XCD",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "LYG",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "JMN",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "HPU",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "HKG",
+    "deferred_first_run": true
+   },
+   {
+    "site_id": "WHI",
+    "deferred_first_run": true
    }
   ],
   "s2": [
@@ -2413,14 +2580,14 @@
    },
    {
     "site_id": "QGZ",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.009,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "ZDH",
@@ -2435,104 +2602,214 @@
    },
    {
     "site_id": "QDH",
-    "days": 2,
-    "clear": 1,
-    "cloudy": 1,
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 1.299,
-    "requests": 4
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XSN",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.008,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "SWS",
-    "days": 1,
-    "clear": 1,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.81,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "QJG",
-    "days": 2,
-    "clear": 1,
-    "cloudy": 1,
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.559,
-    "requests": 4
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "LSN",
-    "days": 2,
-    "clear": 2,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 2.714,
-    "requests": 5
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XMN",
-    "days": 1,
-    "clear": 1,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 1.131,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "STU",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.008,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "MAW",
-    "days": 1,
-    "clear": 1,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
     "older_mask": 1,
-    "processing_units": 0.851,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "PDG",
+    "days": 4,
+    "clear": 1,
+    "cloudy": 0,
+    "skipped": 3,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.338,
     "requests": 3
+   },
+   {
+    "site_id": "NDS",
+    "days": 3,
+    "clear": 1,
+    "cloudy": 1,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.304,
+    "requests": 4
+   },
+   {
+    "site_id": "DXE",
+    "days": 2,
+    "clear": 0,
+    "cloudy": 2,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.01,
+    "requests": 3
+   },
+   {
+    "site_id": "BHI",
+    "days": 5,
+    "clear": 3,
+    "cloudy": 2,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.854,
+    "requests": 9
+   },
+   {
+    "site_id": "XCD",
+    "days": 2,
+    "clear": 1,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.286,
+    "requests": 4
+   },
+   {
+    "site_id": "LYG",
+    "days": 3,
+    "clear": 1,
+    "cloudy": 2,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.581,
+    "requests": 6
+   },
+   {
+    "site_id": "JMN",
+    "days": 2,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.005,
+    "requests": 2
+   },
+   {
+    "site_id": "HPU",
+    "days": 2,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.005,
+    "requests": 2
+   },
+   {
+    "site_id": "HKG",
+    "days": 2,
+    "clear": 0,
+    "cloudy": 2,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.01,
+    "requests": 3
+   },
+   {
+    "site_id": "WHI",
+    "days": 3,
+    "clear": 1,
+    "cloudy": 1,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.294,
+    "requests": 4
    }
   ],
-  "s2_requests": 32,
-  "s2_processing_units": 7.389,
-  "requests": 45,
-  "processing_units": 7.389,
+  "s2_requests": 53,
+  "s2_processing_units": 2.687,
+  "requests": 69,
+  "processing_units": 3.486,
   "pu_source": "header",
-  "scenes": 0,
-  "month_pu_before": 135.987,
+  "scenes": 2,
+  "month_pu_before": 143.376,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-11T12:56:54Z",
+ "updated_utc": "2026-11-12T03:04:01Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
@@ -2679,6 +2956,106 @@
    "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
   },
   {
+   "site_id": "PDG",
+   "kind": "berth_only",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "berth_only",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "berth_only",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "berth_only",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "berth_only",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "berth_only",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "berth_only",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "berth_only",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "berth_only",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "berth_only",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "quay-v1・est-2",
+   "to_version": "quay-v2・est-2.1（berth-1）",
+   "date_utc": "2026-11-01",
+   "note": "集計の対象を岸壁に限定（2026-11-01）：岸壁の数（quay_counts.csv の quay_version＝quay-v2 の行）・推定 est-1・est-2・岸壁帯の候補数（quay_candidates）・赤枠（chips）は船が着く線（sat/berths.json）に沿うものだけ。quay-v1 の行（それより前の撮影）は海岸線の区間も含むため直接比べない（行は書き換えない）。est-2 は毎回保存済みのファイルから全撮影を数え直すので、est-2.1 は過去の撮影も岸壁だけで計算した値"
+  },
+  {
    "site_id": "ZJG",
    "kind": "size",
    "from_mask_version": "ZJG-land-v2",
@@ -2939,6 +3316,206 @@
    "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
   },
   {
+   "site_id": "PDG",
+   "kind": "size",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "PDG",
+   "kind": "fixed",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "size",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "fixed",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "size",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "fixed",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "size",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "fixed",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "size",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "fixed",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "size",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "fixed",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "size",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "fixed",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "size",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "fixed",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "size",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "fixed",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "size",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "長さを問わない",
+   "to_version": "size-1",
+   "date_utc": "2026-11-06",
+   "note": "見出しの harbour_candidates・quay_candidates・区画は長さ 50 m 以上の候補だけ（2026-11-06 以降の撮影。ユーザーの決定 2026-11-05）。小さい候補は harbour_small・quay_small。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "fixed",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "固定物の判定なし",
+   "to_version": "fix-2",
+   "date_utc": "2026-11-05",
+   "note": "候補の画素を空の岸壁の基準と比べ、基準でも明るく当日も変化しない候補（桟橋の縁・係船柱・ブイ等）を外す（2026-11-05 以降の撮影。ユーザーの指示 2026-11-04）。harbour_candidates・quay_candidates・錨泊・赤枠が減る。外した候補は detections の fixed_excluded＝structure。残る候補には船らしさ ship_conf（high・medium・low）を付ける。2026-11-05 以降（fix-2）は、海軍の岸壁の 60 m 以上の候補（100 m 以内のその片を含む）と造船所の候補は外さない（fixed_flag＝guarded、理由は fixed_guard。長く係留している艦を構造物として外さないため。2部の設計書 fixed_eval）。人が光学画像で構造物と確かめた台帳（sat/fixed_registry/<地点>.json、地図は fixed/<地点>.geojson）の点は数えない（fixed_excluded＝registry。台帳の版は撮影ごとの registry_hash）。開けた水面の点状の固定物（point）と密集（field）は印だけで数は変えない。それより前の行は書き換えないので直接比べない"
+  },
+  {
    "site_id": "ZJG",
    "kind": "naval",
    "from_mask_version": "ZJG-land-v2",
@@ -3069,6 +3646,106 @@
    "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-11-05 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
   },
   {
+   "site_id": "PDG",
+   "kind": "naval",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "naval",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "naval",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "naval",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "naval",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "naval",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "naval",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "naval",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "naval",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "naval",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "全区分の岸壁",
+   "to_version": "naval-1",
+   "date_utc": "2026-10-01",
+   "note": "見出しの数を海軍の桟橋・岸壁に限定（2026-10-01 以降の撮影。ユーザーの指示 2026-11-03「明らかに軍艦のみを拾いたい」）。2026-10-01〜2026-11-05 の撮影は、岸壁だけに絞る規則（berth-1）で軍の岸壁（OSM で海岸線だけの岸壁・手書きの桟橋）まで外れていたため、2026-11-07 に取り直してこの規則で数え直した（naval-gap-1）。ship_counts の harbour_candidates・quay_candidates、quay_counts の占有、est-1・est-2、赤枠（chips）は区分「海軍」の線（sat/berth_class/<地点>.json、地図は berth_class.geojson）に沿うものだけ。民間・不明の線の候補は detections の berth_class に区分を付けて残し、件数は berth_class_counts.csv。それより前の行は書き換えないので直接比べない"
+  },
+  {
    "site_id": "ZJG",
    "kind": "windows",
    "from_mask_version": "ZJG-land-v2",
@@ -3197,6 +3874,106 @@
    "to_version": "win-1",
    "date_utc": "2026-11-04",
    "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-11-04 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "PDG",
+   "kind": "windows",
+   "from_mask_version": "PDG-land-v1",
+   "to_mask_version": "PDG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "NDS",
+   "kind": "windows",
+   "from_mask_version": "NDS-land-v1",
+   "to_mask_version": "NDS-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "DXE",
+   "kind": "windows",
+   "from_mask_version": "DXE-land-v1",
+   "to_mask_version": "DXE-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "BHI",
+   "kind": "windows",
+   "from_mask_version": "BHI-land-v1",
+   "to_mask_version": "BHI-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "XCD",
+   "kind": "windows",
+   "from_mask_version": "XCD-land-v1",
+   "to_mask_version": "XCD-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "LYG",
+   "kind": "windows",
+   "from_mask_version": "LYG-land-v1",
+   "to_mask_version": "LYG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "JMN",
+   "kind": "windows",
+   "from_mask_version": "JMN-land-v1",
+   "to_mask_version": "JMN-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "HPU",
+   "kind": "windows",
+   "from_mask_version": "HPU-land-v1",
+   "to_mask_version": "HPU-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "HKG",
+   "kind": "windows",
+   "from_mask_version": "HKG-land-v1",
+   "to_mask_version": "HKG-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
+  },
+  {
+   "site_id": "WHI",
+   "kind": "windows",
+   "from_mask_version": "WHI-land-v1",
+   "to_mask_version": "WHI-land-v1",
+   "from_version": "窓の制限なし",
+   "to_version": "win-1",
+   "date_utc": "2026-10-01",
+   "note": "候補の窓を、海とつながり艦が入れる水面（水路幅 30 m 以上）で、船が着く線から 80 m 以内に限定（2026-10-01 以降の撮影。ユーザーの決定 2026-11-03）。harbour_candidates・quay_candidates・赤枠（chips）が減る。それより前の行は書き換えないので直接比べない。外した候補は detections の window_excluded（land・pond・enclosed）。船が着く線から 80 m より遠い港内水域の候補は外さず、港内の錨泊として anchorage_counts.csv に別に数える（harbour_candidates には入らない）"
   }
  ]
 }
