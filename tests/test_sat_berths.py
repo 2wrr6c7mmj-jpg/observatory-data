@@ -148,8 +148,15 @@ class NoBerthTest(unittest.TestCase):
             self.assertEqual(nv.line_class(way, lon, lat), "naval")
         self.assertTrue(nv.point_ok("pier", 15388243, 119.980372, 35.716429))       # 15388243:L:01: still a berth
         self.assertTrue(nv.point_ok("pier", 1564921419, 119.968889, 35.725746))     # 1564921419:L:00, 60 m east of R:00
+        # 2026-11-12 (the mask check of every port): the reclaimed platform at the root of the northernmost slanted pier (water
+        # until 2026-04, land in S2 2026-09-22) is still water in QGZ-land-v1, so the coastline's band lay on it: sections L:00, L:01
+        for lon, lat in ((119.981059, 35.731404), (119.982146, 35.730975)):
+            self.assertFalse(nv.point_ok("coastline", 219848835, lon, lat))
+            self.assertEqual(nv.line_class(219848835, lon, lat), "naval")
+        self.assertTrue(nv.point_ok("coastline", 219848835, 119.983065, 35.730142))  # 219848835:L:02 next to it: still a berth
+        self.assertTrue(nv.point_ok("pier", 219848836, 119.981059, 35.731404))       # the pier beside the platform is not touched
         cls = berths.load_classes("QGZ")
-        self.assertEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), 6)
+        self.assertEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), 7)
         for e in cls["lines"]:
             if e.get("berth") is False:
                 self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), e["way"])
