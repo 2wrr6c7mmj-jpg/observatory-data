@@ -942,7 +942,7 @@
    "center_lon": 121.5,
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
-   "mask_version": 1,
+   "mask_water": "osm_polygons", "mask_version": 2, "history": [{"mask_version": 1, "until_utc": "2026-11-12", "recount": true, "note": "範囲は同じで、陸と水の分け方を直した（過去 30 日の撮影は新しい版で数え直す）。OSM の海岸線（natural=coastline、長江の岸の 3 本）だけで作ったため、海岸線の無い黄浦江・蘊藻浜の水面が陸になっていた（範囲の 94% が陸、水 6%）。海軍の桟橋（OSM way 697315140 ほか 13 本）の周りに水の画素が無く、岸壁の標本に 1 本も入らず、札は 0 のままだった（2026-11-12、目視の確認セットを作るときに発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた"}],
    "quay_lines_version": 1,
    "sectors": [
     {
