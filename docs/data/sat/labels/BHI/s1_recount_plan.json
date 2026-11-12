@@ -1,0 +1,53 @@
+{
+ "site_id": "BHI",
+ "version": "s2rev-1",
+ "scenes": [],
+ "per_day": [
+  {
+   "date": "2026-03-25",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-05-26",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-07-25",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-09-06",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-10-06",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-10-23",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-11-02",
+   "s1": null,
+   "dt_h": null
+  },
+  {
+   "date": "2026-11-12",
+   "s1": null,
+   "dt_h": null
+  }
+ ],
+ "pu_per_scene": 0.332,
+ "pu_total": 0.0,
+ "pu_if_stored_stretches_used": 0.0,
+ "note": "取り直しは python -m sat.s2_labels 系の S1 だけの取得（この PR にはまだ無い）で、答えの日の前後 4 日以内の撮影を 1 枚ずつ。stored_stretches＝その撮影の岸壁の片（区間の奥行きなど）は quay/<地点>/ に保存済み（取り直さずに突き合わせを組める。組む処理は未実装なので pu_total には含めてある）。S2 の自動ラベルは使わない（人の答えだけを正解にする）ので S2 の取得（約 2.7〜3.2 PU/日）は要らない。PU は cdse.estimate_pu の見積もり（3 帯、LIA なし）",
+ "needs_cdse": true,
+ "fetched": false
+}

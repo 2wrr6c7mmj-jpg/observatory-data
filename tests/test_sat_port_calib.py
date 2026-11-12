@@ -180,6 +180,11 @@ class ReviewSetTest(unittest.TestCase):
         self.assertEqual(got[0]["s1_near"][0]["relative_orbit"], "157")
         oos = s2_answers.eligible_days(s2, [], {"157"}, ["T-land-v1"], "2026-11-15", oos=True)
         self.assertEqual([d["date"] for d in oos], ["2026-11-20"])
+        # an archive with Sentinel-2 only (the ports of 2026-11-12): every clear day before the freeze, paired later
+        alone = s2_answers.eligible_days(s2, [], {"157"}, ["T-land-v1"], "2026-11-15", need_s1=False)
+        self.assertEqual([d["date"] for d in alone], ["2026-01-10", "2026-02-10"])
+        self.assertEqual(alone[1]["s1_near"], [])
+        self.assertEqual(s2_answers.eligible_days(s2, [], {"157"}, ["T-land-v1"], "2026-11-15"), [])
 
     def test_pick_days_spreads(self):
         days = [{"date": f"d{i:02d}"} for i in range(20)]
