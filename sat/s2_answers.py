@@ -137,11 +137,16 @@ class Archive:
 # ---------------------------------------------------------------- the grid of a picture
 def image_grid(site_grid: Grid, chip_w: int, chip_h: int) -> Grid:
     """The grid of an archived picture: same west, south and pixel size as the site's current grid, the height
-    of the picture (an older, smaller range keeps its south-west corner: SLP v1 stops at 18.230 N)."""
-    if chip_w != site_grid.width:
+    of the picture (an older, smaller range keeps its south-west corner: SLP v1 stops at 18.230 N).
+    A range narrower than the strip below the picture (sat/color.py LEGEND_MIN_WIDTH, 300 px: Jianggezhuang is 288 px wide,
+    the ports of 2026-11-12 about 220) is archived on a canvas as wide as the strip, the picture at its top left: the
+    grid keeps the site's width, and the page reads the pixels from the top left corner."""
+    from .color import LEGEND_MIN_WIDTH
+    narrow = site_grid.width < LEGEND_MIN_WIDTH == chip_w
+    if chip_w != site_grid.width and not narrow:
         raise ValueError(f"picture width {chip_w} != grid width {site_grid.width}")
     dlat = (site_grid.north - site_grid.south) / site_grid.height
-    return Grid(site_grid.west, site_grid.south, site_grid.east, round(site_grid.south + dlat * chip_h, 6), chip_w, chip_h)
+    return Grid(site_grid.west, site_grid.south, site_grid.east, round(site_grid.south + dlat * chip_h, 6), site_grid.width, chip_h)
 
 
 def webp_size(data: bytes) -> tuple[int, int]:

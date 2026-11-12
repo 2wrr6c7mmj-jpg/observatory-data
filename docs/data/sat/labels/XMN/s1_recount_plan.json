@@ -1,0 +1,118 @@
+{
+ "site_id": "XMN",
+ "version": "s2rev-1",
+ "scenes": [
+  {
+   "acquired_utc": "2025-11-10T10:09:44Z",
+   "relative_orbit": "142",
+   "days": [
+    "2025-11-08"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2025-12-28T10:09:40Z",
+   "relative_orbit": "142",
+   "days": [
+    "2025-12-28"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-02-02T10:09:37Z",
+   "relative_orbit": "142",
+   "days": [
+    "2026-02-06"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-03-10T10:09:36Z",
+   "relative_orbit": "142",
+   "days": [
+    "2026-03-08"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-03-15T10:17:29Z",
+   "relative_orbit": "40",
+   "days": [
+    "2026-03-15"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-06-02T10:09:35Z",
+   "relative_orbit": "142",
+   "days": [
+    "2026-06-01"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-08-08T10:08:55Z",
+   "relative_orbit": "142",
+   "days": [
+    "2026-08-05"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-10-24T10:16:50Z",
+   "relative_orbit": "40",
+   "days": [
+    "2026-10-24"
+   ],
+   "stored_stretches": true
+  }
+ ],
+ "per_day": [
+  {
+   "date": "2025-11-08",
+   "s1": "2025-11-10T10:09:44Z",
+   "dt_h": 55.3
+  },
+  {
+   "date": "2025-12-28",
+   "s1": "2025-12-28T10:09:40Z",
+   "dt_h": 7.3
+  },
+  {
+   "date": "2026-02-06",
+   "s1": "2026-02-02T10:09:37Z",
+   "dt_h": -88.7
+  },
+  {
+   "date": "2026-03-08",
+   "s1": "2026-03-10T10:09:36Z",
+   "dt_h": 55.3
+  },
+  {
+   "date": "2026-03-15",
+   "s1": "2026-03-15T10:17:29Z",
+   "dt_h": 7.4
+  },
+  {
+   "date": "2026-06-01",
+   "s1": "2026-06-02T10:09:35Z",
+   "dt_h": 31.3
+  },
+  {
+   "date": "2026-08-05",
+   "s1": "2026-08-08T10:08:55Z",
+   "dt_h": 79.3
+  },
+  {
+   "date": "2026-10-24",
+   "s1": "2026-10-24T10:16:50Z",
+   "dt_h": 7.4
+  }
+ ],
+ "pu_per_scene": 1.35,
+ "pu_total": 10.8,
+ "pu_if_stored_stretches_used": 9.45,
+ "note": "取り直しは python -m sat.s2_labels 系の S1 だけの取得（この PR にはまだ無い）で、答えの日の前後 4 日以内の撮影を 1 枚ずつ。stored_stretches＝その撮影の岸壁の片（区間の奥行きなど）は quay/<地点>/ に保存済み（取り直さずに突き合わせを組める。組む処理は未実装なので pu_total には含めてある）。S2 の自動ラベルは使わない（人の答えだけを正解にする）ので S2 の取得（約 2.7〜3.2 PU/日）は要らない。PU は cdse.estimate_pu の見積もり（3 帯、LIA なし）",
+ "needs_cdse": true,
+ "fetched": false
+}

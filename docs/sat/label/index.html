@@ -86,8 +86,9 @@ const OOS = q.get('oos') === '1';
 const S1 = q.get('s1') === '1';
 const base = '../../data/sat/labels/';
 // Shown by place name; the code stays only in the URL and the CSV (machine keys).
-const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', LSN: '大連・旅順', QDH: '青島港内', ZJG: '湛江'};
-const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH', 'LSN', 'QDH'];
+const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', LSN: '大連・旅順', QDH: '青島港内', ZJG: '湛江',
+  QJG: '青島・姜哥荘', XSN: '寧波・象山', XMN: '廈門', STU: '汕頭', MAW: '福州・馬尾'};
+const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH', 'LSN', 'QDH', 'QJG', 'XSN', 'XMN', 'STU', 'MAW'];
 document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${NAMES[p]}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>'
   + '<br>S1 の同じ時刻の正解：' + ['QGZ', 'SLP', 'SYL'].map(p => `<a href="?site=${p}&s1=1">${NAMES[p]}</a>`).join('');
 document.getElementById('ports-s1').innerHTML = '港：' + ['QGZ', 'SLP', 'SYL'].map(p => `<a href="?site=${p}&s1=1">${NAMES[p]}</a>`).join('') + '<a href="?site=' + (SITE || 'QGZ') + '">S2 の確認に戻る</a>';
