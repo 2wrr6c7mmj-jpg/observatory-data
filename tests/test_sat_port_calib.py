@@ -158,6 +158,17 @@ class ReviewSetTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             s2_answers.image_grid(g, 600, 498)
 
+    def test_image_grid_of_a_range_narrower_than_the_strip(self):
+        """A range under 300 px wide is archived on a canvas as wide as the strip below it (sat/color.py LEGEND_MIN_WIDTH),
+        the picture at the top left: the grid keeps the site's width (Jianggezhuang: 288 px, the picture 300)."""
+        from sat.color import LEGEND_MIN_WIDTH
+        g = Grid(120.57, 36.095, 120.602, 36.122, 288, 300)
+        self.assertLess(g.width, LEGEND_MIN_WIDTH)
+        got = s2_answers.image_grid(g, LEGEND_MIN_WIDTH, g.height)
+        self.assertEqual((got.width, got.height, got.west, got.east, got.north), (g.width, g.height, g.west, g.east, g.north))
+        with self.assertRaises(ValueError):
+            s2_answers.image_grid(g, g.width + 5, g.height)       # neither the site's width nor the strip's
+
     def test_days_need_an_s1_scene_within_four_days(self):
         s2 = [{"site_id": "T", "mask_version": "T-land-v1", "date": d, "acquired_utc": f"{d}T03:00:00Z", "result": r, "image": f"s2/T/v1/{d}.webp"}
               for d, r in (("2026-01-10", "clear"), ("2026-02-10", "clear"), ("2026-03-10", "cloudy"), ("2026-11-20", "clear"))]
