@@ -66,7 +66,8 @@ class WaterPolygonTest(unittest.TestCase):
         self.assertIn('relation["waterway"="riverbank"]', om.overpass_query(g, True))
         modes = {s["id"]: om.water_mode(s) for s in run.load_sites()}
         # 2026-11-12: Yamen (JMN) and Huangpu (HPU) are river banks too (no coastline way: the water comes from OSM's water areas)
-        self.assertEqual({k for k, v in modes.items() if v != "coastline"}, {"MAW", "JMN", "HPU"})
+        # 2026-11-12: Wusong (SWS) too: the Huangpu has no coastline way (v1 had the river as land)
+        self.assertEqual({k for k, v in modes.items() if v != "coastline"}, {"MAW", "JMN", "HPU", "SWS"})
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

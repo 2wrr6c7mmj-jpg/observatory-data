@@ -653,7 +653,7 @@
    "center_lat": 31.385,
    "center_lon": 121.5,
    "pixel_m": 10,
-   "mask_version": 1,
+   "mask_version": 2,
    "enabled": true,
    "provisional": true,
    "priority": 1,
