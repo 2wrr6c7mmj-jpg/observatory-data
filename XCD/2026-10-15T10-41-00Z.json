@@ -1,0 +1,119 @@
+{
+ "version": "raw-1",
+ "site_id": "XCD",
+ "acquired_utc": "2026-10-15T10:41:00Z",
+ "platform": "sentinel-1d",
+ "orbit_direction": "ascending",
+ "relative_orbit": 84,
+ "catalog_ids": [
+  "S1D_IW_GRDH_1SDV_20261015T104100_20261015T104125_005025_0097F5_8E72_COG.SAFE"
+ ],
+ "retrieved_utc": "2026-11-12T03:31:26Z",
+ "processing_units": 0.3316497802734375,
+ "chip": "2026-10-15T10-41-00Z.png",
+ "encoding": {
+  "format": "PNG 16-bit RGBA",
+  "bands": [
+   "VV",
+   "VH",
+   "localIncidenceAngle",
+   "dataMask"
+  ],
+  "db": "value / 800 - 50 (0 = no data)",
+  "lia_deg": "value / 100",
+  "with_lia": true
+ },
+ "bbox": [
+  112.54,
+  21.59,
+  112.56,
+  21.609
+ ],
+ "width": 207,
+ "height": 210,
+ "pixel_m": [
+  10.017969717483613,
+  10.004790742840635
+ ],
+ "mask": "../masks/XCD-land-v1.png",
+ "mask_version": "XCD-land-v1",
+ "coverage": 0.999,
+ "detector_version": "cfar-v1",
+ "detector_params": {
+  "pfa": 1e-05,
+  "guard_m": 70.0,
+  "background_m": 150.0,
+  "min_background_fraction": 0.25,
+  "min_pixels": 3,
+  "vh_min_ratio": 2.0,
+  "quay_band_m": 50.0
+ },
+ "detector_info": {
+  "valid_fraction": 0.7132,
+  "water_fraction": 0.4716,
+  "threshold_sigma": 4.265,
+  "guard_px": 7,
+  "outer_px": 22,
+  "hit_pixels": 91,
+  "clusters": 36,
+  "dropped_small": 28,
+  "dropped_vh": 5
+ },
+ "candidates": [
+  {
+   "row": 79.8,
+   "col": 87.4,
+   "rmin": 79,
+   "rmax": 81,
+   "cmin": 87,
+   "cmax": 88,
+   "pixels": 5,
+   "length_m": 32,
+   "width_m": 23,
+   "length_class": "lt50",
+   "zone": "quay",
+   "peak_vv_db": -5.1,
+   "contrast_vv_db": 11.9,
+   "vh_ratio_db": 8.5,
+   "lon": 112.5484927536232,
+   "lat": 21.601734761904762
+  },
+  {
+   "row": 88.0,
+   "col": 102.8,
+   "rmin": 86,
+   "rmax": 90,
+   "cmin": 102,
+   "cmax": 104,
+   "pixels": 5,
+   "length_m": 55,
+   "width_m": 15,
+   "length_class": "50_100",
+   "zone": "quay",
+   "peak_vv_db": -6.6,
+   "contrast_vv_db": 10.4,
+   "vh_ratio_db": 3.9,
+   "lon": 112.5499806763285,
+   "lat": 21.60099285714286
+  },
+  {
+   "row": 126.83333333333333,
+   "col": 107.6,
+   "rmin": 123,
+   "rmax": 131,
+   "cmin": 105,
+   "cmax": 110,
+   "pixels": 30,
+   "length_m": 100,
+   "width_m": 46,
+   "length_class": "50_100",
+   "zone": "harbour",
+   "peak_vv_db": 4.0,
+   "contrast_vv_db": 16.6,
+   "vh_ratio_db": 15.5,
+   "lon": 112.55044444444445,
+   "lat": 21.597479365079366
+  }
+ ],
+ "attribution": "Contains modified Copernicus Sentinel data 2026; land mask (c) OpenStreetMap contributors, ODbL 1.0"
+}
