@@ -1,46 +1,36 @@
 {
- "days": 1457,
+ "days": 1458,
  "first_day": "2022-11-16",
- "generated_utc": "2026-11-11T14:41:50Z",
- "last_day": "2026-11-11",
- "last_request_utc": "2026-11-11T14:41:50Z",
+ "generated_utc": "2026-11-12T15:33:50Z",
+ "last_day": "2026-11-12",
+ "last_request_utc": "2026-11-12T15:33:50Z",
  "last_run": {
   "access": "robots",
   "added": 1,
   "added_range": [
-   "2026-11-11",
-   "2026-11-11"
+   "2026-11-12",
+   "2026-11-12"
   ],
-  "finished_utc": "2026-11-11T14:41:50Z",
+  "finished_utc": "2026-11-12T15:33:50Z",
   "kept_not_in_source": [],
   "kept_not_in_source_count": 0,
   "result": "ok",
-  "revised": [
-   {
-    "changed": {
-     "cross_rate": [
-      "0",
-      "0.0"
-     ]
-    },
-    "date": "2026-11-10"
-   }
-  ],
-  "revised_count": 1,
+  "revised": [],
+  "revised_count": 0,
   "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
-  "started_utc": "2026-11-11T14:41:50Z"
+  "started_utc": "2026-11-12T15:33:50Z"
  },
- "last_success_utc": "2026-11-11T14:41:50Z",
+ "last_success_utc": "2026-11-12T15:33:50Z",
  "source": {
-  "bytes": 104033,
+  "bytes": 104098,
   "content_type": "text/csv; charset=utf-8",
-  "etag": "\"85760f3421f03e8f356027c9ebd36e26\"",
+  "etag": "\"849e79df9f6144b307982f389fd90d9f\"",
   "first_day": "2022-11-16",
   "http": 200,
-  "last_day": "2026-11-11",
+  "last_day": "2026-11-12",
   "last_modified": null,
-  "rows": 1457,
-  "sha256": "8b4dca985d676789100238cd80e2cdacb810a7ba697dd01593db817514f13be8",
+  "rows": 1458,
+  "sha256": "8a48cc0ddf1db55410875193f3da1098aaa730908891f07f70942a0115bd130c",
   "skipped_count": 0,
   "skipped_rows": [],
   "url": "https://pla-tracker.skyfaring.net/data/records.csv"
