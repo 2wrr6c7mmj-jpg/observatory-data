@@ -4289,7 +4289,7 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-12T08:42:53Z",
+  "run_utc": "2026-11-12T13:58:27Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -4300,7 +4300,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "SYL",
@@ -4311,7 +4311,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "SLP",
@@ -4322,7 +4322,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "QGZ",
@@ -4333,7 +4333,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "ZDH",
@@ -4344,7 +4344,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "QDH",
@@ -4355,7 +4355,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "XSN",
@@ -4366,18 +4366,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "SWS",
-    "lookback_days": 30,
-    "catalog_items": 2,
-    "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "QJG",
@@ -4388,7 +4388,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "LSN",
@@ -4399,7 +4399,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "XMN",
@@ -4410,7 +4410,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "STU",
@@ -4421,7 +4421,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "MAW",
@@ -4432,7 +4432,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "PDG",
@@ -4443,7 +4443,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "NDS",
@@ -4454,7 +4454,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "DXE",
@@ -4465,7 +4465,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "BHI",
@@ -4476,7 +4476,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "XCD",
@@ -4487,7 +4487,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "LYG",
@@ -4498,7 +4498,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "JMN",
@@ -4509,7 +4509,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "HPU",
@@ -4520,7 +4520,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "HKG",
@@ -4531,7 +4531,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    },
    {
     "site_id": "WHI",
@@ -4542,23 +4542,12 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 840.62
+    "budget_left_pu": 839.52
    }
   ],
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 1,
-    "clear": 0,
-    "cloudy": 1,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.009,
-    "requests": 2
-   },
-   {
-    "site_id": "SYL",
     "days": 0,
     "clear": 0,
     "cloudy": 0,
@@ -4569,11 +4558,22 @@
     "requests": 1
    },
    {
-    "site_id": "SLP",
-    "days": 0,
+    "site_id": "SYL",
+    "days": 1,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 0,
+    "skipped": 1,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "SLP",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 1,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -4625,14 +4625,14 @@
    },
    {
     "site_id": "SWS",
-    "days": 4,
-    "clear": 1,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
-    "skipped": 3,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.81,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "QJG",
@@ -4725,14 +4725,14 @@
    },
    {
     "site_id": "BHI",
-    "days": 1,
-    "clear": 1,
+    "days": 0,
+    "clear": 0,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.281,
-    "requests": 3
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "XCD",
@@ -4801,16 +4801,16 @@
     "requests": 1
    }
   ],
-  "s2_requests": 28,
-  "s2_processing_units": 1.099,
-  "requests": 53,
-  "processing_units": 3.03,
+  "s2_requests": 23,
+  "s2_processing_units": 0.0,
+  "requests": 46,
+  "processing_units": 0.0,
   "pu_source": "header",
-  "scenes": 2,
-  "month_pu_before": 157.452,
+  "scenes": 0,
+  "month_pu_before": 160.482,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-12T08:42:53Z",
+ "updated_utc": "2026-11-12T13:58:27Z",
  "series_breaks": [
   {
    "site_id": "ZJG",

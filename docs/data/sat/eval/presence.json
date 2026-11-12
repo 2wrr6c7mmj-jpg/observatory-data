@@ -1,6 +1,6 @@
 {
  "version": "eval-presence-5",
- "generated_utc": "2026-11-12T09:05:40Z",
+ "generated_utc": "2026-11-12T13:59:06Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
