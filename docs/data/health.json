@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-12T01:42:59Z",
+ "generated_utc": "2026-11-12T03:09:06Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -70,8 +70,8 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-11T12:56:54Z",
-   "heartbeat_age_h": 12.8,
+   "heartbeat_utc": "2026-11-12T03:04:01Z",
+   "heartbeat_age_h": 0.1,
    "data_date": "2026-11-09",
    "data_date_tz": "UTC",
    "data_age_days": 3,
@@ -106,13 +106,63 @@
      "level": "warn",
      "code": "no_scene",
      "text": "MAW：現行の範囲（MAW-land-v2）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "PDG：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "NDS：現行の範囲（NDS-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "DXE：現行の範囲（DXE-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "BHI：現行の範囲（BHI-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "XCD：現行の範囲（XCD-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "LYG：現行の範囲（LYG-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "JMN：現行の範囲（JMN-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "HPU：現行の範囲（HPU-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "HKG：現行の範囲（HKG-land-v1）の撮影の行が無い"
+    },
+    {
+     "level": "warn",
+     "code": "no_scene",
+     "text": "WHI：現行の範囲（WHI-land-v1）の撮影の行が無い"
     }
    ],
    "values": {
     "latest_acquired_utc": "2026-11-09T09:48:11Z",
-    "last_run_utc": "2026-11-11T12:56:54Z",
+    "last_run_utc": "2026-11-12T03:04:01Z",
     "last_run_errors": 0,
-    "last_run_scenes": 0
+    "last_run_scenes": 2
    }
   },
   {
@@ -121,7 +171,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-11T11:26:42Z",
-   "heartbeat_age_h": 14.3,
+   "heartbeat_age_h": 15.7,
    "data_date": "2026-11-10",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -144,7 +194,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-11T14:41:50Z",
-   "heartbeat_age_h": 11.0,
+   "heartbeat_age_h": 12.5,
    "data_date": "2026-11-11",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -188,7 +238,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-11T07:53:07Z",
-   "heartbeat_age_h": 17.8,
+   "heartbeat_age_h": 19.3,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 16,
@@ -212,7 +262,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-11T07:53:01Z",
-   "heartbeat_age_h": 17.8,
+   "heartbeat_age_h": 19.3,
    "data_date": "2026-11-11",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -230,7 +280,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-11T11:27:03Z",
-   "heartbeat_age_h": 14.3,
+   "heartbeat_age_h": 15.7,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -506,6 +556,88 @@
     "publish": "trial",
     "trial": true,
     "mask_version": "MAW-land-v2"
+   },
+   {
+    "site_id": "PDG",
+    "name": "上海・浦東（登陸艦第 5 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "PDG-land-v1",
+    "est1": {
+     "acquired_utc": "2026-11-02T09:54:27Z",
+     "version": "est-1",
+     "mode": 10,
+     "p10": 8,
+     "p90": 13,
+     "warship_mode": 6,
+     "warship_p10": 4,
+     "warship_p90": 7,
+     "credibility": 3,
+     "in_sample": "baseline"
+    }
+   },
+   {
+    "site_id": "NDS",
+    "name": "寧徳・三都澳（護衛艦第 15 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "NDS-land-v1"
+   },
+   {
+    "site_id": "DXE",
+    "name": "寧波・大榭島（潜水艦第 22 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "DXE-land-v1"
+   },
+   {
+    "site_id": "BHI",
+    "name": "北海（護衛艦第 18 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "BHI-land-v1"
+   },
+   {
+    "site_id": "XCD",
+    "name": "台山・下川島（潜水艦第 52 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "XCD-land-v1"
+   },
+   {
+    "site_id": "LYG",
+    "name": "連雲港・連島（護衛艦第 13 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "LYG-land-v1"
+   },
+   {
+    "site_id": "JMN",
+    "name": "江門・崖門（掃雷艦第 10 大隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "JMN-land-v1"
+   },
+   {
+    "site_id": "HPU",
+    "name": "広州・黄埔（護衛艦第 17 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "HPU-land-v1"
+   },
+   {
+    "site_id": "HKG",
+    "name": "香港・昂船洲（駐香港部隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "HKG-land-v1"
+   },
+   {
+    "site_id": "WHI",
+    "name": "威海（護衛艦第 12 支隊）",
+    "publish": "trial",
+    "trial": true,
+    "mask_version": "WHI-land-v1"
    }
   ],
   "jcg": {
@@ -597,8 +729,8 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-11T12:48:03Z",
-   "last_success_event": "schedule",
+   "last_success_started_utc": "2026-11-12T02:54:18Z",
+   "last_success_event": "workflow_dispatch",
    "last_scheduled": {
     "id": 43023472128,
     "started_utc": "2026-11-11T12:48:03Z",
@@ -679,12 +811,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 143.376,
-   "usage_csv_requests": 517,
-   "usage_csv_runs": 15,
-   "status_month_pu_before": 135.987,
-   "status_last_run_utc": "2026-11-11T12:56:54Z",
-   "usage_csv_pu_before_last_run": 135.987,
+   "usage_csv_pu": 146.862,
+   "usage_csv_requests": 586,
+   "usage_csv_runs": 16,
+   "status_month_pu_before": 143.376,
+   "status_last_run_utc": "2026-11-12T03:04:01Z",
+   "usage_csv_pu_before_last_run": 143.376,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -812,6 +944,15 @@
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "STU-land-v1"
+   },
+   "PDG": {
+    "acquired_utc": "2026-11-02T09:54:27Z",
+    "platform": "sentinel-1d",
+    "relative_orbit": 171,
+    "coverage": 1.0,
+    "result": "counted",
+    "quay_result": "counted",
+    "mask_version": "PDG-land-v1"
    }
   },
   "sites_daily": [
@@ -827,7 +968,17 @@
    "SWS",
    "XMN",
    "STU",
-   "MAW"
+   "MAW",
+   "PDG",
+   "NDS",
+   "DXE",
+   "BHI",
+   "XCD",
+   "LYG",
+   "JMN",
+   "HPU",
+   "HKG",
+   "WHI"
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
