@@ -8,6 +8,7 @@ OSM quay lines as in Zhanjiang (sat/s2_labels.py sections()).
 
     python -m sat.s2_answers prepare --site SYL --archive-ref origin/probe/ports-s2ext-ops3
     python -m sat.s2_answers prepare --site LSN --archive-ref origin/probe/ports-s2ext-ops3 --naval-only   # naval lines only (A-0)
+    python -m sat.s2_answers prepare --site PDG --archive-ref origin/probe/ports-s2new-hq --naval-only --no-s1   # S2-only archive
     python -m sat.s2_answers prepare --site ZJG --oos                    # out-of-sample days (from the freeze on)
     python -m sat.s2_answers merge   --site SYL --file ~/Downloads/SYL-s2-answers.csv
     python -m sat.s2_answers plan                                        # S1 re-fetch list and PU, every port with a review set
@@ -156,9 +157,11 @@ def webp_size(data: bytes) -> tuple[int, int]:
 
 # ---------------------------------------------------------------- days
 def eligible_days(s2_rows: list[dict], s1_rows: list[dict], orbits: set, mask_tags: list[str], freeze: str,
-                  oos: bool = False) -> list[dict]:
+                  oos: bool = False, need_s1: bool = True) -> list[dict]:
     """Clear Sentinel-2 days (a mask tag in ``mask_tags``, the first one that has the day), before ``freeze`` (or from it
-    on when ``oos``), with the Sentinel-1 scenes of ``orbits`` within +-4 days (for ports; oos: no S1 needed here)."""
+    on when ``oos``), with the Sentinel-1 scenes of ``orbits`` within +-4 days (for ports; oos: no S1 needed here).
+    ``need_s1`` False: every clear day is eligible (a port archived with Sentinel-2 only: the ports of 2026-11-12; the
+    S1 scenes to pair a day with are looked up when the answers are used)."""
     seen: dict = {}
     for tag in mask_tags:
         for r in s2_rows:
@@ -175,7 +178,7 @@ def eligible_days(s2_rows: list[dict], s1_rows: list[dict], orbits: set, mask_ta
             if abs(dt) <= S1_WINDOW_DAYS * 24 and (a["acquired_utc"][:10] < freeze) == (not oos):
                 near.append({"acquired_utc": a["acquired_utc"], "relative_orbit": str(a["relative_orbit"]), "dt_h": round(dt, 1)})
         near.sort(key=lambda x: abs(x["dt_h"]))
-        if near or oos:
+        if near or oos or not need_s1:
             out.append({**r, "s1_near": near})
     return out
 
@@ -257,7 +260,7 @@ def site_config(site_id: str) -> dict:
 
 def prepare(site_id: str, out: Path = OUT, archive: Archive | None = None, oos: bool = False,
             n_days: int = N_DAYS, n_sections: int = N_SECTIONS, site: dict | None = None, log=print,
-            naval_only: bool = False) -> dict:
+            naval_only: bool = False, need_s1: bool = True) -> dict:
     """``naval_only`` (plan A, A-0): only the sections on a line classed naval by naval-1 (sat/berth_class/<site>.json, with
     the sections the class file adds) are candidates, so that the owner's answers all serve the presence evaluation
     (sat/eval_presence.py) of the naval quays."""
@@ -290,7 +293,7 @@ def prepare(site_id: str, out: Path = OUT, archive: Archive | None = None, oos: 
 
         def read_img(r): return archive.read(site_id, r["image"])
         tags = [f"{site_id}-land-v{mver}"] + sorted({r["mask_version"] for r in s2_rows} - {f"{site_id}-land-v{mver}"}, reverse=True)
-    elig = eligible_days(s2_rows, s1_rows, orbits, tags, freeze, oos) if site_id != "ZJG" else \
+    elig = eligible_days(s2_rows, s1_rows, orbits, tags, freeze, oos, need_s1) if site_id != "ZJG" else \
         [{**r, "s1_near": []} for r in eligible_days(s2_rows, [], orbits, tags, freeze, oos)] if not oos else \
         eligible_days(s2_rows, [], orbits, tags, freeze, True)
     days_info, imgs = [], {}
@@ -360,7 +363,7 @@ def prepare(site_id: str, out: Path = OUT, archive: Archive | None = None, oos: 
            "answers_file": answers_path(out, site_id, oos).name,
            "credit": "Contains modified Copernicus Sentinel data 2025, 2026", "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）",
            "selection": {"sections": f"保存済みの S1 の区間（同じ OSM の線・向き 20 m 以内）が撮影ごとに変わる区間を先に、次にいつも占有、最後にいつも空。OSM の線ごとに順番に取る（最大 {n_sections}）",
-                         "days": f"S2 の晴れの日（凍結 {freeze} {'以後' if oos else 'より前'}）のうち" + ("" if oos else "、前後 4 日以内に基準のある軌道の S1 があるものから、期間に等間隔で最大 " + str(n_days) + " 日"),
+                         "days": f"S2 の晴れの日（凍結 {freeze} {'以後' if oos else 'より前'}）のうち" + ("" if oos else ("、前後 4 日以内に基準のある軌道の S1 があるものから" if need_s1 else "（S2 だけのアーカイブ。S1 との対は答えを使うときに探す）") + "、期間に等間隔で最大 " + str(n_days) + " 日"),
                          "candidate_sections": len(secs), "eligible_days": len(elig),
                          "naval_only": naval_only,
                          **({"naval_only_note": "naval-1 で naval の線（設定が足す区間を含む）の区間だけを候補にした（在/不在の評価票 eval/presence.json の対象に合わせる）"} if naval_only else {})}}
@@ -679,6 +682,7 @@ def main(argv=None) -> int:
     p.add_argument("--days", type=int, default=N_DAYS)
     p.add_argument("--sections", type=int, default=N_SECTIONS)
     p.add_argument("--naval-only", action="store_true", help="candidates: the sections on naval-1's naval lines only")
+    p.add_argument("--no-s1", action="store_true", help="every clear S2 day is eligible (an archive with Sentinel-2 only)")
     p.add_argument("--s1", action="store_true", help="the S1 check: review-s1.json and labels/<site>/s1/*.webp from the saved chips")
     p.add_argument("--raw-ref", help="--s1: git ref holding probe-raw/s1-recount/<site>/ (e.g. origin/probe/sat-s1-recount-ops4)")
     p.add_argument("--raw-dir", type=Path, help="--s1: directory holding <site>/s1-*.npz instead")
@@ -694,7 +698,8 @@ def main(argv=None) -> int:
     if a.cmd == "prepare" and a.s1:
         print(json.dumps(prepare_s1(a.site, a.out, RawStore(a.raw_ref, a.raw_dir)), ensure_ascii=False))
     elif a.cmd == "prepare":
-        r = prepare(a.site, a.out, Archive(a.archive_ref, a.archive_dir), a.oos, a.days, a.sections, naval_only=a.naval_only)
+        r = prepare(a.site, a.out, Archive(a.archive_ref, a.archive_dir), a.oos, a.days, a.sections, naval_only=a.naval_only,
+                    need_s1=not a.no_s1)
         print(json.dumps({k: v for k, v in r.items() if k != "plan"}, ensure_ascii=False))
     elif a.cmd == "merge" and a.s1:
         print(json.dumps(merge_s1(a.site, a.file, a.out), ensure_ascii=False))
