@@ -32,10 +32,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          asset=$(gh release view --repo ggml-org/llama.cpp --json assets --jq '[.assets[].name|select(test("bin-ubuntu-x64\\.zip$"))][0]')
+          names=$(gh release view --repo ggml-org/llama.cpp --json assets --jq '.assets[].name')
+          asset=$(printf '%s\n' "$names" | grep -E 'bin-ubuntu-x64\.(zip|tar\.gz)$' | head -1)
+          [ -n "$asset" ] || { echo "::error title=llama.cpp assets::$(printf '%s ' $names | cut -c1-900)"; exit 1; }
           echo "asset: $asset"
           gh release download --repo ggml-org/llama.cpp --pattern "$asset" --dir "$RUNNER_TEMP"
-          unzip -q "$RUNNER_TEMP/$asset" -d "$RUNNER_TEMP/llama"
+          mkdir -p "$RUNNER_TEMP/llama"
+          case "$asset" in
+            *.zip) unzip -q "$RUNNER_TEMP/$asset" -d "$RUNNER_TEMP/llama" ;;
+            *) tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP/llama" ;;
+          esac
           bin=$(dirname "$(find "$RUNNER_TEMP/llama" -name llama-server -type f | head -1)")
           echo "LLAMA_BIN=$bin" >> "$GITHUB_ENV"
       - uses: actions/cache@v4
