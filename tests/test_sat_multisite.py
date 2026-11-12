@@ -402,8 +402,10 @@ class MainOrderTest(unittest.TestCase):
                  {**base, "id": "CAP", "priority": 1, "pu_month_cap": 0}]
         with tempfile.TemporaryDirectory() as d:
             out = Path(d) / "out"
-            rc = self._main(sites, out, FakeClient(self._chip()))
+            with mock.patch.object(run, "FIRST_RUNS_PER_RUN", 2):
+                rc = self._main(sites, out, FakeClient(self._chip()))
             self.assertEqual(rc, 0)
+            self.assertGreaterEqual(run.FIRST_RUNS_PER_RUN, 2)
             st = json.loads((out / "status.json").read_text())
             order = [s["site_id"] for s in st["last_run"]["sites"]]
             self.assertEqual(order, ["P1", "CAP", "P2", "P3"])          # priority, then sites.json order; OFF not fetched
@@ -411,7 +413,7 @@ class MainOrderTest(unittest.TestCase):
             self.assertTrue(by["CAP"].get("deferred_site_cap"))
             self.assertEqual(by["P1"]["counted"], 2)
             self.assertEqual(by["P2"]["counted"], 2)
-            self.assertTrue(by["P3"].get("deferred_first_run"))       # at most 2 first backfills per run
+            self.assertTrue(by["P3"].get("deferred_first_run"))       # at most FIRST_RUNS_PER_RUN (here 2) first backfills per run
             self.assertEqual({s["site_id"] for s in st["scenes"]}, {"P1", "P2"})
             # per-site PU from the scene records (usage.csv stays one row per run)
             month = st["last_run"]["run_utc"][:7]

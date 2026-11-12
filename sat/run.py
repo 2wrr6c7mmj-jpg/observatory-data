@@ -48,7 +48,10 @@ FIRST_LOOKBACK_DAYS = 30   # first run for a site (free tier: keep the backfill 
 LOOKBACK_DAYS = 6          # later runs: the last few days
 MAX_LOOKBACK_DAYS = 30
 MAX_SCENES_PER_RUN = 12
-FIRST_RUNS_PER_RUN = 2     # sites whose first 30-day backfill may start in one run (do not add many ports at once)
+# Sites whose first 30-day backfill may start in one run. 2 until 2026-11-12; 12 since: the ten ports added that day are
+# about 2 km across (a first backfill is 1-2 PU, measured 0.8 PU at Pudong), and Mawei takes one of the places every run
+# (no row with its newer mask yet). The spending is held by the caps: pu_month_cap per site and MONTHLY_PU_CAP in all.
+FIRST_RUNS_PER_RUN = 12
 MONTHLY_PU_CAP = 1000.0    # own cap for this workflow, well inside the CDSE free tier
 MONTHLY_REQUEST_CAP = 2000
 MIN_COVERAGE = 0.5         # share of the site's water that must have data
