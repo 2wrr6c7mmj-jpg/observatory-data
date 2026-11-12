@@ -11,6 +11,12 @@ sees "17 of 25". Which units count for which port is the table SITES below, writ
 - other: units the roster gives the same home port, but whose quays are not known to be in the range.
          They are listed under the number, not added to it.
 
+Not in any range (2026-11-12): the 9th Minesweeper Squadron (Changtu: OSM has no military area there and the
+10 m overview did not single out its piers), the 4th Minesweeper Squadron (Shanghai, place unknown), the 11th Frigate
+Flotilla (Haiyang Island: two piers in Taiping Bay, but no military area in OSM, no point on Wen's map, a ferry landing in
+the same bay, and the 48 scenes of the baselines show hardly a ship alongside; held until a source places the unit) and
+the missile boats.
+
 The roster is an estimate from open sources (revision 3 of our roster of the PLA Navy, 2026-11-12;
 the src column names the sources, SRC_LEGEND below). Home port is not where a ship is today.
 """
@@ -25,7 +31,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ROSTER = ROOT / 'docs/data/ref/plan-fleet.csv'
 OUT = ROOT / 'docs/data/ref/port-roster.json'
-VERSION = 'roster-3'
+VERSION = 'roster-3.1'
 MIN_LENGTH_M = 50
 
 # Ships under 50 m: the satellite count leaves them out, so the roster does too.
@@ -58,11 +64,14 @@ def pick(home: str | set[str], unit: str | None = None, types: set[str] | None =
 # site id -> groups. Each group: (label, matcher, why). `why` is shown for the "other" groups and kept for "in".
 SITES: dict[str, dict] = {
     'ZJG': {
-        'in': [('駆逐艦第2支隊', pick('Zhanjiang', '2nd Destroyer Flotilla'), '麻斜（中国語版 Wikipedia・知乎）')],
-        'other': [
-            ('登陸艦第6支隊', pick('Zhanjiang', '6th Landing Ship Flotilla'), '湛江。岸壁の場所は未確認'),
-            ('作戦支援艦第3支隊', pick('Zhanjiang', '3rd Combat Support Ship Flotilla'), '湛江の赤坎。範囲の外の可能性'),
+        # 2026-11-12: the three units share the base (OSM "南海舰队", six groups of piers in the range): a destroyer of the 2nd,
+        # an LPD of the 6th and a replenishment ship of the 3rd were shown together at "湛江某軍港" (環球網 2026-04-23)
+        'in': [
+            ('駆逐艦第2支隊', pick('Zhanjiang', '2nd Destroyer Flotilla'), '麻斜（中国語版 Wikipedia・知乎）'),
+            ('登陸艦第6支隊', pick('Zhanjiang', '6th Landing Ship Flotilla'), '湛江。同じ軍港で駆逐艦・揚陸艦・補給艦を公開（環球網 2026-04-23）。桟橋の割り振りは未確認'),
+            ('作戦支援艦第3支隊', pick('Zhanjiang', '3rd Combat Support Ship Flotilla'), '機関は赤坎。艦は同じ軍港で公開（環球網 2026-04-23）、東江湖は湛江に係留（Naval News 2026-03）'),
         ],
+        'other': [],
     },
     'SYL': {
         'in': [
@@ -96,7 +105,10 @@ SITES: dict[str, dict] = {
             ('駆逐艦第10支隊', pick('Lushun', '10th Destroyer Flotilla'), '旅順口東港'),
             ('潜水艦第12支隊', pick('Lushun', '12th Submarine Flotilla'), '旅順口'),
         ],
-        'other': [('054AG型（鄂爾多斯・臨汾）', pick('Lushun', '', {'FFG'}), '大連某軍港・北部戦区。支隊と岸壁は未確認')],
+        'other': [
+            ('054AG型（鄂爾多斯・臨汾）', pick('Lushun', '', {'FFG'}), '大連某軍港・北部戦区。支隊と岸壁は未確認'),
+            ('掃雷艦第11大隊', pick('Dalian', '11th Minesweeper Squadron'), '大連。旅順軍港の公開に 081型 青州艦（央視 2026-04）。大隊の岸壁は未確認'),
+        ],
     },
     'ZDH': {
         'in': [
@@ -108,6 +120,17 @@ SITES: dict[str, dict] = {
     'XSN': {'in': [('潜水艦第42支隊', pick('Ningbo-Xiangshan', '42nd Submarine Flotilla'), '象山')], 'other': []},
     'SWS': {'in': [('護衛艦第14支隊', pick('Shanghai', '14th Frigate Flotilla'), '呉淞')], 'other': []},
     'XMN': {'in': [('護衛艦第16支隊', pick('Xiamen', '16th Frigate Flotilla'), '廈門')], 'other': []},
+    # 2026-11-12: the ports added from the roster (positions: OSM military areas and the 10 m overviews of locate-2)
+    'PDG': {'in': [('登陸艦第5支隊', pick('Shanghai', '5th Landing Ship Flotilla'), '浦東（OSM「登5支」）。旧来の虬江碼頭に大型艦は見えない')], 'other': []},
+    'NDS': {'in': [('護衛艦第15支隊', pick('Ningde', '15th Frigate Flotilla'), '三都澳の南岸（城澳）')], 'other': []},
+    'DXE': {'in': [('潜水艦第22支隊', pick('Ningbo-Daxie', '22nd Submarine Flotilla'), '大榭島の南岸')], 'other': []},
+    'BHI': {'in': [('護衛艦第18支隊', pick('Beihai', '18th Frigate Flotilla'), '北海の地角（OSM「南部战区海军护卫舰第18支队」）')], 'other': []},
+    'XCD': {'in': [('潜水艦第52支隊', pick('Xiachuan', '52nd Submarine Flotilla'), '下川島（OSM「下川岛基地」）')], 'other': []},
+    'LYG': {'in': [('護衛艦第13支隊', pick('Lianyungang', '13th Frigate Flotilla'), '西連島の南岸')], 'other': []},
+    'JMN': {'in': [('掃雷艦第10大隊', pick('Jiangmen', '10th Minesweeper Squadron'), '崖門水道の東岸（OSM の名前の無い軍の基地。部隊との結び付けは位置だけ）')], 'other': []},
+    'HPU': {'in': [('護衛艦第17支隊', pick('Guangzhou', '17th Frigate Flotilla'), '長洲島の北岸')], 'other': []},
+    'HKG': {'in': [('駐香港部隊艦艇大隊', pick('Hong Kong', 'Hong Kong Garrison Vessel Squadron'), '昂船洲')], 'other': []},
+    'WHI': {'in': [('護衛艦第12支隊', pick('Weihai', '12th Frigate Flotilla'), '威海湾の北岸（桟橋の特定は仮）')], 'other': []},
     'STU': {'in': [('導弾艇第34大隊', pick('Shantou', '34th Missile Boat Squadron'), '汕頭の礐石。022型（42.6 m）は 50 m 未満')], 'other': []},
 }
 

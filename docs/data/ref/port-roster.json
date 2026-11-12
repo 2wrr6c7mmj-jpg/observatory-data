@@ -1,6 +1,6 @@
 {
  "dataset": "ref/port-roster",
- "version": "roster-3",
+ "version": "roster-3.1",
  "kind": "参照データ（公開情報からの推定。うちの観測ではない）",
  "basis": "中国海軍の港別艦艇配置（改訂3、2026-11-12）。docs/data/ref/plan-fleet.csv",
  "min_length_m": 50,
@@ -41,7 +41,7 @@
  },
  "sites": {
   "ZJG": {
-   "assigned": 15,
+   "assigned": 54,
    "units": [
     {
      "name": "駆逐艦第2支隊",
@@ -51,9 +51,7 @@
       "FFG": 6
      },
      "where": "麻斜（中国語版 Wikipedia・知乎）"
-    }
-   ],
-   "other": [
+    },
     {
      "name": "登陸艦第6支隊",
      "n": 25,
@@ -63,7 +61,7 @@
       "LSM": 6,
       "LST": 12
      },
-     "where": "湛江。岸壁の場所は未確認",
+     "where": "湛江。同じ軍港で駆逐艦・揚陸艦・補給艦を公開（環球網 2026-04-23）。桟橋の割り振りは未確認",
      "low": 6
     },
     {
@@ -74,10 +72,11 @@
       "AKS": 4,
       "AOR": 7
      },
-     "where": "湛江の赤坎。範囲の外の可能性",
+     "where": "機関は赤坎。艦は同じ軍港で公開（環球網 2026-04-23）、東江湖は湛江に係留（Naval News 2026-03）",
      "low": 1
     }
-   ]
+   ],
+   "other": []
   },
   "SYL": {
    "assigned": 14,
@@ -237,6 +236,14 @@
      },
      "where": "大連某軍港・北部戦区。支隊と岸壁は未確認",
      "low": 1
+    },
+    {
+     "name": "掃雷艦第11大隊",
+     "n": 8,
+     "types": {
+      "MCM": 8
+     },
+     "where": "大連。旅順軍港の公開に 081型 青州艦（央視 2026-04）。大隊の岸壁は未確認"
     }
    ]
   },
@@ -314,6 +321,158 @@
       "FFL": 4
      },
      "where": "廈門"
+    }
+   ],
+   "other": []
+  },
+  "PDG": {
+   "assigned": 24,
+   "units": [
+    {
+     "name": "登陸艦第5支隊",
+     "n": 24,
+     "types": {
+      "LHD": 2,
+      "LPD": 3,
+      "LSM": 4,
+      "LST": 15
+     },
+     "where": "浦東（OSM「登5支」）。旧来の虬江碼頭に大型艦は見えない",
+     "low": 7
+    }
+   ],
+   "other": []
+  },
+  "NDS": {
+   "assigned": 14,
+   "units": [
+    {
+     "name": "護衛艦第15支隊",
+     "n": 14,
+     "types": {
+      "FFG": 7,
+      "FFL": 7
+     },
+     "where": "三都澳の南岸（城澳）",
+     "low": 5
+    }
+   ],
+   "other": []
+  },
+  "DXE": {
+   "assigned": 10,
+   "units": [
+    {
+     "name": "潜水艦第22支隊",
+     "n": 10,
+     "types": {
+      "SSK": 10
+     },
+     "where": "大榭島の南岸"
+    }
+   ],
+   "other": []
+  },
+  "BHI": {
+   "assigned": 8,
+   "units": [
+    {
+     "name": "護衛艦第18支隊",
+     "n": 8,
+     "types": {
+      "FFG": 1,
+      "FFL": 7
+     },
+     "where": "北海の地角（OSM「南部战区海军护卫舰第18支队」）",
+     "low": 1
+    }
+   ],
+   "other": []
+  },
+  "XCD": {
+   "assigned": 6,
+   "units": [
+    {
+     "name": "潜水艦第52支隊",
+     "n": 6,
+     "types": {
+      "SSK": 6
+     },
+     "where": "下川島（OSM「下川岛基地」）"
+    }
+   ],
+   "other": []
+  },
+  "LYG": {
+   "assigned": 2,
+   "units": [
+    {
+     "name": "護衛艦第13支隊",
+     "n": 2,
+     "types": {
+      "FFG": 1,
+      "FFL": 1
+     },
+     "where": "西連島の南岸",
+     "low": 1
+    }
+   ],
+   "other": []
+  },
+  "JMN": {
+   "assigned": 10,
+   "units": [
+    {
+     "name": "掃雷艦第10大隊",
+     "n": 10,
+     "types": {
+      "MCM": 10
+     },
+     "where": "崖門水道の東岸（OSM の名前の無い軍の基地。部隊との結び付けは位置だけ）"
+    }
+   ],
+   "other": []
+  },
+  "HPU": {
+   "assigned": 9,
+   "units": [
+    {
+     "name": "護衛艦第17支隊",
+     "n": 9,
+     "types": {
+      "FFL": 9
+     },
+     "where": "長洲島の北岸",
+     "low": 2
+    }
+   ],
+   "other": []
+  },
+  "HKG": {
+   "assigned": 2,
+   "units": [
+    {
+     "name": "駐香港部隊艦艇大隊",
+     "n": 2,
+     "types": {
+      "FFL": 2
+     },
+     "where": "昂船洲"
+    }
+   ],
+   "other": []
+  },
+  "WHI": {
+   "assigned": 7,
+   "units": [
+    {
+     "name": "護衛艦第12支隊",
+     "n": 7,
+     "types": {
+      "FFL": 7
+     },
+     "where": "威海湾の北岸（桟橋の特定は仮）",
+     "low": 1
     }
    ],
    "other": []

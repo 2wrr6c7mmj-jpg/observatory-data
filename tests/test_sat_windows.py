@@ -11,6 +11,8 @@ if np is not None:
     from sat import berths, run, windows
     from sat.grid import Grid
 
+# 2026-11-12: the ten ports added with the rule in place (tests/test_sat_multisite.py ROSTER_PORTS)
+ROSTER_PORTS = {"PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI"}
 SITE = {"id": "TWN", "bbox": [110.0, 21.0, 110.01, 21.01], "pixel_m": 10,
         "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30}}
 
@@ -129,7 +131,11 @@ class WindowsTest(unittest.TestCase):
             cfg = windows.config(s)
             self.assertIsNotNone(cfg, s["id"])
             self.assertEqual(cfg["version"], windows.VERSION)
-            self.assertGreaterEqual(cfg["since_utc"], "2026-11-04")   # never before the decision (scenes not rewritten)
+            if s["id"] in ROSTER_PORTS:
+                # added 2026-11-12 with the rule in place: it holds from the first backfilled scene (no published scene to rewrite)
+                self.assertEqual(cfg["since_utc"], "2026-10-01", s["id"])
+            else:
+                self.assertGreaterEqual(cfg["since_utc"], "2026-11-04")   # never before the decision (scenes not rewritten)
 
 
 if __name__ == "__main__":

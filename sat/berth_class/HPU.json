@@ -1,0 +1,238 @@
+{
+ "site": "HPU",
+ "name": "広州・黄埔（護衛艦第 17 支隊）",
+ "version": "naval-1",
+ "lines_version": "HPU-quay-v1",
+ "default": "unknown",
+ "built_utc": "2026-11-11T23:13:26Z",
+ "osm_base": "2026-11-11T22:45:50Z",
+ "osm_bbox": [
+  113.39,
+  23.06,
+  113.452,
+  23.119
+ ],
+ "confidence": "中（OSM の軍の区域の外形から引いた線。艦の着く区間は初回の撮影で確かめる）",
+ "note": null,
+ "sources": [
+  "OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）、sat/berth_osm.py の probe",
+  "出典：溫約瑟（Joseph Wen）「中國人民解放軍基地及設施 (持續更新)」（Google マイマップ、https://www.google.com/maps/d/viewer?mid=19Q8BraU1Nmnk23TzMb5rhXFuIAnOpTTq、2026-10-31 取得）"
+ ],
+ "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
+ "lines": [
+  {
+   "way": 469207094,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/3108842728「长洲码头」（amenity=ferry_terminal）に接する（10 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 469207120,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207123「中国人民解放军海军海军4801工厂」（landuse=military・man_made=works）に接する（19 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 469207121,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207123「中国人民解放军海军海军4801工厂」（landuse=military・man_made=works）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 469207132,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207090（landuse=military）に含まれる",
+    "溫約瑟の地図 wen-0011「廣州水警區」まで 83 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 807570841,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2982817390「鱼珠码头」（amenity=ferry_terminal）に接する（0 m）",
+    "OSM node/4635904043「鱼珠车渡码头」（amenity=ferry_terminal）に接する（38 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 807570842,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2982817390「鱼珠码头」（amenity=ferry_terminal）に接する（12 m）",
+    "OSM node/4635904043「鱼珠车渡码头」（amenity=ferry_terminal）に接する（36 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 807570844,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2982817390「鱼珠码头」（amenity=ferry_terminal）に接する（17 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 807570845,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 807570846,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/2982817390「鱼珠码头」（amenity=ferry_terminal）に接する（29 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 807570847,
+   "kind": "pier",
+   "class": "unknown",
+   "conf": "—",
+   "why": "軍・民間のどちらの根拠も無い",
+   "basis": [
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 807573933,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/3108842728「长洲码头」（amenity=ferry_terminal）に接する（0 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 807573935,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/3108842728「长洲码头」（amenity=ferry_terminal）に接する（7 m）",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": 840091123,
+   "kind": "pier",
+   "class": "civil",
+   "conf": "推定",
+   "why": "OSM の民間の港の区域に接し、軍の区域に接しない",
+   "basis": [
+    "OSM node/4635904046「长洲渡车船码头」（amenity=ferry_terminal）に接する（0 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 947993213,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1312997002（landuse=military）に接する（0 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 947993214,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/1312997002（landuse=military）に接する（0 m）",
+    "区画 B（role other）"
+   ]
+  },
+  {
+   "way": 1454803311,
+   "kind": "pier",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207090（landuse=military）に含まれる",
+    "溫約瑟の地図 wen-0011「廣州水警區」まで 83 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": -3,
+   "kind": "quay",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207090（landuse=military）に含まれる",
+    "OSM way/469207126「中船黄埔文冲船舶有限公司-长洲厂区」（landuse=industrial・industrial=shipyard）に接する（0 m）",
+    "溫約瑟の地図 wen-0011「廣州水警區」まで 11 m",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": -2,
+   "kind": "quay",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207123「中国人民解放军海军海军4801工厂」（landuse=military・man_made=works）に含まれる",
+    "区画 A1（role naval）"
+   ]
+  },
+  {
+   "way": -1,
+   "kind": "quay",
+   "class": "naval",
+   "conf": "確認寄り",
+   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "basis": [
+    "OSM way/469207123「中国人民解放军海军海军4801工厂」（landuse=military・man_made=works）に含まれる",
+    "溫約瑟の地図 wen-0011「廣州水警區」まで 473 m",
+    "区画 A1（role naval）"
+   ]
+  }
+ ]
+}
