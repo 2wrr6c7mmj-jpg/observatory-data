@@ -125,7 +125,7 @@
   {
    "area": "BASHI",
    "acquired_utc": "2026-11-03T21:51:23Z",
-   "checked_utc": "2026-11-11T11:28:10Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
    "gfw_cells_ais": 5,
    "gfw_cells_no_ais": 1,
    "status": "done",
@@ -140,7 +140,7 @@
   {
    "area": "TSS",
    "acquired_utc": "2026-11-03T21:51:23Z",
-   "checked_utc": "2026-11-11T11:28:10Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
    "gfw_cells_ais": 84,
    "gfw_cells_no_ais": 13,
    "status": "done",
@@ -155,7 +155,7 @@
   {
    "area": "OKI",
    "acquired_utc": "2026-11-05T09:28:05Z",
-   "checked_utc": "2026-11-11T11:28:10Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
    "gfw_cells_ais": 44,
    "gfw_cells_no_ais": 67,
    "status": "done",
@@ -170,7 +170,7 @@
   {
    "area": "TSW",
    "acquired_utc": "2026-11-05T10:16:50Z",
-   "checked_utc": "2026-11-11T11:28:10Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
    "gfw_cells_ais": 253,
    "gfw_cells_no_ais": 68,
    "status": "done",
@@ -181,6 +181,51 @@
    "B_no_ais": 0,
    "B_none": 15,
    "first_done_utc": "2026-11-11T00:41:06Z"
+  },
+  {
+   "area": "TSM",
+   "acquired_utc": "2026-11-07T10:00:28Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
+   "gfw_cells_ais": 51,
+   "gfw_cells_no_ais": 27,
+   "status": "done",
+   "A_ais": 17,
+   "A_no_ais": 0,
+   "A_none": 1,
+   "B_ais": 7,
+   "B_no_ais": 2,
+   "B_none": 39,
+   "first_done_utc": "2026-11-12T11:51:14Z"
+  },
+  {
+   "area": "TSN",
+   "acquired_utc": "2026-11-07T10:00:28Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
+   "gfw_cells_ais": 198,
+   "gfw_cells_no_ais": 18,
+   "status": "done",
+   "A_ais": 37,
+   "A_no_ais": 0,
+   "A_none": 1,
+   "B_ais": 109,
+   "B_no_ais": 5,
+   "B_none": 15,
+   "first_done_utc": "2026-11-12T11:51:14Z"
+  },
+  {
+   "area": "TWN",
+   "acquired_utc": "2026-11-07T10:00:28Z",
+   "checked_utc": "2026-11-12T11:51:14Z",
+   "gfw_cells_ais": 63,
+   "gfw_cells_no_ais": 13,
+   "status": "done",
+   "A_ais": 21,
+   "A_no_ais": 3,
+   "A_none": 0,
+   "B_ais": 13,
+   "B_no_ais": 4,
+   "B_none": 3,
+   "first_done_utc": "2026-11-12T11:51:14Z"
   }
  ]
 }
