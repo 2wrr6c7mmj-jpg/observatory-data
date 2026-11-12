@@ -825,7 +825,8 @@ class AllPortsTest(unittest.TestCase):
 
     EXPECT = {  # site: (mask version, baseline orbits, pu_month_cap, naval sectors)
         "QJG": (1, [171], 13, 1), "QDH": (2, [171], 46, 1), "XSN": (1, [171], 17, 1), "LSN": (1, [171, 98], 40, 1),
-        "SWS": (1, [171], 14, 1), "XMN": (1, [40, 142], 19, 1), "STU": (1, [40], 17, 2), "MAW": (2, [142], 9, 1),
+        # SWS: mask v2 since 2026-11-12 (v1 was made from the coastline alone: the Huangpu was land and no naval pier was sampled)
+        "SWS": (2, [171], 14, 1), "XMN": (1, [40, 142], 19, 1), "STU": (1, [40], 17, 2), "MAW": (2, [142], 9, 1),
     }
 
     def sites(self):
@@ -1014,6 +1015,41 @@ class RosterPortsTest(unittest.TestCase):
         # the theatre tables and the sites before are as they were
         self.assertNotIn("073A", t["fleets"]["east"])
         self.assertNotIn("072A", t["fleets"]["east"])
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class WusongMaskTest(unittest.TestCase):
+    """SWS-land-v2 (2026-11-12): Wusong lies on the Huangpu, which has no coastline way. The mask made from the coastline
+    alone (v1) had 94 % of the range as land and no water at the naval piers: no pier was sampled and the headline stayed 0.
+    v2 is made from OSM's water areas (mask_water osm_polygons); the baseline was fetched again; 30 days are recounted."""
+
+    def test_the_naval_piers_are_sampled(self):
+        from sat import berths, quay
+        x = next(s for s in run.load_sites() if s["id"] == "SWS")
+        self.assertEqual((x["mask_version"], x["mask_water"], run.mask_tag(x)), (2, "osm_polygons", "SWS-land-v2"))
+        self.assertIsNone(run.mask_since(x))                         # the latest history entry recounts: the usual 30 days
+        self.assertEqual([(h["mask_version"], h["recount"]) for h in x["history"]], [(1, True)])
+        g = Grid.for_site(x)
+        lines = quay_lines.load("SWS", 1)
+        b = berths.Berths(x, lines, naval=True)
+
+        def sampled(version):
+            mask, _ = run.load_mask("SWS", version)
+            n = 0
+            for pr in quay.Geometry(g, mask, lines).profiles:
+                mid = len(pr["lon"]) // 2
+                if b.line_class(pr["way_id"], float(pr["lon"][mid]), float(pr["lat"][mid])) == "naval":
+                    n += int(pr["ok"].sum())
+            return n, float((mask == 0).mean())
+
+        old, new = sampled(1), sampled(2)
+        self.assertEqual(old[0], 0)                                  # v1: not one sample on a naval pier
+        self.assertLess(old[1], 0.07)
+        self.assertGreater(new[0], 300)                              # v2: the naval piers along the west bank
+        self.assertGreater(new[1], 0.15)
+        bl = baseline.load(x, 171)[1]
+        self.assertEqual((bl["mask_version"], int(bl["scenes"]), bl["credibility"]), ("SWS-land-v2", 24, "3"))
+        self.assertTrue(run.site_meta(x)["quay"]["ready"])
 
 
 if __name__ == "__main__":

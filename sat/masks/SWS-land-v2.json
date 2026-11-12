@@ -1,0 +1,33 @@
+{
+ "version": "SWS-land-v2",
+ "site": "SWS",
+ "built_utc": "2026-11-12T08:07:23Z",
+ "bbox": [
+  121.48,
+  31.37,
+  121.52,
+  31.4
+ ],
+ "width": 380,
+ "height": 333,
+ "values": {
+  "0": "water",
+  "1": "land",
+  "2": "structure (pier/breakwater/groyne/quay/bridge)"
+ },
+ "source": "OpenStreetMap via Overpass API",
+ "osm_base": "2026-11-12T08:06:11Z",
+ "query": "[out:json][timeout:180];(way[\"natural\"=\"coastline\"](31.37,121.48,31.4,121.52);way[\"man_made\"~\"^(pier|breakwater|groyne|quay)$\"](31.37,121.48,31.4,121.52);way[\"bridge\"][\"highway\"](31.37,121.48,31.4,121.52);way[\"bridge\"][\"railway\"](31.37,121.48,31.4,121.52);way[\"natural\"=\"water\"](31.37,121.48,31.4,121.52);relation[\"natural\"=\"water\"](31.37,121.48,31.4,121.52);way[\"waterway\"=\"riverbank\"](31.37,121.48,31.4,121.52);relation[\"waterway\"=\"riverbank\"](31.37,121.48,31.4,121.52););out geom;",
+ "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
+ "coastline_ways": 3,
+ "structure_ways": 133,
+ "regions": 2,
+ "regions_without_votes": 0,
+ "water_fraction": 0.1631,
+ "land_fraction": 0.825,
+ "structure_fraction": 0.0119,
+ "water_mode": "osm_polygons",
+ "water_areas": 8,
+ "water_outer_rings": 8,
+ "water_inner_rings": 2
+}

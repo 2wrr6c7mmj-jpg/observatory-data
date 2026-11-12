@@ -1,0 +1,111 @@
+{
+ "site_id": "SWS",
+ "version": "s2rev-1",
+ "scenes": [
+  {
+   "acquired_utc": "2025-10-31T09:55:01Z",
+   "relative_orbit": "171",
+   "days": [
+    "2025-11-02"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2025-11-24T09:55:00Z",
+   "relative_orbit": "171",
+   "days": [
+    "2025-11-22",
+    "2025-11-28"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2025-12-18T09:54:57Z",
+   "relative_orbit": "171",
+   "days": [
+    "2025-12-15"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-01-11T09:54:55Z",
+   "relative_orbit": "171",
+   "days": [
+    "2026-01-12"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-03-24T09:54:53Z",
+   "relative_orbit": "171",
+   "days": [
+    "2026-03-28"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-06-28T09:54:50Z",
+   "relative_orbit": "171",
+   "days": [
+    "2026-06-26"
+   ],
+   "stored_stretches": false
+  },
+  {
+   "acquired_utc": "2026-10-09T09:54:27Z",
+   "relative_orbit": "171",
+   "days": [
+    "2026-10-08"
+   ],
+   "stored_stretches": false
+  }
+ ],
+ "per_day": [
+  {
+   "date": "2025-11-02",
+   "s1": "2025-10-31T09:55:01Z",
+   "dt_h": -40.7
+  },
+  {
+   "date": "2025-11-22",
+   "s1": "2025-11-24T09:55:00Z",
+   "dt_h": 55.3
+  },
+  {
+   "date": "2025-11-28",
+   "s1": "2025-11-24T09:55:00Z",
+   "dt_h": -88.9
+  },
+  {
+   "date": "2025-12-15",
+   "s1": "2025-12-18T09:54:57Z",
+   "dt_h": 79.3
+  },
+  {
+   "date": "2026-01-12",
+   "s1": "2026-01-11T09:54:55Z",
+   "dt_h": -16.9
+  },
+  {
+   "date": "2026-03-28",
+   "s1": "2026-03-24T09:54:53Z",
+   "dt_h": -88.9
+  },
+  {
+   "date": "2026-06-26",
+   "s1": "2026-06-28T09:54:50Z",
+   "dt_h": 55.1
+  },
+  {
+   "date": "2026-10-08",
+   "s1": "2026-10-09T09:54:27Z",
+   "dt_h": 31.3
+  }
+ ],
+ "pu_per_scene": 0.965,
+ "pu_total": 6.75,
+ "pu_if_stored_stretches_used": 6.75,
+ "note": "取り直しは python -m sat.s2_labels 系の S1 だけの取得（この PR にはまだ無い）で、答えの日の前後 4 日以内の撮影を 1 枚ずつ。stored_stretches＝その撮影の岸壁の片（区間の奥行きなど）は quay/<地点>/ に保存済み（取り直さずに突き合わせを組める。組む処理は未実装なので pu_total には含めてある）。S2 の自動ラベルは使わない（人の答えだけを正解にする）ので S2 の取得（約 2.7〜3.2 PU/日）は要らない。PU は cdse.estimate_pu の見積もり（3 帯、LIA なし）",
+ "needs_cdse": true,
+ "fetched": false
+}

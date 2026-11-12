@@ -942,7 +942,7 @@
    "center_lon": 121.5,
    "pixel_m": 10,
    "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30},
-   "mask_version": 1,
+   "mask_water": "osm_polygons", "mask_version": 2, "history": [{"mask_version": 1, "until_utc": "2026-11-12", "recount": true, "note": "範囲は同じで、陸と水の分け方を直した（過去 30 日の撮影は新しい版で数え直す）。OSM の海岸線（natural=coastline、長江の岸の 3 本）だけで作ったため、海岸線の無い黄浦江・蘊藻浜の水面が陸になっていた（範囲の 94% が陸、水 6%）。海軍の桟橋（OSM way 697315140 ほか 13 本）の周りに水の画素が無く、岸壁の標本に 1 本も入らず、札は 0 のままだった（2026-11-12、目視の確認セットを作るときに発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた"}],
    "quay_lines_version": 1,
    "sectors": [
     {
@@ -970,7 +970,7 @@
     "lookback_days": 365,
     "max_scenes": 30,
     "min_scenes": 24,
-    "note": "ro171-bl-1（24 撮影、2025-11-24〜2026-10-21、確度 3） は SWS-land-v1 で probe/ports-baseline-oct-ops3（49c7e00）が作成し、そのまま sat/baselines に置いた。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
+    "note": "ro171-bl-1（24 撮影、2025-12-06〜2026-11-02、確度 3） は SWS-land-v2 で probe/ports-baseline-sws-hq（2cde987）が作成し、そのまま sat/baselines に置いた（2026-11-12、陸マスクの作り直しに伴う取り直し。SWS-land-v1 の基準は sat/baselines/SWS-land-v1 に残す）。軌道 3 は 11 撮影で使わない。24 撮影に届かない軌道は使わない。毎日の実行は基準を作らない"
    },
    "quay": {
     "tuning_scenes": [],
