@@ -1,0 +1,40 @@
+{
+ "run_utc": "2026-11-12T08:09:17Z",
+ "sites": {
+  "SWS": {
+   "mask": {
+    "version": "SWS-land-v2",
+    "water_polygons": true,
+    "switched_to_water_polygons": false,
+    "coastline_ways": 3,
+    "structure_ways": 133,
+    "water_areas": 8,
+    "water_fraction": 0.1631,
+    "land_fraction": 0.825,
+    "structure_fraction": 0.0119,
+    "osm_base": "2026-11-12T08:06:11Z"
+   },
+   "lines": {
+    "version": "SWS-quay-v1",
+    "counts": {
+     "pier": 23,
+     "quay": 0,
+     "coastline": 3
+    }
+   },
+   "areas": {
+    "features": 48,
+    "military": 6,
+    "military_names": [
+     "宝山镇雷达站",
+     "高炮营",
+     "高炮营",
+     "上海水警区",
+     "",
+     "东海舰队宝山水兵训练基地 91150部队"
+    ]
+   }
+  }
+ },
+ "failed": []
+}
