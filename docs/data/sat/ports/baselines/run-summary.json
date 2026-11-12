@@ -1,0 +1,54 @@
+{
+ "run_utc": "2026-11-12T08:12:44Z",
+ "cap_pu": 50.0,
+ "ports": [
+  {
+   "site_id": "SWS",
+   "mask_version": "SWS-land-v2",
+   "lookback_days": 730,
+   "catalog_by_orbit": {
+    "171": 56,
+    "3": 11
+   },
+   "footprint_dropped": 0,
+   "max_scenes_used": 24,
+   "min_scenes": 24,
+   "orbits": {
+    "3": {
+     "scenes": 11,
+     "used": 11,
+     "built": true,
+     "credibility": "4",
+     "first_utc": "2025-01-16T21:58:56Z",
+     "last_utc": "2025-04-28T21:57:41Z",
+     "png_bytes": {
+      "vv_p10": 29439,
+      "vv_p90": 29344,
+      "vh_p10": 30766
+     },
+     "older_than_12_months": 11,
+     "enough": false
+    },
+    "171": {
+     "scenes": 24,
+     "used": 24,
+     "built": true,
+     "credibility": "3",
+     "first_utc": "2025-12-06T09:54:58Z",
+     "last_utc": "2026-11-02T09:54:27Z",
+     "png_bytes": {
+      "vv_p10": 26887,
+      "vv_p90": 27896,
+      "vh_p10": 28193
+     },
+     "older_than_12_months": 0,
+     "enough": true
+    }
+   },
+   "processing_units": 22.527,
+   "requests": 36
+  }
+ ],
+ "processing_units": 22.527,
+ "requests": 36
+}
