@@ -477,20 +477,6 @@
    ],
    "other": []
   },
-  "HYD": {
-   "assigned": 4,
-   "units": [
-    {
-     "name": "護衛艦第11支隊",
-     "n": 4,
-     "types": {
-      "FFL": 4
-     },
-     "where": "海洋島の太平湾（桟橋の特定は仮）"
-    }
-   ],
-   "other": []
-  },
   "STU": {
    "assigned": 0,
    "units": [

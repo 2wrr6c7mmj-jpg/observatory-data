@@ -119,8 +119,8 @@ class Clock:
 
 
 GRADUATED_DAILY = {"SYL", "SLP", "QGZ", "ZDH", "QJG", "QDH", "XSN", "LSN", "SWS", "XMN", "STU", "MAW",
-                   # 2026-11-12：配属の表で監視範囲の外にあった部隊の軍港 11（基準のためだけに ports.json にある）
-                   "PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI", "HYD"}  # 日次の地点になった港（sat/ports.json には範囲・マスクの一致のためだけに残る）
+                   # 2026-11-12：配属の表で監視範囲の外にあった部隊の軍港 10（基準のためだけに ports.json にある）
+                   "PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI"}  # 日次の地点になった港（sat/ports.json には範囲・マスクの一致のためだけに残る）
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -748,6 +748,7 @@ class LocatePiersTest(unittest.TestCase):
         from sat import port_locate as pl
         q = pl.overpass_query([120.0, 30.0, 120.1, 30.1])
         self.assertIn('way["man_made"~"^(pier|quay|breakwater)$"](30.0,120.0,30.1,120.1);', q)
+        self.assertIn('nwr["man_made"~"^(pier|quay|breakwater)$"]["name"](30.0,120.0,30.1,120.1);', q)   # named nodes and relations too
 
     def test_new_regions_are_small_enough(self):
         from sat import port_locate as pl

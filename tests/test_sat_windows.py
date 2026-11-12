@@ -11,8 +11,8 @@ if np is not None:
     from sat import berths, run, windows
     from sat.grid import Grid
 
-# 2026-11-12: the eleven ports added with the rule in place (tests/test_sat_multisite.py ROSTER_PORTS)
-ROSTER_PORTS = {"PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI", "HYD"}
+# 2026-11-12: the ten ports added with the rule in place (tests/test_sat_multisite.py ROSTER_PORTS)
+ROSTER_PORTS = {"PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI"}
 SITE = {"id": "TWN", "bbox": [110.0, 21.0, 110.01, 21.01], "pixel_m": 10,
         "windows": {"version": "win-1", "since_utc": "2026-11-04", "band_m": 80, "min_channel_m": 30}}
 

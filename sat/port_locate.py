@@ -56,6 +56,7 @@ def overpass_query(b: list[float]) -> str:
             f'nwr["industrial"="shipyard"]{bb};'
             f'nwr["landuse"="industrial"]["name"~"船|Shipyard|shipyard|Shipbuilding"]{bb};'
             f'nwr["natural"~"^(reef|island|islet)$"]["name"]{bb};'
+            f'nwr["man_made"~"^(pier|quay|breakwater)$"]["name"]{bb};'
             f'way["man_made"~"^(pier|quay|breakwater)$"]{bb};'
             f');out tags geom;')
 

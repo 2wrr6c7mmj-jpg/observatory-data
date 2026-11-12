@@ -1,7 +1,7 @@
 {
  "version": "est-1b",
  "title": "艦種表（全長）・戦区ごとの在籍（隻数）・港ごとの重み（岸壁の数の推定 est-1 の事前分布）",
- "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す。古鎮口（QGZ）・定海（ZDH）の w と北部・東部の在籍（fleets.north・east）は同じ調査 §5.1・§5.3 の値（provisional、版 est-1b-202610、multi-site PR-3a）。湛江・SYL・SLP の値は変えていない。fleets.north・east に 056A・039AB・039G・MCM・022・TUG を、classes に 039G（宋級、74.9 m）を、QGZ・ZDH の w に 039G 0.2 を足した（2部 調査_北部・東部戦区の小型艦・作業船、2026-10-31。fleets.south には 039G を入れていないので湛江・SYL・SLP は変わらない）。2026-11-12：監視範囲に加えた 11 港（PDG・NDS・DXE・BHI・XCD・LYG・JMN・HPU・HKG・WHI・HYD）は、配属の表から港ごとの在籍（fleets.<地点>-roster）を作り w＝1.0 で使う（status＝roster、版 est-1b-202611-roster）。classes に 073A を足した。既存の港の値と戦区の在籍は変えていない",
+ "note": "全長は各艦種の Wikipedia（英語版）の記載。隻数は戦区ごとの在籍の推定、w は港を母港・寄港地とする重みの推定。港の事前分布は count（その港の戦区）×w で、w の無い艦種は入らない。湛江の値は est-1 と同じ（2部の設計、2026-10-30）。楡林（SYL）・亜龍湾（SLP）の w は 2部の調査（プロジェクト doc『調査_4港の艦種の重みと区画』、2026-10-31）の値（provisional、艦種ごとの確度は w_detail）。003・001・956・051C を足した（湛江の重みに無いので湛江の事前分布は変わらない）。各艦の長さには N(0, 3 m) の揺らぎを足す。古鎮口（QGZ）・定海（ZDH）の w と北部・東部の在籍（fleets.north・east）は同じ調査 §5.1・§5.3 の値（provisional、版 est-1b-202610、multi-site PR-3a）。湛江・SYL・SLP の値は変えていない。fleets.north・east に 056A・039AB・039G・MCM・022・TUG を、classes に 039G（宋級、74.9 m）を、QGZ・ZDH の w に 039G 0.2 を足した（2部 調査_北部・東部戦区の小型艦・作業船、2026-10-31。fleets.south には 039G を入れていないので湛江・SYL・SLP は変わらない）。2026-11-12：監視範囲に加えた 10 港（PDG・NDS・DXE・BHI・XCD・LYG・JMN・HPU・HKG・WHI）は、配属の表から港ごとの在籍（fleets.<地点>-roster）を作り w＝1.0 で使う（status＝roster、版 est-1b-202611-roster）。classes に 073A を足した。既存の港の値と戦区の在籍は変えていない",
  "length_sd_m": 3.0,
  "groups": {
   "X": "210 m 以上（揚陸艦・補給艦・空母）",
@@ -828,21 +828,6 @@
    },
    "TUG": {
     "count": 3,
-    "conf": "未確認",
-    "source": "（出典なし。港の大きさからの仮置き）",
-    "as_of": "2026-11"
-   }
-  },
-  "HYD-roster": {
-   "056A": {
-    "count": 4,
-    "conf": "推定",
-    "source": "docs/data/ref/plan-fleet.csv（配属の表 roster-3.1、2026-11-12。tools/port_roster.py の SITES でこの港の範囲内とした部隊の艦）",
-    "as_of": "2026-11",
-    "note": "配属の表の艦級：Type 056A"
-   },
-   "TUG": {
-    "count": 2,
     "conf": "未確認",
     "source": "（出典なし。港の大きさからの仮置き）",
     "as_of": "2026-11"
@@ -1773,19 +1758,6 @@
    "conf_level": 3,
    "status": "roster",
    "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第12支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.WHI-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
-   "sources": []
-  },
-  "HYD": {
-   "version": "est-1b-202611-roster",
-   "fleet": "HYD-roster",
-   "w": {
-    "056A": 1.0,
-    "TUG": 1.0
-   },
-   "w_conf": "推定（配属の表から。港ごとの調査なし）",
-   "conf_level": 3,
-   "status": "roster",
-   "basis": "この港の範囲内に駐屯地がある部隊（護衛艦第11支隊）に配属の艦（配属の表 docs/data/ref/plan-fleet.csv、改訂 3。出典は表の src 列）を、艦種ごとの隻数のまま事前分布にした（fleets.HYD-roster の count、w はすべて 1.0）。配属は母港であって今いる場所ではない。寄港する他の部隊の艦は入っていない。タグ・作業船の数は出典なしの仮置き",
    "sources": []
   }
  }

@@ -22,7 +22,7 @@ if np is not None:
     from tests.test_sat_quay import FakeClient, scene_parts, ships
 
 # 2026-11-12: the home ports of the units the roster had outside every watched range, in the order of sites.json
-ROSTER_PORTS = ["PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI", "HYD"]
+ROSTER_PORTS = ["PDG", "NDS", "DXE", "BHI", "XCD", "LYG", "JMN", "HPU", "HKG", "WHI"]
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
@@ -890,14 +890,15 @@ class AllPortsTest(unittest.TestCase):
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class RosterPortsTest(unittest.TestCase):
-    """2026-11-12：配属の表（docs/data/ref/plan-fleet.csv）で監視範囲の外にあった部隊の軍港 11。位置の特定（sat/port_locate.py
+    """2026-11-12：配属の表（docs/data/ref/plan-fleet.csv）で監視範囲の外にあった部隊の軍港 10。位置の特定（sat/port_locate.py
     locate-2）→ 陸マスク・岸壁線・周りの区域（tools/ports_prep.py）→ 基準（probe/ports-baseline-new-hq・new2-hq）→ 区分。
-    daily true。下川島 XCD だけ基準が 24 撮影に届かず確度 4（どの軌道も 2026 年からの撮影しか無い）。"""
+    daily true。下川島 XCD だけ基準が 24 撮影に届かず確度 4（どの軌道も 2026 年からの撮影しか無い）。
+    大連・海洋島（護衛艦第 11 支隊）は入れていない：桟橋が軍のものという裏付けが無く、基準の 48 撮影でも桟橋に船の出入りが乏しい。"""
 
     EXPECT = {  # site: (baseline orbits, their credibility, pu_month_cap)
         "PDG": ([171], "3", 8), "NDS": ([142], "3", 8), "DXE": ([171], "3", 8), "BHI": ([157], "3", 6),
         "XCD": ([84, 11], "4", 6), "LYG": ([69], "3", 6), "JMN": ([11], "3", 8), "HPU": ([11], "3", 6),
-        "HKG": ([113, 11], "3", 6), "WHI": ([98], "3", 6), "HYD": ([98, 25], "3", 6),
+        "HKG": ([113, 11], "3", 6), "WHI": ([98], "3", 6),
     }
 
     def setUp(self):
@@ -976,15 +977,20 @@ class RosterPortsTest(unittest.TestCase):
             self.assertEqual(f["geometry"]["coordinates"], drawn[f["properties"]["id"]])
             self.assertIn("OpenStreetMap way/", f["properties"]["source"])
         self.assertEqual(run.manual_line_credits(self.sites["HPU"]), [])   # from OSM outlines: no imagery credit
-        # Stonecutters and Haiyang Island: the berths are coastline in OSM, put back by sat/berths.json
-        for sid, way in (("HKG", 110774390), ("HYD", 16381313)):
-            b = berths.Berths(self.sites[sid], quay_lines.load(sid, 1), naval=True)
-            self.assertEqual(b.counts()["coastline_sections"], 1, sid)
-            self.assertIn(str(way), b.allow, sid)
-        # Haiyang Island: only the two piers come back, not the breakwater with the ferry landing
-        b = berths.Berths(self.sites["HYD"], quay_lines.load("HYD", 1), naval=True)
-        self.assertTrue(b.point_ok("coastline", 16381313, 123.154171, 39.06845))    # the tip of the west pier
-        self.assertFalse(b.point_ok("coastline", 16381313, 123.152434, 39.070246))  # the ferry landing
+        # Stonecutters: the basin's quays are coastline in OSM, put back by sat/berths.json
+        b = berths.Berths(self.sites["HKG"], quay_lines.load("HKG", 1), naval=True)
+        self.assertEqual(b.counts()["coastline_sections"], 1)
+        self.assertIn("110774390", b.allow)
+        # Daxie: the eight piers of the south shore are one group; the three beyond 600 m of Wen's point are naval by hand
+        b = berths.Berths(self.sites["DXE"], quay_lines.load("DXE", 1), naval=True)
+        piers = {w["id"]: w["coords"][0] for w in quay_lines.load("DXE", 1)["ways"]}
+        for way in (286600129, 286600130, 286600131, 286600132, 286600142, 286600133, 286600139, 286600141):
+            self.assertEqual(b.line_class(way, *piers[way]), "naval", way)
+        fixed = {e["way"] for e in b.classes["lines"] if e.get("fixed")}
+        self.assertEqual(fixed, {286600133, 286600139, 286600141})
+        self.assertEqual(b.line_class(286600128, *piers[286600128]), "unknown")   # the slanted pier west of the sector
+        # Haiyang Island is not a site (the piers could not be tied to the navy)
+        self.assertNotIn("HYD", self.sites)
 
     def test_class_weights_from_the_roster(self):
         from tools import port_roster

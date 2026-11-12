@@ -38,9 +38,9 @@ class PortRosterTest(unittest.TestCase):
         self.assertEqual(got, {'ZJG': 54, 'SYL': 14, 'SLP': 30, 'QGZ': 17, 'QDH': 9, 'QJG': 3, 'LSN': 23,
                                'ZDH': 32, 'XSN': 6, 'SWS': 8, 'XMN': 6, 'STU': 0,
                                'PDG': 24, 'NDS': 14, 'DXE': 10, 'BHI': 8, 'XCD': 6, 'LYG': 2, 'JMN': 10, 'HPU': 9,
-                               'HKG': 2, 'WHI': 7, 'HYD': 4})
-        # watched: 163 before 2026-11-12, + Zhanjiang's two units (39) + the eleven new ports (96)
-        self.assertEqual(sum(got.values()), 298)
+                               'HKG': 2, 'WHI': 7})
+        # watched: 163 before 2026-11-12, + Zhanjiang's two units (39) + the ten new ports (92)
+        self.assertEqual(sum(got.values()), 294)
 
     def test_every_site_is_a_watched_site(self):
         with open(pr.ROOT / 'sat/sites.json', encoding='utf-8') as f:

@@ -12,7 +12,10 @@ sees "17 of 25". Which units count for which port is the table SITES below, writ
          They are listed under the number, not added to it.
 
 Not in any range (2026-11-12): the 9th Minesweeper Squadron (Changtu: OSM has no military area there and the
-10 m overview did not single out its piers), the 4th Minesweeper Squadron (Shanghai, place unknown) and the missile boats.
+10 m overview did not single out its piers), the 4th Minesweeper Squadron (Shanghai, place unknown), the 11th Frigate
+Flotilla (Haiyang Island: two piers in Taiping Bay, but no military area in OSM, no point on Wen's map, a ferry landing in
+the same bay, and the 48 scenes of the baselines show hardly a ship alongside; held until a source places the unit) and
+the missile boats.
 
 The roster is an estimate from open sources (revision 3 of our roster of the PLA Navy, 2026-11-12;
 the src column names the sources, SRC_LEGEND below). Home port is not where a ship is today.
@@ -128,7 +131,6 @@ SITES: dict[str, dict] = {
     'HPU': {'in': [('護衛艦第17支隊', pick('Guangzhou', '17th Frigate Flotilla'), '長洲島の北岸')], 'other': []},
     'HKG': {'in': [('駐香港部隊艦艇大隊', pick('Hong Kong', 'Hong Kong Garrison Vessel Squadron'), '昂船洲')], 'other': []},
     'WHI': {'in': [('護衛艦第12支隊', pick('Weihai', '12th Frigate Flotilla'), '威海湾の北岸（桟橋の特定は仮）')], 'other': []},
-    'HYD': {'in': [('護衛艦第11支隊', pick('Dalian-Haiyangdao', '11th Frigate Flotilla'), '海洋島の太平湾（桟橋の特定は仮）')], 'other': []},
     'STU': {'in': [('導弾艇第34大隊', pick('Shantou', '34th Missile Boat Squadron'), '汕頭の礐石。022型（42.6 m）は 50 m 未満')], 'other': []},
 }
 
