@@ -63,7 +63,7 @@
   {
    "acquired_utc": "2026-10-21T09:54:27Z",
    "prior_hash": "6d70efefe629",
-   "updated": false,
+   "updated": true,
    "note": "",
    "alpha": {
     "NV": [
@@ -87,7 +87,7 @@
   {
    "acquired_utc": "2026-11-02T09:54:27Z",
    "prior_hash": "6d70efefe629",
-   "updated": false,
+   "updated": true,
    "note": "",
    "alpha": {
     "NV": [

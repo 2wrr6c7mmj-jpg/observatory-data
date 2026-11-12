@@ -1134,6 +1134,43 @@
    "quay_result": "counted"
   },
   {
+   "site_id": "SWS",
+   "acquired_utc": "2026-10-21T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "SWS-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261021T095427_20261021T095452_005112_009AE4_24D0_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-12T08:43:00Z",
+   "processing_units": 0.965423583984375,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 8,
+    "coastline": 0
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9858,
+    "water_fraction": 0.1553,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 316,
+    "clusters": 28,
+    "dropped_small": 5,
+    "dropped_vh": 1
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_result": "counted"
+  },
+  {
    "site_id": "QDH",
    "acquired_utc": "2026-10-21T09:55:42Z",
    "platform": "sentinel-1d",
@@ -2605,6 +2642,59 @@
     "civil": {
      "segments": 0,
      "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "SWS",
+   "acquired_utc": "2026-11-02T09:54:27Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 171,
+   "mask_version": "SWS-land-v2",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261102T095427_20261102T095452_005287_00A0E7_39D3_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-12T08:43:04Z",
+   "processing_units": 0.965423583984375,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 6,
+    "coastline": 1
+   },
+   "naval_excluded": {
+    "civil": 2,
+    "unknown": 6,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9845,
+    "water_fraction": 0.1564,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 299,
+    "clusters": 34,
+    "dropped_small": 11,
+    "dropped_vh": 2
+   },
+   "quay_excluded": {
+    "segments": 1,
+    "length_m": 40,
+    "max": 1,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 2,
+     "max": 2
     },
     "unknown": {
      "segments": 0,
@@ -4199,7 +4289,7 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-12T03:30:41Z",
+  "run_utc": "2026-11-12T08:42:53Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -4210,7 +4300,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "SYL",
@@ -4221,7 +4311,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "SLP",
@@ -4232,7 +4322,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "QGZ",
@@ -4243,7 +4333,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "ZDH",
@@ -4254,7 +4344,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "QDH",
@@ -4265,7 +4355,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "XSN",
@@ -4276,18 +4366,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 842.55
    },
    {
     "site_id": "SWS",
-    "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
+    "lookback_days": 30,
+    "catalog_items": 2,
+    "acquisitions": 2,
+    "new": 2,
+    "counted": 2,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "QJG",
@@ -4298,7 +4388,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "LSN",
@@ -4309,7 +4399,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "XMN",
@@ -4320,7 +4410,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "STU",
@@ -4331,7 +4421,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "MAW",
@@ -4342,7 +4432,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "PDG",
@@ -4353,119 +4443,119 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 853.14
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "NDS",
-    "lookback_days": 30,
-    "catalog_items": 4,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 4,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 851.73
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "DXE",
-    "lookback_days": 30,
-    "catalog_items": 2,
-    "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 850.73
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "BHI",
-    "lookback_days": 30,
-    "catalog_items": 5,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 4,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 849.41
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "XCD",
-    "lookback_days": 30,
-    "catalog_items": 4,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 4,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 848.08
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "LYG",
-    "lookback_days": 30,
-    "catalog_items": 4,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 4,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 846.72
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "JMN",
-    "lookback_days": 30,
-    "catalog_items": 2,
-    "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 845.95
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "HPU",
-    "lookback_days": 30,
-    "catalog_items": 2,
-    "acquisitions": 2,
-    "new": 2,
-    "counted": 2,
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 845.23
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "HKG",
-    "lookback_days": 30,
-    "catalog_items": 4,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 4,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 843.91
+    "budget_left_pu": 840.62
    },
    {
     "site_id": "WHI",
-    "lookback_days": 30,
-    "catalog_items": 4,
-    "acquisitions": 4,
-    "new": 4,
-    "counted": 4,
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 842.55
+    "budget_left_pu": 840.62
    }
   ],
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.009,
+    "requests": 2
    },
    {
     "site_id": "SYL",
@@ -4535,14 +4625,14 @@
    },
    {
     "site_id": "SWS",
-    "days": 0,
-    "clear": 0,
+    "days": 4,
+    "clear": 1,
     "cloudy": 0,
-    "skipped": 0,
+    "skipped": 3,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.81,
+    "requests": 3
    },
    {
     "site_id": "QJG",
@@ -4635,14 +4725,14 @@
    },
    {
     "site_id": "BHI",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.281,
+    "requests": 3
    },
    {
     "site_id": "XCD",
@@ -4711,16 +4801,16 @@
     "requests": 1
    }
   ],
-  "s2_requests": 23,
-  "s2_processing_units": 0.0,
-  "requests": 76,
-  "processing_units": 10.59,
+  "s2_requests": 28,
+  "s2_processing_units": 1.099,
+  "requests": 53,
+  "processing_units": 3.03,
   "pu_source": "header",
-  "scenes": 30,
-  "month_pu_before": 146.862,
+  "scenes": 2,
+  "month_pu_before": 157.452,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-12T03:30:41Z",
+ "updated_utc": "2026-11-12T08:42:53Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
@@ -4728,6 +4818,13 @@
    "to_mask_version": "ZJG-land-v2",
    "date_utc": "2026-10-30",
    "note": "監視範囲を変更（旧範囲 v1：概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
+  },
+  {
+   "site_id": "SWS",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v2",
+   "date_utc": "2026-11-12",
+   "note": "監視範囲を変更（旧範囲 v1：範囲は同じで、陸と水の分け方を直した（過去 30 日の撮影は新しい版で数え直す）。OSM の海岸線（natural=coastline、長江の岸の 3 本）だけで作ったため、海岸線の無い黄浦江・蘊藻浜の水面が陸になっていた（範囲の 94% が陸、水 6%）。海軍の桟橋（OSM way 697315140 ほか 13 本）の周りに水の画素が無く、岸壁の標本に 1 本も入らず、札は 0 のままだった（2026-11-12、目視の確認セットを作るときに発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
   },
   {
    "site_id": "MAW",
@@ -4829,8 +4926,8 @@
   {
    "site_id": "SWS",
    "kind": "berth_only",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "quay-v1・est-2",
    "to_version": "quay-v2・est-2.1（berth-1）",
    "date_utc": "2026-11-01",
@@ -5149,8 +5246,8 @@
   {
    "site_id": "SWS",
    "kind": "size",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "長さを問わない",
    "to_version": "size-1",
    "date_utc": "2026-11-06",
@@ -5159,8 +5256,8 @@
   {
    "site_id": "SWS",
    "kind": "fixed",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "固定物の判定なし",
    "to_version": "fix-2",
    "date_utc": "2026-11-05",
@@ -5519,8 +5616,8 @@
   {
    "site_id": "SWS",
    "kind": "naval",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
    "date_utc": "2026-11-01",
@@ -5749,8 +5846,8 @@
   {
    "site_id": "SWS",
    "kind": "windows",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "窓の制限なし",
    "to_version": "win-1",
    "date_utc": "2026-11-04",

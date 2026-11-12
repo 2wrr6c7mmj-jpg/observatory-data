@@ -1186,7 +1186,7 @@
   {
    "id": "SWS",
    "name": "上海・呉淞（上海水警区）",
-   "mask_version": "SWS-land-v1",
+   "mask_version": "SWS-land-v2",
    "bbox": [
     121.48,
     31.37,
@@ -2691,6 +2691,13 @@
    "note": "監視範囲を変更（旧範囲 v1：概略の中心による 8×8 km の正方形。霞山の市街地・商港と特呈島を含み、麻斜の桟橋群の北半分を外していた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
   },
   {
+   "site_id": "SWS",
+   "from_mask_version": "SWS-land-v1",
+   "to_mask_version": "SWS-land-v2",
+   "date_utc": "2026-11-12",
+   "note": "監視範囲を変更（旧範囲 v1：範囲は同じで、陸と水の分け方を直した（過去 30 日の撮影は新しい版で数え直す）。OSM の海岸線（natural=coastline、長江の岸の 3 本）だけで作ったため、海岸線の無い黄浦江・蘊藻浜の水面が陸になっていた（範囲の 94% が陸、水 6%）。海軍の桟橋（OSM way 697315140 ほか 13 本）の周りに水の画素が無く、岸壁の標本に 1 本も入らず、札は 0 のままだった（2026-11-12、目視の確認セットを作るときに発見）。v2 は OSM の水域の多角形（natural=water・waterway=riverbank）で陸と水を分けた）。mask_version が違う行の数は範囲が違うため直接比べない。新しい版は過去 30 日の撮影も新しい範囲で数え直し、旧版の行は残す（同じ撮影に両方の行がある）"
+  },
+  {
    "site_id": "MAW",
    "from_mask_version": "MAW-land-v1",
    "to_mask_version": "MAW-land-v2",
@@ -2790,8 +2797,8 @@
   {
    "site_id": "SWS",
    "kind": "berth_only",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "quay-v1・est-2",
    "to_version": "quay-v2・est-2.1（berth-1）",
    "date_utc": "2026-11-01",
@@ -3110,8 +3117,8 @@
   {
    "site_id": "SWS",
    "kind": "size",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "長さを問わない",
    "to_version": "size-1",
    "date_utc": "2026-11-06",
@@ -3120,8 +3127,8 @@
   {
    "site_id": "SWS",
    "kind": "fixed",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "固定物の判定なし",
    "to_version": "fix-2",
    "date_utc": "2026-11-05",
@@ -3480,8 +3487,8 @@
   {
    "site_id": "SWS",
    "kind": "naval",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "全区分の岸壁",
    "to_version": "naval-1",
    "date_utc": "2026-11-01",
@@ -3710,8 +3717,8 @@
   {
    "site_id": "SWS",
    "kind": "windows",
-   "from_mask_version": "SWS-land-v1",
-   "to_mask_version": "SWS-land-v1",
+   "from_mask_version": "SWS-land-v2",
+   "to_mask_version": "SWS-land-v2",
    "from_version": "窓の制限なし",
    "to_version": "win-1",
    "date_utc": "2026-11-04",
@@ -9434,8 +9441,24 @@
     "SLP": "標本外 141 撮影×区間（較正の流用）",
     "QGZ": "標本外 124 撮影×区間（較正の流用）",
     "ZDH": "標本 0",
+    "QJG": "標本 0",
     "QDH": "標本 0",
-    "LSN": "標本 0"
+    "XSN": "標本 0",
+    "LSN": "標本 0",
+    "SWS": "標本 0",
+    "XMN": "標本 0",
+    "STU": "標本 0",
+    "MAW": "標本 0",
+    "PDG": "標本 0",
+    "NDS": "標本 0",
+    "DXE": "標本 0",
+    "BHI": "標本 0",
+    "XCD": "標本 0",
+    "LYG": "標本 0",
+    "JMN": "標本 0",
+    "HPU": "標本 0",
+    "HKG": "標本 0",
+    "WHI": "標本 0"
    },
    "note": "海軍の岸壁（naval の線、50 m 以上）の撮影×区間ごとの在/不在を所有者の目視と突き合わせた評価票（再現率・適合率・ブライア、港別と全体、判定の出所別）。毎日の実行が保存済みのファイルから作り直す（PU 0）。定義と港別の表は eval/meta.json"
   },
@@ -9574,14 +9597,14 @@
    },
    {
     "site_id": "SWS",
-    "mask_version": "SWS-land-v1",
+    "mask_version": "SWS-land-v2",
     "relative_orbit": 171,
     "version": "ro171-bl-1",
     "scenes": 24,
-    "first_utc": "2025-11-24T09:55:00Z",
-    "last_utc": "2026-10-21T09:54:27Z",
+    "first_utc": "2025-12-06T09:54:58Z",
+    "last_utc": "2026-11-02T09:54:27Z",
     "credibility": "3",
-    "file": "sat/baselines/SWS-land-v1/ro171-bl-1.json"
+    "file": "sat/baselines/SWS-land-v2/ro171-bl-1.json"
    },
    {
     "site_id": "XMN",
@@ -9957,15 +9980,15 @@
    },
    {
     "site_id": "SWS",
-    "mask_version": "SWS-land-v1",
+    "mask_version": "SWS-land-v2",
     "relative_orbit": 171,
     "baseline_version": "ro171-bl-1",
     "lines_version": "SWS-quay-v1",
-    "total_m": 1580,
-    "blind_m": 0,
-    "share": 0.0,
-    "strict_m": 0,
-    "stretches": 0
+    "total_m": 6010,
+    "blind_m": 1180,
+    "share": 0.196,
+    "strict_m": 240,
+    "stretches": 58
    },
    {
     "site_id": "XMN",

@@ -60,8 +60,10 @@ ZDH,2026-10-21T09:54:02Z,171,ZDH-land-v2,A2,舟山水警区の岸壁（小型艦
 ZDH,2026-10-21T09:54:02Z,171,ZDH-land-v2,B,それ以外（定海の商港・北西の工業港の桟橋）,other,19,32,est-1,26,22,31,est-2.1,0,0,1,ZJG,quay-v1
 PDG,2026-10-21T09:54:27Z,171,PDG-land-v1,A1,長江南岸の桟橋（約 1.4 km、岸と平行）と連絡橋,naval,12,19,est-1,11,9,14,est-2.1,4,2,6,ZJG,quay-v2
 PDG,2026-10-21T09:54:27Z,171,PDG-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
-SWS,2026-10-21T09:54:27Z,171,SWS-land-v1,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v1
-SWS,2026-10-21T09:54:27Z,171,SWS-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v1
+SWS,2026-10-21T09:54:27Z,171,SWS-land-v1,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,0,0,est-1,0,0,0,est-2.1,4,3,6,ZJG,quay-v1
+SWS,2026-10-21T09:54:27Z,171,SWS-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,1,ZJG,quay-v1
+SWS,2026-10-21T09:54:27Z,171,SWS-land-v2,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,5,13,est-1,9,7,12,est-2.1,4,3,6,ZJG,quay-v2
+SWS,2026-10-21T09:54:27Z,171,SWS-land-v2,B,それ以外,other,2,6,est-1,3,3,6,est-2.1,0,0,1,ZJG,quay-v2
 QDH,2026-10-21T09:55:42Z,171,QDH-land-v2,A1,海軍基地（OSM way/979396338）,naval,16,26,est-1,19,17,22,est-2.1,0,0,0,ZJG,quay-v1
 QDH,2026-10-21T09:55:42Z,171,QDH-land-v2,B,それ以外,other,11,30,est-1,23,18,27,est-2.1,0,0,0,ZJG,quay-v1
 QGZ,2026-10-21T09:55:42Z,171,QGZ-land-v1,A1,外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）,naval,4,6,est-1,4,3,5,est-2.1,2,1,3,ZJG,quay-v1
@@ -126,8 +128,10 @@ ZDH,2026-11-02T09:54:02Z,171,ZDH-land-v2,A2,舟山水警区の岸壁（小型艦
 ZDH,2026-11-02T09:54:02Z,171,ZDH-land-v2,B,それ以外（定海の商港・北西の工業港の桟橋）,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
 PDG,2026-11-02T09:54:27Z,171,PDG-land-v1,A1,長江南岸の桟橋（約 1.4 km、岸と平行）と連絡橋,naval,12,20,est-1,10,8,13,est-2.1,2,1,4,ZJG,quay-v2
 PDG,2026-11-02T09:54:27Z,171,PDG-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
-SWS,2026-11-02T09:54:27Z,171,SWS-land-v1,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
-SWS,2026-11-02T09:54:27Z,171,SWS-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+SWS,2026-11-02T09:54:27Z,171,SWS-land-v1,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,0,0,est-1,0,0,0,est-2.1,2,1,3,ZJG,quay-v2
+SWS,2026-11-02T09:54:27Z,171,SWS-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,1,ZJG,quay-v2
+SWS,2026-11-02T09:54:27Z,171,SWS-land-v2,A1,上海水警区と水兵訓練基地（OSM way/653753242・988368515）,naval,3,10,est-1,7,4,9,est-2.1,2,1,3,ZJG,quay-v2
+SWS,2026-11-02T09:54:27Z,171,SWS-land-v2,B,それ以外,other,1,4,est-1,2,1,5,est-2.1,0,0,1,ZJG,quay-v2
 QDH,2026-11-02T09:55:42Z,171,QDH-land-v2,A1,海軍基地（OSM way/979396338）,naval,3,5,est-1,3,3,4,est-2.1,1,0,3,ZJG,quay-v2
 QDH,2026-11-02T09:55:42Z,171,QDH-land-v2,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
 QGZ,2026-11-02T09:55:42Z,171,QGZ-land-v1,A1,外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）,naval,7,12,est-1,8,7,10,est-2.1,3,2,5,ZJG,quay-v2
