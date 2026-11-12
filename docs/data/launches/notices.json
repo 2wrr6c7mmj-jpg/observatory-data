@@ -1,6 +1,6 @@
 {
- "last_retrieved_utc": "2026-11-11T07:53:01Z",
- "last_snapshot": "snapshot-bf248ac9b823bb96.json",
+ "last_retrieved_utc": "2026-11-12T08:31:05Z",
+ "last_snapshot": "snapshot-2fd52540acfdfd07.json",
  "notices": {
   "aviation:B5731/26": {
    "authority": "RPHI",
@@ -111,7 +111,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "B5829/26",
    "key": "aviation:B5829/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -153,7 +153,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "B5830/26",
    "key": "aviation:B5830/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -203,7 +203,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "B5831/26",
    "key": "aviation:B5831/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -244,7 +244,7 @@
    "first_seen_utc": "2026-11-05T02:17:23Z",
    "id": "B5910/26",
    "key": "aviation:B5910/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -335,7 +335,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "P3998/26",
    "key": "aviation:P3998/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -451,7 +451,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "P3999/26",
    "key": "aviation:P3999/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -566,7 +566,7 @@
    "first_seen_utc": "2026-11-02T07:50:31Z",
    "id": "P5506/26",
    "key": "aviation:P5506/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -766,7 +766,7 @@
    "first_seen_utc": "2026-11-10T08:32:25Z",
    "id": "P5641/26",
    "key": "aviation:P5641/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [],
    "source": "aviation",
    "start_utc": "2026-11-09T12:11:00Z",
@@ -847,7 +847,7 @@
    "first_seen_utc": "2026-11-11T07:53:01Z",
    "id": "P5648/26",
    "key": "aviation:P5648/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1284,7 +1284,7 @@
    "first_seen_utc": "2026-11-11T07:53:01Z",
    "id": "Q2693/26",
    "key": "aviation:Q2693/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "line",
@@ -1490,7 +1490,7 @@
    "first_seen_utc": "2026-11-10T08:32:25Z",
    "id": "Z0854/26",
    "key": "aviation:Z0854/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [],
    "source": "aviation",
    "start_utc": "2026-11-09T06:44:00Z",
@@ -1584,7 +1584,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN177/2026",
    "key": "maritime:HN177/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1609,7 +1609,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN182/2026",
    "key": "maritime:HN182/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1634,7 +1634,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN192/2026",
    "key": "maritime:HN192/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1659,7 +1659,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "HN202/2026",
    "key": "maritime:HN202/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1684,7 +1684,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "HN213/2026",
    "key": "maritime:HN213/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1709,7 +1709,7 @@
    "first_seen_utc": "2026-11-05T02:17:23Z",
    "id": "HN217/2026",
    "key": "maritime:HN217/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1761,7 +1761,7 @@
    "first_seen_utc": "2026-11-06T08:04:54Z",
    "id": "HN220/2026",
    "key": "maritime:HN220/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -1786,7 +1786,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "NAVAREA XI 26-0439",
    "key": "maritime:NAVAREA XI 26-0439",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1844,7 +1844,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "NAVAREA XI 26-0486",
    "key": "maritime:NAVAREA XI 26-0486",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1902,7 +1902,7 @@
    "first_seen_utc": "2026-11-05T02:17:23Z",
    "id": "NAVAREA XI 26-0494",
    "key": "maritime:NAVAREA XI 26-0494",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -1955,7 +1955,7 @@
    "first_seen_utc": "2026-11-05T02:17:23Z",
    "id": "NAVAREA XI 26-0496",
    "key": "maritime:NAVAREA XI 26-0496",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -2013,7 +2013,7 @@
    "first_seen_utc": "2026-11-07T07:25:36Z",
    "id": "NAVAREA XI 26-0498",
    "key": "maritime:NAVAREA XI 26-0498",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -2071,7 +2071,7 @@
    "first_seen_utc": "2026-11-10T08:32:25Z",
    "id": "NAVAREA XI 26-0504",
    "key": "maritime:NAVAREA XI 26-0504",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -2192,7 +2192,7 @@
    "first_seen_utc": "2026-11-11T07:53:01Z",
    "id": "NAVAREA XI 26-0507",
    "key": "maritime:NAVAREA XI 26-0507",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -2313,7 +2313,7 @@
    "first_seen_utc": "2026-11-11T07:53:01Z",
    "id": "NAVAREA XI 26-0508",
    "key": "maritime:NAVAREA XI 26-0508",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -2372,7 +2372,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "SD827/2026",
    "key": "maritime:SD827/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -2442,6 +2442,58 @@
    "start_utc": null,
    "text": "SD827/26 YELLOW SEA \"DONG FANG HANG TIAN GANG\" ROCKET FIRING IN RIZHAO AREA FROM 182200UTC TO 210700UTC OCT. SAFETY CONTROL AREA 1 IS DEFINED AS A CIRCULAR AREA WITHIN A 3-KILOMETER RADIUS OF 35-23.50N 119-35.92E. SAFETY CONTROL AREA 2 IS BOUNDED BY THE LINES JOINING 35-23.50N 119-35.92E, 35-21.56N 119-38.30E AND 35-22.93N 119-39.22E. ROCKET DEBRIS IS EXPECTED TO FALL IN AREA BOUNDED BY THE LINES JOINING 35-16.41N 120-11.35E, 35-00.28N 120-45.63E, 34-46.28N 120-35.76E AND 35-02.36N 120-01.55E . ENTERING PROHIBITED. SHANDONG MSA CHINA."
   },
+  "maritime:SD907/2026": {
+   "authority": "中国沿海",
+   "end_utc": null,
+   "evidence": [
+    "ROCKET DEBRIS"
+   ],
+   "first_seen_utc": "2026-11-12T08:31:05Z",
+   "id": "SD907/2026",
+   "key": "maritime:SD907/2026",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
+   "shapes": [
+    {
+     "kind": "point",
+     "points": [
+      [
+       35.973,
+       122.759
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       36.304,
+       122.935
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       36.718,
+       121.749
+      ]
+     ]
+    },
+    {
+     "kind": "point",
+     "points": [
+      [
+       36.381,
+       121.57
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": null,
+   "text": "SD907/26 YELLOW SEA，121400 UTC TO 122100UTC NOV , ROCKET DEBRIS FALL IN AREA BOUNDED BY THE LINES JOINING 35-58.38N 122-45.54E,36-18.24N 122-56.10E,36-43.08N 121-44.94E,36-22.86N 121-34.20E. ENTERING PROHIBITED. SHANDONG MSA CHINA."
+  },
   "maritime:ZJ272/26": {
    "authority": "中国沿海",
    "end_utc": null,
@@ -2451,7 +2503,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ272/26",
    "key": "maritime:ZJ272/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -2503,7 +2555,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ332/26",
    "key": "maritime:ZJ332/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -2555,7 +2607,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ350/26",
    "key": "maritime:ZJ350/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -2607,7 +2659,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ385/2026",
    "key": "maritime:ZJ385/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -2659,7 +2711,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "ZJ385/26",
    "key": "maritime:ZJ385/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "point",
@@ -2711,7 +2763,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "云航警51/25",
    "key": "maritime:云航警51/25",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -2748,7 +2800,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "沪航警561/26",
    "key": "maritime:沪航警561/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -2863,7 +2915,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "沪航警722/26",
    "key": "maritime:沪航警722/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -2978,7 +3030,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警627/26",
    "key": "maritime:浙航警627/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3015,7 +3067,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警807/26",
    "key": "maritime:浙航警807/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3052,7 +3104,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警841/26",
    "key": "maritime:浙航警841/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3089,7 +3141,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警960/2026",
    "key": "maritime:浙航警960/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3126,7 +3178,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "浙航警960/26",
    "key": "maritime:浙航警960/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3163,7 +3215,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警130/26",
    "key": "maritime:琼航警130/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3189,7 +3241,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警138/26",
    "key": "maritime:琼航警138/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3215,7 +3267,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警148/26",
    "key": "maritime:琼航警148/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3241,7 +3293,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警174/26",
    "key": "maritime:琼航警174/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3267,7 +3319,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警182/2026",
    "key": "maritime:琼航警182/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3304,7 +3356,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警185/2026",
    "key": "maritime:琼航警185/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3330,7 +3382,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警190/2026",
    "key": "maritime:琼航警190/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3356,7 +3408,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警200/2026",
    "key": "maritime:琼航警200/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3382,7 +3434,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警210/2026",
    "key": "maritime:琼航警210/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3408,7 +3460,7 @@
    "first_seen_utc": "2026-10-31T08:30:43Z",
    "id": "琼航警221/2026",
    "key": "maritime:琼航警221/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3434,7 +3486,7 @@
    "first_seen_utc": "2026-11-05T02:17:23Z",
    "id": "琼航警225/2026",
    "key": "maritime:琼航警225/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3471,7 +3523,7 @@
    "first_seen_utc": "2026-11-06T08:04:54Z",
    "id": "琼航警228/2026",
    "key": "maritime:琼航警228/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3497,7 +3549,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "琼航警259/25",
    "key": "maritime:琼航警259/25",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3524,7 +3576,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "鲁航警629/26",
    "key": "maritime:鲁航警629/26",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "polygon",
@@ -3588,7 +3640,7 @@
    "first_seen_utc": "2026-10-30T06:38:10Z",
    "id": "鲁航警906/2026",
    "key": "maritime:鲁航警906/2026",
-   "last_seen_utc": "2026-11-11T07:53:01Z",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
    "shapes": [
     {
      "kind": "circle",
@@ -3642,6 +3694,43 @@
    "source": "maritime",
    "start_utc": "2026-10-18T22:00:00Z",
    "text": "鲁航警906/26，黄海，自10月19日0600时至21日1500时，“东方航天港”轮在日照水域进行海上火箭发射活动。安全管控区域一为以35-23.50N 119-35.92E为中心、半径3公里的圆形区域，安全管控区域二为35-23.50N 119-35.92E、35-21.56N 119-38.30E和35-22.93N 119-39.22E三点连线围成的区域。海上残骸落区为35-16.41N 120-11.35E、35-00.28N 120-45.63E、34-46.28N 120-35.76E、35-02.36N 120-01.55E四点连线围成的区域。其他船舶禁止驶入。"
+  },
+  "maritime:鲁航警993/2026": {
+   "authority": "黄海",
+   "end_utc": "2026-11-12T21:00:00Z",
+   "evidence": [
+    "火箭残骸"
+   ],
+   "first_seen_utc": "2026-11-12T08:31:05Z",
+   "id": "鲁航警993/2026",
+   "key": "maritime:鲁航警993/2026",
+   "last_seen_utc": "2026-11-12T08:31:05Z",
+   "shapes": [
+    {
+     "kind": "polygon",
+     "points": [
+      [
+       35.973,
+       122.759
+      ],
+      [
+       36.304,
+       122.935
+      ],
+      [
+       36.718,
+       121.749
+      ],
+      [
+       36.381,
+       121.57
+      ]
+     ]
+    }
+   ],
+   "source": "maritime",
+   "start_utc": "2026-11-12T14:00:00Z",
+   "text": "鲁航警993/26，黄海，青岛，11月12日2200时至13日0500时，预计有火箭残骸落在35-58.38N 122-45.54E、36-18.24N 122-56.10E、36-43.08N 121-44.94E、36-22.86N 121-34.20E四点连线水域，禁止驶入。"
   }
  }
 }

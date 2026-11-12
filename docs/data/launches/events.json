@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-11T07:53:01Z",
+ "generated_utc": "2026-11-12T08:31:05Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -218,15 +218,6 @@
    "bearing_spread_deg": 0.0,
    "inclination_deg": 101.2,
    "recorded_launches": [
-    {
-     "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-     "name": "Mir | Demo Flight",
-     "status": "Go",
-     "net_utc": "2026-11-13T05:00:00Z",
-     "rocket": "Mir",
-     "orbit": "LEO",
-     "pad": "ADD Offshore launch platform"
-    },
     {
      "ll2_id": "e0741415-6c63-4236-9736-24a6c04485bc",
      "name": "Nuri | NeonSat-2 to 6",
@@ -626,6 +617,15 @@
      "pad": "Commercial LC-2"
     },
     {
+     "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+     "name": "Mir | Demo Flight",
+     "status": "TBD",
+     "net_utc": "2026-11-30T00:00:00Z",
+     "rocket": "Mir",
+     "orbit": "LEO",
+     "pad": "ADD Offshore launch platform"
+    },
+    {
      "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
      "name": "Long March 8A | SatNet LEO Group TBD?",
      "status": "TBC",
@@ -676,11 +676,11 @@
     },
     {
      "ll2_id": "d66590ab-b273-47ff-b85a-608b62851b4b",
-     "name": "Long March 2D | Unknown Payload",
-     "status": "Go",
-     "net_utc": "2026-11-11T11:40:00Z",
+     "name": "Long March 2D | CAS Pathfinder-1",
+     "status": "Success",
+     "net_utc": "2026-11-11T11:41:00Z",
      "rocket": "Long March 2D",
-     "orbit": "N/A",
+     "orbit": "SSO",
      "pad": "Launch Area 94 (SLS-2 / 603)"
     },
     {
@@ -693,6 +693,23 @@
      "pad": "Launch Area 95A"
     }
    ]
+  },
+  {
+   "window_start_utc": "2026-11-12T14:00Z",
+   "window_end_utc": "2026-11-12T21:00Z",
+   "areas": [
+    [
+     36.346,
+     122.255
+    ]
+   ],
+   "notices": [
+    "maritime:鲁航警993/2026"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 151
   },
   {
    "window_start_utc": "2026-11-13T04:00Z",
@@ -1006,13 +1023,13 @@
   },
   {
    "ll2_id": "d66590ab-b273-47ff-b85a-608b62851b4b",
-   "name": "Long March 2D | Unknown Payload",
-   "status": "Go",
-   "net_utc": "2026-11-11T11:40:00Z",
+   "name": "Long March 2D | CAS Pathfinder-1",
+   "status": "Success",
+   "net_utc": "2026-11-11T11:41:00Z",
    "rocket": "Long March 2D",
    "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
+   "orbit": "SSO",
+   "mission_type": "Technology",
    "pad": "Launch Area 94 (SLS-2 / 603)",
    "location": "Jiuquan Satellite Launch Center, People's Republic of China",
    "country": "CHN",
@@ -1037,23 +1054,6 @@
    "lon": 100.343333,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
    "event_index": 26
-  },
-  {
-   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-   "name": "Mir | Demo Flight",
-   "status": "Go",
-   "net_utc": "2026-11-13T05:00:00Z",
-   "rocket": "Mir",
-   "provider": "Agency for Defense Development",
-   "orbit": "LEO",
-   "mission_type": "Test Flight",
-   "pad": "ADD Offshore launch platform",
-   "location": "Sea Launch",
-   "country": "???",
-   "lat": 33.216667,
-   "lon": 126.366667,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
-   "event_index": 8
   },
   {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
@@ -1105,6 +1105,23 @@
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
    "event_index": 26
+  },
+  {
+   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+   "name": "Mir | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-11-30T00:00:00Z",
+   "rocket": "Mir",
+   "provider": "Agency for Defense Development",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "pad": "ADD Offshore launch platform",
+   "location": "Sea Launch",
+   "country": "???",
+   "lat": 33.216667,
+   "lon": 126.366667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
+   "event_index": 25
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
