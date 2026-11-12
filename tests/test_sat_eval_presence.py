@@ -271,9 +271,12 @@ class EvaluateRepoTest(unittest.TestCase):
         # Gu Zhenkou (A-1, 2026-11-07): the hooked jetty 582517902 and the yard shore 15387629:L:06 are out of the evaluation
         q = self.res["sites"]["QGZ"]
         # and four more of 2026-11-10 (structures bright in every scene, the owner's answer 8/8 absent)
-        self.assertEqual(q["sections"]["no_berth"], 7)
+        # and one of 2026-11-12 (the coastline's section on the reclaimed platform, land since 2026 but water in the mask; the
+        # other section on it, 219848835:L:01, is not in the review set)
+        self.assertEqual(q["sections"]["no_berth"], 8)
         self.assertFalse({x["section_id"] for x in q["rows"]} & {"582517902:L:01", "582517902:R:00", "15387629:L:06", "15388243:L:15",
-                                                                 "219848837:L:02", "219848837:L:07", "1564921419:R:00"})
+                                                                 "219848837:L:02", "219848837:L:07", "1564921419:R:00",
+                                                                 "219848835:L:00"})
         self.assertGreater(q["labels"]["no_berth"], 0)
 
     def test_rows_and_split(self):
