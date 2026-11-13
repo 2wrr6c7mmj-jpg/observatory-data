@@ -1,0 +1,91 @@
+name: Translate headlines
+# 世界情勢観測のニュースの見出しで、サイトにまだ日本語訳がないものを訳し、
+# docs/data/translations/ にだけ書く（サイトの背景更新が GitHub Pages から取り込む）。
+# 訳は公開のモデル（Qwen3-8B、Apache-2.0。思考なしで JSON の形に縛って出させる）を llama.cpp で Actions 上の CPU で動かす。
+# キー・登録・利用上限なし。公開リポジトリなので Actions の時間は無料。
+on:
+  push:
+    branches: ['probe/translate']
+  schedule:
+    - cron: '33 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ${{ github.event_name == 'push' && format('probe-translate-{0}', github.ref_name) || 'translate-headlines' }}
+  cancel-in-progress: false
+env:
+  MODEL: unsloth/Qwen3-8B-GGUF:Q4_K_M
+  LLAMA_CACHE: /home/runner/.cache/llama
+jobs:
+  translate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: llama.cpp (latest CPU release for Ubuntu x64)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The newest releases first; take the first one that has the CPU build for Ubuntu x64.
+          names=$(gh api 'repos/ggml-org/llama.cpp/releases?per_page=10' --jq '.[] | .tag_name as $t | .assets[] | "\($t) \(.name)"')
+          line=$(printf '%s\n' "$names" | grep -E ' [^ ]*bin-ubuntu-x64\.(zip|tar\.gz)$' | head -1)
+          tag=${line%% *}; asset=${line#* }
+          [ -n "$line" ] || { echo "::error title=llama.cpp assets::$(printf '%s ' $names | cut -c1-900)"; exit 1; }
+          echo "release: $tag $asset"
+          gh release download "$tag" --repo ggml-org/llama.cpp --pattern "$asset" --dir "$RUNNER_TEMP"
+          mkdir -p "$RUNNER_TEMP/llama"
+          case "$asset" in
+            *.zip) unzip -q "$RUNNER_TEMP/$asset" -d "$RUNNER_TEMP/llama" ;;
+            *) tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP/llama" ;;
+          esac
+          bin=$(dirname "$(find "$RUNNER_TEMP/llama" -name llama-server -type f | head -1)")
+          echo "LLAMA_BIN=$bin" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/llama
+          key: llama-model-qwen3-8b-q4km
+      - name: Start the model server
+        run: |
+          export LD_LIBRARY_PATH="$LLAMA_BIN:$LD_LIBRARY_PATH"
+          nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" --jinja -c 8192 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
+          for i in $(seq 1 120); do
+            curl -sf http://127.0.0.1:8080/health >/dev/null && { echo "ready after $((i*5)) s"; exit 0; }
+            sleep 5
+          done
+          tail -40 "$RUNNER_TEMP/server.log"; echo "::error title=translate::model server did not start"; exit 1
+      - name: Probe (temporary directory, 5 minutes)
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p "$RUNNER_TEMP/tr"
+          python -m translate.headlines --model "$MODEL" --minutes 5 --out "$RUNNER_TEMP/tr"
+          python - <<'P'
+          import json, os
+          d = json.load(open(os.environ['RUNNER_TEMP'] + '/tr/headlines-ja.json'))
+          for x in d['items'][:15]:
+              print(f"::notice title=sample::{x['original'][:120]} → {x['translated'][:120]}")
+          P
+          grep -E "eval time|tokens per second" "$RUNNER_TEMP/server.log" | tail -4 || true
+      - name: Translate
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p docs/data/translations
+          python -m translate.headlines --model "$MODEL" --minutes 40
+      - name: Publish changed data
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git add docs/data/translations
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: 見出しの翻訳 ($(date -u +%Y-%m-%dT%H:%MZ))"
+          for i in 1 2 3; do
+            git pull -q --rebase && git push && exit 0
+            sleep 20
+          done
+          exit 1

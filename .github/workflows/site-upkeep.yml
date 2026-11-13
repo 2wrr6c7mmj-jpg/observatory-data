@@ -1,0 +1,32 @@
+name: Site upkeep clock
+# Advances the Observatory site's background upkeep (news collection,
+# translation, naval/exercise/activity rebuilds) while nobody has the site
+# open. The site does one bounded step per request (Workers Free CPU limit),
+# so this calls /api/maintenance until it reports idle or the step cap.
+# Runs here (public repository, free Actions) instead of a new Cloudflare
+# cron trigger. About 60 requests per run at most, 72 runs a day.
+on:
+  schedule:
+    - cron: '7,27,47 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: site-upkeep-clock
+  cancel-in-progress: false
+jobs:
+  tick:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Step the site upkeep
+        run: |
+          tasks=""; fails=0
+          for i in $(seq 1 60); do
+            body=$(curl -sS -m 25 -H 'Accept: application/json' https://observatory-watch.pages.dev/api/maintenance) || { fails=$((fails+1)); [ $fails -ge 3 ] && break; sleep 5; continue; }
+            task=$(printf '%s' "$body" | sed -n 's/.*"task":"\([^"]*\)".*/\1/p')
+            tasks="$tasks ${task:-?}"
+            [ "$task" = idle ] && break
+            sleep 2
+          done
+          echo "::notice title=upkeep::$(echo $tasks | tr ' ' '\n' | sed 's/:.*//' | sort | uniq -c | tr '\n' ' ')"
+          [ $fails -lt 3 ] || { echo "::error title=upkeep::site did not answer"; exit 1; }
