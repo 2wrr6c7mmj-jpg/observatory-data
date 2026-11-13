@@ -105,9 +105,25 @@ class BlindPrior(unittest.TestCase):
             self.assertTrue(pub, p.name)
             for r in pub:
                 self.assertEqual(r, mine.get(r["acquired_utc"]), f"{p.name} {r['acquired_utc']}")
+        for site in ep.load_sites():                      # and no file is left for a site without a row (the map would add it)
+            if site["id"] not in res:
+                self.assertFalse((ep.OUT / ep.BLIND_DIR / f"{site['id']}.csv").exists(), site["id"])
         with tempfile.TemporaryDirectory() as d:          # an output folder without answers: no files
             self.assertEqual(ep.write_blind(Path(d)), {})
             self.assertFalse((Path(d) / ep.BLIND_DIR).exists())
+
+    def test_a_site_without_a_resident_section_loses_its_old_file(self):
+        """Lushun 2026-11-13: the AI's table had two resident sections (+2 on the map); the owner's answers have none. The file
+        of the earlier run must go, and the files of the sites that were not asked for must stay."""
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            (d / ep.BLIND_DIR).mkdir()
+            head = ",".join(ep.BLIND_COLUMNS) + "\n"
+            (d / ep.BLIND_DIR / "TST.csv").write_text(head + "TST,2026-11-09T09:48:11Z,blind-1,ai,2,0,2\n", encoding="utf-8")
+            (d / ep.BLIND_DIR / "OTH.csv").write_text(head + "OTH,2026-11-09T09:48:11Z,blind-1,s1,1,0,1\n", encoding="utf-8")
+            self.assertEqual(ep.write_blind(d, [{"id": "TST"}]), {})
+            self.assertFalse((d / ep.BLIND_DIR / "TST.csv").exists())
+            self.assertTrue((d / ep.BLIND_DIR / "OTH.csv").exists())
 
     def test_beside_the_current_judge(self):
         rows = [{"y": 1, "p": 0.0, "p_any": 0.0, "p_resident": 0.9, "p_blind1": 0.9},    # a resident quay the count missed
