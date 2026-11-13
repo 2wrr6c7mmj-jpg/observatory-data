@@ -1,6 +1,6 @@
 {
  "version": "eval-presence-5",
- "generated_utc": "2026-11-13T11:22:35Z",
+ "generated_utc": "2026-11-13T12:47:41Z",
  "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
  "min_length_m": 50.0,
  "threshold": 0.5,
@@ -36322,7 +36322,7 @@
   },
   "SWS": {
    "site_id": "SWS",
-   "name": "汕尾",
+   "name": "上海・呉淞",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
    "truth": "s2",
@@ -37301,7 +37301,7 @@
   },
   "XMN": {
    "site_id": "XMN",
-   "name": "厦門",
+   "name": "廈門",
    "freeze_utc": "2026-11-15",
    "calibrated": false,
    "truth": "s2",

@@ -48,11 +48,13 @@
    "way": 230360728,
    "kind": "pier",
    "class": "naval",
+   "fixed": true,
    "conf": "確認寄り",
    "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
    "basis": [
     "OSM way/158981830「亚龙湾海军基地」（landuse=military・military=naval_base）に含まれる",
-    "区画 A3（role naval）"
+    "区画 A3（role naval）",
+    "消磁施設（2026-11-13 の点検）：FAS（H. Kristensen、2008-04「New Chinese SSBN Deploys to Hainan Island」）が潜水艦の消磁施設とした c 字形の桟橋（2006〜08 年に建設、小島の施設と連絡橋でつながる）。艦は 2 本の桟橋の間に入る。外側の面の区間 R:02（150 m）は所有者の光学写真の答えが 8 日とも不在で、その日の近くのレーダー 8 撮影のうち 3 撮影が 50 m 以上の片を出したが、数えない区間（berth false）にしない：保存済みのレーダー画像 4 撮影（2026-10-02・10-14・10-26・11-07、同じ軌道）で桟橋の明るさが撮影ごとに大きく変わり（10-26 は全長が強く、11-07 は弱い）、桟橋そのものの反射ではなく、中に入った艦の反射が外側の面に出たものとみる（確度 低：光学の裏付けなし。Contains modified Copernicus Sentinel data 2026）"
    ]
   },
   {

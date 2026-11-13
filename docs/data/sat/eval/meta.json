@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-13T11:22:35Z",
+ "generated_utc": "2026-11-13T12:47:41Z",
  "version": "eval-presence-5",
  "files": {
   "presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）",
@@ -680,7 +680,7 @@
   },
   {
    "site_id": "SWS",
-   "name": "汕尾",
+   "name": "上海・呉淞",
    "calibrated": false,
    "sections_eligible": 24,
    "answers": 0,
@@ -747,7 +747,7 @@
   },
   {
    "site_id": "XMN",
-   "name": "厦門",
+   "name": "廈門",
    "calibrated": false,
    "sections_eligible": 10,
    "answers": 0,

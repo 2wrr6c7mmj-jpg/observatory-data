@@ -92,8 +92,8 @@ TRUTHS = ("s2", "s1")
 BLIND_SHARE = 0.5             # a cell whose section lies on a blind stretch for at least this share is "blind"
 BLIND_MATCH_M = 20.0          # a point of the section line within this of a blind stretch of the same OSM way is blind
 NAMES = {"ZJG": "湛江", "SYL": "三亜・楡林", "SLP": "三亜・亜龍湾", "QGZ": "青島・古鎮口", "ZDH": "舟山・定海",
-         "LSN": "大連・旅順", "QDH": "青島港内", "QJG": "青島・姜哥荘", "XSN": "象山", "SWS": "汕尾", "STU": "汕頭",
-         "XMN": "厦門", "MAW": "馬尾"}
+         "LSN": "大連・旅順", "QDH": "青島港内", "QJG": "青島・姜哥荘", "XSN": "象山", "SWS": "上海・呉淞", "STU": "汕頭",
+         "XMN": "廈門", "MAW": "馬尾"}     # SWS was "汕尾" (Shanwei, another city) until 2026-11-13: SWS is Wusong, Shanghai
 
 
 # ---------------------------------------------------------------- small helpers
