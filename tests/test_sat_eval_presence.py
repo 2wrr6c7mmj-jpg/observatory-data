@@ -503,5 +503,26 @@ class RegressionGuardTest(unittest.TestCase):
             self.assertEqual(ep.refresh(out, [s for s in ep.load_sites() if s["id"] == "SLP"])["snapshot"], "updated")
 
 
+class NamesTest(unittest.TestCase):
+    """The short names of the table are the sites' own names (sat/sites.json) without the bracket. Until 2026-11-13 SWS (Wusong,
+    Shanghai) was named "汕尾" (Shanwei, a city in Guangdong) and XMN was written "厦門" where sites.json writes "廈門"."""
+
+    def test_names_follow_sites(self):
+        sites = {s["id"]: s["name"] for s in ep.load_sites()}
+        for sid, name in ep.NAMES.items():
+            self.assertIn(sid, sites)
+            for part in name.split("・"):
+                self.assertIn(part, sites[sid], (sid, name))
+        self.assertEqual(ep.NAMES["SWS"], "上海・呉淞")
+
+    def test_published_tables(self):
+        for f in ("presence.json", "meta.json"):
+            text = (ROOT / "docs" / "data" / "sat" / "eval" / f).read_text(encoding="utf-8")
+            self.assertNotIn("汕尾", text, f)
+            self.assertNotIn("厦門", text, f)
+        d = json.loads((ROOT / "docs" / "data" / "sat" / "eval" / "presence.json").read_text(encoding="utf-8"))
+        self.assertEqual(d["sites"]["SWS"]["name"], "上海・呉淞")
+
+
 if __name__ == "__main__":
     unittest.main()

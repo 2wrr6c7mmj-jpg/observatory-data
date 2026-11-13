@@ -198,6 +198,20 @@ class NoBerthPhotoTest(unittest.TestCase):
         nv = berths.Berths(sites["LSN"], lines_of(sites["LSN"]), naval=True)
         self.assertFalse(nv.point_ok("pier", 1026281591, 121.237494, 38.790535))   # 1026281591:R:00
 
+    def test_degaussing_pier_stays(self):
+        """SLP 230360728 (the c-shaped degaussing pier, FAS 2008): its outer face R:02 meets the first two conditions (the
+        owner's photo answers say empty on all 8 days, the radar said "present" on 3 of 8), but ships lie between the two arms
+        and the pier's brightness changes from scene to scene (2026-10-26 strong over its whole length, 11-07 weak): it
+        stays a berth, with the reason in the basis."""
+        sites = {s["id"]: s for s in json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
+        nv = berths.Berths(sites["SLP"], lines_of(sites["SLP"]), naval=True)
+        self.assertTrue(nv.point_ok("pier", 230360728, 109.68984, 18.188029))      # 230360728:R:02
+        self.assertFalse(nv.no_berth_at(230360728, 109.68984, 18.188029))
+        cls = berths.load_classes("SLP")
+        self.assertFalse(any(e.get("berth") is False for e in cls["lines"]))
+        e = next(e for e in cls["lines"] if e["way"] == 230360728)
+        self.assertTrue(e.get("fixed") and any("消磁施設" in b and "berth false）にしない" in b for b in e["basis"]))
+
 
 @unittest.skipUnless(np is not None, "numpy not installed")
 class EsriPiersTest(unittest.TestCase):
