@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-13T11:33:23Z",
+ "generated_utc": "2026-11-13T12:06:04Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-12T13:58:27Z",
-   "heartbeat_age_h": 21.6,
+   "heartbeat_age_h": 22.1,
    "data_date": "2026-11-10",
    "data_date_tz": "UTC",
    "data_age_days": 3,
@@ -151,7 +151,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-13T11:32:06Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.6,
    "data_date": "2026-11-12",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -174,7 +174,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-12T15:33:50Z",
-   "heartbeat_age_h": 20.0,
+   "heartbeat_age_h": 20.5,
    "data_date": "2026-11-12",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -218,7 +218,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-13T08:15:00Z",
-   "heartbeat_age_h": 3.3,
+   "heartbeat_age_h": 3.9,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 17,
@@ -242,7 +242,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-13T08:14:57Z",
-   "heartbeat_age_h": 3.3,
+   "heartbeat_age_h": 3.9,
    "data_date": "2026-11-13",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -260,7 +260,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-13T11:32:26Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -1152,7 +1152,7 @@
   "sites_configured_not_daily": [],
   "changes_latest": {
    "date": "2026-11-13",
-   "version": "s1-recount-1 のまま（上限と対象の港を変更）、s1-match-3"
+   "version": "naval-1 / naval50-2 のまま（岸壁の区分の手決めを 5 件追加）"
   }
  },
  "credits": [
