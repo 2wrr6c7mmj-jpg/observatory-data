@@ -162,7 +162,6 @@ class NoBerthTest(unittest.TestCase):
                 self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), e["way"])
 
 
-@unittest.skipUnless(np is not None, "numpy not installed")
 class NoBerthPhotoTest(unittest.TestCase):
     """2026-11-13: sections the owner's photo answers call empty on all 8 days, where the radar count said "present" again and
     again, and the photos show no place for a warship (a pier's own echo, a headland's edge across a narrow channel, the end
@@ -200,6 +199,7 @@ class NoBerthPhotoTest(unittest.TestCase):
         self.assertFalse(nv.point_ok("pier", 1026281591, 121.237494, 38.790535))   # 1026281591:R:00
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
 class EsriPiersTest(unittest.TestCase):
     """naval-1 (2026-11-05): the piers read from Esri World Imagery (QDH -1..-4, QJG -2 in place of the S2 line -1) are
     berth lines only in the naval variant (scenes from NAVAL_SINCE), naval, and never lie on an existing line (a band
