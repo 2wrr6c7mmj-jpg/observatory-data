@@ -1,3 +1,4 @@
 run_utc,site_id,probe_version,requests,processing_units,pu_source,scenes,cap_pu
 2026-11-07T12:23:15Z,SYL+SLP+QGZ,s1-recount-1,30,25.519,header,15,40.0
 2026-11-07T12:26:05Z,SYL+SLP+QGZ,s1-recount-1,8,5.056,header,4,14.481
+2026-11-13T08:34:09Z,ZDH+LSN+QDH+QJG+XSN,s1-recount-1,72,42.004,header,36,45.12
