@@ -194,7 +194,7 @@ class NoBerthPhotoTest(unittest.TestCase):
             for e in cls["lines"][:len(cases)]:                                    # in front of the other entries of their way
                 self.assertIs(e.get("berth"), False)
                 self.assertTrue(e.get("fixed") and e["part"].get("bbox") and "2026-11-13" in e["basis"][1], (sid, e["way"]))
-        # the other face of the same finger pier lies in the box too (both faces are out)
+        # the other section on the same (east) face of that finger pier lies in the box too; its west face stays a berth
         nv = berths.Berths(sites["LSN"], lines_of(sites["LSN"]), naval=True)
         self.assertFalse(nv.point_ok("pier", 1026281591, 121.237494, 38.790535))   # 1026281591:R:00
 
