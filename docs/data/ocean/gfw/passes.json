@@ -155,7 +155,7 @@
   {
    "area": "OKI",
    "acquired_utc": "2026-11-05T09:28:05Z",
-   "checked_utc": "2026-11-12T11:51:14Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
    "gfw_cells_ais": 44,
    "gfw_cells_no_ais": 67,
    "status": "done",
@@ -170,7 +170,7 @@
   {
    "area": "TSW",
    "acquired_utc": "2026-11-05T10:16:50Z",
-   "checked_utc": "2026-11-12T11:51:14Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
    "gfw_cells_ais": 253,
    "gfw_cells_no_ais": 68,
    "status": "done",
@@ -185,7 +185,7 @@
   {
    "area": "TSM",
    "acquired_utc": "2026-11-07T10:00:28Z",
-   "checked_utc": "2026-11-12T11:51:14Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
    "gfw_cells_ais": 51,
    "gfw_cells_no_ais": 27,
    "status": "done",
@@ -200,7 +200,7 @@
   {
    "area": "TSN",
    "acquired_utc": "2026-11-07T10:00:28Z",
-   "checked_utc": "2026-11-12T11:51:14Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
    "gfw_cells_ais": 198,
    "gfw_cells_no_ais": 18,
    "status": "done",
@@ -215,7 +215,7 @@
   {
    "area": "TWN",
    "acquired_utc": "2026-11-07T10:00:28Z",
-   "checked_utc": "2026-11-12T11:51:14Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
    "gfw_cells_ais": 63,
    "gfw_cells_no_ais": 13,
    "status": "done",
@@ -226,6 +226,66 @@
    "B_no_ais": 4,
    "B_none": 3,
    "first_done_utc": "2026-11-12T11:51:14Z"
+  },
+  {
+   "area": "SAKI_S",
+   "acquired_utc": "2026-11-08T09:52:08Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
+   "gfw_cells_ais": 5,
+   "gfw_cells_no_ais": 3,
+   "status": "done",
+   "A_ais": 5,
+   "A_no_ais": 0,
+   "A_none": 0,
+   "B_ais": 0,
+   "B_no_ais": 0,
+   "B_none": 4,
+   "first_done_utc": "2026-11-13T11:34:27Z"
+  },
+  {
+   "area": "SENKAKU",
+   "acquired_utc": "2026-11-08T09:52:08Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
+   "gfw_cells_ais": 2,
+   "gfw_cells_no_ais": 5,
+   "status": "done",
+   "A_ais": 2,
+   "A_no_ais": 4,
+   "A_none": 1,
+   "B_ais": 0,
+   "B_no_ais": 1,
+   "B_none": 0,
+   "first_done_utc": "2026-11-13T11:34:27Z"
+  },
+  {
+   "area": "TWNE",
+   "acquired_utc": "2026-11-08T09:52:08Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
+   "gfw_cells_ais": 8,
+   "gfw_cells_no_ais": 5,
+   "status": "done",
+   "A_ais": 7,
+   "A_no_ais": 1,
+   "A_none": 1,
+   "B_ais": 0,
+   "B_no_ais": 0,
+   "B_none": 0,
+   "first_done_utc": "2026-11-13T11:34:27Z"
+  },
+  {
+   "area": "YNG",
+   "acquired_utc": "2026-11-08T09:52:08Z",
+   "checked_utc": "2026-11-13T11:34:27Z",
+   "gfw_cells_ais": 21,
+   "gfw_cells_no_ais": 3,
+   "status": "done",
+   "A_ais": 19,
+   "A_no_ais": 1,
+   "A_none": 0,
+   "B_ais": 2,
+   "B_no_ais": 0,
+   "B_none": 3,
+   "first_done_utc": "2026-11-13T11:34:27Z"
   }
  ]
 }
