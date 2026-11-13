@@ -770,7 +770,8 @@ def meta(res: dict) -> dict:
             "s1-recount": (f"est-2 に無い撮影（ラベル日の S1 取り直し、labels/<地点>-s2-s1-match.csv）：区間に属する片（{STRETCH_ASSIGN}：区間内に {STRETCH_INSIDE_M:g} m 以上あるか、片の中点が区間内。2026-11-10 までは 20 m 掛かれば可）の全長 s1_stretch_len_m ≥ {MIN_LENGTH_M:g} m で 1、それ以外 0"
                            f"（港の表、s1-match-3。est-2 の ship_length_m と同じ量：区間の境をまたぐ艦は中点のある側で在、両側に {STRETCH_INSIDE_M:g} m 以上あれば両区間で在）。湛江の表（s1-match-1、列なし）は s1_occupied 1 かつ s1_occ_len_m ≥ {MIN_LENGTH_M:g} m。0/1 の判定：ブライアは誤り率に等しい"),
             "blind-1": (f"{bp.VERSION}（sat/blind_prior）：区間の常在度を併記。所有者の同日の答え（labels/<地点>-s1-answers.csv）で、判定する撮影を除いて {bp.MIN_ANSWERS} 撮影以上あり、"
-                        f"在の割合が {bp.RESIDENT_MIN:g} 以上の区間は p_resident＝(在＋1)／(答え＋2)、ほかは 0。p_blind1＝max(p, p_resident)。本体の p は現行の判定のまま。"
+                        f"在の割合が {bp.RESIDENT_MIN:g} 以上の区間は p_resident＝(在＋1)／(答え＋2)、ほかは 0。"
+                        f"blind-2（2026-11-13）：同日の答えで常在でも、光学写真の答えが {bp.MIN_ANSWERS} 日以上あって在の割合が {bp.RESIDENT_MIN:g} 未満の区間は 0（判定する撮影の日の答えは除く）。p_blind1＝max(p, p_resident)。本体の p は現行の判定のまま。"
                         f"指標は各ブロックの blind1（min50＝p_blind1、current＝同じ升の現行、resident＝常在の升だけ）。対象は軍艦で稼働状態は問わない"),
             "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
             "occ-2": (f"撮影に occ-2 の行（quay_occ2/<地点>/YYYY-MM.csv、sat/occ2）があれば、升に p_occ2（占有の確率。較正前は a=logit(事前)・b=1・c=0 の仮置き、"
