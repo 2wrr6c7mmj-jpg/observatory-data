@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-12T16:45:52Z",
+ "generated_utc": "2026-11-13T00:53:52Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,36 +71,46 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-12T13:58:27Z",
-   "heartbeat_age_h": 2.8,
+   "heartbeat_age_h": 10.9,
    "data_date": "2026-11-10",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 3,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "ZDH：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "ZDH：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "QJG：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "QJG：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "QDH：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "QDH：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "XSN：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "XSN：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SWS：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "SWS：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "XMN：最新の撮影 2026-11-05 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "STU：最新の撮影 2026-11-05 から 8 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -110,22 +120,22 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "PDG：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "PDG：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "DXE：最新の撮影 2026-11-02 から 10 日（撮影の抜け）"
+     "text": "DXE：最新の撮影 2026-11-02 から 11 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "JMN：最新の撮影 2026-11-03 から 9 日（撮影の抜け）"
+     "text": "JMN：最新の撮影 2026-11-03 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "HPU：最新の撮影 2026-11-03 から 9 日（撮影の抜け）"
+     "text": "HPU：最新の撮影 2026-11-03 から 10 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -141,7 +151,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-12T11:50:10Z",
-   "heartbeat_age_h": 4.9,
+   "heartbeat_age_h": 13.1,
    "data_date": "2026-11-11",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -164,7 +174,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-12T15:33:50Z",
-   "heartbeat_age_h": 1.2,
+   "heartbeat_age_h": 9.3,
    "data_date": "2026-11-12",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -208,7 +218,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-12T08:31:09Z",
-   "heartbeat_age_h": 8.2,
+   "heartbeat_age_h": 16.4,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 17,
@@ -232,10 +242,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-12T08:31:05Z",
-   "heartbeat_age_h": 8.2,
+   "heartbeat_age_h": 16.4,
    "data_date": "2026-11-12",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -250,7 +260,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-12T11:50:30Z",
-   "heartbeat_age_h": 4.9,
+   "heartbeat_age_h": 13.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -738,15 +748,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 8,
-   "open_now": 4,
+   "open_or_upcoming_windows": 7,
+   "open_now": 3,
    "next_start": {
     "site": null,
     "country": null,
     "window_start_utc": "2026-11-13T04:00Z",
     "window_end_utc": "2026-11-30T09:34Z"
    },
-   "active_notices": 35
+   "active_notices": 34
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -872,15 +882,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-12T01:39:05Z",
+   "last_success_started_utc": "2026-11-13T00:40:17Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43135954662,
-    "started_utc": "2026-11-12T01:39:05Z",
+    "id": 43338896357,
+    "started_utc": "2026-11-13T00:40:17Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43135954662",
-    "delay_h": 6.0
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43338896357",
+    "delay_h": 5.0
    },
    "consecutive_failures": 0
   }
