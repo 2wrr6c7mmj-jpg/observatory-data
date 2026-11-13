@@ -9,8 +9,8 @@ The chip is saved as float16 dB (``--raw``: <raw>/<site>/s1-<stamp>.npz, NaN = n
 
 Budget, explicit here and checked before every request (port_archive.LimitedClient):
 
-* ``MAX_PU_TOTAL`` (40 PU) for all runs of this job together: the PU of this job's earlier rows in ``--usage-out``
-  are subtracted;
+* ``MAX_PU_TOTAL`` (40 PU until 2026-11-13, 100 PU since) for all runs of this job together: the PU of this job's
+  earlier rows in ``--usage-out`` are subtracted;
 * what is left of the month's own caps (``month_left``, the same rule as port_archive.guard): the global cap
   (``--global-cap`` 9,000) minus its margin (450), the other usage of the month (main's sat usage and every
   branch's usage CSVs, ``--usage``; each record once), the port archive's usage (``--ports-usage``, one pool) and
@@ -29,6 +29,11 @@ Budget, explicit here and checked before every request (port_archive.LimitedClie
 Ops-4 (2026-11-07, the owner's priority: ports first, SYL -> SLP -> QGZ within the 40 PU): first run SYL 4 + SLP 7 (the
 2026-10-14 scene of both is in est-2) + QGZ 4 of 8 = 15 scenes, 25.5 PU by the header (the plan's estimate, 38.3 PU, counts
 3 bands; the request has 2, so a scene costs 2/3 of it); second run the other 4 QGZ scenes (about 5.1 PU).
+
+Ops-5 (2026-11-13, the owner's consent "go ahead" to about 67 PU more): the owner answered the photo check of five more
+ports (Dinghai, Lushun, Qingdao harbour, Jianggezhuang, Xiangshan; 39 answered days), whose Sentinel-1 scenes are not stored,
+so the presence evaluation had almost no cell for them. The plans add up to 66.8 PU by the 3-band estimate (about 45 PU for
+the 2 bands of the request). The cap of all runs together goes from 40 to 100 PU (about 30.6 PU spent by ops-4).
 
 ``--match`` (no CDSE, PU 0): labels/<site>-s2-s1-match.csv from the saved chips, in the shape of Zhanjiang's table
 (sat/s2_labels.MATCH_FIELDS): one row per section the owner was asked about (labels/<site>/review*.json) x label day, with
@@ -62,7 +67,7 @@ from .grid import Grid
 
 PROBE_VERSION = "s1-recount-1"
 RAW_SUBDIR = "probe-raw/s1-recount"   # where the chips are saved on the probe branch (--raw), read again by sat/s2_answers --s1
-MAX_PU_TOTAL = 40.0          # the owner's consent: about 37 PU (SYL 16.09 + SLP 20.38), with a little room
+MAX_PU_TOTAL = 100.0         # the owner's consents: about 37 PU (2026-11-03, cap 40) + about 67 PU for five more ports (2026-11-13)
 BUDGET_MONTH = "2026-11"     # the month the cap was set for
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
