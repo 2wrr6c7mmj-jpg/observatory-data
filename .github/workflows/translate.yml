@@ -1,7 +1,7 @@
 name: Translate headlines
 # 世界情勢観測のニュースの見出しで、サイトにまだ日本語訳がないものを訳し、
 # docs/data/translations/ にだけ書く（サイトの背景更新が GitHub Pages から取り込む）。
-# 訳は公開のモデル（Qwen3-4B-Instruct-2507、Apache-2.0）を llama.cpp で Actions 上の CPU で動かす。
+# 訳は公開のモデル（Qwen3-8B、Apache-2.0。思考なしで JSON の形に縛って出させる）を llama.cpp で Actions 上の CPU で動かす。
 # キー・登録・利用上限なし。公開リポジトリなので Actions の時間は無料。
 on:
   push:
@@ -15,7 +15,7 @@ concurrency:
   group: ${{ github.event_name == 'push' && format('probe-translate-{0}', github.ref_name) || 'translate-headlines' }}
   cancel-in-progress: false
 env:
-  MODEL: unsloth/Qwen3-4B-Instruct-2507-GGUF:Q4_K_M
+  MODEL: unsloth/Qwen3-8B-GGUF:Q4_K_M
   LLAMA_CACHE: /home/runner/.cache/llama
 jobs:
   translate:
@@ -49,11 +49,11 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: /home/runner/.cache/llama
-          key: llama-model-qwen3-4b-instruct-2507-q4km
+          key: llama-model-qwen3-8b-q4km
       - name: Start the model server
         run: |
           export LD_LIBRARY_PATH="$LLAMA_BIN:$LD_LIBRARY_PATH"
-          nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" -c 8192 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
+          nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" --jinja -c 8192 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
           for i in $(seq 1 120); do
             curl -sf http://127.0.0.1:8080/health >/dev/null && { echo "ready after $((i*5)) s"; exit 0; }
             sleep 5

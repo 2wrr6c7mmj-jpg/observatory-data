@@ -66,6 +66,7 @@ def translate_batch(server, titles):
             {'role': 'system', 'content': SYSTEM},
             {'role': 'user', 'content': '次の見出しを順番どおりに訳し、{"ja": [...]} の形で返してください。\n' + json.dumps(titles, ensure_ascii=False)},
         ],
+        'chat_template_kwargs': {'enable_thinking': False},
         'temperature': 0.1, 'max_tokens': 90 * len(titles) + 50,
         'response_format': {'type': 'json_object', 'schema': schema},
     }
