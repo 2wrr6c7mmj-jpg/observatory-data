@@ -51,3 +51,6 @@ ZJG,2026-11-08T10:41:00Z,sentinel-1d,ascending,84,ZJG-land-v2,naval-1,0,0,0,14,0
 WHI,2026-11-09T09:47:42Z,sentinel-1d,ascending,98,WHI-land-v1,naval-1,0,0,0,3,0,0,7,0,0,11,0,0
 LSN,2026-11-09T09:48:11Z,sentinel-1d,ascending,98,LSN-land-v1,naval-1,0,0,0,9,0,0,10,0,0,23,0,0
 HKG,2026-11-10T10:24:50Z,sentinel-1d,ascending,113,HKG-land-v1,naval-1,0,0,0,5,0,1,8,0,2,10,0,6
+XMN,2026-11-12T10:08:56Z,sentinel-1d,ascending,142,XMN-land-v1,naval-1,0,0,0,2,1,2,2,5,2,2,5,2
+MAW,2026-11-12T10:09:25Z,sentinel-1d,ascending,142,MAW-land-v2,naval-1,1,0,0,2,0,2,0,0,2,0,0,2
+NDS,2026-11-12T10:09:25Z,sentinel-1d,ascending,142,NDS-land-v1,naval-1,0,0,0,4,0,0,8,0,2,15,0,2

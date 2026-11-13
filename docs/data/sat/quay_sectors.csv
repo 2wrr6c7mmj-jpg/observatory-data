@@ -137,7 +137,7 @@ QDH,2026-11-02T09:55:42Z,171,QDH-land-v2,B,それ以外,other,0,0,est-1,0,0,0,es
 QGZ,2026-11-02T09:55:42Z,171,QGZ-land-v1,A1,外港の東の桟橋 O1〜O3（NMF の桟橋 5〜7 と推定。O3＝空母の桟橋 5）,naval,7,12,est-1,8,7,10,est-2.1,3,2,5,ZJG,quay-v2
 QGZ,2026-11-02T09:55:42Z,171,QGZ-land-v1,A2,内港（防波堤 C の内側の岸壁・斜めの桟橋 4 本）,naval,32,64,est-1,42,36,49,est-2.1,11,8,14,ZJG,quay-v2
 QGZ,2026-11-02T09:55:42Z,171,QGZ-land-v1,B,それ以外（古鎮湾の外の泊地・南の防波堤）,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
-QJG,2026-11-02T09:55:42Z,171,QJG-land-v1,A1,潜水艦の桟橋（姜哥荘、ORF の座標の周り）,naval,4,5,est-1,5,3,5,est-2.1,1,0,2,ZJG,quay-v2
+QJG,2026-11-02T09:55:42Z,171,QJG-land-v1,A1,潜水艦の桟橋（姜哥荘、ORF の座標の周り）,naval,4,5,est-1,5,3,5,est-2.1,0,0,1,ZJG,quay-v2
 QJG,2026-11-02T09:55:42Z,171,QJG-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
 LSN,2026-11-02T09:56:32Z,171,LSN-land-v1,A1,旅順の内港（半島先端の湖状の港、港口の内側）,naval,2,12,est-1,6,4,9,est-2.1,3,1,4,ZJG,quay-v2
 LSN,2026-11-02T09:56:32Z,171,LSN-land-v1,B,それ以外,other,1,2,est-1,1,1,2,est-2.1,0,0,0,ZJG,quay-v2
@@ -183,3 +183,9 @@ LSN,2026-11-09T09:48:11Z,98,LSN-land-v1,A1,旅順の内港（半島先端の湖�
 LSN,2026-11-09T09:48:11Z,98,LSN-land-v1,B,それ以外,other,7,10,est-1,8,6,10,est-2.1,0,0,1,ZJG,quay-v2
 HKG,2026-11-10T10:24:50Z,113,HKG-land-v1,A1,昂船洲の南岸の四角い港池,naval,5,10,est-1,7,5,9,est-2.1,2,1,3,ZJG,quay-v2
 HKG,2026-11-10T10:24:50Z,113,HKG-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+XMN,2026-11-12T10:08:56Z,142,XMN-land-v1,A1,廈門水警区（OSM way/409154029）,naval,1,2,est-1,1,1,2,est-2.1,0,0,0,ZJG,quay-v2
+XMN,2026-11-12T10:08:56Z,142,XMN-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+MAW,2026-11-12T10:09:25Z,142,MAW-land-v2,A1,馬尾造船所の岸壁（OSM way/431595199）,naval,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+MAW,2026-11-12T10:09:25Z,142,MAW-land-v2,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2
+NDS,2026-11-12T10:09:25Z,142,NDS-land-v1,A1,南岸（城澳）の桟橋（約 850 m、連絡橋 3 本）,naval,5,15,est-1,7,5,9,est-2.1,3,2,4,ZJG,quay-v2
+NDS,2026-11-12T10:09:25Z,142,NDS-land-v1,B,それ以外,other,0,0,est-1,0,0,0,est-2.1,0,0,0,ZJG,quay-v2

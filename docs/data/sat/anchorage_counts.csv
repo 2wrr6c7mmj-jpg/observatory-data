@@ -39,3 +39,6 @@ ZJG,2026-11-08T10:41:00Z,sentinel-1d,ascending,84,ZJG-land-v2,win-1,11,A:2;B:9,8
 WHI,2026-11-09T09:47:42Z,sentinel-1d,ascending,98,WHI-land-v1,win-1,0,A1:0;B:0,0,0
 LSN,2026-11-09T09:48:11Z,sentinel-1d,ascending,98,LSN-land-v1,win-1,4,A1:0;B:4,4,0
 HKG,2026-11-10T10:24:50Z,sentinel-1d,ascending,113,HKG-land-v1,win-1,6,A1:0;B:6,4,2
+XMN,2026-11-12T10:08:56Z,sentinel-1d,ascending,142,XMN-land-v1,win-1,8,A1:0;B:8,4,4
+MAW,2026-11-12T10:09:25Z,sentinel-1d,ascending,142,MAW-land-v2,win-1,8,A1:0;B:8,5,3
+NDS,2026-11-12T10:09:25Z,sentinel-1d,ascending,142,NDS-land-v1,win-1,2,A1:0;B:2,1,1
