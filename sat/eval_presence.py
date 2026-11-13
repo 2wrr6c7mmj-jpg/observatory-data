@@ -963,10 +963,18 @@ def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
 
 
 def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
-    """Write quay_blind/<site>.csv (all stored scenes, rewritten whole: PU 0). Returns {site_id: number of rows}."""
+    """Write quay_blind/<site>.csv (all stored scenes, rewritten whole: PU 0). Returns {site_id: number of rows}.
+    A site that has no row any more loses the file of an earlier run (its table lost its last resident section: the owner's
+    answers replaced the AI's table, or were corrected). The map adds whatever the file says and reads a missing file as +0,
+    so a file left behind would keep adding the old number (Lushun 2026-11-13: the AI's +2 after the owner's answers gave 0)."""
+    sites = sites or load_sites()
     res = blind_counts(out, sites)
+    d = out / BLIND_DIR
+    for site in sites:
+        stale = d / f"{site['id']}.csv"
+        if site["id"] not in res and stale.exists():
+            stale.unlink()
     for sid, rows in res.items():
-        d = out / BLIND_DIR
         d.mkdir(parents=True, exist_ok=True)
         with (d / f"{sid}.csv").open("w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=BLIND_COLUMNS, lineterminator="\n")
