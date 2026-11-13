@@ -32,11 +32,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          names=$(gh release view --repo ggml-org/llama.cpp --json assets --jq '.assets[].name')
-          asset=$(printf '%s\n' "$names" | grep -E 'bin-ubuntu-x64\.(zip|tar\.gz)$' | head -1)
-          [ -n "$asset" ] || { echo "::error title=llama.cpp assets::$(printf '%s ' $names | cut -c1-900)"; exit 1; }
-          echo "asset: $asset"
-          gh release download --repo ggml-org/llama.cpp --pattern "$asset" --dir "$RUNNER_TEMP"
+          # The newest releases first; take the first one that has the CPU build for Ubuntu x64.
+          names=$(gh api 'repos/ggml-org/llama.cpp/releases?per_page=10' --jq '.[] | .tag_name as $t | .assets[] | "\($t) \(.name)"')
+          line=$(printf '%s\n' "$names" | grep -E ' [^ ]*bin-ubuntu-x64\.(zip|tar\.gz)$' | head -1)
+          tag=${line%% *}; asset=${line#* }
+          [ -n "$line" ] || { echo "::error title=llama.cpp assets::$(printf '%s ' $names | cut -c1-900)"; exit 1; }
+          echo "release: $tag $asset"
+          gh release download "$tag" --repo ggml-org/llama.cpp --pattern "$asset" --dir "$RUNNER_TEMP"
           mkdir -p "$RUNNER_TEMP/llama"
           case "$asset" in
             *.zip) unzip -q "$RUNNER_TEMP/$asset" -d "$RUNNER_TEMP/llama" ;;
