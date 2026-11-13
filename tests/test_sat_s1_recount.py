@@ -1,4 +1,4 @@
-"""sat/s1_recount.py: S1 only for the answered days, with its own 40 PU cap and the month's guard (no request here)."""
+"""sat/s1_recount.py: S1 only for the answered days, with its own cap (MAX_PU_TOTAL) and the month's guard (no request here)."""
 import csv
 import json
 import tempfile
@@ -100,14 +100,14 @@ class RecountTest(unittest.TestCase):
             d = Path(d)
             write_plan(d / "out", "TSR", ["2026-10-14T10:48:16Z"])
             (d / "out" / "s1_recount_usage.csv").write_text(
-                "run_utc,site_id,probe_version,requests,processing_units\n2026-11-03T01:00:00Z,SYL+SLP,s1-recount-1,10,39.99\n")
+                "run_utc,site_id,probe_version,requests,processing_units\n2026-11-03T01:00:00Z,SYL+SLP,s1-recount-1,10,99.99\n")
             rc, s = self.run_main(d, client=Fake(0.01))
             self.assertEqual(s["cap_this_run"], 0.01)
             self.assertEqual(s["sites"], [])
             self.assertIn("上限", s["stopped"])
 
     def test_constants_are_explicit(self):
-        self.assertEqual(r.MAX_PU_TOTAL, 40.0)
+        self.assertEqual(r.MAX_PU_TOTAL, 100.0)   # 40 until 2026-11-13 (three ports); five more ports with the owner's consent
         self.assertEqual(r.BUDGET_MONTH, "2026-11")
 
     def test_other_month_sends_nothing(self):
@@ -147,7 +147,7 @@ class RecountTest(unittest.TestCase):
 
     def test_matched_scenes_and_gathered_copies_count_as_done(self):
         """A probe branch cut from main after the merge: no chips, but the match table names the scenes (not fetched again)
-        and the gathered copy of s1_recount_usage.csv carries the earlier PU (subtracted from the 40 PU)."""
+        and the gathered copy of s1_recount_usage.csv carries the earlier PU (subtracted from MAX_PU_TOTAL)."""
         T = ["2026-10-14T10:48:16Z", "2026-10-02T10:48:16Z"]
         with tempfile.TemporaryDirectory() as d:
             d = Path(d)
@@ -163,7 +163,7 @@ class RecountTest(unittest.TestCase):
             rc, s = self.run_main(d, extra=["--usage", str(copy)], client=c)
             self.assertEqual(rc, 0)
             self.assertEqual(s["spent_before"], 25.519)
-            self.assertEqual(s["cap_this_run"], round(40 - 25.519, 3))
+            self.assertEqual(s["cap_this_run"], round(r.MAX_PU_TOTAL - 25.519, 3))
             self.assertEqual(s["sites"][0]["matched"], [T[0]])
             self.assertEqual(s["sites"][0]["fetched"], [T[1]])
             self.assertEqual(c.requests, 2)
