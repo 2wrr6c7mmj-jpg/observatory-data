@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-12T08:31:05Z",
+ "generated_utc": "2026-11-13T08:14:57Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -633,6 +633,24 @@
      "rocket": "Long March 8A",
      "orbit": "LEO",
      "pad": "Commercial LC-1"
+    },
+    {
+     "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
+     "name": "Soyuz 2.1b/Fregat-M | MKA Kinosputnik, KOEN and others",
+     "status": "Go",
+     "net_utc": "2026-11-14T00:50:00Z",
+     "rocket": "Soyuz 2.1b Fregat-M",
+     "orbit": "SSO",
+     "pad": "Cosmodrome Site 1S"
+    },
+    {
+     "ll2_id": "e0a11eb1-0bda-4872-b36b-140247fd5c60",
+     "name": "Long March 2D | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-18T22:50:00Z",
+     "rocket": "Long March 2D",
+     "orbit": "N/A",
+     "pad": "Launch Complex 9"
     }
    ]
   },
@@ -686,8 +704,8 @@
     {
      "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
      "name": "Kuaizhou 11 | Unknown Payload",
-     "status": "Go",
-     "net_utc": "2026-11-12T19:50:00Z",
+     "status": "TBD",
+     "net_utc": "2026-11-30T00:00:00Z",
      "rocket": "Kuaizhou 11",
      "orbit": "N/A",
      "pad": "Launch Area 95A"
@@ -1039,21 +1057,38 @@
    "event_index": 26
   },
   {
-   "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
-   "name": "Kuaizhou 11 | Unknown Payload",
+   "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
+   "name": "Soyuz 2.1b/Fregat-M | MKA Kinosputnik, KOEN and others",
    "status": "Go",
-   "net_utc": "2026-11-12T19:50:00Z",
-   "rocket": "Kuaizhou 11",
-   "provider": "ExPace",
+   "net_utc": "2026-11-14T00:50:00Z",
+   "rocket": "Soyuz 2.1b Fregat-M",
+   "provider": "Russian Federal Space Agency (ROSCOSMOS)",
+   "orbit": "SSO",
+   "mission_type": "Technology",
+   "pad": "Cosmodrome Site 1S",
+   "location": "Vostochny Cosmodrome, Siberia, Russian Federation",
+   "country": "RUS",
+   "lat": 51.884395,
+   "lon": 128.333932,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/bff2fc91-eddd-4dfc-af26-ac0674cfab4d/",
+   "event_index": 25
+  },
+  {
+   "ll2_id": "e0a11eb1-0bda-4872-b36b-140247fd5c60",
+   "name": "Long March 2D | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-18T22:50:00Z",
+   "rocket": "Long March 2D",
+   "provider": "China Aerospace Science and Technology Corporation",
    "orbit": "N/A",
    "mission_type": "Unknown",
-   "pad": "Launch Area 95A",
-   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "pad": "Launch Complex 9",
+   "location": "Taiyuan Satellite Launch Center, People's Republic of China",
    "country": "CHN",
-   "lat": 40.969117,
-   "lon": 100.343333,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
-   "event_index": 26
+   "lat": 38.863128,
+   "lon": 111.589567,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/e0a11eb1-0bda-4872-b36b-140247fd5c60/",
+   "event_index": 25
   },
   {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
@@ -1122,6 +1157,23 @@
    "lon": 126.366667,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
    "event_index": 25
+  },
+  {
+   "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
+   "name": "Kuaizhou 11 | Unknown Payload",
+   "status": "TBD",
+   "net_utc": "2026-11-30T00:00:00Z",
+   "rocket": "Kuaizhou 11",
+   "provider": "ExPace",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Area 95A",
+   "location": "Jiuquan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 40.969117,
+   "lon": 100.343333,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
+   "event_index": 26
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
