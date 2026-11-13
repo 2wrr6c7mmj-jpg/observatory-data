@@ -162,6 +162,43 @@ class NoBerthTest(unittest.TestCase):
                 self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), e["way"])
 
 
+class NoBerthPhotoTest(unittest.TestCase):
+    """2026-11-13: sections the owner's photo answers call empty on all 8 days, where the radar count said "present" again and
+    again, and the photos show no place for a warship (a pier's own echo, a headland's edge across a narrow channel, the end
+    face of a jetty, a boat basin, a tidal flat). The sections held back because the photos show a quay face stay berths."""
+
+    CASES = {   # site: [(kind, way, the section's middle point, the neighbouring section's middle point that stays a berth)]
+        "LSN": [("coastline", 696162852, (121.256177, 38.800634), (121.260026, 38.799832)),      # 696162852:L:09 / L:16
+                ("pier", 1026281591, (121.237495, 38.790571), (121.236641, 38.790432))],         # 1026281591:L:01 (+R:00) / L:00
+        "QDH": [("coastline", 69732073, (120.319682, 36.092023), (120.320757, 36.091171)),       # 69732073:L:25 / L:26
+                ("coastline", 69732009, (120.312445, 36.096774), (120.312197, 36.096329))],      # 69732009:L:32 / L:31
+        "QJG": [("coastline", 43251729, (120.583626, 36.112915), (120.582938, 36.111768))],      # 43251729:L:12 / L:13
+    }
+    HELD = {"LSN": ("pier", 995530596, (121.247763, 38.804574)),           # 995530596:R:01: the face of a pier
+            "QDH": ("coastline", 69732073, (120.324203, 36.091828)),       # 69732073:L:22: the north face of pier 3
+            "QJG": ("coastline", 43251729, (120.583595, 36.107857))}       # 43251729:L:17: a straight revetment
+
+    def test_files(self):
+        sites = {s["id"]: s for s in json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
+        for sid, cases in self.CASES.items():
+            nv = berths.Berths(sites[sid], lines_of(sites[sid]), naval=True)
+            for kind, way, mid, neighbour in cases:
+                self.assertFalse(nv.point_ok(kind, way, *mid), (sid, way))
+                self.assertTrue(nv.no_berth_at(way, *mid), (sid, way))
+                self.assertEqual(nv.line_class(way, *mid), "naval", (sid, way))    # the class stays: only "not a berth"
+                self.assertTrue(nv.point_ok(kind, way, *neighbour), (sid, way))
+            kind, way, mid = self.HELD[sid]
+            self.assertTrue(nv.point_ok(kind, way, *mid), (sid, way))
+            cls = berths.load_classes(sid)
+            self.assertEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), len(cases), sid)
+            for e in cls["lines"][:len(cases)]:                                    # in front of the other entries of their way
+                self.assertIs(e.get("berth"), False)
+                self.assertTrue(e.get("fixed") and e["part"].get("bbox") and "2026-11-13" in e["basis"][1], (sid, e["way"]))
+        # the other face of the same finger pier lies in the box too (both faces are out)
+        nv = berths.Berths(sites["LSN"], lines_of(sites["LSN"]), naval=True)
+        self.assertFalse(nv.point_ok("pier", 1026281591, 121.237494, 38.790535))   # 1026281591:R:00
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class EsriPiersTest(unittest.TestCase):
     """naval-1 (2026-11-05): the piers read from Esri World Imagery (QDH -1..-4, QJG -2 in place of the S2 line -1) are
