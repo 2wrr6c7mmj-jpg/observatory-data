@@ -1,5 +1,5 @@
 {
- "version": "blind-1",
+ "version": "blind-2",
  "site_id": "QJG",
  "answers": "s2",
  "source": "labels/QJG-s2-answers.csv・-oos-answers.csv（所有者の S2 の日の答え、verified 1。同日の答えが無い港）",

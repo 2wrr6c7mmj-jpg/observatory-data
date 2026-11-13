@@ -1,4 +1,4 @@
-"""blind-1 (sat/blind_prior.py): resident sections from the owner's S1 answers, and the judge beside the current one."""
+"""blind-1 / blind-2 (sat/blind_prior.py): resident sections from the owner's S1 answers, and the judge beside the current one."""
 import json
 import tempfile
 import unittest
@@ -43,7 +43,7 @@ class BlindPrior(unittest.TestCase):
 
     def test_table_and_stored_file(self):
         doc = bp.build(_answers([("a", d, 1, 1) for d in range(1, 5)] + [("c", d, 1, 0) for d in range(1, 5)]), "TST")
-        self.assertEqual(doc["version"], "blind-1")
+        self.assertEqual(doc["version"], bp.VERSION)
         self.assertEqual(doc["n_resident"], 1)
         self.assertEqual(doc["sections"]["a"], {"present": 4, "answers": 4, "resident": True, "p_blind": round(5 / 6, 3)})
         self.assertFalse(doc["sections"]["c"]["resident"])
@@ -112,6 +112,48 @@ class BlindPrior(unittest.TestCase):
             self.assertEqual(ep.write_blind(Path(d)), {})
             self.assertFalse((Path(d) / ep.BLIND_DIR).exists())
 
+    def test_the_photo_answers_overrule_the_s1_check(self):
+        """blind-2 (user's decision 2026-11-13): a section the S1 check calls resident is not when the owner's answers on the
+        Sentinel-2 days say otherwise. Guzhenkou: the thin detached pier (S1 8/8, photo 0/8) and the far face of a pier."""
+        d = Path(tempfile.mkdtemp())
+        (d / "labels").mkdir()
+        s1 = "site_id,section_id,s1_acquired_utc,relative_orbit,s2_date,dt_h,verified,verified_occupied,verified_by,verified_note\n"
+        s2 = "site_id,section_id,date,verified,verified_occupied,verified_c,verified_color,verified_by,verified_note\n"
+        for sec in "abcde":                                     # every section: present in all 8 S1 scenes of the check
+            s1 += "".join(f"TST,{sec},2026-01-{day:02d}T10:00:00Z,69,,,1,1,owner,\n" for day in range(1, 9))
+        s2 += "".join(f"TST,a,2026-01-{day:02d},1,0,0,,owner,\n" for day in range(1, 9))                          # photo 0/8: overruled
+        s2 += "".join(f"TST,b,2026-01-{day:02d},1,{1 if day <= 6 else 0},1,,owner,\n" for day in range(1, 9))     # photo 6/8 = 0.75: stays
+        s2 += "".join(f"TST,c,2026-01-{day:02d},1,0,0,,owner,\n" for day in range(1, 3))                          # photo 0/2: too few days
+        s2 += "TST,d,2026-01-01,1,1,1,,owner,\nTST,d,2026-01-02,1,0,0,,owner,\nTST,d,2026-01-03,1,0,0,,owner,\n"  # photo 1/3: overruled
+        s2 += "".join(f"TST,z,2026-01-{day:02d},1,1,1,,owner,\n" for day in range(1, 9))                          # resident in the photos only
+        (d / "labels" / "TST-s1-answers.csv").write_text(s1, encoding="utf-8")
+        (d / "labels" / "TST-s2-answers.csv").write_text(s2, encoding="utf-8")
+        ans = bp.answers(d, "TST")
+        self.assertEqual(bp.answers_source(d, "TST"), "s1")
+        self.assertEqual([bp.p_blind(ans, k) for k in "abcdez"], [0.0, 0.9, 0.9, 0.0, 0.9, 0.0])   # e: no photo answer; z: not added
+        # leave one out: the judged scene's own photo day is left out too (d: 0/2 left = too few days, so no veto)
+        self.assertEqual(bp.p_blind(ans, "d", exclude_s1={"2026-01-01"}), 0.9)
+        self.assertEqual(bp.p_blind(ans, "a", exclude_s1={"2026-01-01T10:00:00Z", "2026-01-01", ""}), 0.0)
+        doc = bp.build(d, "TST")
+        self.assertEqual((doc["version"], doc["n_resident"]), ("blind-2", 3))
+        self.assertEqual(doc["sections"]["a"], {"present": 8, "answers": 8, "resident": False, "p_blind": 0.0,
+                                                "photo_present": 0, "photo_answers": 8, "photo_veto": True})
+        self.assertEqual(doc["sections"]["b"], {"present": 8, "answers": 8, "resident": True, "p_blind": 0.9, "photo_present": 6, "photo_answers": 8})
+        self.assertEqual(doc["sections"]["e"], {"present": 8, "answers": 8, "resident": True, "p_blind": 0.9})
+        self.assertIn("写真の答えを優先", doc["rule"])
+        # a plain dict (the older callers and tests) and a site without an S1 check have no photo answers: the rule of blind-1
+        self.assertEqual(bp.p_blind({"a": [(f"k{i}", 1) for i in range(8)]}, "a"), 0.9)
+        (d / "labels" / "TST-s1-answers.csv").unlink()
+        only = bp.answers(d, "TST")
+        self.assertEqual((bp.answers_source(d, "TST"), only.photo), ("s2", {}))
+        self.assertEqual([bp.p_blind(only, k) for k in "abz"], [0.0, 0.7, 0.9])
+        self.assertNotIn("写真の答えを優先", bp.build(d, "TST")["rule"])
+        # the published table of Guzhenkou: the two sections of the decision are out, the four the photos confirm stay
+        q = bp.build(bp.OUT, "QGZ")["sections"]
+        if q:
+            self.assertEqual(sorted(k for k, v in q.items() if v.get("photo_veto")), ["1564921421:R:00", "219848839:L:01"])
+            self.assertEqual(sorted(k for k, v in q.items() if v["resident"]), ["1564921419:L:00", "219848839:L:00", "527583619:R:05", "694211538:L:04"])
+
     def test_a_site_without_a_resident_section_loses_its_old_file(self):
         """Lushun 2026-11-13: the AI's table had two resident sections (+2 on the map); the owner's answers have none. The file
         of the earlier run must go, and the files of the sites that were not asked for must stay."""
@@ -131,7 +173,7 @@ class BlindPrior(unittest.TestCase):
                 {"y": 0, "p": 0.0, "p_any": 0.0, "p_resident": 0.0, "p_blind1": 0.0},
                 {"y": 0, "p": 0.0, "p_any": 0.0}]                                         # a row without blind-1 is not in its block
         m = ep.blind1_metrics(rows)
-        self.assertEqual((m["version"], m["n"], m["n_resident"]), ("blind-1", 3, 1))
+        self.assertEqual((m["version"], m["n"], m["n_resident"]), (bp.VERSION, 3, 1))
         self.assertEqual((m["min50"]["recall"], m["current"]["recall"]), (1.0, 0.5))
         self.assertEqual(m["resident"]["p_blind1"]["tp"], 1)
         self.assertEqual(ep.metrics(rows)["fn"], 1)                                       # the body's judge is unchanged
