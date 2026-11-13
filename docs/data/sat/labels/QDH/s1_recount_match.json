@@ -1,0 +1,38 @@
+{
+ "site_id": "QDH",
+ "version": "s1-match-3",
+ "sections": 24,
+ "sections_unknown": [],
+ "days": 8,
+ "days_matched": [
+  "2025-11-01",
+  "2025-11-28",
+  "2025-12-28",
+  "2026-02-14",
+  "2026-04-30",
+  "2026-09-04",
+  "2026-09-29"
+ ],
+ "days_without_chip": [
+  "2026-10-21"
+ ],
+ "scenes": [
+  "2025-10-31T09:56:16Z",
+  "2025-11-24T09:56:15Z",
+  "2025-12-30T09:56:11Z",
+  "2026-02-16T09:56:08Z",
+  "2026-04-29T09:56:07Z",
+  "2026-09-03T09:55:42Z",
+  "2026-09-27T09:55:42Z"
+ ],
+ "rows": 168,
+ "answered": 144,
+ "agree": 107,
+ "owner_1_s1_0": 14,
+ "owner_0_s1_1": 23,
+ "no_baseline": [],
+ "agree_rate": 0.743,
+ "note": "s2_* の列は所有者の答え（labels/<港>-s2-answers.csv：s2_status owner、s2_occupied＝verified_occupied、s2_c＝verified_c。未回答・判断できない（verified 0）は空欄）。S1 の列は sat/s2_labels.s1_sections（湛江の ZJG-s2-s1-match.csv と同じ）。agree＝所有者と S1 の在/不在の一致（s1_coverage ≥ 0.5 の答えのある升）。評価票 eval/presence.json は est-2 に無い撮影でこの表を読む",
+ "credit": "Contains modified Copernicus Sentinel data 2025–2026",
+ "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）"
+}
