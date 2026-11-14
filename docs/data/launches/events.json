@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-14T07:31:53Z",
+ "generated_utc": "2026-11-14T08:02:49Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -675,8 +675,8 @@
     ]
    ],
    "notices": [
-    "aviation:P5648/26",
-    "aviation:M0627/26"
+    "aviation:M0627/26",
+    "aviation:P5648/26"
    ],
    "method": "none"
   },
@@ -969,8 +969,8 @@
   {
    "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
    "name": "Soyuz 2.1b/Fregat-M | MKA Kinosputnik, KOEN and others",
-   "status": "Go",
-   "net_utc": "2026-11-14T00:50:00Z",
+   "status": "In Flight",
+   "net_utc": "2026-11-14T01:16:00Z",
    "rocket": "Soyuz 2.1b Fregat-M",
    "provider": "Russian Federal Space Agency (ROSCOSMOS)",
    "orbit": "SSO",

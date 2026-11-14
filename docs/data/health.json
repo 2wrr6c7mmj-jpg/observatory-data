@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-14T00:34:50Z",
+ "generated_utc": "2026-11-14T07:44:02Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-13T13:21:15Z",
-   "heartbeat_age_h": 11.2,
+   "heartbeat_age_h": 18.4,
    "data_date": "2026-11-12",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -141,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-13T11:32:06Z",
-   "heartbeat_age_h": 13.0,
+   "heartbeat_age_h": 20.2,
    "data_date": "2026-11-12",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -164,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-13T14:53:36Z",
-   "heartbeat_age_h": 9.7,
+   "heartbeat_age_h": 16.8,
    "data_date": "2026-11-13",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -207,8 +207,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "manual",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-13T08:15:00Z",
-   "heartbeat_age_h": 16.3,
+   "heartbeat_utc": "2026-11-14T07:43:02Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 18,
@@ -231,17 +231,17 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-13T08:14:57Z",
-   "heartbeat_age_h": 16.3,
-   "data_date": "2026-11-13",
+   "heartbeat_utc": "2026-11-14T07:42:59Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-14",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-13T08:14:57Z",
-    "notam_watch_last_seen_utc": "2026-11-13T08:14:57Z",
-    "ll2_last_retrieved_utc": "2026-11-13T08:14:53Z"
+    "notices_last_retrieved_utc": "2026-11-14T07:42:59Z",
+    "notam_watch_last_seen_utc": "2026-11-14T07:42:59Z",
+    "ll2_last_retrieved_utc": "2026-11-14T07:42:57Z"
    }
   },
   {
@@ -249,8 +249,8 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-13T11:32:26Z",
-   "heartbeat_age_h": 13.0,
+   "heartbeat_utc": "2026-11-14T07:43:16Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -258,8 +258,8 @@
    "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-13T11:32:55Z",
-    "newest_input_utc": "2026-11-13T11:32:06Z"
+    "computed_utc_max": "2026-11-14T07:43:41Z",
+    "newest_input_utc": "2026-11-14T07:43:02Z"
    }
   },
   {
@@ -750,7 +750,7 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 7,
+   "open_or_upcoming_windows": 8,
    "open_now": 5,
    "next_start": {
     "site": "西昌",
@@ -758,7 +758,7 @@
     "window_start_utc": "2026-11-20T10:30Z",
     "window_end_utc": "2026-11-23T14:10Z"
    },
-   "active_notices": 30
+   "active_notices": 33
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -775,15 +775,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-13T08:14:21Z",
+   "last_success_started_utc": "2026-11-14T07:42:32Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43391660058,
-    "started_utc": "2026-11-13T08:14:21Z",
+    "id": 43572353906,
+    "started_utc": "2026-11-14T07:42:32Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43391660058",
-    "delay_h": 6.9
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43572353906",
+    "delay_h": 6.3
    },
    "consecutive_failures": 0
   },
@@ -863,14 +863,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-13T11:32:26Z",
+   "last_success_started_utc": "2026-11-14T07:43:16Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 43417874685,
-    "started_utc": "2026-11-13T11:32:26Z",
+    "id": 43572409098,
+    "started_utc": "2026-11-14T07:43:16Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43417874685"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43572409098"
    },
    "consecutive_failures": 0
   },
@@ -901,9 +901,9 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 163.206,
-   "usage_csv_requests": 811,
-   "usage_csv_runs": 20,
+   "usage_csv_pu": 172.808,
+   "usage_csv_requests": 825,
+   "usage_csv_runs": 22,
    "status_month_pu_before": 160.482,
    "status_last_run_utc": "2026-11-13T13:21:15Z",
    "usage_csv_pu_before_last_run": 160.482,
@@ -1162,8 +1162,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-13",
-   "version": "naval-1 / naval50-2 のまま（数は変えない）"
+   "date": "2026-11-14",
+   "version": "**s2nc-2**（光学の雲の判定）"
   }
  },
  "credits": [
