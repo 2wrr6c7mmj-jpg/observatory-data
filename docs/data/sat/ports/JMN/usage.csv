@@ -2,3 +2,4 @@ run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s
 2026-11-12T07:48:11Z,JMN,61,3.091,header,0,60,6,0.0,3.093,10.6,ports-1
 2026-11-14T00:15:22Z,JMN,21,0.979,header,0,7,2,0.0,0.979,5.6,ports-1
 2026-11-14T00:30:20Z,JMN,14,0.0,header,0,0,0,0.0,0.0,4.5,ports-1
+2026-11-14T00:47:11Z,JMN,42,3.6,header,0,25,11,0.0,3.6,9.2,ports-1

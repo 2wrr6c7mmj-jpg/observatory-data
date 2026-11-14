@@ -1,9 +1,9 @@
 {
- "plan_utc": "2026-11-14T00:29:04Z",
+ "plan_utc": "2026-11-14T00:46:29Z",
  "cap_pu": 65.0,
- "cap_req": 5516,
+ "cap_req": 5388,
  "estimate_pu": 24.8,
- "chosen_estimate_pu": 24.8,
+ "chosen_estimate_pu": 22.0,
  "catalog_requests": 27,
  "ports": [
   {
@@ -26,7 +26,7 @@
    "mask_version": "PDG-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 1.1,
+   "cap_pu": 5.8,
    "cap_req": 46
   },
   {
@@ -49,7 +49,7 @@
    "mask_version": "NDS-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 4.1,
+   "cap_pu": 8.8,
    "cap_req": 77
   },
   {
@@ -72,7 +72,7 @@
    "mask_version": "JMN-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 4.5,
+   "cap_pu": 9.2,
    "cap_req": 77
   },
   {
@@ -95,7 +95,7 @@
    "mask_version": "HPU-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 3.9,
+   "cap_pu": 8.5,
    "cap_req": 75
   },
   {
@@ -141,7 +141,7 @@
    "mask_version": "WHI-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 1.5,
+   "cap_pu": 6.2,
    "cap_req": 51
   },
   {
@@ -164,7 +164,7 @@
    "mask_version": "HKG-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 4.0,
+   "cap_pu": 8.7,
    "cap_req": 77
   },
   {
@@ -187,7 +187,7 @@
    "mask_version": "LYG-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 4.0,
+   "cap_pu": 8.7,
    "cap_req": 77
   },
   {
@@ -210,7 +210,7 @@
    "mask_version": "DXE-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 4.4,
+   "cap_pu": 9.0,
    "cap_req": 70
   },
   {
@@ -233,60 +233,54 @@
    "mask_version": "XCD-land-v1",
    "s1_catalog_items": 0,
    "s1_catalog_modes": {},
-   "cap_pu": 3.5,
-   "cap_req": 72
+   "skipped": "枠が足りないため取らない（優先順の後ろ）"
   }
  ],
  "matrix": [
   {
-   "port": "DXE",
-   "cap": 4.4,
-   "req": 70
+   "port": "PDG",
+   "cap": 5.8,
+   "req": 46
   },
   {
-   "port": "HKG",
-   "cap": 4.0,
+   "port": "NDS",
+   "cap": 8.8,
+   "req": 77
+  },
+  {
+   "port": "JMN",
+   "cap": 9.2,
    "req": 77
   },
   {
    "port": "HPU",
-   "cap": 3.9,
+   "cap": 8.5,
    "req": 75
   },
   {
-   "port": "JMN",
-   "cap": 4.5,
+   "port": "WHI",
+   "cap": 6.2,
+   "req": 51
+  },
+  {
+   "port": "HKG",
+   "cap": 8.7,
    "req": 77
   },
   {
    "port": "LYG",
-   "cap": 4.0,
+   "cap": 8.7,
    "req": 77
   },
   {
-   "port": "NDS",
-   "cap": 4.1,
-   "req": 77
-  },
-  {
-   "port": "PDG",
-   "cap": 1.1,
-   "req": 46
-  },
-  {
-   "port": "WHI",
-   "cap": 1.5,
-   "req": 51
-  },
-  {
-   "port": "XCD",
-   "cap": 3.5,
-   "req": 72
+   "port": "DXE",
+   "cap": 9.0,
+   "req": 70
   }
  ],
- "other_usage_pu": 2452.8,
- "reserve_pu": 4807.3,
- "other_usage_requests": 1303,
+ "other_usage_pu": 2608.5,
+ "reserve_pu": 4651.6,
+ "other_usage_requests": 1331,
  "ports_done_pu": 225.7,
  "global_cap": 9000.0,
  "global_margin": 450.0,

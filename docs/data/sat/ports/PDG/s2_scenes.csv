@@ -1,5 +1,11 @@
 site_id,mask_version,date,acquired_utc,platform,tile_cloud_pct,pre_cloud,pre_cloud_a,cloud,cloud_a,valid,result,image,thumb,processing_units,s2_version,retrieved_utc,attempts
 PDG,PDG-land-v1,2025-11-02,2025-11-02T02:39:25Z,sentinel-2a,18.23,0.0592,0.0592,0.0591,0.0591,1.0,cloudy,,,0.338,s2nc-1,2025-11-19T00:15:30Z,
+PDG,PDG-land-v1,2025-11-03,2025-11-03T02:49:17Z,sentinel-2c,92.09,,,,,,tile_cloudy,,,0.0,s2nc-1,2025-11-19T00:47:00Z,
+PDG,PDG-land-v1,2025-11-05,2025-11-05T02:39:04Z,sentinel-2a+sentinel-2b,92.96,,,,,,tile_cloudy,,,0.0,s2nc-1,2025-11-19T00:47:00Z,
+PDG,PDG-land-v1,2025-11-08,2025-11-08T02:49:00Z,sentinel-2b,99.99,,,,,,tile_cloudy,,,0.0,s2nc-1,2025-11-19T00:47:00Z,
+PDG,PDG-land-v1,2025-11-13,2025-11-13T02:49:14Z,sentinel-2c,0.57,0.0495,0.0495,0.0488,0.0488,1.0,cloudy,,,0.338,s2nc-1,2025-11-19T00:47:00Z,
+PDG,PDG-land-v1,2025-11-15,2025-11-15T02:39:04Z,sentinel-2b,11.9,0.0794,0.0794,,,,pre_cloudy,,,0.005,s2nc-1,2025-11-19T00:47:00Z,
+PDG,PDG-land-v1,2025-11-18,2025-11-18T02:49:00Z,sentinel-2b,18.42,0.1157,0.1157,,,,pre_cloudy,,,0.005,s2nc-1,2025-11-19T00:47:00Z,
 PDG,PDG-land-v1,2025-11-22,2025-11-22T02:39:25Z,sentinel-2a,0.08,0.0146,0.0146,0.0155,0.0155,1.0,clear,s2/PDG/v1/2025-11-22T02-39-25Z.webp,s2/PDG/v1/2025-11-22T02-39-25Z.thumb.webp,0.338,s2nc-1,2025-12-19T00:15:30Z,
 PDG,PDG-land-v1,2025-11-23,2025-11-23T02:49:14Z,sentinel-2c,0.02,0.0,0.0,0.0001,0.0001,1.0,clear,s2/PDG/v1/2025-11-23T02-49-14Z.webp,s2/PDG/v1/2025-11-23T02-49-14Z.thumb.webp,0.338,s2nc-1,2025-12-19T00:15:30Z,
 PDG,PDG-land-v1,2025-11-25,2025-11-25T02:39:01Z,sentinel-2a+sentinel-2b,4.16,0.0934,0.0934,,,,pre_cloudy,,,0.005,s2nc-1,2025-12-19T00:15:30Z,
