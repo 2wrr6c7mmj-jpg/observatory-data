@@ -1,3 +1,4 @@
 run_utc,site_id,requests,processing_units,pu_source,s1_scenes,s2_days,s2_clear,s1_processing_units,s2_processing_units,cap_pu,archive_version
 2026-11-12T07:51:23Z,XCD,74,4.667,header,0,60,13,0.0,4.666,9.5,ports-1
 2026-11-14T00:22:25Z,XCD,22,0.583,header,0,10,1,0.0,0.582,5.1,ports-1
+2026-11-14T00:30:55Z,XCD,14,0.0,header,0,0,0,0.0,0.0,3.5,ports-1
