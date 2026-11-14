@@ -1,0 +1,29 @@
+{
+ "version": "WHI-land-v1",
+ "site": "WHI",
+ "built_utc": "2026-11-11T22:52:07Z",
+ "bbox": [
+  122.12,
+  37.5015,
+  122.144,
+  37.5205
+ ],
+ "width": 212,
+ "height": 211,
+ "values": {
+  "0": "water",
+  "1": "land",
+  "2": "structure (pier/breakwater/groyne/quay/bridge)"
+ },
+ "source": "OpenStreetMap via Overpass API",
+ "osm_base": "2026-11-11T22:51:00Z",
+ "query": "[out:json][timeout:90];(way[\"natural\"=\"coastline\"](37.5015,122.12,37.5205,122.144);way[\"man_made\"~\"^(pier|breakwater|groyne|quay)$\"](37.5015,122.12,37.5205,122.144);way[\"bridge\"][\"highway\"](37.5015,122.12,37.5205,122.144);way[\"bridge\"][\"railway\"](37.5015,122.12,37.5205,122.144););out geom;",
+ "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
+ "coastline_ways": 6,
+ "structure_ways": 6,
+ "regions": 5,
+ "regions_without_votes": 1,
+ "water_fraction": 0.4895,
+ "land_fraction": 0.5014,
+ "structure_fraction": 0.0091
+}

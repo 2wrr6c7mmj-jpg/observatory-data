@@ -1,0 +1,29 @@
+{
+ "version": "HKG-land-v1",
+ "site": "HKG",
+ "built_utc": "2026-11-11T22:49:00Z",
+ "bbox": [
+  114.126,
+  22.307,
+  114.146,
+  22.326
+ ],
+ "width": 206,
+ "height": 210,
+ "values": {
+  "0": "water",
+  "1": "land",
+  "2": "structure (pier/breakwater/groyne/quay/bridge)"
+ },
+ "source": "OpenStreetMap via Overpass API",
+ "osm_base": "2026-11-11T22:47:56Z",
+ "query": "[out:json][timeout:90];(way[\"natural\"=\"coastline\"](22.307,114.126,22.326,114.146);way[\"man_made\"~\"^(pier|breakwater|groyne|quay)$\"](22.307,114.126,22.326,114.146);way[\"bridge\"][\"highway\"](22.307,114.126,22.326,114.146);way[\"bridge\"][\"railway\"](22.307,114.126,22.326,114.146););out geom;",
+ "license": "(c) OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)",
+ "coastline_ways": 7,
+ "structure_ways": 37,
+ "regions": 16,
+ "regions_without_votes": 3,
+ "water_fraction": 0.5913,
+ "land_fraction": 0.4064,
+ "structure_fraction": 0.0023
+}
