@@ -74,7 +74,7 @@ def fit(text):
     """Keeps the prompt inside the model's window (8k tokens): CJK text uses about
     one token per character, Latin text about one per four."""
     cjk = sum(1 for ch in text[:2000] if "\u3040" <= ch <= "\u9fff")
-    return text[:3000] if cjk > 400 else text[:6000]
+    return text[:2500] if cjk > 400 else text[:4500]
 
 
 def doc_key(doc):
@@ -89,7 +89,7 @@ def stored_event(e):
     """Events keep their internal 'official' flag between runs."""
     e = dict(e)
     e["_official"] = bool(e.pop("official", False)) or any(s.get("kind") in merge.OFFICIAL_KINDS for s in e["sources"])
-    for k in ("id", "regionName", "phase", "confidence"):
+    for k in ("id", "regionName", "phase", "confidence", "lat", "lon"):
         e.pop(k, None)
     return e
 
@@ -114,7 +114,7 @@ def main(argv=None):
 
     analyses = load(out / "analyses.json", {"items": {}})["items"]
     previous = []
-    for p in sorted((out / "events").glob("*.json")) if (out / "events").exists() else []:
+    for p in sorted((out / "events").glob("[0-9][0-9][0-9][0-9].json")) if (out / "events").exists() else []:
         previous += load(p, {"events": []})["events"]
     previous = [stored_event(e) for e in previous]
 
@@ -161,7 +161,7 @@ def main(argv=None):
             fresh.append(merge.event_from({**meta, "analyzedAt": now}, ans))
         analyses[doc_key(doc)] = entry
         if a.probe:
-            samples.append((doc, ans, round(time.time() - t0, 1), len(text)))
+            samples.append((doc, ans, round(time.time() - t0, 1), len(text), getattr(extract.ask, "last_timings", {})))
 
     events = merge.merge_all(previous + fresh)
     cutoff = now - KEEP_ANALYSES_DAYS * DAY
@@ -186,6 +186,7 @@ def main(argv=None):
             by_year.setdefault(year_of(e), []).append(e)
         for y, evs in by_year.items():
             write(out / "events" / f"{y}.json", {"year": int(y), "events": evs})
+        write(out / "events" / "index.json", {"years": sorted(int(y) for y in by_year)})
         write(out / "current.json", {"generatedAt": now, "today": today.isoformat(), "events": current})
         write(out / "analyses.json", {"items": analyses})
         write(out / "status.json", status)
@@ -196,11 +197,11 @@ def main(argv=None):
           f"left {status['left']}, s/doc {status['secondsPerDocument']}")
     for s in log["sources"]:
         print(f"::notice title=source {s['source']}::{json.dumps(s, ensure_ascii=False)[:300]}")
-    for doc, ans, secs, n in samples:
+    for doc, ans, secs, n, tm in samples:
         brief = {k: ans.get(k) for k in ("kind", "name", "countries", "region", "place", "forces", "start", "end",
                                          "status")} if ans.get("relevant") else "not relevant"
         print(f"::notice title=sample {secs}s {n}c::{doc['sourceName']}: {doc['title'][:90]} → "
-              f"{json.dumps(brief, ensure_ascii=False)[:600]}")
+              f"{json.dumps(brief, ensure_ascii=False)[:600]} {json.dumps(tm)}")
     return 0
 
 

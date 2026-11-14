@@ -60,12 +60,12 @@ jobs:
       - name: Start the model server
         run: |
           export LD_LIBRARY_PATH="$LLAMA_BIN:$LD_LIBRARY_PATH"
-          nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" --jinja -c 8192 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
+          nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" --jinja -c 8192 -np 1 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
           for i in $(seq 1 120); do
             curl -sf http://127.0.0.1:8080/health >/dev/null && { echo "ready after $((i*5)) s"; exit 0; }
             sleep 5
           done
-          tail -40 "$RUNNER_TEMP/server.log"; echo "::error title=translate::model server did not start"; exit 1
+          tail -40 "$RUNNER_TEMP/server.log"; echo "::error title=exercises::model server did not start"; exit 1
       - name: Probe (temporary directory)
         if: github.event_name == 'push'
         run: |

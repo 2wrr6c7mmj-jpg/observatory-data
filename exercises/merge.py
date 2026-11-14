@@ -143,6 +143,8 @@ def finish(e: dict, today: date) -> dict:
         [e["kind"], e["region"], ",".join(sorted(e["countries"])), anchor])
     out["id"] = hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
     out["regionName"] = regions.name(e["region"])
+    r = regions.BY_ID.get(e["region"]) or regions.BY_ID["other"]
+    out["lat"], out["lon"] = r[2], r[3]
     out["phase"] = phase(e, today)
     out["confidence"] = confidence(e)
     return out

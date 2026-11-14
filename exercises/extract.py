@@ -23,7 +23,7 @@ Fields (Japanese for text fields):
 - name: the exercise's own name exactly as written in the text (e.g. "Keen Sword 27", "Balikatan 2026", "海峡雷霆-2025A"); null if none.
 - titleJa: a short factual Japanese headline (who, what, where).
 - countries: participating countries in Japanese (日本, 米国, 中国, ロシア, 韓国, 台湾, フィリピン, 豪州, インド, …). Not countries only mentioned.
-- region: exactly one id from this list (the main area of the event):
+- region: exactly one id from this list (the main area of the event; a sea named in the text wins over a nearby island):
 {regions.prompt_list()}
 - place: the place in Japanese as specific as the text states (e.g. 日向灘, 嘉手納基地); null if not stated.
 - forces: participating units, ships, aircraft and people in Japanese, as the text states them (e.g. "海自 艦艇16隻（掃海艦3・掃海艇8）、MCH-101×2／米海軍 掃海艦1"); null if not stated.
@@ -71,7 +71,7 @@ def ask(server: str, doc: dict, text: str, published_day: str, timeout: int = 90
         "messages": [{"role": "system", "content": SYSTEM},
                      {"role": "user", "content": user_message(doc, text, published_day)}],
         "chat_template_kwargs": {"enable_thinking": False},
-        "temperature": 0, "max_tokens": 700,
+        "temperature": 0, "max_tokens": 700, "cache_prompt": True,
         "response_format": {"type": "json_object", "schema": SCHEMA},
     }
     req = urllib.request.Request(server + "/v1/chat/completions", data=json.dumps(body).encode("utf-8"),
@@ -80,7 +80,10 @@ def ask(server: str, doc: dict, text: str, published_day: str, timeout: int = 90
         res = json.loads(r.read().decode("utf-8"))
     content = res["choices"][0]["message"]["content"]
     start, end = content.find("{"), content.rfind("}")
-    return json.loads(content[start:end + 1])
+    out = json.loads(content[start:end + 1])
+    t = res.get("timings") or {}
+    ask.last_timings = {k: t.get(k) for k in ("prompt_n", "prompt_ms", "predicted_n", "predicted_ms", "cache_n")}
+    return out
 
 
 def _norm(s: str) -> str:
@@ -116,6 +119,8 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
         return {"relevant": False}
     source = " ".join([doc.get("title") or "", doc.get("summary") or "", text or ""])
     name = v.get("name") if isinstance(v.get("name"), str) and _contains(source, v["name"]) else None
+    if name and re.fullmatch(r"[\x00-\x7f]+", name) and not re.search(r"[A-Z0-9]", name):
+        name = None   # "silent drills without a name": a description, not a name
     start, end = _iso(v.get("start")), _iso(v.get("end"))
     evidence = v.get("dateEvidence") if isinstance(v.get("dateEvidence"), str) else None
     if not evidence or not _contains(source, evidence[:60]):
@@ -139,7 +144,7 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
         "relevant": True, "kind": v["kind"], "name": name,
         "titleJa": s("titleJa", 120) or (doc.get("titleJa") or doc.get("title") or "")[:120],
         "countries": countries[:12],
-        "region": v.get("region") if v.get("region") in regions.IDS else "other",
+        "region": regions.from_place(s("place", 80)) or (v.get("region") if v.get("region") in regions.IDS else "other"),
         "place": s("place", 80), "forces": s("forces", 400), **counts,
         "content": s("content", 300), "start": start, "end": end,
         "dateEvidence": evidence[:200] if evidence else None,

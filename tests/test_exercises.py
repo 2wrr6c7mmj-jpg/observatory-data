@@ -42,8 +42,19 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(extract.validate(answer(relevant=False), DOC, TEXT, "2026-11-09"), {"relevant": False})
         self.assertEqual(extract.validate(answer(kind="port_visit"), DOC, TEXT, "2026-11-09"), {"relevant": False})
 
+    def test_place_words_decide_the_area(self):
+        v = extract.validate(answer(region="taiwan-strait", place="沖縄本島北西の東シナ海上の空域"), DOC, TEXT, "2026-11-09")
+        self.assertEqual(v["region"], "east-china-sea")
+        self.assertEqual(regions.from_place("日向灘"), "kyushu")
+        self.assertIsNone(regions.from_place("某所"))
+
+    def test_lowercase_description_is_not_a_name(self):
+        t = TEXT + " silent drills without a name. Keen Sword 27"
+        self.assertIsNone(extract.validate(answer(name="silent drills without a name"), DOC, t, "2026-11-09")["name"])
+        self.assertEqual(extract.validate(answer(name="Keen Sword 27"), DOC, t, "2026-11-09")["name"], "Keen Sword 27")
+
     def test_unknown_region(self):
-        self.assertEqual(extract.validate(answer(region="mars"), DOC, TEXT, "2026-11-09")["region"], "other")
+        self.assertEqual(extract.validate(answer(region="mars", place=None), DOC, TEXT, "2026-11-09")["region"], "other")
 
 
 def ev(src, kind="報道", at=1_794_000_000_000, **kw):
@@ -68,7 +79,7 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(len(merge.merge_all([ev("a"), ev("b")])), 1)
 
     def test_unnamed_other_area(self):
-        self.assertEqual(len(merge.merge_all([ev("a"), ev("b", region="nansei")])), 2)
+        self.assertEqual(len(merge.merge_all([ev("a"), ev("b", region="nansei", place=None)])), 2)
 
     def test_official_fields_win_and_confidence(self):
         out = merge.merge_all([ev("news", forces="艦艇10隻"), ev("msdf", kind="公式", forces="海自 艦艇16隻")])
@@ -106,10 +117,18 @@ class SourcesTest(unittest.TestCase):
         self.assertEqual([d["url"] for d in out], ["https://n/1"])
         self.assertEqual(out[0]["kind"], "専門報道")
 
+    def test_list_links_dates(self):
+        html = ('<a href="/theaters/asia_pacific/2026-11-13/keen-sword-drill-23451056.html">Keen Sword drill</a>'
+                '<a href="/2025xb/C_251453/TE/16494628.html">PLA Navy training</a>')
+        a = sources.list_links(html, "https://www.stripes.com/", r"/theaters/")
+        self.assertEqual(a[0][2], "2026-11-13")
+        b = sources.list_links(html, "http://eng.chinamil.com.cn/", r"/TE/\d+")
+        self.assertIsNone(b[0][2])
+
     def test_list_links(self):
         html = ('<li>2026/11/09 <a href="/msdf/release/202611/20261109.pdf">機雷戦訓練（日向灘）について</a></li>'
                 '<li><a href="/msdf/about/">about</a></li>')
-        links = sources.list_links(html, "https://www.mod.go.jp/msdf/release/", sources.OFFICIAL[0]["href"])
+        links = sources.list_links(html, "https://www.mod.go.jp/msdf/release/", r"/msdf/release/\d{6}/\d{8}\.pdf")
         self.assertEqual(links, [("https://www.mod.go.jp/msdf/release/202611/20261109.pdf",
                                   "機雷戦訓練（日向灘）について", "2026-11-09")])
 

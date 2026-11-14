@@ -15,12 +15,23 @@ FEED = "https://observatory-watch.pages.dev/api/feeds"
 UA = "observatory-data/1"
 
 # Official lists. kind is shown on the site as the source's character.
+# (海幕・陸幕・空幕 answer Actions with a bot challenge and are not fetched; the Ministry of Defense
+#  press list comes in through the site's feed. INDOPACOM and 7th Fleet refuse robots.txt with 403.)
+JA_WORDS = r"訓練|演習|射撃"
+EN_WORDS = (r"exercis|drill|war ?game|live[- ]fire|maneuv|manoeuv|training|joint patrol|combat readiness|"
+            r"keen sword|balikatan|talisman|rimpac|malabar|resolute dragon|orient shield|freedom (shield|edge)|valiant shield")
 OFFICIAL = [
-    {"id": "msdf", "name": "海上幕僚監部 お知らせ", "kind": "公式", "country": "日本",
-     "list": "https://www.mod.go.jp/msdf/release/", "href": r"/msdf/release/\d{6}/\d{8}[^\"']*\.pdf"},
     {"id": "jso", "name": "統合幕僚監部 報道発表", "kind": "公式", "country": "日本",
-     "list": "https://www.mod.go.jp/js/press/index.html", "href": r"/js/pdf/\d{4}/p\d{8}_\d+\.pdf"},
+     "list": "https://www.mod.go.jp/js/press/index.html", "href": r"/js/pdf/\d{4}/p\d{8}_\d+\.pdf", "words": JA_WORDS},
+    {"id": "cn-mod", "name": "中国国防部 军事行动", "kind": "公式", "country": "中国",
+     "list": "http://www.mod.gov.cn/gfbw/jsxd/index.html", "href": r"/gfbw/jsxd/[a-z0-9_]+/\d{6,}\.html", "words": r"演|训|练|巡|射"},
+    {"id": "chinamil", "name": "中国軍網 Training & Exercise", "kind": "国営メディア", "country": "中国",
+     "list": "http://eng.chinamil.com.cn/2025xb/C_251453/TE/index.html", "href": r"/TE/\d{6,}\.html", "words": EN_WORDS},
+    {"id": "stripes", "name": "Stars and Stripes 太平洋", "kind": "報道", "country": None,
+     "list": "https://www.stripes.com/theaters/asia_pacific/",
+     "href": r"/(theaters|branches)/[a-z_]+/\d{4}-\d{2}-\d{2}/[a-z0-9-]+\.html", "words": EN_WORDS},
 ]
+PER_SOURCE = 15
 
 # Words that make a headline a candidate (any language the feed carries).
 ACTIVITY = re.compile(
@@ -85,7 +96,7 @@ def list_links(html_text: str, base: str, href_pattern: str) -> list:
         seen.add(url)
         text = re.sub(r"<[^>]+>", " ", inner)
         text = re.sub(r"\s+", " ", text).strip()
-        m = re.search(r"(\d{4})(\d{2})(\d{2})", url)
+        m = re.search(r"(20\d{2})-?(0[1-9]|1[0-2])-?(0[1-9]|[12]\d|3[01])(?!\d)", url)
         day = f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if m else None
         out.append((url, text, day))
     return out
@@ -105,7 +116,7 @@ def official_candidates(fetch, since_day: str, log: list) -> list:
             log.append({"source": src["id"], "status": f"http {status}"})
             continue
         links = list_links(body.decode("utf-8", "replace"), src["list"], src["href"])
-        picked = [(u, t, d) for u, t, d in links if (d or "") >= since_day and re.search(r"訓練|演習|射撃", t)]
+        picked = [(u, t, d) for u, t, d in links if (d is None or d >= since_day) and re.search(src["words"], t, re.I)][:PER_SOURCE]
         log.append({"source": src["id"], "status": "ok", "links": len(links), "picked": len(picked)})
         for url, title, day in picked:
             published = int(time.mktime(time.strptime(day, "%Y-%m-%d")) * 1000) if day else None
