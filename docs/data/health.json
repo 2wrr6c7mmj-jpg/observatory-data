@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-14T07:44:02Z",
+ "generated_utc": "2026-11-14T08:17:11Z",
  "state": "warn",
  "summary": {
   "ok": 10,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-13T13:21:15Z",
-   "heartbeat_age_h": 18.4,
+   "heartbeat_age_h": 18.9,
    "data_date": "2026-11-12",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -141,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-13T11:32:06Z",
-   "heartbeat_age_h": 20.2,
+   "heartbeat_age_h": 20.8,
    "data_date": "2026-11-12",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -164,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-13T14:53:36Z",
-   "heartbeat_age_h": 16.8,
+   "heartbeat_age_h": 17.4,
    "data_date": "2026-11-13",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -208,7 +208,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-14T07:43:02Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.6,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 18,
@@ -231,16 +231,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-14T07:42:59Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_utc": "2026-11-14T08:02:49Z",
+   "heartbeat_age_h": 0.2,
    "data_date": "2026-11-14",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-14T07:42:59Z",
-    "notam_watch_last_seen_utc": "2026-11-14T07:42:59Z",
+    "notices_last_retrieved_utc": "2026-11-14T08:02:49Z",
+    "notam_watch_last_seen_utc": "2026-11-14T08:02:49Z",
     "ll2_last_retrieved_utc": "2026-11-14T07:42:57Z"
    }
   },
@@ -249,7 +249,7 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-14T07:43:16Z",
+   "heartbeat_utc": "2026-11-14T08:16:26Z",
    "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
@@ -258,8 +258,8 @@
    "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-14T07:43:41Z",
-    "newest_input_utc": "2026-11-14T07:43:02Z"
+    "computed_utc_max": "2026-11-14T08:16:45Z",
+    "newest_input_utc": "2026-11-14T08:02:49Z"
    }
   },
   {
@@ -751,12 +751,12 @@
   },
   "launches": {
    "open_or_upcoming_windows": 8,
-   "open_now": 5,
+   "open_now": 6,
    "next_start": {
-    "site": "西昌",
+    "site": "文昌",
     "country": "CN",
-    "window_start_utc": "2026-11-20T10:30Z",
-    "window_end_utc": "2026-11-23T14:10Z"
+    "window_start_utc": "2026-11-20T11:00Z",
+    "window_end_utc": "2026-11-23T14:00Z"
    },
    "active_notices": 33
   }
@@ -863,8 +863,8 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-14T07:43:16Z",
-   "last_success_event": "workflow_run",
+   "last_success_started_utc": "2026-11-14T08:16:26Z",
+   "last_success_event": "push",
    "last_scheduled": {
     "id": 43572409098,
     "started_utc": "2026-11-14T07:43:16Z",
