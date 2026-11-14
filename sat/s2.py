@@ -41,7 +41,7 @@ import numpy as np
 from . import cdse, png
 from .grid import Grid
 
-S2_VERSION = "s2nc-1"
+S2_VERSION = "s2nc-2"         # s2nc-2 (2026-11-14): thin cirrus (SCL 10) not counted in sector A; per-site sector-A limits
 COLLECTION = "sentinel-2-l2a"
 LOOKBACK_DAYS = 10            # the daily run looks at the last days only (new acquisitions)
 CATALOG_MAX_CC = 90.0         # tile cloud cover (%) above this: no pixel request at all
@@ -52,6 +52,7 @@ MAX_CLOUD = 0.10              # final (10 m SCL): cloud + shadow in the site
 MAX_CLOUD_A = 0.02            # ... and in sector A
 MIN_VALID = 0.90              # share of the site with data
 CLOUD_SCL = (8, 9, 10)        # cloud medium / high probability, thin cirrus
+CIRRUS_SCL = (10,)            # thin cirrus: counted in the whole site, not in sector A (s2nc-2)
 SHADOW_SCL = (3,)             # cloud shadows
 NODATA = 255
 REFL_SCALE = 10000.0
@@ -149,19 +150,33 @@ def sector_index(grid: Grid, site: dict) -> np.ndarray | None:
 
 
 def cloud_shares(scl: np.ndarray, in_a: np.ndarray | None) -> dict:
-    """Cloud + shadow share of the valid pixels (site, sector A) and the valid share of the site."""
+    """Cloud + shadow share of the valid pixels (site, sector A) and the valid share of the site.
+
+    Sector A (s2nc-2) leaves out thin cirrus (SCL 10): on 2026-11-11 the three Qingdao ports had 7-11 % of thin
+    cirrus in sector A on a picture with no visible cloud, and every one was skipped. The whole site still counts
+    it, so a day under real cirrus is still stopped by MAX_CLOUD. Without sectors, cloud_a is the site's share
+    without thin cirrus."""
     scl = np.asarray(scl)
     valid = (scl != NODATA) & (scl != 0)
     bad = np.isin(scl, CLOUD_SCL + SHADOW_SCL) & valid
+    bad_a = bad & ~np.isin(scl, CIRRUS_SCL)
     n = int(valid.sum())
     out = {"valid": round(n / scl.size, 4) if scl.size else 0.0,
            "cloud": round(float(bad.sum()) / n, 4) if n else None, "cloud_a": None}
     if in_a is not None and in_a.shape == scl.shape:
         na = int((valid & in_a).sum())
-        out["cloud_a"] = round(float((bad & in_a).sum()) / na, 4) if na else None
+        out["cloud_a"] = round(float((bad_a & in_a).sum()) / na, 4) if na else None
     elif in_a is None:
-        out["cloud_a"] = out["cloud"]
+        out["cloud_a"] = round(float(bad_a.sum()) / n, 4) if n else None
     return out
+
+
+def a_limits(site: dict) -> tuple[float, float]:
+    """(pre-check, final) limits of sector A: the module's, or the site's own (sites.json s2.pre_max_cloud_a /
+    s2.max_cloud_a) where SCL counts cloud on a clear day (Guzhenkou: 3-5 % of medium-probability cloud on
+    turbid water and white quays, 2026-09-04 and 10-27)."""
+    c = site.get("s2") or {}
+    return float(c.get("pre_max_cloud_a", PRE_MAX_CLOUD_A)), float(c.get("max_cloud_a", MAX_CLOUD_A))
 
 
 def resample_mask(in_a: np.ndarray | None, shape: tuple[int, int]) -> np.ndarray | None:
@@ -279,6 +294,7 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
     days left to the older version."""
     grid = Grid.for_site(site)
     tag = mask_tag(site)
+    pre_a, max_a = a_limits(site)
     path = out / "s2_scenes.csv"
     rows = read_rows(path)
     mine = {r["date"]: r for r in rows if r["site_id"] == site["id"] and r["mask_version"] == tag}
@@ -318,7 +334,7 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
                 if pc["cloud"] is None or pc["valid"] < MIN_VALID - 0.05:
                     row["result"] = "no_data" if pc["cloud"] is None else "partial"
                     row["valid"] = pc["valid"]
-                elif pc["cloud"] > PRE_MAX_CLOUD or (pc["cloud_a"] or 0) > PRE_MAX_CLOUD_A:
+                elif pc["cloud"] > PRE_MAX_CLOUD or (pc["cloud_a"] or 0) > pre_a:
                     row["result"] = "pre_cloudy"
                 else:
                     refl, scl, pu = fetch(client, grid, d["date"])
@@ -327,7 +343,7 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
                     row.update(cloud=c["cloud"], cloud_a=c["cloud_a"], valid=c["valid"])
                     if c["cloud"] is None or c["valid"] < MIN_VALID:
                         row["result"] = "partial"
-                    elif c["cloud"] <= MAX_CLOUD and (c["cloud_a"] if c["cloud_a"] is not None else 1.0) <= MAX_CLOUD_A:
+                    elif c["cloud"] <= MAX_CLOUD and (c["cloud_a"] if c["cloud_a"] is not None else 1.0) <= max_a:
                         row["result"] = "clear"
                         ip, tp = image_paths(site, d["acquired_utc"])
                         plat = (d["platform"] or "S2").replace("sentinel-", "S").upper()
@@ -370,7 +386,8 @@ def settings() -> dict:
         "source": "Copernicus Sentinel-2 L2A（CDSE Sentinel Hub Process API、sentinel-2-l2a、日ごとに雲の少ない順のモザイク）",
         "bands": "B2・B3・B4・B8（反射率×10000、UINT16）と SCL を 10 m で 1 回の要求（2 出力の tar）。PU の見込み 約 1.5／撮影（湛江 v2）",
         "cloud": (f"範囲内の SCL の 8・9・10（雲・巻雲）と 3（雲の影）の画素の割合。範囲内 ≤ {MAX_CLOUD:.0%} かつ区画 A ≤ {MAX_CLOUD_A:.0%}、"
-                  f"データのある画素 ≥ {MIN_VALID:.0%} の日だけ画像を作る（clear）"),
+                  f"データのある画素 ≥ {MIN_VALID:.0%} の日だけ画像を作る（clear）。区画 A（cloud_a・pre_cloud_a）は 10（薄い巻雲）を数えない（s2nc-2、"
+                  f"2026-11-14 から。それより前の行は 10 を含む）。港の設定（sites.json の s2.max_cloud_a・pre_max_cloud_a）があればその上限を使う"),
         "precheck": (f"カタログのタイル全体の雲量（eo:cloud_cover）が {CATALOG_MAX_CC:g}% を超える日は取得しない（tile_cloudy）。"
                      f"それ以外はまず SCL だけを {PRE_M} m で取得し（約 0.03 PU）、範囲 > {PRE_MAX_CLOUD:.0%} か区画 A > {PRE_MAX_CLOUD_A:.0%} なら 10 m は取らない（pre_cloudy）"),
         "display": (f"自然色：R＝B4、G＝B3、B＝B2、反射率 0〜{REFL_MAX:g} を 0〜1 に、γ 1/{GAMMA:g}。範囲は全日で固定。WebP（品質 {WEBP_QUALITY}、"
