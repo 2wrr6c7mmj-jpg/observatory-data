@@ -69,3 +69,31 @@ class Sites(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Attempts(unittest.TestCase):
+    N = {k: {"kind": v} for k, v in {"a": "rocket", "b": "rocket", "c": "fall", "i1": "intercept", "i2": "intercept",
+                                       "r1": "related", "r2": "related"}.items()}
+
+    def ev(self, s, e, notices, site=None, mission=None):
+        return {"window_start_utc": s, "window_end_utc": e, "notices": notices, "areas": [], "site": site,
+                "recorded_launches": [{"name": mission}] if mission else []}
+
+    def test_attempts_of_one_launch_are_one_entry(self):
+        out = Z.merge_attempts([self.ev("2026-11-10T00:00Z", "2026-11-30T09:34Z", ["a"], "済州沖（海上発射）", "Mir | Demo"),
+                                self.ev("2026-11-11T05:00Z", "2026-11-30T09:34Z", ["b"], "済州沖（海上発射）"),
+                                self.ev("2026-11-13T05:00Z", "2026-11-30T09:34Z", ["c"], "済州沖（海上発射）")], self.N)
+        self.assertEqual([e["notices"] for e in out], [["a", "b", "c"]])
+        self.assertEqual(out[0]["recorded_launches"][0]["name"], "Mir | Demo")
+
+    def test_two_launches_from_one_site_stay_apart(self):
+        out = Z.merge_attempts([self.ev("2026-11-20T11:00Z", "2026-11-23T14:00Z", ["a"], "文昌", "Long March 8A"),
+                                self.ev("2026-11-22T07:00Z", "2026-11-27T10:00Z", ["c"], "文昌", "Long March 12")], self.N)
+        self.assertEqual(len(out), 2)
+
+    def test_notices_with_no_site(self):
+        out = Z.merge_attempts([self.ev("2026-08-17T07:09Z", "2026-11-16T15:00Z", ["i1"]),
+                                self.ev("2026-09-01T00:00Z", "2026-11-16T15:00Z", ["i2"]),
+                                self.ev("2026-11-14T01:30Z", "2026-11-20T05:01Z", ["r1"]),
+                                self.ev("2026-11-15T01:30Z", "2026-11-20T05:01Z", ["r2"])], self.N)
+        self.assertEqual([e["notices"] for e in out], [["i1", "i2"], ["r1"], ["r2"]])

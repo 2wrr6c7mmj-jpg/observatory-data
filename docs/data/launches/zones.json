@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-14T08:02:49Z",
+ "generated_utc": "2026-11-14T11:00:58Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -9,6 +9,7 @@
  },
  "events": [
   {
+   "id": "2026-08-17T07:09Z:intercept",
    "window_start_utc": "2026-08-17T07:09Z",
    "window_end_utc": "2026-11-16T15:00Z",
    "site": null,
@@ -117,16 +118,7 @@
      ],
      "circles": [],
      "text": "P3998/26 NOTAMR P2326/26\r\nQ)RJJJ/QRTCA/IV/BO/W/000/999/2530N12516E164\r\nA)RJJJ B)2608170709 C)2611161500EST\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FOLLOWING AIRSPACE\r\nDUE TO THE ANTIBALLISTIC MISSILES MAY BE LAUNCHED\r\nFOR THE DESTRUCTION OF AN OBJECT PROPELLED BY ROCKET\r\nLAUNCHED FROM NORTH KOREA\r\n(1)AIRSPACE: BOUNDED BY FLW POINTS\r\n264419N1275729E - 255619N1275729E - 255619N1272129E - \r\n264419N1272129E - 264419N1275729E (NAHA-SHI)\r\n(2)AIRSPACE: BOUNDED BY FLW POINTS\r\n251802N1253730E - 243002N1253730E - 243002N1250130E - \r\n251802N1250130E - 251802N1253730E (MIYAKOJIMA)\r\n(3)AIRSPACE: BOUNDED BY FLW POINTS\r\n245604N1242912E - 240804N1242912E - 240804N1235321E - \r\n245604N1235321E - 245604N1242912E (ISHIGAKIJIMA)\r\n(4)AIRSPACE: BOUNDED BY FLW POINTS\r\n245838N1231516E - 241038N1231516E - 241038N1223916E - \r\n245838N1223916E - 245838N1231516E (YONAGUNIJIMA)\r\nRMK: 1)EXC ACFT OF GOVERNMENT AGENCIES,DOCTOR HEL AND\r\n  ACFT WITH PRIOR COORDINATION WITH JAPAN SELF DEFENSE FORCE.\r\n  MINISTRY OF DEFENSE JOINT STAFF OFFICE\r\n  TEL:03-3268-3111(EXT 30929)\r\n2)ALL VFR ACFT FLYING WI AIRSPACE(EXC EACH CTR AND INFO ZONE) ARE\r\n  REQUESTED TO CONTACT FLW FREQ\r\n  CALL SIGN : RODE RICK\r\n  FREQ      : 123.1MHZ,138.05MHZ\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "window_start_utc": "2026-08-17T07:09Z",
-   "window_end_utc": "2026-11-16T15:00Z",
-   "site": null,
-   "orbit": null,
-   "vehicle": null,
-   "notices": [
+    },
     {
      "key": "aviation:P3999/26",
      "id": "P3999/26",
@@ -144,6 +136,7 @@
    ]
   },
   {
+   "id": "2026-11-10T00:00Z:済州沖（海上発射）",
    "window_start_utc": "2026-11-10T00:00Z",
    "window_end_utc": "2026-11-30T09:34Z",
    "site": {
@@ -151,9 +144,11 @@
     "lat": 33.145,
     "lon": 126.455,
     "country": "KR",
-    "method": "stated"
+    "method": "stated",
+    "azimuth_deg": 144.4,
+    "inclination_deg": 60.9
    },
-   "orbit": null,
+   "orbit": "低軌道",
    "vehicle": {
     "basis": "ll2",
     "name": "固体燃料の宇宙発射体（国防科学研究所）",
@@ -289,32 +284,7 @@
      ],
      "circles": [],
      "text": "P5538/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611100621 C)2611300934\r\nD)0621/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 10 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0600-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 11 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0621-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0633-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "window_start_utc": "2026-11-11T05:00Z",
-   "window_end_utc": "2026-11-30T09:34Z",
-   "site": {
-    "name": "済州沖（海上発射）",
-    "lat": 33.145,
-    "lon": 126.455,
-    "country": "KR",
-    "method": "stated",
-    "azimuth_deg": 144.4,
-    "inclination_deg": 60.9
-   },
-   "orbit": "低軌道",
-   "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "固体燃料の宇宙発射体（国防科学研究所）",
-      "orbit": "低軌道・太陽同期"
-     }
-    ]
-   },
-   "notices": [
+    },
     {
      "key": "aviation:Z0843/26",
      "id": "Z0843/26",
@@ -414,32 +384,7 @@
      ],
      "circles": [],
      "text": "P5590/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611110521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 11 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 12 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "window_start_utc": "2026-11-13T05:00Z",
-   "window_end_utc": "2026-11-30T09:34Z",
-   "site": {
-    "name": "済州沖（海上発射）",
-    "lat": 33.145,
-    "lon": 126.455,
-    "country": "KR",
-    "method": "stated",
-    "azimuth_deg": 144.4,
-    "inclination_deg": 60.9
-   },
-   "orbit": "低軌道",
-   "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "固体燃料の宇宙発射体（国防科学研究所）",
-      "orbit": "低軌道・太陽同期"
-     }
-    ]
-   },
-   "notices": [
+    },
     {
      "key": "aviation:Z0856/26",
      "id": "Z0856/26",
@@ -543,6 +488,7 @@
    ]
   },
   {
+   "id": "2026-11-14T01:30Z:related",
    "window_start_utc": "2026-11-14T01:30Z",
    "window_end_utc": "2026-11-20T05:01Z",
    "site": null,
@@ -674,6 +620,7 @@
    ]
   },
   {
+   "id": "2026-11-20T11:00Z:文昌",
    "window_start_utc": "2026-11-20T11:00Z",
    "window_end_utc": "2026-11-23T14:00Z",
    "site": {
@@ -783,6 +730,7 @@
    ]
   },
   {
+   "id": "2026-11-24T07:00Z:文昌",
    "window_start_utc": "2026-11-24T07:00Z",
    "window_end_utc": "2026-11-27T10:00Z",
    "site": {
