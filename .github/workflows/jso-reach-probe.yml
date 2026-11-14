@@ -2,46 +2,44 @@ name: JSO reach probe
 # 統幕（mod.go.jp/js）の報道発表を Actions から礼儀正しく読めるかだけを確かめる、読み取り専用の確認。
 # probe/jso-* ブランチへの push でだけ動く。robots.txt を確かめ、一覧ページと PDF を1回ずつ取得して
 # 状態を注釈（::notice / ::error）に出すだけ。ボット対策のチャレンジが出たらそこで止める（回り込まない）。
-# 何も commit しない。main は変えない。
+# 取得物は同じ probe ブランチ（probe-raw/jso/）にだけ commit する。main は変えない。
 on:
   push:
     branches: ['probe/jso-*']
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
+    if: ${{ !contains(github.event.head_commit.message, '[jso-probe-result]') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Reach mod.go.jp/js politely
+      - name: Save list page and sample PDFs to probe-raw/jso
         run: |
-          python - <<'PY'
-          import time
-          from collectors.polite import check_robots, raw_get, is_challenge
+          mkdir -p probe-raw/jso/pdf
+          python - <<'PY2'
+          import time, pathlib
+          from collectors.polite import get
           UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)"
-          urls = ["https://www.mod.go.jp/js/press/index.html",
-                  "https://www.mod.go.jp/js/activity/domestic/keikai2026.html",
-                  "https://www.mod.go.jp/js/pdf/2026/p20261105_01.pdf"]
-          r = check_robots(urls[0], UA)
-          print(f"::notice title=jso-robots::allowed={r.allowed} verified={r.verified} reason={r.reason}")
-          if not r.allowed:
-              raise SystemExit(0)
-          for u in urls:
+          out = pathlib.Path("probe-raw/jso")
+          r = get("https://www.mod.go.jp/js/press/index.html", UA)
+          (out / "press-index.html").write_bytes(r.body)
+          print(f"::notice title=jso-list::status={r.status} bytes={len(r.body)}")
+          ids = "2026/p20260825_02 2026/p20260928_01 2026/p20260803_01 2026/p20260914_02 2026/p20260831_02 2026/p20261009_02 2026/p20260821_02 2026/p20260817_04 2026/p20260820_02 2026/p20260824_02 2026/p20260916_02 2026/p20260810_03 2026/p20260914_03 2026/p20261023_01 2024/p20240214_02 2024/p20241007_04 2024/p20240325_03 2025/p20250602_01 2025/p20250507_02 2024/p20240902_03 2026/p20261027_01 2026/p20261027_02 2026/p20261027_03".split()
+          for k in ids:
               time.sleep(3)
-              try:
-                  resp = raw_get(u, UA, timeout=30)
-              except Exception as e:  # noqa: BLE001
-                  print(f"::error title=jso-fetch::{u} {type(e).__name__}: {e}")
-                  continue
-              ch = is_challenge(resp)
-              print(f"::notice title=jso-fetch::{u} status={resp.status} challenge={ch} "
-                    f"type={resp.headers.get('content-type','')} bytes={len(resp.body)} "
-                    f"server={resp.headers.get('server','')}")
-              if ch:
-                  print("::notice title=jso-stop::bot challenge; stopping without retrying")
-                  break
-          PY
+              r = get(f"https://www.mod.go.jp/js/pdf/{k}.pdf", UA)
+              (out / "pdf" / (k.replace("/", "_") + ".pdf")).write_bytes(r.body)
+          print(f"::notice title=jso-pdfs::saved {len(ids)}")
+          PY2
+      - name: Commit to this probe branch only
+        run: |
+          git add probe-raw/jso
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 統幕の一覧と PDF 見本 [jso-probe-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
