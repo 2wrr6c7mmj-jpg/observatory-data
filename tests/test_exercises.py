@@ -211,6 +211,25 @@ class DatesTest(unittest.TestCase):
         self.assertEqual((v["start"], v["end"], v["datePrecision"]), ("2026-11-01", "2026-11-20", "part"))
 
 
+class RunFilesTest(unittest.TestCase):
+    def test_stale_year_files_are_removed(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+        from exercises import run
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            (out / "events").mkdir()
+            (out / "events" / "2027.json").write_text(json.dumps({"year": 2027, "rules": run.RULES, "events": []}))
+            (out / "analyses.json").write_text(json.dumps({"rules": run.RULES, "items": {}}))
+            with mock.patch.object(run.sources, "get_json", return_value={"records": [], "sources": []}), \
+                    mock.patch.object(run.sources, "official_candidates", return_value=[]):
+                run.main(["--out", d, "--minutes", "0"])
+            self.assertFalse((out / "events" / "2027.json").exists())
+            self.assertEqual(json.loads((out / "events" / "index.json").read_text())["years"], [])
+
+
 class PageDayTest(unittest.TestCase):
     def test_page_day(self):
         from exercises.run import page_day

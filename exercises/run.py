@@ -34,7 +34,9 @@ DAY = 86400000
 # The checking rules. When they change, what was read before is read again (the stored answers were kept
 # under the old rules): 1 = first version; 2 = countries named in the text, the area named in the text,
 # numbers of the forces in the text, names checked (descriptions, earlier exercises, generic names).
-RULES = 5
+RULES = 6
+# 6 = year files of events that no longer have events are removed (a stale events/2027.json from rules 3 brought
+#     back a wrong date); read everything again once.
 # 5 = an official release announcing its own country's part adds that country; an undated activity is over 7 days
 #     after its last report (was 14).
 # 4 = dates read from the quoted words by rule (exercises/dates.py), publication day from the page when the list has
@@ -222,6 +224,9 @@ def main(argv=None):
             by_year.setdefault(year_of(e), []).append(e)
         for y, evs in by_year.items():
             write(out / "events" / f"{y}.json", {"year": int(y), "rules": RULES, "events": evs})
+        for p in (out / "events").glob("[0-9][0-9][0-9][0-9].json"):
+            if p.stem not in by_year:
+                p.unlink()   # a year with no events left (otherwise its old events come back next run)
         write(out / "events" / "index.json", {"years": sorted(int(y) for y in by_year)})
         write(out / "current.json", {"generatedAt": now, "today": today.isoformat(), "events": current})
         write(out / "analyses.json", {"rules": RULES, "items": analyses})
