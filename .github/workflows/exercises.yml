@@ -1,0 +1,89 @@
+name: Exercises
+# インド太平洋の軍事演習・訓練・実弾射撃・大規模展開を 3 時間ごとに集める。
+# 世界情勢観測のニュース（/api/feeds、約 48 源）と、公式の発表（海幕・統幕）から候補を拾い、
+# 公開のモデル（Qwen3-8B、Apache-2.0）を llama.cpp で Actions の CPU 上で動かして 1 件ずつ読み、
+# 原文と照合して事象にまとめ、docs/data/exercises/ にだけ書く。キー・登録・利用上限なし。
+on:
+  push:
+    branches: ['probe/exercises*']
+  schedule:
+    - cron: '43 */3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ${{ github.event_name == 'push' && format('probe-exercises-{0}', github.ref_name) || 'exercises' }}
+  cancel-in-progress: false
+env:
+  MODEL: unsloth/Qwen3-8B-GGUF:Q4_K_M
+  LLAMA_CACHE: /home/runner/.cache/llama
+jobs:
+  exercises:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: PDF reader
+        run: |
+          pip install -q pypdf
+          command -v pdftotext && echo "pdftotext present" || echo "pdftotext absent (pypdf is used)"
+      - name: Probe more official sources (robots.txt, status, links; no data change)
+        if: github.event_name == 'push'
+        run: python -m exercises.probe_sources
+      - name: llama.cpp (latest CPU release for Ubuntu x64)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The newest releases first; take the first one that has the CPU build for Ubuntu x64.
+          names=$(gh api 'repos/ggml-org/llama.cpp/releases?per_page=10' --jq '.[] | .tag_name as $t | .assets[] | "\($t) \(.name)"')
+          line=$(printf '%s\n' "$names" | grep -E ' [^ ]*bin-ubuntu-x64\.(zip|tar\.gz)$' | head -1)
+          tag=${line%% *}; asset=${line#* }
+          [ -n "$line" ] || { echo "::error title=llama.cpp assets::$(printf '%s ' $names | cut -c1-900)"; exit 1; }
+          echo "release: $tag $asset"
+          gh release download "$tag" --repo ggml-org/llama.cpp --pattern "$asset" --dir "$RUNNER_TEMP"
+          mkdir -p "$RUNNER_TEMP/llama"
+          case "$asset" in
+            *.zip) unzip -q "$RUNNER_TEMP/$asset" -d "$RUNNER_TEMP/llama" ;;
+            *) tar -xzf "$RUNNER_TEMP/$asset" -C "$RUNNER_TEMP/llama" ;;
+          esac
+          bin=$(dirname "$(find "$RUNNER_TEMP/llama" -name llama-server -type f | head -1)")
+          echo "LLAMA_BIN=$bin" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/llama
+          key: llama-model-qwen3-8b-q4km
+      - name: Start the model server
+        run: |
+          export LD_LIBRARY_PATH="$LLAMA_BIN:$LD_LIBRARY_PATH"
+          nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" --jinja -c 8192 -np 1 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
+          for i in $(seq 1 120); do
+            curl -sf http://127.0.0.1:8080/health >/dev/null && { echo "ready after $((i*5)) s"; exit 0; }
+            sleep 5
+          done
+          tail -40 "$RUNNER_TEMP/server.log"; echo "::error title=exercises::model server did not start"; exit 1
+      - name: Probe (temporary directory)
+        if: github.event_name == 'push'
+        run: |
+          python -m exercises.run --model "$MODEL" --probe --out "$RUNNER_TEMP/ex" --limit 10 --minutes 25
+          grep -E "prompt eval time|eval time" "$RUNNER_TEMP/server.log" | tail -4 || true
+      - name: Collect and read
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        run: python -m exercises.run --model "$MODEL" --minutes 50
+      - name: Publish changed data
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git add docs/data/exercises
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "データ更新: 演習 ($(date -u +%Y-%m-%dT%H:%MZ))"
+          for i in 1 2 3; do
+            git pull -q --rebase && git push && exit 0
+            sleep 20
+          done
+          exit 1
