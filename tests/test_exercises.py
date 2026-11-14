@@ -141,21 +141,77 @@ class MergeTest(unittest.TestCase):
     def test_official_fields_win_and_confidence(self):
         out = merge.merge_all([ev("news", forces="艦艇10隻"), ev("msdf", kind="公式", forces="海自 艦艇16隻")])
         self.assertEqual(out[0]["forces"], "海自 艦艇16隻")
-        self.assertEqual(merge.confidence(out[0]), "高")
+        level, why = merge.confidence(out[0])
+        self.assertEqual(level, "高")
+        self.assertIn("msdf", why)
 
     def test_phase(self):
         e = ev("a")
         self.assertEqual(merge.phase(e, date(2026, 11, 14)), "next")
         self.assertEqual(merge.phase(e, date(2026, 11, 20)), "now")
         self.assertEqual(merge.phase(e, date(2026, 11, 30)), "done")
-        undated = ev("b", start=None, end=None, status="ongoing")
-        self.assertEqual(merge.phase(undated, date(2026, 11, 30)), "now")
+        undated = ev("b", start=None, end=None, dateEvidence=None, status="ongoing")   # reported 2026-11-06
+        self.assertEqual(merge.phase(undated, date(2026, 11, 15)), "now")
+        self.assertEqual(merge.phase(undated, date(2026, 11, 30)), "done")   # 14 days after the last report
+        open_ended = {**ev("c", status="ongoing"), "end": None}   # 11-16 with no end, reported 11-06
+        self.assertEqual(merge.phase(open_ended, date(2026, 11, 18)), "now")
+        self.assertEqual(merge.phase(open_ended, date(2026, 11, 22)), "done")   # 14 days after the last report
+        self.assertEqual(merge.phase({**open_ended, "lastReported": 1_795_200_000_000}, date(2026, 11, 22)), "now")
+        self.assertEqual(merge.phase({**open_ended, "lastReported": 1_795_200_000_000, "status": "completed"}, date(2026, 11, 22)), "done")
+        no_pub = {**undated, "_pub": False}
+        self.assertEqual(merge.phase(no_pub, date(2026, 11, 15)), "unknown")
+
+    def test_confidence_reasons(self):
+        def src(s, kind):
+            return {"url": "https://x/" + s, "source": s, "sourceName": s, "kind": kind, "publishedAt": 1}
+        e = {"countries": ["中国"], "sources": [src("cn-mod", "公式")]}
+        self.assertEqual(merge.confidence(e), ("高", "公式：cn-mod（実施国の発表）"))
+        e = {"countries": ["中国"], "sources": [src("jso", "公式")]}
+        self.assertEqual(merge.confidence(e)[1], "公式：jso（観測した国の発表）")
+        e = {"countries": ["中国"], "sources": [src("xinhua", "国営メディア"), src("globaltimes", "国営・党系メディア")]}
+        self.assertEqual(merge.confidence(e), ("低", "1 系列のみ：中国国営"))
+        e = {"countries": ["中国"], "sources": [src("xinhua", "国営メディア"), src("scmp-china", "報道")]}
+        self.assertEqual(merge.confidence(e)[0], "中")
 
     def test_finish_has_region_name_and_stable_id(self):
         a = merge.finish(ev("a", name="Keen Sword 27"), date(2026, 11, 14))
         b = merge.finish(ev("b", name="Keen Sword 27"), date(2026, 11, 14))
         self.assertEqual(a["regionName"], "九州周辺")
         self.assertEqual(a["id"], b["id"])
+
+
+class DatesTest(unittest.TestCase):
+    def test_stated_dates(self):
+        from exercises.dates import parse
+        self.assertEqual(parse("令和８年１１月１７日（火）から同月２０日（金）までの間", "2026-11-13"), ("2026-11-17", "2026-11-20", "day"))
+        self.assertEqual(parse("9月中旬至10月上旬", "2026-10-12"), ("2026-09-11", "2026-10-10", "part"))
+        self.assertEqual(parse("Oct. 24–30, 2026", "2026-11-10"), ("2026-10-24", "2026-10-30", "day"))
+        self.assertEqual(parse("19 to 29 October 2026", None), ("2026-10-19", "2026-10-29", "day"))
+        self.assertEqual(parse("September 26 to October 12", "2026-11-11"), ("2026-09-26", "2026-10-12", "day"))
+        self.assertEqual(parse("12月29日", "2026-01-05"), ("2025-12-29", "2025-12-29", "day"))
+
+    def test_words_that_are_not_dates(self):
+        from exercises.dates import parse
+        for words in ("日前", "Tuesday", "early this month", "Rotation 27-01", "2026-11-07 16:07", "27日"):
+            self.assertIsNone(parse(words, "2026-11-13"), words)
+        self.assertIsNone(parse("11月上中旬", None))          # no year and no publication day
+        self.assertIsNone(parse("2026-10-29", "2026-10-29"))  # the page's own date
+
+    def test_validate_uses_the_rule_not_the_model(self):
+        v = extract.validate(answer(start="2026-11-14", end=None, dateEvidence="日前", place=None), PLAIN,
+                             "中俄海军日前在黄海举行联合演习", None)
+        self.assertEqual((v["start"], v["dateText"]), (None, "日前"))
+        v = extract.validate(answer(start="2026-11-14", end="2026-11-14", dateEvidence="11月上中旬", place=None), PLAIN,
+                             "中越两国11月上中旬举行联合训练", "2026-11-14")
+        self.assertEqual((v["start"], v["end"], v["datePrecision"]), ("2026-11-01", "2026-11-20", "part"))
+
+
+class PageDayTest(unittest.TestCase):
+    def test_page_day(self):
+        from exercises.run import page_day
+        self.assertEqual(page_day('<meta name="PubDate" content="2026-11-12 10:32">'), "2026-11-12")
+        self.assertEqual(page_day("<p>发布时间：2026年11月3日 09:00</p>"), "2026-11-03")
+        self.assertIsNone(page_day("<p>no date</p>"))
 
 
 class SourcesTest(unittest.TestCase):
