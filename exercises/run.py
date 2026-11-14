@@ -33,7 +33,9 @@ DAY = 86400000
 # The checking rules. When they change, what was read before is read again (the stored answers were kept
 # under the old rules): 1 = first version; 2 = countries named in the text, the area named in the text,
 # numbers of the forces in the text, names checked (descriptions, earlier exercises, generic names).
-RULES = 2
+RULES = 3
+# 3 = model's country names in Chinese/English mapped to the table, China's interior and other areas from the
+#     place words, unnamed reports of neighbouring areas merged.
 
 
 def load(path, default):

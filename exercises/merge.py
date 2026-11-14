@@ -6,7 +6,9 @@ Two answers are the same event when
   - neither has a name, they share the kind, area and at least one country,
     and their dates overlap (or, undated, they were reported within 5 days).
 An unnamed answer also joins a named event of the same area and countries
-whose dates overlap it.
+whose dates overlap it. Unnamed reports of neighbouring areas (regions.GROUPS:
+around Taiwan / east of Taiwan / the western Pacific …) with a shared country and
+overlapping dates, or undated and reported within 10 days, are one event.
 """
 import hashlib
 import re
@@ -54,13 +56,11 @@ def same_event(a, b) -> bool:
     ov = _overlap(a, b)
     if a.get("name") and b.get("name"):
         return norm_name(a["name"]) == norm_name(b["name"]) and ov is not False
-    if a["region"] != b["region"] or not set(a["countries"]) & set(b["countries"]):
+    if not regions.near(a["region"], b["region"]) or not set(a["countries"]) & set(b["countries"]):
         return False
     if a.get("name") or b.get("name"):
-        return ov is True
-    if a["kind"] != b["kind"]:
-        return False
-    return ov is True or (ov is None and _reported_close(a, b))
+        return ov is True and a["region"] == b["region"]
+    return ov is True or (ov is None and _reported_close(a, b, 10))
 
 
 def event_from(doc: dict, ans: dict) -> dict:

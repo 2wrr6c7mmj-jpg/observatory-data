@@ -23,7 +23,7 @@ Fields (Japanese for text fields):
 - kind: exercise (exercise, drill, joint training), live_fire (firing or missile drills), deployment (large deployment presented as a drill or show of force).
 - name: the exercise's own name exactly as written in the text, often in quotes or with a year; null if none. Not the name of an earlier exercise the text only recalls, and not a description.
 - titleJa: a short factual Japanese headline (who, what, where), at most 30 characters.
-- countries: participating countries in Japanese (日本, 米国, 中国, ロシア, 韓国, 台湾, フィリピン, 豪州, インド, …). Not countries only mentioned. In Chinese, 中巴 is China–Pakistan, 印尼 is Indonesia (not India), 中越 is China–Vietnam.
+- countries: participating countries, always in Japanese katakana/kanji as listed here (日本, 米国, 中国, ロシア, 韓国, 北朝鮮, 台湾, フィリピン, 豪州, インド, インドネシア, ベトナム, パキスタン, …), even when the text is Chinese or English. Not countries only mentioned. In Chinese, 中巴 is China–Pakistan, 印尼 is Indonesia (not India), 中越 is China–Vietnam.
 - region: exactly one id from this list (the main area of the event; a sea named in the text wins over a nearby island):
 {regions.prompt_list()}
 - place: the place in Japanese as specific as the text states (e.g. 日向灘, 嘉手納基地); null if not stated.
@@ -64,7 +64,7 @@ _Z2H = str.maketrans("０１２３４５６７８９，", "0123456789,")
 COUNTRY_WORDS = {
     "日本": r"日本|japan|自衛隊|jsdf|jmsdf|jgsdf|jasdf|海自|陸自|空自|日米|日豪|日比|日印|日英|日仏|日韓|日方",
     "米国": r"米国|米軍|米海|米空|米陸|米海兵|アメリカ|united states|\bu\.?s\.?\b|\bus (navy|army|air|marine)|usmc|american|美国|美军|美方|日米|米比|米韓|米豪|indopacom|7th fleet",
-    "中国": r"中国|china|chinese|\bpla\b|plan\b|解放军|解放軍|中方|中俄|中巴|中越|中印|中泰|中柬|战区|戦区|武警|人民武装警察|中共",
+    "中国": r"中国|中华|中華|china|chinese|\bpla\b|plan\b|解放军|解放軍|中方|中俄|中巴|中越|中印|中泰|中柬|战区|戦区|武警|人民武装警察|中共",
     "ロシア": r"ロシア|russia|露|俄|россия|российск",
     "韓国": r"韓国|south korea|\brok\b|韩国|米韓|日米韓|대한민국",
     "北朝鮮": r"北朝鮮|north korea|dprk|朝鲜|朝鮮人民軍",
@@ -152,9 +152,19 @@ def quoted_name(title: str):
     return m.group(1).strip() if m else None
 
 
+def canonical_country(name):
+    """The table's Japanese name for a country the model wrote in another form (俄罗斯, 越南, Russia → ロシア, ベトナム)."""
+    if name in COUNTRY_WORDS:
+        return name
+    for key, pat in COUNTRY_WORDS.items():
+        if re.fullmatch(f"(?:{pat})", name, re.I) or re.fullmatch(r"[^\s]{1,8}", name) and re.search(pat, name, re.I) and len(name) <= 8:
+            return key
+    return name
+
+
 def supported_countries(countries, source):
     out = []
-    for c in countries:
+    for c in (canonical_country(x) for x in countries):
         pat = COUNTRY_WORDS.get(c)
         ok = re.search(pat, source, re.I) if pat else _contains(source, c)
         if ok and c not in out:

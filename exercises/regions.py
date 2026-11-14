@@ -97,6 +97,9 @@ def from_place(place):
     for rid, pattern in PLACE_WORDS:
         if re.search(pattern, place, re.I):
             return rid
+    for rid in ("china", "southeast-asia", "indian-ocean", "north-pacific"):
+        if re.search(EXTRA_WORDS[rid], place, re.I):
+            return rid
     return None
 
 
@@ -119,3 +122,16 @@ def supported(region_id, text):
     if region_id in EXTRA_WORDS:
         pats.append(EXTRA_WORDS[region_id])
     return any(re.search(p, text or "", re.I) for p in pats)
+
+
+# Neighbouring areas: reports of one activity often name different ones (around Taiwan / east of Taiwan / western Pacific).
+GROUPS = [
+    {"taiwan", "taiwan-east", "taiwan-strait", "bashi", "philippine-sea"},
+    {"east-china-sea", "nansei", "yellow-sea"},
+    {"south-china-sea", "spratly", "philippines"},
+    {"japan", "kyushu", "shikoku-kii", "honshu-south", "tohoku-pacific", "hokkaido", "sea-of-japan"},
+]
+
+
+def near(a, b):
+    return a == b or any(a in g and b in g for g in GROUPS)
