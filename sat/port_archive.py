@@ -66,6 +66,12 @@ MIN_COVERAGE = 0.5          # as sat/run.py
 S2_WINDOW_DAYS = 30
 S2_CLEAR_SHARE = 0.35       # plan only: share of days with a 10 m request
 S2_PRE_PU = 0.03
+S2_RESERVE_PU = 3.0         # run_s2 keeps this much of the port's cap free before each 30-day window
+# A port with S2 days to fetch gets this on top of 1.25 x its estimate: run_s2 stops a window when the cap
+# left minus S2_RESERVE_PU cannot hold one more full day (s2.EST_PRE_PU + s2.EST_FULL_PU), so a cap of about
+# 5 PU fetched only about 1 PU (2026-11-14: the 10 new ports' S2 deferred 20-25 days each). The run still
+# spends only what the days cost; the cap is an upper bound.
+S2_HEADROOM_PU = S2_RESERVE_PU + s2.EST_PRE_PU + s2.EST_FULL_PU
 RAW_KEEP = 3
 DONE_RESULTS = ("counted", "skipped_low_coverage", "skipped_footprint")
 SCENE_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "result",
@@ -506,10 +512,11 @@ def estimate_port(site: dict, n_s1: int, n_s2_days: int) -> dict:
 
 def allocate(estimates: list[dict], cap: float, req_cap: int) -> list[dict]:
     """Per-port caps (PU, requests). Priority-1 ports first; a priority-2 port only if all of it fits.
-    Each port gets 1.25 x its estimate (it stops on its own cap), scaled down if the sum is over ``cap``."""
+    Each port gets 1.25 x its estimate (+ S2_HEADROOM_PU with S2 days; it stops on its own cap), scaled down if
+    the sum is over ``cap``."""
     chosen, total, total_req = [], 0.0, 0
     for e in sorted(estimates, key=lambda e: (e["priority"], e["site_id"])):
-        need = e["pu"] * 1.25
+        need = e["pu"] * 1.25 + (S2_HEADROOM_PU if e.get("s2_days") else 0.0)
         nreq = int((e["s1_requests"] + e["s2_requests"]) * 1.25) + 20
         if e["priority"] > 1 and (total + need > cap or total_req + nreq > req_cap):
             e["skipped"] = "枠が足りないため取らない（priority 2）"
@@ -528,11 +535,11 @@ def allocate(estimates: list[dict], cap: float, req_cap: int) -> list[dict]:
 
 
 def allocate_ordered(estimates: list[dict], cap: float, req_cap: int) -> list[dict]:
-    """In the given order: each port gets 1.25 x its estimate while the cap lasts; the next one gets what is
+    """In the given order: each port gets 1.25 x its estimate (+ S2_HEADROOM_PU with S2 days) while the cap lasts; the next one gets what is
     left (if at least 5 PU), the rest are skipped."""
     out, left, left_req = [], cap, req_cap
     for e in estimates:
-        need = e["pu"] * 1.25
+        need = e["pu"] * 1.25 + (S2_HEADROOM_PU if e.get("s2_days") else 0.0)
         nreq = int((e["s1_requests"] + e["s2_requests"]) * 1.25) + 20
         if left < 5 or left_req < 30:
             e["skipped"] = "枠が足りないため取らない（優先順の後ろ）"
@@ -802,7 +809,7 @@ def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left
         if deadline_left() <= 0:
             tot["stopped"] = "時間の上限"
             break
-        left = cap_left() - 3.0
+        left = cap_left() - S2_RESERVE_PU
         if left <= 0:
             tot["stopped"] = "PU の上限"
             break
