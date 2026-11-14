@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-14T07:42:59Z",
+ "generated_utc": "2026-11-14T08:02:49Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -35,6 +35,11 @@
    39.03,
    125.75,
    "KP"
+  ],
+  "済州沖（海上発射）": [
+   33.22,
+   126.37,
+   "KR"
   ],
   "種子島": [
    30.4,
@@ -105,9 +110,9 @@
     "maritime:沪航警561/26"
    ],
    "method": "nearest-only",
-   "site": "海陽（海上発射）",
-   "country": "CN",
-   "distance_km": 455
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "distance_km": 339
   },
   {
    "window_start_utc": "2026-07-22T01:30Z",
@@ -122,9 +127,9 @@
     "maritime:浙航警627/26"
    ],
    "method": "nearest-only",
-   "site": "種子島",
-   "country": "JP",
-   "distance_km": 732
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "distance_km": 605
   },
   {
    "window_start_utc": "2026-07-29T11:30Z",
@@ -201,33 +206,28 @@
     [
      25.178,
      125.081
-    ],
+    ]
+   ],
+   "notices": [
+    "aviation:P3998/26"
+   ],
+   "method": "none",
+   "intercept": true
+  },
+  {
+   "window_start_utc": "2026-08-17T07:09Z",
+   "window_end_utc": "2026-11-16T15:00Z",
+   "areas": [
     [
      24.964,
      125.022
     ]
    ],
    "notices": [
-    "aviation:P3998/26",
     "aviation:P3999/26"
    ],
-   "method": "aligned",
-   "site": "羅老",
-   "country": "KR",
-   "azimuth_deg": 193.6,
-   "bearing_spread_deg": 0.0,
-   "inclination_deg": 101.2,
-   "recorded_launches": [
-    {
-     "ll2_id": "e0741415-6c63-4236-9736-24a6c04485bc",
-     "name": "Nuri | NeonSat-2 to 6",
-     "status": "Success",
-     "net_utc": "2026-10-07T03:25:00Z",
-     "rocket": "KSLV-2 Nuri",
-     "orbit": "SSO",
-     "pad": "LC-2"
-    }
-   ]
+   "method": "none",
+   "intercept": true
   },
   {
    "window_start_utc": "2026-09-10T08:00Z",
@@ -242,9 +242,9 @@
     "maritime:浙航警807/26"
    ],
    "method": "nearest-only",
-   "site": "種子島",
-   "country": "JP",
-   "distance_km": 477
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "distance_km": 328
   },
   {
    "window_start_utc": "2026-09-13T22:00Z",
@@ -259,9 +259,9 @@
     "maritime:沪航警722/26"
    ],
    "method": "nearest-only",
-   "site": "海陽（海上発射）",
-   "country": "CN",
-   "distance_km": 455
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "distance_km": 339
   },
   {
    "window_start_utc": "2026-09-15T16:00Z",
@@ -276,9 +276,9 @@
     "maritime:浙航警841/26"
    ],
    "method": "nearest-only",
-   "site": "種子島",
-   "country": "JP",
-   "distance_km": 756
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "distance_km": 625
   },
   {
    "window_start_utc": "2026-09-16T23:30Z",
@@ -333,7 +333,7 @@
   },
   {
    "window_start_utc": "2026-10-07T03:33Z",
-   "window_end_utc": "2026-10-07T04:53Z",
+   "window_end_utc": "2026-10-07T05:53Z",
    "areas": [
     [
      15.25,
@@ -378,17 +378,18 @@
    "window_end_utc": "2026-10-21T07:00Z",
    "areas": [
     [
-     35.203,
-     120.009
+     35.175,
+     120.067
     ]
    ],
    "notices": [
+    "maritime:SD827/2026",
     "maritime:鲁航警906/2026"
    ],
    "method": "nearest-only",
    "site": "海陽（海上発射）",
    "country": "CN",
-   "distance_km": 183,
+   "distance_km": 177,
    "recorded_launches": [
     {
      "ll2_id": "69ebbcd2-b257-4070-9ef9-21e7d1f8a883",
@@ -441,9 +442,9 @@
     "maritime:浙航警960/26"
    ],
    "method": "nearest-only",
-   "site": "種子島",
-   "country": "JP",
-   "distance_km": 477
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "distance_km": 328
   },
   {
    "window_start_utc": "2026-10-25T01:00Z",
@@ -474,23 +475,6 @@
    ]
   },
   {
-   "window_start_utc": "2026-11-01T23:00Z",
-   "window_end_utc": "2026-11-02T07:00Z",
-   "areas": [
-    [
-     35.272,
-     138.832
-    ]
-   ],
-   "notices": [
-    "aviation:P5408/26"
-   ],
-   "method": "nearest-only",
-   "site": "内之浦",
-   "country": "JP",
-   "distance_km": 848
-  },
-  {
    "window_start_utc": "2026-11-05T15:00Z",
    "window_end_utc": "2026-11-05T17:00Z",
    "areas": [
@@ -519,8 +503,33 @@
    ]
   },
   {
-   "window_start_utc": "2026-11-05T19:00Z",
+   "window_start_utc": "2026-11-05T20:00Z",
    "window_end_utc": "2026-11-09T23:00Z",
+   "areas": [
+    [
+     9.14,
+     119.21
+    ],
+    [
+     19.598,
+     110.936
+    ]
+   ],
+   "notices": [
+    "aviation:B5731/26",
+    "maritime:琼航警221/2026",
+    "aviation:B5826/26"
+   ],
+   "method": "aligned",
+   "site": "西昌",
+   "country": "CN",
+   "azimuth_deg": 135.6,
+   "bearing_spread_deg": 1.6,
+   "inclination_deg": 52.0
+  },
+  {
+   "window_start_utc": "2026-11-08T18:00Z",
+   "window_end_utc": "2026-11-09T00:00Z",
    "areas": [
     [
      9.151,
@@ -532,32 +541,7 @@
     ]
    ],
    "notices": [
-    "maritime:NAVAREA XI 26-0494",
-    "aviation:B5731/26",
-    "maritime:琼航警221/2026",
-    "aviation:B5826/26"
-   ],
-   "method": "aligned",
-   "site": "西昌",
-   "country": "CN",
-   "azimuth_deg": 135.6,
-   "bearing_spread_deg": 1.5,
-   "inclination_deg": 52.0
-  },
-  {
-   "window_start_utc": "2026-11-08T19:20Z",
-   "window_end_utc": "2026-11-08T21:20Z",
-   "areas": [
-    [
-     19.598,
-     110.936
-    ],
-    [
-     9.14,
-     119.21
-    ]
-   ],
-   "notices": [
+    "maritime:NAVAREA XI 26-0496",
     "maritime:琼航警228/2026",
     "aviation:B5920/26"
    ],
@@ -565,7 +549,7 @@
    "site": "西昌",
    "country": "CN",
    "azimuth_deg": 135.6,
-   "bearing_spread_deg": 1.6,
+   "bearing_spread_deg": 1.5,
    "inclination_deg": 52.0
   },
   {
@@ -577,20 +561,8 @@
      131.082
     ],
     [
-     33.6,
-     125.6
-    ],
-    [
-     23.973,
-     134.392
-    ],
-    [
      33.039,
      126.565
-    ],
-    [
-     19.099,
-     137.17
     ],
     [
      27.03,
@@ -599,23 +571,17 @@
    ],
    "notices": [
     "aviation:P5375/26",
-    "aviation:Z0840/26",
-    "aviation:Q2648/26",
     "aviation:Z0834/26",
-    "maritime:NAVAREA XI 26-0498",
     "aviation:P5538/26"
    ],
-   "method": "unaligned",
+   "method": "stated",
+   "site_latlon": [
+    33.145,
+    126.455
+   ],
+   "site": "済州沖（海上発射）",
+   "country": "KR",
    "recorded_launches": [
-    {
-     "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
-     "name": "Long March 12 | SatNet LEO Group TBD?",
-     "status": "TBC",
-     "net_utc": "2026-11-24T07:00:00Z",
-     "rocket": "Long March 12",
-     "orbit": "LEO",
-     "pad": "Commercial LC-2"
-    },
     {
      "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
      "name": "Mir | Demo Flight",
@@ -624,48 +590,13 @@
      "rocket": "Mir",
      "orbit": "LEO",
      "pad": "ADD Offshore launch platform"
-    },
-    {
-     "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
-     "name": "Long March 8A | SatNet LEO Group TBD?",
-     "status": "TBC",
-     "net_utc": "2026-11-20T11:00:00Z",
-     "rocket": "Long March 8A",
-     "orbit": "LEO",
-     "pad": "Commercial LC-1"
-    },
-    {
-     "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
-     "name": "Soyuz 2.1b/Fregat-M | MKA Kinosputnik, KOEN and others",
-     "status": "In Flight",
-     "net_utc": "2026-11-14T01:16:00Z",
-     "rocket": "Soyuz 2.1b Fregat-M",
-     "orbit": "SSO",
-     "pad": "Cosmodrome Site 1S"
-    },
-    {
-     "ll2_id": "e0a11eb1-0bda-4872-b36b-140247fd5c60",
-     "name": "Long March 2D | Unknown Payload",
-     "status": "Go",
-     "net_utc": "2026-11-18T22:50:00Z",
-     "rocket": "Long March 2D",
-     "orbit": "N/A",
-     "pad": "Launch Complex 9"
     }
    ]
   },
   {
-   "window_start_utc": "2026-11-11T04:00Z",
+   "window_start_utc": "2026-11-11T05:00Z",
    "window_end_utc": "2026-11-30T09:34Z",
    "areas": [
-    [
-     33.6,
-     125.6
-    ],
-    [
-     23.973,
-     134.392
-    ],
     [
      33.039,
      126.565
@@ -676,41 +607,18 @@
     ]
    ],
    "notices": [
-    "aviation:Z0844/26",
-    "aviation:Q2664/26",
     "aviation:Z0843/26",
     "aviation:P5590/26"
    ],
-   "method": "unaligned",
-   "recorded_launches": [
-    {
-     "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
-     "name": "Long March 2F/G | Shenzhou 24",
-     "status": "TBD",
-     "net_utc": "2026-11-25T00:00:00Z",
-     "rocket": "Long March 2F/G",
-     "orbit": "LEO",
-     "pad": "Launch Area 91 (SLS-1 / 921)"
-    },
-    {
-     "ll2_id": "d66590ab-b273-47ff-b85a-608b62851b4b",
-     "name": "Long March 2D | CAS Pathfinder-1",
-     "status": "Success",
-     "net_utc": "2026-11-11T11:41:00Z",
-     "rocket": "Long March 2D",
-     "orbit": "SSO",
-     "pad": "Launch Area 94 (SLS-2 / 603)"
-    },
-    {
-     "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
-     "name": "Kuaizhou 11 | Unknown Payload",
-     "status": "TBD",
-     "net_utc": "2026-11-30T00:00:00Z",
-     "rocket": "Kuaizhou 11",
-     "orbit": "N/A",
-     "pad": "Launch Area 95A"
-    }
-   ]
+   "method": "stated",
+   "site_latlon": [
+    33.145,
+    126.455
+   ],
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "azimuth_deg": 144.4,
+   "inclination_deg": 60.9
   },
   {
    "window_start_utc": "2026-11-12T14:00Z",
@@ -722,6 +630,7 @@
     ]
    ],
    "notices": [
+    "maritime:SD907/2026",
     "maritime:鲁航警993/2026"
    ],
    "method": "nearest-only",
@@ -730,24 +639,12 @@
    "distance_km": 151
   },
   {
-   "window_start_utc": "2026-11-13T04:00Z",
+   "window_start_utc": "2026-11-13T05:00Z",
    "window_end_utc": "2026-11-30T09:34Z",
    "areas": [
     [
-     33.6,
-     125.6
-    ],
-    [
-     23.973,
-     134.392
-    ],
-    [
      33.039,
      126.565
-    ],
-    [
-     19.099,
-     137.17
     ],
     [
      27.03,
@@ -755,47 +652,38 @@
     ]
    ],
    "notices": [
-    "aviation:Z0857/26",
-    "aviation:Q2688/26",
     "aviation:Z0856/26",
-    "maritime:NAVAREA XI 26-0508",
     "aviation:P5642/26"
    ],
-   "method": "unaligned"
+   "method": "stated",
+   "site_latlon": [
+    33.145,
+    126.455
+   ],
+   "site": "済州沖（海上発射）",
+   "country": "KR",
+   "azimuth_deg": 144.4,
+   "inclination_deg": 60.9
   },
   {
-   "window_start_utc": "2026-11-13T22:00Z",
+   "window_start_utc": "2026-11-14T01:30Z",
    "window_end_utc": "2026-11-20T05:01Z",
    "areas": [
     [
-     42.885,
-     141.474
-    ],
-    [
      26.709,
      154.739
-    ],
-    [
-     23.389,
-     143.945
     ]
    ],
    "notices": [
-    "aviation:P5506/26",
-    "aviation:P5648/26",
-    "aviation:Q2693/26",
-    "aviation:M0627/26"
+    "aviation:M0627/26",
+    "aviation:P5648/26"
    ],
-   "method": "unaligned"
+   "method": "none"
   },
   {
-   "window_start_utc": "2026-11-20T10:30Z",
-   "window_end_utc": "2026-11-23T14:10Z",
+   "window_start_utc": "2026-11-20T11:00Z",
+   "window_end_utc": "2026-11-23T14:00Z",
    "areas": [
-    [
-     12.25,
-     116.641
-    ],
     [
      12.81,
      116.057
@@ -806,16 +694,26 @@
     ]
    ],
    "notices": [
-    "aviation:B5910/26",
     "aviation:B5829/26",
     "aviation:B5830/26"
    ],
    "method": "aligned",
-   "site": "西昌",
+   "site": "文昌",
    "country": "CN",
-   "azimuth_deg": 137.0,
-   "bearing_spread_deg": 1.0,
-   "inclination_deg": 53.1
+   "azimuth_deg": 143.4,
+   "bearing_spread_deg": 0.1,
+   "inclination_deg": 55.8,
+   "recorded_launches": [
+    {
+     "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
+     "name": "Long March 8A | SatNet LEO Group TBD?",
+     "status": "TBC",
+     "net_utc": "2026-11-20T11:00:00Z",
+     "rocket": "Long March 8A",
+     "orbit": "LEO",
+     "pad": "Commercial LC-1"
+    }
+   ]
   },
   {
    "window_start_utc": "2026-11-24T07:00Z",
@@ -832,24 +730,18 @@
    "method": "nearest-only",
    "site": "文昌",
    "country": "CN",
-   "distance_km": 1464
-  },
-  {
-   "window_start_utc": "2026-11-30T22:00Z",
-   "window_end_utc": "2026-12-02T08:00Z",
-   "areas": [
-    [
-     42.879,
-     141.494
-    ]
-   ],
-   "notices": [
-    "aviation:P5732/26"
-   ],
-   "method": "nearest-only",
-   "site": "平壌周辺",
-   "country": "KP",
-   "distance_km": 1387
+   "distance_km": 1464,
+   "recorded_launches": [
+    {
+     "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
+     "name": "Long March 12 | SatNet LEO Group TBD?",
+     "status": "TBC",
+     "net_utc": "2026-11-24T07:00:00Z",
+     "rocket": "Long March 12",
+     "orbit": "LEO",
+     "pad": "Commercial LC-2"
+    }
+   ]
   }
  ],
  "recorded_launches": [
@@ -868,7 +760,7 @@
    "lat": 34.431867,
    "lon": 127.535069,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e0741415-6c63-4236-9736-24a6c04485bc/",
-   "event_index": 8
+   "event_index": null
   },
   {
    "ll2_id": "a1bb0984-19d4-4b47-9bba-706d225573e2",
@@ -885,7 +777,7 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a1bb0984-19d4-4b47-9bba-706d225573e2/",
-   "event_index": 16
+   "event_index": 17
   },
   {
    "ll2_id": "dfcabb3c-078b-4f5b-a47c-0161f248cee9",
@@ -919,7 +811,7 @@
    "lat": 30.400938,
    "lon": 130.97564,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/69ebbcd2-b257-4070-9ef9-21e7d1f8a883/",
-   "event_index": 17
+   "event_index": 18
   },
   {
    "ll2_id": "c6f8b6b0-6bae-460a-99bb-c12a3d29effd",
@@ -936,7 +828,7 @@
    "lat": 35.391667,
    "lon": 119.598667,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c6f8b6b0-6bae-460a-99bb-c12a3d29effd/",
-   "event_index": 17
+   "event_index": 18
   },
   {
    "ll2_id": "9648124f-8568-46d2-86d7-4b4d6f12187f",
@@ -987,7 +879,7 @@
    "lat": 19.597275,
    "lon": 110.930753,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/6b95bcc8-1f88-4539-84fe-f63630138766/",
-   "event_index": 20
+   "event_index": 21
   },
   {
    "ll2_id": "f3f201cd-0ff9-4ff7-9aaa-1d22c399c75a",
@@ -1072,7 +964,7 @@
    "lat": 40.960482,
    "lon": 100.298059,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/d66590ab-b273-47ff-b85a-608b62851b4b/",
-   "event_index": 26
+   "event_index": null
   },
   {
    "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
@@ -1089,7 +981,7 @@
    "lat": 51.884395,
    "lon": 128.333932,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/bff2fc91-eddd-4dfc-af26-ac0674cfab4d/",
-   "event_index": 25
+   "event_index": null
   },
   {
    "ll2_id": "e0a11eb1-0bda-4872-b36b-140247fd5c60",
@@ -1106,7 +998,7 @@
    "lat": 38.863128,
    "lon": 111.589567,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e0a11eb1-0bda-4872-b36b-140247fd5c60/",
-   "event_index": 25
+   "event_index": null
   },
   {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
@@ -1123,7 +1015,7 @@
    "lat": 19.597275,
    "lon": 110.930753,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a2975167-7c6f-4403-99e1-b40df17c8140/",
-   "event_index": 25
+   "event_index": 30
   },
   {
    "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
@@ -1140,7 +1032,7 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
-   "event_index": 25
+   "event_index": 31
   },
   {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
@@ -1157,7 +1049,7 @@
    "lat": 40.957893,
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
-   "event_index": 26
+   "event_index": null
   },
   {
    "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
@@ -1191,7 +1083,7 @@
    "lat": 40.969117,
    "lon": 100.343333,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
-   "event_index": 26
+   "event_index": null
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",

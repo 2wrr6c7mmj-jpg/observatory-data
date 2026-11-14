@@ -2,7 +2,9 @@ name: NOTAM military notices (East Asia)
 # NOTAM Watch（notam-watch.pages.dev）の公開ファイル（manifest と snapshot、静的ファイル。Worker は通らない）を読み、
 # 東アジアの軍事演習・射撃・発射・危険区域の告知を docs/data/notam/ に公開する（notam/military.mjs）。
 # 取得は2時間に1回（UTC の奇数時 50 分）。NOTAM Watch の公開（偶数時 13 分から）と重ならない。
-# main に書くのは docs/data/notam/ だけ。テストが通ったときだけ公開する。
+# 同じ回で発射関連の告知（NOTAM と航行警報）を蓄積し、発射ごとの区域・推定発射地点・機種を docs/data/launches/ に出す
+# （notam/extract.mjs → notam/launches.py。打上げ記録 ll2.json は collect.yml が毎日更新）。
+# main に書くのは docs/data/notam/ と docs/data/launches/ だけ（ll2.json は除く）。テストが通ったときだけ公開する。
 on:
   schedule:
     - cron: '50 1-23/2 * * *'
@@ -25,18 +27,24 @@ jobs:
         with:
           node-version: '22'
       - name: Tests
-        run: node --test notam/*.test.mjs
+        run: |
+          node --test notam/*.test.mjs
+          python -m unittest tests.test_launches tests.test_launch_zones
       - name: robots.txt (collectors/polite.py; skipped when disallowed or unverifiable)
         run: |
           python -c "from collectors.polite import require_allowed; print('::notice title=robots::', require_allowed('https://notam-watch.pages.dev/data/manifest.json', 'observatory-data/1').reason)"
       - name: Build docs/data/notam
         run: node notam/military.mjs docs/data/notam
-      - name: Publish changed data (docs/data/notam only)
+      - name: Launch notices, events and zones
         run: |
-          git add docs/data/notam
+          node notam/extract.mjs /tmp/launch-extract.json
+          python -m notam.launches /tmp/launch-extract.json
+      - name: Publish changed data (docs/data/notam and docs/data/launches only)
+        run: |
+          git add docs/data/notam docs/data/launches/notices.json docs/data/launches/events.json docs/data/launches/zones.json
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "データ更新: NOTAM 軍事・発射 ($(date -u +%Y-%m-%dT%H:%MZ))"
+            commit -q -m "データ更新: NOTAM・航行警報 軍事・発射 ($(date -u +%Y-%m-%dT%H:%MZ))"
           # Other workflows push to main (other directories); rebase onto them.
           for i in 1 2 3 4; do
             git pull -q --rebase && git push && exit 0
