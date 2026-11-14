@@ -52,12 +52,11 @@ jobs:
         run: python -m collectors.taiwan_mnd --pages "${{ inputs.pages || '3' }}"
       # The steps below run even when the Taiwan MND collection fails, but never
       # when the tests failed, so a broken build cannot publish data.
-      - name: Launch-related notices from NOTAM Watch (static files; no Worker requests)
+      # Launch-related notices and zones are built every two hours by notam-military.yml; this keeps only
+      # the daily Launch Library 2 records (docs/data/launches/ll2.json) that those builds match against.
+      - name: Launch Library 2 records
         if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
-        run: |
-          python -m collectors.ll2
-          node notam/extract.mjs /tmp/launch-extract.json
-          python -m notam.launches /tmp/launch-extract.json
+        run: python -m collectors.ll2
       - name: Rebuild JSO transit datasets (joins the Taiwan MND counts)
         if: ${{ !cancelled() && steps.tests.outcome == 'success' && !inputs.probe }}
         run: python -m jso.build

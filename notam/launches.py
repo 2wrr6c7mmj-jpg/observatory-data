@@ -29,12 +29,15 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from notam import launch_zones as Z
+
 OUT = Path(__file__).resolve().parent.parent / "docs" / "data" / "launches"
 EARTH_KM = 6371.0
 SITES = {  # name: (lat, lon, country)
     "酒泉": (40.96, 100.29, "CN"), "太原": (38.85, 111.61, "CN"), "西昌": (28.25, 102.03, "CN"),
     "文昌": (19.61, 110.95, "CN"), "海陽（海上発射）": (35.0, 122.0, "CN"),
     "西海（東倉里）": (39.66, 124.71, "KP"), "平壌周辺": (39.03, 125.75, "KP"),
+    "済州沖（海上発射）": (33.22, 126.37, "KR"),
     "種子島": (30.40, 130.97, "JP"), "内之浦": (31.25, 131.08, "JP"), "羅老": (34.43, 127.53, "KR"),
     "ボストーチヌイ": (51.88, 128.33, "RU"),
 }
@@ -106,11 +109,35 @@ def infer_site(centres: list[tuple[float, float]]) -> dict:
             "bearing_spread_deg": round(spread, 1), "inclination_deg": inclination(lat, mean)}
 
 
+def stated_site_inference(pos: list[float], centres: list[tuple[float, float]]) -> dict:
+    """The site the notice states, named after a known site within 50 km, with the azimuth to the areas."""
+    name = next((n for n, s in SITES.items() if distance_km(s[:2], pos) <= 50), None)
+    out = {"method": "stated", "site_latlon": pos, **({"site": name, "country": SITES[name][2]} if name else {})}
+    far = [c for c in centres if distance_km(pos, c) >= 30]
+    if far:
+        mean, spread = circular_mean_and_spread([bearing(pos, c) for c in far])
+        if spread <= 2 * MAX_SPREAD_DEG:
+            out.update(azimuth_deg=round(mean, 1), inclination_deg=inclination(pos[0], mean))
+    return out
+
+
 def in_east_asia(c) -> bool:
     return EAST_ASIA[0] <= c[0] <= EAST_ASIA[1] and EAST_ASIA[2] <= c[1] <= EAST_ASIA[3]
 
 
 def events(notices: list[dict]) -> list[dict]:
+    """Group notices into launches. Interception airspace (prepared against a launch, around the defender) is
+    never grouped with the hazard areas of a launch, so it cannot pull the site inference off."""
+    # A notice whose text is not about a launch (ground firing with a "missile", a detour route) is left out.
+    ev = _events([n for n in notices if n.get("kind", "rocket") not in (None, "intercept")])
+    for n in notices:
+        if n.get("kind") == "intercept":
+            ev.extend({**{k: v for k, v in e.items() if k in ("window_start_utc", "window_end_utc", "areas", "notices")},
+                       "method": "none", "intercept": True} for e in _events([n]))
+    return sorted(ev, key=lambda e: e["window_start_utc"])
+
+
+def _events(notices: list[dict]) -> list[dict]:
     items = []
     for n in notices:
         c = centre(n["shapes"])
@@ -135,12 +162,13 @@ def events(notices: list[dict]) -> list[dict]:
         for _, _, c, _ in g:
             if all(distance_km(c, k) > 20 for k in centres):
                 centres.append(c)
+        stated = next((x[3]["stated_site"] for x in g if x[3].get("stated_site")), None)
         out.append({
             "window_start_utc": min(x[0] for x in g).strftime("%Y-%m-%dT%H:%MZ"),
             "window_end_utc": max(x[1] for x in g).strftime("%Y-%m-%dT%H:%MZ"),
             "areas": [list(c) for c in centres],
             "notices": [x[3]["key"] for x in g],
-            **infer_site(centres),
+            **(stated_site_inference(stated, centres) if stated else infer_site(centres)),
         })
     return out
 
@@ -172,10 +200,18 @@ def match_launches(ev: list[dict], ll2: list[dict], slack_hours: float = 6) -> l
             end = datetime.strptime(e["window_end_utc"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc)
             if not (start - timedelta(hours=slack_hours) <= t <= end + timedelta(hours=slack_hours)):
                 continue
-            if e.get("method") == "aligned":
+            if e.get("intercept"):
+                continue
+            if e.get("method") == "stated":
+                near = distance_km(pad, tuple(e["site_latlon"])) <= 300
+            elif e.get("method") == "aligned":
                 near = distance_km(pad, SITES[e["site"]][:2]) <= 300
+            elif len(e["areas"]) >= 2:
+                # no known site lines up: the pad itself must line up with the areas
+                near = all(distance_km(pad, tuple(a)) <= 4500 for a in e["areas"]) and \
+                    circular_mean_and_spread([bearing(pad, tuple(a)) for a in e["areas"]])[1] <= MAX_SPREAD_DEG
             else:
-                near = bool(e["areas"]) and distance_km(pad, tuple(e["areas"][0])) <= 2500
+                near = bool(e["areas"]) and distance_km(pad, tuple(e["areas"][0])) <= 1500
             if near:
                 hit = i
                 break
@@ -206,7 +242,9 @@ def main(path: str) -> int:
     history = json.loads(hist_path.read_text(encoding="utf-8")) if hist_path.exists() else {}
     history = merge(history, extract)
     hist_path.write_text(json.dumps(history, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    ev = events(list(history["notices"].values()))
+    gone = Z.cancelled_keys(list(history["notices"].values()))
+    notices = {k: Z.normalise(n) for k, n in history["notices"].items() if k not in gone}
+    ev = events(list(notices.values()))
     ll2_path = OUT / "ll2.json"
     ll2 = list(json.loads(ll2_path.read_text(encoding="utf-8")).get("launches", {}).values()) if ll2_path.exists() else []
     recorded = match_launches(ev, ll2)
@@ -214,6 +252,9 @@ def main(path: str) -> int:
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "sites": {k: list(v) for k, v in SITES.items()}, "events": ev, "recorded_launches": recorded,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    zones = Z.build(ev, notices, SITES, datetime.now(timezone.utc))
+    (OUT / "zones.json").write_text(json.dumps(zones, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"::notice::launch zones {len(zones['events'])} (in force or within {Z.HORIZON_DAYS} days)")
     print(f"::notice::launch notices stored {len(history['notices'])}, events {len(ev)} "
           f"({sum(1 for e in ev if e['method'] == 'aligned')} aligned)")
     return 0
