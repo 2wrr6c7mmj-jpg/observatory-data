@@ -240,15 +240,63 @@ def vehicle_of(ev: dict) -> dict | None:
 
 
 # ---------- zones.json ----------
+def _window(e: dict) -> tuple[datetime, datetime]:
+    f = "%Y-%m-%dT%H:%MZ"
+    return (datetime.strptime(e["window_start_utc"], f).replace(tzinfo=timezone.utc),
+            datetime.strptime(e["window_end_utc"], f).replace(tzinfo=timezone.utc))
+
+
+def _mission(e: dict) -> str | None:
+    rec = e.get("recorded_launches") or []
+    return rec[0].get("name") if rec else None
+
+
+def _kinds(e: dict, notices: dict[str, dict]) -> frozenset:
+    return frozenset(notices[k].get("kind") for k in e["notices"])
+
+
+def merge_attempts(events: list[dict], notices: dict[str, dict]) -> list[dict]:
+    """One launch, one entry. A launch put off day after day is notified again for each attempt (済州沖 11/10, 11/11,
+    11/13, each with reserve days to 11/30); these are the same launch when the site is the same, the windows overlap and
+    the launch schedule does not name two different launches. Notices with no site are one entry when they are of the
+    same kinds over the same window (interception airspace: over overlapping windows)."""
+    out: list[dict] = []
+    for e in sorted(events, key=lambda x: x["window_start_utc"]):
+        a, b = _window(e)
+        for g in out:
+            ga, gb = _window(g)
+            if a > gb or b < ga:
+                continue
+            if e.get("site") and g.get("site"):
+                m1, m2 = _mission(e), _mission(g)
+                same = e["site"] == g["site"] and not (m1 and m2 and m1 != m2)
+            elif not e.get("site") and not g.get("site"):
+                k = _kinds(e, notices)
+                same = k == _kinds(g, notices) and (k == {"intercept"} or (a, b) == (ga, gb))
+            else:
+                same = False
+            if same:
+                g["notices"] = g["notices"] + [k for k in e["notices"] if k not in g["notices"]]
+                g["areas"] = g.get("areas", []) + e.get("areas", [])
+                g["window_start_utc"] = min(g["window_start_utc"], e["window_start_utc"])
+                g["window_end_utc"] = max(g["window_end_utc"], e["window_end_utc"])
+                if not g.get("recorded_launches") and e.get("recorded_launches"):
+                    g["recorded_launches"] = e["recorded_launches"]
+                for k in ("azimuth_deg", "inclination_deg", "bearing_spread_deg", "distance_km"):
+                    if k not in g and k in e:
+                        g[k] = e[k]
+                break
+        else:
+            out.append(dict(e))
+    return out
+
+
 def build(events: list[dict], notices: dict[str, dict], sites: dict, now: datetime) -> dict:
     """Launches in force at `now` or starting within HORIZON_DAYS, each with its notices."""
     horizon = now + timedelta(days=HORIZON_DAYS)
     out = []
-    for e in events:
-        start =datetime.strptime(e["window_start_utc"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc)
-        end = datetime.strptime(e["window_end_utc"], "%Y-%m-%dT%H:%MZ").replace(tzinfo=timezone.utc)
-        if end < now or start > horizon:
-            continue
+    live = [e for e in events if _window(e)[1] >= now and _window(e)[0] <= horizon]
+    for e in merge_attempts(live, notices):
         ns = []
         for k in e["notices"]:
             n = notices[k]
@@ -268,6 +316,7 @@ def build(events: list[dict], notices: dict[str, dict], sites: dict, now: dateti
             site = {"name": e["site"], "lat": lat, "lon": lon, "country": cc, "method": e["method"],
                     **{k: e[k] for k in ("azimuth_deg", "bearing_spread_deg", "inclination_deg", "distance_km") if k in e}}
         out.append({
+            "id": f"{e['window_start_utc']}:{(site or {}).get('name') or '+'.join(sorted({str(n['kind']) for n in ns}))}",
             "window_start_utc": e["window_start_utc"], "window_end_utc": e["window_end_utc"],
             "site": site, "orbit": orbit_hint(e.get("inclination_deg")), "vehicle": vehicle_of(e), "notices": ns,
         })
