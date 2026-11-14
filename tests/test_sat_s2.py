@@ -102,6 +102,28 @@ class S2Test(unittest.TestCase):
         self.assertAlmostEqual(c["cloud"], 15 / 90, places=3)
         self.assertAlmostEqual(c["cloud_a"], 0.3)
 
+    def test_thin_cirrus_not_in_sector_a(self):
+        """s2nc-2: thin cirrus (SCL 10) counts in the whole site, not in sector A (Qingdao 2026-11-11)."""
+        scl = np.full((10, 10), 6, np.uint8)
+        scl[0, :] = 10
+        scl[1, :2] = 8
+        in_a = np.zeros((10, 10), bool)
+        in_a[:5] = True
+        c = s2.cloud_shares(scl, in_a)
+        self.assertAlmostEqual(c["cloud"], 12 / 100, places=3)
+        self.assertAlmostEqual(c["cloud_a"], 2 / 50, places=3)
+        c = s2.cloud_shares(scl, None)
+        self.assertAlmostEqual(c["cloud_a"], 2 / 100, places=3)
+
+    def test_site_a_limits(self):
+        self.assertEqual(s2.a_limits({"s2": {"enabled": True}}), (s2.PRE_MAX_CLOUD_A, s2.MAX_CLOUD_A))
+        sites = {x["id"]: x for x in json.loads((Path(__file__).resolve().parent.parent / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
+        self.assertEqual(s2.a_limits(sites["QGZ"]), (0.12, 0.1))
+        # Guzhenkou 2026-10-27 and 11-11 (seen clear): 10 m sector A 7.9 % and 11.5 % with thin cirrus, under 10 % without it
+        self.assertLessEqual(0.0787, s2.a_limits(sites["QGZ"])[1])
+        # only Guzhenkou has its own limits
+        self.assertEqual([k for k, x in sites.items() if "max_cloud_a" in (x.get("s2") or {})], ["QGZ"])
+
     def test_natural_color(self):
         refl = np.zeros((1, 3, 4), np.uint16)
         refl[0, 0] = [0, 0, 3000, 0]        # red 0.3 -> 255
@@ -176,7 +198,7 @@ class S2Test(unittest.TestCase):
             self.assertAlmostEqual(float(u["s2_processing_units"]), 1.56, places=3)
             self.assertAlmostEqual(float(u["processing_units"]), 1.56, places=3)
             meta = json.loads((d / "out" / "meta.json").read_text())
-            self.assertEqual(meta["s2"]["version"], "s2nc-1")
+            self.assertEqual(meta["s2"]["version"], "s2nc-2")
             self.assertIn("Contains modified Copernicus Sentinel data 2026", meta["s2"]["credit"])
             self.assertEqual(s2.read_rows(d / "out" / "s2_scenes.csv")[0]["result"], "clear")
 
