@@ -33,12 +33,14 @@ jobs:
       - name: Fetch new releases
         env:
           JSO_PAUSE_SECONDS: '3'
-        run: python -m jso.update fetch
+        run: python -m jso.update fetch 2> "$RUNNER_TEMP/err.log" || { tail -c 1500 "$RUNNER_TEMP/err.log" | tr '\n' ' ' | sed 's/^/::error title=jso-fetch::/'; echo; exit 1; }
       - name: Rebuild docs/data/jso when releases were added
         run: |
-          if python -m jso.update stale; then python -m jso.build; else echo "docs/data/jso is current"; fi
+          if python -m jso.update stale; then
+            python -m jso.build > /dev/null 2> "$RUNNER_TEMP/err.log" || { tail -c 1500 "$RUNNER_TEMP/err.log" | tr '\n' ' ' | sed 's/^/::error title=jso-build::/'; echo; exit 1; }
+          else echo "docs/data/jso is current"; fi
       - name: Check the rebuilt data
-        run: python -m jso.update check
+        run: python -m jso.update check 2> "$RUNNER_TEMP/err.log" || { tail -c 1500 "$RUNNER_TEMP/err.log" | tr '\n' ' ' | sed 's/^/::error title=jso-check::/'; echo; exit 1; }
       - name: Publish
         if: ${{ github.event_name != 'push' && github.ref == 'refs/heads/main' }}
         run: |
@@ -57,4 +59,4 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_D1_TOKEN: ${{ secrets.CLOUDFLARE_D1_TOKEN }}
-        run: python -m jso.update d1
+        run: python -m jso.update d1 2> "$RUNNER_TEMP/err.log" || { tail -c 1500 "$RUNNER_TEMP/err.log" | tr '\n' ' ' | sed 's/^/::error title=jso-d1::/'; echo; exit 1; }
