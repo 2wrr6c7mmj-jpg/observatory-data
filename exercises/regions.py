@@ -98,3 +98,24 @@ def from_place(place):
         if re.search(pattern, place, re.I):
             return rid
     return None
+
+
+# Words that let the model's own choice of area stand (the area must be named somewhere in the text).
+EXTRA_WORDS = {
+    "japan": r"日本|japan|自衛隊|jsdf",
+    "china": r"中国本土|中国内陸|新疆|西藏|チベット|内モンゴル|内蒙古|甘粛|甘肃|青海|雲南|云南|四川|山東|山东|福建|浙江|広東|广东|xinjiang|tibet|inner mongolia|province|省|軍区|军区|戦区|战区",
+    "southeast-asia": r"タイ王国|タイ軍|カンボジア|ベトナム|マレーシア|シンガポール|ラオス|ミャンマー|thailand|cambodia|vietnam|malaysia|singapore|myanmar|laos|越南|泰国|柬埔寨|马来西亚|新加坡|老挝|缅甸",
+    "indian-ocean": r"インド洋|indian ocean|印度洋",
+    "north-pacific": r"アラスカ|アリューシャン|alaska|aleutian",
+    "russia": r"ロシア|russia|俄罗斯|россия|モスクワ|バルト|黒海|baltic|black sea",
+    "india": r"インド|india\b|印度(?!尼|洋)",
+}
+
+
+def supported(region_id, text):
+    """True when the text names the area (so the model's choice of it can stand)."""
+    import re
+    pats = [p for rid, p in PLACE_WORDS if rid == region_id]
+    if region_id in EXTRA_WORDS:
+        pats.append(EXTRA_WORDS[region_id])
+    return any(re.search(p, text or "", re.I) for p in pats)
