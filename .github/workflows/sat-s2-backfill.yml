@@ -32,7 +32,16 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           rc=0
-          python -m sat.s2 --days 365 --max-pu 100 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/s2.log" || rc=$?
+          python - <<'PY'
+          import csv
+          p = "docs/data/sat/s2_scenes.csv"
+          rows = list(csv.DictReader(open(p, encoding="utf-8")))
+          keep = [r for r in rows if not (r["site_id"] == "QGZ" and r["date"] in ("2026-10-27", "2026-11-11"))]
+          print("removed", len(rows) - len(keep))
+          with open(p, "w", encoding="utf-8", newline="") as f:
+              w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(keep)
+          PY
+          python -c "import sys; from sat import s2; s2.PRE_MAX_CLOUD = s2.PRE_MAX_CLOUD_A = s2.MAX_CLOUD = s2.MAX_CLOUD_A = 1.0; sys.exit(s2.main(['--site', 'QGZ', '--days', '20', '--max-pu', '8']))" > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/s2.log" || rc=$?
           cat "$RUNNER_TEMP/s2.log" "$RUNNER_TEMP/summary.json"
           exit $rc
       - name: Report (annotations)
