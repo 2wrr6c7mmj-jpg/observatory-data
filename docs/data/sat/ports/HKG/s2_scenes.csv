@@ -1,4 +1,11 @@
 site_id,mask_version,date,acquired_utc,platform,tile_cloud_pct,pre_cloud,pre_cloud_a,cloud,cloud_a,valid,result,image,thumb,processing_units,s2_version,retrieved_utc,attempts
+HKG,HKG-land-v1,2026-01-18,2026-01-18T03:11:44Z,sentinel-2c,24.86,0.0,0.0,0.0001,0.0001,1.0,clear,s2/HKG/v1/2026-01-18T03-11-44Z.webp,s2/HKG/v1/2026-01-18T03-11-44Z.thumb.webp,0.28,s2nc-1,2026-02-17T00:16:31Z,
+HKG,HKG-land-v1,2026-02-17,2026-02-17T03:11:46Z,sentinel-2c,99.99,,,,,,tile_cloudy,,,0.0,s2nc-1,2026-03-19T00:16:31Z,
+HKG,HKG-land-v1,2026-02-22,2026-02-22T03:11:41Z,sentinel-2b,30.49,0.884,0.884,,,,pre_cloudy,,,0.005,s2nc-1,2026-03-19T00:16:31Z,
+HKG,HKG-land-v1,2026-02-27,2026-02-27T03:11:45Z,sentinel-2c,99.95,,,,,,tile_cloudy,,,0.0,s2nc-1,2026-03-19T00:16:31Z,
+HKG,HKG-land-v1,2026-03-04,2026-03-04T03:11:42Z,sentinel-2b,99.99,,,,,,tile_cloudy,,,0.0,s2nc-1,2026-03-19T00:16:31Z,
+HKG,HKG-land-v1,2026-03-09,2026-03-09T03:11:45Z,sentinel-2c,43.31,0.6437,0.6437,,,,pre_cloudy,,,0.005,s2nc-1,2026-03-19T00:16:31Z,
+HKG,HKG-land-v1,2026-03-14,2026-03-14T03:11:41Z,sentinel-2b,0.1,0.0,0.0,0.0001,0.0001,1.0,clear,s2/HKG/v1/2026-03-14T03-11-41Z.webp,s2/HKG/v1/2026-03-14T03-11-41Z.thumb.webp,0.28,s2nc-1,2026-03-19T00:16:31Z,
 HKG,HKG-land-v1,2026-03-19,2026-03-19T03:11:46Z,sentinel-2c,2.26,0.0,0.0,0.0,0.0,1.0,clear,s2/HKG/v1/2026-03-19T03-11-46Z.webp,s2/HKG/v1/2026-03-19T03-11-46Z.thumb.webp,0.28,s2nc-1,2026-04-16T07:50:05Z,
 HKG,HKG-land-v1,2026-03-24,2026-03-24T03:11:41Z,sentinel-2b,78.47,0.884,0.884,,,,pre_cloudy,,,0.005,s2nc-1,2026-04-16T07:50:05Z,
 HKG,HKG-land-v1,2026-03-29,2026-03-29T03:11:45Z,sentinel-2c,65.37,0.5748,0.5748,,,,pre_cloudy,,,0.005,s2nc-1,2026-04-16T07:50:05Z,
