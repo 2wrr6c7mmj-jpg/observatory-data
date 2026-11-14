@@ -15,7 +15,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: collect-jso
+  group: collect-jso-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   jso:
@@ -37,8 +37,8 @@ jobs:
       - name: Rebuild docs/data/jso when releases were added
         run: |
           if python -m jso.update stale; then python -m jso.build; else echo "docs/data/jso is current"; fi
-      - name: Tests on the new data
-        run: python -m unittest tests.test_jso_update tests.test_jso_build
+      - name: Check the rebuilt data
+        run: python -m jso.update check
       - name: Publish
         if: ${{ github.event_name != 'push' && github.ref == 'refs/heads/main' }}
         run: |
