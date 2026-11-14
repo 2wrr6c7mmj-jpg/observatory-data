@@ -30,6 +30,10 @@ KEEP_ANALYSES_DAYS = 60
 CURRENT_DONE_DAYS = 30
 OFFICIAL_SINCE_DAYS = 45
 DAY = 86400000
+# The checking rules. When they change, what was read before is read again (the stored answers were kept
+# under the old rules): 1 = first version; 2 = countries named in the text, the area named in the text,
+# numbers of the forces in the text, names checked (descriptions, earlier exercises, generic names).
+RULES = 2
 
 
 def load(path, default):
@@ -112,9 +116,11 @@ def main(argv=None):
     today = datetime.now(timezone.utc).date()
     out = Path(a.out)
 
-    analyses = load(out / "analyses.json", {"items": {}})["items"]
+    stored = load(out / "analyses.json", {"items": {}})
+    fresh_rules = stored.get("rules") != RULES
+    analyses = {} if fresh_rules else stored["items"]
     previous = []
-    for p in sorted((out / "events").glob("[0-9][0-9][0-9][0-9].json")) if (out / "events").exists() else []:
+    for p in sorted((out / "events").glob("[0-9][0-9][0-9][0-9].json")) if (out / "events").exists() and not fresh_rules else []:
         previous += load(p, {"events": []})["events"]
     previous = [stored_event(e) for e in previous]
 
@@ -175,7 +181,7 @@ def main(argv=None):
     current = [e for e in finished if e["phase"] in ("now", "next") or
                (e.get("end") or e.get("start") or day_of(e["lastReported"])) >= done_cut]
 
-    status = {"generatedAt": now, "model": a.model, "minutes": round((time.time() - started) / 60, 1),
+    status = {"generatedAt": now, "model": a.model, "rules": RULES, "reread": fresh_rules, "minutes": round((time.time() - started) / 60, 1),
               "read": read, "failed": failed, "relevantNew": len(fresh), "events": len(finished),
               "current": len(current), "left": max(0, len(todo) - read),
               "secondsPerDocument": round(sum(seconds) / len(seconds), 1) if seconds else None,
@@ -185,10 +191,10 @@ def main(argv=None):
         for e in finished:
             by_year.setdefault(year_of(e), []).append(e)
         for y, evs in by_year.items():
-            write(out / "events" / f"{y}.json", {"year": int(y), "events": evs})
+            write(out / "events" / f"{y}.json", {"year": int(y), "rules": RULES, "events": evs})
         write(out / "events" / "index.json", {"years": sorted(int(y) for y in by_year)})
         write(out / "current.json", {"generatedAt": now, "today": today.isoformat(), "events": current})
-        write(out / "analyses.json", {"items": analyses})
+        write(out / "analyses.json", {"rules": RULES, "items": analyses})
         write(out / "status.json", status)
         write(out / "meta.json", meta_doc())
 
@@ -210,9 +216,13 @@ def meta_doc():
         "schemaVersion": 1,
         "description": "インド太平洋の軍事演習・訓練・実弾射撃・大規模展開。ニュースと公式発表を公開の言語モデルで読み、原文と照合して事象にまとめたもの。",
         "rules": {
+            "version": RULES,
             "dates": "原文に期間の記述があるときだけ。記述（dateEvidence）が原文に無い日付は捨てる",
+            "countries": "原文にその国の名（略称・漢字の略記を含む）があるときだけ",
+            "region": "場所の言葉が名指しする地域。無ければ見出しの言葉、さらに無ければモデルの選んだ地域を原文にその地名があるときだけ。それ以外は『その他』",
+            "forces": "戦力の記述の中の 3 以上の数は原文の数（数字か数詞）にあるときだけ。無ければ戦力の記述ごと捨てる",
             "counts": "艦艇・航空機・人員の数は原文に数字としてあるときだけ",
-            "name": "演習名は原文に現れるときだけ。『日米共同訓練』のような一般名は名前として扱わない",
+            "name": "演習名は原文に現れるときだけ。一般名（『日米共同訓練』『米軍・日本軍共同訓練』）、説明文、日付入り、年が事象と違う過去の演習名は名前として扱わない",
             "phase": "now 実施中・next 予定・done 終了。期間があれば期間から、無ければ報道の時点の状態から",
             "confidence": "高：公式発表あり／中：2つ以上の異なる媒体／低：1媒体のみ",
             "null": "null は原文に記述が無いこと",

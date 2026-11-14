@@ -21,13 +21,13 @@ When relevant=false, answer only {{"relevant": false}} with every other field nu
 
 Fields (Japanese for text fields):
 - kind: exercise (exercise, drill, joint training), live_fire (firing or missile drills), deployment (large deployment presented as a drill or show of force).
-- name: the exercise's own name exactly as written in the text, often in quotes or with a year (e.g. "Keen Sword 27", "Balikatan 2026", "海峡雷霆-2025A", "海上联合-2026"); null if none.
+- name: the exercise's own name exactly as written in the text, often in quotes or with a year; null if none. Not the name of an earlier exercise the text only recalls, and not a description.
 - titleJa: a short factual Japanese headline (who, what, where), at most 30 characters.
-- countries: participating countries in Japanese (日本, 米国, 中国, ロシア, 韓国, 台湾, フィリピン, 豪州, インド, …). Not countries only mentioned.
+- countries: participating countries in Japanese (日本, 米国, 中国, ロシア, 韓国, 台湾, フィリピン, 豪州, インド, …). Not countries only mentioned. In Chinese, 中巴 is China–Pakistan, 印尼 is Indonesia (not India), 中越 is China–Vietnam.
 - region: exactly one id from this list (the main area of the event; a sea named in the text wins over a nearby island):
 {regions.prompt_list()}
 - place: the place in Japanese as specific as the text states (e.g. 日向灘, 嘉手納基地); null if not stated.
-- forces: participating units, ships, aircraft and people in Japanese, as the text states them, concise, at most 120 characters (e.g. "海自 艦艇16隻（掃海艦3・掃海艇8）、MCH-101×2／米海軍 掃海艦1"); null if not stated.
+- forces: the participating units, ships, aircraft and people of THIS text, in Japanese, concise, at most 120 characters; null if the text does not state them. Never fill it from anything but this text.
 - ships, aircraft, personnel: totals the text states as numbers; null when the text gives no number. Never estimate.
 - content: what is trained or done, in Japanese, one sentence of at most 60 characters, facts from the text only; null if not stated.
 - start, end: YYYY-MM-DD only when the text states the event's dates (not the publication date). Resolve relative words ("Monday", "this week", 令和8年11月16日) using the publication date. Same date for both for a single day; end=null when unknown.
@@ -59,6 +59,37 @@ SCHEMA = {
 }
 
 _Z2H = str.maketrans("０１２３４５６７８９，", "0123456789,")
+
+# A country stays only when the text names it (the model has mixed up 中巴 → Bahrain and 印尼 → India).
+COUNTRY_WORDS = {
+    "日本": r"日本|japan|自衛隊|jsdf|jmsdf|jgsdf|jasdf|海自|陸自|空自|日米|日豪|日比|日印|日英|日仏|日韓|日方",
+    "米国": r"米国|米軍|米海|米空|米陸|米海兵|アメリカ|united states|\bu\.?s\.?\b|\bus (navy|army|air|marine)|usmc|american|美国|美军|美方|日米|米比|米韓|米豪|indopacom|7th fleet",
+    "中国": r"中国|china|chinese|\bpla\b|plan\b|解放军|解放軍|中方|中俄|中巴|中越|中印|中泰|中柬|战区|戦区|武警|人民武装警察|中共",
+    "ロシア": r"ロシア|russia|露|俄|россия|российск",
+    "韓国": r"韓国|south korea|\brok\b|韩国|米韓|日米韓|대한민국",
+    "北朝鮮": r"北朝鮮|north korea|dprk|朝鲜|朝鮮人民軍",
+    "台湾": r"台湾|taiwan|台灣|國軍|国軍",
+    "フィリピン": r"フィリピン|philippine|菲律宾|日米比|米比|日比|比海軍|比軍|\bafp\b",
+    "豪州": r"豪州|オーストラリア|australia|澳大利亚|日豪|米豪|豪海軍|豪軍|\badf\b",
+    "インド": r"インド(?!ネシア|洋)|\bindia\b|indian (navy|army|air force|armed)|印度(?!尼|洋)|日印",
+    "インドネシア": r"インドネシア|indonesia|印度尼西亚|印尼",
+    "ベトナム": r"ベトナム|vietnam|viet nam|越南|中越",
+    "パキスタン": r"パキスタン|pakistan|巴基斯坦|中巴",
+    "バーレーン": r"バーレーン|bahrain|巴林",
+    "タイ": r"タイ王国|タイ軍|タイ海軍|日タイ|米タイ|thailand|\bthai\b|泰国|中泰",
+    "マレーシア": r"マレーシア|malaysia|马来西亚",
+    "シンガポール": r"シンガポール|singapore|新加坡",
+    "カンボジア": r"カンボジア|cambodia|柬埔寨|中柬",
+    "英国": r"英国|イギリス|british|united kingdom|royal navy|日英|英海軍|英軍",
+    "フランス": r"フランス|france|french|法国|日仏|仏海軍|仏軍",
+    "ドイツ": r"ドイツ|germany|german|德国",
+    "カナダ": r"カナダ|canada|canadian|加拿大",
+    "ニュージーランド": r"ニュージーランド|new zealand|新西兰",
+    "モンゴル": r"モンゴル|mongolia|蒙古国",
+}
+_NUM_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+              "ten": 10, "eleven": 11, "twelve": 12, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6,
+              "七": 7, "八": 8, "九": 9, "十": 10}
 
 
 def user_message(doc: dict, text: str, published_day: str) -> str:
@@ -121,6 +152,49 @@ def quoted_name(title: str):
     return m.group(1).strip() if m else None
 
 
+def supported_countries(countries, source):
+    out = []
+    for c in countries:
+        pat = COUNTRY_WORDS.get(c)
+        ok = re.search(pat, source, re.I) if pat else _contains(source, c)
+        if ok and c not in out:
+            out.append(c)
+    return out
+
+
+def _numbers(text):
+    return {int(x) for x in re.findall(r"\d+", re.sub(r"(?<=\d),(?=\d{3})", "", (text or "").translate(_Z2H)))}
+
+
+def numbers_supported(text, source):
+    """Every number of 3 or more in `text` is a number of the source (digits or a number word)."""
+    have = _numbers(source) | {v for w, v in _NUM_WORDS.items() if re.search(rf"\b{w}\b" if w.isascii() else w, source, re.I)}
+    return all(n in have for n in _numbers(text) if n >= 3)
+
+
+_GENERIC_JA = re.compile(r"^(共同|合同|多国間|二国間|海上|統合|実動|指揮所|反恐|联合|聯合|軍事)*(訓練|演習|演习|训练|演練)(について)?$")
+_ACTORS = re.compile(r"日本軍?|米軍?|アメリカ軍?|中国軍?|ロシア軍?|露|中|日|自衛隊|海自|陸自|空自|[米日中露韓豪比印英仏加独伊新]|軍|・|、|\s")
+_NOT_IN_NAMES = {"in", "with", "for", "during", "at", "held", "hold", "holds", "conduct", "conducts", "conducted", "near"}
+
+
+def plausible_name(name, year=None):
+    """A real exercise name, not a description or an earlier exercise."""
+    if not name:
+        return None
+    if re.search(r"\d{4}-\d{2}-\d{2}", name):
+        return None
+    if re.fullmatch(r"[\x00-\x7f]+", name):
+        words = name.split()
+        if not re.search(r"[A-Z0-9]", name) or len(words) > 6 or any(w.lower() in _NOT_IN_NAMES for w in words):
+            return None
+    if _GENERIC_JA.match(_ACTORS.sub("", name)):
+        return None
+    m = re.search(r"(20\d{2})", name)
+    if m and year and int(m.group(1)) != int(year):
+        return None
+    return name
+
+
 def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
     """Keeps only what the source supports. Returns {'relevant': False} when the
     answer is not a concrete event."""
@@ -129,8 +203,6 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
         return {"relevant": False}
     source = " ".join([doc.get("title") or "", doc.get("summary") or "", text or ""])
     name = v.get("name") if isinstance(v.get("name"), str) and _contains(source, v["name"]) else None
-    if name and re.fullmatch(r"[\x00-\x7f]+", name) and not re.search(r"[A-Z0-9]", name):
-        name = None   # "silent drills without a name": a description, not a name
     if not name:
         name = quoted_name(doc.get("title") or "")
     start, end = _iso(v.get("start")), _iso(v.get("end"))
@@ -143,22 +215,30 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
     if start and end and end < start:
         end = None
     counts = {k: (v.get(k) if _number_in(source, v.get(k)) else None) for k in ("ships", "aircraft", "personnel")}
+    name = plausible_name(name, (start or published_day or "")[:4] or None)
 
     def s(key, n):
         x = v.get(key)
         return x.strip()[:n] if isinstance(x, str) and x.strip() else None
 
-    countries = []
-    for c in v.get("countries") or []:
-        if isinstance(c, str) and c.strip() and c.strip() not in countries:
-            countries.append(c.strip()[:20])
+    countries = supported_countries([c.strip()[:20] for c in (v.get("countries") or []) if isinstance(c, str) and c.strip()], source)
+    forces = s("forces", 400)
+    if forces and not numbers_supported(forces, source):
+        forces = None
+    content = s("content", 300)
+    if content and not numbers_supported(content, source):
+        content = None
+    place = s("place", 80)
+    model_region = v.get("region") if v.get("region") in regions.IDS else "other"
+    region = (regions.from_place(place) or regions.from_place(doc.get("title") or "")
+              or (model_region if regions.supported(model_region, source) else "other"))
     return {
         "relevant": True, "kind": v["kind"], "name": name,
         "titleJa": s("titleJa", 120) or (doc.get("titleJa") or doc.get("title") or "")[:120],
         "countries": countries[:12],
-        "region": regions.from_place(s("place", 80)) or (v.get("region") if v.get("region") in regions.IDS else "other"),
-        "place": s("place", 80), "forces": s("forces", 400), **counts,
-        "content": s("content", 300), "start": start, "end": end,
+        "region": region,
+        "place": place, "forces": forces, **counts,
+        "content": content, "start": start, "end": end,
         "dateEvidence": evidence[:200] if evidence else None,
         "status": v.get("status") if v.get("status") in STATUSES else "unknown",
     }

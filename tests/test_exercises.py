@@ -4,6 +4,7 @@ from datetime import date
 from exercises import extract, merge, regions, sources
 from exercises.text import html_to_text
 
+PLAIN = {"title": "共同訓練について", "summary": ""}
 DOC = {"title": "令和８年度機雷戦訓練（日向灘）及び掃海特別訓練（日米共同訓練）について", "summary": ""}
 TEXT = ("２ 期 間 令和８年１１月１６日（月）～１１月２６日（木） ３ 訓練海空域 日向灘 "
         "４ 参加予定部隊等 （１）海上自衛隊 艦艇１６隻（掃海母艦×１隻、掃海艦×３隻） 航空機２機（ＭＣＨ－１０１×２機）")
@@ -59,13 +60,44 @@ class ValidateTest(unittest.TestCase):
         self.assertIsNone(extract.quoted_name("Japan and US hold drills"))
         self.assertEqual(extract.quoted_name("「海峡雷霆-2025A」演習"), "海峡雷霆-2025A")
 
+    def test_countries_must_be_named(self):
+        doc = {"title": "中巴“喀喇昆仑-2026”联合反恐演习", "summary": ""}
+        v = extract.validate(answer(countries=["中国", "バーレーン"], place=None, region="china", name=None), doc,
+                             "中巴两国军队在新疆库尔勒举行联合演习。", "2026-10-20")
+        self.assertEqual(v["countries"], ["中国"])
+        self.assertEqual(v["region"], "china")
+        v = extract.validate(answer(countries=["中国", "インド", "インドネシア"], place=None), PLAIN, "中国和印尼特种部队", "2026-11-01")
+        self.assertEqual(v["countries"], ["中国", "インドネシア"])
+
+    def test_model_area_needs_a_word_in_the_text(self):
+        v = extract.validate(answer(region="korea", place=None), PLAIN, "中越两国公安部队举行联合训练", "2026-11-14")
+        self.assertEqual(v["region"], "other")
+        v = extract.validate(answer(region="east-china-sea", place=None), PLAIN, "Algeria and China drill in the Mediterranean", "2026-11-14")
+        self.assertEqual(v["region"], "other")
+
+    def test_forces_numbers_must_be_in_the_text(self):
+        v = extract.validate(answer(forces="海自 艦艇16隻（掃海艦3・掃海艇8）、MCH-101×2", place=None), PLAIN,
+                             "中俄海军开封舰与瓦良格号导弹巡洋舰在黄海演练", "2026-11-14")
+        self.assertIsNone(v["forces"])
+        v = extract.validate(answer(forces="F-15×2、F-22×4"), DOC, "F-15 two and four F-22", "2026-11-14")
+        self.assertEqual(v["forces"], "F-15×2、F-22×4")
+
+    def test_names_that_are_not_names(self):
+        self.assertIsNone(extract.plausible_name("Type 15 light tanks in live-fire training"))
+        self.assertIsNone(extract.plausible_name("Plateau Live-Fire Drill 2026-11-01"))
+        self.assertIsNone(extract.plausible_name("米軍・日本軍共同訓練"))
+        self.assertIsNone(extract.plausible_name("Justice Mission 2025", "2026"))
+        self.assertEqual(extract.plausible_name("Justice Mission 2025", "2025"), "Justice Mission 2025")
+        self.assertEqual(extract.plausible_name("海上联合-2026", "2026"), "海上联合-2026")
+        self.assertEqual(extract.plausible_name("Keen Sword 27", "2026"), "Keen Sword 27")
+
     def test_unknown_region(self):
-        self.assertEqual(extract.validate(answer(region="mars", place=None), DOC, TEXT, "2026-11-09")["region"], "other")
+        self.assertEqual(extract.validate(answer(region="mars", place=None), PLAIN, TEXT, "2026-11-09")["region"], "other")
 
 
 def ev(src, kind="報道", at=1_794_000_000_000, **kw):
     doc = {"url": "https://x/" + src, "title": src, "source": src, "sourceName": src, "kind": kind, "publishedAt": at}
-    return merge.event_from(doc, extract.validate(answer(**kw), DOC, TEXT + " Keen Sword 27 Balikatan", "2026-11-09"))
+    return merge.event_from(doc, extract.validate(answer(**kw), PLAIN, TEXT + " Keen Sword 27 Balikatan 沖縄", "2026-11-09"))
 
 
 class MergeTest(unittest.TestCase):
