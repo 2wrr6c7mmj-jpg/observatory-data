@@ -12,17 +12,19 @@ parse_release(release_id, pub_date, text) -> dict
 import csv, json, math, os, re, unicodedata, datetime as dt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# reference tables live in jso/ref (one level up) in this repository; the original layout had them next to this file
+REF = os.path.join(HERE, "ref") if os.path.isdir(os.path.join(HERE, "ref")) else os.path.join(os.path.dirname(HERE), "ref")
 
 # ---------------------------------------------------------------- reference data
 REF_POINTS = {}
-with open(os.path.join(HERE, "ref", "ref_points.csv"), encoding="utf-8") as f:
+with open(os.path.join(REF, "ref_points.csv"), encoding="utf-8") as f:
     for row in csv.DictReader(f):
         REF_POINTS[row["name_jp"]] = (float(row["lat"]), float(row["lon"]))
         for a in (row.get("aliases") or "").split("|"):
             if a.strip():
                 REF_POINTS[a.strip()] = (float(row["lat"]), float(row["lon"]))
 
-with open(os.path.join(HERE, "ref", "straits.json"), encoding="utf-8") as f:
+with open(os.path.join(REF, "straits.json"), encoding="utf-8") as f:
     STRAITS = json.load(f)
 PREF_OPT = r"(?:（[^）]{2,6}）)?"
 def _pat(pt):

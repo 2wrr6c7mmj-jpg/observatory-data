@@ -1,6 +1,7 @@
 """Build the public 統幕 (Japan Joint Staff Office) transit datasets.
 
-Reads jso/source/jso.sqlite (parsed press releases, see jso/HANDOFF.md) and
+Reads jso/source/jso.sqlite (parsed press releases, see jso/HANDOFF.md) with the
+releases collected since (jso/source/updates.jsonl, added by jso/update.py) and
 writes docs/data/jso/ for GitHub Pages:
 
   passages.csv / .json   one row per release x strait x day (ship passages)
@@ -26,6 +27,7 @@ import csv
 import datetime as dt
 import json
 import sqlite3
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -244,7 +246,17 @@ def mnd_daily() -> dict[str, dict]:
 
 
 def main() -> int:
-    con = sqlite3.connect(DB)
+    # the base database plus the releases collected since (jso/source/updates.jsonl, see jso/update.py)
+    from jso import update
+    with tempfile.TemporaryDirectory() as d:
+        con = sqlite3.connect(update.working_db(Path(d) / "jso.sqlite"))
+        try:
+            return build(con)
+        finally:
+            con.close()
+
+
+def build(con: sqlite3.Connection) -> int:
     c = con.cursor()
     events = [(D(a), D(b or a), actor, cat, name, reg) for a, b, actor, cat, name, reg in
               c.execute("select date_start, date_end, actor, category, name, region from context_events")]

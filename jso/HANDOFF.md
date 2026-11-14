@@ -68,7 +68,8 @@
 
 - D1は無料枠で運用している（書込み10万行/日）。大量投入は日を分け、AIの出力でSQLを流さず、wranglerで流すこと（AI経由だと利用量が大きい）。
 - ユーザーはチャットの利用量を抑えたい意向がある。大規模な並列エージェントは避け、安い手段を優先すること。
-- 新しい資料の追加手順：一覧ページから新しいPDFを取得してテキスト化し、jsoparse.py で解析、load_d1.py でSQLを作り、.bat で投入する。
+- 新しい資料の追加は自動（2026-11〜）：`.github/workflows/jso-update.yml` が1日2回（12:17・21:17 JST）`jso/update.py` を動かす。一覧ページから未取得の資料の PDF を取り、pdftotext の本文を `jso/source/updates.jsonl` に追記する（追記のみ。`jso.sqlite` は書き換えない）。`jso.build` は基のDBに updates.jsonl を足したコピーから作る。D1 には足りない資料だけを追加し、transit_pairs と vessels を作り直す（Secrets `CLOUDFLARE_ACCOUNT_ID`・`CLOUDFLARE_D1_TOKEN`、D1 の編集権限だけのトークン）。
+- GitHub Actions からは mod.go.jp に届く（2026-11-14 確認、robots.txt は許可）。Claude の作業環境からは届かない。
 
 ## 8. 次の候補
 
