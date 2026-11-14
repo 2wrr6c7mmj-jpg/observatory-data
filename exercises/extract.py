@@ -8,7 +8,7 @@ import json
 import re
 import urllib.request
 
-from . import regions
+from . import dates, regions
 
 KINDS = ["exercise", "live_fire", "deployment"]
 STATUSES = ["planned", "ongoing", "completed", "unknown"]
@@ -30,8 +30,8 @@ Fields (Japanese for text fields):
 - forces: the participating units, ships, aircraft and people of THIS text, in Japanese, concise, at most 120 characters; null if the text does not state them. Never fill it from anything but this text.
 - ships, aircraft, personnel: totals the text states as numbers; null when the text gives no number. Never estimate.
 - content: what is trained or done, in Japanese, one sentence of at most 60 characters, facts from the text only; null if not stated.
-- start, end: YYYY-MM-DD only when the text states the event's dates (not the publication date). Resolve relative words ("Monday", "this week", 令和8年11月16日) using the publication date. Same date for both for a single day; end=null when unknown.
-- dateEvidence: the exact words in the text that give the dates (copy them), or null.
+- start, end: YYYY-MM-DD only when the text states the event's dates (not the publication date or the page's time stamp). Same date for both for a single day; end=null when unknown.
+- dateEvidence: the exact words in the text that state when the event takes place, copied as written (e.g. a date, a span of dates, a part of a month), or null. Never the page's publication time.
 - status: planned (announced for the future), ongoing (underway at publication), completed (finished), unknown."""
 
 SCHEMA = {
@@ -215,15 +215,14 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
     name = v.get("name") if isinstance(v.get("name"), str) and _contains(source, v["name"]) else None
     if not name:
         name = quoted_name(doc.get("title") or "")
-    start, end = _iso(v.get("start")), _iso(v.get("end"))
-    evidence = v.get("dateEvidence") if isinstance(v.get("dateEvidence"), str) else None
-    if not evidence or not _contains(source, evidence[:60]):
-        start = end = evidence = None
-    for d in (start, end):
-        if d and published_day and _days_apart(d, published_day) > 400:
-            start = end = evidence = None
-    if start and end and end < start:
-        end = None
+    # Dates are read from the quoted words by rule (exercises/dates.py); the model's own dates are not used.
+    evidence = v.get("dateEvidence") if isinstance(v.get("dateEvidence"), str) and v["dateEvidence"].strip() else None
+    if evidence and not _contains(source, evidence[:60]):
+        evidence = None
+    parsed = dates.parse(evidence, published_day) if evidence else None
+    start, end, precision = parsed if parsed else (None, None, None)
+    if start and published_day and _days_apart(start, published_day) > 400:
+        start = end = precision = None
     counts = {k: (v.get(k) if _number_in(source, v.get(k)) else None) for k in ("ships", "aircraft", "personnel")}
     name = plausible_name(name, (start or published_day or "")[:4] or None)
 
@@ -249,6 +248,6 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
         "region": region,
         "place": place, "forces": forces, **counts,
         "content": content, "start": start, "end": end,
-        "dateEvidence": evidence[:200] if evidence else None,
+        "dateText": evidence[:120] if evidence else None, "datePrecision": precision,
         "status": v.get("status") if v.get("status") in STATUSES else "unknown",
     }

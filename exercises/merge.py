@@ -12,12 +12,21 @@ overlapping dates, or undated and reported within 10 days, are one event.
 """
 import hashlib
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from . import regions
 
 DAY = 86400000
 OFFICIAL_KINDS = {"公式", "政府発表"}
+# Whose official word a source is.
+OFFICIAL_COUNTRY = {"jso": "日本", "mod": "日本", "mofa": "日本", "navy": "米国", "dvids": "米国", "kremlin": "ロシア",
+                    "cn-mod": "中国"}
+# Outlets of one family count once (independence of sources).
+FAMILY = {"xinhua": "中国国営", "xinhua-world": "中国国営", "globaltimes": "中国国営", "cgtn": "中国国営", "ecns": "中国国営",
+          "chinadaily": "中国国営", "chinamil": "中国国営", "tass": "ロシア国営", "rt": "ロシア国営", "sputnik": "ロシア国営",
+          "scmp-china": "SCMP", "scmp-military": "SCMP", "guardian-china": "Guardian", "guardian-russia": "Guardian",
+          "bbc": "BBC", "bbc-china": "BBC", "bbc-africa": "BBC"}
+STALE_DAYS = 14   # an activity with no end date is taken as over 14 days after its last report
 
 
 GENERIC = re.compile(r"^(日[米豪比印英仏加独伊新韓]+|米[比豪韓]+|中露|露中)?(共同|合同|多国間|二国間|海上|統合|実動|指揮所)*(訓練|演習)(について)?$|"
@@ -72,9 +81,9 @@ def event_from(doc: dict, ans: dict) -> dict:
     if ans.get("name") and GENERIC.match(ans["name"].strip()):
         ans["name"] = None
     keep = {k: ans.get(k) for k in ("kind", "name", "titleJa", "countries", "region", "place", "forces", "ships",
-                                     "aircraft", "personnel", "content", "start", "end", "status")}
+                                     "aircraft", "personnel", "content", "start", "end", "status", "dateText", "datePrecision")}
     return {**keep, "sources": [src], "firstReported": at, "lastReported": at,
-            "_official": src["kind"] in OFFICIAL_KINDS}
+            "_official": src["kind"] in OFFICIAL_KINDS, "_pub": bool(doc.get("publishedAt"))}
 
 
 def _merge(a: dict, b: dict) -> dict:
@@ -83,9 +92,13 @@ def _merge(a: dict, b: dict) -> dict:
         return (1 if e["_official"] else 0, e["lastReported"])
     first, second = (a, b) if rank(a) >= rank(b) else (b, a)
     out = dict(first)
-    for k in ("name", "place", "forces", "ships", "aircraft", "personnel", "content", "start", "end"):
+    for k in ("name", "place", "forces", "ships", "aircraft", "personnel", "content"):
         if out.get(k) in (None, ""):
             out[k] = second.get(k)
+    if not out.get("start") and second.get("start"):
+        for k in ("start", "end", "dateText", "datePrecision"):
+            out[k] = second.get(k)
+    out["_pub"] = first.get("_pub", True) or second.get("_pub", True)
     if first.get("start") and second.get("start") and not first["_official"]:
         out["start"] = min(first["start"], second["start"])
         ends = [x for x in (first.get("end"), second.get("end")) if x]
@@ -115,25 +128,55 @@ def merge_all(items: list) -> list:
 
 
 def phase(e: dict, today: date) -> str:
-    """now / next / done from the dates; from the reported status when undated."""
-    sp = _span(e)
-    if sp:
-        if sp[1] < today and (e.get("end") or sp[0] < today - timedelta(days=1)):
-            return "done"
-        if sp[0] > today:
+    """now 実施中 / next 予定 / done 終了 / unknown（出さない）.
+
+    - A period with an end: over after the end day.
+    - A start only: under way from the start; over when the reports say it ended, or STALE_DAYS after the last report.
+    - No date: from the reports' own words (planned / under way / ended) while the last report is at most STALE_DAYS old,
+      over after that. Without a publication date there is nothing to measure from: unknown.
+    """
+    last_report = datetime.fromtimestamp((e.get("lastReported") or 0) / 1000, timezone.utc).date()
+    stale = (today - last_report).days > STALE_DAYS
+    if e.get("start"):
+        s = date.fromisoformat(e["start"])
+        if s > today:
             return "next"
-        if e.get("end") is None and sp[0] < today - timedelta(days=14) and e.get("status") == "completed":
-            return "done"
-        return "now"
-    return {"planned": "next", "ongoing": "now", "completed": "done"}.get(e.get("status"), "now")
+        if e.get("end"):
+            return "done" if date.fromisoformat(e["end"]) < today else "now"
+        return "done" if e.get("status") == "completed" or stale else "now"
+    if not e.get("_pub", True):
+        return "unknown"
+    if stale or e.get("status") == "completed":
+        return "done"
+    return {"planned": "next", "ongoing": "now"}.get(e.get("status"), "done")
 
 
-def confidence(e: dict) -> str:
-    """高: an official release; 中: two or more different outlets; 低: one report."""
-    if e["_official"]:
-        return "高"
-    outlets = {s.get("source") for s in e["sources"]}
-    return "中" if len(outlets) >= 2 else "低"
+def confidence(e: dict):
+    """(高・中・低, the reason in words).
+
+    高: an official release (the government or forces of a participating country, or of a country that watched it).
+    中: two or more independent outlets (one family of state media counts once).
+    低: one outlet, or one family only.
+    """
+    official = []
+    for s in e["sources"]:
+        if s.get("kind") in OFFICIAL_KINDS:
+            who = OFFICIAL_COUNTRY.get(s.get("source"))
+            role = "実施国" if who and who in e["countries"] else "観測した国" if who else "公式"
+            label = f"{s.get('sourceName') or s.get('source')}（{role}の発表）"
+            if label not in official:
+                official.append(label)
+    families = []
+    for s in e["sources"]:
+        f = FAMILY.get(s.get("source"), s.get("sourceName") or s.get("source"))
+        if f not in families:
+            families.append(f)
+    if official:
+        return "高", "公式：" + "、".join(official)
+    if len(families) >= 2:
+        return "中", f"独立した {len(families)} 系列：" + "、".join(families[:4])
+    only = families[0] if families else "不明"
+    return "低", f"1 系列のみ：{only}"
 
 
 def finish(e: dict, today: date) -> dict:
@@ -146,5 +189,5 @@ def finish(e: dict, today: date) -> dict:
     r = regions.BY_ID.get(e["region"]) or regions.BY_ID["other"]
     out["lat"], out["lon"] = r[2], r[3]
     out["phase"] = phase(e, today)
-    out["confidence"] = confidence(e)
+    out["confidence"], out["confidenceBasis"] = confidence(e)
     return out

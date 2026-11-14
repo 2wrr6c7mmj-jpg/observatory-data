@@ -14,6 +14,7 @@ Writes (docs/data/exercises/):
 """
 import argparse
 import json
+import re
 import os
 import sys
 import time
@@ -33,7 +34,9 @@ DAY = 86400000
 # The checking rules. When they change, what was read before is read again (the stored answers were kept
 # under the old rules): 1 = first version; 2 = countries named in the text, the area named in the text,
 # numbers of the forces in the text, names checked (descriptions, earlier exercises, generic names).
-RULES = 3
+RULES = 4
+# 4 = dates read from the quoted words by rule (exercises/dates.py), publication day from the page when the list has
+#     none, the end of an activity (merge.phase), confidence with its reason, no current state without a date.
 # 3 = model's country names in Chinese/English mapped to the table, China's interior and other areas from the
 #     place words, unnamed reports of neighbouring areas merged.
 
@@ -73,7 +76,28 @@ def body_text(doc, log):
         return "", f"http {status}"
     if doc["url"].lower().endswith(".pdf") or data[:5] == b"%PDF-":
         return pdf_to_text(data), "pdf"
-    return html_to_text(data.decode("utf-8", "replace")), "html"
+    page = data.decode("utf-8", "replace")
+    if not doc.get("publishedAt"):
+        day = page_day(page)
+        if day:
+            doc["publishedAt"] = int(datetime.fromisoformat(day).replace(tzinfo=timezone.utc).timestamp() * 1000)
+    return html_to_text(page), "html"
+
+
+_META_DAY = re.compile(r"<meta[^>]+(?:name|property)=[\"'](?:pubdate|publishdate|PubDate|article:published_time|og:release_date|"
+                       r"dc\.date|date)[\"'][^>]+content=[\"'](20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})", re.I)
+_TEXT_DAY = re.compile(r"(?:发布时间|發布時間|时间|日期|Source:.{0,60}?|Editor:.{0,60}?)\s*[:：]?\s*(20\d{2})[-/.年](\d{1,2})[-/.月](\d{1,2})")
+
+
+def page_day(page):
+    """The page's own publication day (meta tag, or the 发布时间 line), YYYY-MM-DD, or None."""
+    m = _META_DAY.search(page) or _TEXT_DAY.search(page)
+    if not m:
+        return None
+    try:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3))).isoformat()
+    except ValueError:
+        return None
 
 
 def fit(text):
@@ -95,7 +119,8 @@ def stored_event(e):
     """Events keep their internal 'official' flag between runs."""
     e = dict(e)
     e["_official"] = bool(e.pop("official", False)) or any(s.get("kind") in merge.OFFICIAL_KINDS for s in e["sources"])
-    for k in ("id", "regionName", "phase", "confidence", "lat", "lon"):
+    e["_pub"] = e.pop("pubKnown", True)
+    for k in ("id", "regionName", "phase", "confidence", "confidenceBasis", "lat", "lon"):
         e.pop(k, None)
     return e
 
@@ -151,7 +176,7 @@ def main(argv=None):
         t0 = time.time()
         text, how = body_text(doc, body_log)
         text = fit(text)
-        published = day_of(doc.get("publishedAt") or now)
+        published = day_of(doc["publishedAt"]) if doc.get("publishedAt") else None
         try:
             raw = extract.ask(a.server, doc, text, published)
             ans = extract.validate(raw, doc, text, published)
@@ -178,10 +203,11 @@ def main(argv=None):
     finished = [merge.finish(e, today) for e in events]
     for f, e in zip(finished, events):
         f["official"] = e["_official"]
+        f["pubKnown"] = e.get("_pub", True)
     finished.sort(key=lambda e: (e.get("start") or day_of(e["firstReported"])), reverse=True)
     done_cut = (today - timedelta(days=CURRENT_DONE_DAYS)).isoformat()
     current = [e for e in finished if e["phase"] in ("now", "next") or
-               (e.get("end") or e.get("start") or day_of(e["lastReported"])) >= done_cut]
+               (e["phase"] == "done" and (e.get("end") or e.get("start") or day_of(e["lastReported"])) >= done_cut)]
 
     status = {"generatedAt": now, "model": a.model, "rules": RULES, "reread": fresh_rules, "minutes": round((time.time() - started) / 60, 1),
               "read": read, "failed": failed, "relevantNew": len(fresh), "events": len(finished),
@@ -219,14 +245,14 @@ def meta_doc():
         "description": "インド太平洋の軍事演習・訓練・実弾射撃・大規模展開。ニュースと公式発表を公開の言語モデルで読み、原文と照合して事象にまとめたもの。",
         "rules": {
             "version": RULES,
-            "dates": "原文に期間の記述があるときだけ。記述（dateEvidence）が原文に無い日付は捨てる",
+            "dates": "モデルが写した原文の言葉（dateText）を規則で読む（exercises/dates.py）。日・日の幅・月の上旬/中旬/下旬だけを日付にし、『先日』『今月初め』『火曜』などの相対表現と、ページの掲載時刻は日付にしない。年が無いときは掲載日の年（掲載日が分からなければ日付にしない）。datePrecision：day＝日まで、part＝月の上中下旬",
+            "phase": "終わりの日がある→その日を過ぎたら終了。始まりだけ→報道が終了と書くか、最後の報道から 14 日で終了。日付なし→最後の報道から 14 日以内は報道の書き方（予定・実施中）、過ぎたら終了。掲載日も分からないものは unknown（現況に出さない）",
+            "confidence": "高：公式の発表（実施国か観測した国の政府・軍）／中：独立した 2 系列以上の報道（同じ国の国営は 1 系列）／低：1 系列だけ。confidenceBasis にその内訳",
             "countries": "原文にその国の名（略称・漢字の略記を含む）があるときだけ",
             "region": "場所の言葉が名指しする地域。無ければ見出しの言葉、さらに無ければモデルの選んだ地域を原文にその地名があるときだけ。それ以外は『その他』",
             "forces": "戦力の記述の中の 3 以上の数は原文の数（数字か数詞）にあるときだけ。無ければ戦力の記述ごと捨てる",
             "counts": "艦艇・航空機・人員の数は原文に数字としてあるときだけ",
             "name": "演習名は原文に現れるときだけ。一般名（『日米共同訓練』『米軍・日本軍共同訓練』）、説明文、日付入り、年が事象と違う過去の演習名は名前として扱わない",
-            "phase": "now 実施中・next 予定・done 終了。期間があれば期間から、無ければ報道の時点の状態から",
-            "confidence": "高：公式発表あり／中：2つ以上の異なる媒体／低：1媒体のみ",
             "null": "null は原文に記述が無いこと",
         },
         "regions": [{"id": r[0], "name": r[1], "lat": r[2], "lon": r[3]} for r in regions.REGIONS],
