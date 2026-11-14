@@ -638,6 +638,18 @@ class RunPortTest(unittest.TestCase):
         self.assertEqual([(e["site_id"], e["cap_pu"]) for e in out], [("A", 500), ("B", 500)])
         self.assertIn("skipped", est[2])
 
+    def test_allocate_s2_headroom(self):
+        """A port with S2 days gets the headroom that run_s2 keeps free, so a small port still fetches its days."""
+        est = [{"site_id": "A", "pu": 4.0, "priority": 1, "s1_requests": 0, "s2_requests": 30, "s2_days": 30},
+               {"site_id": "B", "pu": 4.0, "priority": 1, "s1_requests": 10, "s2_requests": 0, "s2_days": 0}]
+        out = pa.allocate([dict(e) for e in est], 100, 10000)
+        self.assertAlmostEqual(out[0]["cap_pu"], round(5.0 + pa.S2_HEADROOM_PU, 1))
+        self.assertAlmostEqual(out[1]["cap_pu"], 5.0)
+        out = pa.allocate_ordered([dict(e) for e in est], 100, 10000)
+        self.assertAlmostEqual(out[0]["cap_pu"], round(5.0 + pa.S2_HEADROOM_PU, 1))
+        # with that cap, the PU left for the days after the reserve is at least the estimate
+        self.assertGreaterEqual(out[0]["cap_pu"] - pa.S2_RESERVE_PU - pa.s2.EST_PRE_PU - pa.s2.EST_FULL_PU, 4.0)
+
     def test_baseline_port(self):
         g = Grid.for_site(SITE)
         mask = np.zeros((g.height, g.width), np.uint8)
