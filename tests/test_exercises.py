@@ -53,6 +53,12 @@ class ValidateTest(unittest.TestCase):
         self.assertIsNone(extract.validate(answer(name="silent drills without a name"), DOC, t, "2026-11-09")["name"])
         self.assertEqual(extract.validate(answer(name="Keen Sword 27"), DOC, t, "2026-11-09")["name"], "Keen Sword 27")
 
+    def test_name_from_the_headline_quotes(self):
+        doc = {"title": "中俄“海上联合-2026”联合演习防空反导演练侧记", "summary": ""}
+        self.assertEqual(extract.validate(answer(name=None), doc, TEXT, "2026-11-14")["name"], "海上联合-2026")
+        self.assertIsNone(extract.quoted_name("Japan and US hold drills"))
+        self.assertEqual(extract.quoted_name("「海峡雷霆-2025A」演習"), "海峡雷霆-2025A")
+
     def test_unknown_region(self):
         self.assertEqual(extract.validate(answer(region="mars", place=None), DOC, TEXT, "2026-11-09")["region"], "other")
 

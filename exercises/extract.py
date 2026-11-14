@@ -17,18 +17,19 @@ SYSTEM = f"""You read one news article or official press release and extract a c
 
 relevant=true ONLY when the text reports a specific, real-world event of this kind with participants and a place or time: a named or unnamed exercise or drill, joint training between countries, live-fire or missile firing drills, or a large naval/air deployment that the text itself presents as an exercise, drill or show of force.
 relevant=false for: port visits alone, strait transits alone, ceremonies, individual or classroom training, procurement, policy, budgets, opinion, and texts that only mention an exercise in passing or as background. If the text reports several events, pick the main one.
+When relevant=false, answer only {{"relevant": false}} with every other field null, "" or [] (region "other", status "unknown"): write nothing else.
 
 Fields (Japanese for text fields):
 - kind: exercise (exercise, drill, joint training), live_fire (firing or missile drills), deployment (large deployment presented as a drill or show of force).
-- name: the exercise's own name exactly as written in the text (e.g. "Keen Sword 27", "Balikatan 2026", "海峡雷霆-2025A"); null if none.
-- titleJa: a short factual Japanese headline (who, what, where).
+- name: the exercise's own name exactly as written in the text, often in quotes or with a year (e.g. "Keen Sword 27", "Balikatan 2026", "海峡雷霆-2025A", "海上联合-2026"); null if none.
+- titleJa: a short factual Japanese headline (who, what, where), at most 30 characters.
 - countries: participating countries in Japanese (日本, 米国, 中国, ロシア, 韓国, 台湾, フィリピン, 豪州, インド, …). Not countries only mentioned.
 - region: exactly one id from this list (the main area of the event; a sea named in the text wins over a nearby island):
 {regions.prompt_list()}
 - place: the place in Japanese as specific as the text states (e.g. 日向灘, 嘉手納基地); null if not stated.
-- forces: participating units, ships, aircraft and people in Japanese, as the text states them (e.g. "海自 艦艇16隻（掃海艦3・掃海艇8）、MCH-101×2／米海軍 掃海艦1"); null if not stated.
+- forces: participating units, ships, aircraft and people in Japanese, as the text states them, concise, at most 120 characters (e.g. "海自 艦艇16隻（掃海艦3・掃海艇8）、MCH-101×2／米海軍 掃海艦1"); null if not stated.
 - ships, aircraft, personnel: totals the text states as numbers; null when the text gives no number. Never estimate.
-- content: what is trained or done, in Japanese, 1–2 sentences, facts from the text only; null if not stated.
+- content: what is trained or done, in Japanese, one sentence of at most 60 characters, facts from the text only; null if not stated.
 - start, end: YYYY-MM-DD only when the text states the event's dates (not the publication date). Resolve relative words ("Monday", "this week", 令和8年11月16日) using the publication date. Same date for both for a single day; end=null when unknown.
 - dateEvidence: the exact words in the text that give the dates (copy them), or null.
 - status: planned (announced for the future), ongoing (underway at publication), completed (finished), unknown."""
@@ -111,6 +112,15 @@ def _days_apart(a: str, b: str) -> int:
     return abs((date.fromisoformat(a) - date.fromisoformat(b)).days)
 
 
+_QUOTED = re.compile(r"[“「『\"']([^”」』\"']{2,40}?[-－‐ ]?(?:20\d{2}|\d{2})[A-Za-z]?)[”」』\"']")
+
+
+def quoted_name(title: str):
+    """A name the headline quotes with a year in it: 中俄“海上联合-2026”联合演习 → 海上联合-2026."""
+    m = _QUOTED.search(title)
+    return m.group(1).strip() if m else None
+
+
 def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
     """Keeps only what the source supports. Returns {'relevant': False} when the
     answer is not a concrete event."""
@@ -121,6 +131,8 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
     name = v.get("name") if isinstance(v.get("name"), str) and _contains(source, v["name"]) else None
     if name and re.fullmatch(r"[\x00-\x7f]+", name) and not re.search(r"[A-Z0-9]", name):
         name = None   # "silent drills without a name": a description, not a name
+    if not name:
+        name = quoted_name(doc.get("title") or "")
     start, end = _iso(v.get("start")), _iso(v.get("end"))
     evidence = v.get("dateEvidence") if isinstance(v.get("dateEvidence"), str) else None
     if not evidence or not _contains(source, evidence[:60]):
