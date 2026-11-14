@@ -34,7 +34,9 @@ DAY = 86400000
 # The checking rules. When they change, what was read before is read again (the stored answers were kept
 # under the old rules): 1 = first version; 2 = countries named in the text, the area named in the text,
 # numbers of the forces in the text, names checked (descriptions, earlier exercises, generic names).
-RULES = 4
+RULES = 5
+# 5 = an official release announcing its own country's part adds that country; an undated activity is over 7 days
+#     after its last report (was 14).
 # 4 = dates read from the quoted words by rule (exercises/dates.py), publication day from the page when the list has
 #     none, the end of an activity (merge.phase), confidence with its reason, no current state without a date.
 # 3 = model's country names in Chinese/English mapped to the table, China's interior and other areas from the
@@ -246,7 +248,7 @@ def meta_doc():
         "rules": {
             "version": RULES,
             "dates": "モデルが写した原文の言葉（dateText）を規則で読む（exercises/dates.py）。日・日の幅・月の上旬/中旬/下旬だけを日付にし、『先日』『今月初め』『火曜』などの相対表現と、ページの掲載時刻は日付にしない。年が無いときは掲載日の年（掲載日が分からなければ日付にしない）。datePrecision：day＝日まで、part＝月の上中下旬",
-            "phase": "終わりの日がある→その日を過ぎたら終了。始まりだけ→報道が終了と書くか、最後の報道から 14 日で終了。日付なし→最後の報道から 14 日以内は報道の書き方（予定・実施中）、過ぎたら終了。掲載日も分からないものは unknown（現況に出さない）",
+            "phase": "終わりの日がある→その日を過ぎたら終了。始まりだけ→報道が終了と書くか、最後の報道から 14 日で終了。日付なし→最後の報道から 7 日以内は報道の書き方（予定・実施中）、過ぎたら終了。掲載日も分からないものは unknown（現況に出さない）",
             "confidence": "高：公式の発表（実施国か観測した国の政府・軍）／中：独立した 2 系列以上の報道（同じ国の国営は 1 系列）／低：1 系列だけ。confidenceBasis にその内訳",
             "countries": "原文にその国の名（略称・漢字の略記を含む）があるときだけ",
             "region": "場所の言葉が名指しする地域。無ければ見出しの言葉、さらに無ければモデルの選んだ地域を原文にその地名があるときだけ。それ以外は『その他』",
