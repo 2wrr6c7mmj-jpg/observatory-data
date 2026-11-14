@@ -69,6 +69,16 @@ class ValidateTest(unittest.TestCase):
         v = extract.validate(answer(countries=["中国", "インド", "インドネシア"], place=None), PLAIN, "中国和印尼特种部队", "2026-11-01")
         self.assertEqual(v["countries"], ["中国", "インドネシア"])
 
+    def test_country_names_in_other_languages(self):
+        v = extract.validate(answer(countries=["中国", "越南"], place=None), PLAIN, "中越两国公安部队举行联合训练", "2026-11-14")
+        self.assertEqual(v["countries"], ["中国", "ベトナム"])
+        v = extract.validate(answer(countries=["中华人民共和国", "俄罗斯"], place=None), PLAIN, "中俄海军在黄海举行联合演习", "2026-11-14")
+        self.assertEqual(v["countries"], ["中国", "ロシア"])
+        self.assertEqual(extract.canonical_country("Russia"), "ロシア")
+
+    def test_interior_from_place(self):
+        self.assertEqual(regions.from_place("新疆の高原"), "china")
+
     def test_model_area_needs_a_word_in_the_text(self):
         v = extract.validate(answer(region="korea", place=None), PLAIN, "中越两国公安部队举行联合训练", "2026-11-14")
         self.assertEqual(v["region"], "other")
@@ -118,6 +128,15 @@ class MergeTest(unittest.TestCase):
 
     def test_unnamed_other_area(self):
         self.assertEqual(len(merge.merge_all([ev("a"), ev("b", region="nansei", place=None)])), 2)
+
+    def test_neighbouring_areas_merge_when_unnamed(self):
+        def raw(src, region, kind, at):
+            return merge.event_from({"url": "https://x/" + src, "source": src, "kind": "報道", "publishedAt": at},
+                                    answer(region=region, kind=kind, countries=["中国"], start=None, end=None, name=None, place=None))
+        a, b = raw("a", "taiwan", "deployment", 1_794_000_000_000), raw("b", "philippine-sea", "exercise", 1_794_300_000_000)
+        self.assertEqual(len(merge.merge_all([a, b])), 1)
+        c = raw("c", "south-china-sea", "exercise", 1_794_000_000_000)
+        self.assertEqual(len(merge.merge_all([a, c])), 2)
 
     def test_official_fields_win_and_confidence(self):
         out = merge.merge_all([ev("news", forces="艦艇10隻"), ev("msdf", kind="公式", forces="海自 艦艇16隻")])
