@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-14T12:26:02Z",
+ "generated_utc": "2026-11-14T13:47:04Z",
  "state": "warn",
  "summary": {
   "ok": 9,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-14T12:23:05Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.4,
    "data_date": "2026-11-13",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -141,7 +141,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-14T10:55:56Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_age_h": 2.9,
    "data_date": "2026-11-12",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -163,19 +163,19 @@
    "name": "PLA Activity Tracker",
    "kind": "daily",
    "workflow": "pla-tracker.yml",
-   "heartbeat_utc": "2026-11-13T14:53:36Z",
-   "heartbeat_age_h": 21.5,
-   "data_date": "2026-11-13",
+   "heartbeat_utc": "2026-11-14T13:46:35Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-14",
    "data_date_tz": "TWT",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
     "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
     "access": "robots",
-    "days": 1459,
+    "days": 1460,
     "last_run_result": "ok",
-    "revised_count": 1
+    "revised_count": 0
    }
   },
   {
@@ -208,7 +208,7 @@
    "kind": "manual",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-14T07:43:02Z",
-   "heartbeat_age_h": 4.7,
+   "heartbeat_age_h": 6.1,
    "data_date": "2026-10-27",
    "data_date_tz": "JST",
    "data_age_days": 18,
@@ -232,7 +232,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-14T11:00:58Z",
-   "heartbeat_age_h": 1.4,
+   "heartbeat_age_h": 2.8,
    "data_date": "2026-11-14",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -250,7 +250,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-14T10:56:12Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_age_h": 2.8,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -748,10 +748,10 @@
    "note": "null は不明、0 は原文に明記"
   },
   "taiwan": {
-   "date": "2026-11-13",
+   "date": "2026-11-14",
    "date_tz": "TWT",
-   "aircraft_total": 30,
-   "median_line_cross": 23,
+   "aircraft_total": 10,
+   "median_line_cross": 4,
    "ships_total": 11,
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
@@ -847,15 +847,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-13T14:53:15Z",
+   "last_success_started_utc": "2026-11-14T13:46:14Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43447030110,
-    "started_utc": "2026-11-13T14:53:15Z",
+    "id": 43601422685,
+    "started_utc": "2026-11-14T13:46:14Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43447030110",
-    "delay_h": 8.3
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43601422685",
+    "delay_h": 7.2
    },
    "consecutive_failures": 0
   },
