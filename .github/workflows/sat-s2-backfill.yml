@@ -32,7 +32,7 @@ jobs:
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           rc=0
-          python -m sat.s2 --days 365 --max-pu 100 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/s2.log" || rc=$?
+          python -m sat.s2 --site SLP --days 45 --max-pu 15 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/s2.log" || rc=$?
           cat "$RUNNER_TEMP/s2.log" "$RUNNER_TEMP/summary.json"
           exit $rc
       - name: Report (annotations)
