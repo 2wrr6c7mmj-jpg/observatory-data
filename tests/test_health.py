@@ -78,7 +78,8 @@ def good_files() -> dict:
 
 
 CRONS = {"collect.yml": "23 1 * * *", "jcg-senkaku.yml": "43 3 * * *", "sat-ships.yml": "17 5 * * *",
-         "pla-tracker.yml": "37 6 * * *", "ocean-monitor.yml": "41 19 * * *"}
+         "pla-tracker.yml": "37 6 * * *", "ocean-monitor.yml": "41 19 * * *",
+         "jso-update.yml": "17 3,12 * * *"}
 
 
 def run(event, conclusion, started, status="completed"):

@@ -84,6 +84,8 @@ WORKFLOWS = [
     {"file": "jcg-senkaku.yml", "label": "海上保安庁 尖閣", "event": "schedule", "sources": ["jcg-senkaku"]},
     {"file": "sat-ships.yml", "label": "Sentinel-1 艦船候補", "event": "schedule", "sources": ["sat"]},
     {"file": "pla-tracker.yml", "label": "PLA Activity Tracker", "event": "schedule", "sources": ["pla-tracker"]},
+    # 統幕の新しい公表の自動取り込み（2026-11-14 から。それまでは手作業で追加し、collect.yml で再構築していた）
+    {"file": "jso-update.yml", "label": "統幕の公表の取り込み", "event": "schedule", "sources": ["jso"]},
     {"file": "proto.yml", "label": "分析の試作", "event": "workflow_run", "sources": ["proto"]},
     # 外洋の定期監視：実行の記録（schedule の起動と結論）だけで判定する（データの鮮度は撮影の有無で変わるので見ない）
     {"file": "ocean-monitor.yml", "label": "外洋の定期監視（Sentinel-1）", "event": "schedule", "sources": ["ocean"]},
@@ -611,28 +613,28 @@ def check_mnd(now: datetime, data: Path) -> dict:
 
 
 def check_jso(now: datetime, data: Path) -> dict:
-    src = Source("jso", "統合幕僚監部（統幕）", "manual", "collect.yml")
+    src = Source("jso", "統合幕僚監部（統幕）", "daily", "jso-update.yml")
     th = THRESHOLDS["jso_release_days"]
     try:
         st = load_json(data / "jso" / "status.json")
     except Unreadable as e:
         unreadable(src, e)
         return src.done()
-    # 心拍は再構築（collect.yml 毎日）。データの新しさは公表日（手動取り込み）
+    # 心拍は再構築（jso-update.yml 1 日 2 回・collect.yml 毎日）。データの新しさは公表日（jso-update.yml の自動取り込み）
     src.heartbeat(now, parse_utc(st.get("built_utc")), "最後の再構築（built_utc）")
     today = now.astimezone(JST).date()
     last = day_of(st.get("last_release"))
     src.data_date(last, "JST", today)
     src.d["values"].update({"passages": st.get("passages"), "releases": st.get("releases"),
-                            "intake": "手動取り込み（mod.go.jp は自動取得できない）"})
+                            "intake": "自動取り込み（jso-update.yml、1 日 2 回。一覧ページと新しい資料の PDF だけを取得）"})
     if last is None:
         src.add("warn", "data_date_unknown", "last_release が読めない")
     else:
         days = (today - last).days
         if days >= th["alert"]:
-            src.add("alert", "release_old", f"最新の公表 {last} から {days} 日（公表間隔の p99 超：取り込み忘れの疑い）")
+            src.add("alert", "release_old", f"最新の公表 {last} から {days} 日（公表間隔の p99 超：取り込みの停止の疑い）")
         elif days >= th["warn"]:
-            src.add("warn", "release_old", f"最新の公表 {last} から {days} 日（手動取り込み待ちの可能性）")
+            src.add("warn", "release_old", f"最新の公表 {last} から {days} 日（公表が無い、または取り込みの遅れ）")
     return src.done()
 
 
