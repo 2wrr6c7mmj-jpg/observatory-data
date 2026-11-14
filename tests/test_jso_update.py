@@ -1,3 +1,6 @@
+import contextlib
+import io
+import json
 import shutil
 import sqlite3
 import tempfile
@@ -175,7 +178,8 @@ class Fetch(unittest.TestCase):
             if url == update.LIST_URL:
                 return Resp(200, self.page(3))
             return Resp(404, b"<html>") if url.endswith("p20261102_01.pdf") else Resp(200, b"%PDF-1.4 x")
-        n = update.fetch(0, get, self.updates)
+        with contextlib.redirect_stdout(io.StringIO()):  # no annotations from the tests
+            n = update.fetch(0, get, self.updates)
         recs = update.read_updates(self.updates)
         self.assertEqual(n, 7)  # 3 days x 2 + 2026/p20261113_01 + 2026/p20261102_01n, less the 404
         self.assertNotIn("2026/p20261102_01", [r["release_id"] for r in recs])
@@ -184,7 +188,8 @@ class Fetch(unittest.TestCase):
         update.MAX_PER_RUN = 1
         try:
             ok = lambda url: Resp(200, self.page(3)) if url == update.LIST_URL else Resp(200, b"%PDF-1.4 x")
-            self.assertEqual(update.fetch(0, ok, self.updates), 1)  # the next run tries the failed one again
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(update.fetch(0, ok, self.updates), 1)  # the next run tries the failed one again
         finally:
             update.MAX_PER_RUN = old
 
@@ -194,7 +199,7 @@ class Fetch(unittest.TestCase):
             if url == update.LIST_URL:
                 return Resp(200, self.page(1))
             raise polite.Challenge("challenge")
-        with self.assertRaises(polite.Challenge):
+        with self.assertRaises(polite.Challenge), contextlib.redirect_stdout(io.StringIO()):
             update.fetch(0, get, self.updates)
 
 
@@ -269,3 +274,48 @@ class D1Sync(unittest.TestCase):
         q = "SELECT count(*) FROM transit_pairs"
         self.assertEqual(d1.con.execute(q).fetchone()[0], local.execute(q).fetchone()[0])
         self.assertEqual(self.counts(d1.con, self.keys[0]), self.counts(local, self.keys[0]))
+
+
+class Cli(unittest.TestCase):
+    """stale / check against a temporary updates.jsonl and status.json (the commands the workflow runs)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        d = Path(self.tmp.name)
+        self.updates, self.out = d / "updates.jsonl", d / "jso"
+        self.out.mkdir()
+        self.saved = update.UPDATES
+        update.UPDATES = self.updates
+        ref = sqlite3.connect(update.BASE_DB)
+        self.base = ref.execute("SELECT count(*) FROM releases").fetchone()[0]
+        self.last = ref.execute("SELECT max(pub_date) FROM releases").fetchone()[0]
+        text = ref.execute("SELECT raw_text FROM releases WHERE release_id='2026/p20261027_03'").fetchone()[0]
+        ref.close()
+        # a copy of a stored ship release under a new id: it parses into sightings
+        self.rec = dict(release_id="2026/p20261128_01", pub_date="2026-11-28", pages=3, text=text,
+                        title="2026年11月28日 公表 中国海軍艦艇の動向について")
+
+    def tearDown(self):
+        update.UPDATES = self.saved
+        self.tmp.cleanup()
+
+    def status(self, releases, last):
+        (self.out / "status.json").write_text(json.dumps({"releases": releases, "last_release": last}), encoding="utf-8")
+
+    def test_stale_and_check(self):
+        self.updates.write_text("", encoding="utf-8")
+        self.status(self.base, self.last)
+        self.assertFalse(update.is_stale(self.out / "status.json"))
+        self.assertEqual(update.check_built(self.out), [])
+        self.updates.write_text(json.dumps(self.rec, ensure_ascii=False) + "\n", encoding="utf-8")
+        self.assertTrue(update.is_stale(self.out / "status.json"))
+        self.assertEqual(len(update.check_built(self.out)), 2)  # count and last release behind
+        self.status(self.base + 1, "2026-11-28")
+        self.assertFalse(update.is_stale(self.out / "status.json"))
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(update.check_built(self.out), [])
+        self.assertNotIn("without any sighting", out.getvalue())
+
+    def test_stale_command_exit_code(self):
+        self.updates.write_text("", encoding="utf-8")
+        self.assertIn(update.main(["stale"]), (0, 1))  # runs (no NameError); 0/1 depends on the published status

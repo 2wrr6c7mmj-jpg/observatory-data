@@ -111,9 +111,9 @@ def category(title: str) -> tuple[str, str]:
     return "OTHER", "other"
 
 
-def stored_ids(db: Path = BASE_DB, updates: Path = UPDATES) -> tuple[set[str], str]:
+def stored_ids(db: Path | None = None, updates: Path | None = None) -> tuple[set[str], str]:
     """Release ids already stored (base database + updates.jsonl) and the newest pub_date."""
-    con = sqlite3.connect(db)
+    con = sqlite3.connect(db or BASE_DB)
     ids = {r[0] for r in con.execute("SELECT release_id FROM releases")}
     newest = con.execute("SELECT max(pub_date) FROM releases").fetchone()[0]
     con.close()
@@ -142,17 +142,19 @@ def pdf_text(data: bytes) -> tuple[str, int]:
     return PAGE_SEP.join(p.strip() for p in pages), len(pages)
 
 
-def read_updates(path: Path = UPDATES) -> list[dict]:
+def read_updates(path: Path | None = None) -> list[dict]:
+    path = path or UPDATES
     if not path.exists():
         return []
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def fetch(pause: float = 3.0, getter=None, updates: Path = UPDATES, db: Path = BASE_DB) -> int:
+def fetch(pause: float = 3.0, getter=None, updates: Path | None = None, db: Path | None = None) -> int:
     """Append the new releases to updates.jsonl. A release that cannot be fetched or read is skipped with a
     warning and tried again next run; robots.txt refusal or a bot challenge stops the run (never worked around)."""
     from collectors import polite
     get = getter or (lambda url: polite.get(url, UA))
+    updates = updates or UPDATES
     ids, newest = stored_ids(db, updates)
     page = get(LIST_URL)
     if page.status != 200:
@@ -397,23 +399,26 @@ def d1_sync(con: sqlite3.Connection, d1: D1, records: list[dict]) -> list[str]:
     """Bring the updates.jsonl releases in D1 to the local rows; rebuild its transit_pairs and vessels.
 
     A release is rewritten when D1 does not have it or has another number of sightings (an earlier run that
-    stopped half-way). transit_pairs and vessels are rebuilt when a release was written, or when their row
+    stopped half-way; sightings, units and Japanese units are compared). transit_pairs and vessels are rebuilt when a release was written, or when their row
     counts differ from the local database (a rebuild that failed earlier). Each step can be run again."""
     if not records:
         return []
     since = min(r["pub_date"] for r in records)
     ids = sorted({r["release_id"] for r in records})
-    local = dict(con.execute("SELECT r.release_id, count(s.sighting_id) FROM releases r LEFT JOIN sightings s "
-                             "USING(release_id) WHERE r.pub_date >= ? GROUP BY r.release_id", (since,)).fetchall())
-    remote = {row["release_id"]: row["n"] for row in d1.query(
-        "SELECT r.release_id, count(s.sighting_id) AS n FROM releases r LEFT JOIN sightings s USING(release_id) "
-        "WHERE r.pub_date >= ? GROUP BY r.release_id", [since])[0]["results"]}
+    per = ("SELECT r.release_id, "
+           "(SELECT count(*) FROM sightings s WHERE s.release_id = r.release_id) AS s, "
+           "(SELECT count(*) FROM sighting_units u JOIN sightings s USING(sighting_id) WHERE s.release_id = r.release_id) AS u, "
+           "(SELECT count(*) FROM jp_units j WHERE j.release_id = r.release_id) AS j "
+           "FROM releases r WHERE r.pub_date >= ?")
+    local = {r[0]: tuple(r[1:]) for r in con.execute(per, (since,)).fetchall()}
+    remote = {row["release_id"]: (row["s"], row["u"], row["j"]) for row in d1.query(per, [since])[0]["results"]}
     todo = [k for k in ids if k in local and remote.get(k) != local[k]]
     for k in todo:
         d1.query(d1_release_sql(con, k))
-        got = d1.query("SELECT count(*) AS n FROM sightings WHERE release_id = ?", [k])[0]["results"][0]["n"]
+        got = {row["release_id"]: (row["s"], row["u"], row["j"]) for row in d1.query(
+            per.replace("WHERE r.pub_date >= ?", "WHERE r.release_id = ?"), [k])[0]["results"]}.get(k)
         if got != local[k]:
-            raise RuntimeError(f"D1 {k}: {got} sightings written, expected {local[k]}")
+            raise RuntimeError(f"D1 {k}: (sightings, units, jp_units) {got} written, expected {local[k]}")
     counts = "SELECT (SELECT count(*) FROM transit_pairs) AS tp, (SELECT count(*) FROM vessels) AS v"
     want = dict(zip(("tp", "v"), con.execute(counts).fetchone()))
     if todo or d1.query(counts)[0]["results"][0] != want:
@@ -422,6 +427,16 @@ def d1_sync(con: sqlite3.Connection, d1: D1, records: list[dict]) -> list[str]:
         if got != want:
             raise RuntimeError(f"D1 transit_pairs/vessels {got}, expected {want}")
     return todo
+
+
+def is_stale(status_path: Path = ROOT / "docs" / "data" / "jso" / "status.json") -> bool:
+    """True when the published status counts another number of releases than are stored (base + updates.jsonl)."""
+    ids, _ = stored_ids()
+    try:
+        published = json.loads(status_path.read_text(encoding="utf-8"))["releases"]
+    except (OSError, ValueError, KeyError):
+        return True
+    return published != len(ids)
 
 
 def check_built(out: Path = ROOT / "docs" / "data" / "jso") -> list[str]:
@@ -433,13 +448,15 @@ def check_built(out: Path = ROOT / "docs" / "data" / "jso") -> list[str]:
         problems.append(f"status.json releases {status.get('releases')}, stored {len(ids)}")
     if (status.get("last_release") or "") < newest:
         problems.append(f"status.json last_release {status.get('last_release')}, newest stored {newest}")
-    with tempfile.TemporaryDirectory() as d:
-        con = sqlite3.connect(working_db(Path(d) / "jso.sqlite"))
-        empty = [r[0] for r in con.execute(
-            "SELECT r.release_id FROM releases r WHERE r.domain='ship' AND r.release_id IN (%s) AND NOT EXISTS "
-            "(SELECT 1 FROM sightings s WHERE s.release_id=r.release_id)" % ",".join("?" * len(ids)),
-            sorted(i for i in ids if i in {x["release_id"] for x in read_updates()}))]
-        con.close()
+    new = sorted({x["release_id"] for x in read_updates()})
+    empty = []
+    if new:
+        with tempfile.TemporaryDirectory() as d:
+            con = sqlite3.connect(working_db(Path(d) / "jso.sqlite"))
+            empty = [r[0] for r in con.execute(
+                "SELECT r.release_id FROM releases r WHERE r.domain='ship' AND r.release_id IN (%s) AND NOT EXISTS "
+                "(SELECT 1 FROM sightings s WHERE s.release_id=r.release_id)" % ",".join("?" * len(new)), new)]
+            con.close()
     if empty:
         print(f"::warning title=jso-check::ship releases without any sighting read (check the text): {' '.join(empty)}")
     return problems
