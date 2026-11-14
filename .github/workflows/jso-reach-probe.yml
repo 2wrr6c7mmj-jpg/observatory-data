@@ -1,0 +1,47 @@
+name: JSO reach probe
+# 統幕（mod.go.jp/js）の報道発表を Actions から礼儀正しく読めるかだけを確かめる、読み取り専用の確認。
+# probe/jso-* ブランチへの push でだけ動く。robots.txt を確かめ、一覧ページと PDF を1回ずつ取得して
+# 状態を注釈（::notice / ::error）に出すだけ。ボット対策のチャレンジが出たらそこで止める（回り込まない）。
+# 何も commit しない。main は変えない。
+on:
+  push:
+    branches: ['probe/jso-*']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reach mod.go.jp/js politely
+        run: |
+          python - <<'PY'
+          import time
+          from collectors.polite import check_robots, raw_get, is_challenge
+          UA = "observatory-data/1 (+https://github.com/2wrr6c7mmj-jpg/observatory-data)"
+          urls = ["https://www.mod.go.jp/js/press/index.html",
+                  "https://www.mod.go.jp/js/activity/domestic/keikai2026.html",
+                  "https://www.mod.go.jp/js/pdf/2026/p20261105_01.pdf"]
+          r = check_robots(urls[0], UA)
+          print(f"::notice title=jso-robots::allowed={r.allowed} verified={r.verified} reason={r.reason}")
+          if not r.allowed:
+              raise SystemExit(0)
+          for u in urls:
+              time.sleep(3)
+              try:
+                  resp = raw_get(u, UA, timeout=30)
+              except Exception as e:  # noqa: BLE001
+                  print(f"::error title=jso-fetch::{u} {type(e).__name__}: {e}")
+                  continue
+              ch = is_challenge(resp)
+              print(f"::notice title=jso-fetch::{u} status={resp.status} challenge={ch} "
+                    f"type={resp.headers.get('content-type','')} bytes={len(resp.body)} "
+                    f"server={resp.headers.get('server','')}")
+              if ch:
+                  print("::notice title=jso-stop::bot challenge; stopping without retrying")
+                  break
+          PY
