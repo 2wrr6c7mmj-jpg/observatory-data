@@ -15,18 +15,17 @@ import re
 from datetime import date, datetime, timedelta, timezone
 
 from . import regions
+from .extract import OFFICIAL_COUNTRY
 
 DAY = 86400000
 OFFICIAL_KINDS = {"公式", "政府発表"}
-# Whose official word a source is.
-OFFICIAL_COUNTRY = {"jso": "日本", "mod": "日本", "mofa": "日本", "navy": "米国", "dvids": "米国", "kremlin": "ロシア",
-                    "cn-mod": "中国"}
 # Outlets of one family count once (independence of sources).
 FAMILY = {"xinhua": "中国国営", "xinhua-world": "中国国営", "globaltimes": "中国国営", "cgtn": "中国国営", "ecns": "中国国営",
           "chinadaily": "中国国営", "chinamil": "中国国営", "tass": "ロシア国営", "rt": "ロシア国営", "sputnik": "ロシア国営",
           "scmp-china": "SCMP", "scmp-military": "SCMP", "guardian-china": "Guardian", "guardian-russia": "Guardian",
           "bbc": "BBC", "bbc-china": "BBC", "bbc-africa": "BBC"}
-STALE_DAYS = 14   # an activity with no end date is taken as over 14 days after its last report
+STALE_DAYS = 14   # an activity with a start but no end is taken as over 14 days after its last report
+STALE_UNDATED = 7   # one with no date at all, 7 days after its last report
 
 
 GENERIC = re.compile(r"^(日[米豪比印英仏加独伊新韓]+|米[比豪韓]+|中露|露中)?(共同|合同|多国間|二国間|海上|統合|実動|指揮所)*(訓練|演習)(について)?$|"
@@ -132,8 +131,8 @@ def phase(e: dict, today: date) -> str:
 
     - A period with an end: over after the end day.
     - A start only: under way from the start; over when the reports say it ended, or STALE_DAYS after the last report.
-    - No date: from the reports' own words (planned / under way / ended) while the last report is at most STALE_DAYS old,
-      over after that. Without a publication date there is nothing to measure from: unknown.
+    - No date: from the reports' own words (planned / under way / ended) while the last report is at most STALE_UNDATED
+      old, over after that. Without a publication date there is nothing to measure from: unknown.
     """
     last_report = datetime.fromtimestamp((e.get("lastReported") or 0) / 1000, timezone.utc).date()
     stale = (today - last_report).days > STALE_DAYS
@@ -146,7 +145,7 @@ def phase(e: dict, today: date) -> str:
         return "done" if e.get("status") == "completed" or stale else "now"
     if not e.get("_pub", True):
         return "unknown"
-    if stale or e.get("status") == "completed":
+    if (today - last_report).days > STALE_UNDATED or e.get("status") == "completed":
         return "done"
     return {"planned": "next", "ongoing": "now"}.get(e.get("status"), "done")
 

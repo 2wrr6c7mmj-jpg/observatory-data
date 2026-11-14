@@ -8,6 +8,13 @@ on:
     branches: ['probe/exercises*']
   schedule:
     - cron: '43 */3 * * *'
+  # GitHub runs the schedules of this repository only a few times a day (11-14: the hourly translation ran 3 times,
+  # this schedule not once). So a run is also started when one of the other regular workflows ends; the "Due?" step
+  # lets it go only when the last collection is 150 minutes old or more.
+  workflow_run:
+    workflows: ['Translate headlines', 'Collection health', 'Collect PLA Activity Tracker', 'Sentinel-1 ship candidates',
+                'Collect JCG Senkaku', 'Ocean GFW match', 'AIS record', 'Site upkeep clock', 'Collect public data']
+    types: [completed]
   workflow_dispatch:
 permissions:
   contents: write
@@ -23,19 +30,31 @@ jobs:
     timeout-minutes: 80
     steps:
       - uses: actions/checkout@v4
+      - name: Due?
+        id: due
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_run" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          last=$(python3 -c "import json;print(json.load(open('docs/data/exercises/status.json')).get('generatedAt',0)//1000)" 2>/dev/null || echo 0)
+          age=$(( $(date +%s) - last ))
+          if [ "$age" -lt 9000 ]; then echo "go=false" >> "$GITHUB_OUTPUT"; echo "last collection $((age/60)) min ago: not due"; else echo "go=true" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-python@v5
+        if: steps.due.outputs.go == 'true'
+
         with:
           python-version: '3.12'
       - name: Tests
+        if: steps.due.outputs.go == 'true'
         run: python -m unittest discover -s tests -t .
       - name: PDF reader
+        if: steps.due.outputs.go == 'true'
         run: |
           pip install -q pypdf
           command -v pdftotext && echo "pdftotext present" || echo "pdftotext absent (pypdf is used)"
       - name: Probe more official sources (robots.txt, status, links; no data change)
-        if: github.event_name == 'push'
+        if: steps.due.outputs.go == 'true' && (github.event_name == 'push')
         run: python -m exercises.probe_sources
       - name: llama.cpp (latest CPU release for Ubuntu x64)
+        if: steps.due.outputs.go == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -54,10 +73,12 @@ jobs:
           bin=$(dirname "$(find "$RUNNER_TEMP/llama" -name llama-server -type f | head -1)")
           echo "LLAMA_BIN=$bin" >> "$GITHUB_ENV"
       - uses: actions/cache@v4
+        if: steps.due.outputs.go == 'true'
         with:
           path: /home/runner/.cache/llama
           key: llama-model-qwen3-8b-q4km
       - name: Start the model server
+        if: steps.due.outputs.go == 'true'
         run: |
           export LD_LIBRARY_PATH="$LLAMA_BIN:$LD_LIBRARY_PATH"
           nohup "$LLAMA_BIN/llama-server" -hf "$MODEL" --jinja -c 8192 -np 1 -t "$(nproc)" --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/server.log" 2>&1 &
@@ -67,19 +88,19 @@ jobs:
           done
           tail -40 "$RUNNER_TEMP/server.log"; echo "::error title=exercises::model server did not start"; exit 1
       - name: Probe (temporary directory)
-        if: github.event_name == 'push'
+        if: steps.due.outputs.go == 'true' && (github.event_name == 'push')
         run: |
           python -m exercises.run --model "$MODEL" --probe --out "$RUNNER_TEMP/ex" --limit 10 --minutes 25
           grep -E "prompt eval time|eval time" "$RUNNER_TEMP/server.log" | tail -4 || true
       - name: Collect and read
-        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        if: steps.due.outputs.go == 'true' && (github.event_name != 'push' && github.ref == 'refs/heads/main')
         # Works on a copy, so that publishing never has to merge two versions of the same files.
         run: |
           mkdir -p "$RUNNER_TEMP/ex"
           cp -r docs/data/exercises/. "$RUNNER_TEMP/ex/" 2>/dev/null || true
           python -m exercises.run --model "$MODEL" --minutes 50 --out "$RUNNER_TEMP/ex"
       - name: Publish changed data
-        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        if: steps.due.outputs.go == 'true' && (github.event_name != 'push' && github.ref == 'refs/heads/main')
         # The run's output is the whole of docs/data/exercises (it was built from the files at the start of the run).
         # Other workflows push other directories meanwhile, so each try starts from the newest main and puts the
         # output on top: no rebase of the same files, which failed on 11-14 when two runs overlapped.

@@ -101,6 +101,11 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(extract.plausible_name("海上联合-2026", "2026"), "海上联合-2026")
         self.assertEqual(extract.plausible_name("Keen Sword 27", "2026"), "Keen Sword 27")
 
+    def test_official_release_of_own_part(self):
+        doc = {"title": "仏軍主催多国間訓練「赤道２６」への参加について", "summary": "", "source": "jso"}
+        v = extract.validate(answer(countries=["フランス", "豪州"], place=None), doc, "フランス 豪州 オーストラリア", "2026-11-13")
+        self.assertEqual(v["countries"], ["日本", "フランス", "豪州"])
+
     def test_unknown_region(self):
         self.assertEqual(extract.validate(answer(region="mars", place=None), PLAIN, TEXT, "2026-11-09")["region"], "other")
 
@@ -151,15 +156,15 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(merge.phase(e, date(2026, 11, 20)), "now")
         self.assertEqual(merge.phase(e, date(2026, 11, 30)), "done")
         undated = ev("b", start=None, end=None, dateEvidence=None, status="ongoing")   # reported 2026-11-06
-        self.assertEqual(merge.phase(undated, date(2026, 11, 15)), "now")
-        self.assertEqual(merge.phase(undated, date(2026, 11, 30)), "done")   # 14 days after the last report
+        self.assertEqual(merge.phase(undated, date(2026, 11, 12)), "now")
+        self.assertEqual(merge.phase(undated, date(2026, 11, 15)), "done")   # 7 days after the last report
         open_ended = {**ev("c", status="ongoing"), "end": None}   # 11-16 with no end, reported 11-06
         self.assertEqual(merge.phase(open_ended, date(2026, 11, 18)), "now")
         self.assertEqual(merge.phase(open_ended, date(2026, 11, 22)), "done")   # 14 days after the last report
         self.assertEqual(merge.phase({**open_ended, "lastReported": 1_795_200_000_000}, date(2026, 11, 22)), "now")
         self.assertEqual(merge.phase({**open_ended, "lastReported": 1_795_200_000_000, "status": "completed"}, date(2026, 11, 22)), "done")
         no_pub = {**undated, "_pub": False}
-        self.assertEqual(merge.phase(no_pub, date(2026, 11, 15)), "unknown")
+        self.assertEqual(merge.phase(no_pub, date(2026, 11, 12)), "unknown")
 
     def test_confidence_reasons(self):
         def src(s, kind):

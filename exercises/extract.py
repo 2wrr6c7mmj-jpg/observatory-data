@@ -60,6 +60,11 @@ SCHEMA = {
 
 _Z2H = str.maketrans("０１２３４５６７８９，", "0123456789,")
 
+# Whose official word a source is (also used by merge.confidence).
+OFFICIAL_COUNTRY = {"jso": "日本", "mod": "日本", "mofa": "日本", "navy": "米国", "dvids": "米国", "kremlin": "ロシア",
+                    "cn-mod": "中国"}
+_TAKES_PART = re.compile(r"参加|共同訓練|共同演習|合同演習|派遣|联合演习|联合训练|joint exercise|participat", re.I)
+
 # A country stays only when the text names it (the model has mixed up 中巴 → Bahrain and 印尼 → India).
 COUNTRY_WORDS = {
     "日本": r"日本|japan|自衛隊|jsdf|jmsdf|jgsdf|jasdf|海自|陸自|空自|日米|日豪|日比|日印|日英|日仏|日韓|日方",
@@ -231,6 +236,10 @@ def validate(value: dict, doc: dict, text: str, published_day: str) -> dict:
         return x.strip()[:n] if isinstance(x, str) and x.strip() else None
 
     countries = supported_countries([c.strip()[:20] for c in (v.get("countries") or []) if isinstance(c, str) and c.strip()], source)
+    # An official release that announces its own country's part (「…への参加について」) makes that country a participant.
+    own = OFFICIAL_COUNTRY.get(doc.get("source"))
+    if own and own not in countries and _TAKES_PART.search(doc.get("title") or ""):
+        countries.insert(0, own)
     forces = s("forces", 400)
     if forces and not numbers_supported(forces, source):
         forces = None
