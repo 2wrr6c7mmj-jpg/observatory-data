@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-13T08:14:57Z",
+ "generated_utc": "2026-11-14T07:42:59Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -637,8 +637,8 @@
     {
      "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
      "name": "Soyuz 2.1b/Fregat-M | MKA Kinosputnik, KOEN and others",
-     "status": "Go",
-     "net_utc": "2026-11-14T00:50:00Z",
+     "status": "In Flight",
+     "net_utc": "2026-11-14T01:16:00Z",
      "rocket": "Soyuz 2.1b Fregat-M",
      "orbit": "SSO",
      "pad": "Cosmodrome Site 1S"
@@ -783,7 +783,8 @@
    "notices": [
     "aviation:P5506/26",
     "aviation:P5648/26",
-    "aviation:Q2693/26"
+    "aviation:Q2693/26",
+    "aviation:M0627/26"
    ],
    "method": "unaligned"
   },
@@ -832,6 +833,23 @@
    "site": "文昌",
    "country": "CN",
    "distance_km": 1464
+  },
+  {
+   "window_start_utc": "2026-11-30T22:00Z",
+   "window_end_utc": "2026-12-02T08:00Z",
+   "areas": [
+    [
+     42.879,
+     141.494
+    ]
+   ],
+   "notices": [
+    "aviation:P5732/26"
+   ],
+   "method": "nearest-only",
+   "site": "平壌周辺",
+   "country": "KP",
+   "distance_km": 1387
   }
  ],
  "recorded_launches": [
@@ -1059,8 +1077,8 @@
   {
    "ll2_id": "bff2fc91-eddd-4dfc-af26-ac0674cfab4d",
    "name": "Soyuz 2.1b/Fregat-M | MKA Kinosputnik, KOEN and others",
-   "status": "Go",
-   "net_utc": "2026-11-14T00:50:00Z",
+   "status": "In Flight",
+   "net_utc": "2026-11-14T01:16:00Z",
    "rocket": "Soyuz 2.1b Fregat-M",
    "provider": "Russian Federal Space Agency (ROSCOSMOS)",
    "orbit": "SSO",
