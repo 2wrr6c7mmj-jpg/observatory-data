@@ -3953,11 +3953,11 @@
   "no_data": "黒"
  },
  "s2": {
-  "version": "s2nc-1",
+  "version": "s2nc-2",
   "status": "試行（表示だけ。数・推定には使わない）",
   "source": "Copernicus Sentinel-2 L2A（CDSE Sentinel Hub Process API、sentinel-2-l2a、日ごとに雲の少ない順のモザイク）",
   "bands": "B2・B3・B4・B8（反射率×10000、UINT16）と SCL を 10 m で 1 回の要求（2 出力の tar）。PU の見込み 約 1.5／撮影（湛江 v2）",
-  "cloud": "範囲内の SCL の 8・9・10（雲・巻雲）と 3（雲の影）の画素の割合。範囲内 ≤ 10% かつ区画 A ≤ 2%、データのある画素 ≥ 90% の日だけ画像を作る（clear）",
+  "cloud": "範囲内の SCL の 8・9・10（雲・巻雲）と 3（雲の影）の画素の割合。範囲内 ≤ 10% かつ区画 A ≤ 2%、データのある画素 ≥ 90% の日だけ画像を作る（clear）。区画 A（cloud_a・pre_cloud_a）は 10（薄い巻雲）を数えない（s2nc-2、2026-11-14 から。それより前の行は 10 を含む）。港の設定（sites.json の s2.max_cloud_a・pre_max_cloud_a）があればその上限を使う",
   "precheck": "カタログのタイル全体の雲量（eo:cloud_cover）が 90% を超える日は取得しない（tile_cloudy）。それ以外はまず SCL だけを 60 m で取得し（約 0.03 PU）、範囲 > 20% か区画 A > 6% なら 10 m は取らない（pre_cloudy）",
   "display": "自然色：R＝B4、G＝B3、B＝B2、反射率 0〜0.3 を 0〜1 に、γ 1/2.2。範囲は全日で固定。WebP（品質 80、下に撮影・雲量・出典の帯）と縮小版（320×320 に収める、品質 70）",
   "daily": "毎日の実行で直近 10 日の新しい撮影日だけを処理する（同じ日は 1 回だけ。error は 2 回まで取り直す、列 attempts）。probe（--probe）では取らない",
