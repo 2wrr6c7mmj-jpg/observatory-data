@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-15T11:31:13Z",
+ "generated_utc": "2026-11-15T13:03:07Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -70,11 +70,11 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-14T12:23:05Z",
-   "heartbeat_age_h": 23.1,
-   "data_date": "2026-11-13",
+   "heartbeat_utc": "2026-11-15T12:57:01Z",
+   "heartbeat_age_h": 0.1,
+   "data_date": "2026-11-14",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
@@ -85,47 +85,7 @@
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "QGZ：最新の撮影 2026-11-07 から 8 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "ZDH：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "QJG：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "QDH：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "XSN：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "SWS：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
      "text": "STU：最新の撮影 2026-11-05 から 10 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "PDG：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "DXE：最新の撮影 2026-11-02 から 13 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -144,10 +104,10 @@
     }
    ],
    "values": {
-    "latest_acquired_utc": "2026-11-13T10:49:25Z",
-    "last_run_utc": "2026-11-14T12:23:05Z",
+    "latest_acquired_utc": "2026-11-14T09:56:32Z",
+    "last_run_utc": "2026-11-15T12:57:01Z",
     "last_run_errors": 0,
-    "last_run_scenes": 3
+    "last_run_scenes": 9
    }
   },
   {
@@ -156,7 +116,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-15T11:29:40Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.6,
    "data_date": "2026-11-12",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -185,7 +145,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-14T13:46:35Z",
-   "heartbeat_age_h": 21.7,
+   "heartbeat_age_h": 23.3,
    "data_date": "2026-11-14",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -229,7 +189,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-15T07:59:39Z",
-   "heartbeat_age_h": 3.5,
+   "heartbeat_age_h": 5.1,
    "data_date": "2026-11-13",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -247,7 +207,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-15T08:28:32Z",
-   "heartbeat_age_h": 3.0,
+   "heartbeat_age_h": 4.6,
    "data_date": "2026-11-15",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -265,7 +225,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-15T11:29:56Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -371,14 +331,14 @@
     "trial": true,
     "mask_version": "QGZ-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-07T10:03:53Z",
+     "acquired_utc": "2026-11-14T09:55:42Z",
      "version": "est-1",
-     "mode": 37,
-     "p10": 33,
-     "p90": 43,
-     "warship_mode": 23,
-     "warship_p10": 19,
-     "warship_p90": 27,
+     "mode": 30,
+     "p10": 26,
+     "p90": 35,
+     "warship_mode": 16,
+     "warship_p10": 13,
+     "warship_p90": 20,
      "credibility": 3,
      "in_sample": ""
     }
@@ -390,14 +350,14 @@
     "trial": true,
     "mask_version": "ZDH-land-v2",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:02Z",
+     "acquired_utc": "2026-11-14T09:54:02Z",
      "version": "est-1",
-     "mode": 22,
-     "p10": 18,
-     "p90": 24,
-     "warship_mode": 15,
-     "warship_p10": 12,
-     "warship_p90": 17,
+     "mode": 18,
+     "p10": 15,
+     "p90": 21,
+     "warship_mode": 10,
+     "warship_p10": 8,
+     "warship_p90": 13,
      "credibility": 3,
      "in_sample": ""
     }
@@ -409,14 +369,14 @@
     "trial": true,
     "mask_version": "QJG-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:55:42Z",
+     "acquired_utc": "2026-11-14T09:55:42Z",
      "version": "est-1",
-     "mode": 5,
-     "p10": 3,
-     "p90": 5,
-     "warship_mode": 1,
-     "warship_p10": 1,
-     "warship_p90": 3,
+     "mode": 0,
+     "p10": 0,
+     "p90": 0,
+     "warship_mode": 0,
+     "warship_p10": 0,
+     "warship_p90": 0,
      "credibility": 3,
      "in_sample": ""
     }
@@ -428,7 +388,7 @@
     "trial": true,
     "mask_version": "QDH-land-v2",
     "est1": {
-     "acquired_utc": "2026-11-02T09:55:42Z",
+     "acquired_utc": "2026-11-14T09:55:42Z",
      "version": "est-1",
      "mode": 3,
      "p10": 3,
@@ -447,14 +407,14 @@
     "trial": true,
     "mask_version": "XSN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:02Z",
+     "acquired_utc": "2026-11-14T09:54:02Z",
      "version": "est-1",
-     "mode": 0,
-     "p10": 0,
-     "p90": 0,
-     "warship_mode": 0,
+     "mode": 1,
+     "p10": 1,
+     "p90": 1,
+     "warship_mode": 1,
      "warship_p10": 0,
-     "warship_p90": 0,
+     "warship_p90": 1,
      "credibility": 3,
      "in_sample": ""
     }
@@ -466,12 +426,12 @@
     "trial": true,
     "mask_version": "LSN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-09T09:48:11Z",
+     "acquired_utc": "2026-11-14T09:56:32Z",
      "version": "est-1",
-     "mode": 19,
-     "p10": 16,
-     "p90": 22,
-     "warship_mode": 7,
+     "mode": 13,
+     "p10": 10,
+     "p90": 17,
+     "warship_mode": 6,
      "warship_p10": 4,
      "warship_p90": 9,
      "credibility": 3,
@@ -485,16 +445,16 @@
     "trial": true,
     "mask_version": "SWS-land-v2",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:27Z",
+     "acquired_utc": "2026-11-14T09:54:27Z",
      "version": "est-1",
-     "mode": 9,
-     "p10": 6,
-     "p90": 12,
-     "warship_mode": 4,
-     "warship_p10": 2,
-     "warship_p90": 6,
+     "mode": 6,
+     "p10": 4,
+     "p90": 8,
+     "warship_mode": 2,
+     "warship_p10": 1,
+     "warship_p90": 3,
      "credibility": 3,
-     "in_sample": "baseline"
+     "in_sample": ""
     }
    },
    {
@@ -561,16 +521,16 @@
     "trial": true,
     "mask_version": "PDG-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:27Z",
+     "acquired_utc": "2026-11-14T09:54:27Z",
      "version": "est-1",
-     "mode": 10,
-     "p10": 8,
-     "p90": 13,
-     "warship_mode": 6,
-     "warship_p10": 4,
-     "warship_p90": 7,
+     "mode": 12,
+     "p10": 10,
+     "p90": 14,
+     "warship_mode": 7,
+     "warship_p10": 5,
+     "warship_p90": 8,
      "credibility": 3,
-     "in_sample": "baseline"
+     "in_sample": ""
     }
    },
    {
@@ -599,7 +559,7 @@
     "trial": true,
     "mask_version": "DXE-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-02T09:54:02Z",
+     "acquired_utc": "2026-11-14T09:54:02Z",
      "version": "est-1",
      "mode": 0,
      "p10": 0,
@@ -608,7 +568,7 @@
      "warship_p10": 0,
      "warship_p90": 0,
      "credibility": 3,
-     "in_sample": "baseline"
+     "in_sample": ""
     }
    },
    {
@@ -834,15 +794,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-14T12:17:31Z",
+   "last_success_started_utc": "2026-11-15T12:49:52Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43594082307,
-    "started_utc": "2026-11-14T12:17:31Z",
+    "id": 43715831559,
+    "started_utc": "2026-11-15T12:49:52Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43594082307",
-    "delay_h": 7.0
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43715831559",
+    "delay_h": 7.5
    },
    "consecutive_failures": 0
   },
@@ -937,12 +897,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 178.487,
-   "usage_csv_requests": 878,
-   "usage_csv_runs": 23,
-   "status_month_pu_before": 172.808,
-   "status_last_run_utc": "2026-11-14T12:23:05Z",
-   "usage_csv_pu_before_last_run": 172.808,
+   "usage_csv_pu": 192.799,
+   "usage_csv_requests": 939,
+   "usage_csv_runs": 24,
+   "status_month_pu_before": 178.487,
+   "status_last_run_utc": "2026-11-15T12:57:01Z",
+   "usage_csv_pu_before_last_run": 178.487,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -991,16 +951,16 @@
     "mask_version": "SLP-land-v2"
    },
    "QGZ": {
-    "acquired_utc": "2026-11-07T10:03:53Z",
+    "acquired_utc": "2026-11-14T09:55:42Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 69,
-    "coverage": 0.999,
+    "relative_orbit": 171,
+    "coverage": 0.998,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "QGZ-land-v1"
    },
    "ZDH": {
-    "acquired_utc": "2026-11-02T09:54:02Z",
+    "acquired_utc": "2026-11-14T09:54:02Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 0.999,
@@ -1009,7 +969,7 @@
     "mask_version": "ZDH-land-v2"
    },
    "QJG": {
-    "acquired_utc": "2026-11-02T09:55:42Z",
+    "acquired_utc": "2026-11-14T09:55:42Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 0.999,
@@ -1018,7 +978,7 @@
     "mask_version": "QJG-land-v1"
    },
    "QDH": {
-    "acquired_utc": "2026-11-02T09:55:42Z",
+    "acquired_utc": "2026-11-14T09:55:42Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 1.0,
@@ -1027,25 +987,25 @@
     "mask_version": "QDH-land-v2"
    },
    "XSN": {
-    "acquired_utc": "2026-11-02T09:54:02Z",
+    "acquired_utc": "2026-11-14T09:54:02Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
-    "coverage": 0.996,
+    "coverage": 0.994,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "XSN-land-v1"
    },
    "LSN": {
-    "acquired_utc": "2026-11-09T09:48:11Z",
+    "acquired_utc": "2026-11-14T09:56:32Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 98,
-    "coverage": 0.997,
+    "relative_orbit": 171,
+    "coverage": 0.999,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "LSN-land-v1"
    },
    "SWS": {
-    "acquired_utc": "2026-11-02T09:54:27Z",
+    "acquired_utc": "2026-11-14T09:54:27Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 1.0,
@@ -1081,7 +1041,7 @@
     "mask_version": "MAW-land-v2"
    },
    "PDG": {
-    "acquired_utc": "2026-11-02T09:54:27Z",
+    "acquired_utc": "2026-11-14T09:54:27Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 1.0,
@@ -1099,7 +1059,7 @@
     "mask_version": "NDS-land-v1"
    },
    "DXE": {
-    "acquired_utc": "2026-11-02T09:54:02Z",
+    "acquired_utc": "2026-11-14T09:54:02Z",
     "platform": "sentinel-1d",
     "relative_orbit": 171,
     "coverage": 1.0,
