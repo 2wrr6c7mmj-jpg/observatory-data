@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-15T08:01:06Z",
+ "generated_utc": "2026-11-15T11:00:44Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-14T12:23:05Z",
-   "heartbeat_age_h": 19.6,
+   "heartbeat_age_h": 22.6,
    "data_date": "2026-11-13",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -156,7 +156,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-14T10:55:56Z",
-   "heartbeat_age_h": 21.1,
+   "heartbeat_age_h": 24.1,
    "data_date": "2026-11-12",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -185,7 +185,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-14T13:46:35Z",
-   "heartbeat_age_h": 18.2,
+   "heartbeat_age_h": 21.2,
    "data_date": "2026-11-14",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -229,7 +229,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-15T07:59:39Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 3.0,
    "data_date": "2026-11-13",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -246,16 +246,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-15T01:19:54Z",
-   "heartbeat_age_h": 6.7,
+   "heartbeat_utc": "2026-11-15T08:28:32Z",
+   "heartbeat_age_h": 2.5,
    "data_date": "2026-11-15",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-15T01:19:54Z",
-    "notam_watch_last_seen_utc": "2026-11-15T01:19:54Z",
+    "notices_last_retrieved_utc": "2026-11-15T08:28:32Z",
+    "notam_watch_last_seen_utc": "2026-11-15T08:28:32Z",
     "ll2_last_retrieved_utc": "2026-11-15T07:59:35Z"
    }
   },
@@ -264,7 +264,7 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-15T07:59:56Z",
+   "heartbeat_utc": "2026-11-15T11:00:08Z",
    "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
@@ -274,7 +274,7 @@
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-15T08:00:14Z",
-    "newest_input_utc": "2026-11-15T07:59:39Z"
+    "newest_input_utc": "2026-11-15T08:28:32Z"
    }
   },
   {
@@ -773,7 +773,7 @@
     "window_start_utc": "2026-11-20T11:00Z",
     "window_end_utc": "2026-11-23T14:00Z"
    },
-   "active_notices": 32
+   "active_notices": 33
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -878,14 +878,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-14T18:08:24Z",
+   "last_success_started_utc": "2026-11-15T10:59:13Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43624905327,
-    "started_utc": "2026-11-14T18:08:24Z",
+    "id": 43706682246,
+    "started_utc": "2026-11-15T10:59:13Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43624905327"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43706682246"
    },
    "consecutive_failures": 0
   },
@@ -899,14 +899,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-15T07:59:56Z",
+   "last_success_started_utc": "2026-11-15T11:00:08Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 43692418665,
-    "started_utc": "2026-11-15T07:59:56Z",
+    "id": 43706754145,
+    "started_utc": "2026-11-15T11:00:08Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43692418665"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43706754145"
    },
    "consecutive_failures": 0
   },
@@ -1198,8 +1198,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-14",
-   "version": "**s2nc-2**（光学の雲の判定）"
+   "date": "2026-11-15",
+   "version": "**naval50-3**（地図の札の数え方）"
   }
  },
  "credits": [
