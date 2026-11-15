@@ -1066,6 +1066,8 @@ def write_naval50(out: Path, sites: list[dict] | None = None) -> int:
             w.writeheader()
             w.writerows(rows)
         write_naval50_boxes(out, rows, boxes)
+        from . import close_pairs   # the S1 scenes with a clear S2 image within a day (user 2026-11-15: keep them every day)
+        close_pairs.update(out, rows, boxes)
     return len(rows)
 
 
