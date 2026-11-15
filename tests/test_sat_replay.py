@@ -4,12 +4,17 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:   # the plain test job has no numpy: sat/replay.py and sat/run.py need it
+    np = None
 
-from sat import replay
-from sat.run import decode_chip
+if np is not None:
+    from sat import replay
+    from sat.run import decode_chip
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
 class ReplayTest(unittest.TestCase):
     def test_encode_chip_round_trip(self):
         vv = np.array([[-12.5, np.nan], [-20.0, -3.25]])
