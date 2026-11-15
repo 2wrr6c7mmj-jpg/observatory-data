@@ -4265,13 +4265,13 @@
     },
     "HKG": {
      "lines": {
-      "naval": 1,
+      "naval": 3,
       "civil": 1,
       "unknown": 4
      },
      "lines_version": "HKG-quay-v1",
      "confidence": "中（溫約瑟の地図の点と、昂船洲の海軍基地として広く知られた港池。OSM に軍の区域は無い）",
-     "note": null,
+     "note": "berth false（2026-11-15、AI の判断）：昂船洲の泊地の岸壁。S1 の naval50 は 4 撮影とも 5〜6 隻で位置も同じ（10-17〜11-10）だが、S2 の 5 日（09-30・10-05・10-07・10-25 ほか）とも泊地は空。岸壁・防波堤そのものの反射を数えている（検品_全港の正解（AI の目視、2026-11-15））",
      "since_utc": "2026-10-01"
     },
     "HPU": {
@@ -4287,13 +4287,13 @@
     },
     "JMN": {
      "lines": {
-      "naval": 14,
+      "naval": 23,
       "civil": 0,
       "unknown": 0
      },
      "lines_version": "JMN-quay-v1",
      "confidence": null,
-     "note": null,
+     "note": "berth false（2026-11-15、AI の判断）：崖門の長い桟橋。S1 の naval50 は 10-22 に 11、11-03 に 5 だが、S2 の 4 日（09-20・09-30・10-07・10-25）とも 50 m 以上の船は無く、同じ位置に小さな浮体があるだけ。桟橋と浮体の反射を数えている（検品_全港の正解（AI の目視、2026-11-15））",
      "since_utc": "2026-10-01"
     },
     "LSN": {
@@ -4309,13 +4309,13 @@
     },
     "LYG": {
      "lines": {
-      "naval": 4,
+      "naval": 5,
       "civil": 0,
       "unknown": 6
      },
      "lines_version": "LYG-quay-v1",
      "confidence": null,
-     "note": null,
+     "note": "berth false（2026-11-15、AI の判断）：連雲港の岸壁の沖。3 撮影とも数えた位置に、S2 の 6 日（2026-04-05〜11-06）とも船が写っていない",
      "since_utc": "2026-10-01"
     },
     "MAW": {
@@ -4397,24 +4397,24 @@
     },
     "STU": {
      "lines": {
-      "naval": 6,
+      "naval": 11,
       "civil": 2,
       "unknown": 17
      },
      "lines_version": "STU-quay-v1",
      "confidence": null,
-     "note": null,
+     "note": "berth false（2026-11-15、AI の判断）：汕頭の陸上（田・道・建物）。数えた片の箱が S2 の 6 日（2025-11-16〜2026-11-01）とも陸の上",
      "since_utc": "2026-11-05"
     },
     "SWS": {
      "lines": {
-      "naval": 13,
+      "naval": 17,
       "civil": 5,
       "unknown": 5
      },
      "lines_version": "SWS-quay-v1",
      "confidence": null,
-     "note": null,
+     "note": "berth false（2026-11-15、AI の判断）：呉淞の桟橋（斜めの構造物）。2 撮影とも数えた位置に、S2 の 6 日（2025-11-02〜2026-11-10）とも船が無く構造物だけ",
      "since_utc": "2026-11-01"
     },
     "SYL": {
@@ -4430,13 +4430,13 @@
     },
     "WHI": {
      "lines": {
-      "naval": 3,
+      "naval": 5,
       "civil": 0,
       "unknown": 0
      },
      "lines_version": "WHI-quay-v1",
      "confidence": null,
-     "note": null,
+     "note": "berth false（2026-11-15、AI の判断）：威海の桟橋。数えた片の位置（3 撮影中 2〜3 回）に、S2 の 6 日（2026-05-17〜11-10）とも 50 m 以上の船が写っていない",
      "since_utc": "2026-10-01"
     },
     "XCD": {
