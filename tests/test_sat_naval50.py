@@ -1,4 +1,5 @@
-"""naval50-1 (sat/eval_presence.py): ships of 50 m or more on the naval berth lines, counted without est-2's discounts."""
+"""naval50 (sat/eval_presence.py): ships of 50 m or more on the naval berth lines, counted without est-2's discounts
+(naval50-3: the first ship of a stretch whole, half of the rest end to end and abreast)."""
 import tempfile
 import unittest
 from pathlib import Path
@@ -16,14 +17,15 @@ class Naval50(unittest.TestCase):
               {"ship_length_m": 90}]                                              # missing k / c_mean / p_real: one ship
         n, total = ep.naval50_sum(st)
         self.assertEqual(n, 4)
-        self.assertAlmostEqual(total, 1.11 + 3.0 + 0.6 + 1.0)
+        # 1 x 1.055 + 2 x 1 + 1 x 1.5 x 0.3 + 1 (naval50-3: half of the ships beyond the first)
+        self.assertAlmostEqual(total, 1.055 + 2.0 + 0.45 + 1.0)
         self.assertEqual(ep.naval50_sum([]), (0, 0.0))
         # a lower line (the maritime garrison ports, 40 m): the 44 m boats count, the 37 m ones do not
         boats = [{"ship_length_m": 44, "k": 4, "c_mean": 1.05, "p_real": 1.0}, {"ship_length_m": 37, "k": 3, "c_mean": 1.0, "p_real": 1.0}]
         self.assertEqual(ep.naval50_sum(boats), (0, 0.0))
         n, total = ep.naval50_sum(boats, 40.0)
         self.assertEqual(n, 1)
-        self.assertAlmostEqual(total, 4.2)
+        self.assertAlmostEqual(total, 2.5 * 1.025)
 
     def test_length_line_per_site(self):
         self.assertEqual(set(ep.NAVAL50_MIN_LEN), {"STU", "XMN", "SWS"})          # the maritime garrison ports only
