@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-14T12:23:43Z",
+ "generated_utc": "2026-11-15T00:54:31Z",
  "version": "eval-presence-5",
  "files": {
   "presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）",
@@ -1352,7 +1352,7 @@
    "site_id": "JMN",
    "name": "江門・崖門（掃雷艦第 10 大隊）",
    "calibrated": false,
-   "sections_eligible": 32,
+   "sections_eligible": 19,
    "answers": 0,
    "n_blind_oos": 0,
    "n_clear_oos": 0,
@@ -1486,7 +1486,7 @@
    "site_id": "HKG",
    "name": "香港・昂船洲（駐香港部隊）",
    "calibrated": false,
-   "sections_eligible": 24,
+   "sections_eligible": 17,
    "answers": 0,
    "n_blind_oos": 0,
    "n_clear_oos": 0,
@@ -1620,7 +1620,7 @@
    "site_id": "ALL",
    "name": "全港",
    "calibrated": null,
-   "sections_eligible": 460,
+   "sections_eligible": 440,
    "answers": 1531,
    "n_blind_oos": 186,
    "n_clear_oos": 851,
