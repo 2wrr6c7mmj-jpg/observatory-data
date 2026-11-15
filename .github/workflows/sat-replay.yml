@@ -1,0 +1,81 @@
+name: Close pairs from the past (replay probe)
+# 撮影時刻の近い S1・S2 の組を過去分からも作る probe（sat/replay.py。ユーザー了承 2026-11-15「全港 約350PU」）。
+# 晴れの S2 画像（s2_scenes.csv と目視確認の日）ごとに、24 時間以内で基準のある軌道の S1 を、目視確認の取り直しの切り出し
+# （probe/sat-s1-recount-* の probe-raw/s1-recount、0 PU）か CDSE から取り、毎日の処理と同じコードで数えて close_pairs に足す。
+# probe 用ブランチ（probe/sat-replay-*）への push でだけ動く。main は変えない。結果（close_pairs・replay_usage.csv・
+# probe-raw/replay）は同じ probe ブランチにだけ commit し、close_pairs と usage は司令部が PR で main に入れる。
+# PU：この仕事の合計の上限 350 PU（sat/replay.py の MAX_PU_TOTAL）と、月の自主上限（全体 9,000・余裕 450・外洋 7,000 の予約、
+# ports-archive.yml と同じ値）の残りの小さい方。BUDGET_MONTH 以外の月は要求の前に止まる。
+on:
+  push:
+    branches: ['probe/sat-replay-*']
+permissions:
+  contents: write
+concurrency:
+  group: probe-ports-archive
+  cancel-in-progress: false
+env:
+  BUDGET_MONTH: '2026-11'
+  OCEAN_CAP: '7000'
+  GUARD_ARGS: '--budget-month 2026-11 --global-cap 9000 --global-margin 450'
+  REPLAY_SITES: 'ZJG SYL SLP QGZ ZDH QJG QDH XSN LSN SWS XMN STU MAW PDG NDS DXE BHI XCD LYG JMN HPU HKG WHI'
+jobs:
+  replay:
+    if: ${{ !contains(github.event.head_commit.message, '[replay-result]') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest tests.test_sat_replay tests.test_sat_close_pairs tests.test_sat_s1_recount -v
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
+      - name: Other CDSE usage of this month (main's sat; every branch's other and ports usage CSVs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+      - name: The recount probes' chips (0 PU)
+        run: |
+          for b in $(git for-each-ref --format='%(refname:short)' 'refs/remotes/origin/probe/sat-s1-recount-*'); do
+            d="$RUNNER_TEMP/chips/$(basename "$b")"; mkdir -p "$d"
+            git archive "$b" probe-raw/s1-recount 2>/dev/null | tar -x -C "$d" || true
+            echo "$b: $(find "$d" -name '*.npz' | wc -l) chips"
+          done
+      - name: Replay
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          rc=0
+          python -m sat.replay --site $REPLAY_SITES --work "$RUNNER_TEMP/work" --keep probe-raw/replay \
+            --chips "$RUNNER_TEMP"/chips/*/probe-raw/s1-recount $GUARD_ARGS --ocean-cap "$OCEAN_CAP" \
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
+            --usage-out docs/data/sat/replay_usage.csv --max-minutes 120 > "$RUNNER_TEMP/summary.json" 2> "$RUNNER_TEMP/replay.log" || rc=$?
+          tail -c 20000 "$RUNNER_TEMP/replay.log"; cat "$RUNNER_TEMP/summary.json"
+          exit $rc
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python -m sat.annotate text replay-summary "$RUNNER_TEMP/summary.json" || true
+          tail -c 30000 "$RUNNER_TEMP/replay.log" > "$RUNNER_TEMP/replay-tail.log" || true
+          python -m sat.annotate text replay-log "$RUNNER_TEMP/replay-tail.log" || true
+      - name: Commit to this probe branch only
+        if: always()
+        run: |
+          git add docs/data/sat/close_pairs.csv docs/data/sat/close_pairs docs/data/sat/replay_usage.csv probe-raw/replay 2>/dev/null || true
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 過去分の撮影時刻の近い組（replay） [replay-result]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "::notice title=replay-commit::$(git rev-parse HEAD)"
