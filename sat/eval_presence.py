@@ -750,8 +750,9 @@ def meta(res: dict) -> dict:
         "version": EVAL_VERSION,
         "files": {"presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）", "meta.json": "この定義と港別の表（table）",
                   f"../{NAVAL50_FILE}": (f"{NAVAL50_VERSION}：地図の札の数。撮影ごとに、軍の着く線（naval-1）の上の片のうち船の長さが {MIN_LENGTH_M:g} m 以上のものを、"
-                                         "艦種の重みや区画の役割で割り引かずに数える（ユーザーの決定 2026-11-11）。warship_50＝Σ k×c_mean×p_real の四捨五入"
-                                         "（k＝縦に並ぶ数、c_mean＝横抱きの列数の期待値、p_real＝にじみでない確率）、stretches_50＝数えた片の数、"
+                                         "艦種の重みや区画の役割で割り引かずに数える（ユーザーの決定 2026-11-11）。warship_50＝Σ (1＋0.5(k−1))×(1＋0.5(c_mean−1))×p_real の四捨五入"
+                                         "（k＝縦に並ぶ数、c_mean＝横抱きの列数の期待値、p_real＝にじみでない確率。片の 1 隻目はそのまま、2 隻目からは半分に数える："
+                                         "naval50-3、2026-11-15。撮影時刻の近い S2 との組 66 組で、大きな基地の数が目視の 1.6〜2.9 倍だったため）、stretches_50＝数えた片の数、"
                                          "warship_est2＝est-2 の中央値（割り引いた数）、ships_all＝全長・全種の中央値、min_length_m＝その港の長さの線引き"
                                          f"（既定 {MIN_LENGTH_M:g} m。水警区の港 {'・'.join(sorted(NAVAL50_MIN_LEN))} は {min(NAVAL50_MIN_LEN.values()):g} m：022 型ミサイル艇など小型の戦闘艦艇が主のため。列名は warship_50 のまま）"),
                   f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
@@ -985,7 +986,15 @@ def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
 
 
 NAVAL50_FILE = "quay_naval50.csv"
-NAVAL50_VERSION = "naval50-2"   # naval50-1 + the length line per site (NAVAL50_MIN_LEN) and the column min_length_m
+NAVAL50_VERSION = "naval50-3"   # naval50-2 + half of the ships beyond the first (NAVAL50_K_DAMP, NAVAL50_C_DAMP)
+# naval50-3 (2026-11-15): the count of a stretch keeps the first ship whole and half of the rest, end to end (k) and abreast
+# (c_mean): (1 + K_DAMP (k - 1)) x (1 + C_DAMP (c_mean - 1)) x p_real. The close pairs (close_pairs.csv: 66 pairs of a radar
+# scene and a Sentinel-2 image within 24 h, the AI's count by eye) showed naval50-2 over the eye count at the big bases
+# (Zhanjiang, Guzhenkou, Dinghai, Yulin, Longpo: 17 of 24 pairs over, 1.6-2.9 times), mostly from k (a long bright stretch read as
+# several ships end to end). With these values: 9 of 18 pairs within the eye range (1 of 18 before), Zhanjiang 1.08 times, Dinghai
+# 1.20, Guzhenkou 1.52. Abreast ships are half kept: the eye at 10 m misses some of them. The small ports barely change (k ~ 1).
+NAVAL50_K_DAMP = 0.5
+NAVAL50_C_DAMP = 0.5
 NAVAL50_COLUMNS = ("site_id", "acquired_utc", "naval50_version", "stretches_50", "warship_50", "warship_est2", "ships_all", "min_length_m")
 # The length line of a site when it is not MIN_LENGTH_M. The maritime garrison ports (水警区: the navy's coastal patrol units, not
 # the coast guard) are home to small combatants: the Type 022 missile boat is about 43 m, and at Shantou 20 ships were seen on the
@@ -994,13 +1003,16 @@ NAVAL50_MIN_LEN = {"STU": 40.0, "XMN": 40.0, "SWS": 40.0}
 
 
 def naval50_sum(stretches: list[dict], min_len: float = MIN_LENGTH_M) -> tuple[int, float]:
-    """(stretches of ``min_len`` or more, their ships = sum of k x c_mean x p_real) of est-2 stretches already on naval berths."""
+    """(stretches of ``min_len`` or more, their ships) of est-2 stretches already on naval berths. The ships of a stretch
+    (naval50-3) = (1 + K_DAMP (k - 1)) x (1 + C_DAMP (c_mean - 1)) x p_real: the first ship whole, half of the rest."""
     n, total = 0, 0.0
     for st in stretches:
         if float(st.get("ship_length_m") or 0) < min_len:
             continue
         n += 1
-        total += float(st.get("k") or 1) * float(st.get("c_mean") or 1) * float(1 if st.get("p_real") is None else st["p_real"])
+        k, c = float(st.get("k") or 1), float(st.get("c_mean") or 1)
+        total += ((1 + NAVAL50_K_DAMP * (k - 1)) * (1 + NAVAL50_C_DAMP * (c - 1))
+                  * float(1 if st.get("p_real") is None else st["p_real"]))
     return n, total
 
 
@@ -1077,7 +1089,7 @@ def naval50_box_doc(site_id: str, rows: list[dict], scenes: dict) -> dict:
     keep = sorted(mine)[-NAVAL50_BOX_SCENES:]
     return {"version": NAVAL50_VERSION, "site_id": site_id, "min_length_m": float(mine[keep[-1]]["min_length_m"]) if keep else None,
             "note": "box_lonlat は数えた片（軍の着く線の上で、船の長さが線引き以上）の線の範囲を 15 m 広げた四角 [西, 南, 東, 北]。"
-                    "ships はその片の隻数（縦に並ぶ数 × 横抱きの期待値 × 実在の確率）。船体の輪郭ではない",
+                    "ships はその片の隻数（縦に並ぶ数と横抱きの期待値の、1 隻目はそのまま・2 隻目からは半分 × 実在の確率。naval50-3）。船体の輪郭ではない",
             "scenes": {a: {"warship_50": mine[a]["warship_50"], "boxes": scenes.get(a, [])} for a in keep}}
 
 
