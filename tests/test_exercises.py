@@ -156,8 +156,10 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(merge.phase(e, date(2026, 11, 20)), "now")
         self.assertEqual(merge.phase(e, date(2026, 11, 30)), "done")
         undated = ev("b", start=None, end=None, dateEvidence=None, status="ongoing")   # reported 2026-11-06
-        self.assertEqual(merge.phase(undated, date(2026, 11, 12)), "now")
-        self.assertEqual(merge.phase(undated, date(2026, 11, 15)), "done")   # 7 days after the last report
+        self.assertEqual(merge.phase(undated, date(2026, 11, 12)), "done")   # no period: never under way
+        planned = {**undated, "status": "planned"}
+        self.assertEqual(merge.phase(planned, date(2026, 11, 12)), "next")
+        self.assertEqual(merge.phase(planned, date(2026, 11, 15)), "done")   # 7 days after the last report
         open_ended = {**ev("c", status="ongoing"), "end": None}   # 11-16 with no end, reported 11-06
         self.assertEqual(merge.phase(open_ended, date(2026, 11, 18)), "now")
         self.assertEqual(merge.phase(open_ended, date(2026, 11, 22)), "done")   # 14 days after the last report
@@ -169,14 +171,22 @@ class MergeTest(unittest.TestCase):
     def test_confidence_reasons(self):
         def src(s, kind):
             return {"url": "https://x/" + s, "source": s, "sourceName": s, "kind": kind, "publishedAt": 1}
-        e = {"countries": ["中国"], "sources": [src("cn-mod", "公式")]}
+        e = {"countries": ["中国"], "start": "2026-11-01", "sources": [src("cn-mod", "公式")]}
         self.assertEqual(merge.confidence(e), ("高", "公式：cn-mod（実施国の発表）"))
-        e = {"countries": ["中国"], "sources": [src("jso", "公式")]}
+        undated = {**e, "start": None}
+        self.assertEqual(merge.confidence(undated), ("中", "公式（期間の記載なし）：cn-mod（実施国の発表）"))
+        e = {"countries": ["中国"], "start": "2026-11-01", "sources": [src("jso", "公式")]}
         self.assertEqual(merge.confidence(e)[1], "公式：jso（観測した国の発表）")
         e = {"countries": ["中国"], "sources": [src("xinhua", "国営メディア"), src("globaltimes", "国営・党系メディア")]}
         self.assertEqual(merge.confidence(e), ("低", "1 系列のみ：中国国営"))
         e = {"countries": ["中国"], "sources": [src("xinhua", "国営メディア"), src("scmp-china", "報道")]}
         self.assertEqual(merge.confidence(e)[0], "中")
+
+    def test_scope_leaves_out_far_areas(self):
+        self.assertIn("taiwan", regions.IN_SCOPE)
+        self.assertIn("hawaii", regions.IN_SCOPE)
+        for r in ("other", "us-mainland", "india", "indian-ocean", "bay-of-bengal", "russia"):
+            self.assertNotIn(r, regions.IN_SCOPE)
 
     def test_finish_has_region_name_and_stable_id(self):
         a = merge.finish(ev("a", name="Keen Sword 27"), date(2026, 11, 14))
@@ -227,7 +237,9 @@ class RunFilesTest(unittest.TestCase):
                     mock.patch.object(run.sources, "official_candidates", return_value=[]):
                 run.main(["--out", d, "--minutes", "0"])
             self.assertFalse((out / "events" / "2027.json").exists())
-            self.assertEqual(json.loads((out / "events" / "index.json").read_text())["years"], [])
+            # only the years of the ledger's past exercises are left
+            ledger_years = sorted({int(e["start"][:4]) for e in json.loads(run.LEDGER.read_text(encoding="utf-8"))["events"]})
+            self.assertEqual(json.loads((out / "events" / "index.json").read_text())["years"], ledger_years)
 
 
 class PageDayTest(unittest.TestCase):
@@ -285,3 +297,14 @@ class RegionsTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LedgerTest(unittest.TestCase):
+    def test_ledger_events_load_and_merge_once(self):
+        from exercises import run
+        ev = run.ledger_events()
+        self.assertGreaterEqual(len(ev), 7)
+        self.assertTrue(all(e["start"] and e["end"] and e["region"] in regions.IN_SCOPE for e in ev))
+        self.assertEqual(len(merge.merge_all(ev + ev)), len(ev))   # stored copies and the ledger are one event each
+        done = [merge.finish(e, date(2026, 11, 15)) for e in ev]
+        self.assertTrue(all(f["phase"] == "done" and f["confidence"] in ("高", "中") for f in done))

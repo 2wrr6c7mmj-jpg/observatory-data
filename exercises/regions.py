@@ -42,6 +42,10 @@ REGIONS = [
     ("other", "その他", None, None),
 ]
 BY_ID = {r[0]: r for r in REGIONS}
+# The site's scope (user, 2026-11-15): East Asia, the western Pacific and the United States' joint training in the Pacific.
+# Events of the other areas are not published (they stay in analyses.json).
+OUT_OF_SCOPE = {"bay-of-bengal", "india", "indian-ocean", "russia", "us-mainland", "other"}
+IN_SCOPE = [r[0] for r in REGIONS if r[0] not in OUT_OF_SCOPE]
 IDS = [r[0] for r in REGIONS]
 
 

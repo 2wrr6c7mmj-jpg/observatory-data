@@ -1,0 +1,265 @@
+{
+ "note": "過去の主要な演習の台帳（手で確かめたもの）。毎回の実行で事象に足す（exercises/run.py の ledger_events）。出典は報道・研究機関で、確度は規則どおり（独立した系列の数）。",
+ "events": [
+  {
+   "name": null,
+   "nameEn": null,
+   "kind": "live_fire",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾周辺の海空域（6 区域）",
+   "forces": "東部戦区",
+   "content": "台湾海峡での長距離実弾射撃と通常弾道ミサイルの試射を含む海空の合同演習。1 週間あまり",
+   "start": "2022-08-04",
+   "end": "2022-08-10",
+   "status": "completed",
+   "dateText": "2022-08-04〜2022-08-10",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    },
+    {
+     "url": "https://jamestown.org/pla-justice-mission-2025-further-rehearses-taiwan-invasion-operations",
+     "title": "PLA Justice Mission 2025 Further Rehearses Taiwan Invasion Operations",
+     "source": "jamestown",
+     "sourceName": "Jamestown Foundation",
+     "kind": "報道",
+     "publishedAt": 1768435200000
+    }
+   ],
+   "titleJa": "台湾周辺の重要軍事演訓行動（2022年8月、ペロシ米下院議長の訪台後）"
+  },
+  {
+   "name": "联合利剑",
+   "nameEn": "Joint Sword",
+   "kind": "exercise",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾周辺",
+   "forces": "東部戦区",
+   "content": "環台湾島の戦備警戒巡航と「聯合利剣」演習（4 月 5〜7 日の台湾海峡中北部の巡航巡査に続く第 2 段階）",
+   "start": "2023-04-08",
+   "end": "2023-04-10",
+   "status": "completed",
+   "dateText": "2023-04-08〜2023-04-10",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://global.hk01.com/台湾新闻/60307597/围台军演-东部战区发布军事演习主题海报-正义之盾-破限除妄",
+     "title": "围台军演｜东部战区发布军事演习主题海报",
+     "source": "hk01",
+     "sourceName": "香港01",
+     "kind": "報道",
+     "publishedAt": 1766966400000
+    },
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    }
+   ],
+   "titleJa": "聯合利剣（台湾周辺）"
+  },
+  {
+   "name": "海空联合战备警巡演练",
+   "nameEn": null,
+   "kind": "exercise",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾周辺",
+   "forces": "東部戦区",
+   "content": "1 日の海空の合同戦備警戒巡航と多軍種の合同訓練",
+   "start": "2023-08-19",
+   "end": "2023-08-19",
+   "status": "completed",
+   "dateText": "2023-08-19〜2023-08-19",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://global.hk01.com/台湾新闻/60307597/围台军演-东部战区发布军事演习主题海报-正义之盾-破限除妄",
+     "title": "围台军演｜东部战区发布军事演习主题海报",
+     "source": "hk01",
+     "sourceName": "香港01",
+     "kind": "報道",
+     "publishedAt": 1766966400000
+    },
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    }
+   ],
+   "titleJa": "海空合同戦備警戒巡航演練（台湾周辺）"
+  },
+  {
+   "name": "联合利剑—2024A",
+   "nameEn": "Joint Sword-2024A",
+   "kind": "exercise",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾周辺",
+   "forces": "東部戦区",
+   "content": "2 日間の合同演習。海警が初めて加わる",
+   "start": "2024-05-23",
+   "end": "2024-05-24",
+   "status": "completed",
+   "dateText": "2024-05-23〜2024-05-24",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    },
+    {
+     "url": "https://jamestown.org/pla-justice-mission-2025-further-rehearses-taiwan-invasion-operations",
+     "title": "PLA Justice Mission 2025 Further Rehearses Taiwan Invasion Operations",
+     "source": "jamestown",
+     "sourceName": "Jamestown Foundation",
+     "kind": "報道",
+     "publishedAt": 1768435200000
+    }
+   ],
+   "titleJa": "聯合利剣-2024A（台湾周辺）"
+  },
+  {
+   "name": "联合利剑—2024B",
+   "nameEn": "Joint Sword-2024B",
+   "kind": "exercise",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾周辺",
+   "forces": "東部戦区",
+   "content": "予告なしに午前 5 時に始まり同日夕方に終わった 1 日の演習",
+   "start": "2024-10-14",
+   "end": "2024-10-14",
+   "status": "completed",
+   "dateText": "2024-10-14〜2024-10-14",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    },
+    {
+     "url": "https://jamestown.org/pla-justice-mission-2025-further-rehearses-taiwan-invasion-operations",
+     "title": "PLA Justice Mission 2025 Further Rehearses Taiwan Invasion Operations",
+     "source": "jamestown",
+     "sourceName": "Jamestown Foundation",
+     "kind": "報道",
+     "publishedAt": 1768435200000
+    }
+   ],
+   "titleJa": "聯合利剣-2024B（台湾周辺）"
+  },
+  {
+   "name": "海峡雷霆—2025A",
+   "nameEn": "Strait Thunder-2025A",
+   "kind": "exercise",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾海峡中部・南部と台湾周辺",
+   "forces": "東部戦区",
+   "content": "4 月 1 日の合同演訓に続き 2 日に台湾海峡中部・南部で査証識別・警告駆離・臨検拿捕の演練。空母山東の編隊が参加",
+   "start": "2025-04-01",
+   "end": "2025-04-02",
+   "status": "completed",
+   "dateText": "2025-04-01〜2025-04-02",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://jamestown.org/strait-thunder-2025a-drill-implies-future-increase-in-pla-pressure-on-taiwan/",
+     "title": "'Strait Thunder-2025A' Drill Implies Future Increase in PLA Pressure on Taiwan",
+     "source": "jamestown",
+     "sourceName": "Jamestown Foundation",
+     "kind": "報道",
+     "publishedAt": 1744329600000
+    },
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    }
+   ],
+   "titleJa": "海峡雷霆-2025A（台湾周辺）"
+  },
+  {
+   "name": "正义使命—2025",
+   "nameEn": "Justice Mission-2025",
+   "kind": "exercise",
+   "countries": [
+    "中国"
+   ],
+   "region": "taiwan",
+   "place": "台湾海峡・台湾の北部・南西・南東・東方",
+   "forces": "東部戦区",
+   "content": "陸海空・ロケット軍による合同演習。30 日に実弾射撃、要港・要域の封鎖の演練。強襲揚陸艦海南の編隊が参加",
+   "start": "2025-12-29",
+   "end": "2025-12-30",
+   "status": "completed",
+   "dateText": "2025-12-29〜2025-12-30",
+   "datePrecision": "day",
+   "sources": [
+    {
+     "url": "https://global.hk01.com/台湾新闻/60307597/围台军演-东部战区发布军事演习主题海报-正义之盾-破限除妄",
+     "title": "围台军演｜东部战区发布军事演习主题海报",
+     "source": "hk01",
+     "sourceName": "香港01",
+     "kind": "報道",
+     "publishedAt": 1766966400000
+    },
+    {
+     "url": "https://news.usni.org/2025/12/29/china-launches-blockade-drills-around-taiwan-in-protest-of-u-s-arms-sales",
+     "title": "China Launches Blockade Drills Around Taiwan in Protest of U.S. Arms Sales",
+     "source": "usni",
+     "sourceName": "USNI News",
+     "kind": "報道",
+     "publishedAt": 1766966400000
+    },
+    {
+     "url": "https://mobile.chinadaily.com.cn/html5/2026-01/28/content_006_697926a0ed50ccabe15211c8.htm",
+     "title": "Key PLA actions around Taiwan (2022–25)",
+     "source": "chinadaily",
+     "sourceName": "China Daily",
+     "kind": "報道",
+     "publishedAt": 1769558400000
+    }
+   ],
+   "titleJa": "正義使命-2025（台湾周辺）"
+  }
+ ]
+}

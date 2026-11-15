@@ -129,6 +129,23 @@ def stored_event(e):
     return e
 
 
+LEDGER = Path(__file__).with_name("ledger.json")
+
+
+def ledger_events():
+    """The hand-checked major exercises of the past (ledger.json), as events: merged with the stored ones by name each run."""
+    if not LEDGER.exists():
+        return []
+    out = []
+    for x in json.loads(LEDGER.read_text(encoding="utf-8"))["events"]:
+        first, *rest = x["sources"]
+        e = merge.event_from(first, {k: v for k, v in x.items() if k not in ("sources", "nameEn")})
+        for s in rest:
+            e = merge._merge(e, merge.event_from(s, {k: v for k, v in x.items() if k not in ("sources", "nameEn")}))
+        out.append(e)
+    return out
+
+
 def year_of(e):
     return (e.get("start") or day_of(e["firstReported"]))[:4]
 
@@ -153,7 +170,7 @@ def main(argv=None):
     previous = []
     for p in sorted((out / "events").glob("[0-9][0-9][0-9][0-9].json")) if (out / "events").exists() and not fresh_rules else []:
         previous += load(p, {"events": []})["events"]
-    previous = [stored_event(e) for e in previous]
+    previous = [stored_event(e) for e in previous] + ledger_events()
 
     log = {"sources": []}
     feed_docs = []
@@ -204,6 +221,7 @@ def main(argv=None):
     cutoff = now - KEEP_ANALYSES_DAYS * DAY
     analyses = {k: v for k, v in analyses.items() if v.get("at", 0) >= cutoff}
 
+    events = [e for e in events if e.get("region") in regions.IN_SCOPE]   # the site's scope (regions.OUT_OF_SCOPE)
     finished = [merge.finish(e, today) for e in events]
     for f, e in zip(finished, events):
         f["official"] = e["_official"]
@@ -253,8 +271,9 @@ def meta_doc():
         "rules": {
             "version": RULES,
             "dates": "モデルが写した原文の言葉（dateText）を規則で読む（exercises/dates.py）。日・日の幅・月の上旬/中旬/下旬だけを日付にし、『先日』『今月初め』『火曜』などの相対表現と、ページの掲載時刻は日付にしない。年が無いときは掲載日の年（掲載日が分からなければ日付にしない）。datePrecision：day＝日まで、part＝月の上中下旬",
-            "phase": "終わりの日がある→その日を過ぎたら終了。始まりだけ→報道が終了と書くか、最後の報道から 14 日で終了。日付なし→最後の報道から 7 日以内は報道の書き方（予定・実施中）、過ぎたら終了。掲載日も分からないものは unknown（現況に出さない）",
-            "confidence": "高：公式の発表（実施国か観測した国の政府・軍）／中：独立した 2 系列以上の報道（同じ国の国営は 1 系列）／低：1 系列だけ。confidenceBasis にその内訳",
+            "phase": "終わりの日がある→その日を過ぎたら終了。始まりだけ→報道が終了と書くか、最後の報道から 14 日で終了。日付なし→実施中にはしない。予定と書かれ最後の報道から 7 日以内なら予定、それ以外は終了。掲載日も分からないものは unknown（現況に出さない）",
+            "scope": "東アジア・西太平洋と、米国の太平洋地域の共同訓練。ベンガル湾・インド・インド洋・ロシア西部・米本土・その他の地域の事象は載せない",
+            "confidence": "高：期間の書かれた公式の発表（実施国か観測した国の政府・軍。期間の無い公式の発表は中）／中：独立した 2 系列以上の報道（同じ国の国営は 1 系列）／低：1 系列だけ。confidenceBasis にその内訳",
             "countries": "原文にその国の名（略称・漢字の略記を含む）があるときだけ",
             "region": "場所の言葉が名指しする地域。無ければ見出しの言葉、さらに無ければモデルの選んだ地域を原文にその地名があるときだけ。それ以外は『その他』",
             "forces": "戦力の記述の中の 3 以上の数は原文の数（数字か数詞）にあるときだけ。無ければ戦力の記述ごと捨てる",
