@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-15T16:38:14Z",
+ "generated_utc": "2026-11-15T22:07:27Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -681,9 +681,13 @@
    "method": "none"
   },
   {
-   "window_start_utc": "2026-11-20T11:00Z",
+   "window_start_utc": "2026-11-20T10:00Z",
    "window_end_utc": "2026-11-23T14:00Z",
    "areas": [
+    [
+     9.405,
+     119.33
+    ],
     [
      12.81,
      116.057
@@ -694,26 +698,16 @@
     ]
    ],
    "notices": [
+    "maritime:NAVAREA XI 26-0515",
     "aviation:B5829/26",
     "aviation:B5830/26"
    ],
    "method": "aligned",
-   "site": "文昌",
+   "site": "西昌",
    "country": "CN",
-   "azimuth_deg": 143.4,
-   "bearing_spread_deg": 0.1,
-   "inclination_deg": 55.8,
-   "recorded_launches": [
-    {
-     "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
-     "name": "Long March 8A | SatNet LEO Group TBD?",
-     "status": "TBC",
-     "net_utc": "2026-11-20T11:00:00Z",
-     "rocket": "Long March 8A",
-     "orbit": "LEO",
-     "pad": "Commercial LC-1"
-    }
-   ]
+   "azimuth_deg": 136.7,
+   "bearing_spread_deg": 1.8,
+   "inclination_deg": 52.9
   },
   {
    "window_start_utc": "2026-11-24T07:00Z",
@@ -1015,7 +1009,7 @@
    "lat": 19.597275,
    "lon": 110.930753,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a2975167-7c6f-4403-99e1-b40df17c8140/",
-   "event_index": 30
+   "event_index": null
   },
   {
    "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",

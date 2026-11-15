@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-15T16:38:14Z",
+ "generated_utc": "2026-11-15T22:07:27Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -620,31 +620,103 @@
    ]
   },
   {
-   "id": "2026-11-20T11:00Z:文昌",
-   "window_start_utc": "2026-11-20T11:00Z",
+   "id": "2026-11-20T10:00Z:西昌",
+   "window_start_utc": "2026-11-20T10:00Z",
    "window_end_utc": "2026-11-23T14:00Z",
    "site": {
-    "name": "文昌",
-    "lat": 19.61,
-    "lon": 110.95,
+    "name": "西昌",
+    "lat": 28.25,
+    "lon": 102.03,
     "country": "CN",
     "method": "aligned",
-    "azimuth_deg": 143.4,
-    "bearing_spread_deg": 0.1,
-    "inclination_deg": 55.8
+    "azimuth_deg": 136.7,
+    "bearing_spread_deg": 1.8,
+    "inclination_deg": 52.9
    },
    "orbit": "低軌道",
    "vehicle": {
-    "basis": "ll2",
-    "name": "長征8A号",
-    "rocket_ll2": "Long March 8A",
-    "mission": "Long March 8A | SatNet LEO Group TBD?",
-    "orbit": "LEO",
-    "status": "TBC",
-    "net_utc": "2026-11-20T11:00:00Z",
-    "pad": "Commercial LC-1"
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征3B/3C号",
+      "orbit": "静止遷移・北斗"
+     },
+     {
+      "name": "長征2C/2D号",
+      "orbit": "低軌道"
+     }
+    ]
    },
    "notices": [
+    {
+     "key": "maritime:NAVAREA XI 26-0515",
+     "id": "NAVAREA XI 26-0515",
+     "dataset": "maritime",
+     "kind": "fall",
+     "issuer": "日本（海上保安庁）",
+     "country": "JP",
+     "start_utc": "2026-11-20T10:00:00Z",
+     "end_utc": "2026-11-20T16:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        12.99,
+        116.15
+       ],
+       [
+        13.33,
+        116.59
+       ],
+       [
+        12.47,
+        117.29
+       ],
+       [
+        12.13,
+        116.84
+       ]
+      ],
+      [
+       [
+        7.98,
+        120.08
+       ],
+       [
+        8.31,
+        120.52
+       ],
+       [
+        7.44,
+        121.19
+       ],
+       [
+        7.11,
+        120.75
+       ]
+      ],
+      [
+       [
+        7.97,
+        119.97
+       ],
+       [
+        8.42,
+        120.55
+       ],
+       [
+        7.55,
+        121.22
+       ],
+       [
+        7.11,
+        120.64
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "NO.26-0515 　　　発表日時：2026年11月15日 21時\n\n\nSOUTH CHINA SEA, NORTHERN PART AND SULU \nSEA.\nSPACE DEBRIS.\n201000Z TO 201600Z NOV. AREAS BOUNDED BY\nA. 12-59.4N 116-09.0E\n   13-19.8N 116-35.4E\n   12-28.2N 117-17.4E\n   12-07.8N 116-50.4E.\nB. 07-58.8N 120-04.8E\n   08-18.6N 120-31.2E\n   07-26.4N 121-11.4E\n   07-06.6N 120-45.0E.\nC. 07-58.2N 119-58.2E\n   08-25.2N 120-33.0E\n   07-33.0N 121-13.2E\n   07-06.6N 120-38.4E.\nCANCEL THIS MSG 201700Z NOV."
+    },
     {
      "key": "aviation:B5829/26",
      "id": "B5829/26",
