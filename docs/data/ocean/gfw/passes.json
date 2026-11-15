@@ -185,7 +185,7 @@
   {
    "area": "TSM",
    "acquired_utc": "2026-11-07T10:00:28Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 51,
    "gfw_cells_no_ais": 27,
    "status": "done",
@@ -200,7 +200,7 @@
   {
    "area": "TSN",
    "acquired_utc": "2026-11-07T10:00:28Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 198,
    "gfw_cells_no_ais": 18,
    "status": "done",
@@ -215,7 +215,7 @@
   {
    "area": "TWN",
    "acquired_utc": "2026-11-07T10:00:28Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 63,
    "gfw_cells_no_ais": 13,
    "status": "done",
@@ -230,7 +230,7 @@
   {
    "area": "SAKI_S",
    "acquired_utc": "2026-11-08T09:52:08Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 5,
    "gfw_cells_no_ais": 3,
    "status": "done",
@@ -245,7 +245,7 @@
   {
    "area": "SENKAKU",
    "acquired_utc": "2026-11-08T09:52:08Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 2,
    "gfw_cells_no_ais": 5,
    "status": "done",
@@ -260,7 +260,7 @@
   {
    "area": "TWNE",
    "acquired_utc": "2026-11-08T09:52:08Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 8,
    "gfw_cells_no_ais": 5,
    "status": "done",
@@ -275,7 +275,7 @@
   {
    "area": "YNG",
    "acquired_utc": "2026-11-08T09:52:08Z",
-   "checked_utc": "2026-11-14T10:56:24Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
    "gfw_cells_ais": 21,
    "gfw_cells_no_ais": 3,
    "status": "done",
@@ -286,6 +286,51 @@
    "B_no_ais": 0,
    "B_none": 3,
    "first_done_utc": "2026-11-13T11:34:27Z"
+  },
+  {
+   "area": "TSS",
+   "acquired_utc": "2026-11-09T21:51:39Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
+   "gfw_cells_ais": 63,
+   "gfw_cells_no_ais": 14,
+   "status": "done",
+   "A_ais": 27,
+   "A_no_ais": 3,
+   "A_none": 0,
+   "B_ais": 38,
+   "B_no_ais": 10,
+   "B_none": 5,
+   "first_done_utc": "2026-11-15T11:30:09Z"
+  },
+  {
+   "area": "MYK",
+   "acquired_utc": "2026-11-10T09:36:12Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
+   "gfw_cells_ais": 0,
+   "gfw_cells_no_ais": 4,
+   "status": "done",
+   "A_ais": 0,
+   "A_no_ais": 0,
+   "A_none": 0,
+   "B_ais": 0,
+   "B_no_ais": 1,
+   "B_none": 1,
+   "first_done_utc": "2026-11-15T11:30:09Z"
+  },
+  {
+   "area": "HKS",
+   "acquired_utc": "2026-11-10T10:24:50Z",
+   "checked_utc": "2026-11-15T11:30:09Z",
+   "gfw_cells_ais": 79,
+   "gfw_cells_no_ais": 6,
+   "status": "done",
+   "A_ais": 34,
+   "A_no_ais": 1,
+   "A_none": 1,
+   "B_ais": 14,
+   "B_no_ais": 2,
+   "B_none": 4,
+   "first_done_utc": "2026-11-15T11:30:09Z"
   }
  ]
 }

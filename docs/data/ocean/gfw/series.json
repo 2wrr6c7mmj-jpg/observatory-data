@@ -169,7 +169,7 @@
    "B_none": 39,
    "gfw_cells_ais": 51,
    "gfw_cells_no_ais": 27,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
   },
   {
    "area": "TSN",
@@ -182,7 +182,7 @@
    "B_none": 15,
    "gfw_cells_ais": 198,
    "gfw_cells_no_ais": 18,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
   },
   {
    "area": "TWN",
@@ -195,7 +195,7 @@
    "B_none": 3,
    "gfw_cells_ais": 63,
    "gfw_cells_no_ais": 13,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
   },
   {
    "area": "SAKI_S",
@@ -208,7 +208,7 @@
    "B_none": 4,
    "gfw_cells_ais": 5,
    "gfw_cells_no_ais": 3,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
   },
   {
    "area": "SENKAKU",
@@ -221,7 +221,7 @@
    "B_none": 0,
    "gfw_cells_ais": 2,
    "gfw_cells_no_ais": 5,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
   },
   {
    "area": "TWNE",
@@ -234,7 +234,7 @@
    "B_none": 0,
    "gfw_cells_ais": 8,
    "gfw_cells_no_ais": 5,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
   },
   {
    "area": "YNG",
@@ -247,7 +247,46 @@
    "B_none": 3,
    "gfw_cells_ais": 21,
    "gfw_cells_no_ais": 3,
-   "checked_utc": "2026-11-14T10:56:24Z"
+   "checked_utc": "2026-11-15T11:30:09Z"
+  },
+  {
+   "area": "TSS",
+   "acquired_utc": "2026-11-09T21:51:39Z",
+   "A_ais": 27,
+   "A_no_ais": 3,
+   "A_none": 0,
+   "B_ais": 38,
+   "B_no_ais": 10,
+   "B_none": 5,
+   "gfw_cells_ais": 63,
+   "gfw_cells_no_ais": 14,
+   "checked_utc": "2026-11-15T11:30:09Z"
+  },
+  {
+   "area": "MYK",
+   "acquired_utc": "2026-11-10T09:36:12Z",
+   "A_ais": 0,
+   "A_no_ais": 0,
+   "A_none": 0,
+   "B_ais": 0,
+   "B_no_ais": 1,
+   "B_none": 1,
+   "gfw_cells_ais": 0,
+   "gfw_cells_no_ais": 4,
+   "checked_utc": "2026-11-15T11:30:09Z"
+  },
+  {
+   "area": "HKS",
+   "acquired_utc": "2026-11-10T10:24:50Z",
+   "A_ais": 34,
+   "A_no_ais": 1,
+   "A_none": 1,
+   "B_ais": 14,
+   "B_no_ais": 2,
+   "B_none": 4,
+   "gfw_cells_ais": 79,
+   "gfw_cells_no_ais": 6,
+   "checked_utc": "2026-11-15T11:30:09Z"
   }
  ]
 }
