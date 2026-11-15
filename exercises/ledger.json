@@ -260,6 +260,152 @@
     }
    ],
    "titleJa": "正義使命-2025（台湾周辺）"
+  },
+  {
+   "name": "Keen Sword 25",
+   "titleJa": "キーン・ソード25（日米共同統合演習）",
+   "kind": "exercise",
+   "countries": [
+    "日本",
+    "米国",
+    "豪州",
+    "カナダ"
+   ],
+   "region": "japan",
+   "place": "日本各地",
+   "forces": "自衛隊・米インド太平洋軍ほか（第3海兵遠征軍 約900人）",
+   "content": "2 年ごとの日米共同統合の実動演習。1986 年以来最大",
+   "start": "2024-10-23",
+   "end": "2024-11-01",
+   "sources": [
+    {
+     "url": "https://www.cpf.navy.mil/Newsroom/News/Article/3944258/",
+     "title": "Japan Self-Defense Forces and U.S. military begin biennial exercise Keen Sword 25",
+     "source": "us-pacflt",
+     "sourceName": "米太平洋艦隊",
+     "kind": "公式",
+     "publishedAt": 1729641600000
+    },
+    {
+     "url": "https://www.pacom.mil/Media/News/Article/3954464/us-japan-successfully-conclude-joint-bilateral-exercise-keen-sword-25/",
+     "title": "U.S., Japan successfully conclude joint bilateral exercise Keen Sword 25",
+     "source": "indopacom",
+     "sourceName": "米インド太平洋軍",
+     "kind": "公式",
+     "publishedAt": 1730419200000
+    }
+   ],
+   "status": "completed",
+   "dateText": "2024-10-23〜2024-11-01",
+   "datePrecision": "day",
+   "nameEn": null
+  },
+  {
+   "name": "Balikatan 2024",
+   "titleJa": "バリカタン2024（米比共同演習）",
+   "kind": "exercise",
+   "countries": [
+    "フィリピン",
+    "米国"
+   ],
+   "region": "philippines",
+   "place": "バタネス・パラワンほか",
+   "forces": "比国軍・米軍",
+   "content": "米比最大の年次共同演習（第 39 回）",
+   "start": "2024-04-22",
+   "end": "2024-05-10",
+   "sources": [
+    {
+     "url": "https://www.pacom.mil/Media/NEWS/News-Article-View/Article/3743848/philippine-us-troops-to-kick-off-exercise-balikatan-2024",
+     "title": "Philippine, U.S. Troops to Kick Off Exercise Balikatan 2024",
+     "source": "indopacom",
+     "sourceName": "米インド太平洋軍",
+     "kind": "公式",
+     "publishedAt": 1713225600000
+    }
+   ],
+   "status": "completed",
+   "dateText": "2024-04-22〜2024-05-10",
+   "datePrecision": "day",
+   "nameEn": null
+  },
+  {
+   "name": "Balikatan 2025",
+   "titleJa": "バリカタン2025（米比共同演習）",
+   "kind": "exercise",
+   "countries": [
+    "フィリピン",
+    "米国",
+    "日本",
+    "豪州"
+   ],
+   "region": "philippines",
+   "place": "ルソン島・パラワン島",
+   "forces": "米比 約 14,000〜17,000 人、日豪が参加",
+   "content": "第 40 回。「全面的な戦闘試験」、5 月 5 日にサンバレス沖で洋上の撃沈訓練",
+   "start": "2025-04-21",
+   "end": "2025-05-09",
+   "sources": [
+    {
+     "url": "https://www.imef.marines.mil/Media-Room/Press-Releases/Announcement/Article/4148452/philippine-us-troops-kick-off-exercise-balikatan-2025/",
+     "title": "Philippine, U.S. Troops Kick off Exercise Balikatan 2025",
+     "source": "usmc",
+     "sourceName": "米海兵隊",
+     "kind": "公式",
+     "publishedAt": 1743984000000
+    },
+    {
+     "url": "https://www.navalnews.com/?p=71560",
+     "title": "Philippines and U.S. kick off Balikatan 2025 large-scale exercise",
+     "source": "navalnews",
+     "sourceName": "Naval News",
+     "kind": "報道",
+     "publishedAt": 1745193600000
+    }
+   ],
+   "status": "completed",
+   "dateText": "2025-04-21〜2025-05-09",
+   "datePrecision": "day",
+   "nameEn": null
+  },
+  {
+   "name": "Talisman Sabre 2025",
+   "titleJa": "タリスマン・セイバー2025（米豪共同演習）",
+   "kind": "exercise",
+   "countries": [
+    "豪州",
+    "米国",
+    "日本",
+    "ニュージーランド"
+   ],
+   "region": "australia",
+   "place": "豪州各地（北部準州・クイーンズランドほか）",
+   "forces": "19 か国、3 万人超",
+   "content": "米豪最大の 2 国間演習（第 11 回）。揚陸・洋上の識別と阻止・実弾射撃",
+   "start": "2025-07-13",
+   "end": "2025-08-04",
+   "sources": [
+    {
+     "url": "https://www.globalsecurity.org/military/library/news/2025/06/mil-250605-nzdf01.htm",
+     "title": "NZDF prepares for major warfighting exercise in Australia",
+     "source": "nzdf",
+     "sourceName": "ニュージーランド国防軍（GlobalSecurity の転載）",
+     "kind": "公式",
+     "publishedAt": 1749081600000
+    },
+    {
+     "url": "https://www.cpf.navy.mil/Newsroom/News/Article/4245157/talisman-sabre-2025-begins-with-record-participation-enduring-purpose/",
+     "title": "Talisman Sabre 2025 begins with record participation, enduring purpose",
+     "source": "us-pacflt",
+     "sourceName": "米太平洋艦隊",
+     "kind": "公式",
+     "publishedAt": 1752451200000
+    }
+   ],
+   "status": "completed",
+   "dateText": "2025-07-13〜2025-08-04",
+   "datePrecision": "day",
+   "nameEn": null
   }
  ]
 }
