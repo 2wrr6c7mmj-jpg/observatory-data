@@ -131,8 +131,8 @@ def phase(e: dict, today: date) -> str:
 
     - A period with an end: over after the end day.
     - A start only: under way from the start; over when the reports say it ended, or STALE_DAYS after the last report.
-    - No date: from the reports' own words (planned / under way / ended) while the last report is at most STALE_UNDATED
-      old, over after that. Without a publication date there is nothing to measure from: unknown.
+    - No date: never under way. A plan reported in the last STALE_UNDATED days is next; otherwise over. Without a
+      publication date there is nothing to measure from: unknown.
     """
     last_report = datetime.fromtimestamp((e.get("lastReported") or 0) / 1000, timezone.utc).date()
     stale = (today - last_report).days > STALE_DAYS
@@ -143,17 +143,20 @@ def phase(e: dict, today: date) -> str:
         if e.get("end"):
             return "done" if date.fromisoformat(e["end"]) < today else "now"
         return "done" if e.get("status") == "completed" or stale else "now"
+    # No date: never "under way" (today cannot be inside a period nobody gave). A plan reported in the last STALE_UNDATED
+    # days is "next"; the rest is over (with a publication date) or unknown (without one).
     if not e.get("_pub", True):
         return "unknown"
-    if (today - last_report).days > STALE_UNDATED or e.get("status") == "completed":
-        return "done"
-    return {"planned": "next", "ongoing": "now"}.get(e.get("status"), "done")
+    if e.get("status") == "planned" and (today - last_report).days <= STALE_UNDATED:
+        return "next"
+    return "done"
 
 
 def confidence(e: dict):
     """(高・中・低, the reason in words).
 
-    高: an official release (the government or forces of a participating country, or of a country that watched it).
+    高: an official release (the government or forces of a participating country, or of a country that watched it)
+        that gives the period. An official release without a date is 中.
     中: two or more independent outlets (one family of state media counts once).
     低: one outlet, or one family only.
     """
@@ -170,8 +173,11 @@ def confidence(e: dict):
         f = FAMILY.get(s.get("source"), s.get("sourceName") or s.get("source"))
         if f not in families:
             families.append(f)
-    if official:
+    dated = bool(e.get("start"))
+    if official and dated:
         return "高", "公式：" + "、".join(official)
+    if official:
+        return "中", "公式（期間の記載なし）：" + "、".join(official)
     if len(families) >= 2:
         return "中", f"独立した {len(families)} 系列：" + "、".join(families[:4])
     only = families[0] if families else "不明"
