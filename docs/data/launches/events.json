@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-16T03:13:55Z",
+ "generated_utc": "2026-11-16T12:06:02Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -681,6 +681,36 @@
    "method": "none"
   },
   {
+   "window_start_utc": "2026-11-16T02:36Z",
+   "window_end_utc": "2027-02-15T15:00Z",
+   "areas": [
+    [
+     25.178,
+     125.081
+    ]
+   ],
+   "notices": [
+    "aviation:P5747/26"
+   ],
+   "method": "none",
+   "intercept": true
+  },
+  {
+   "window_start_utc": "2026-11-16T02:36Z",
+   "window_end_utc": "2027-02-15T15:00Z",
+   "areas": [
+    [
+     24.964,
+     125.022
+    ]
+   ],
+   "notices": [
+    "aviation:P5748/26"
+   ],
+   "method": "none",
+   "intercept": true
+  },
+  {
    "window_start_utc": "2026-11-20T10:00Z",
    "window_end_utc": "2026-11-23T14:00Z",
    "areas": [
@@ -695,19 +725,34 @@
     [
      8.338,
      119.26
+    ],
+    [
+     19.6,
+     110.93
+    ],
+    [
+     12.78,
+     116.6
+    ],
+    [
+     7.65,
+     120.61
     ]
    ],
    "notices": [
     "maritime:NAVAREA XI 26-0515",
     "aviation:B5829/26",
-    "aviation:B5830/26"
+    "aviation:B5830/26",
+    "maritime:琼航警239/2026",
+    "aviation:B6120/26",
+    "aviation:B6122/26"
    ],
    "method": "aligned",
    "site": "西昌",
    "country": "CN",
-   "azimuth_deg": 136.7,
-   "bearing_spread_deg": 1.8,
-   "inclination_deg": 52.9
+   "azimuth_deg": 136.1,
+   "bearing_spread_deg": 2.7,
+   "inclination_deg": 52.4
   },
   {
    "window_start_utc": "2026-11-24T07:00Z",
@@ -1026,7 +1071,7 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
-   "event_index": 31
+   "event_index": 33
   },
   {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",

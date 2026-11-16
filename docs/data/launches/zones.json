@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-16T03:13:55Z",
+ "generated_utc": "2026-11-16T12:06:02Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -11,7 +11,7 @@
   {
    "id": "2026-08-17T07:09Z:intercept",
    "window_start_utc": "2026-08-17T07:09Z",
-   "window_end_utc": "2026-11-16T15:00Z",
+   "window_end_utc": "2027-02-15T15:00Z",
    "site": null,
    "orbit": null,
    "vehicle": null,
@@ -132,6 +132,123 @@
      "polygons": [],
      "circles": [],
      "text": "P3999/26 NOTAMR P2331/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2608170709 C)2611161500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:P5747/26",
+     "id": "P5747/26",
+     "dataset": "aviation",
+     "kind": "intercept",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-16T02:36:00Z",
+     "end_utc": "2027-02-15T15:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        26.7386,
+        127.9581
+       ],
+       [
+        25.9386,
+        127.9581
+       ],
+       [
+        25.9386,
+        127.3581
+       ],
+       [
+        26.7386,
+        127.3581
+       ],
+       [
+        26.7386,
+        127.9581
+       ]
+      ],
+      [
+       [
+        25.3006,
+        125.625
+       ],
+       [
+        24.5006,
+        125.625
+       ],
+       [
+        24.5006,
+        125.025
+       ],
+       [
+        25.3006,
+        125.025
+       ],
+       [
+        25.3006,
+        125.625
+       ]
+      ],
+      [
+       [
+        24.9344,
+        124.4867
+       ],
+       [
+        24.1344,
+        124.4867
+       ],
+       [
+        24.1344,
+        123.8892
+       ],
+       [
+        24.9344,
+        123.8892
+       ],
+       [
+        24.9344,
+        124.4867
+       ]
+      ],
+      [
+       [
+        24.9772,
+        123.2544
+       ],
+       [
+        24.1772,
+        123.2544
+       ],
+       [
+        24.1772,
+        122.6544
+       ],
+       [
+        24.9772,
+        122.6544
+       ],
+       [
+        24.9772,
+        123.2544
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5747/26 NOTAMR P3998/26\r\nQ)RJJJ/QRTCA/IV/BO/W/000/999/2530N12516E164\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FOLLOWING AIRSPACE\r\nDUE TO THE ANTIBALLISTIC MISSILES MAY BE LAUNCHED\r\nFOR THE DESTRUCTION OF AN OBJECT PROPELLED BY ROCKET\r\nLAUNCHED FROM NORTH KOREA\r\n(1)AIRSPACE: BOUNDED BY FLW POINTS\r\n264419N1275729E - 255619N1275729E - 255619N1272129E - \r\n264419N1272129E - 264419N1275729E (NAHA-SHI)\r\n(2)AIRSPACE: BOUNDED BY FLW POINTS\r\n251802N1253730E - 243002N1253730E - 243002N1250130E - \r\n251802N1250130E - 251802N1253730E (MIYAKOJIMA)\r\n(3)AIRSPACE: BOUNDED BY FLW POINTS\r\n245604N1242912E - 240804N1242912E - 240804N1235321E - \r\n245604N1235321E - 245604N1242912E (ISHIGAKIJIMA)\r\n(4)AIRSPACE: BOUNDED BY FLW POINTS\r\n245838N1231516E - 241038N1231516E - 241038N1223916E - \r\n245838N1223916E - 245838N1231516E (YONAGUNIJIMA)\r\nRMK: 1)EXC ACFT OF GOVERNMENT AGENCIES,DOCTOR HEL AND\r\n  ACFT WITH PRIOR COORDINATION WITH JAPAN SELF DEFENSE FORCE.\r\n  MINISTRY OF DEFENSE JOINT STAFF OFFICE\r\n  TEL:03-3268-3111(EXT 30929)\r\n2)ALL VFR ACFT FLYING WI AIRSPACE(EXC EACH CTR AND INFO ZONE) ARE\r\n  REQUESTED TO CONTACT FLW FREQ\r\n  CALL SIGN : RODE RICK\r\n  FREQ      : 123.1MHZ,138.05MHZ\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:P5748/26",
+     "id": "P5748/26",
+     "dataset": "aviation",
+     "kind": "intercept",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-16T02:36:00Z",
+     "end_utc": "2027-02-15T15:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [],
+     "circles": [],
+     "text": "P5748/26 NOTAMR P3999/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
     }
    ]
   },
@@ -629,9 +746,9 @@
     "lon": 102.03,
     "country": "CN",
     "method": "aligned",
-    "azimuth_deg": 136.7,
-    "bearing_spread_deg": 1.8,
-    "inclination_deg": 52.9
+    "azimuth_deg": 136.1,
+    "bearing_spread_deg": 2.7,
+    "inclination_deg": 52.4
    },
    "orbit": "低軌道",
    "vehicle": {
@@ -798,6 +915,113 @@
      ],
      "circles": [],
      "text": "B5830/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0811N11926E046\r\nA) RPHI B) 2611201100 C) 2611231400\r\nD) 1100-1400\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n083500N 1184800E - \r\n085400N 1191500E - \r\n084300N 1192900E - \r\n075000N 1200600E - \r\n072600N 1193000E -\r\n081900N 1185300E - \r\n083500N 1184800E\r\n(56NM SOUTH OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
+    },
+    {
+     "key": "maritime:琼航警239/2026",
+     "id": "琼航警239/2026",
+     "dataset": "maritime",
+     "kind": "rocket",
+     "issuer": "中国（海事局）",
+     "country": "CN",
+     "start_utc": "2026-11-20T11:00:00Z",
+     "end_utc": "2026-11-21T13:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [],
+     "circles": [
+      {
+       "kind": "circle",
+       "points": [
+        [
+         19.6,
+         110.93
+        ]
+       ],
+       "radius": 10000.800000000001
+      }
+     ],
+     "text": "琼航警239/26，南海，自11月20日至11月21日，每日1900时至2100时，在以19-36.00N 110-55.80E为中心，5.4海里为半径的圆形区域内进行火箭发射，禁止驶入。"
+    },
+    {
+     "key": "aviation:B6120/26",
+     "id": "B6120/26",
+     "dataset": "aviation",
+     "kind": "fall",
+     "issuer": "フィリピン（航空当局 RPHI）",
+     "country": "PH",
+     "start_utc": "2026-11-20T11:51:00Z",
+     "end_utc": "2026-11-20T12:17:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        12.9833,
+        116.15
+       ],
+       [
+        13.3333,
+        116.5833
+       ],
+       [
+        12.4667,
+        117.2833
+       ],
+       [
+        12.1333,
+        116.8333
+       ],
+       [
+        12.9833,
+        116.15
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "B6120/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/1244N11643E038\r\nA) RPHI B) 2611201151 C) 2611201217\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n125900N 1160900E -\r\n132000N 1163500E -\r\n122800N 1171700E - \r\n120800N 1165000E -\r\n125900N 1160900E\r\n(168NM WEST OF FRANCISCO B. REYES PRINCIPAL AP).\r\nF) SFC G) UNL"
+    },
+    {
+     "key": "aviation:B6122/26",
+     "id": "B6122/26",
+     "dataset": "aviation",
+     "kind": "fall",
+     "issuer": "フィリピン（航空当局 RPHI）",
+     "country": "PH",
+     "start_utc": "2026-11-20T11:52:00Z",
+     "end_utc": "2026-11-20T12:28:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        7.9667,
+        119.9667
+       ],
+       [
+        8.4167,
+        120.55
+       ],
+       [
+        7.55,
+        121.2167
+       ],
+       [
+        7.4333,
+        121.1833
+       ],
+       [
+        7.1167,
+        120.75
+       ],
+       [
+        7.1,
+        120.6333
+       ],
+       [
+        7.9667,
+        119.9667
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "B6122/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0745N12036E041\r\nA) RPHI B) 2611201152 C) 2611201228\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n075800N 1195800E - \r\n082500N 1203300E - \r\n073300N 1211300E - \r\n072600N 1211100E - \r\n070700N 1204500E -\r\n070600N 1203800E - \r\n075800N 1195800E\r\n(129NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
     }
    ]
   },
