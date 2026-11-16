@@ -208,7 +208,7 @@
    "B_none": 4,
    "gfw_cells_ais": 5,
    "gfw_cells_no_ais": 3,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   },
   {
    "area": "SENKAKU",
@@ -221,7 +221,7 @@
    "B_none": 0,
    "gfw_cells_ais": 2,
    "gfw_cells_no_ais": 5,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   },
   {
    "area": "TWNE",
@@ -234,7 +234,7 @@
    "B_none": 0,
    "gfw_cells_ais": 8,
    "gfw_cells_no_ais": 5,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   },
   {
    "area": "YNG",
@@ -247,7 +247,7 @@
    "B_none": 3,
    "gfw_cells_ais": 21,
    "gfw_cells_no_ais": 3,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   },
   {
    "area": "TSS",
@@ -260,7 +260,7 @@
    "B_none": 5,
    "gfw_cells_ais": 63,
    "gfw_cells_no_ais": 14,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   },
   {
    "area": "MYK",
@@ -273,7 +273,7 @@
    "B_none": 1,
    "gfw_cells_ais": 0,
    "gfw_cells_no_ais": 4,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   },
   {
    "area": "HKS",
@@ -286,7 +286,7 @@
    "B_none": 4,
    "gfw_cells_ais": 79,
    "gfw_cells_no_ais": 6,
-   "checked_utc": "2026-11-15T11:30:09Z"
+   "checked_utc": "2026-11-16T12:03:12Z"
   }
  ]
 }
