@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-16T12:06:02Z",
+ "generated_utc": "2026-11-16T23:03:35Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -8,250 +8,6 @@
   "intercept": "迎撃の備え"
  },
  "events": [
-  {
-   "id": "2026-08-17T07:09Z:intercept",
-   "window_start_utc": "2026-08-17T07:09Z",
-   "window_end_utc": "2027-02-15T15:00Z",
-   "site": null,
-   "orbit": null,
-   "vehicle": null,
-   "notices": [
-    {
-     "key": "aviation:P3998/26",
-     "id": "P3998/26",
-     "dataset": "aviation",
-     "kind": "intercept",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-08-17T07:09:00Z",
-     "end_utc": "2026-11-16T15:00:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        26.7386,
-        127.9581
-       ],
-       [
-        25.9386,
-        127.9581
-       ],
-       [
-        25.9386,
-        127.3581
-       ],
-       [
-        26.7386,
-        127.3581
-       ],
-       [
-        26.7386,
-        127.9581
-       ]
-      ],
-      [
-       [
-        25.3006,
-        125.625
-       ],
-       [
-        24.5006,
-        125.625
-       ],
-       [
-        24.5006,
-        125.025
-       ],
-       [
-        25.3006,
-        125.025
-       ],
-       [
-        25.3006,
-        125.625
-       ]
-      ],
-      [
-       [
-        24.9344,
-        124.4867
-       ],
-       [
-        24.1344,
-        124.4867
-       ],
-       [
-        24.1344,
-        123.8892
-       ],
-       [
-        24.9344,
-        123.8892
-       ],
-       [
-        24.9344,
-        124.4867
-       ]
-      ],
-      [
-       [
-        24.9772,
-        123.2544
-       ],
-       [
-        24.1772,
-        123.2544
-       ],
-       [
-        24.1772,
-        122.6544
-       ],
-       [
-        24.9772,
-        122.6544
-       ],
-       [
-        24.9772,
-        123.2544
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "P3998/26 NOTAMR P2326/26\r\nQ)RJJJ/QRTCA/IV/BO/W/000/999/2530N12516E164\r\nA)RJJJ B)2608170709 C)2611161500EST\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FOLLOWING AIRSPACE\r\nDUE TO THE ANTIBALLISTIC MISSILES MAY BE LAUNCHED\r\nFOR THE DESTRUCTION OF AN OBJECT PROPELLED BY ROCKET\r\nLAUNCHED FROM NORTH KOREA\r\n(1)AIRSPACE: BOUNDED BY FLW POINTS\r\n264419N1275729E - 255619N1275729E - 255619N1272129E - \r\n264419N1272129E - 264419N1275729E (NAHA-SHI)\r\n(2)AIRSPACE: BOUNDED BY FLW POINTS\r\n251802N1253730E - 243002N1253730E - 243002N1250130E - \r\n251802N1250130E - 251802N1253730E (MIYAKOJIMA)\r\n(3)AIRSPACE: BOUNDED BY FLW POINTS\r\n245604N1242912E - 240804N1242912E - 240804N1235321E - \r\n245604N1235321E - 245604N1242912E (ISHIGAKIJIMA)\r\n(4)AIRSPACE: BOUNDED BY FLW POINTS\r\n245838N1231516E - 241038N1231516E - 241038N1223916E - \r\n245838N1223916E - 245838N1231516E (YONAGUNIJIMA)\r\nRMK: 1)EXC ACFT OF GOVERNMENT AGENCIES,DOCTOR HEL AND\r\n  ACFT WITH PRIOR COORDINATION WITH JAPAN SELF DEFENSE FORCE.\r\n  MINISTRY OF DEFENSE JOINT STAFF OFFICE\r\n  TEL:03-3268-3111(EXT 30929)\r\n2)ALL VFR ACFT FLYING WI AIRSPACE(EXC EACH CTR AND INFO ZONE) ARE\r\n  REQUESTED TO CONTACT FLW FREQ\r\n  CALL SIGN : RODE RICK\r\n  FREQ      : 123.1MHZ,138.05MHZ\r\nF)SFC G)UNL"
-    },
-    {
-     "key": "aviation:P3999/26",
-     "id": "P3999/26",
-     "dataset": "aviation",
-     "kind": "intercept",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-08-17T07:09:00Z",
-     "end_utc": "2026-11-16T15:00:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [],
-     "circles": [],
-     "text": "P3999/26 NOTAMR P2331/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2608170709 C)2611161500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
-    },
-    {
-     "key": "aviation:P5747/26",
-     "id": "P5747/26",
-     "dataset": "aviation",
-     "kind": "intercept",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-16T02:36:00Z",
-     "end_utc": "2027-02-15T15:00:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        26.7386,
-        127.9581
-       ],
-       [
-        25.9386,
-        127.9581
-       ],
-       [
-        25.9386,
-        127.3581
-       ],
-       [
-        26.7386,
-        127.3581
-       ],
-       [
-        26.7386,
-        127.9581
-       ]
-      ],
-      [
-       [
-        25.3006,
-        125.625
-       ],
-       [
-        24.5006,
-        125.625
-       ],
-       [
-        24.5006,
-        125.025
-       ],
-       [
-        25.3006,
-        125.025
-       ],
-       [
-        25.3006,
-        125.625
-       ]
-      ],
-      [
-       [
-        24.9344,
-        124.4867
-       ],
-       [
-        24.1344,
-        124.4867
-       ],
-       [
-        24.1344,
-        123.8892
-       ],
-       [
-        24.9344,
-        123.8892
-       ],
-       [
-        24.9344,
-        124.4867
-       ]
-      ],
-      [
-       [
-        24.9772,
-        123.2544
-       ],
-       [
-        24.1772,
-        123.2544
-       ],
-       [
-        24.1772,
-        122.6544
-       ],
-       [
-        24.9772,
-        122.6544
-       ],
-       [
-        24.9772,
-        123.2544
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "P5747/26 NOTAMR P3998/26\r\nQ)RJJJ/QRTCA/IV/BO/W/000/999/2530N12516E164\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FOLLOWING AIRSPACE\r\nDUE TO THE ANTIBALLISTIC MISSILES MAY BE LAUNCHED\r\nFOR THE DESTRUCTION OF AN OBJECT PROPELLED BY ROCKET\r\nLAUNCHED FROM NORTH KOREA\r\n(1)AIRSPACE: BOUNDED BY FLW POINTS\r\n264419N1275729E - 255619N1275729E - 255619N1272129E - \r\n264419N1272129E - 264419N1275729E (NAHA-SHI)\r\n(2)AIRSPACE: BOUNDED BY FLW POINTS\r\n251802N1253730E - 243002N1253730E - 243002N1250130E - \r\n251802N1250130E - 251802N1253730E (MIYAKOJIMA)\r\n(3)AIRSPACE: BOUNDED BY FLW POINTS\r\n245604N1242912E - 240804N1242912E - 240804N1235321E - \r\n245604N1235321E - 245604N1242912E (ISHIGAKIJIMA)\r\n(4)AIRSPACE: BOUNDED BY FLW POINTS\r\n245838N1231516E - 241038N1231516E - 241038N1223916E - \r\n245838N1223916E - 245838N1231516E (YONAGUNIJIMA)\r\nRMK: 1)EXC ACFT OF GOVERNMENT AGENCIES,DOCTOR HEL AND\r\n  ACFT WITH PRIOR COORDINATION WITH JAPAN SELF DEFENSE FORCE.\r\n  MINISTRY OF DEFENSE JOINT STAFF OFFICE\r\n  TEL:03-3268-3111(EXT 30929)\r\n2)ALL VFR ACFT FLYING WI AIRSPACE(EXC EACH CTR AND INFO ZONE) ARE\r\n  REQUESTED TO CONTACT FLW FREQ\r\n  CALL SIGN : RODE RICK\r\n  FREQ      : 123.1MHZ,138.05MHZ\r\nF)SFC G)UNL"
-    },
-    {
-     "key": "aviation:P5748/26",
-     "id": "P5748/26",
-     "dataset": "aviation",
-     "kind": "intercept",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-16T02:36:00Z",
-     "end_utc": "2027-02-15T15:00:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [],
-     "circles": [],
-     "text": "P5748/26 NOTAMR P3999/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
-    }
-   ]
-  },
   {
    "id": "2026-11-10T00:00Z:済州沖（海上発射）",
    "window_start_utc": "2026-11-10T00:00Z",
@@ -733,6 +489,133 @@
      ],
      "circles": [],
      "text": "P5648/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2630N15445E573\r\nA)RJJJ B)2611140130 C)2611200501\r\nD)0130/0501\r\nE)DUE TO AN AEROSPACE FLIGHT ACTIVITY, THE FLIGHT SAFETY OF THE\r\nAIRCRAFT IN FOLLOWING AREA MAY BE AFFECTED THRU NOV 14-20 2026,\r\n0130-0501 DLY\r\n\r\nAREA:\r\n2356N14437E - 2609N15114E - 2746N15636E - 2927N16500E - 2824N16500E -\r\n2824N16500E - 2812N16345E - 2700N15748E - 2700N15500E - 2620N15500E -\r\n2327N14449E - 2356N14437E\r\n\r\nALTITUDE:\r\nSFC - UNL\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-16T02:36Z:intercept",
+   "window_start_utc": "2026-11-16T02:36Z",
+   "window_end_utc": "2027-02-15T15:00Z",
+   "site": null,
+   "orbit": null,
+   "vehicle": null,
+   "notices": [
+    {
+     "key": "aviation:P5747/26",
+     "id": "P5747/26",
+     "dataset": "aviation",
+     "kind": "intercept",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-16T02:36:00Z",
+     "end_utc": "2027-02-15T15:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        26.7386,
+        127.9581
+       ],
+       [
+        25.9386,
+        127.9581
+       ],
+       [
+        25.9386,
+        127.3581
+       ],
+       [
+        26.7386,
+        127.3581
+       ],
+       [
+        26.7386,
+        127.9581
+       ]
+      ],
+      [
+       [
+        25.3006,
+        125.625
+       ],
+       [
+        24.5006,
+        125.625
+       ],
+       [
+        24.5006,
+        125.025
+       ],
+       [
+        25.3006,
+        125.025
+       ],
+       [
+        25.3006,
+        125.625
+       ]
+      ],
+      [
+       [
+        24.9344,
+        124.4867
+       ],
+       [
+        24.1344,
+        124.4867
+       ],
+       [
+        24.1344,
+        123.8892
+       ],
+       [
+        24.9344,
+        123.8892
+       ],
+       [
+        24.9344,
+        124.4867
+       ]
+      ],
+      [
+       [
+        24.9772,
+        123.2544
+       ],
+       [
+        24.1772,
+        123.2544
+       ],
+       [
+        24.1772,
+        122.6544
+       ],
+       [
+        24.9772,
+        122.6544
+       ],
+       [
+        24.9772,
+        123.2544
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5747/26 NOTAMR P3998/26\r\nQ)RJJJ/QRTCA/IV/BO/W/000/999/2530N12516E164\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FOLLOWING AIRSPACE\r\nDUE TO THE ANTIBALLISTIC MISSILES MAY BE LAUNCHED\r\nFOR THE DESTRUCTION OF AN OBJECT PROPELLED BY ROCKET\r\nLAUNCHED FROM NORTH KOREA\r\n(1)AIRSPACE: BOUNDED BY FLW POINTS\r\n264419N1275729E - 255619N1275729E - 255619N1272129E - \r\n264419N1272129E - 264419N1275729E (NAHA-SHI)\r\n(2)AIRSPACE: BOUNDED BY FLW POINTS\r\n251802N1253730E - 243002N1253730E - 243002N1250130E - \r\n251802N1250130E - 251802N1253730E (MIYAKOJIMA)\r\n(3)AIRSPACE: BOUNDED BY FLW POINTS\r\n245604N1242912E - 240804N1242912E - 240804N1235321E - \r\n245604N1235321E - 245604N1242912E (ISHIGAKIJIMA)\r\n(4)AIRSPACE: BOUNDED BY FLW POINTS\r\n245838N1231516E - 241038N1231516E - 241038N1223916E - \r\n245838N1223916E - 245838N1231516E (YONAGUNIJIMA)\r\nRMK: 1)EXC ACFT OF GOVERNMENT AGENCIES,DOCTOR HEL AND\r\n  ACFT WITH PRIOR COORDINATION WITH JAPAN SELF DEFENSE FORCE.\r\n  MINISTRY OF DEFENSE JOINT STAFF OFFICE\r\n  TEL:03-3268-3111(EXT 30929)\r\n2)ALL VFR ACFT FLYING WI AIRSPACE(EXC EACH CTR AND INFO ZONE) ARE\r\n  REQUESTED TO CONTACT FLW FREQ\r\n  CALL SIGN : RODE RICK\r\n  FREQ      : 123.1MHZ,138.05MHZ\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:P5748/26",
+     "id": "P5748/26",
+     "dataset": "aviation",
+     "kind": "intercept",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-16T02:36:00Z",
+     "end_utc": "2027-02-15T15:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [],
+     "circles": [],
+     "text": "P5748/26 NOTAMR P3999/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
     }
    ]
   },
