@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-16T11:29:14Z",
+ "generated_utc": "2026-11-16T12:03:18Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-15T12:57:01Z",
-   "heartbeat_age_h": 22.5,
+   "heartbeat_age_h": 23.1,
    "data_date": "2026-11-14",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -120,28 +120,22 @@
    "name": "海上保安庁 尖閣周辺",
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
-   "heartbeat_utc": "2026-11-15T11:29:40Z",
-   "heartbeat_age_h": 24.0,
-   "data_date": "2026-11-12",
+   "heartbeat_utc": "2026-11-16T12:02:42Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-15",
    "data_date_tz": "JST",
-   "data_age_days": 4,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "data_old",
-     "text": "最新の日 2026-11-12（JST 今日−4。週末・祝日の可能性）"
-    }
-   ],
+   "data_age_days": 1,
+   "state": "ok",
+   "reasons": [],
    "values": {
-    "last_ok_utc": "2026-11-15T11:29:40Z",
-    "last_run_started_utc": "2026-11-15T11:29:28Z",
+    "last_ok_utc": "2026-11-16T12:02:42Z",
+    "last_run_started_utc": "2026-11-16T12:02:30Z",
     "last_run_result": "ok",
     "not_ok_runs": 0,
     "robots": "https://www.kaiho.mlit.go.jp/robots.txt: HTTP 404, no robots.txt (all allowed)",
-    "days": 5173,
-    "fetched": 0,
-    "not_modified": 1
+    "days": 5176,
+    "fetched": 1,
+    "not_modified": 0
    }
   },
   {
@@ -150,7 +144,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-15T14:16:13Z",
-   "heartbeat_age_h": 21.2,
+   "heartbeat_age_h": 21.8,
    "data_date": "2026-11-15",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -194,7 +188,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-16T08:08:11Z",
-   "heartbeat_age_h": 3.4,
+   "heartbeat_age_h": 3.9,
    "data_date": "2026-11-13",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -212,7 +206,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-16T03:13:55Z",
-   "heartbeat_age_h": 8.3,
+   "heartbeat_age_h": 8.8,
    "data_date": "2026-11-16",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -230,16 +224,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-16T11:28:29Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-16T11:28:29Z が入力の更新 2026-11-16T12:02:42Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-16T08:09:07Z",
-    "newest_input_utc": "2026-11-16T08:08:11Z"
+    "newest_input_utc": "2026-11-16T12:02:42Z"
    }
   },
   {
@@ -711,13 +711,13 @@
    }
   ],
   "jcg": {
-   "date": "2026-11-12",
+   "date": "2026-11-15",
    "date_tz": "JST",
-   "contiguous_zone": 4,
+   "contiguous_zone": 2,
    "territorial_sea": 0,
    "ts_entries": null,
    "check": "match",
-   "as_of": "2026-11-12",
+   "as_of": "2026-11-15",
    "source_url": "https://www.kaiho.mlit.go.jp/mission/senkaku/data_R8_11.pdf",
    "note": "null は不明、0 は原文に明記"
   },
@@ -777,15 +777,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-15T11:29:04Z",
+   "last_success_started_utc": "2026-11-16T12:02:06Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43709129072,
-    "started_utc": "2026-11-15T11:29:04Z",
+    "id": 43862937215,
+    "started_utc": "2026-11-16T12:02:06Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43709129072",
-    "delay_h": 7.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43862937215",
+    "delay_h": 8.3
    },
    "consecutive_failures": 0
   },
@@ -867,11 +867,11 @@
    "last_success_started_utc": "2026-11-16T11:28:29Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 43858064567,
-    "started_utc": "2026-11-16T11:28:29Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43858064567"
+    "id": 43863075693,
+    "started_utc": "2026-11-16T12:03:04Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43863075693"
    },
    "consecutive_failures": 0
   },
