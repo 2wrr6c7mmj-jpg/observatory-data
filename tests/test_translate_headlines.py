@@ -15,6 +15,14 @@ class PendingTitles(unittest.TestCase):
         ]
         self.assertEqual(pending_titles(recs), ['New one', 'Old one', '解放军海军舰艇编队'])
 
+    def test_east_asia_and_military_first(self):
+        recs = [
+            {'title': 'World news', 'source': 'bbc', 'publishedAt': 9, 'category': 'diplomacy'},
+            {'title': 'Drone strike', 'source': 'aj', 'publishedAt': 5, 'category': 'conflict'},
+            {'title': '國防部記者會', 'source': 'cna', 'publishedAt': 1, 'scope': 'TW', 'category': 'military'},
+        ]
+        self.assertEqual(pending_titles(recs), ['國防部記者會', 'Drone strike', 'World news'])
+
     def test_valid(self):
         self.assertTrue(valid('PLA Navy drills', '中国海軍が演習'))
         self.assertFalse(valid('PLA Navy drills', 'PLA Navy drills'))
