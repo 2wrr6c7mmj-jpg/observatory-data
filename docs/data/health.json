@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-16T22:11:45Z",
+ "generated_utc": "2026-11-17T02:43:01Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 1,
+  "ok": 11,
+  "warn": 2,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,26 +71,31 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-16T13:53:14Z",
-   "heartbeat_age_h": 8.3,
+   "heartbeat_age_h": 12.8,
    "data_date": "2026-11-15",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SLP：最新の撮影 2026-11-07 から 9 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-11-07 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "STU：最新の撮影 2026-11-05 から 11 日（撮影の抜け）"
+     "text": "STU：最新の撮影 2026-11-05 から 12 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "LYG：最新の撮影 2026-11-07 から 9 日（撮影の抜け）"
+     "text": "LYG：最新の撮影 2026-11-07 から 10 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "WHI：最新の撮影 2026-11-09 から 8 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -106,7 +111,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-16T12:02:42Z",
-   "heartbeat_age_h": 10.2,
+   "heartbeat_age_h": 14.7,
    "data_date": "2026-11-15",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -129,7 +134,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-16T16:22:00Z",
-   "heartbeat_age_h": 5.8,
+   "heartbeat_age_h": 10.4,
    "data_date": "2026-11-16",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +178,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-16T22:10:17Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 4.5,
    "data_date": "2026-11-16",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -190,16 +195,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-16T12:06:02Z",
-   "heartbeat_age_h": 10.1,
+   "heartbeat_utc": "2026-11-16T23:03:35Z",
+   "heartbeat_age_h": 3.7,
    "data_date": "2026-11-16",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-16T12:06:02Z",
-    "notam_watch_last_seen_utc": "2026-11-16T12:06:02Z",
+    "notices_last_retrieved_utc": "2026-11-16T23:03:35Z",
+    "notam_watch_last_seen_utc": "2026-11-16T23:03:35Z",
     "ll2_last_retrieved_utc": "2026-11-16T08:08:01Z"
    }
   },
@@ -209,16 +214,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-16T22:10:40Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 4.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-16T22:10:40Z が入力の更新 2026-11-16T23:03:35Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-16T22:11:15Z",
-    "newest_input_utc": "2026-11-16T22:10:17Z"
+    "newest_input_utc": "2026-11-16T23:03:35Z"
    }
   },
   {
@@ -864,15 +875,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-15T23:29:37Z",
+   "last_success_started_utc": "2026-11-17T02:35:20Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 43775102216,
-    "started_utc": "2026-11-15T23:29:37Z",
+    "id": 44004101022,
+    "started_utc": "2026-11-17T02:35:20Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/43775102216",
-    "delay_h": 3.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44004101022",
+    "delay_h": 6.9
    },
    "consecutive_failures": 0
   }
