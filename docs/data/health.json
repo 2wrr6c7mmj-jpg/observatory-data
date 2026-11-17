@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-17T21:00:06Z",
+ "generated_utc": "2026-11-17T23:28:13Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 1,
+  "ok": 11,
+  "warn": 2,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -71,7 +71,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-17T14:44:47Z",
-   "heartbeat_age_h": 6.3,
+   "heartbeat_age_h": 8.7,
    "data_date": "2026-11-15",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -111,7 +111,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-17T12:27:32Z",
-   "heartbeat_age_h": 8.5,
+   "heartbeat_age_h": 11.0,
    "data_date": "2026-11-16",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -134,7 +134,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-17T16:26:41Z",
-   "heartbeat_age_h": 4.6,
+   "heartbeat_age_h": 7.0,
    "data_date": "2026-11-17",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -178,7 +178,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-17T09:24:03Z",
-   "heartbeat_age_h": 11.6,
+   "heartbeat_age_h": 14.1,
    "data_date": "2026-11-16",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -195,16 +195,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-17T14:55:54Z",
-   "heartbeat_age_h": 6.1,
+   "heartbeat_utc": "2026-11-17T23:11:31Z",
+   "heartbeat_age_h": 0.3,
    "data_date": "2026-11-17",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-17T14:55:54Z",
-    "notam_watch_last_seen_utc": "2026-11-17T14:55:54Z",
+    "notices_last_retrieved_utc": "2026-11-17T23:11:31Z",
+    "notam_watch_last_seen_utc": "2026-11-17T23:11:31Z",
     "ll2_last_retrieved_utc": "2026-11-17T09:23:19Z"
    }
   },
@@ -214,16 +214,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-17T20:59:21Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-17T20:59:21Z が入力の更新 2026-11-17T23:11:31Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-17T12:28:20Z",
-    "newest_input_utc": "2026-11-17T14:55:54Z"
+    "newest_input_utc": "2026-11-17T23:11:31Z"
    }
   },
   {
