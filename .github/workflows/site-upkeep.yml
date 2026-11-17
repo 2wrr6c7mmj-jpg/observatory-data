@@ -4,7 +4,8 @@ name: Site upkeep clock
 # open. The site does one bounded step per request (Workers Free CPU limit),
 # so this calls /api/maintenance until it reports idle or the step cap.
 # Runs here (public repository, free Actions) instead of a new Cloudflare
-# cron trigger. About 60 requests per run at most, 72 runs a day.
+# cron trigger. About 100 requests per run at most, 72 runs a day (raised from
+# 60 when the site's news sources went from 51 to 97, 2026-11-18).
 on:
   schedule:
     - cron: '7,27,47 * * * *'
@@ -16,12 +17,12 @@ concurrency:
 jobs:
   tick:
     runs-on: ubuntu-24.04
-    timeout-minutes: 6
+    timeout-minutes: 10
     steps:
       - name: Step the site upkeep
         run: |
           tasks=""; fails=0
-          for i in $(seq 1 60); do
+          for i in $(seq 1 100); do
             body=$(curl -sS -m 25 -H 'Accept: application/json' https://observatory-watch.pages.dev/api/maintenance) || { fails=$((fails+1)); [ $fails -ge 3 ] && break; sleep 5; continue; }
             task=$(printf '%s' "$body" | sed -n 's/.*"task":"\([^"]*\)".*/\1/p')
             tasks="$tasks ${task:-?}"

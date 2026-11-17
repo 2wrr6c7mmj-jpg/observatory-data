@@ -34,10 +34,23 @@ def key(title):
     return hashlib.sha256(title.encode('utf-8')).hexdigest()[:24]
 
 
+# East Asia first: headlines from sources scoped to the region, or classed as
+# military/conflict, are translated before the rest (newest first within each).
+EAST_ASIA = {'CN', 'HK', 'MO', 'TW', 'JP', 'KR', 'KP', 'PH'}
+
+
+def priority(r):
+    if r.get('scope') in EAST_ASIA:
+        return 0
+    if r.get('category') in ('military', 'conflict'):
+        return 1
+    return 2
+
+
 def pending_titles(records):
-    """Titles the site still shows untranslated, newest first, without duplicates."""
+    """Titles the site still shows untranslated, East Asia and military first, newest first, without duplicates."""
     out, seen = [], set()
-    for r in sorted(records, key=lambda r: r.get('publishedAt') or 0, reverse=True):
+    for r in sorted(records, key=lambda r: (priority(r), -(r.get('publishedAt') or 0))):
         t = (r.get('title') or '').strip()
         if not t or t in seen or r.get('source') in SKIP_SOURCES:
             continue
