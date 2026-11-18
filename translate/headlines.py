@@ -7,8 +7,14 @@ Reads   https://observatory-watch.pages.dev/api/feeds (titles still pending)
 Keeps   docs/data/translations/cache.json        (every translation made, pruned after 30 days unseen)
 Writes  docs/data/translations/headlines-ja.json (only the titles the site still lacks; the site's
         background upkeep takes them from GitHub Pages)
+
+An answer from the feed without a non-empty list of records, or a run in which
+every batch failed, writes nothing (the published files stay as they are) and
+exits non-zero. The model numbers each translation after its headline; a
+translation whose number is missing, repeated or out of range, or that carries a
+number found only in another headline of the batch, is not used.
 """
-import argparse, hashlib, json, re, sys, time, urllib.request
+import argparse, hashlib, json, os, re, sys, time, urllib.request
 
 FEED = 'https://observatory-watch.pages.dev/api/feeds'
 OUT_DIR = 'docs/data/translations'
@@ -74,24 +80,82 @@ def get_json(url, timeout=60):
         return json.loads(r.read().decode('utf-8'))
 
 
-def translate_batch(server, titles):
-    schema = {'type': 'object', 'properties': {'ja': {'type': 'array', 'items': {'type': 'string'},
-              'minItems': len(titles), 'maxItems': len(titles)}}, 'required': ['ja']}
-    body = {
-        'messages': [
-            {'role': 'system', 'content': SYSTEM},
-            {'role': 'user', 'content': '次の見出しを順番どおりに訳し、{"ja": [...]} の形で返してください。\n' + json.dumps(titles, ensure_ascii=False)},
-        ],
-        'chat_template_kwargs': {'enable_thinking': False},
-        'temperature': 0.1, 'max_tokens': 90 * len(titles) + 50,
-        'response_format': {'type': 'json_object', 'schema': schema},
-    }
+def chat(server, body):
+    """One request to the model server; the message content (a JSON string)."""
     req = urllib.request.Request(server + '/v1/chat/completions', data=json.dumps(body).encode('utf-8'),
                                  headers={'Content-Type': 'application/json'})
     with urllib.request.urlopen(req, timeout=900) as r:
         res = json.loads(r.read().decode('utf-8'))
-    ja = json.loads(res['choices'][0]['message']['content']).get('ja', [])
-    return ja if isinstance(ja, list) and len(ja) == len(titles) else None
+    return res['choices'][0]['message']['content']
+
+
+NUMBER = re.compile(r'\d+(?:[.,]\d+)*')
+
+
+def numbers(text):
+    """The digit runs of a text (full-width digits folded, thousands separators dropped)."""
+    text = (text or '').translate(str.maketrans('０１２３４５６７８９，．', '0123456789,.'))
+    return {n.replace(',', '') for n in NUMBER.findall(text)}
+
+
+def match_batch(titles, content):
+    """The translation for each title (None where it cannot be used), from the model's numbered answer.
+
+    Each answer item is {"n": number of the headline (1-based), "ja": translation}. Items are
+    taken by their number, never by their position; a number that is missing, repeated or out
+    of range gives no translation, and so does a translation with a number that appears in
+    another headline of the batch but not in its own (a sign that two answers were swapped).
+    Returns None when the answer is not the expected shape at all."""
+    try:
+        data = json.loads(content)
+    except (TypeError, ValueError):
+        return None
+    items = data.get('items') if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        return None
+    by_n, dup = {}, set()
+    for it in items:
+        if not isinstance(it, dict):
+            continue
+        n = it.get('n')
+        if isinstance(n, str) and n.strip().isdigit():
+            n = int(n.strip())
+        if not isinstance(n, int) or isinstance(n, bool) or not 1 <= n <= len(titles):
+            continue
+        if n in by_n:
+            dup.add(n)
+        by_n[n] = it.get('ja')
+    out = []
+    own = [numbers(t) for t in titles]
+    for i, t in enumerate(titles, 1):
+        ja = by_n.get(i) if i not in dup else None
+        if isinstance(ja, str):
+            others = set().union(*(own[j] for j in range(len(titles)) if j != i - 1)) - own[i - 1]
+            if numbers(ja) & others:
+                ja = None
+        out.append(ja if isinstance(ja, str) else None)
+    return out
+
+
+def translate_batch(server, titles):
+    """Translations of ``titles`` (None for each one that cannot be used), or None when the answer is unusable."""
+    k = len(titles)
+    schema = {'type': 'object', 'properties': {'items': {'type': 'array', 'minItems': k, 'maxItems': k, 'items': {
+        'type': 'object', 'properties': {'n': {'type': 'integer', 'minimum': 1, 'maximum': k}, 'ja': {'type': 'string'}},
+        'required': ['n', 'ja']}}}, 'required': ['items']}
+    numbered = [{'n': i, 'title': t} for i, t in enumerate(titles, 1)]
+    body = {
+        'messages': [
+            {'role': 'system', 'content': SYSTEM},
+            {'role': 'user', 'content': '次の番号つきの見出しをそれぞれ訳し、{"items": [{"n": 番号, "ja": "訳"}, ...]} の形で返してください。'
+                                        'n には訳した見出しの番号をそのまま書き、1 つの番号に 1 つの訳だけを書きます。\n'
+                                        + json.dumps(numbered, ensure_ascii=False)},
+        ],
+        'chat_template_kwargs': {'enable_thinking': False},
+        'temperature': 0.1, 'max_tokens': 100 * k + 50,
+        'response_format': {'type': 'json_object', 'schema': schema},
+    }
+    return match_batch(titles, chat(server, body))
 
 
 def load(path, default):
@@ -103,9 +167,23 @@ def load(path, default):
 
 
 def write(path, value):
-    with open(path, 'w', encoding='utf-8') as f:
+    """Write beside the file and rename, so a killed run never leaves half a file to publish."""
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
         json.dump(value, f, ensure_ascii=False, separators=(',', ':'))
         f.write('\n')
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
+def feed_records(feed):
+    """The feed's records, or None when the answer is not a non-empty list of records."""
+    records = feed.get('records') if isinstance(feed, dict) else None
+    if not isinstance(records, list):
+        return None
+    records = [r for r in records if isinstance(r, dict)]
+    return records or None
 
 
 def main(argv=None):
@@ -118,20 +196,29 @@ def main(argv=None):
     started, now = time.time(), int(time.time() * 1000)
     cache_path, pub_path = a.out + '/cache.json', a.out + '/headlines-ja.json'
     cache = load(cache_path, {'items': {}})['items']
-    titles = pending_titles(get_json(FEED).get('records', []))
+    try:
+        records = feed_records(get_json(FEED))
+    except Exception as e:  # network error, not JSON: nothing to do this run
+        print(f'::error title=translate::the feed could not be read ({type(e).__name__}: {e}); the published translations are kept')
+        return 2
+    if records is None:
+        print('::error title=translate::the feed returned no records; the published translations are kept')
+        return 2
+    titles = pending_titles(records)
     for t in titles:
         if key(t) in cache:
             cache[key(t)]['seen'] = now
     todo = [t for t in titles if key(t) not in cache]
-    made = failed = 0
+    made = failed = batches = 0
     for i in range(0, len(todo), BATCH):
         if time.time() - started > a.minutes * 60:
             break
         chunk = todo[i:i + BATCH]
+        batches += 1
         try:
             ja = translate_batch(a.server, chunk)
         except Exception as e:  # one bad batch must not stop the rest
-            print(f'batch failed: {e}', file=sys.stderr)
+            print(f'batch failed: {type(e).__name__}: {e}', file=sys.stderr)
             ja = None
         if ja is None:
             failed += len(chunk)
@@ -142,6 +229,9 @@ def main(argv=None):
                 made += 1
             else:
                 failed += 1
+    if batches and not made:
+        print(f'::error title=translate::all {batches} batches failed ({failed} titles); the published translations are kept')
+        return 1
     cutoff = now - KEEP_DAYS * 86400000
     cache = {k: v for k, v in cache.items() if v.get('seen', 0) >= cutoff}
     items = [{'original': t, 'translated': cache[key(t)]['t']} for t in titles if key(t) in cache][:PUBLISH_MAX]

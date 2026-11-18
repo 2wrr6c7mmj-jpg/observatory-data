@@ -241,14 +241,51 @@ class RunTest(unittest.TestCase):
                 rc = P.main(["--out", str(Path(t) / "probe"), "--save-raw", str(Path(t) / "records.csv")])
             self.assertEqual((rc, g.calls), (0, []))
             self.assertFalse((Path(t) / "records.csv").exists())
-            # the next day the probe fetches once
-            g = self.allow_getter()
-            polite._cache.clear()
-            with mock.patch.object(polite, "raw_get", g), mock.patch.object(P, "OUT", published), \
-                    mock.patch.object(P, "now_utc", return_value=datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc)):
-                rc = P.main(["--out", str(Path(t) / "probe"), "--save-raw", str(Path(t) / "records.csv")])
-            self.assertEqual(g.calls.count(P.CSV_URL), 1)
+            # the next day the daily run will request again (it is active): the probe does not
+            rc, calls = self.probe(published, Path(t), datetime(2026, 11, 2, 9, 0, tzinfo=timezone.utc))
+            self.assertEqual((rc, calls), (0, []))
+            self.assertFalse((Path(t) / "records.csv").exists())
+            self.assertTrue(any("定時の取得が動いている" in m for _, _, m in self.notices))
+            # once the daily run has not requested for PROBE_QUIET_DAYS days, the probe fetches once
+            # and records its request (last_request_utc), so a second probe that day makes none
+            rc, calls = self.probe(published, Path(t), datetime(2026, 11, 4, 9, 0, tzinfo=timezone.utc))
+            self.assertEqual((rc, calls.count(P.CSV_URL)), (0, 1))
             self.assertTrue((Path(t) / "records.csv").exists())
+            st = json.loads((Path(t) / "probe" / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual(st["last_request_utc"], "2026-11-04T09:00:00Z")
+            self.assertEqual((st["last_run"]["result"], st["last_run"]["access"]), ("ok", "robots"))
+            self.assertIn("allowed", st["last_run"]["robots"])
+            rc, calls = self.probe(published, Path(t), datetime(2026, 11, 4, 18, 0, tzinfo=timezone.utc))
+            self.assertEqual((rc, calls), (0, []))
+
+    def probe(self, published, t, now, getter=None):
+        g = getter or self.allow_getter()
+        polite._cache.clear()
+        with mock.patch.object(polite, "raw_get", g), mock.patch.object(P, "OUT", published), \
+                mock.patch.object(P, "now_utc", return_value=now):
+            rc = P.main(["--out", str(t / "probe"), "--save-raw", str(t / "records.csv")])
+        return rc, g.calls
+
+    def test_probe_records_a_request_whose_csv_cannot_be_used(self):
+        from datetime import datetime, timezone
+        calls = []
+
+        def getter(url, ua, timeout, headers, max_bytes):
+            calls.append(url)
+            if url.endswith("robots.txt"):
+                return polite.Response(url, 200, {"content-type": "text/plain"}, b"User-agent: *\nAllow: /\n")
+            return polite.Response(url, 500, {"content-type": "text/plain"}, b"error")
+        getter.calls = calls
+        with tempfile.TemporaryDirectory() as t:
+            published = Path(t) / "published"  # no published status.json: the daily run is not active
+            now = datetime(2026, 11, 4, 9, 0, tzinfo=timezone.utc)
+            rc, calls = self.probe(published, Path(t), now, getter)
+            self.assertEqual((rc, calls.count(P.CSV_URL)), (0, 1))
+            st = json.loads((Path(t) / "probe" / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual(st["last_request_utc"], "2026-11-04T09:00:00Z")
+            self.assertIn("HTTP 500", st["last_run"]["reason"])
+            rc, calls = self.probe(published, Path(t), now.replace(hour=20), getter)
+            self.assertEqual(calls.count(P.CSV_URL), 1)  # no second request that day
 
     def test_no_or_expired_permission_skips_without_fetching(self):
         from datetime import date, datetime, timezone

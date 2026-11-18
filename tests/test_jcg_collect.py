@@ -119,6 +119,64 @@ class Collect(unittest.TestCase):
         self.assertIn(BASE + "data_R8_9.pdf", status["not_published"])
         self.assertFalse(any(r[0].startswith("2026-09") for r in daily["rows"]))
 
+    def revise_october(self, d, words, revised_server=None):
+        """First run with the good October PDF, then a run where October was revised to ``words``."""
+        self.run_collect(Server(), d)
+        before = json.loads((Path(d) / "daily.json").read_text())["rows"]
+        s = revised_server or Revised()
+        with mock.patch.dict(WORDS, {BASE + "data_R8_10.pdf": words}):
+            self.run_collect(s, d, today=datetime(2026, 10, 31, 3, tzinfo=timezone.utc))
+        return before, s
+
+    def test_unreadable_revision_keeps_the_checked_version(self):
+        oct_url = BASE + "data_R8_10.pdf"
+        for name, words in [("not parsed", []),
+                            ("mismatch", [w for w in table() if not (w[1] == "4" and w[4] == 95 + 5 * 14)])]:
+            with self.subTest(name), tempfile.TemporaryDirectory() as d:
+                before, s = self.revise_october(d, words)
+                self.assertIn((oct_url, {"If-None-Match": '"e1"', "If-Modified-Since": "Wed, 28 Oct 2026 01:00:00 GMT"}),
+                              s.calls)
+                daily = json.loads((Path(d) / "daily.json").read_text())
+                self.assertEqual([r[:4] for r in daily["rows"]], [r[:4] for r in before])  # October still published
+                self.assertTrue(any(r[0] == "2026-10-01" for r in daily["rows"]))
+                status = json.loads((Path(d) / "status.json").read_text())
+                self.assertNotIn(oct_url, status["not_published"])
+                note = status["revision_not_used"][oct_url]
+                self.assertEqual((note["etag"], note["last_modified_utc"]), ('"e2"', "2026-10-30T01:00:00Z"))
+                self.assertTrue(note["problems"])
+                self.assertEqual(status["last_run"]["revision_not_used"], [oct_url])
+                kept = json.loads((Path(d) / "pdfs.json").read_text())["pdfs"][oct_url]
+                self.assertEqual(kept["etag"], '"e1"')  # the checked version, asked for again next run
+                self.assertTrue(kept["parse"]["parsed"])
+
+    def test_readable_revision_replaces_and_clears_the_note(self):
+        oct_url = BASE + "data_R8_10.pdf"
+        with tempfile.TemporaryDirectory() as d:
+            self.revise_october(d, [])
+            with mock.patch.dict(WORDS, {oct_url: table()}):
+                self.run_collect(Revised(), d, today=datetime(2026, 10, 31, 4, tzinfo=timezone.utc))
+            status = json.loads((Path(d) / "status.json").read_text())
+            self.assertEqual(status["revision_not_used"], {})
+            self.assertEqual(json.loads((Path(d) / "pdfs.json").read_text())["pdfs"][oct_url]["etag"], '"e2"')
+
+    def test_unreadable_pdf_without_a_checked_version_is_stored_as_before(self):
+        with tempfile.TemporaryDirectory() as d, mock.patch.dict(WORDS, {BASE + "data_R8_10.pdf": []}):
+            self.run_collect(Server(), d)
+            status = json.loads((Path(d) / "status.json").read_text())
+        self.assertIn(BASE + "data_R8_10.pdf", status["not_published"])
+        self.assertEqual(status["revision_not_used"], {})
+
+
+class Revised(Server):
+    """The October PDF has been replaced (new ETag / Last-Modified): conditional requests get 200."""
+
+    def __call__(self, url, ua, timeout, headers, max_bytes):
+        if url.endswith("data_R8_10.pdf"):
+            self.calls.append((url, dict(headers or {})))
+            return polite.Response(url, 200, {"content-type": "application/pdf", "etag": '"e2"',
+                                              "last-modified": "Fri, 30 Oct 2026 01:00:00 GMT"}, b"%PDF-" + url.encode())
+        return super().__call__(url, ua, timeout, headers, max_bytes)
+
 
 class Rows(unittest.TestCase):
     def test_first_month_rows_start_where_the_table_starts(self):

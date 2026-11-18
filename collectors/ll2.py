@@ -7,11 +7,16 @@ the anonymous allowance of 15 requests per hour. Launches are kept in
 docs/data/launches/ll2.json by Launch Library id; a later record of the same
 launch (status changed from scheduled to success, a new time) replaces it.
 A refused request (HTTP 429, e.g. a shared runner address) keeps the stored
-data and is retried on the next run.
+data and is retried on the next run. So does any other failure of one request
+(a timeout or a connection cut while the body is read, a truncated or broken
+body): the records of the other request are still merged, and ll2.json is
+written atomically (a killed run never leaves half a file).
 """
 from __future__ import annotations
 
+import http.client
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -58,10 +63,27 @@ def fetch_all(now: datetime) -> tuple[list[dict], list[str]]:
     rows, errors = [], []
     for url in urls:
         try:
-            rows += [compact(x) for x in get(url).get("results", [])]
-        except (urllib.error.URLError, ValueError) as e:
-            errors.append(f"{url.split('?')[0]}: {e}")
+            data = get(url)
+            results = data.get("results") if isinstance(data, dict) else None
+            if not isinstance(results, list):
+                raise ValueError("no list of results in the response")
+            rows += [compact(x) for x in results if isinstance(x, dict)]
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException,
+                OSError, ValueError) as e:
+            # one failed request (also a timeout or an IncompleteRead while reading, or a body
+            # that is not the expected JSON) must not lose what the other one returned
+            errors.append(f"{url.split('?')[0]}: {type(e).__name__}: {e}")
     return rows, errors
+
+
+def write_atomic(path: Path, text: str) -> None:
+    """Write beside the file and rename, so a killed run never leaves half a file to commit."""
+    tmp = path.with_name(path.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
 
 
 def merge(store: dict, rows: list[dict], now: str) -> dict:
@@ -84,7 +106,7 @@ def main() -> int:
     if rows:
         store = merge(store, rows, stamp)
         OUT.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(store, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+        write_atomic(path, json.dumps(store, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
     for e in errors:
         print("::warning::Launch Library 2: " + e + " (stored data kept; retried next run)")
     print(f"::notice::Launch Library 2: {len(rows)} records, {len(store.get('launches', {}))} stored")
