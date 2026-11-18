@@ -42,27 +42,6 @@
    }
   },
   {
-   "way": 697315153,
-   "kind": "pier",
-   "class": "naval",
-   "berth": false,
-   "fixed": true,
-   "conf": "確認寄り",
-   "why": "軍の線だが艦の着かない所の反射を数えていた（AI の判断、2026-11-15）",
-   "basis": [
-    "呉淞の桟橋（斜めの構造物）。2 撮影とも数えた位置に、S2 の 6 日（2025-11-02〜2026-11-10）とも船が無く構造物だけ（検品_全港の正解（AI の目視、2026-11-15））"
-   ],
-   "part": {
-    "bbox": [
-     121.504616,
-     31.388438,
-     121.505632,
-     31.389403
-    ],
-    "note": "naval50 が数えた片の四角（線の範囲＋15 m）。箱の中は線の両面とも数えない"
-   }
-  },
-  {
    "way": 697315154,
    "kind": "pier",
    "class": "naval",
@@ -217,12 +196,15 @@
    "kind": "pier",
    "class": "naval",
    "conf": "確認寄り",
-   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "why": "海軍の区域だが艦の着かない線（高解像度の複数時点で艦なし）",
    "basis": [
     "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に接する（9 m）",
     "溫約瑟の地図 wen-0010「上海水警區」まで 415 m",
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "berth false（hires-1）：この線の全区間（3 区間、計 250 m）。南端の修理・作業の浮き桟橋（赤いクレーン、作業台、浮体）。5 時点とも灰色の軍艦なし。撮影 2010-07-22／2019-04-17／2021-03-15／2021-11-25／2025-04-07。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "berth": false,
+   "fixed": true
   },
   {
    "way": 697315143,
@@ -273,23 +255,29 @@
    "kind": "pier",
    "class": "naval",
    "conf": "確認寄り",
-   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "why": "海軍の区域だが艦の着かない線（高解像度の複数時点で艦なし）",
    "basis": [
     "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
-    "区画 A1（role naval）"
-   ]
+    "区画 A1（role naval）",
+    "berth false（hires-1）：この線の全区間（1 区間、計 80 m）。小さな入江の中の小桟橋と浮き桟橋。40 m 以下の小型艇のみ。撮影 2010-07-22／2019-04-17／2021-03-15／2021-11-25／2025-04-07。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "berth": false,
+   "fixed": true
   },
   {
    "way": 697315152,
    "kind": "pier",
    "class": "naval",
    "conf": "確認寄り",
-   "why": "OSM の軍の区域に接し、民間の港の区域に接しない",
+   "why": "海軍の区域だが艦の着かない線（高解像度の複数時点で艦なし）",
    "basis": [
     "OSM way/653753242「上海水警区」（landuse=military・military=naval_base）に含まれる",
     "溫約瑟の地図 wen-0010「上海水警區」まで 443 m",
-    "区画 A1（role naval）"
-   ]
+    "区画 A1（role naval）",
+    "berth false（hires-1）：この線の全区間（3 区間、計 220 m）。小さな入江の中の小桟橋と浮き桟橋。40 m 以下の小型艇のみ。撮影 2010-07-22／2019-04-17／2021-03-15／2021-11-25／2025-04-07。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "berth": false,
+   "fixed": true
   },
   {
    "way": 697315153,
@@ -363,5 +351,20 @@
     "区画 A1（role naval）"
    ]
   }
- ]
+ ],
+ "hires": {
+  "version": "hires-1",
+  "date": "2026-11-18",
+  "source": "Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）",
+  "owner": "所有者の指示（2026-11-18）：所有者の S2 の答えより高解像度の画像を優先する",
+  "dates": "撮影 2010-07-22／2019-04-17／2021-03-15／2021-11-25／2025-04-07",
+  "sections": 31,
+  "verdicts": {
+   "C": 7,
+   "S": 4,
+   "W": 17,
+   "X": 3
+  },
+  "record": "docs/data/sat/labels/hires-berth-read.csv"
+ }
 }

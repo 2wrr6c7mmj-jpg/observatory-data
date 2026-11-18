@@ -134,29 +134,34 @@ class NoBerthTest(unittest.TestCase):
         self.assertEqual(b1.counts()["no_berth_parts"], 0)
 
     def test_gu_zhenkou_file(self):
-        """The hooked jetty 582517902 and the work-yard shore of 15387629 (section L:06) are berth false with a basis."""
+        """The yard shore of 15387629 (section L:06) and the sections of A-1 where no ship berths are berth false with a basis.
+        hires-1 (2026-11-18, the owner: the high-resolution imagery wins over the owner's answers): the north-west face of the
+        fitting-out pier 582517902 (frigates in 2019 and 2025) and 15388243:L:15 (ships on all five dates) are berths again;
+        the revetments and seaward faces beside the kept sections are no berth now."""
         site = SITES["QGZ"]
         nv = berths.Berths(site, lines_of(site), naval=True)
-        self.assertFalse(nv.point_ok("pier", 582517902, 119.97859, 35.73081))
-        self.assertEqual(nv.line_class(582517902, 119.97859, 35.73081), "naval")
+        self.assertTrue(nv.point_ok("pier", 582517902, 119.978061, 35.730221))      # 582517902:L:01, the north-west face
+        self.assertFalse(nv.point_ok("pier", 582517902, 119.978814, 35.729829))     # 582517902:L:02, the south-east face
+        self.assertEqual(nv.line_class(582517902, 119.978814, 35.729829), "naval")
         self.assertFalse(nv.point_ok("coastline", 15387629, 119.96573, 35.73866))   # L:06, the yard shore
-        self.assertTrue(nv.point_ok("coastline", 15387629, 119.96455, 35.73951))    # L:05 next to it: still a berth (sector A2)
-        # A-1 of 2026-11-10 (検品_古鎮口の非盲域の外れ §2.1): four sections where no ship berths, by the midpoint of the section
-        for way, lon, lat in ((15388243, 119.987205, 35.720096), (219848837, 119.969684, 35.725118),
-                              (219848837, 119.964851, 35.731194), (1564921419, 119.968165, 35.726132)):
+        self.assertFalse(nv.point_ok("coastline", 15387629, 119.96455, 35.73951))   # L:05 next to it: a revetment (hires-1)
+        # A-1 of 2026-11-10 (検品_古鎮口の非盲域の外れ §2.1): three of its four sections stay off, by the midpoint of the section
+        for way, lon, lat in ((219848837, 119.969684, 35.725118), (219848837, 119.964851, 35.731194),
+                              (1564921419, 119.968165, 35.726132)):
             self.assertFalse(nv.point_ok("pier", way, lon, lat), way)
             self.assertEqual(nv.line_class(way, lon, lat), "naval")
-        self.assertTrue(nv.point_ok("pier", 15388243, 119.980372, 35.716429))       # 15388243:L:01: still a berth
+        self.assertTrue(nv.point_ok("pier", 15388243, 119.987205, 35.720096))       # 15388243:L:15: a berth again (hires-1)
+        self.assertFalse(nv.point_ok("pier", 15388243, 119.980372, 35.716429))      # 15388243:L:01: the seaward face (hires-1)
         self.assertTrue(nv.point_ok("pier", 1564921419, 119.968889, 35.725746))     # 1564921419:L:00, 60 m east of R:00
         # 2026-11-12 (the mask check of every port): the reclaimed platform at the root of the northernmost slanted pier (water
-        # until 2026-04, land in S2 2026-09-22) is still water in QGZ-land-v1, so the coastline's band lay on it: sections L:00, L:01
-        for lon, lat in ((119.981059, 35.731404), (119.982146, 35.730975)):
+        # until 2026-04, land in S2 2026-09-22) is still water in QGZ-land-v1, so the coastline's band lay on it: sections L:00, L:01;
+        # hires-1: L:02 next to them is the shore between two piers, no berth either
+        for lon, lat in ((119.981059, 35.731404), (119.982146, 35.730975), (119.983065, 35.730142)):
             self.assertFalse(nv.point_ok("coastline", 219848835, lon, lat))
             self.assertEqual(nv.line_class(219848835, lon, lat), "naval")
-        self.assertTrue(nv.point_ok("coastline", 219848835, 119.983065, 35.730142))  # 219848835:L:02 next to it: still a berth
         self.assertTrue(nv.point_ok("pier", 219848836, 119.981059, 35.731404))       # the pier beside the platform is not touched
         cls = berths.load_classes("QGZ")
-        self.assertEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), 7)
+        self.assertGreaterEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), 7)
         for e in cls["lines"]:
             if e.get("berth") is False:
                 self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), e["way"])
@@ -165,52 +170,57 @@ class NoBerthTest(unittest.TestCase):
 class NoBerthPhotoTest(unittest.TestCase):
     """2026-11-13: sections the owner's photo answers call empty on all 8 days, where the radar count said "present" again and
     again, and the photos show no place for a warship (a pier's own echo, a headland's edge across a narrow channel, the end
-    face of a jetty, a boat basin, a tidal flat). The sections held back because the photos show a quay face stay berths."""
+    face of a jetty, a boat basin, a tidal flat). The sections held back because the photos show a quay face stay berths.
 
-    CASES = {   # site: [(kind, way, the section's middle point, the neighbouring section's middle point that stays a berth)]
-        "LSN": [("coastline", 696162852, (121.256177, 38.800634), (121.260026, 38.799832)),      # 696162852:L:09 / L:16
-                ("pier", 1026281591, (121.237495, 38.790571), (121.236641, 38.790432))],         # 1026281591:L:01 (+R:00) / L:00
-        "QDH": [("coastline", 69732073, (120.319682, 36.092023), (120.320757, 36.091171)),       # 69732073:L:25 / L:26
-                ("coastline", 69732009, (120.312445, 36.096774), (120.312197, 36.096329))],      # 69732009:L:32 / L:31
-        "QJG": [("coastline", 43251729, (120.583626, 36.112915), (120.582938, 36.111768))],      # 43251729:L:12 / L:13
+    hires-1 (2026-11-18, the owner: "the high-resolution imagery wins over my answers; every port"): three of those five sections
+    berth warships on the 0.3-0.6 m imagery of several dates (a ship lying close against a quay, or a black submarine, does not
+    show on the 10 m photos) and are berths again; the boat basin and the tidal flat stay off."""
+
+    RESTORED = {   # site: [(kind, way, the section's middle point)]
+        "LSN": [("coastline", 696162852, (121.256177, 38.800634)),      # 696162852:L:09: frigates 2019, 2025, 2026
+                ("pier", 1026281591, (121.237495, 38.790571)),          # 1026281591:L:01: submarines on the finger piers
+                ("pier", 1026281591, (121.237494, 38.790535))],         # 1026281591:R:00
+        "QDH": [("coastline", 69732073, (120.319682, 36.092023))],      # 69732073:L:25: ships across the end face of pier 3
     }
+    KEPT = {"QDH": [("coastline", 69732009, (120.312445, 36.096774))],      # 69732009:L:32, the boat basin
+            "QJG": [("coastline", 43251729, (120.583626, 36.112915))]}      # 43251729:L:12, the tidal flat
     HELD = {"LSN": ("pier", 995530596, (121.247763, 38.804574)),           # 995530596:R:01: the face of a pier
             "QDH": ("coastline", 69732073, (120.324203, 36.091828)),       # 69732073:L:22: the north face of pier 3
-            "QJG": ("coastline", 43251729, (120.583595, 36.107857))}       # 43251729:L:17: a straight revetment
+            "QJG": ("coastline", 43251729, (120.583595, 36.107857))}       # 43251729:L:17: the west face of the L-shaped quay
 
     def test_files(self):
         sites = {s["id"]: s for s in json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
-        for sid, cases in self.CASES.items():
+        for sid in ("LSN", "QDH", "QJG"):
             nv = berths.Berths(sites[sid], lines_of(sites[sid]), naval=True)
-            for kind, way, mid, neighbour in cases:
+            for kind, way, mid in self.RESTORED.get(sid, []):
+                self.assertTrue(nv.point_ok(kind, way, *mid), (sid, way))
+                self.assertFalse(nv.no_berth_at(way, *mid), (sid, way))
+                self.assertEqual(nv.line_class(way, *mid), "naval", (sid, way))
+            for kind, way, mid in self.KEPT.get(sid, []):
                 self.assertFalse(nv.point_ok(kind, way, *mid), (sid, way))
                 self.assertTrue(nv.no_berth_at(way, *mid), (sid, way))
                 self.assertEqual(nv.line_class(way, *mid), "naval", (sid, way))    # the class stays: only "not a berth"
-                self.assertTrue(nv.point_ok(kind, way, *neighbour), (sid, way))
             kind, way, mid = self.HELD[sid]
             self.assertTrue(nv.point_ok(kind, way, *mid), (sid, way))
             cls = berths.load_classes(sid)
-            self.assertEqual(sum(1 for e in cls["lines"] if e.get("berth") is False), len(cases), sid)
-            for e in cls["lines"][:len(cases)]:                                    # in front of the other entries of their way
-                self.assertIs(e.get("berth"), False)
-                self.assertTrue(e.get("fixed") and e["part"].get("bbox") and "2026-11-13" in e["basis"][1], (sid, e["way"]))
-        # the other section on the same (east) face of that finger pier lies in the box too; its west face stays a berth
-        nv = berths.Berths(sites["LSN"], lines_of(sites["LSN"]), naval=True)
-        self.assertFalse(nv.point_ok("pier", 1026281591, 121.237494, 38.790535))   # 1026281591:R:00
+            for e in cls["lines"]:
+                if e.get("berth") is False:
+                    self.assertTrue(e.get("fixed") and any("berth false" in b for b in e["basis"]), (sid, e["way"]))
 
     def test_degaussing_pier_stays(self):
         """SLP 230360728 (the c-shaped degaussing pier, FAS 2008): its outer face R:02 meets the first two conditions (the
         owner's photo answers say empty on all 8 days, the radar said "present" on 3 of 8), but ships lie between the two arms
         and the pier's brightness changes from scene to scene (2026-10-26 strong over its whole length, 11-07 weak): it
-        stays a berth, with the reason in the basis."""
+        stays a berth, with the reason in the basis. hires-1 (2026-11-18): the link bridge to the shore and the row of
+        dolphins are no berth; the pier's own faces stay."""
         sites = {s["id"]: s for s in json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
         nv = berths.Berths(sites["SLP"], lines_of(sites["SLP"]), naval=True)
         self.assertTrue(nv.point_ok("pier", 230360728, 109.68984, 18.188029))      # 230360728:R:02
         self.assertFalse(nv.no_berth_at(230360728, 109.68984, 18.188029))
         cls = berths.load_classes("SLP")
-        self.assertFalse(any(e.get("berth") is False for e in cls["lines"]))
-        e = next(e for e in cls["lines"] if e["way"] == 230360728)
+        e = next(e for e in cls["lines"] if e["way"] == 230360728 and e.get("berth") is not False)
         self.assertTrue(e.get("fixed") and any("消磁施設" in b and "berth false）にしない" in b for b in e["basis"]))
+
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")

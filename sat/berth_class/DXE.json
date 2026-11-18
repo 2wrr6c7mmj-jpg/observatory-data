@@ -130,12 +130,14 @@
   {
    "way": 1106897710,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の工業岸壁（サイロ、荷役桟橋、作業船）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897711,
@@ -150,52 +152,62 @@
   {
    "way": 1106897713,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の造船・修理所の桟橋とドック（赤い船体の貨物船、クレーン）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897715,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の造船・修理所の桟橋とドック（赤い船体の貨物船、クレーン）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897716,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の造船・修理所の桟橋とドック（赤い船体の貨物船、クレーン）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897717,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の工場の荷役桟橋（緑・赤の貨物船、作業船）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897718,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の工場の荷役桟橋（緑・赤の貨物船、作業船）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897722,
@@ -210,42 +222,66 @@
   {
    "way": 1106897723,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の工場の荷役桟橋（緑・赤の貨物船、作業船）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897751,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の工場の荷役桟橋（緑・赤の貨物船、作業船）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1106897753,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の造船・修理所の桟橋とドック（赤い船体の貨物船、クレーン）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   },
   {
    "way": 1432226526,
    "kind": "pier",
-   "class": "unknown",
-   "conf": "—",
-   "why": "軍・民間のどちらの根拠も無い",
+   "class": "civil",
+   "conf": "確認寄り",
+   "why": "民間の桟橋・岸壁（軍艦は着かない）",
    "basis": [
-    "区画 B（role other）"
-   ]
+    "区画 B（role other）",
+    "区分を unknown → civil に（hires-1）：民間の工業岸壁（サイロ、荷役桟橋、作業船）。撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15。Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）"
+   ],
+   "fixed": true
   }
- ]
+ ],
+ "hires": {
+  "version": "hires-1",
+  "date": "2026-11-18",
+  "source": "Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）",
+  "owner": "所有者の指示（2026-11-18）：所有者の S2 の答えより高解像度の画像を優先する",
+  "dates": "撮影 2010-09-04／2016-02-07／2018-02-14／2019-05-11／2025-01-01／2025-09-15",
+  "sections": 49,
+  "verdicts": {
+   "C": 30,
+   "E": 2,
+   "U": 12,
+   "W": 3,
+   "X": 2
+  },
+  "record": "docs/data/sat/labels/hires-berth-read.csv"
+ }
 }

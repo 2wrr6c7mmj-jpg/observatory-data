@@ -234,5 +234,19 @@
     "区画 A1（role naval）"
    ]
   }
- ]
+ ],
+ "hires": {
+  "version": "hires-1",
+  "date": "2026-11-18",
+  "source": "Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）",
+  "owner": "所有者の指示（2026-11-18）：所有者の S2 の答えより高解像度の画像を優先する",
+  "dates": "撮影 2015-01-02／2015-10-21／2019-09-23／2021-12-10／2022-10-21／2025-03-25",
+  "sections": 12,
+  "verdicts": {
+   "C": 4,
+   "W": 3,
+   "Y": 5
+  },
+  "record": "docs/data/sat/labels/hires-berth-read.csv"
+ }
 }

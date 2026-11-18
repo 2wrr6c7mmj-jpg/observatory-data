@@ -990,7 +990,10 @@ class RosterPortsTest(unittest.TestCase):
         for way in (286600129, 286600130, 286600131, 286600132, 286600142, 286600133, 286600139, 286600141):
             self.assertEqual(b.line_class(way, *piers[way]), "naval", way)
         fixed = {e["way"] for e in b.classes["lines"] if e.get("fixed")}
-        self.assertEqual(fixed, {286600133, 286600139, 286600141})
+        # hires-1 (2026-11-18): the ten civil piers (a shipyard, works quays) are civil by hand, from high-resolution imagery
+        civil = {e["way"] for e in b.classes["lines"] if e.get("fixed") and e["class"] == "civil"}
+        self.assertEqual(fixed - civil, {286600133, 286600139, 286600141})
+        self.assertEqual(len(civil), 10)
         self.assertEqual(b.line_class(286600128, *piers[286600128]), "unknown")   # the slanted pier west of the sector
         # Haiyang Island is not a site (the piers could not be tied to the navy)
         self.assertNotIn("HYD", self.sites)
