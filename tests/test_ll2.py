@@ -68,6 +68,17 @@ class Fetch(unittest.TestCase):
                     self.assertEqual(path.read_text(encoding="utf-8"), '{"launches": {"old": {"ll2_id": "old"}}}\n')
                     self.assertIn("stored data kept", out)
 
+    def test_record_of_another_shape_is_skipped(self):
+        odd = [{**RECORD, "id": "s", "status": "Success"}, {**RECORD, "id": "p", "pad": "LC-9A"},
+               {**RECORD, "id": "m", "mission": {"orbit": "LEO"}}, {**RECORD, "id": "n", "pad": {"latitude": "north"}}]
+        with tempfile.TemporaryDirectory() as d:
+            code, out = self.run_main(d, lambda url: {"results": odd + [RECORD]})
+            self.assertEqual(code, 0)
+            stored = json.loads((Path(d) / "ll2.json").read_text(encoding="utf-8"))
+            self.assertEqual(sorted(stored["launches"]), ["abc"])
+            for rid in ("s", "p", "m", "n"):
+                self.assertIn(f"record {rid} skipped", out)
+
     def test_incomplete_body_from_urlopen_is_caught(self):
         class Body:
             def __enter__(self):

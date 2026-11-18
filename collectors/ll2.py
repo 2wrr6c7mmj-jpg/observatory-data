@@ -67,7 +67,12 @@ def fetch_all(now: datetime) -> tuple[list[dict], list[str]]:
             results = data.get("results") if isinstance(data, dict) else None
             if not isinstance(results, list):
                 raise ValueError("no list of results in the response")
-            rows += [compact(x) for x in results if isinstance(x, dict)]
+            for x in results:
+                try:
+                    rows.append(compact(x))
+                except (AttributeError, TypeError, ValueError) as e:  # one odd record (a field of another shape)
+                    errors.append(f"{url.split('?')[0]}: record {x.get('id') if isinstance(x, dict) else '?'} "
+                                  f"skipped: {type(e).__name__}: {e}")
         except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException,
                 OSError, ValueError) as e:
             # one failed request (also a timeout or an IncompleteRead while reading, or a body

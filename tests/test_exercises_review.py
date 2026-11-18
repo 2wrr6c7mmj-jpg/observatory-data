@@ -113,6 +113,14 @@ class DatesWordsTest(unittest.TestCase):
         self.assertEqual(dates.parse("Nov. 3-5", "2026-11-01"), ("2026-11-03", "2026-11-05", "day"))
         self.assertEqual(dates.parse("3 March", "2026-02-01"), ("2026-03-03", "2026-03-03", "day"))
 
+    def test_length_only_right_after_a_start_day(self):
+        self.assertEqual(dates.parse("11月14日までの3日間", "2026-11-10"), ("2026-11-12", "2026-11-14", "day"))
+        self.assertEqual(dates.parse("11月14日に終了した5日間の訓練", "2026-11-15"), ("2026-11-10", "2026-11-14", "day"))
+        self.assertEqual(dates.parse("11月3日より7日間", "2026-11-01"), ("2026-11-03", "2026-11-09", "day"))
+        # a length elsewhere in the words is not the length of this day
+        self.assertEqual(dates.parse("11月3日に開始、前回は5日間", "2026-11-01"), ("2026-11-03", "2026-11-03", "day"))
+        self.assertEqual(dates.parse("11月3日、10日間の日程で", "2026-11-01"), ("2026-11-03", "2026-11-03", "day"))
+
     def test_relative_days_are_not_days(self):
         self.assertIsNone(dates.parse("3日前", "2026-11-10"))
 
@@ -263,6 +271,109 @@ class RunHistoryTest(unittest.TestCase):
                           robots=polite.RobotsResult(False, False, "could not be read"))
             (entry,) = json.loads((out / "analyses.json").read_text())["items"].values()
             self.assertFalse(entry["ok"])
+
+    def test_robots_txt_that_is_a_challenge_is_not_tried_again(self):
+        def blocked(url):
+            raise polite.SourceBlocked("https://x/robots.txt: bot challenge page (HTTP 403)")
+
+        with tempfile.TemporaryDirectory() as d:
+            out = self.setup_files(d, run.RULES, {})
+            self.run_main(d, [self.doc()], ask=lambda *a, **k: {"relevant": False}, fetch=blocked,
+                          robots=polite.RobotsResult(False, False, "https://x/robots.txt: bot challenge page (HTTP 403)"))
+            (entry,) = json.loads((out / "analyses.json").read_text())["items"].values()
+            self.assertTrue(entry["ok"])
+            self.assertNotIn("fetchTries", entry)
+
+    def test_an_answer_read_with_its_body_stays_when_the_body_is_gone(self):
+        doc = {**self.doc(), "url": "https://x/old"}
+        old_entry = {"at": ms("2026-11-01"), "ok": True, "body": "html",
+                     "doc": {"url": "https://x/old", "title": "Balikatan", "source": "usni", "sourceName": "USNI",
+                             "kind": "報道", "publishedAt": ms("2025-04-21")},
+                     "answer": {**answer(name="Balikatan", countries=["米国", "フィリピン"], region="philippines"),
+                                "start": "2025-04-21", "end": "2025-04-21"}}
+        asked = []
+        with tempfile.TemporaryDirectory() as d:
+            out = self.setup_files(d, run.RULES - 1, {2025: [stored("https://x/old")]}, items={"d2:": old_entry})
+            for _ in range(run.FETCH_TRIES + 1):
+                self.run_main(d, [doc], ask=lambda *a, **k: asked.append(a) or {"relevant": False},
+                              fetch=lambda url: (404, b""))
+            self.assertEqual(asked, [])   # never read again from the headline alone
+            self.assertEqual([e["name"] for e in self.years(out)[2025]], ["Balikatan"])
+            (entry,) = json.loads((out / "analyses.json").read_text())["items"].values()
+            self.assertEqual((entry["ok"], entry["body"], entry["answer"]["name"]), (True, "html", "Balikatan"))
+
+
+class RebuildTest(unittest.TestCase):
+    """An event that loses a source read again is built again from the answers of the sources it keeps."""
+
+    def entry(self, url, countries, start="2026-11-10", at="2026-11-09"):
+        return {"at": ms(at), "ok": True, "body": "html",
+                "doc": {"url": url, "title": url, "source": url, "sourceName": url, "kind": "報道", "publishedAt": ms(at)},
+                "answer": {**answer(name=None, countries=countries, place=None), "start": start, "end": start,
+                           "forces": None}}
+
+    def stored_event(self, entries):
+        evs = [merge.event_from({**x["doc"], "analyzedAt": x["at"]}, x["answer"]) for x in entries]
+        e = evs[0]
+        for x in evs[1:]:
+            e = merge._merge(e, x)
+        return e
+
+    def test_countries_of_the_old_answer_go(self):
+        a = self.entry("https://x/a", ["中国", "米国"])
+        b = self.entry("https://x/b", ["中国"])
+        old = self.stored_event([a, b])
+        self.assertEqual(sorted(old["countries"]), ["中国", "米国"])
+        (e,) = run.without_sources([old], {"https://x/a"}, {"https://x/b": b})
+        self.assertEqual(e["countries"], ["中国"])
+        self.assertEqual([s["url"] for s in e["sources"]], ["https://x/b"])
+        # the new reading of A (China only) merges back without the United States
+        new_a = merge.event_from({**a["doc"], "analyzedAt": a["at"]}, {**a["answer"], "countries": ["中国"]})
+        (m,) = merge.merge_all([e, new_a])
+        self.assertEqual(m["countries"], ["中国"])
+
+    def test_dates_of_the_old_answer_go(self):
+        a = self.entry("https://x/a", ["中国"], start="2026-10-01")
+        b = self.entry("https://x/b", ["中国"], start="2026-10-03")
+        old = {**self.stored_event([a, b]), "start": "2026-10-01", "end": "2026-10-03"}
+        (e,) = run.without_sources([old], {"https://x/a"}, {"https://x/b": b})
+        self.assertEqual((e["start"], e["end"]), ("2026-10-03", "2026-10-03"))
+
+    def test_without_a_stored_answer_the_values_stay(self):
+        a = self.entry("https://x/a", ["中国", "米国"])
+        b = self.entry("https://x/b", ["中国"])
+        old = self.stored_event([a, b])
+        (e,) = run.without_sources([old], {"https://x/a"}, {})
+        self.assertEqual(sorted(e["countries"]), ["中国", "米国"])
+        self.assertEqual([s["url"] for s in e["sources"]], ["https://x/b"])
+
+    def test_only_ledger_sources_left_is_left_to_the_ledger(self):
+        a = self.entry("https://x/a", ["中国"])
+        b = self.entry("https://ledger/b", ["中国"])
+        self.assertEqual(run.without_sources([self.stored_event([a, b])], {"https://x/a"}, {}, {"https://ledger/b"}), [])
+
+    def test_partial_reread_in_a_run(self):
+        a = self.entry("https://x/a", ["中国", "米国"])
+        b = self.entry("https://x/b", ["中国"])
+        old = self.stored_event([a, b])
+        stored_ev = {k: v for k, v in old.items() if not k.startswith("_")}
+        doc = {"id": "da", "url": "https://x/a", "title": "PLA drills", "source": "x", "sourceName": "x",
+               "kind": "報道", "publishedAt": a["doc"]["publishedAt"]}
+        new_answer = {**a["answer"], "countries": ["中国"], "dateEvidence": "11月10日", "place": "日向灘"}
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            (out / "events").mkdir()
+            (out / "events" / "2026.json").write_text(json.dumps({"year": 2026, "rules": run.RULES, "events": [stored_ev]}))
+            (out / "analyses.json").write_text(json.dumps({"rules": run.RULES, "items": {"db:": b}}))
+            with mock.patch.object(run.sources, "get_json", return_value={"records": [], "sources": []}), \
+                    mock.patch.object(run.sources, "official_candidates", return_value=[doc]), \
+                    mock.patch.object(run, "ledger_events", return_value=[]), \
+                    mock.patch.object(run, "fetch", return_value=(200, "<p>中国海军在日向灘演习 11月10日</p>".encode())), \
+                    mock.patch.object(run.extract, "ask", return_value=new_answer):
+                run.main(["--out", d, "--minutes", "5"])
+            evs = json.loads((out / "events" / "2026.json").read_text())["events"]
+            self.assertEqual([e["countries"] for e in evs], [["中国"]])
+            self.assertEqual(sorted(s["url"] for s in evs[0]["sources"]), ["https://x/a", "https://x/b"])
 
 
 if __name__ == "__main__":

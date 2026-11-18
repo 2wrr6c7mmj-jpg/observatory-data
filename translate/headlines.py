@@ -10,7 +10,7 @@ Writes  docs/data/translations/headlines-ja.json (only the titles the site still
 
 An answer from the feed without a non-empty list of records, or a run in which
 every batch failed, writes nothing (the published files stay as they are) and
-exits non-zero. The model numbers each translation after its headline; a
+exits non-zero (a translation dropped one by one is not a failure). The model numbers each translation after its headline; a
 translation whose number is missing, repeated or out of range, or that carries a
 number found only in another headline of the batch, is not used.
 """
@@ -90,12 +90,24 @@ def chat(server, body):
 
 
 NUMBER = re.compile(r'\d+(?:[.,]\d+)*')
+MIN_DIGITS = 3  # shorter numbers (2 sailors, 25th, 10万) are too common, and too often rewritten, to tell a swap
+# A headline that writes a number in words or in kanji/hanzi numerals may get digits in its translation
+# ("Two sailors" → 水兵2人, 一百五十 → 150): such a headline is not checked for numbers.
+NUMBER_WORDS = re.compile(r'\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|'
+                          r'sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|'
+                          r'hundreds?|thousands?|millions?|billions?|dozens?|first|second|third)\b|[〇零一二三四五六七八九十百千万萬億亿兩两]',
+                          re.IGNORECASE)
 
 
 def numbers(text):
-    """The digit runs of a text (full-width digits folded, thousands separators dropped)."""
+    """The digit runs of a text with at least MIN_DIGITS digits (full-width digits folded, separators dropped)."""
     text = (text or '').translate(str.maketrans('０１２３４５６７８９，．', '0123456789,.'))
-    return {n.replace(',', '') for n in NUMBER.findall(text)}
+    out = set()
+    for n in NUMBER.findall(text):
+        n = n.replace(',', '')
+        if sum(c.isdigit() for c in n) >= MIN_DIGITS:
+            out.add(n)
+    return out
 
 
 def match_batch(titles, content):
@@ -104,7 +116,8 @@ def match_batch(titles, content):
     Each answer item is {"n": number of the headline (1-based), "ja": translation}. Items are
     taken by their number, never by their position; a number that is missing, repeated or out
     of range gives no translation, and so does a translation with a number that appears in
-    another headline of the batch but not in its own (a sign that two answers were swapped).
+    another headline of the batch but not in its own (a sign that two answers were swapped; only
+    numbers of MIN_DIGITS digits or more count, and a headline with numbers in words is not checked).
     Returns None when the answer is not the expected shape at all."""
     try:
         data = json.loads(content)
@@ -129,7 +142,7 @@ def match_batch(titles, content):
     own = [numbers(t) for t in titles]
     for i, t in enumerate(titles, 1):
         ja = by_n.get(i) if i not in dup else None
-        if isinstance(ja, str):
+        if isinstance(ja, str) and not NUMBER_WORDS.search(t):
             others = set().union(*(own[j] for j in range(len(titles)) if j != i - 1)) - own[i - 1]
             if numbers(ja) & others:
                 ja = None
@@ -209,7 +222,7 @@ def main(argv=None):
         if key(t) in cache:
             cache[key(t)]['seen'] = now
     todo = [t for t in titles if key(t) not in cache]
-    made = failed = batches = 0
+    made = failed = batches = answered = 0
     for i in range(0, len(todo), BATCH):
         if time.time() - started > a.minutes * 60:
             break
@@ -223,13 +236,17 @@ def main(argv=None):
         if ja is None:
             failed += len(chunk)
             continue
+        answered += 1
         for o, t in zip(chunk, ja):
             if valid(o, t):
                 cache[key(o)] = {'o': o, 't': t.strip(), 'seen': now}
                 made += 1
             else:
                 failed += 1
-    if batches and not made:
+    # Non-zero only when the model never gave a usable answer (an error or a wrong shape in every batch).
+    # Translations dropped one by one (a headline like "HIMARS" that stays as it is, a swap) are normal:
+    # the files are written (seen refreshed, old entries pruned) and the run ends with 0.
+    if batches and not answered:
         print(f'::error title=translate::all {batches} batches failed ({failed} titles); the published translations are kept')
         return 1
     cutoff = now - KEEP_DAYS * 86400000
