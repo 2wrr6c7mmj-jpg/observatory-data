@@ -371,6 +371,22 @@ class EvaluateRepoTest(unittest.TestCase):
         self.assertEqual(names["LSN"], "大連・旅順")
         self.assertEqual(names["ALL"], "全港")
 
+    def test_answers_agree_and_pending_basis(self):
+        """answers: the current judge on the cells whose S1 and S2 answers agree, the disagreeing count, and the cells
+        without a section waiting for the answer basis (PENDING_BASIS). Gu Zhenkou has both kinds of answers."""
+        a = self.res["sites"]["QGZ"]["out_of_sample"]["answers"]
+        rows = [r for r in self.res["sites"]["QGZ"]["rows"] if r["oos"]]
+        self.assertGreater(a["both_answered_n"], 0)
+        self.assertEqual(a["agree"]["n"] + a["disagree_n"], a["both_answered_n"])
+        self.assertEqual(a["agree"]["n"], sum(1 for r in rows if r["agree"] is True))
+        self.assertGreater(a["pending_basis_n"], 0)
+        self.assertEqual(a["settled"]["n"] + a["pending_basis_n"], len(rows))
+        self.assertTrue(all(r["section_id"] == "219848841:L:00" for r in rows if r["pending_basis"]))
+        m = ep.answers_metrics([{"p": 0.9, "y": 1, "agree": True}, {"p": 0.9, "y": 0, "agree": False},
+                                {"p": 0.1, "y": 0, "agree": None, "pending_basis": True}])
+        self.assertEqual((m["agree"]["n"], m["disagree_n"], m["both_answered_n"]), (1, 1, 2))
+        self.assertEqual((m["settled"]["n"], m["pending_basis_n"]), (2, 1))
+
     def test_one_label_day_per_scene_and_sources(self):
         for sid, r in self.res["sites"].items():
             days_of = {}
