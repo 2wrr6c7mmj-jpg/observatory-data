@@ -1,0 +1,1232 @@
+{
+ "site_id": "QGZ",
+ "version": "pres-1a",
+ "mode": "trial",
+ "since_utc": "2026-11-18",
+ "calibration": {
+  "version": "pres-1a",
+  "fit_before": "2026-06-01",
+  "generated_utc": "2026-11-18T14:17:50Z"
+ },
+ "note": "試行（並行系列）。公開の画面は読まない。p_pres1＝在の確率（pres-1a：現行の判定 p_current と、区間の撮影の日より前の所有者の答えの割合 res_rate＝(在＋1)／(答え＋2)・数 res_n のロジスティック回帰）。change_flag＝現行の判定（p_current ≥ 0.5）が区間の直前の答え prev_y と食い違う（1）／同じ（0）／直前の答えなし（null）：目視の確認の順番付け用で、数には入れない。pres-1a は「前と同じ」に強く、答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）。prev_age_days＝直前の答え（prev_date）から撮影までの日数。直前の答えが古い港がある（2026-11 時点の最新の撮影で ZDH は区間の中央値 200 日超）：古い答えほど今の在/不在を表さず、p_pres1 も change_flag も当てにならない（扱いは変えていない。日数を見て読むこと）",
+ "credit": "Contains modified Copernicus Sentinel data 2024, 2025, 2026",
+ "attribution": "岸壁の線・区間：(c) OpenStreetMap contributors（ODbL 1.0）",
+ "scenes": [
+  {
+   "acquired_utc": "2026-10-02T10:03:53Z",
+   "relative_orbit": "69",
+   "present_pres1": 6,
+   "present_current": 6,
+   "change_flags": 4,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.966,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.68,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.219,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.68,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.979,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 12,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 1.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.987,
+     "change_flag": 0
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.921,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.68,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 10,
+     "p_pres1": 0.949,
+     "change_flag": 0
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-10-09T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 6,
+   "present_current": 4,
+   "change_flags": 6,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.966,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.68,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.219,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 19,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 1.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.987,
+     "change_flag": 0
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.921,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 17,
+     "p_pres1": 0.875,
+     "change_flag": 1
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-10-14T10:03:53Z",
+   "relative_orbit": "69",
+   "present_pres1": 6,
+   "present_current": 4,
+   "change_flags": 6,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.966,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.095,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.68,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.979,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 24,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.733,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 1.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 22,
+     "p_pres1": 0.968,
+     "change_flag": 0
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-10-21T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 6,
+   "present_current": 3,
+   "change_flags": 5,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 1.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.992,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.308,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 31,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.733,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 29,
+     "p_pres1": 0.875,
+     "change_flag": 1
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-10-26T10:03:53Z",
+   "relative_orbit": "69",
+   "present_pres1": 6,
+   "present_current": 5,
+   "change_flags": 7,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 1.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.992,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.095,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.68,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.979,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 36,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.921,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 34,
+     "p_pres1": 0.875,
+     "change_flag": 1
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 6,
+   "present_current": 6,
+   "change_flags": 6,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 1.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.992,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.68,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.219,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 43,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 1.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.987,
+     "change_flag": 0
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.921,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 41,
+     "p_pres1": 0.875,
+     "change_flag": 1
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-11-07T10:03:53Z",
+   "relative_orbit": "69",
+   "present_pres1": 6,
+   "present_current": 4,
+   "change_flags": 4,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 1.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.149,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 1.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.992,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.68,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.219,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.68,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.979,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 48,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.733,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 46,
+     "p_pres1": 0.875,
+     "change_flag": 1
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-11-14T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 6,
+   "present_current": 3,
+   "change_flags": 5,
+   "sections": [
+    {
+     "section_id": "15388243:L:15",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921419:L:00",
+     "p_current": 1.0,
+     "res_rate": 0.938,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.992,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1564921421:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848836:L:01",
+     "p_current": 0.68,
+     "res_rate": 0.188,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.219,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848839:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848839:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.643,
+     "res_n": 12,
+     "prev_y": 1,
+     "prev_date": "2026-09-20",
+     "prev_age_days": 55,
+     "p_pres1": 0.732,
+     "change_flag": 1
+    },
+    {
+     "section_id": "219848841:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "219848841:L:07",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.438,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.403,
+     "change_flag": 0
+    },
+    {
+     "section_id": "527583619:R:05",
+     "p_current": 0.0,
+     "res_rate": 0.875,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.947,
+     "change_flag": 1
+    },
+    {
+     "section_id": "582517902:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.062,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.039,
+     "change_flag": 0
+    },
+    {
+     "section_id": "694211538:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.625,
+     "res_n": 14,
+     "prev_y": 0,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.921,
+     "change_flag": 1
+    },
+    {
+     "section_id": "694211538:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 14,
+     "prev_y": 1,
+     "prev_date": "2026-09-22",
+     "prev_age_days": 53,
+     "p_pres1": 0.875,
+     "change_flag": 1
+    }
+   ]
+  }
+ ]
+}

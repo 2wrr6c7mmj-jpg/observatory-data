@@ -45,6 +45,14 @@ left to A-1, the line map: A = line geometry, D = boat basins; sat/occ2_schema.A
 nothing of the published presence changes where occ-2 has no rows). ``auc`` (ROC-AUC, Mann-Whitney, ties half) is in every
 metrics block.
 
+pres-1 (eval-presence-6, sat/pres1, design docs/data/sat/eval/pres1-design.md): every row also carries pres-1a (trial, a parallel
+series) beside the current judge: ``res_rate`` / ``res_n`` / ``prev_y`` (the owner's answers of the section on the days before the
+scene only), ``p_pres1`` (the logistic regression of p, res_rate and res_n with the coefficients of sat/pres1_calib.json, fitted on
+the cells before its ``fit_before``), ``pres1_oos`` and ``change_flag`` (the judge disagrees with the section's previous answer).
+The blocks carry ``pres1`` (pres-1's out-of-sample cells only; ``changed``: the cells whose answer changed, where pres-1a is
+weaker than the current judge). The body ``p`` stays the current judge. refresh also writes quay_pres1/<site>.json for the ports
+whose sites.json quay.pres1 is trial / on (Zhanjiang: off, no file).
+
 Pure Python (no numpy, no CDSE: PU 0). Output docs/data/sat/eval/presence.json and docs/data/sat/eval/meta.json.
 
 Regression guard (tests/test_sat_eval_presence.py): ``presence_table`` is the judge's presence (p >= 0.5, 50 m) of every stored
@@ -74,10 +82,11 @@ from pathlib import Path
 from . import berths
 from . import blind_prior as bp
 from . import occ2_schema as o2s
+from . import pres1
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
-EVAL_VERSION = "eval-presence-5"   # eval-presence-4 (occ-2 beside the judge, AUC, assign-2) + blind-1 beside the judge (resident sections, sat/blind_prior)
+EVAL_VERSION = "eval-presence-6"   # eval-presence-5 (blind-1 beside the judge) + pres-1a and the change flag beside the judge (sat/pres1)
 MIN_LENGTH_M = 50.0
 SECTION_MATCH_M = 20.0        # as sat/quay_est2.SECTION_MATCH_M (not imported: quay_est2 needs numpy)
 # assign-2 (2026-11-10): which stretch belongs to a section; the same rule and numbers as sat/s2_labels (not imported: numpy)
@@ -497,7 +506,8 @@ def split_metrics(rows: list[dict]) -> dict:
                          "clear": metrics([r for r in rows if not is_blind(r)]),
                          "clear_near": metrics([r for r in near if not is_blind(r)])},
             "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs},
-            "occ2": occ2_metrics(rows), "blind1": blind1_metrics(rows), "answers": answers_metrics(rows)}
+            "occ2": occ2_metrics(rows), "blind1": blind1_metrics(rows), "answers": answers_metrics(rows),
+            "pres1": pres1.safe_block(rows, metrics)}
 
 
 # Sections whose answer still waits for the owner's ruling on what counts as present (QGZ 219848841:L:00: a grey
@@ -607,6 +617,9 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     # the same judgement twice); the other days' rows are dropped
     rows, dropped = nearest_day_per_scene(rows)
     cnt["other_day_of_scene"] = dropped
+    # pres-1a and the change flag beside the judge (sat/pres1): the section's answers before the scene only
+    # (never raises: on an error the pres-1 fields are null and a warning is printed; the rest of the evaluation goes on)
+    pres1.safe_annotate(rows, out, sid)
     cnt["used"] = len(rows)
     ins = [r for r in rows if not r["oos"]]
     oos = [r for r in rows if r["oos"]]
@@ -623,7 +636,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
             "by_source": {src: {"n": sum(1 for r in rows if r["source"] == src),
                                 "min50": metrics([r for r in rows if r["source"] == src]),
                                 "any_length": metrics([r for r in rows if r["source"] == src], "p_any")} for src in SOURCES},
-            "in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos),
+            "in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos), "pres1": pres1.safe_block(rows, metrics),
             "status": _status(len(ins), len(oos), own), "rows": rows}
 
 
@@ -681,7 +694,7 @@ def evaluate_one(out: Path, sites: list[dict], truth: str) -> dict:
     all_rows = [r for r in res.values() for r in r["rows"]]
     ins = [r for r in all_rows if not r["oos"]]
     oos = [r for r in all_rows if r["oos"]]
-    tot = {"in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos),
+    tot = {"in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos), "pres1": pres1.safe_block(all_rows, metrics),
            "by_source": {src: {"n": sum(1 for r in all_rows if r["source"] == src), "min50": metrics([r for r in all_rows if r["source"] == src])}
                          for src in SOURCES}}
     return {"truth": truth, "truth_note": TRUTH_NOTE[truth], "total": tot, "sites": res}
@@ -722,6 +735,21 @@ def occ2_columns(rows: list[dict]) -> dict:
     return out
 
 
+def pres1_columns(b: dict) -> dict:
+    """The pres-1 columns of the table from a pres1 block (sat/pres1.block): pres-1a and the current judge on pres-1's
+    out-of-sample cells, on the cells whose answer changed, and the change flag."""
+    if not b or b.get("error") or "pres1" not in b:   # pres-1 failed (pres1.safe_block): the columns are empty
+        b = {"n": None, "pres1": {}, "current": {}, "changed": {"n": None, "pres1": {}, "current": {}}, "change_flag": {}}
+    out = {"n_pres1": b["n"]}
+    for tag, m in (("pres1", b["pres1"]), ("cur_pres1", b["current"])):
+        out.update({f"recall_{tag}": m.get("recall"), f"precision_{tag}": m.get("precision"), f"f1_{tag}": m.get("f1"), f"brier_{tag}": m.get("brier")})
+    out.update({"n_pres1_changed": b["changed"]["n"], "accuracy_pres1_changed": b["changed"]["pres1"].get("accuracy"),
+                "accuracy_cur_pres1_changed": b["changed"]["current"].get("accuracy"),
+                "change_flags": b["change_flag"].get("flags"), "change_flag_precision": b["change_flag"].get("precision"),
+                "change_flag_recall": b["change_flag"].get("recall")})
+    return out
+
+
 def table(res: dict) -> list[dict]:
     rows = []
     other = (res.get("other_truth") or {}).get("sites") or {}
@@ -743,7 +771,8 @@ def table(res: dict) -> list[dict]:
                      "scenes": r["pairing"]["scenes"], "far_share": r["pairing"]["far_share"],
                      "not_naval": r["labels"]["not_naval"], "no_berth": r["labels"].get("no_berth", 0),
                      "no_scene": r["labels"]["no_scene"] + r["labels"]["no_s1_pairing"],
-                     "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"], **occ2_columns(r.get("rows") or [])})
+                     "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"], **occ2_columns(r.get("rows") or []),
+                     **pres1_columns(r.get("pres1") or pres1.safe_block(r.get("rows") or [], metrics))})
     t = res["total"]["in_sample"]["min50"]
     to = res["total"]["out_of_sample"]["min50"]
     tn, ton = res["total"]["in_sample"]["near"]["min50"], res["total"]["out_of_sample"]["near"]["min50"]
@@ -764,7 +793,8 @@ def table(res: dict) -> list[dict]:
                  "scenes": sum(x["scenes"] for x in rows), "far_share": round(far / n_all, 3) if n_all else None,
                  "not_naval": sum(x["not_naval"] for x in rows), "no_berth": sum(x["no_berth"] for x in rows), "no_scene": sum(x["no_scene"] for x in rows),
                  "other_day_of_scene": sum(x["other_day_of_scene"] for x in rows), "status": _status(t["n"], to["n"]),
-                 **occ2_columns([x for r in res["sites"].values() for x in (r.get("rows") or [])])})
+                 **occ2_columns([x for r in res["sites"].values() for x in (r.get("rows") or [])]),
+                 **pres1_columns(res["total"].get("pres1") or pres1.safe_block([x for r in res["sites"].values() for x in (r.get("rows") or [])], metrics))})
     return rows
 
 
@@ -781,7 +811,9 @@ def meta(res: dict) -> dict:
                                          f"（既定 {MIN_LENGTH_M:g} m。水警区の港 {'・'.join(sorted(NAVAL50_MIN_LEN))} は {min(NAVAL50_MIN_LEN.values()):g} m：022 型ミサイル艇など小型の戦闘艦艇が主のため。列名は warship_50 のまま）"),
                   f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
                                                  "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
-                                                 "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）")},
+                                                 "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）"),
+                  f"../{pres1.OUT_DIR}/<地点>.json": (f"{pres1.VERSION}（試行・並行系列、sat/pres1）：sites.json の quay.pres1 が trial／on の港の、直近 {pres1.KEEP_SCENES} 撮影の区間ごとの "
+                                                    "p_current（現行の判定）・res_rate・res_n・prev_y（撮影の日より前の所有者の答え）・p_pres1・change_flag。湛江は off で書かない。公開の画面は読まない")},
         "target": res["target"],
         "truth_source": {"body": res.get("truth", "s2"), "other": (res.get("other_truth") or {}).get("truth"),
                          "note": "本体（total・sites・table）は truth_source.body の正解、other_truth は他方の正解で同じ指標。s2＝S2 の日の答えを直近の S1 に対応、s1＝S1 の撮影そのものの答え（確認ページ ?s1=1）。python -m sat.eval_presence --truth s1 で入れ替わる",
@@ -798,6 +830,10 @@ def meta(res: dict) -> dict:
                         f"在の割合が {bp.RESIDENT_MIN:g} 以上の区間は p_resident＝(在＋1)／(答え＋2)、ほかは 0。"
                         f"blind-2（2026-11-13）：同日の答えで常在でも、光学写真の答えが {bp.MIN_ANSWERS} 日以上あって在の割合が {bp.RESIDENT_MIN:g} 未満の区間は 0（判定する撮影の日の答えは除く）。p_blind1＝max(p, p_resident)。本体の p は現行の判定のまま。"
                         f"指標は各ブロックの blind1（min50＝p_blind1、current＝同じ升の現行、resident＝常在の升だけ）。対象は軍艦で稼働状態は問わない"),
+            "pres-1": (f"{pres1.VERSION}（試行・並行系列、sat/pres1、係数 sat/pres1_calib.json）：升に res_rate・res_n（区間の、撮影の日＝ラベルの日と S1 の日の早い方より前の日の所有者の答え："
+                       "(在＋1)／(答え＋2) と答えの数。S2 の日の答えと S1 の撮影の答え、1 日 1 つ）、prev_y（直前の答え）、p_pres1（logit＝b0＋b1·z(p)＋b2·z(res_rate)＋b3·z(res_n)、"
+                       "fit_before より前の升だけで当てた係数）、pres1_oos（ラベルの日が fit_before 以後＝pres-1 の標本外）、change_flag（p ≥ 0.5 が prev_y と食い違うと 1、同じ 0、直前なし null）を併記。"
+                       "本体の p は現行の判定のまま。pres-1a は「前と同じ」に強く、答えが前回から変わった升では現行の判定より弱い（pres1.changed）"),
             "no_scene": "どちらにも無い撮影は判定しない（labels.no_scene・no_s1_pairing）。保存の無い撮影を「不在」とはしない。港の確認セットの日の S1 は多くが未保存（s1_recount_plan.json の取り直し待ち）",
             "occ-2": (f"撮影に occ-2 の行（quay_occ2/<地点>/YYYY-MM.csv、sat/occ2）があれば、升に p_occ2（占有の確率。較正前は a=logit(事前)・b=1・c=0 の仮置き、"
                       f"盲域は blind_prior と λ=0.5 で混合）、p_test_occ2（検定の有意確率 P(T ≥ T_obs | 空)）、occ2_blind（occ-2 の盲域：空間の参照）、"
@@ -823,6 +859,11 @@ def meta(res: dict) -> dict:
                      "取り直しの 19 撮影の行は sat/eval_occ2 が書いた（較正前、全部が凍結前の答え＝較正に使う標本なので in-sample の数字）。"
                      "較正前の仮置き a＝logit(事前) では p_occ ≥ 事前 が常に成り立ち、事前 ≥ 0.5 の港では p_occ ≥ 0.5 が全升で在になる：較正（occ2-4）までは test の列（p_test）を読む。"
                      "正解を使わない変種（事前 0.5・盲域の事前 0.5）との比較は eval/occ2.json"),
+            "pres1": ("pres-1 の標本外（pres1_oos：ラベルの日が sat/pres1_calib.json の fit_before 以後）の升だけの指標。各ブロック（in_sample・out_of_sample は est-2 の凍結での分け方のまま）と、"
+                      "港の pres1・total.pres1（est-2 の分け方によらない全部の標本外の升）。pres1＝p_pres1 ≥ 0.5、current＝同じ升の現行の判定、f1＝2tp／(2tp＋fp＋fn)。"
+                      "changed＝区間の答えが直前の答え（prev_y）から変わった升（入港・出港）、same＝変わらない升、no_prev_n＝直前の答えの無い升。"
+                      "change_flag：cells＝直前の答えのある升、flags＝印の数、true＝印のうち本当に変わった升、precision＝true／flags、recall＝true／changes。"
+                      "較正に使った升（fit_before より前）の指標は出さない。前進検証と区間は sat/pres1_calib.json"),
             "by_note": "s1 の正解だけ：升の verified_note 別の min50 の指標。prefill＝S2 の答えを初期値のまま確認した升（s2-prefill。所有者が押していない）、default＝要 S2 の区間の既定を上書きしなかった升（在/不在の答えにはならないので通常 0）、manual＝所有者が押した升。prefill の升は S2 の時刻の答えの流用なので、S1 の時刻の正解としては manual より弱い（labels.prefilled に件数）",
         },
         "table_columns": {"site_id": "地点", "name": "地名", "calibrated": "est-2 をその港の正解で較正したか（false＝湛江の流用、全部標本外）",
@@ -843,7 +884,11 @@ def meta(res: dict) -> dict:
                           "recall_occ2_test・precision_occ2_test": f"検定だけ（p_test_occ2 < {TEST_ALPHA:g} を在）の再現率・適合率",
                           "n_occ2_near・…_occ2_near・…_cur_occ2_near": f"occ-2 の行のある升のうち |S1−S2| ≤ {FAR_H:g} 時間の同じ指標（occ-2 と現行）",
                           "n_occ2_blind・recall_occ2_blind・recall_cur_occ2_blind": "occ-2 の盲域（occ2_blind）の升の数と再現率（occ-2 と現行）",
-                          "n_occ2_excl_a1・recall_occ2_excl_a1・precision_occ2_excl_a1": "A-1 対象の区間を除いた occ-2 の再現率・適合率"},
+                          "n_occ2_excl_a1・recall_occ2_excl_a1・precision_occ2_excl_a1": "A-1 対象の区間を除いた occ-2 の再現率・適合率",
+                          "n_pres1・recall_pres1・precision_pres1・f1_pres1・brier_pres1": "pres-1 の標本外の升の数と、p_pres1 ≥ 0.5 の再現率・適合率・F1・ブライア（港の pres1 ブロック）",
+                          "recall_cur_pres1・precision_cur_pres1・f1_cur_pres1・brier_cur_pres1": "同じ升での現行の判定の同じ指標",
+                          "n_pres1_changed・accuracy_pres1_changed・accuracy_cur_pres1_changed": "そのうち答えが直前から変わった升の数と、pres-1a・現行の正答率（pres-1a の弱い所）",
+                          "change_flags・change_flag_precision・change_flag_recall": "変化の印の数・適合率（印のうち本当に変わった割合）・再現率（変わった升のうち印の付いた割合）"},
         "table": table(res),
         "limits": [
             "湛江の見出しの数字（n の大半が s1-recount）は S1 取り直しの占有（quay-v1 の規則）の評価で、est-2 の評価は n_est2 の升だけ。両方の判定を混ぜて一つの指標にしている",
@@ -951,9 +996,10 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
             snapshot(out, sites, now)
             state = "updated"
     r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites),
-         "naval50": write_naval50(out, sites)}
+         "naval50": write_naval50(out, sites), "pres1": pres1.safe_write(out, sites)}
     if log:
-        log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行")
+        log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行、"
+            f"quay_pres1 {len(r['pres1'])} 港")
     return r
 
 
@@ -1171,6 +1217,7 @@ def main(argv=None) -> int:
     write(a.out, res)
     write_blind(a.out)
     write_naval50(a.out)
+    pres1.safe_write(a.out, load_sites())
     print(f"正解 {res['truth']}（other_truth {res['other_truth']['truth']}）", file=sys.stderr)
     for row in table(res):
         print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}"

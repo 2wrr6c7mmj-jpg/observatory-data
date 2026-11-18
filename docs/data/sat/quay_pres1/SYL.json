@@ -1,0 +1,184 @@
+{
+ "site_id": "SYL",
+ "version": "pres-1a",
+ "mode": "trial",
+ "since_utc": "2026-11-18",
+ "calibration": {
+  "version": "pres-1a",
+  "fit_before": "2026-06-01",
+  "generated_utc": "2026-11-18T14:17:50Z"
+ },
+ "note": "試行（並行系列）。公開の画面は読まない。p_pres1＝在の確率（pres-1a：現行の判定 p_current と、区間の撮影の日より前の所有者の答えの割合 res_rate＝(在＋1)／(答え＋2)・数 res_n のロジスティック回帰）。change_flag＝現行の判定（p_current ≥ 0.5）が区間の直前の答え prev_y と食い違う（1）／同じ（0）／直前の答えなし（null）：目視の確認の順番付け用で、数には入れない。pres-1a は「前と同じ」に強く、答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）。prev_age_days＝直前の答え（prev_date）から撮影までの日数。直前の答えが古い港がある（2026-11 時点の最新の撮影で ZDH は区間の中央値 200 日超）：古い答えほど今の在/不在を表さず、p_pres1 も change_flag も当てにならない（扱いは変えていない。日数を見て読むこと）",
+ "credit": "Contains modified Copernicus Sentinel data 2024, 2025, 2026",
+ "attribution": "岸壁の線・区間：(c) OpenStreetMap contributors（ODbL 1.0）",
+ "scenes": [
+  {
+   "acquired_utc": "2026-10-02T10:48:16Z",
+   "relative_orbit": "157",
+   "present_pres1": 1,
+   "present_current": 1,
+   "change_flags": 2,
+   "sections": [
+    {
+     "section_id": "1366235102:R:04",
+     "p_current": 0.0,
+     "res_rate": 0.714,
+     "res_n": 5,
+     "prev_y": 1,
+     "prev_date": "2026-05-26",
+     "prev_age_days": 129,
+     "p_pres1": 0.74,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1565266188:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.143,
+     "res_n": 5,
+     "prev_y": 0,
+     "prev_date": "2026-05-26",
+     "prev_age_days": 129,
+     "p_pres1": 0.145,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1565266188:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 4,
+     "prev_y": 0,
+     "prev_date": "2026-01-06",
+     "prev_age_days": 269,
+     "p_pres1": 0.349,
+     "change_flag": 0
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-10-14T10:48:16Z",
+   "relative_orbit": "157",
+   "present_pres1": 1,
+   "present_current": 2,
+   "change_flags": 0,
+   "sections": [
+    {
+     "section_id": "1366235102:R:04",
+     "p_current": 1.0,
+     "res_rate": 0.75,
+     "res_n": 6,
+     "prev_y": 1,
+     "prev_date": "2026-10-13",
+     "prev_age_days": 1,
+     "p_pres1": 0.944,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1565266188:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.25,
+     "res_n": 6,
+     "prev_y": 1,
+     "prev_date": "2026-10-13",
+     "prev_age_days": 1,
+     "p_pres1": 0.289,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1565266188:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.429,
+     "res_n": 5,
+     "prev_y": 0,
+     "prev_date": "2026-10-13",
+     "prev_age_days": 1,
+     "p_pres1": 0.252,
+     "change_flag": 0
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-10-26T10:48:16Z",
+   "relative_orbit": "157",
+   "present_pres1": 2,
+   "present_current": 2,
+   "change_flags": 1,
+   "sections": [
+    {
+     "section_id": "1366235102:R:04",
+     "p_current": 1.0,
+     "res_rate": 0.778,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 8,
+     "p_pres1": 0.957,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1565266188:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.222,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 8,
+     "p_pres1": 0.077,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1565266188:L:04",
+     "p_current": 1.0,
+     "res_rate": 0.375,
+     "res_n": 6,
+     "prev_y": 0,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 8,
+     "p_pres1": 0.508,
+     "change_flag": 1
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-11-07T10:48:16Z",
+   "relative_orbit": "157",
+   "present_pres1": 2,
+   "present_current": 2,
+   "change_flags": 3,
+   "sections": [
+    {
+     "section_id": "1366235102:R:04",
+     "p_current": 0.0,
+     "res_rate": 0.778,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 20,
+     "p_pres1": 0.841,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1565266188:L:01",
+     "p_current": 1.0,
+     "res_rate": 0.222,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 20,
+     "p_pres1": 0.261,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1565266188:L:04",
+     "p_current": 1.0,
+     "res_rate": 0.375,
+     "res_n": 6,
+     "prev_y": 0,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 20,
+     "p_pres1": 0.508,
+     "change_flag": 1
+    }
+   ]
+  }
+ ]
+}
