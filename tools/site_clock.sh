@@ -13,16 +13,19 @@
 #
 # Exit 1 (a red run, and site-clock.yml then does not hand over; the schedule restarts the chain) when
 # - the site refused the upkeep token (401/403) even once (no more upkeep in this run then),
-# - more than half of this run's upkeep rounds failed (about 2 rounds in a run, every 3 h),
+# - more than half of this run's upkeep rounds failed (about 30 rounds in a run, every 10 min),
 # - the translation failed MAX_STREAK times in a row, or there were more than MAX_FAILS failures in all.
 # A failed publish never leaves a rebase half done or the commit behind (push_retry.sh --reset-on-fail):
 # the next hour translates again from the newest main.
 set -u
 RUN_SECONDS=${RUN_SECONDS:-19800}          # 5 h 30 min (the job limit is 6 h)
-# Upkeep every 3 hours, 60 steps: every 20 minutes exhausted D1's free daily
-# row reads (5 million) by 12:00 JST on 2026-11-18, which took the site's API down.
-UPKEEP_EVERY=${UPKEEP_EVERY:-10800}        # 3 h
-UPKEEP_STEPS=${UPKEEP_STEPS:-60}
+# Upkeep every 10 minutes, 40 steps at most (a round ends when the site reports idle). Every 20 minutes
+# exhausted D1's free daily row reads (5 million) by 12:00 JST on 2026-11-18 with the site's upkeep of then
+# (an idle check read the whole news table); since observatory-watch's D1 row budget change (deciding what
+# to do reads 2 rows) the site is stepped from here and visitors' reads start a step at most every 3 minutes.
+# Needs that site change deployed first: with the older site, keep 10800 / 60 here.
+UPKEEP_EVERY=${UPKEEP_EVERY:-600}          # 10 min (was 3 h)
+UPKEEP_STEPS=${UPKEEP_STEPS:-40}
 TRANSLATE_EVERY=${TRANSLATE_EVERY:-3600}   # 60 min
 TRANSLATE_MINUTES=${TRANSLATE_MINUTES:-15}
 MAX_STREAK=${MAX_STREAK:-3}
