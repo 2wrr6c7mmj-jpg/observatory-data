@@ -62,6 +62,9 @@ THRESHOLDS = {
     "pla_lag_days": {"warn": 2, "alert": 3},
     # 統幕：最新の公表日から（JST）。≤10 日 OK（公表間隔の p90）、11〜24 WARN、>24 ALERT（p99 超。取り込み忘れの疑い）
     "jso_release_days": {"warn": 11, "alert": 25},
+    # 演習：最後の収集（exercises/status.json の generatedAt）からの時間。3 時間ごとの収集＋schedule の遅れ約 6 h まで OK、
+    # >9 h WARN（3 回分の抜け）、>24 h ALERT（止まっていると判断）
+    "exercises_h": {"warn": 9, "alert": 24},
     # 発射：NOTAM Watch 側の notices[].last_seen_utc の最大からの時間。>30 h で WARN（NOTAM Watch が古い）
     "notam_seen_h": {"warn": 30},
     # 尖閣：最後の実行の結果が ok 以外の回数（前回の health.json から数える。jcg_senkaku.py は停止でも exit 0 のことがある）
@@ -685,6 +688,32 @@ def check_launches(now: datetime, data: Path) -> tuple[dict, dict]:
     return src.done(), latest
 
 
+def check_exercises(now: datetime, data: Path) -> dict:
+    """演習（exercises.yml、3 時間ごと）。心拍は status.json の generatedAt（ミリ秒の UNIX 時刻。収集のたびに書く）。"""
+    src = Source("exercises", "演習・訓練（ニュースと公式発表）", "derived", "exercises.yml")
+    th = THRESHOLDS["exercises_h"]
+    try:
+        st = load_json(data / "exercises" / "status.json")
+    except Unreadable as e:
+        unreadable(src, e)
+        return src.done()
+    ms = st.get("generatedAt")
+    hb = datetime.fromtimestamp(ms / 1000, timezone.utc) if isinstance(ms, (int, float)) and ms > 0 else None
+    src.d["heartbeat_utc"] = iso(hb)
+    src.d["heartbeat_age_h"] = hours(now, hb)
+    src.d["values"].update({"events": st.get("events"), "current": st.get("current"), "failed": st.get("failed"),
+                            "fetch_failed": st.get("fetchFailed")})
+    if hb is None:
+        src.add("warn", "heartbeat_unknown", "最後の収集（generatedAt）の時刻が読めない")
+    else:
+        age = (now - hb).total_seconds() / 3600
+        if age > th["alert"]:
+            src.add("alert", "heartbeat_stopped", f"最後の収集から {age:.0f} h（>{th['alert']} h：停止と判断）")
+        elif age > th["warn"]:
+            src.add("warn", "heartbeat_late", f"最後の収集から {age:.0f} h（>{th['warn']} h：遅延）")
+    return src.done()
+
+
 def check_proto(now: datetime, data: Path, workflows: list[dict], inputs_hb: list[datetime]) -> dict:
     """分析の試作。各 JSON は中身が変わらなければ書き直さない（analysis/proto.py）ので computed_utc は心拍に使えない。
     心拍は proto.yml の最後の成功（Actions REST）。入力（収集の心拍）より古ければ WARN。"""
@@ -871,7 +900,8 @@ def build(now: datetime | None = None, data: Path = DATA, repo: Path = ROOT, fet
     inputs = [parse_utc(s.get("heartbeat_utc")) for s in (jcg, jso, launches)]
     proto = check_proto(now, data, workflows, [i for i in inputs if i])
     ocean = check_ocean(now, data)
-    sources = [sat, jcg, pla, mnd, jso, launches, proto, ocean]
+    exercises = check_exercises(now, data)
+    sources = [sat, jcg, pla, mnd, jso, launches, proto, ocean, exercises]
     states = [s["state"] for s in sources] + [w["state"] for w in workflows]
     summary = {k: states.count(k) for k in ("ok", "warn", "alert", "halt", "info", "unknown")}
     latest = {**latest_sat, **latest_jcg, **latest_pla, **latest_launch}

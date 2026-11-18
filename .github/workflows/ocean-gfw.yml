@@ -44,12 +44,6 @@ jobs:
           export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
           export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
           git commit -q -m "データ更新: 外洋の候補の AIS の一致 (GFW) ($(date -u +%Y-%m-%d)) [ocean-gfw]"
-          for i in 1 2 3; do
-            git push origin HEAD:main && break
-            [ "$i" = 3 ] && break
-            sleep $((i * 10))
-            git pull -q --rebase origin main
-          done
-          git fetch -q origin main
-          git merge-base --is-ancestor HEAD origin/main || { echo "::error title=ocean-gfw::push できなかった"; exit 1; }
+          # rebase onto main; a failed rebase is aborted and tried again (tools/push_retry.sh)
+          PUSH_RETRY_SLEEP=15 bash tools/push_retry.sh --tries 3 --title ocean-gfw || { echo "::error title=ocean-gfw::push できなかった"; exit 1; }
           echo "::notice title=ocean-gfw-commit::$(git rev-parse HEAD)"

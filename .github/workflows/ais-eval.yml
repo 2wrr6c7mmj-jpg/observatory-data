@@ -84,14 +84,8 @@ jobs:
           export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
           export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
           git commit -q -m "データ更新: 香港の南の検出率 (AIS 照合) ($(date -u +%Y-%m-%d)) [ais-eval]"
-          for i in 1 2 3; do
-            git push origin HEAD:main && break
-            [ "$i" = 3 ] && break
-            sleep $((i * 10))
-            git pull -q --rebase origin main
-          done
-          git fetch -q origin main
-          git merge-base --is-ancestor HEAD origin/main || { echo "::error title=ais-eval::push できなかった"; exit 1; }
+          # rebase onto main; a failed rebase is aborted and tried again (tools/push_retry.sh)
+          PUSH_RETRY_SLEEP=15 bash tools/push_retry.sh --tries 3 --title ais-eval || { echo "::error title=ais-eval::push できなかった"; exit 1; }
           echo "::notice title=ais-eval-commit::$(git rev-parse HEAD)"
       - name: Delete the artifacts whose tracks are all matched (or cannot be)
         if: steps.publish.outcome == 'success' && steps.eval.outcome == 'success'
