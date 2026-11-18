@@ -14,13 +14,14 @@ and only when the publication day is known.
 """
 import calendar
 import re
-from datetime import date
+from datetime import date, timedelta
 
 _Z2H = str.maketrans("０１２３４５６７８９／－～：", "0123456789/-~:")
 MONTHS = {m.lower(): i for i, m in enumerate(calendar.month_name) if m}
 MONTHS.update({m.lower(): i for i, m in enumerate(calendar.month_abbr) if m})
 MONTHS["sept"] = 9
-_MON = r"(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?"
+# A month name is a whole word: "mar" in "marines", "dec" in "decks" or "decisions" is not a month.
+_MON = r"(?<![a-z])(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?![a-z])\.?"
 _PART = {"上旬": (1, 10), "中旬": (11, 20), "下旬": (21, 31), "上中旬": (1, 20), "中下旬": (11, 31),
          "early": (1, 10), "mid": (11, 20), "late": (21, 31)}
 _RELATIVE = re.compile(r"日前|近日|先日|最近|本周|上周|今週|先週|昨日|今日|明日|this (week|month)|last (week|month)|next (week|month)|"
@@ -71,7 +72,8 @@ def parse(evidence, published=None):
         return year_in_text or _year_for(mo, published)
 
     # Chinese / Japanese: M月D日 … (至|から|～|-) (M月)?D日, and parts of months
-    ja = list(re.finditer(r"(?:(\d{1,2})月)?(\d{1,2})日|(\d{1,2})月(上中旬|中下旬|上旬|中旬|下旬)", t))
+    # "10日間" / "3日前" are a length or a relative day, not a day of the month.
+    ja = list(re.finditer(r"(?<!\d)(?:(\d{1,2})月)?(\d{1,2})日(?!間|前|後|以内)|(?<!\d)(\d{1,2})月(上中旬|中下旬|上旬|中旬|下旬)", t))
     if ja:
         points, month, precision = [], None, "day"
         for x in ja:
@@ -96,6 +98,12 @@ def parse(evidence, published=None):
         last = points[-1]
         y1 = y0 + (1 if last[0] < points[0][0] else 0)
         e = _day(y1, last[0], last[2])
+        # "11月3日から10日間" / "11月3日起为期10天": one day and a length → the last day of that length
+        length = re.search(r"(\d{1,3})\s*日間|为期\s*(\d{1,3})\s*天|為期\s*(\d{1,3})\s*天", t)
+        if len(points) == 1 and precision == "day" and s and length:
+            n = int(next(g for g in length.groups() if g))
+            if 1 <= n <= 366:
+                e = s + timedelta(days=n - 1)
         if not s or not e or e < s:
             return None
         return s.isoformat(), e.isoformat(), precision

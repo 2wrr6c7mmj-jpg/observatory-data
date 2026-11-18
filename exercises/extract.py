@@ -66,31 +66,45 @@ OFFICIAL_COUNTRY = {"jso": "日本", "mod": "日本", "mofa": "日本", "navy": 
 _TAKES_PART = re.compile(r"参加|共同訓練|共同演習|合同演習|派遣|联合演习|联合训练|joint exercise|participat", re.I)
 
 # A country stays only when the text names it (the model has mixed up 中巴 → Bahrain and 印尼 → India).
+# The words must name the country, not an ordinary word or a place named after it: "us" (pronoun), "plan",
+# 披露・露出・暴露, the South China Sea, the Philippine Sea, the Sea of Japan, インド太平洋, 中国地方, 内モンゴル,
+# AFP (the news agency), and 日米 in 「11日米軍が」 are not countries. Abbreviations in capitals (US, PLA, PLAN, ROK,
+# ADF) count only in capitals.
+_DAY_BEFORE = r"(?<![0-9〇一二三四五六七八九十百同毎前昨本今翌先期終初休祝平曜土連半隔])"   # 「11日米…」「本日米…」
+_ZH_IN = r"(?<![空途集其之习習练練训訓])"   # 「演习中俄方」: 中 as "in", not China
 COUNTRY_WORDS = {
-    "日本": r"日本|japan|自衛隊|jsdf|jmsdf|jgsdf|jasdf|海自|陸自|空自|日米|日豪|日比|日印|日英|日仏|日韓|日方",
-    "米国": r"米国|米軍|米海|米空|米陸|米海兵|アメリカ|united states|\bu\.?s\.?\b|\bus (navy|army|air|marine)|usmc|american|美国|美军|美方|日米|米比|米韓|米豪|indopacom|7th fleet",
-    "中国": r"中国|中华|中華|china|chinese|\bpla\b|plan\b|解放军|解放軍|中方|中俄|中巴|中越|中印|中泰|中柬|战区|戦区|武警|人民武装警察|中共",
-    "ロシア": r"ロシア|russia|露|俄|россия|российск",
-    "韓国": r"韓国|south korea|\brok\b|韩国|米韓|日米韓|대한민국",
-    "北朝鮮": r"北朝鮮|north korea|dprk|朝鲜|朝鮮人民軍",
-    "台湾": r"台湾|taiwan|台灣|國軍|国軍",
-    "フィリピン": r"フィリピン|philippine|菲律宾|日米比|米比|日比|比海軍|比軍|\bafp\b",
-    "豪州": r"豪州|オーストラリア|australia|澳大利亚|日豪|米豪|豪海軍|豪軍|\badf\b",
-    "インド": r"インド(?!ネシア|洋)|\bindia\b|indian (navy|army|air force|armed)|印度(?!尼|洋)|日印",
+    "日本": r"日本(?!海(?!上自|軍|军))|(?<!sea of )japan|自衛隊|jsdf|jmsdf|jgsdf|jasdf|海自|陸自|空自|"
+            + _DAY_BEFORE + r"(?:日米|日豪|日比(?!谷|較|率)|日印|日英|日仏|日韓|日方)",
+    "米国": r"(?<![南北])(?:米国|米軍|米海|米空|米陸|米海兵|米比(?!較|率)|米韓|米豪)|アメリカ|united states|\bu\.s\b\.?|(?-i:\bUSA?\b)|"
+            r"(?-i:\bUSMC\b)|(?<!latin )(?<!south )(?<!central )american|美国|美军|美方|"
+            + _DAY_BEFORE + r"日米|indopacom|7th fleet",
+    "中国": r"中国(?!地方|四国|・四国|地区|山地|自動車道|電力|新聞)|中[华華](?!民[国國])|(?<!south )(?<!east )china|chinese|"
+            r"(?-i:\bPLA(?:N|AF|RF)?\b)|解放军|解放軍|中方|中共|"
+            + _ZH_IN + r"(?:中俄|中巴|中越(?!地|沖)|中印|中泰|中柬)|战区|戦区|武警|人民武装警察",
+    "ロシア": r"ロシア|russia|俄|россия|российск|露(?:軍|海軍|空軍|陸軍|国(?!境)|側|政府|大統領|国防|外務|太平洋|艦|首相|紙|中|朝)|"
+              r"[日中米英仏独印対訪親反]露(?![出天呈見骨店光営わ])",
+    "韓国": r"韓国|south korea|(?-i:\bROK\b)|韩国|米韓|대한민국",
+    "北朝鮮": r"北朝鮮|north korea|dprk|朝鲜(?!半岛|战争)|朝鮮人民軍",
+    "台湾": r"台湾(?!海峡)|台灣(?!海峽)|taiwan(?! strait)|國軍",
+    "フィリピン": r"フィリピン(?!海(?!軍|兵))|philippine(?!s? sea)|菲律宾(?!海(?!军))|(?<![南北])米比(?!較|率)|"
+                 + _DAY_BEFORE + r"日比(?!谷|較|率)|比海軍|比軍",
+    "豪州": r"豪州|オーストラリア|australia|澳大利亚|日豪|米豪|豪海軍|豪軍|(?-i:\bADF\b)",
+    "インド": r"インド(?!ネシア|洋|太平洋)|\bindia\b|indian (?:navy|army|air force|armed)|印度(?!尼|洋|太平洋|-太平洋)|"
+              + _DAY_BEFORE + r"日印",
     "インドネシア": r"インドネシア|indonesia|印度尼西亚|印尼",
-    "ベトナム": r"ベトナム|vietnam|viet nam|越南|中越",
-    "パキスタン": r"パキスタン|pakistan|巴基斯坦|中巴",
+    "ベトナム": r"ベトナム|vietnam|viet nam|越南|" + _ZH_IN + r"中越(?!地|沖)",
+    "パキスタン": r"パキスタン|pakistan|巴基斯坦|" + _ZH_IN + r"中巴",
     "バーレーン": r"バーレーン|bahrain|巴林",
-    "タイ": r"タイ王国|タイ軍|タイ海軍|日タイ|米タイ|thailand|\bthai\b|泰国|中泰",
+    "タイ": r"タイ王国|タイ軍|タイ海軍|日タイ|米タイ(?!ム|プ|ヤ|ル)|thailand|\bthai\b|泰国|" + _ZH_IN + r"中泰",
     "マレーシア": r"マレーシア|malaysia|马来西亚",
     "シンガポール": r"シンガポール|singapore|新加坡",
-    "カンボジア": r"カンボジア|cambodia|柬埔寨|中柬",
-    "英国": r"英国|イギリス|british|united kingdom|royal navy|日英|英海軍|英軍",
-    "フランス": r"フランス|france|french|法国|日仏|仏海軍|仏軍",
+    "カンボジア": r"カンボジア|cambodia|柬埔寨|" + _ZH_IN + r"中柬",
+    "英国": r"英国|イギリス|british|united kingdom|royal navy|" + _DAY_BEFORE + r"日英|英海軍|英軍",
+    "フランス": r"フランス|france|french|法国|" + _DAY_BEFORE + r"日仏|仏海軍|仏軍",
     "ドイツ": r"ドイツ|germany|german|德国",
     "カナダ": r"カナダ|canada|canadian|加拿大",
     "ニュージーランド": r"ニュージーランド|new zealand|新西兰",
-    "モンゴル": r"モンゴル|mongolia|蒙古国",
+    "モンゴル": r"(?<!内)モンゴル|(?<!inner )mongolia|蒙古国",
 }
 _NUM_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
               "ten": 10, "eleven": 11, "twelve": 12, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5, "六": 6,
@@ -133,10 +147,28 @@ def _contains(source: str, needle: str) -> bool:
 
 
 def _number_in(source: str, n) -> bool:
+    """`n` is a number of the source, not the day, month or year of a date in it."""
     if not isinstance(n, int) or isinstance(n, bool) or n <= 0:
         return False
-    digits = re.sub(r"[,\s]", "", source.translate(_Z2H))
+    digits = re.sub(r"(?<=\d)[,\s](?=\d{3}(?!\d))", "", without_dates(source))   # 2,000 / 2 000, not "12, 16"
     return re.search(rf"(?<!\d){n}(?!\d)", digits) is not None
+
+
+_COUNT_AFTER = (r"\s*(?:人|名|隻|機|両|門|発|troops|personnel|people|sailors|soldiers|marines|airmen|service ?members|"
+                r"members|military|ships|vessels|aircraft|jets|planes|名|官兵)")
+_DATE_PARTS = re.compile(
+    r"(?:令和|平成|昭和)\s*\d{1,2}\s*年度?|\d{1,4}\s*年度?|(?<!\d)\d{1,2}\s*月(?:\s*\d{1,2}\s*[日号])?|(?<!\d)\d{1,2}\s*[日号]|"
+    r"\d{4}[-/.]\d{1,2}[-/.]\d{1,2}|(?<!\d)\d{1,2}:\d{2}|"
+    rf"{dates._MON}\s*\d{{1,2}}(?:st|nd|rd|th)?(?:\s*(?:-|–|~|to|through)\s*\d{{1,2}}(?:st|nd|rd|th)?)?(?!\d)|"
+    rf"(?<!\d)\d{{1,2}}(?:st|nd|rd|th)?(?:\s*(?:-|–|~|to|through)\s*\d{{1,2}}(?:st|nd|rd|th)?)?\s+(?:of\s+)?{dates._MON}|"
+    rf"(?<!\d)(?<!\d,)(?:19|20)\d{{2}}(?!\d|,\d{{3}})(?!{_COUNT_AFTER})|"
+    r"(?<![a-z])fy\s*\d{2,4}", re.I)
+
+
+def without_dates(text: str) -> str:
+    """The text with its dates and years (11月12日, 2026年, Nov. 12, 2026, 令和8年) cut out, so that their
+    numbers are not taken for counts. A cut leaves "|" so that the numbers on its two sides do not join."""
+    return _DATE_PARTS.sub("|", (text or "").translate(_Z2H))
 
 
 def _iso(v):
@@ -178,7 +210,8 @@ def supported_countries(countries, source):
 
 
 def _numbers(text):
-    return {int(x) for x in re.findall(r"\d+", re.sub(r"(?<=\d),(?=\d{3})", "", (text or "").translate(_Z2H)))}
+    """The numbers of the text that are not parts of dates."""
+    return {int(x) for x in re.findall(r"\d+", re.sub(r"(?<=\d),(?=\d{3})", "", without_dates(text)))}
 
 
 def numbers_supported(text, source):
