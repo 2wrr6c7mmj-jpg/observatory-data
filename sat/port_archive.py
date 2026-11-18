@@ -176,6 +176,7 @@ class LimitedClient(cdse.Client):
                 if e.sent and key is not None:  # a process request that may have been served: its estimate in the window
                     self._count_resends(req0, 1)
                     self.window.append((self.clock(), est))
+                    e.pu_estimate = est  # and the same value in processing_units (cdse.Client._send_process)
                 else:
                     self._count_resends(req0, 0)
                 raise

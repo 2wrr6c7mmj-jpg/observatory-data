@@ -217,8 +217,9 @@ class NetworkRetryTest(unittest.TestCase):
             c.process(g.bbox, g.width, g.height, t, t, True)
         est = cdse.estimate_pu(g.width, g.height, 3)
         self.assertEqual(c.requests, 3)
-        self.assertAlmostEqual(c.processing_units, 0.5 + est)
-        self.assertAlmostEqual(sum(p for _t, p in c.window), 0.5 + max(est, 0.5))
+        # the same value in the cap and in the window: the estimate, or the largest header PU seen for this size
+        self.assertAlmostEqual(c.processing_units, 0.5 + max(est, 0.5))
+        self.assertAlmostEqual(sum(p for _t, p in c.window), c.processing_units)
 
     def run_main(self, out, cli, sites, land):
         with mock.patch.object(run, "load_mask", return_value=(land.astype(np.uint8), {})), \
@@ -456,6 +457,41 @@ class QuayRefetchTest(unittest.TestCase):
             month = store.status["scenes"][0]["retrieved_utc"][:7]
             self.assertAlmostEqual(run.site_month_pu(store, "TST", month), 2 * est, places=3)
 
+    def test_estimated_pu_counts_against_the_budget(self):
+        """Timeouts (the estimate) and successes alternate: the estimate is taken from the budget too, so the scenes
+        stop when it is spent (the network streak never reaches 2)."""
+        chip, land = chip_and_land()
+        g = Grid.for_site(SITE)
+        est = cdse.estimate_pu(g.width, g.height, 3)
+
+        class Alternating(FakeClient):
+            def catalog(self, bbox, start, end, collection=None):
+                feats = super().catalog(bbox, start, end)
+                p = feats[0]["properties"]
+                return [{"id": f"s{i}", "properties": {**p, "datetime": f"2026-10-{20 + i:02d}T22:30:00Z"}} for i in range(6)]
+
+            def process(self, bbox, w, h, t0, t1, with_lia=True):
+                self.requests += 1
+                self.processed.append(t0)
+                if len(self.processed) % 2 == 1:
+                    e = cdse.NetworkError("CDSE に応答が途中で途切れた（TimeoutError）")
+                    e.pu_estimate = est
+                    self.processing_units += est
+                    raise e
+                self.processing_units += est
+                return self.chip, est
+        budget = 3.5 * est
+        with tempfile.TemporaryDirectory() as d:
+            store = run.Store(Path(d), [SITE])
+            cli = Alternating(chip)
+            s = run.process_site(cli, store, SITE, land.astype(np.uint8), NOW, None, budget, 12, log=quiet)
+            self.assertEqual(len(cli.processed), 3)  # 3 x est fits in 3.5 x est; the 4th would not
+            self.assertTrue(s["deferred_budget"])
+            recorded = sum(float(x.get("processing_units") or 0) for x in store.status["scenes"])
+            self.assertAlmostEqual(recorded, 3 * est, places=3)
+            self.assertLessEqual(recorded, budget)
+            self.assertAlmostEqual(s["budget_left_pu"], round(budget - 3 * est, 2), places=2)
+
     def test_successful_refetch_keeps_the_first_pu(self):
         chip, land = chip_and_land()
         mask = land.astype(np.uint8)
@@ -644,25 +680,83 @@ class AtomicWriteTest(unittest.TestCase):
         self.assertFalse(run.scene_done({"result": "error"}))
         self.assertTrue(run.scene_done({"result": "counted"}))
 
-    def test_scenes_whose_rows_were_written_stay_counted(self):
+    def save_failing_on(self, store, part):
+        """store.save with every atomic write whose path contains ``part`` failing."""
+        real = atomic.write_text
+
+        def write_text(path, text, encoding="utf-8"):
+            if part in str(path):
+                raise OSError(f"disk full ({part})")
+            return real(path, text, encoding)
+        with mock.patch.object(atomic, "write_text", write_text), contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(OSError):
+                store.save({"run_utc": "2026-10-30T05:17:00Z", "requests": 3, "processing_units": 9.766,
+                            "pu_source": "header", "scenes": 2})
+
+    def test_rows_written_but_detections_not_are_fetched_again(self):
         chip, land = chip_and_land()
         with tempfile.TemporaryDirectory() as d:
             out = Path(d)
             store = run.Store(out, [SITE])
             run.process_site(FakeClient(chip), store, SITE, land.astype(np.uint8), NOW, None, 100.0, 12, log=quiet)
-            real = run.Store.save_records
+            self.save_failing_on(store, "detections")
+            self.assertEqual(len(run.read_csv(out / "ship_counts.csv")), 2)  # the rows made it to disk
+            st = json.loads((out / "status.json").read_text())
+            self.assertEqual([s["result"] for s in st["scenes"]], ["save_error", "save_error"])
+            store2 = run.Store(out, [SITE])
+            self.assertEqual(store2.done("TST", run.mask_tag(SITE)), set())  # fetched again despite the rows
+            cli = FakeClient(chip)
+            run.process_site(cli, store2, SITE, land.astype(np.uint8), NOW, None, 100.0, 12, log=quiet)
+            self.assertEqual(len(cli.processed), 2)
+            self.assertEqual(len(store2.rows), 2)  # replaced, not doubled
+            # a second save failure gives the scenes up (no PU spent again and again)
+            self.save_failing_on(store2, "detections")
+            store3 = run.Store(out, [SITE])
+            self.assertEqual(len(store3.done("TST", run.mask_tag(SITE))), 2)
 
-            def half(self):  # ship_counts.csv is written, then the rest fails
-                run.write_csv(self.out / "ship_counts.csv", self.rows, run.CSV_FIELDS)
-                raise OSError("disk full")
-            with mock.patch.object(run.Store, "save_records", half), contextlib.redirect_stderr(io.StringIO()):
+    def test_all_written_stays_counted_even_if_a_later_file_fails(self):
+        chip, land = chip_and_land()
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            store = run.Store(out, [SITE])
+            run.process_site(FakeClient(chip), store, SITE, land.astype(np.uint8), NOW, None, 100.0, 12, log=quiet)
+            with mock.patch.object(run.Store, "save_chips", side_effect=OSError("disk full")), \
+                    contextlib.redirect_stderr(io.StringIO()):
                 with self.assertRaises(OSError):
                     store.save({"run_utc": "2026-10-30T05:17:00Z", "requests": 3, "processing_units": 9.766,
                                 "pu_source": "header", "scenes": 2})
-            self.assertTrue(real)
             st = json.loads((out / "status.json").read_text())
             self.assertEqual([s["result"] for s in st["scenes"]], ["counted", "counted"])
 
+    def test_save_error_without_pu_still_gives_up_on_the_second(self):
+        with tempfile.TemporaryDirectory() as d:
+            store = run.Store(Path(d), [SITE])
+            k = {"site_id": "TST", "acquired_utc": "2026-10-20T22:30:00Z", "mask_version": "TST-land-v1"}
+            store.note_scene({**k, "result": "save_error", "retrieved_utc": "2026-10-30T05:00:00Z", "processing_units": 0})
+            store.note_scene({**k, "result": "save_error", "retrieved_utc": "2026-10-31T05:00:00Z", "processing_units": 0})
+            sc = store.scene_entry("TST", k["acquired_utc"], k["mask_version"])
+            self.assertEqual([f["result"] for f in sc["earlier_fetches"]], ["save_error"])
+            self.assertTrue(run.scene_done(sc))
+
+    def test_quay_records_not_written_are_counted_again(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            store = run.Store(out, [SITE])
+            tag = run.mask_tag(SITE)
+            t = "2026-10-20T22:30:00Z"
+            store.add({"site_id": "TST", "acquired_utc": t, "mask_version": tag, "harbour_candidates": 1}, [], None)
+            store.add_quay({"site_id": "TST", "acquired_utc": t, "mask_version": tag, "relative_orbit": 1,
+                            "occupied_min": 1, "occupied_max": 2}, [])
+            store.note_scene({"site_id": "TST", "acquired_utc": t, "mask_version": tag, "result": "counted",
+                              "quay_result": "counted", "retrieved_utc": "2026-10-30T05:00:00Z", "processing_units": 1.0})
+            self.save_failing_on(store, "/quay/")  # quay_counts.csv written, the quay month file not
+            sc = json.loads((out / "status.json").read_text())["scenes"][0]
+            self.assertEqual((sc["result"], sc["quay_result"], sc["quay_save_errors"]), ("counted", "save_error", 1))
+            store2 = run.Store(out, [SITE])
+            self.assertIn(t, store2.done("TST", tag))  # the ship count is fine
+            self.assertNotIn(t, store2.quay_done("TST", tag))  # the quay count is made again
+            store2.status["scenes"][0]["quay_save_errors"] = run.QUAY_SAVE_ERRORS_MAX
+            self.assertIn(t, store2.quay_done("TST", tag))  # given up
 
 # ---------- 2. the port archive records its PU and scenes however the run ends ----------
 

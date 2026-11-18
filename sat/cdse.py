@@ -252,8 +252,10 @@ class Client:
             return self._post_sh(PROCESS_URL, payload, accept)
         except NetworkError as e:
             if e.sent:
-                e.pu_estimate = est
-                self.processing_units += est
+                # a subclass may have set a larger estimate (port_archive.LimitedClient: the largest header PU seen
+                # for this request's size), the same value it counts in its rate window
+                e.pu_estimate = max(est, e.pu_estimate or 0.0)
+                self.processing_units += e.pu_estimate
                 self.pu_reported = False
             raise
 

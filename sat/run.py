@@ -99,6 +99,7 @@ SECTOR_FIELDS = [
 # A counted scene is fetched again once for its quay count (a baseline of its orbit came later); a failed refetch
 # keeps the scene's first record and is tried again at most this many times in all (status.json quay_refetch_failures).
 QUAY_REFETCH_MAX = 2
+QUAY_SAVE_ERRORS_MAX = 2   # quay records of a scene that failed to be written this many times: given up
 # Network errors (cdse.NetworkError, after the client's own retries) of consecutive scenes of one site after which the
 # rest of the site waits for the next run (no more requests to a host that does not answer).
 NET_FAILURES_PER_SITE = 2
@@ -319,6 +320,7 @@ class Store:
         self.class_rows = read_csv(out / "berth_class_counts.csv")
         self.new_class = False
         self.noted: set[tuple] = set()  # scenes recorded by this run (note_scene)
+        self.written: set[str] = set()  # scene records written by save_records (mark_unsaved)
 
     def site(self, site_id: str) -> dict | None:
         return self.by_id.get(site_id)
@@ -346,6 +348,9 @@ class Store:
         keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id and row_mask_tag(r) == tag}
         keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
                  if s["site_id"] == site_id and row_mask_tag(s) == tag and scene_done(s)}
+        # records not (all) written by an earlier run (save_error): fetched again once, even when a row made it to disk
+        keys -= {s["acquired_utc"] for s in self.status.get("scenes", [])
+                 if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("result") == "save_error" and not scene_done(s)}
         return keys
 
     def quay_done(self, site_id: str, tag: str) -> set[str]:
@@ -354,6 +359,14 @@ class Store:
         keys = {r["acquired_utc"] for r in self.quay_rows if r["site_id"] == site_id and row_mask_tag(r) == tag}
         keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
                  if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("quay_result") in ("counted", "error", "skipped")}
+        # a quay count whose records were not (all) written (quay_result save_error): fetched again once; given up
+        # after QUAY_SAVE_ERRORS_MAX such failures (the disk or the code is broken: no PU spent again and again)
+        for s in self.status.get("scenes", []):
+            if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("quay_result") == "save_error":
+                if int(s.get("quay_save_errors") or 0) >= QUAY_SAVE_ERRORS_MAX:
+                    keys.add(s["acquired_utc"])
+                else:
+                    keys.discard(s["acquired_utc"])
         return keys
 
     def add_quay(self, row: dict, features: list[dict], extra: dict[str, bytes] | None = None) -> None:
@@ -419,12 +432,14 @@ class Store:
         old = self.scene_entry(*key)
         if old is not None and old is not entry:
             earlier = list(old.get("earlier_fetches") or [])
-            if float(old.get("processing_units") or 0) > 0:
+            # a save_error is kept even without PU: scene_done gives a scene up after its second save failure
+            if float(old.get("processing_units") or 0) > 0 or old.get("result") == "save_error":
                 earlier.append({k: old.get(k) for k in ("retrieved_utc", "processing_units", "result")})
             if earlier:
                 entry["earlier_fetches"] = earlier + [f for f in entry.get("earlier_fetches") or [] if f not in earlier]
-            if old.get("quay_refetch_failures"):
-                entry.setdefault("quay_refetch_failures", old["quay_refetch_failures"])
+            for k in ("quay_refetch_failures", "quay_save_errors"):
+                if old.get(k):
+                    entry.setdefault(k, old[k])
         self.noted.add(key)
         sc = [s for s in self.status.get("scenes", []) if (s["site_id"], s["acquired_utc"], row_mask_tag(s)) != key]
         sc.append(entry)
@@ -491,23 +506,40 @@ class Store:
         atomic.write_text(self.out / "meta.json", json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n")
 
     def mark_unsaved(self, error: str) -> None:
-        """The records of this run's counted scenes may not be written: those without a row in ship_counts.csv as
-        it is on disk become ``save_error`` (their PU stay; scene_done fetches them again once)."""
-        try:
-            on_disk = {(r["site_id"], r["acquired_utc"], row_mask_tag(r)) for r in read_csv(self.out / "ship_counts.csv")}
-        except Exception:  # noqa: BLE001  (unreadable: none of this run's rows is known to be there)
-            on_disk = set()
+        """save_records failed midway: which of this run's scenes lack records, from the files it did write
+        (``self.written``, each replaced atomically, so a file is either the new one or the old one).
+
+        * ship_counts.csv or the scene's detections file not written: ``result`` save_error (the PU stay; done() and
+          scene_done fetch it again once, then give it up).
+        * quay_counts.csv or the scene's quay month file not written, for a scene whose quay row this run made:
+          ``quay_result`` save_error (quay_done fetches it again, at most QUAY_SAVE_ERRORS_MAX times in all).
+
+        Limits: the other files (anchorage and class counts, chips, zone priors, est-2, quay_sectors.csv, the
+        evaluation) are rebuilt or rewritten from these records by later runs, or hold no count of their own, and are
+        not judged per scene; a scene whose files were all written stays counted even if a later file failed."""
+        written = self.written
+        quay_new = {(r["site_id"], r["acquired_utc"], row_mask_tag(r)) for items in self.new_quay.values() for r, _f in items}
         for s in self.status.get("scenes", []):
             key = (s["site_id"], s["acquired_utc"], row_mask_tag(s))
-            if key in self.noted and s.get("result") == "counted" and key not in on_disk:
+            if key not in self.noted:
+                continue
+            site = self.site(s["site_id"])
+            month = s["acquired_utc"][:7]
+            if s.get("result") == "counted" and not ("ship_counts.csv" in written and detections_rel(site, month) in written):
                 s["result"] = "save_error"
                 s["save_error"] = error
-                if s.get("quay_result") == "counted":
-                    s.pop("quay_result")
+            if s.get("quay_result") == "counted" and key in quay_new and not (
+                    "quay_counts.csv" in written and quay_rel(site, month) in written):
+                s["quay_result"] = "save_error"
+                s["quay_error"] = error
+                s["quay_save_errors"] = int(s.get("quay_save_errors") or 0) + 1
 
     def save_records(self) -> None:
-        """The counts, detections, quay records, est-2, chips and the presence evaluation (everything but the PU)."""
+        """The counts, detections, quay records, est-2, chips and the presence evaluation (everything but the PU).
+        ``self.written``: the scene records written so far (for mark_unsaved)."""
+        self.written = set()
         write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
+        self.written.add("ship_counts.csv")
         if self.new_anchorage:
             write_csv(self.out / "anchorage_counts.csv", self.anchorage_rows, ANCHORAGE_FIELDS)
         if self.new_class:
@@ -525,6 +557,7 @@ class Store:
             fc["features"] = feats
             p.parent.mkdir(parents=True, exist_ok=True)
             atomic.write_text(p, json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
+            self.written.add(rel)
         self.save_chips()
         pairs = orbit_pairs(self.quay_rows)
         qkey = lambda r: (r["site_id"], r["acquired_utc"], row_mask_tag(r))
@@ -537,6 +570,7 @@ class Store:
                 months.setdefault(quay_rel(self.site(r["site_id"]), r["acquired_utc"][:7]), [])
         if self.quay_rows or self.new_quay:
             write_csv(self.out / "quay_counts.csv", self.quay_rows, QUAY_FIELDS)
+            self.written.add("quay_counts.csv")
         for rel, items in months.items():
             p = self.out / rel
             month = rel.rsplit("/", 1)[-1][:7]
@@ -558,6 +592,7 @@ class Store:
             fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4], in_file), "features": feats}
             p.parent.mkdir(parents=True, exist_ok=True)
             atomic.write_text(p, json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
+            self.written.add(rel)
         for sid, zp in self.zone_priors.items():
             zp.save(self.zone_prior_path(sid))
         est2 = None
@@ -1697,6 +1732,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                 pu = getattr(e, "pu_estimate", None)
                 if pu is not None:
                     entry["pu_source"] = "estimate"
+                    budget_left -= pu  # counted against the budget as if spent (the success path subtracts the header's PU)
             if pu is not None:  # the chip was received (PU spent) but could not be read, or the estimate above
                 entry["processing_units"] = pu
             failed(entry, refetch, str(e))
