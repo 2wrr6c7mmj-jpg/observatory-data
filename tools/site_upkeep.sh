@@ -4,7 +4,7 @@
 # done. Exit 0: done; 1: the site did not answer (3 failed requests); 3: the site refused the token
 # (401/403: the secret UPKEEP_TOKEN does not match the site's value).
 #
-# Used by tools/site_clock.sh (every 3 h, 60 steps, inside the long Site clock run) and by site-upkeep.yml
+# Used by tools/site_clock.sh (every 10 min, 40 steps, inside the long Site clock run) and by site-upkeep.yml
 # (the fallback while no Site clock run is going).
 #
 # The token (the repository secret UPKEEP_TOKEN, the same value as on the site) is read from the file

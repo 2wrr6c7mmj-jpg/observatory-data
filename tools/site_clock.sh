@@ -13,16 +13,25 @@
 #
 # Exit 1 (a red run, and site-clock.yml then does not hand over; the schedule restarts the chain) when
 # - the site refused the upkeep token (401/403) even once (no more upkeep in this run then),
-# - more than half of this run's upkeep rounds failed (about 2 rounds in a run, every 3 h),
+# - more than half of this run's upkeep rounds failed (about 30 rounds in a run, every 10 min),
 # - the translation failed MAX_STREAK times in a row, or there were more than MAX_FAILS failures in all.
 # A failed publish never leaves a rebase half done or the commit behind (push_retry.sh --reset-on-fail):
 # the next hour translates again from the newest main.
 set -u
 RUN_SECONDS=${RUN_SECONDS:-19800}          # 5 h 30 min (the job limit is 6 h)
-# Upkeep every 3 hours, 60 steps: every 20 minutes exhausted D1's free daily
-# row reads (5 million) by 12:00 JST on 2026-11-18, which took the site's API down.
-UPKEEP_EVERY=${UPKEEP_EVERY:-10800}        # 3 h
-UPKEEP_STEPS=${UPKEEP_STEPS:-60}
+# Upkeep every 10 minutes, 40 steps at most (a round ends when the site reports idle). Every 20 minutes
+# exhausted D1's free daily row reads (5 million) by 12:00 JST on 2026-11-18 with the site's upkeep of then
+# (an idle check read the whole news table); since observatory-watch's D1 row budget change (deciding what
+# to do reads 2 rows) the site is stepped from here and visitors' reads start a step at most every 3 minutes.
+# That site says so in /api/status ("upkeep": 2 or more). Before each round the clock reads it: without the
+# mark (an older site, or the status could not be read) it falls back to the old pace, LEGACY_STEPS every
+# LEGACY_EVERY, with a warning, so this change can never take the older site over the D1 quota.
+UPKEEP_EVERY=${UPKEEP_EVERY:-600}          # 10 min (was 3 h)
+UPKEEP_STEPS=${UPKEEP_STEPS:-40}
+LEGACY_EVERY=${LEGACY_EVERY:-10800}        # 3 h, for a site without the mark
+LEGACY_STEPS=${LEGACY_STEPS:-60}
+SITE=${SITE:-https://observatory-watch.pages.dev}
+export SITE
 TRANSLATE_EVERY=${TRANSLATE_EVERY:-3600}   # 60 min
 TRANSLATE_MINUTES=${TRANSLATE_MINUTES:-15}
 MAX_STREAK=${MAX_STREAK:-3}
@@ -30,10 +39,18 @@ MAX_FAILS=${MAX_FAILS:-10}
 here=$(cd "$(dirname "$0")" && pwd)
 start=$(date +%s); next_upkeep=$start; next_translate=$start
 upkeeps=0; translations=0; fails=0
-upkeep_fails=0; upkeep_denied=false; translate_streak=0; worst_translate=0
+upkeep_fails=0; upkeep_denied=false; last_legacy=""; translate_streak=0; worst_translate=0
 
 upkeep() {
-  STEPS=$UPKEEP_STEPS bash "$here/site_upkeep.sh"
+  STEPS=$1 bash "$here/site_upkeep.sh"
+}
+
+# The site's upkeep version from /api/status ("upkeep"); 0 when it is missing or cannot be read.
+site_upkeep_version() {
+  local v
+  v=$(curl -sS -m 20 -H 'Accept: application/json' "$SITE/api/status" 2>/dev/null \
+      | python3 -c 'import json,sys; v=json.load(sys.stdin).get("upkeep"); print(v if isinstance(v,int) and not isinstance(v,bool) else 0)' 2>/dev/null)
+  echo "${v:-0}"
 }
 
 translate() {
@@ -70,11 +87,19 @@ while :; do
   now=$(date +%s)
   [ $((now - start)) -ge "$RUN_SECONDS" ] && break
   if [ "$now" -ge "$next_upkeep" ] && [ "$upkeep_denied" = false ]; then
-    upkeep; rc=$?
-    if [ $rc = 0 ]; then upkeeps=$((upkeeps+1))
-    else
-      fails=$((fails+1)); upkeep_fails=$((upkeep_fails+1))
-      [ $rc = 3 ] && upkeep_denied=true
+    version=$(site_upkeep_version); steps=0
+    if [ "$version" -ge 2 ]; then steps=$UPKEEP_STEPS
+    elif [ -z "$last_legacy" ] || [ $((now - last_legacy)) -ge "$LEGACY_EVERY" ]; then
+      echo "::warning title=site clock::/api/status に upkeep 2 以上の印がない（$version）: 旧来の $((LEGACY_EVERY/60)) 分ごと・$LEGACY_STEPS 手で進める"
+      steps=$LEGACY_STEPS; last_legacy=$now
+    fi
+    if [ "$steps" -gt 0 ]; then
+      upkeep "$steps"; rc=$?
+      if [ $rc = 0 ]; then upkeeps=$((upkeeps+1))
+      else
+        fails=$((fails+1)); upkeep_fails=$((upkeep_fails+1))
+        [ $rc = 3 ] && upkeep_denied=true
+      fi
     fi
     next_upkeep=$((now + UPKEEP_EVERY))
   fi

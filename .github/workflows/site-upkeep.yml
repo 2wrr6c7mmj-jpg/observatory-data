@@ -7,13 +7,12 @@ name: Site upkeep clock
 # of a new Cloudflare cron trigger.
 #
 # Since 2026-11-18 the long Site clock run (site-clock.yml, tools/site_clock.sh)
-# does the same (every 3 hours), because GitHub drops most of these short
+# does the same (every 10 minutes), because GitHub drops most of these short
 # scheduled runs. This schedule stays as the fallback for the hours when no
 # Site clock run is going (its chain stopped and its 3-hourly schedule has not
 # picked it up yet): while a Site clock run is in progress (or queued), this run
 # only says so and does not call the site, so the site is not stepped twice.
-# Every 3 hours and 60 steps at most, as the Site clock (every 20 minutes used up
-# D1's free daily row reads on 2026-11-18).
+# Every 3 hours and 60 steps at most (the fallback; the Site clock steps every 10 minutes).
 on:
   schedule:
     - cron: '7 1-23/3 * * *'
