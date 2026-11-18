@@ -14,8 +14,11 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+# collect.yml rebuilds docs/data/jso too (the Taiwan MND counts, and the built_utc that analysis/health.py reads as
+# the heartbeat): on main this run joins its group "collect", so the two never write docs/data/jso at the same time;
+# each starts from the newest main (checkout ref: main). Probe branches keep a group of their own.
 concurrency:
-  group: collect-jso-${{ github.ref }}
+  group: ${{ github.ref == 'refs/heads/main' && 'collect' || format('collect-jso-{0}', github.ref) }}
   cancel-in-progress: false
 jobs:
   jso:
@@ -23,6 +26,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref == 'refs/heads/main' && 'main' || '' }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -49,11 +54,8 @@ jobs:
           export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
           export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
           git commit -q -m "データ更新: 統幕 艦艇・軍機の動向 ($(date -u +%Y-%m-%d))"
-          for i in 1 2 3; do
-            git pull -q --rebase && git push && exit 0
-            sleep 20
-          done
-          exit 1
+          # rebase onto main; a failed rebase is aborted and tried again (tools/push_retry.sh)
+          bash tools/push_retry.sh --tries 3 --title jso-update
       - name: Cloudflare D1
         if: ${{ github.event_name != 'push' && github.ref == 'refs/heads/main' }}
         env:

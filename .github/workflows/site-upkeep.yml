@@ -2,15 +2,25 @@ name: Site upkeep clock
 # Advances the Observatory site's background upkeep (news collection,
 # translation, naval/exercise/activity rebuilds) while nobody has the site
 # open. The site does one bounded step per request (Workers Free CPU limit),
-# so this calls /api/maintenance until it reports idle or the step cap.
-# Runs here (public repository, free Actions) instead of a new Cloudflare
-# cron trigger. About 100 requests per run at most, 72 runs a day (raised from
-# 60 when the site's news sources went from 51 to 97, 2026-11-18).
+# so this calls /api/maintenance until it reports idle or the step cap
+# (tools/site_upkeep.sh). Runs here (public repository, free Actions) instead
+# of a new Cloudflare cron trigger.
+#
+# Since 2026-11-18 the long Site clock run (site-clock.yml, tools/site_clock.sh)
+# does the same (every 3 hours), because GitHub drops most of these short
+# scheduled runs. This schedule stays as the fallback for the hours when no
+# Site clock run is going (its chain stopped and its 3-hourly schedule has not
+# picked it up yet): while a Site clock run is in progress (or queued), this run
+# only says so and does not call the site, so the site is not stepped twice.
+# Every 3 hours and 60 steps at most, as the Site clock (every 20 minutes used up
+# D1's free daily row reads on 2026-11-18).
 on:
   schedule:
-    - cron: '7,27,47 * * * *'
+    - cron: '7 1-23/3 * * *'
   workflow_dispatch:
-permissions: {}
+permissions:
+  actions: read     # is a Site clock run going?
+  contents: read    # checkout (tools/site_upkeep.sh)
 concurrency:
   group: site-upkeep-clock
   cancel-in-progress: false
@@ -19,15 +29,36 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - name: Step the site upkeep
+      - name: Is the Site clock running?
+        id: clock
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          tasks=""; fails=0
-          for i in $(seq 1 100); do
-            body=$(curl -sS -m 25 -H 'Accept: application/json' https://observatory-watch.pages.dev/api/maintenance) || { fails=$((fails+1)); [ $fails -ge 3 ] && break; sleep 5; continue; }
-            task=$(printf '%s' "$body" | sed -n 's/.*"task":"\([^"]*\)".*/\1/p')
-            tasks="$tasks ${task:-?}"
-            [ "$task" = idle ] && break
-            sleep 2
+          # When the question cannot be answered, step the site anyway (a second round is harmless, none is not).
+          n=0
+          for s in in_progress queued; do
+            c=$(curl -sS -m 20 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+                  "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/site-clock.yml/runs?branch=main&status=$s&per_page=1" \
+                | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_count"])' 2>/dev/null) || c=0
+            n=$((n + ${c:-0}))
           done
-          echo "::notice title=upkeep::$(echo $tasks | tr ' ' '\n' | sed 's/:.*//' | sort | uniq -c | tr '\n' ' ')"
-          [ $fails -lt 3 ] || { echo "::error title=upkeep::site did not answer"; exit 1; }
+          if [ "$n" -gt 0 ] && [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice title=upkeep::Site clock is running: it steps the site, nothing to do here"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.clock.outputs.skip != 'true'
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: tools
+      - name: Step the site upkeep
+        if: steps.clock.outputs.skip != 'true'
+        env:
+          # /api/maintenance checks it when the site has UPKEEP_TOKEN set; empty when the secret is not set (sent without)
+          UPKEEP_TOKEN: ${{ secrets.UPKEEP_TOKEN }}
+          UPKEEP_ANNOTATE: '1'
+          STEPS: '60'
+        run: bash tools/site_upkeep.sh || { echo "::error title=upkeep::site did not answer"; exit 1; }
