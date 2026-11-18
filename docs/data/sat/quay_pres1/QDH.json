@@ -1,0 +1,613 @@
+{
+ "site_id": "QDH",
+ "version": "pres-1a",
+ "mode": "trial",
+ "since_utc": "2026-11-18",
+ "calibration": {
+  "version": "pres-1a",
+  "fit_before": "2026-06-01",
+  "generated_utc": "2026-11-18T10:01:24Z"
+ },
+ "note": "試行（並行系列）。公開の画面は読まない。p_pres1＝在の確率（pres-1a：現行の判定 p_current と、区間の撮影の日より前の所有者の答えの割合 res_rate＝(在＋1)／(答え＋2)・数 res_n のロジスティック回帰）。change_flag＝現行の判定（p_current ≥ 0.5）が区間の直前の答え prev_y と食い違う（1）／同じ（0）／直前の答えなし（null）：目視の確認の順番付け用で、数には入れない。pres-1a は「前と同じ」に強く、答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）",
+ "credit": "Contains modified Copernicus Sentinel data 2024, 2025, 2026",
+ "attribution": "岸壁の線・区間：(c) OpenStreetMap contributors（ODbL 1.0）",
+ "scenes": [
+  {
+   "acquired_utc": "2026-10-21T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 3,
+   "present_current": 0,
+   "change_flags": 3,
+   "sections": [
+    {
+     "section_id": "-1:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.444,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.304,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-1:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "-2:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-2:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 6,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.381,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-3:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-3:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-4:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "-4:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:27",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:28",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:35",
+     "p_current": 0.0,
+     "res_rate": 0.778,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.841,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732009:L:37",
+     "p_current": 0.0,
+     "res_rate": 0.889,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.924,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732009:R:07",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:R:08",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:22",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:23",
+     "p_current": 0.0,
+     "res_rate": 0.714,
+     "res_n": 5,
+     "prev_y": 0,
+     "prev_date": "2026-09-04",
+     "p_pres1": 0.74,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:25",
+     "p_current": 0.0,
+     "res_rate": 0.111,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.035,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:26",
+     "p_current": 0.0,
+     "res_rate": 0.444,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.304,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732073:L:28",
+     "p_current": 0.0,
+     "res_rate": 0.444,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-09-29",
+     "p_pres1": 0.304,
+     "change_flag": 0
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-11-02T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 3,
+   "present_current": 1,
+   "change_flags": 6,
+   "sections": [
+    {
+     "section_id": "-1:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.415,
+     "change_flag": 1
+    },
+    {
+     "section_id": "-1:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "-2:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-2:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.444,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.304,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-3:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-3:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-4:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "-4:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:27",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:28",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:35",
+     "p_current": 0.0,
+     "res_rate": 0.8,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.87,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732009:L:37",
+     "p_current": 0.0,
+     "res_rate": 0.9,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.934,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732009:R:07",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:R:08",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:22",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:23",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 6,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.8,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732073:L:25",
+     "p_current": 1.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.132,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732073:L:26",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.415,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732073:L:28",
+     "p_current": 0.0,
+     "res_rate": 0.4,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.251,
+     "change_flag": 0
+    }
+   ]
+  },
+  {
+   "acquired_utc": "2026-11-14T09:55:42Z",
+   "relative_orbit": "171",
+   "present_pres1": 5,
+   "present_current": 3,
+   "change_flags": 6,
+   "sections": [
+    {
+     "section_id": "-1:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.415,
+     "change_flag": 1
+    },
+    {
+     "section_id": "-1:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "-2:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-2:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.444,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.304,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-3:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-3:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-4:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "-4:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:27",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:28",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:L:35",
+     "p_current": 0.0,
+     "res_rate": 0.8,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.87,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732009:L:37",
+     "p_current": 0.0,
+     "res_rate": 0.9,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.934,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732009:R:07",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732009:R:08",
+     "p_current": 1.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.132,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732073:L:22",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:23",
+     "p_current": 0.0,
+     "res_rate": 0.75,
+     "res_n": 6,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.8,
+     "change_flag": 1
+    },
+    {
+     "section_id": "69732073:L:25",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:26",
+     "p_current": 1.0,
+     "res_rate": 0.5,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.751,
+     "change_flag": 0
+    },
+    {
+     "section_id": "69732073:L:28",
+     "p_current": 1.0,
+     "res_rate": 0.4,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-21",
+     "p_pres1": 0.589,
+     "change_flag": 1
+    }
+   ]
+  }
+ ]
+}

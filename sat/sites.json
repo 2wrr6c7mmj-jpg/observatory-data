@@ -1,5 +1,5 @@
 {
- "note": "唯一の地点の設定（multi-site PR-1）。kind＝naval|yard|island、priority＝処理の順（1 が先）、daily＝毎日の実行で取るか、publish＝trial（試行ページのみ）|public、layout＝shared（湛江：detections/・quay/ の月ごとのファイルを共用）|per_site（地点ごとの下位フォルダ）、png＝PNG の切り出し画像を作るか、sectors＝区画（bbox か polygon、role）、sector_rest＝残り、quay＝岸壁の数の地点ごとの設定、pu_month_cap＝地点ごとの月の PU の上限（全体の 1,000 PU の内側）。湛江は区画の role を書かない（A＝naval、B＝other とみなす）",
+ "note": "唯一の地点の設定（multi-site PR-1）。kind＝naval|yard|island、priority＝処理の順（1 が先）、daily＝毎日の実行で取るか、publish＝trial（試行ページのみ）|public、layout＝shared（湛江：detections/・quay/ の月ごとのファイルを共用）|per_site（地点ごとの下位フォルダ）、png＝PNG の切り出し画像を作るか、sectors＝区画（bbox か polygon、role）、sector_rest＝残り、quay＝岸壁の数の地点ごとの設定（quay.pres1＝pres-1a の試行：off（既定）|trial（quay_pres1 と評価票の併記だけ）|on（未使用。切り替えの条件は docs/data/sat/eval/pres1-design.md §4.3）、pres1_since_utc＝trial にした日）、pu_month_cap＝地点ごとの月の PU の上限（全体の 1,000 PU の内側）。湛江は区画の role を書かない（A＝naval、B＝other とみなす）",
  "sites": [
   {
    "id": "ZJG",
@@ -52,6 +52,7 @@
      "2026-10-26T10:48:45Z"
     ],
     "label_freeze_utc": "2026-10-27",
+    "pres1": "off",
     "est2_lat0": 21.2,
     "class_weights": "ZJG"
    },
@@ -213,6 +214,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "SYL"
    },
    "s2": {
@@ -343,6 +346,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "SLP"
    },
    "s2": {
@@ -445,6 +450,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "QGZ"
    },
    "s2": {
@@ -556,6 +563,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "ZDH"
    },
    "s2": {
@@ -666,6 +675,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "QJG"
    },
    "s2": {
@@ -737,6 +748,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "QDH"
    },
    "s2": {
@@ -830,6 +843,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "XSN"
    },
    "s2": {
@@ -907,6 +922,8 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "trial",
+    "pres1_since_utc": "2026-11-18",
     "class_weights": "LSN"
    },
    "s2": {
@@ -978,6 +995,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "off",
     "class_weights": "SWS"
    },
    "s2": {
@@ -1066,6 +1084,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "off",
     "class_weights": "XMN"
    },
    "s2": {
@@ -1154,6 +1173,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "off",
     "class_weights": "STU"
    },
    "s2": {
@@ -1241,6 +1261,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
+    "pres1": "off",
     "class_weights": "MAW"
    },
    "s2": {
@@ -1327,6 +1348,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "PDG"
    },
    "s2": {
@@ -1415,6 +1437,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "NDS"
    },
    "s2": {
@@ -1503,6 +1526,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "DXE"
    },
    "s2": {
@@ -1591,6 +1615,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "BHI"
    },
    "s2": {
@@ -1680,6 +1705,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "XCD"
    },
    "s2": {
@@ -1768,6 +1794,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "LYG"
    },
    "s2": {
@@ -1851,6 +1878,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "JMN"
    },
    "s2": {
@@ -1939,6 +1967,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "HPU"
    },
    "s2": {
@@ -2039,6 +2068,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "HKG"
    },
    "s2": {
@@ -2121,6 +2151,7 @@
    "quay": {
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
+    "pres1": "off",
     "class_weights": "WHI"
    },
    "s2": {

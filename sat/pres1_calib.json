@@ -1,0 +1,1424 @@
+{
+ "version": "pres-1a",
+ "generated_utc": "2026-11-18T10:01:24Z",
+ "fit_before": "2026-06-01",
+ "truth": "s2",
+ "cells": 737,
+ "train_n": 542,
+ "holdout_n": 195,
+ "train_last_label_day": "2026-05-31",
+ "train_last_answer_used": "2026-04-25",
+ "bootstrap": {
+  "B": 2000,
+  "unit": "scene",
+  "seed": 0
+ },
+ "note": "pres-1a の係数（model：fit_before より前のラベルの日の升だけで当てた。各升の res はその撮影の日より前の答えだけ）と標本外の評価。holdout＝fit_before 以後の升（この係数の標本外）、forward＝前進検証（各窓をそれより前の升だけで当てた係数で判定）。changed＝区間の答えが直前の答えから変わった升（pres-1a が現行の判定より弱い所）、same＝変わらなかった升。*_ci95＝撮影を単位にしたブートストラップの 95% 区間、diff＝pres1 − current（同じ再標本の対）。閾値 0.5",
+ "model": {
+  "features": [
+   "p_current",
+   "res_rate",
+   "res_n"
+  ],
+  "mean": [
+   0.328413,
+   0.43109,
+   2.704797
+  ],
+  "sd": [
+   0.469636,
+   0.214682,
+   2.355322
+  ],
+  "intercept": -0.752675,
+  "coef": [
+   0.680845,
+   1.604111,
+   0.164663
+  ],
+  "n": 542,
+  "n_present": 204,
+  "c": 0.3
+ },
+ "holdout": {
+  "all": {
+   "n": 195,
+   "scenes": 19,
+   "base_rate": 0.226,
+   "pres1": {
+    "n": 195,
+    "tp": 39,
+    "fp": 20,
+    "fn": 5,
+    "tn": 131,
+    "recall": 0.886,
+    "precision": 0.661,
+    "f1": 0.757,
+    "accuracy": 0.872,
+    "brier": 0.097,
+    "auc": 0.94
+   },
+   "current": {
+    "n": 195,
+    "tp": 23,
+    "fp": 15,
+    "fn": 21,
+    "tn": 136,
+    "recall": 0.523,
+    "precision": 0.605,
+    "f1": 0.561,
+    "accuracy": 0.815,
+    "brier": 0.185,
+    "auc": 0.711
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.787,
+     0.975
+    ],
+    "precision": [
+     0.492,
+     0.844
+    ],
+    "f1": [
+     0.629,
+     0.871
+    ],
+    "accuracy": [
+     0.827,
+     0.923
+    ],
+    "brier": [
+     0.066,
+     0.125
+    ],
+    "auc": [
+     0.914,
+     0.968
+    ]
+   },
+   "diff": {
+    "recall": 0.364,
+    "precision": 0.056,
+    "f1": 0.196,
+    "accuracy": 0.056,
+    "brier": -0.089,
+    "auc": 0.23
+   },
+   "diff_ci95": {
+    "recall": [
+     0.156,
+     0.558
+    ],
+    "precision": [
+     -0.061,
+     0.186
+    ],
+    "f1": [
+     0.043,
+     0.371
+    ],
+    "accuracy": [
+     -0.012,
+     0.131
+    ],
+    "brier": [
+     -0.147,
+     -0.034
+    ],
+    "auc": [
+     0.124,
+     0.324
+    ]
+   }
+  },
+  "changed": {
+   "n": 24,
+   "scenes": 11,
+   "base_rate": 0.333,
+   "pres1": {
+    "n": 24,
+    "tp": 5,
+    "fp": 10,
+    "fn": 3,
+    "tn": 6,
+    "recall": 0.625,
+    "precision": 0.333,
+    "f1": 0.435,
+    "accuracy": 0.458,
+    "brier": 0.435,
+    "auc": 0.387
+   },
+   "current": {
+    "n": 24,
+    "tp": 5,
+    "fp": 2,
+    "fn": 3,
+    "tn": 14,
+    "recall": 0.625,
+    "precision": 0.714,
+    "f1": 0.667,
+    "accuracy": 0.792,
+    "brier": 0.208,
+    "auc": 0.75
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.4,
+     1.0
+    ],
+    "precision": [
+     0.125,
+     0.615
+    ],
+    "f1": [
+     0.2,
+     0.667
+    ],
+    "accuracy": [
+     0.296,
+     0.619
+    ],
+    "brier": [
+     0.321,
+     0.553
+    ],
+    "auc": [
+     0.15,
+     0.554
+    ]
+   },
+   "diff": {
+    "recall": 0.0,
+    "precision": -0.381,
+    "f1": -0.232,
+    "accuracy": -0.333,
+    "brier": 0.227,
+    "auc": -0.363
+   },
+   "diff_ci95": {
+    "recall": [
+     -0.5,
+     0.5
+    ],
+    "precision": [
+     -0.857,
+     -0.102
+    ],
+    "f1": [
+     -0.619,
+     0.185
+    ],
+    "accuracy": [
+     -0.6,
+     -0.034
+    ],
+    "brier": [
+     -0.067,
+     0.47
+    ],
+    "auc": [
+     -0.704,
+     -0.111
+    ]
+   }
+  },
+  "same": {
+   "n": 168,
+   "scenes": 19,
+   "base_rate": 0.196,
+   "pres1": {
+    "n": 168,
+    "tp": 31,
+    "fp": 10,
+    "fn": 2,
+    "tn": 125,
+    "recall": 0.939,
+    "precision": 0.756,
+    "f1": 0.838,
+    "accuracy": 0.929,
+    "brier": 0.047,
+    "auc": 0.989
+   },
+   "current": {
+    "n": 168,
+    "tp": 15,
+    "fp": 13,
+    "fn": 18,
+    "tn": 122,
+    "recall": 0.455,
+    "precision": 0.536,
+    "f1": 0.492,
+    "accuracy": 0.815,
+    "brier": 0.185,
+    "auc": 0.678
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.848,
+     1.0
+    ],
+    "precision": [
+     0.532,
+     0.972
+    ],
+    "f1": [
+     0.667,
+     0.959
+    ],
+    "accuracy": [
+     0.878,
+     0.978
+    ],
+    "brier": [
+     0.023,
+     0.071
+    ],
+    "auc": [
+     0.977,
+     0.998
+    ]
+   },
+   "diff": {
+    "recall": 0.485,
+    "precision": 0.22,
+    "f1": 0.346,
+    "accuracy": 0.113,
+    "brier": -0.138,
+    "auc": 0.311
+   },
+   "diff_ci95": {
+    "recall": [
+     0.25,
+     0.667
+    ],
+    "precision": [
+     0.031,
+     0.406
+    ],
+    "f1": [
+     0.141,
+     0.536
+    ],
+    "accuracy": [
+     0.027,
+     0.204
+    ],
+    "brier": [
+     -0.203,
+     -0.076
+    ],
+    "auc": [
+     0.202,
+     0.398
+    ]
+   }
+  },
+  "no_prev": {
+   "n": 3,
+   "scenes": 3,
+   "base_rate": 1.0,
+   "pres1": {
+    "n": 3,
+    "tp": 3,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "accuracy": 1.0,
+    "brier": 0.134,
+    "auc": null
+   },
+   "current": {
+    "n": 3,
+    "tp": 3,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0,
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "accuracy": 1.0,
+    "brier": 0.0,
+    "auc": null
+   }
+  },
+  "near": {
+   "n": 145,
+   "scenes": 14,
+   "base_rate": 0.234,
+   "pres1": {
+    "n": 145,
+    "tp": 30,
+    "fp": 14,
+    "fn": 4,
+    "tn": 97,
+    "recall": 0.882,
+    "precision": 0.682,
+    "f1": 0.769,
+    "accuracy": 0.876,
+    "brier": 0.096,
+    "auc": 0.937
+   },
+   "current": {
+    "n": 145,
+    "tp": 17,
+    "fp": 12,
+    "fn": 17,
+    "tn": 99,
+    "recall": 0.5,
+    "precision": 0.586,
+    "f1": 0.54,
+    "accuracy": 0.8,
+    "brier": 0.2,
+    "auc": 0.696
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.773,
+     1.0
+    ],
+    "precision": [
+     0.511,
+     0.872
+    ],
+    "f1": [
+     0.651,
+     0.88
+    ],
+    "accuracy": [
+     0.825,
+     0.928
+    ],
+    "brier": [
+     0.065,
+     0.13
+    ],
+    "auc": [
+     0.903,
+     0.968
+    ]
+   },
+   "diff": {
+    "recall": 0.382,
+    "precision": 0.096,
+    "f1": 0.23,
+    "accuracy": 0.076,
+    "brier": -0.104,
+    "auc": 0.242
+   },
+   "diff_ci95": {
+    "recall": [
+     0.147,
+     0.593
+    ],
+    "precision": [
+     -0.055,
+     0.246
+    ],
+    "f1": [
+     0.045,
+     0.426
+    ],
+    "accuracy": [
+     -0.008,
+     0.161
+    ],
+    "brier": [
+     -0.171,
+     -0.035
+    ],
+    "auc": [
+     0.119,
+     0.351
+    ]
+   }
+  },
+  "per_port": {
+   "LSN": {
+    "n": 72,
+    "scenes": 4,
+    "base_rate": 0.083,
+    "pres1": {
+     "n": 72,
+     "tp": 6,
+     "fp": 14,
+     "fn": 0,
+     "tn": 52,
+     "recall": 1.0,
+     "precision": 0.3,
+     "f1": 0.462,
+     "accuracy": 0.806,
+     "brier": 0.121,
+     "auc": 0.924
+    },
+    "current": {
+     "n": 72,
+     "tp": 2,
+     "fp": 7,
+     "fn": 4,
+     "tn": 59,
+     "recall": 0.333,
+     "precision": 0.222,
+     "f1": 0.267,
+     "accuracy": 0.847,
+     "brier": 0.153,
+     "auc": 0.614
+    }
+   },
+   "QDH": {
+    "n": 50,
+    "scenes": 3,
+    "base_rate": 0.2,
+    "pres1": {
+     "n": 50,
+     "tp": 8,
+     "fp": 3,
+     "fn": 2,
+     "tn": 37,
+     "recall": 0.8,
+     "precision": 0.727,
+     "f1": 0.762,
+     "accuracy": 0.9,
+     "brier": 0.086,
+     "auc": 0.945
+    },
+    "current": {
+     "n": 50,
+     "tp": 3,
+     "fp": 4,
+     "fn": 7,
+     "tn": 36,
+     "recall": 0.3,
+     "precision": 0.429,
+     "f1": 0.353,
+     "accuracy": 0.78,
+     "brier": 0.22,
+     "auc": 0.6
+    }
+   },
+   "QGZ": {
+    "n": 12,
+    "scenes": 1,
+    "base_rate": 0.417,
+    "pres1": {
+     "n": 12,
+     "tp": 4,
+     "fp": 2,
+     "fn": 1,
+     "tn": 5,
+     "recall": 0.8,
+     "precision": 0.667,
+     "f1": 0.727,
+     "accuracy": 0.75,
+     "brier": 0.2,
+     "auc": 0.886
+    },
+    "current": {
+     "n": 12,
+     "tp": 4,
+     "fp": 3,
+     "fn": 1,
+     "tn": 4,
+     "recall": 0.8,
+     "precision": 0.571,
+     "f1": 0.667,
+     "accuracy": 0.667,
+     "brier": 0.333,
+     "auc": 0.686
+    }
+   },
+   "QJG": {
+    "n": 28,
+    "scenes": 4,
+    "base_rate": 0.286,
+    "pres1": {
+     "n": 28,
+     "tp": 8,
+     "fp": 0,
+     "fn": 0,
+     "tn": 20,
+     "recall": 1.0,
+     "precision": 1.0,
+     "f1": 1.0,
+     "accuracy": 1.0,
+     "brier": 0.01,
+     "auc": 1.0
+    },
+    "current": {
+     "n": 28,
+     "tp": 3,
+     "fp": 1,
+     "fn": 5,
+     "tn": 19,
+     "recall": 0.375,
+     "precision": 0.75,
+     "f1": 0.5,
+     "accuracy": 0.786,
+     "brier": 0.214,
+     "auc": 0.662
+    }
+   },
+   "SLP": {
+    "n": 15,
+    "scenes": 1,
+    "base_rate": 0.133,
+    "pres1": {
+     "n": 15,
+     "tp": 1,
+     "fp": 0,
+     "fn": 1,
+     "tn": 13,
+     "recall": 0.5,
+     "precision": 1.0,
+     "f1": 0.667,
+     "accuracy": 0.933,
+     "brier": 0.034,
+     "auc": 1.0
+    },
+    "current": {
+     "n": 15,
+     "tp": 1,
+     "fp": 0,
+     "fn": 1,
+     "tn": 13,
+     "recall": 0.5,
+     "precision": 1.0,
+     "f1": 0.667,
+     "accuracy": 0.933,
+     "brier": 0.073,
+     "auc": 0.75
+    }
+   },
+   "SYL": {
+    "n": 3,
+    "scenes": 1,
+    "base_rate": 0.667,
+    "pres1": {
+     "n": 3,
+     "tp": 1,
+     "fp": 0,
+     "fn": 1,
+     "tn": 1,
+     "recall": 0.5,
+     "precision": 1.0,
+     "f1": 0.667,
+     "accuracy": 0.667,
+     "brier": 0.286,
+     "auc": 0.5
+    },
+    "current": {
+     "n": 3,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0,
+     "tn": 1,
+     "recall": 1.0,
+     "precision": 1.0,
+     "f1": 1.0,
+     "accuracy": 1.0,
+     "brier": 0.0,
+     "auc": 1.0
+    }
+   },
+   "XSN": {
+    "n": 7,
+    "scenes": 1,
+    "base_rate": 0.429,
+    "pres1": {
+     "n": 7,
+     "tp": 3,
+     "fp": 1,
+     "fn": 0,
+     "tn": 3,
+     "recall": 1.0,
+     "precision": 0.75,
+     "f1": 0.857,
+     "accuracy": 0.857,
+     "brier": 0.188,
+     "auc": 0.792
+    },
+    "current": {
+     "n": 7,
+     "tp": 0,
+     "fp": 0,
+     "fn": 3,
+     "tn": 4,
+     "recall": 0.0,
+     "precision": null,
+     "f1": 0.0,
+     "accuracy": 0.571,
+     "brier": 0.429,
+     "auc": 0.5
+    }
+   },
+   "ZJG": {
+    "n": 8,
+    "scenes": 4,
+    "base_rate": 1.0,
+    "pres1": {
+     "n": 8,
+     "tp": 8,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": 1.0,
+     "precision": 1.0,
+     "f1": 1.0,
+     "accuracy": 1.0,
+     "brier": 0.057,
+     "auc": null
+    },
+    "current": {
+     "n": 8,
+     "tp": 8,
+     "fp": 0,
+     "fn": 0,
+     "tn": 0,
+     "recall": 1.0,
+     "precision": 1.0,
+     "f1": 1.0,
+     "accuracy": 1.0,
+     "brier": 0.0,
+     "auc": null
+    }
+   }
+  },
+  "change_flag": {
+   "cells": 192,
+   "flags": 50,
+   "true": 19,
+   "changes": 24,
+   "precision": 0.38,
+   "recall": 0.792,
+   "base_rate_change": 0.125
+  }
+ },
+ "forward": {
+  "windows": [
+   {
+    "from": "2025-12-01",
+    "to": "2026-03-01",
+    "train_n": 221,
+    "test_n": 187,
+    "coef": [
+     0.7552,
+     0.9485,
+     0.2254
+    ],
+    "intercept": -0.5739
+   },
+   {
+    "from": "2026-03-01",
+    "to": "2026-06-01",
+    "train_n": 408,
+    "test_n": 134,
+    "coef": [
+     0.7829,
+     1.4308,
+     0.2296
+    ],
+    "intercept": -0.6628
+   },
+   {
+    "from": "2026-06-01",
+    "to": null,
+    "train_n": 542,
+    "test_n": 195,
+    "coef": [
+     0.6808,
+     1.6041,
+     0.1647
+    ],
+    "intercept": -0.7527
+   }
+  ],
+  "all": {
+   "n": 516,
+   "scenes": 53,
+   "base_rate": 0.316,
+   "pres1": {
+    "n": 516,
+    "tp": 141,
+    "fp": 39,
+    "fn": 22,
+    "tn": 314,
+    "recall": 0.865,
+    "precision": 0.783,
+    "f1": 0.822,
+    "accuracy": 0.882,
+    "brier": 0.099,
+    "auc": 0.929
+   },
+   "current": {
+    "n": 516,
+    "tp": 95,
+    "fp": 55,
+    "fn": 68,
+    "tn": 298,
+    "recall": 0.583,
+    "precision": 0.633,
+    "f1": 0.607,
+    "accuracy": 0.762,
+    "brier": 0.239,
+    "auc": 0.713
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.808,
+     0.915
+    ],
+    "precision": [
+     0.695,
+     0.869
+    ],
+    "f1": [
+     0.766,
+     0.872
+    ],
+    "accuracy": [
+     0.854,
+     0.91
+    ],
+    "brier": [
+     0.081,
+     0.117
+    ],
+    "auc": [
+     0.908,
+     0.949
+    ]
+   },
+   "diff": {
+    "recall": 0.282,
+    "precision": 0.15,
+    "f1": 0.215,
+    "accuracy": 0.12,
+    "brier": -0.14,
+    "auc": 0.216
+   },
+   "diff_ci95": {
+    "recall": [
+     0.167,
+     0.405
+    ],
+    "precision": [
+     0.075,
+     0.225
+    ],
+    "f1": [
+     0.134,
+     0.313
+    ],
+    "accuracy": [
+     0.071,
+     0.173
+    ],
+    "brier": [
+     -0.189,
+     -0.096
+    ],
+    "auc": [
+     0.157,
+     0.277
+    ]
+   }
+  },
+  "changed": {
+   "n": 67,
+   "scenes": 31,
+   "base_rate": 0.493,
+   "pres1": {
+    "n": 67,
+    "tp": 20,
+    "fp": 25,
+    "fn": 13,
+    "tn": 9,
+    "recall": 0.606,
+    "precision": 0.444,
+    "f1": 0.513,
+    "accuracy": 0.433,
+    "brier": 0.435,
+    "auc": 0.331
+   },
+   "current": {
+    "n": 67,
+    "tp": 24,
+    "fp": 13,
+    "fn": 9,
+    "tn": 21,
+    "recall": 0.727,
+    "precision": 0.649,
+    "f1": 0.686,
+    "accuracy": 0.672,
+    "brier": 0.328,
+    "auc": 0.672
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.444,
+     0.741
+    ],
+    "precision": [
+     0.267,
+     0.634
+    ],
+    "f1": [
+     0.339,
+     0.653
+    ],
+    "accuracy": [
+     0.31,
+     0.547
+    ],
+    "brier": [
+     0.354,
+     0.515
+    ],
+    "auc": [
+     0.179,
+     0.46
+    ]
+   },
+   "diff": {
+    "recall": -0.121,
+    "precision": -0.204,
+    "f1": -0.173,
+    "accuracy": -0.239,
+    "brier": 0.107,
+    "auc": -0.341
+   },
+   "diff_ci95": {
+    "recall": [
+     -0.308,
+     0.071
+    ],
+    "precision": [
+     -0.341,
+     -0.084
+    ],
+    "f1": [
+     -0.299,
+     -0.04
+    ],
+    "accuracy": [
+     -0.364,
+     -0.098
+    ],
+    "brier": [
+     -0.015,
+     0.223
+    ],
+    "auc": [
+     -0.476,
+     -0.223
+    ]
+   }
+  },
+  "same": {
+   "n": 431,
+   "scenes": 51,
+   "base_rate": 0.267,
+   "pres1": {
+    "n": 431,
+    "tp": 108,
+    "fp": 13,
+    "fn": 7,
+    "tn": 303,
+    "recall": 0.939,
+    "precision": 0.893,
+    "f1": 0.915,
+    "accuracy": 0.954,
+    "brier": 0.042,
+    "auc": 0.989
+   },
+   "current": {
+    "n": 431,
+    "tp": 58,
+    "fp": 41,
+    "fn": 57,
+    "tn": 275,
+    "recall": 0.504,
+    "precision": 0.586,
+    "f1": 0.542,
+    "accuracy": 0.773,
+    "brier": 0.228,
+    "auc": 0.687
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.887,
+     0.982
+    ],
+    "precision": [
+     0.794,
+     0.969
+    ],
+    "f1": [
+     0.855,
+     0.961
+    ],
+    "accuracy": [
+     0.927,
+     0.977
+    ],
+    "brier": [
+     0.031,
+     0.056
+    ],
+    "auc": [
+     0.981,
+     0.996
+    ]
+   },
+   "diff": {
+    "recall": 0.435,
+    "precision": 0.307,
+    "f1": 0.373,
+    "accuracy": 0.181,
+    "brier": -0.185,
+    "auc": 0.303
+   },
+   "diff_ci95": {
+    "recall": [
+     0.308,
+     0.565
+    ],
+    "precision": [
+     0.206,
+     0.407
+    ],
+    "f1": [
+     0.271,
+     0.487
+    ],
+    "accuracy": [
+     0.124,
+     0.241
+    ],
+    "brier": [
+     -0.238,
+     -0.138
+    ],
+    "auc": [
+     0.239,
+     0.368
+    ]
+   }
+  },
+  "no_prev": {
+   "n": 18,
+   "scenes": 9,
+   "base_rate": 0.833,
+   "pres1": {
+    "n": 18,
+    "tp": 13,
+    "fp": 1,
+    "fn": 2,
+    "tn": 2,
+    "recall": 0.867,
+    "precision": 0.929,
+    "f1": 0.897,
+    "accuracy": 0.833,
+    "brier": 0.195,
+    "auc": 0.811
+   },
+   "current": {
+    "n": 18,
+    "tp": 13,
+    "fp": 1,
+    "fn": 2,
+    "tn": 2,
+    "recall": 0.867,
+    "precision": 0.929,
+    "f1": 0.897,
+    "accuracy": 0.833,
+    "brier": 0.167,
+    "auc": 0.767
+   }
+  },
+  "near": {
+   "n": 298,
+   "scenes": 32,
+   "base_rate": 0.319,
+   "pres1": {
+    "n": 298,
+    "tp": 83,
+    "fp": 21,
+    "fn": 12,
+    "tn": 182,
+    "recall": 0.874,
+    "precision": 0.798,
+    "f1": 0.834,
+    "accuracy": 0.889,
+    "brier": 0.094,
+    "auc": 0.934
+   },
+   "current": {
+    "n": 298,
+    "tp": 59,
+    "fp": 23,
+    "fn": 36,
+    "tn": 180,
+    "recall": 0.621,
+    "precision": 0.72,
+    "f1": 0.667,
+    "accuracy": 0.802,
+    "brier": 0.198,
+    "auc": 0.754
+   },
+   "pres1_ci95": {
+    "recall": [
+     0.798,
+     0.941
+    ],
+    "precision": [
+     0.69,
+     0.898
+    ],
+    "f1": [
+     0.766,
+     0.898
+    ],
+    "accuracy": [
+     0.855,
+     0.926
+    ],
+    "brier": [
+     0.073,
+     0.117
+    ],
+    "auc": [
+     0.909,
+     0.959
+    ]
+   },
+   "diff": {
+    "recall": 0.253,
+    "precision": 0.079,
+    "f1": 0.168,
+    "accuracy": 0.087,
+    "brier": -0.104,
+    "auc": 0.18
+   },
+   "diff_ci95": {
+    "recall": [
+     0.124,
+     0.398
+    ],
+    "precision": [
+     -0.017,
+     0.183
+    ],
+    "f1": [
+     0.064,
+     0.284
+    ],
+    "accuracy": [
+     0.028,
+     0.151
+    ],
+    "brier": [
+     -0.161,
+     -0.051
+    ],
+    "auc": [
+     0.106,
+     0.26
+    ]
+   }
+  },
+  "per_port": {
+   "LSN": {
+    "n": 107,
+    "scenes": 6,
+    "base_rate": 0.131,
+    "pres1": {
+     "n": 107,
+     "tp": 14,
+     "fp": 15,
+     "fn": 0,
+     "tn": 78,
+     "recall": 1.0,
+     "precision": 0.483,
+     "f1": 0.651,
+     "accuracy": 0.86,
+     "brier": 0.094,
+     "auc": 0.947
+    },
+    "current": {
+     "n": 107,
+     "tp": 5,
+     "fp": 11,
+     "fn": 9,
+     "tn": 82,
+     "recall": 0.357,
+     "precision": 0.312,
+     "f1": 0.333,
+     "accuracy": 0.813,
+     "brier": 0.187,
+     "auc": 0.619
+    }
+   },
+   "QDH": {
+    "n": 100,
+    "scenes": 6,
+    "base_rate": 0.26,
+    "pres1": {
+     "n": 100,
+     "tp": 18,
+     "fp": 6,
+     "fn": 8,
+     "tn": 68,
+     "recall": 0.692,
+     "precision": 0.75,
+     "f1": 0.72,
+     "accuracy": 0.86,
+     "brier": 0.097,
+     "auc": 0.928
+    },
+    "current": {
+     "n": 100,
+     "tp": 10,
+     "fp": 11,
+     "fn": 16,
+     "tn": 63,
+     "recall": 0.385,
+     "precision": 0.476,
+     "f1": 0.426,
+     "accuracy": 0.73,
+     "brier": 0.27,
+     "auc": 0.618
+    }
+   },
+   "QGZ": {
+    "n": 76,
+    "scenes": 6,
+    "base_rate": 0.395,
+    "pres1": {
+     "n": 76,
+     "tp": 28,
+     "fp": 7,
+     "fn": 2,
+     "tn": 39,
+     "recall": 0.933,
+     "precision": 0.8,
+     "f1": 0.862,
+     "accuracy": 0.882,
+     "brier": 0.119,
+     "auc": 0.913
+    },
+    "current": {
+     "n": 76,
+     "tp": 25,
+     "fp": 13,
+     "fn": 5,
+     "tn": 33,
+     "recall": 0.833,
+     "precision": 0.658,
+     "f1": 0.735,
+     "accuracy": 0.763,
+     "brier": 0.237,
+     "auc": 0.775
+    }
+   },
+   "QJG": {
+    "n": 49,
+    "scenes": 7,
+    "base_rate": 0.286,
+    "pres1": {
+     "n": 49,
+     "tp": 12,
+     "fp": 0,
+     "fn": 2,
+     "tn": 35,
+     "recall": 0.857,
+     "precision": 1.0,
+     "f1": 0.923,
+     "accuracy": 0.959,
+     "brier": 0.049,
+     "auc": 0.988
+    },
+    "current": {
+     "n": 49,
+     "tp": 3,
+     "fp": 3,
+     "fn": 11,
+     "tn": 32,
+     "recall": 0.214,
+     "precision": 0.5,
+     "f1": 0.3,
+     "accuracy": 0.714,
+     "brier": 0.286,
+     "auc": 0.564
+    }
+   },
+   "SLP": {
+    "n": 95,
+    "scenes": 6,
+    "base_rate": 0.137,
+    "pres1": {
+     "n": 95,
+     "tp": 10,
+     "fp": 4,
+     "fn": 3,
+     "tn": 78,
+     "recall": 0.769,
+     "precision": 0.714,
+     "f1": 0.741,
+     "accuracy": 0.926,
+     "brier": 0.065,
+     "auc": 0.912
+    },
+    "current": {
+     "n": 95,
+     "tp": 8,
+     "fp": 8,
+     "fn": 5,
+     "tn": 74,
+     "recall": 0.615,
+     "precision": 0.5,
+     "f1": 0.552,
+     "accuracy": 0.863,
+     "brier": 0.138,
+     "auc": 0.755
+    }
+   },
+   "SYL": {
+    "n": 14,
+    "scenes": 5,
+    "base_rate": 0.5,
+    "pres1": {
+     "n": 14,
+     "tp": 3,
+     "fp": 2,
+     "fn": 4,
+     "tn": 5,
+     "recall": 0.429,
+     "precision": 0.6,
+     "f1": 0.5,
+     "accuracy": 0.571,
+     "brier": 0.263,
+     "auc": 0.704
+    },
+    "current": {
+     "n": 14,
+     "tp": 4,
+     "fp": 2,
+     "fn": 3,
+     "tn": 5,
+     "recall": 0.571,
+     "precision": 0.667,
+     "f1": 0.615,
+     "accuracy": 0.643,
+     "brier": 0.357,
+     "auc": 0.643
+    }
+   },
+   "XSN": {
+    "n": 25,
+    "scenes": 3,
+    "base_rate": 0.72,
+    "pres1": {
+     "n": 25,
+     "tp": 16,
+     "fp": 2,
+     "fn": 2,
+     "tn": 5,
+     "recall": 0.889,
+     "precision": 0.889,
+     "f1": 0.889,
+     "accuracy": 0.84,
+     "brier": 0.161,
+     "auc": 0.79
+    },
+    "current": {
+     "n": 25,
+     "tp": 0,
+     "fp": 0,
+     "fn": 18,
+     "tn": 7,
+     "recall": 0.0,
+     "precision": null,
+     "f1": 0.0,
+     "accuracy": 0.28,
+     "brier": 0.72,
+     "auc": 0.5
+    }
+   },
+   "ZDH": {
+    "n": 14,
+    "scenes": 2,
+    "base_rate": 0.5,
+    "pres1": {
+     "n": 14,
+     "tp": 7,
+     "fp": 3,
+     "fn": 0,
+     "tn": 4,
+     "recall": 1.0,
+     "precision": 0.7,
+     "f1": 0.824,
+     "accuracy": 0.786,
+     "brier": 0.215,
+     "auc": 0.755
+    },
+    "current": {
+     "n": 14,
+     "tp": 7,
+     "fp": 6,
+     "fn": 0,
+     "tn": 1,
+     "recall": 1.0,
+     "precision": 0.538,
+     "f1": 0.7,
+     "accuracy": 0.571,
+     "brier": 0.429,
+     "auc": 0.571
+    }
+   },
+   "ZJG": {
+    "n": 36,
+    "scenes": 12,
+    "base_rate": 0.944,
+    "pres1": {
+     "n": 36,
+     "tp": 33,
+     "fp": 0,
+     "fn": 1,
+     "tn": 2,
+     "recall": 0.971,
+     "precision": 1.0,
+     "f1": 0.985,
+     "accuracy": 0.972,
+     "brier": 0.078,
+     "auc": 0.978
+    },
+    "current": {
+     "n": 36,
+     "tp": 33,
+     "fp": 1,
+     "fn": 1,
+     "tn": 1,
+     "recall": 0.971,
+     "precision": 0.971,
+     "f1": 0.971,
+     "accuracy": 0.944,
+     "brier": 0.056,
+     "auc": 0.735
+    }
+   }
+  },
+  "change_flag": {
+   "cells": 498,
+   "flags": 143,
+   "true": 45,
+   "changes": 67,
+   "precision": 0.315,
+   "recall": 0.672,
+   "base_rate_change": 0.135
+  }
+ }
+}

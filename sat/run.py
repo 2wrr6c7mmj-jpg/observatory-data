@@ -789,6 +789,12 @@ def presence_eval_ref(out: Path) -> dict:
         return {"file": None, "status": "未実行（python -m sat.eval_presence）"}
 
 
+def presence_trial_ref(out: Path) -> dict:
+    """meta.json -> pres-1a (trial, a parallel series) and the change flag (sat/pres1.py, quay_pres1/<site>.json)."""
+    from . import pres1
+    return pres1.meta_ref(out)
+
+
 def baseline_meta(sites: list[dict]) -> list[dict]:
     out = []
     for site in sites:
@@ -1024,6 +1030,7 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
             "estimate2": quay_est2.settings(),
             "estimate2_evaluation": est2_eval_ref(out),
             "presence_evaluation": presence_eval_ref(out),
+            "presence_trial": presence_trial_ref(out),
             "baselines": baseline_meta(sites),
             "change_image": fcolor.change_settings(),
             "credibility": "基準が 24 シーン以上なら 3、未満なら 4（一段下げる）",
