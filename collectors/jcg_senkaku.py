@@ -150,6 +150,34 @@ def newness(rec: dict) -> tuple:
     return ((rec.get("parse") or {}).get("as_of") or "", rec.get("last_modified_utc") or "")
 
 
+def publishable(rec: dict | None, today: date) -> bool:
+    """Whether daily_rows would publish this PDF's month (read, as-of date known, rows agree with the totals)."""
+    if not rec:
+        return False
+    p = rec.get("parse") or {}
+    if not p.get("parsed") or not p.get("days"):
+        return False
+    end = last_day(rec, today)
+    return end is not None and check(p, end) != "mismatch"
+
+
+def keep_previous(old: dict | None, new: dict, today: date) -> bool:
+    """A revised PDF that cannot be used must not replace the version already published."""
+    return publishable(old, today) and not publishable(new, today)
+
+
+def rejected_note(new: dict, today: date) -> dict:
+    """What status.json and pdfs.json keep about a revision that was not used (no words)."""
+    p = new.get("parse") or {}
+    problems = list(p.get("problems") or [])
+    if not problems:
+        end = last_day(new, today)
+        problems = ["as-of date unknown"] if end is None else [f"rows do not match the monthly totals {p.get('totals')}"]
+    return {"sha256": new.get("sha256"), "bytes": new.get("bytes"), "etag": new.get("etag"),
+            "last_modified_utc": new.get("last_modified_utc"), "retrieved_utc": new.get("retrieved_utc"),
+            "parser_version": p.get("parser_version"), "problems": problems[:10]}
+
+
 def daily_rows(store: dict, today: date) -> tuple[list[dict], dict]:
     rows, months, issues = [], {}, {}
     for url, rec in store["pdfs"].items():
@@ -250,6 +278,9 @@ def save(store: dict, run: dict, today: date) -> None:
         "pdfs": len(store["pdfs"]), "days": len(rows),
         "first_day": rows[0]["date"] if rows else None, "last_day": rows[-1]["date"] if rows else None,
         "page": store.get("page"), "not_published": issues, "parser_version": PARSER_VERSION,
+        # a revised PDF that could not be used: the previous, checked version stays published
+        "revision_not_used": {u: r["revision_not_used"] for u, r in sorted(store["pdfs"].items())
+                              if r.get("revision_not_used")},
     }, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
 
 
@@ -352,8 +383,16 @@ def _collect(store: dict, run: dict, today: date, max_fetch: int) -> int:
             if resp.status == 304:
                 run["not_modified"] += 1
                 continue
-            pdfs[link["url"]] = record(link, resp, now_utc())
+            new = record(link, resp, now_utc())
             run["fetched"] += 1
+            if keep_previous(rec, new, today):
+                note = rejected_note(new, today)
+                pdfs[link["url"]] = {**rec, "revision_not_used": note}
+                run.setdefault("revision_not_used", []).append(link["url"])
+                warning(f"jcg-senkaku: {link['url']} was revised but the new version cannot be used "
+                        f"({'; '.join(note['problems'][:3])}); the previous version (retrieved {rec.get('retrieved_utc')}) stays published")
+            else:
+                pdfs[link["url"]] = new
             if i % 10 == 9:
                 save(store, run, today)  # resumable
     except polite.SourceBlocked as e:
