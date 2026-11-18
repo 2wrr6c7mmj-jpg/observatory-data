@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import argparse
 import csv
-import io
+import http.client
 import json
 import math
 import sys
@@ -25,7 +25,7 @@ from . import baseline as fbase
 from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
 from . import fixed as ffixed
 from . import fixed_registry as freg
-from . import raw_store
+from . import atomic, raw_store
 from . import sectors as fsectors
 from . import color as fcolor
 from .detect import DEFAULTS as DETECT_DEFAULTS, DETECTOR_VERSION, LENGTH_CLASSES, detect
@@ -96,6 +96,12 @@ SECTOR_FIELDS = [
     "occupied_min", "occupied_max", "est_version", "est_mode", "est_p10", "est_p90",
     "est2_version", "est2_median", "est2_p10", "est2_p90", "est2_calib_source", "source",
 ]
+# A counted scene is fetched again once for its quay count (a baseline of its orbit came later); a failed refetch
+# keeps the scene's first record and is tried again at most this many times in all (status.json quay_refetch_failures).
+QUAY_REFETCH_MAX = 2
+# Network errors (cdse.NetworkError, after the client's own retries) of consecutive scenes of one site after which the
+# rest of the site waits for the next run (no more requests to a host that does not answer).
+NET_FAILURES_PER_SITE = 2
 PAIR_MAX_H = 36.0  # feat-1: scenes of two relative orbits within this many hours form a pair
 
 # Scenes the quay-v1 thresholds were tuned on (CHANGES.md, 2026-10-30): their counts are
@@ -199,8 +205,12 @@ def site_month_pu(store: "Store", site_id: str, month: str) -> float:
     usage.csv stays one row per run (unchanged): the per-site share comes from the scene records."""
     pu = 0.0
     for s in store.status.get("scenes", []):
-        if s.get("site_id") == site_id and str(s.get("retrieved_utc") or "").startswith(month):
-            pu += float(s.get("processing_units") or 0)
+        if s.get("site_id") != site_id:
+            continue
+        # the scene's last fetch, and the earlier fetches it replaced or that failed (each in the month it was made)
+        for f in [s] + list(s.get("earlier_fetches") or []):
+            if str(f.get("retrieved_utc") or "").startswith(month):
+                pu += float(f.get("processing_units") or 0)
     for r in s2.read_rows(store.out / "s2_scenes.csv"):
         if r.get("site_id") == site_id and str(r.get("retrieved_utc") or "").startswith(month):
             pu += float(r.get("processing_units") or 0)
@@ -247,13 +257,8 @@ def read_csv(path: Path) -> list[dict]:
 
 
 def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=fields, lineterminator="\n", extrasaction="ignore")
-    w.writeheader()
-    for r in rows:
-        w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in fields})
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(buf.getvalue(), encoding="utf-8")
+    """Atomic (sat/atomic.py): a failure midway leaves the old file, never a half-written one."""
+    atomic.write_csv(path, rows, fields)
 
 
 def month_usage(usage: list[dict], month: str) -> tuple[float, int]:
@@ -342,9 +347,7 @@ class Store:
         self.quay_rows.append(row)
         self.quay_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
         for rel, data in (extra or {}).items():
-            q = self.out / rel
-            q.parent.mkdir(parents=True, exist_ok=True)
-            q.write_bytes(data)
+            atomic.write_bytes(self.out / rel, data)
         self.new_quay.setdefault(quay_rel(self.site(row["site_id"]), row["acquired_utc"][:7]), []).append((row, features))
 
     def add_anchorage(self, site: dict, acq: dict, tag: str, dets: list[dict], sectors: list[dict]) -> None:
@@ -378,8 +381,7 @@ class Store:
         p = self.out / "windows" / f"{site['id']}.geojson"
         text = fwindows.dumps(w.regions())
         if not p.exists() or p.read_text(encoding="utf-8") != text:
-            p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(text, encoding="utf-8")
+            atomic.write_text(p, text)
 
     def done_any(self, site_id: str) -> set[str]:
         """Scenes of the site counted (or tried) with any mask version."""
@@ -391,12 +393,49 @@ class Store:
     def has_rows(self, site_id: str, tag: str) -> bool:
         return any(r["site_id"] == site_id and row_mask_tag(r) == tag for r in self.rows)
 
+    def scene_entry(self, site_id: str, acquired_utc: str, tag: str) -> dict | None:
+        return next((s for s in self.status.get("scenes", [])
+                     if (s["site_id"], s["acquired_utc"], row_mask_tag(s)) == (site_id, acquired_utc, tag)), None)
+
     def note_scene(self, entry: dict) -> None:
+        """Record a scene (replacing its earlier entry). The PU of an earlier fetch of the same scene is kept in
+        ``earlier_fetches`` (its retrieved_utc and processing_units), so site_month_pu still counts it."""
         key = (entry["site_id"], entry["acquired_utc"], row_mask_tag(entry))
+        old = self.scene_entry(*key)
+        if old is not None and old is not entry:
+            earlier = list(old.get("earlier_fetches") or [])
+            if float(old.get("processing_units") or 0) > 0:
+                earlier.append({k: old.get(k) for k in ("retrieved_utc", "processing_units", "result")})
+            if earlier:
+                entry["earlier_fetches"] = earlier + [f for f in entry.get("earlier_fetches") or [] if f not in earlier]
+            if old.get("quay_refetch_failures"):
+                entry.setdefault("quay_refetch_failures", old["quay_refetch_failures"])
         sc = [s for s in self.status.get("scenes", []) if (s["site_id"], s["acquired_utc"], row_mask_tag(s)) != key]
         sc.append(entry)
         sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"], row_mask_tag(s)))
         self.status["scenes"] = sc
+
+    def note_refetch_failure(self, entry: dict, error: str) -> None:
+        """A scene fetched again for its quay count (already counted) failed: its first record stays as it was
+        (processing_units, coverage, detector_info, result); the failure and its PU go into ``earlier_fetches`` and
+        ``quay_refetch_failures``. After QUAY_REFETCH_MAX failures the scene is given up for the quay count
+        (quay_result error, so quay_done holds it and it is never fetched again)."""
+        key = (entry["site_id"], entry["acquired_utc"], row_mask_tag(entry))
+        old = self.scene_entry(*key)
+        if old is None:  # a row without a status entry (older records): keep what is known of it
+            old = {k: v for k, v in entry.items() if k not in ("result", "error", "processing_units", "retrieved_utc", "coverage")}
+            old["result"] = "counted"
+            self.note_scene(old)
+        if float(entry.get("processing_units") or 0) > 0:
+            old.setdefault("earlier_fetches", []).append({"retrieved_utc": entry.get("retrieved_utc"),
+                                                          "processing_units": entry.get("processing_units"),
+                                                          "result": "error"})
+        n = int(old.get("quay_refetch_failures") or 0) + 1
+        old["quay_refetch_failures"] = n
+        old["quay_refetch_error"] = error[:300]
+        if n >= QUAY_REFETCH_MAX:
+            old["quay_result"] = "error"
+            old["quay_error"] = f"岸壁の数のための取り直しが {n} 回失敗したため諦めた: {error[:200]}"
 
     def add(self, row: dict, features: list[dict], image: bytes | None, extra: dict[str, bytes] | None = None) -> None:
         key = (row["site_id"], row["acquired_utc"], row_mask_tag(row))
@@ -404,17 +443,33 @@ class Store:
         self.rows.append(row)
         self.rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
         if image is not None and row.get("image"):  # new sites keep no PNG (site png: false)
-            p = self.out / row["image"]
-            p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_bytes(image)
+            atomic.write_bytes(self.out / row["image"], image)
         for rel, data in (extra or {}).items():
-            q = self.out / rel
-            q.parent.mkdir(parents=True, exist_ok=True)
-            q.write_bytes(data)
+            atomic.write_bytes(self.out / rel, data)
         self.new_features.setdefault(detections_rel(self.site(row["site_id"]), row["acquired_utc"][:7]), []).append((row, features))
 
     def save(self, run: dict) -> None:
+        """Write every record. Each file is replaced atomically (sat/atomic.py). The PU go first: usage.csv (this run's
+        row) before any count, and status.json (the scenes with their PU, read by site_month_pu) is written however the
+        writing of the counts ends; a failure there is kept in last_run.save_error and raised again."""
         self.out.mkdir(parents=True, exist_ok=True)
+        if run.get("requests"):
+            self.usage.append({k: run.get(k) for k in USAGE_FIELDS})
+        write_csv(self.out / "usage.csv", self.usage, USAGE_FIELDS)
+        try:
+            self.save_records()
+        except BaseException as e:
+            run["save_error"] = f"{type(e).__name__}: {str(e)[:300]}"
+            raise
+        finally:
+            self.status["last_run"] = run
+            self.status["updated_utc"] = run["run_utc"]
+            self.status["series_breaks"] = series_breaks(self.sites)
+            atomic.write_text(self.out / "status.json", json.dumps(self.status, ensure_ascii=False, indent=1) + "\n")
+        atomic.write_text(self.out / "meta.json", json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n")
+
+    def save_records(self) -> None:
+        """The counts, detections, quay records, est-2, chips and the presence evaluation (everything but the PU)."""
         write_csv(self.out / "ship_counts.csv", self.rows, CSV_FIELDS)
         if self.new_anchorage:
             write_csv(self.out / "anchorage_counts.csv", self.anchorage_rows, ANCHORAGE_FIELDS)
@@ -432,7 +487,7 @@ class Store:
                                       row_mask_tag(f["properties"]), f["properties"]["n"]))
             fc["features"] = feats
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+            atomic.write_text(p, json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
         self.save_chips()
         pairs = orbit_pairs(self.quay_rows)
         qkey = lambda r: (r["site_id"], r["acquired_utc"], row_mask_tag(r))
@@ -465,7 +520,7 @@ class Store:
             in_file = [x for x in self.sites if quay_rel(x, month) == rel]
             fc = {"type": "FeatureCollection", **quay_fc_attribution(month[:4], in_file), "features": feats}
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+            atomic.write_text(p, json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
         for sid, zp in self.zone_priors.items():
             zp.save(self.zone_prior_path(sid))
         est2 = None
@@ -496,16 +551,7 @@ class Store:
             p = self.out / rel
             p.parent.mkdir(parents=True, exist_ok=True)
             fc = {"type": "FeatureCollection", **quay_fc_attribution(None, group_sites.get(rel, [])), "features": blind_feats}
-            p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-        if run.get("requests"):
-            self.usage.append({k: run.get(k) for k in USAGE_FIELDS})
-        write_csv(self.out / "usage.csv", self.usage, USAGE_FIELDS)
-        self.status["last_run"] = run
-        self.status["updated_utc"] = run["run_utc"]
-        self.status["series_breaks"] = series_breaks(self.sites)
-        (self.out / "status.json").write_text(json.dumps(self.status, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        (self.out / "meta.json").write_text(json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n",
-                                            encoding="utf-8")
+            atomic.write_text(p, json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
 
 
     def save_chips(self) -> None:
@@ -551,9 +597,11 @@ class Store:
                 self.sector_rows += back
                 self.new_sector_rows = True
             if est2:
-                by = {(x["site_id"], x["acquired_utc"]): x for x in est2.get("scenes", [])}
+                # keyed by mask version too: a scene counted with two mask versions has a row of each (the old
+                # version's rows keep their own est-2 values)
+                by = {(x["site_id"], x["acquired_utc"], row_mask_tag(x)): x for x in est2.get("scenes", [])}
                 for r in self.sector_rows:
-                    e = by.get((r["site_id"], r["acquired_utc"]))
+                    e = by.get((r["site_id"], r["acquired_utc"], row_mask_tag(r)))
                     st = (e or {}).get("by_sector", {}).get(r["sector_id"]) if e else None
                     if st:
                         new = {"est2_version": quay_est2.EST2_VERSION, "est2_median": st["warship"]["median"],
@@ -1467,7 +1515,10 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         try:  # est-1 never stops the quay-v1 count
             zp = store.zone_prior(site["id"], qctx.model())
             tuning = row["in_sample"] == "tuning"  # the thresholds were tuned on it: never informs the prior
-            est = quay_est.estimate(q["segments"], site["id"], qctx.model(), zp, tuple(sc["id"] for sc in sectors),
+            # a scene fetched again (its quay count) already updated the prior: estimate it with the prior as it was
+            # before its own update (the history), so a scene never informs its own prior
+            used = zp.without(acq["acquired_utc"])
+            est = quay_est.estimate(q["segments"], site["id"], qctx.model(), used, tuple(sc["id"] for sc in sectors),
                                     update_prior=not tuning)
             row.update(est_version=quay_est.EST_VERSION, est_mode=est["all"]["mode"], est_p10=est["all"]["p10"],
                        est_p90=est["all"]["p90"], est_mean=est["all"]["mean"],
@@ -1478,7 +1529,8 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
                 st = est["by_sector"].get(sc["id"])
                 if st:
                     row[f"est_{col}_mode"], row[f"est_{col}_p10"], row[f"est_{col}_p90"] = st["mode"], st["p10"], st["p90"]
-            zp.record(acq["acquired_utc"], bool(est["soft"]) and not tuning, "tuning（更新に使わない）" if tuning else "")
+            if used is zp:  # (a scene fetched again keeps the history entry of its first estimate: the same alpha)
+                zp.record(acq["acquired_utc"], bool(est["soft"]) and not tuning, "tuning（更新に使わない）" if tuning else "")
             if not tuning:
                 zp.update(acq["acquired_utc"], est["soft"])  # after the estimate: a scene never informs its own prior
         except Exception as e:
@@ -1557,7 +1609,21 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
     land = mask > 0
     water_px = int((~land).sum())
     with_lia = True
+    net_failures = 0
+
+    def failed(entry: dict, refetch: bool, error: str) -> None:
+        """A scene that could not be counted. A scene counted before (fetched again for its quay count) keeps its
+        record (note_refetch_failure); a new scene is recorded as an error, with the PU already spent."""
+        if refetch:
+            store.note_refetch_failure(entry, error)
+        else:
+            store.note_scene(entry)
+
     for acq in new[:max_scenes]:
+        if net_failures >= NET_FAILURES_PER_SITE:  # the network to CDSE is down: leave the site's rest to the next run
+            log(f"{site['id']}: 接続の失敗が {net_failures} 回続いたため、この地点の残りを次回に回す")
+            summary["deferred_network"] = summary.get("deferred_network", 0) + 1
+            continue
         est = cdse.estimate_pu(grid.width, grid.height, 3)
         if budget_left < est:
             log(f"{site['id']}: 今月の処理単位の上限に近いため残りを次回に回す")
@@ -1567,6 +1633,8 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
                  "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
                  "mask_version": tag, "catalog_ids": acq["ids"]}
         retrieved = cdse.iso(datetime.now(timezone.utc))
+        refetch = acq["acquired_utc"] in done  # counted before: fetched again only for its quay count
+        pu = None
         try:
             try:
                 data, pu = client.process(grid.bbox, grid.width, grid.height, acq["t_from"], acq["t_to"], with_lia)
@@ -1588,14 +1656,27 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             raise
         except Exception as e:  # one bad scene does not stop the run; it is retried next time
             entry.update(result="error", error=str(e)[:300], retrieved_utc=retrieved)
-            store.note_scene(entry)
+            if pu is not None:  # the chip was received (PU spent) but could not be read
+                entry["processing_units"] = pu
+            failed(entry, refetch, str(e))
             summary["errors"] += 1
+            net_failures = net_failures + 1 if isinstance(e, cdse.NetworkError) else 0
             log(f"{site['id']} {acq['acquired_utc']}: 失敗 {str(e)[:200]}")
             continue
+        net_failures = 0
         valid_water = np.isfinite(vv) & ~land
         coverage = valid_water.sum() / water_px if water_px else 0.0
         entry.update(retrieved_utc=retrieved, processing_units=pu, coverage=round(float(coverage), 3))
         if coverage < MIN_COVERAGE:
+            if refetch:  # counted before: its record stays; never fetched again for the quay count
+                old = store.scene_entry(site["id"], acq["acquired_utc"], tag)
+                if old is not None:
+                    old.setdefault("earlier_fetches", []).append(
+                        {"retrieved_utc": retrieved, "processing_units": pu, "result": "skipped_low_coverage"})
+                    old["quay_result"] = "skipped"
+                    summary["skipped"] += 1
+                    log(f"{site['id']} {acq['acquired_utc']}: 取り直しで水域の {coverage:.0%} しか写っていないため岸壁の数を作らない")
+                    continue
             entry["result"] = "skipped_low_coverage"
             entry["quay_result"] = "skipped"  # never re-fetched for the quay count either
             store.note_scene(entry)
@@ -1661,7 +1742,7 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             features = chip_features(site, grid, acq, dets, image)
         except Exception as e:
             entry.update(result="error", error=f"検出・描画で失敗: {str(e)[:280]}")
-            store.note_scene(entry)
+            failed(entry, refetch, f"検出・描画で失敗: {e}")
             summary["errors"] += 1
             log(f"{site['id']} {acq['acquired_utc']}: 検出・描画で失敗 {str(e)[:200]}")
             continue
@@ -1771,7 +1852,8 @@ def main(argv=None, client=None, sites=None) -> int:
                                  keep_raw=args.keep_raw)
             except cdse.CredentialError:
                 raise
-            except cdse.CDSEError as e:  # e.g. catalog 429/5xx: record it, go on to the next site
+            except (cdse.CDSEError, OSError, http.client.HTTPException) as e:
+                # e.g. catalog 429/5xx, a timeout or a reset connection: record it, go on to the next site (and S2)
                 print(f"{site['id']}: 失敗 {str(e)[:200]}", file=sys.stderr)
                 s = {"site_id": site["id"], "error": str(e)[:300]}
                 rc = 1

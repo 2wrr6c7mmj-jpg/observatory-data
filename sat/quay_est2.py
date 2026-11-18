@@ -52,6 +52,8 @@ from pathlib import Path
 
 import numpy as np
 
+from . import atomic
+
 EST2_VERSION = "est-2.1"   # est-2 on the berth lines only (berth-1, sat/berths.py; 2026-11-01)
 CALIB_FILE = Path(__file__).with_name("quay_est2_calib.json")   # #7 (sat/quay_est2_calib.py); absent: placeholders
 
@@ -820,7 +822,7 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
     if shared_rows or not per_site:
         write_csv(out / "quay_est2.csv", shared_rows, CSV_FIELDS)
         doc = {"version": EST2_VERSION, "status": STATUS, "settings": settings(), "scenes": shared_scenes}
-        (out / "quay_est2.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        atomic.write_text(out / "quay_est2.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n")
     for sid in sorted(per_site):
         rows_s = [x for x in out_rows if x["site_id"] == sid]
         if not rows_s:
@@ -839,20 +841,18 @@ def build(out: Path, quay_rows: list[dict] | None = None, ship_rows: list[dict] 
                "sectors": [{"id": k, "role": v} for k, v in sites[sid].roles.items()],
                "scenes": [{**x, "calib_source": src, "calib_label": ci["calib_label"], "weights_version": wi["version"], "weights_status": wi["status"]}
                           for x in scenes if x["site_id"] == sid]}
-        (out / "quay_est2" / f"{sid}.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n",
-                                                       encoding="utf-8")
-    for x in scenes:
+        atomic.write_text(out / "quay_est2" / f"{sid}.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n")
+    for x, r in zip(scenes, out_rows):
         x["calib_source"] = calib_source(x["site_id"])  # after writing: Zhanjiang's file keeps its keys
+        # after writing too (the files keep their keys): the scene's mask version, so a scene counted with two mask
+        # versions is told apart by run.Store.save_sectors (rows without one are v1, as run.row_mask_tag)
+        x["mask_version"] = r.get("mask_version") or f"{x['site_id']}-land-v1"
     return {"rows": out_rows, "scenes": scenes}
 
 
 def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore", lineterminator="\n")
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in fields})
+    """Atomic (sat/atomic.py): a failure midway leaves the old file."""
+    atomic.write_csv(path, rows, fields)
 
 
 # --- check against the S2 labels (not a calibration) ----------------------------------------------

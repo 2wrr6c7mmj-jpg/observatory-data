@@ -269,13 +269,8 @@ def read_rows(path: Path) -> list[dict]:
 
 
 def write_rows(path: Path, rows: list[dict]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=FIELDS, lineterminator="\n", extrasaction="ignore")
-    w.writeheader()
-    for r in sorted(rows, key=lambda r: (r["date"], r["site_id"], r["mask_version"])):
-        w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in FIELDS})
-    path.write_text(buf.getvalue(), encoding="utf-8")
+    from . import atomic
+    atomic.write_csv(path, sorted(rows, key=lambda r: (r["date"], r["site_id"], r["mask_version"])), FIELDS)
 
 
 def _pct(x) -> str:
@@ -309,6 +304,20 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
     in_a = sector_index(grid, site)
     summary = {"site_id": site["id"], "days": 0, "clear": 0, "cloudy": 0, "skipped": 0, "deferred": 0, "errors": 0}
     limit = budget if max_pu is None else min(budget, max_pu)
+    try:
+        _days(client, out, site, now, grid, tag, pre_a, max_a, rows, mine, done, older, since, before_since, feats, in_a,
+              summary, limit, pu0, log)
+    finally:  # the days done so far are recorded however the loop ends (a BudgetStop, a 403, an unexpected error)
+        if summary["days"] or not path.exists():
+            write_rows(path, rows)
+    summary["processing_units"] = round(client.processing_units - pu0, 3)
+    summary["requests"] = client.requests - req0
+    return summary
+
+
+def _days(client, out, site, now, grid, tag, pre_a, max_a, rows, mine, done, older, since, before_since, feats, in_a,
+          summary, limit, pu0, log) -> None:
+    """The loop of update_site over the catalog's days; ``rows`` is changed in place."""
     for d in day_groups(feats):
         if d["date"] in done:
             continue
@@ -323,6 +332,7 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
                "platform": d["platform"], "tile_cloud_pct": d["tile_cloud_pct"], "s2_version": S2_VERSION,
                "retrieved_utc": cdse.iso(now)}
         pu_day = 0.0
+        pu_before = client.processing_units
         try:
             if d["tile_cloud_pct"] is not None and d["tile_cloud_pct"] > CATALOG_MAX_CC:
                 row["result"] = "tile_cloudy"
@@ -350,9 +360,9 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
                         label = (f"{site['id']} v{int(site.get('mask_version', 1))}  {d['acquired_utc']}  {plat} L2A\n"
                                  f"cloud+shadow {_pct(c['cloud'])} (sector A {_pct(c['cloud_a'])})")
                         full, thumb = render(natural_color(refl, scl), label, credit(d["acquired_utc"][:4]))
+                        from . import atomic
                         for rel, data in ((ip, full), (tp, thumb)):
-                            (out / rel).parent.mkdir(parents=True, exist_ok=True)
-                            (out / rel).write_bytes(data)
+                            atomic.write_bytes(out / rel, data)
                         row.update(image=ip, thumb=tp)
                     else:
                         row["result"] = "cloudy"
@@ -360,23 +370,20 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
             raise
         except Exception as e:  # one bad day never stops the run
             row["result"] = "error"
+            # the PU of a response that was received but could not be read (tar, PNG, shape): spent all the same
+            pu_day = max(pu_day, client.processing_units - pu_before)
             log(f"{site['id']} S2 {d['date']}: 失敗 {str(e)[:200]}")
         row["processing_units"] = round(pu_day, 3)
         if row["result"] == "error":
             prev = mine.get(d["date"])
             row["attempts"] = (int(prev.get("attempts") or 1) if prev and prev.get("result") == "error" else 0) + 1
-        rows = [r for r in rows if not (r["site_id"] == site["id"] and r["mask_version"] == tag and r["date"] == d["date"])]
+        rows[:] = [r for r in rows if not (r["site_id"] == site["id"] and r["mask_version"] == tag and r["date"] == d["date"])]
         rows.append(row)
         summary["days"] += 1
         res = row["result"]
         summary["clear" if res == "clear" else "errors" if res == "error" else "cloudy" if res in ("cloudy", "pre_cloudy") else "skipped"] += 1
         log(f"{site['id']} S2 {d['date']} {res}：雲 {_pct(row.get('cloud', row.get('pre_cloud')))}"
             f"（A {_pct(row.get('cloud_a', row.get('pre_cloud_a')))}）、{pu_day:.3f} PU")
-    if summary["days"] or not path.exists():
-        write_rows(path, rows)
-    summary["processing_units"] = round(client.processing_units - pu0, 3)
-    summary["requests"] = client.requests - req0
-    return summary
 
 
 def settings() -> dict:

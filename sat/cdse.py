@@ -6,6 +6,7 @@ and are never printed, logged or written. Error messages say what went wrong
 """
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import time
@@ -48,6 +49,24 @@ class CredentialError(CDSEError):
     pass
 
 
+class NetworkError(CDSEError):
+    """No HTTP answer: the connection failed, was reset or timed out (URLError, TimeoutError, ConnectionResetError,
+    RemoteDisconnected, IncompleteRead ...). Retried a few times by Client; then the caller's scene or site fails, never
+    the whole run."""
+
+
+# Retries of one call (each send counts as a request): a network error or HTTP 429 / 5xx is sent again after
+# NET_BACKOFF_S x 2^n seconds (n = 0, 1, 2: 5, 10, 20 s; at most NET_BACKOFF_MAX_S), so one call sends at most
+# NET_ATTEMPTS requests in about a minute -- far below the account's 300 requests per minute.
+NET_ATTEMPTS = 4
+NET_BACKOFF_S = 5.0
+NET_BACKOFF_MAX_S = 60.0
+
+
+def backoff(attempt: int) -> float:
+    return min(NET_BACKOFF_S * 2 ** attempt, NET_BACKOFF_MAX_S)
+
+
 def evalscript(with_lia: bool) -> str:
     bands = '"VV", "VH", "localIncidenceAngle"' if with_lia else '"VV", "VH"'
     # VV/VH default to linear power (sigma0 with backCoeff SIGMA0_ELLIPSOID); the angle is in degrees.
@@ -64,8 +83,22 @@ def _http(url: str, data: bytes | None = None, headers: dict | None = None, time
         with opener(req, timeout=timeout) as resp:
             return resp.status, {k.lower(): v for k, v in resp.headers.items()}, resp.read()
     except urllib.error.HTTPError as e:
-        body = e.read() if hasattr(e, "read") else b""
+        try:
+            body = e.read() if hasattr(e, "read") else b""
+        except (OSError, http.client.HTTPException):
+            body = b""
         return e.code, {k.lower(): v for k, v in (e.headers or {}).items()}, body
+    except (OSError, http.client.HTTPException) as e:  # URLError, TimeoutError, ConnectionResetError, RemoteDisconnected, ...
+        reason = getattr(e, "reason", None) or e
+        host = urllib.parse.urlsplit(url).netloc
+        raise NetworkError(f"CDSE（{host}）に接続できない（{type(e).__name__}: {str(reason)[:200]}）") from None
+
+
+def _retry_after(h: dict) -> float:
+    try:
+        return max(0.0, float(h.get("retry-after") or 0))
+    except (TypeError, ValueError):  # an HTTP date: use our own wait
+        return 0.0
 
 
 def _short(body: bytes, n: int = 300) -> str:
@@ -84,6 +117,10 @@ class Client:
         self.processing_units = 0.0
         self.pu_reported = True  # False when any process response lacked the PU header
         self.last_headers: list[str] = []
+        self.network_retries = 0  # sends repeated after a network error or HTTP 429 / 5xx (catalog, process and token)
+
+    def _wait(self, seconds: float) -> None:
+        time.sleep(seconds)
 
     def token(self) -> str:
         if self._token and time.time() < self._token_exp - 60:
@@ -93,8 +130,21 @@ class Client:
             raise CredentialError(f"CDSE の資格情報が設定されていません（{', '.join(missing)} が空）。リポジトリの Secrets を確かめてください")
         data = urllib.parse.urlencode({"grant_type": "client_credentials", "client_id": self._id,
                                        "client_secret": self._secret}).encode()
-        status, _h, body = _http(TOKEN_URL, data, {"Content-Type": "application/x-www-form-urlencoded"},
-                                 timeout=60, opener=self._opener)
+        for attempt in range(NET_ATTEMPTS):  # 429 / 5xx and network errors: retried with a growing wait
+            try:
+                status, h, body = _http(TOKEN_URL, data, {"Content-Type": "application/x-www-form-urlencoded"},
+                                        timeout=60, opener=self._opener)
+            except NetworkError:
+                if attempt == NET_ATTEMPTS - 1:
+                    raise
+                self.network_retries += 1
+                self._wait(backoff(attempt))
+                continue
+            if (status == 429 or status >= 500) and attempt < NET_ATTEMPTS - 1:
+                self.network_retries += 1
+                self._wait(min(max(_retry_after(h), backoff(attempt)), 120))
+                continue
+            break
         if status != 200:
             try:
                 err = json.loads(body)
@@ -115,10 +165,18 @@ class Client:
 
     def _post_sh(self, url: str, payload: dict, accept: str) -> tuple[dict, bytes]:
         body = json.dumps(payload).encode()
-        for attempt in range(4):
+        status, data = None, b""
+        for attempt in range(NET_ATTEMPTS):
             headers = {"Authorization": "Bearer " + self.token(), "Content-Type": "application/json", "Accept": accept}
             self.requests += 1
-            status, h, data = _http(url, body, headers, opener=self._opener)
+            try:
+                status, h, data = _http(url, body, headers, opener=self._opener)
+            except NetworkError:
+                if attempt == NET_ATTEMPTS - 1:
+                    raise
+                self.network_retries += 1
+                self._wait(backoff(attempt))
+                continue
             if status == 200:
                 return h, data
             if status == 401 and attempt == 0:
@@ -129,10 +187,13 @@ class Client:
             if status == 403:
                 raise CredentialError(f"Sentinel Hub がアクセスを拒否（HTTP 403）。アカウントの権限か無料枠を確かめてください: {_short(data)}")
             if status == 429 or status >= 500:
-                wait = float(h.get("retry-after") or 0) or 20 * (attempt + 1)
-                if status == 429 and attempt == 3:
+                wait = _retry_after(h) or 20 * (attempt + 1)
+                if status == 429 and attempt == NET_ATTEMPTS - 1:
                     raise CDSEError(f"Sentinel Hub の利用制限（HTTP 429）。無料枠の処理単位かリクエスト数の上限の可能性: {_short(data)}")
-                time.sleep(min(wait, 120))
+                if attempt == NET_ATTEMPTS - 1:
+                    break
+                self.network_retries += 1
+                self._wait(min(wait, 120))
                 continue
             raise CDSEError(f"Sentinel Hub がリクエストを受け付けません（HTTP {status}）: {_short(data)}")
         raise CDSEError(f"Sentinel Hub への要求が繰り返し失敗しました（HTTP {status}）: {_short(data)}")
