@@ -36,7 +36,8 @@ jobs:
         run: |
           # When the question cannot be answered, step the site anyway (a second round is harmless, none is not).
           n=0
-          for s in in_progress queued; do
+          # pending: waiting for the concurrency group (the next run of the chain while one is going)
+          for s in in_progress queued pending waiting; do
             c=$(curl -sS -m 20 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
                   "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/workflows/site-clock.yml/runs?branch=main&status=$s&per_page=1" \
                 | python3 -c 'import json,sys; print(json.load(sys.stdin)["total_count"])' 2>/dev/null) || c=0
@@ -61,4 +62,7 @@ jobs:
           UPKEEP_TOKEN: ${{ secrets.UPKEEP_TOKEN }}
           UPKEEP_ANNOTATE: '1'
           STEPS: '60'
-        run: bash tools/site_upkeep.sh || { echo "::error title=upkeep::site did not answer"; exit 1; }
+        run: |
+          rc=0; bash tools/site_upkeep.sh || rc=$?
+          [ $rc = 1 ] && echo "::error title=upkeep::site did not answer"
+          exit $rc

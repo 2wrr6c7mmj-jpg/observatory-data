@@ -10,9 +10,10 @@
 # local commits are dropped too (HEAD = origin/main), for a long run that makes them again later
 # (tools/site_clock.sh).
 #
-# Authentication: with PUSH_TOKEN set (checkout with persist-credentials: false), the token is given to
-# git for fetch and push only, as a header on the command line of those two commands; it is not
-# written to .git/config and not printed. Without PUSH_TOKEN, git uses what the checkout left.
+# Authentication: with PUSH_TOKEN_FILE (a file holding the token, site-clock.yml) or PUSH_TOKEN set
+# (checkout with persist-credentials: false), the token is given to the fetch and the push only, through
+# git's GIT_CONFIG_COUNT/KEY/VALUE environment of those two git commands: not on a command line, not in
+# .git/config, not printed. Without a token, git uses what the checkout left.
 set -u
 tries=3
 pause=${PUSH_RETRY_SLEEP:-20}
@@ -28,12 +29,24 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-auth=()
-if [ -n "${PUSH_TOKEN:-}" ]; then
-  basic=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+token=${PUSH_TOKEN:-}
+if [ -n "${PUSH_TOKEN_FILE:-}" ] && [ -s "$PUSH_TOKEN_FILE" ]; then token=$(cat -- "$PUSH_TOKEN_FILE"); fi
+basic=""
+if [ -n "$token" ]; then
+  basic=$(printf 'x-access-token:%s' "$token" | base64 | tr -d '\n')
   [ -n "${GITHUB_ACTIONS:-}" ] && echo "::add-mask::$basic"
-  auth=(-c "http.https://github.com/.extraheader=AUTHORIZATION: basic $basic")
 fi
+unset token PUSH_TOKEN
+
+# git with the token for this one command (environment of the git process only)
+git_auth() {
+  if [ -n "$basic" ]; then
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.https://github.com/.extraheader \
+      GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $basic" git "$@"
+  else
+    git "$@"
+  fi
+}
 
 rebasing() {
   [ -d "$(git rev-parse --git-path rebase-merge)" ] || [ -d "$(git rev-parse --git-path rebase-apply)" ]
@@ -44,7 +57,7 @@ if rebasing; then git rebase --abort 2>/dev/null || true; fi
 
 for i in $(seq 1 "$tries"); do
   [ "$i" = 1 ] || sleep "$pause"
-  if ! git "${auth[@]}" fetch -q origin main; then
+  if ! git_auth fetch -q origin main; then
     echo "::warning title=$title::fetch に失敗（$i/$tries 回目）"; continue
   fi
   if ! git rebase -q origin/main >/dev/null 2>&1; then
@@ -55,7 +68,7 @@ for i in $(seq 1 "$tries"); do
     continue
   fi
   if [ -z "$(git rev-list origin/main..HEAD)" ]; then echo "No changes"; exit 0; fi
-  if git "${auth[@]}" push -q origin HEAD:main; then exit 0; fi
+  if git_auth push -q origin HEAD:main; then exit 0; fi
   echo "::warning title=$title::push に失敗（$i/$tries 回目）"
 done
 echo "::error title=$title::$tries 回試みたが push できなかった"

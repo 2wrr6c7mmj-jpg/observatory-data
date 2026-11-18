@@ -6,18 +6,26 @@ name: Exercises
 on:
   push:
     branches: ['probe/exercises*']
+  # The collection is due every 3 hours (the "Due?" step lets a run go when the last one is 150 minutes old or more;
+  # a run that is not due only checks out and stops). GitHub runs the schedules of this repository only a few times a
+  # day (11-14: the hourly translation ran 3 times, this schedule not once), so a run is started in three ways:
+  # - this schedule, every hour (more chances to be run at all),
+  # - the Site clock (tools/site_clock.sh), which runs all day and starts this workflow every hour when it is due,
+  # - the end of the regular workflows below, that end a few times a day (health about 10, Site clock about 4, the
+  #   collectors once or twice). 'AIS record' (48 a day) and 'Site upkeep clock' are not in the list any more: they
+  #   started more than 100 runs a day that only said "not due".
   schedule:
-    - cron: '43 */3 * * *'
-  # GitHub runs the schedules of this repository only a few times a day (11-14: the hourly translation ran 3 times,
-  # this schedule not once). So a run is also started when one of the other regular workflows ends; the "Due?" step
-  # lets it go only when the last collection is 150 minutes old or more. Only workflows that end a few times a day
-  # (health about 10, Site clock about 4, the collectors once or twice): 'AIS record' (48 a day) and 'Site upkeep
-  # clock' (72 a day) are not in the list any more, they started more than 100 runs a day that only said "not due".
+    - cron: '43 * * * *'
   workflow_run:
     workflows: ['Translate headlines', 'Collection health', 'Collect PLA Activity Tracker', 'Sentinel-1 ship candidates',
                 'Collect JCG Senkaku', 'Ocean GFW match', 'Site clock', 'Collect public data']
     types: [completed]
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Collect even when the last collection is less than 150 minutes old'
+        type: boolean
+        default: true
 permissions:
   contents: write
 concurrency:
@@ -40,8 +48,13 @@ jobs:
           persist-credentials: false
       - name: Due?
         id: due
+        env:
+          FORCE: ${{ inputs.force }}
         run: |
-          if [ "${{ github.event_name }}" != "workflow_run" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # push (probe) and a manual run go; the schedule, workflow_run and the Site clock's dispatch (force: false) only when due
+          if [ "$GITHUB_EVENT_NAME" = push ] || { [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$FORCE" = true ]; }; then
+            echo "go=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
           last=$(python3 -c "import json;print(json.load(open('docs/data/exercises/status.json')).get('generatedAt',0)//1000)" 2>/dev/null || echo 0)
           age=$(( $(date +%s) - last ))
           if [ "$age" -lt 9000 ]; then echo "go=false" >> "$GITHUB_OUTPUT"; echo "last collection $((age/60)) min ago: not due"; else echo "go=true" >> "$GITHUB_OUTPUT"; fi

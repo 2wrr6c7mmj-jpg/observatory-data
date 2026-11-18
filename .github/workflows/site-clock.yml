@@ -43,15 +43,29 @@ jobs:
       # llama.cpp (pinned image, by digest) and the model (pinned commit, SHA-256 checked): tools/llama_server.sh
       - name: Start the model server
         run: bash tools/llama_server.sh
-      - name: Run the clock
+      # The tokens go to files (mode 600) that only tools/push_retry.sh and tools/site_upkeep.sh read; the clock
+      # step and its children (the translation) do not get them in their environment.
+      - name: Token files for the push and the upkeep
         env:
           PUSH_TOKEN: ${{ github.token }}
           # /api/maintenance checks it when the site has UPKEEP_TOKEN set; empty when the secret is not set (sent without)
           UPKEEP_TOKEN: ${{ secrets.UPKEEP_TOKEN }}
         run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/tokens"
+          printf '%s' "$PUSH_TOKEN" > "$RUNNER_TEMP/tokens/push"
+          printf '%s' "$UPKEEP_TOKEN" > "$RUNNER_TEMP/tokens/upkeep"
+      - name: Run the clock
+        env:
+          PUSH_TOKEN_FILE: ${{ runner.temp }}/tokens/push
+          UPKEEP_TOKEN_FILE: ${{ runner.temp }}/tokens/upkeep
+        run: |
           git config user.name "observatory-data bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bash tools/site_clock.sh
+      - name: Remove the token files
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/tokens"
       - name: Hand over to the next run
         if: success()
         env:

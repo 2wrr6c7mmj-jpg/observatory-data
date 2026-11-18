@@ -66,6 +66,8 @@ def good_files() -> dict:
         "taiwan-mnd/status.json": {"collection": "robots.txt が拒否しているため停止中", "last_day": "2026-10-30",
                                    "generated_utc": ago(days=1)},
         "jso/status.json": {"built_utc": ago(hours=3), "last_release": "2026-10-27", "passages": 1024},
+        "exercises/status.json": {"generatedAt": int((NOW - timedelta(hours=2)).timestamp() * 1000), "events": 22,
+                                  "current": 8, "failed": 0, "fetchFailed": 1},
         "launches/events.json": {"generated_utc": ago(hours=3), "events": [
             {"site": "内之浦", "window_start_utc": z(NOW + timedelta(days=1)), "window_end_utc": z(NOW + timedelta(days=2))},
             {"site": "古い", "window_start_utc": "2025-09-08T18:00Z", "window_end_utc": "2025-09-08T22:00Z"}]},
@@ -302,6 +304,14 @@ class OtherSourcesTest(Base):
         s = src(self.make(mutate=m).build(), "launches")
         self.assertEqual(s["state"], "warn")
         self.assertIn("notam_watch_old", codes(s))
+
+    def test_exercises_heartbeat(self):
+        for hours_ago, want in ((2, "ok"), (10, "warn"), (30, "alert")):
+            ms = int((NOW - timedelta(hours=hours_ago)).timestamp() * 1000)
+            out = self.make(mutate=lambda f: f["exercises/status.json"].update(generatedAt=ms)).build()
+            self.assertEqual(src(out, "exercises")["state"], want, hours_ago)
+        out = self.make(mutate=lambda f: f["exercises/status.json"].pop("generatedAt")).build()
+        self.assertIn("heartbeat_unknown", codes(src(out, "exercises")))
 
     def test_proto_older_than_input(self):
         runs = good_runs()
