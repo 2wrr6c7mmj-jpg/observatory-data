@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-18T02:57:48Z",
+ "generated_utc": "2026-11-18T07:36:57Z",
  "version": "eval-presence-5",
  "files": {
   "presence.json": "評価票の本体：全体と港別の指標、撮影×区間の行（rows）",
@@ -816,7 +816,7 @@
    "site_id": "STU",
    "name": "汕頭",
    "calibrated": false,
-   "sections_eligible": 5,
+   "sections_eligible": 6,
    "answers": 0,
    "n_blind_oos": 0,
    "n_clear_oos": 0,
@@ -1620,7 +1620,7 @@
    "site_id": "ALL",
    "name": "全港",
    "calibrated": null,
-   "sections_eligible": 261,
+   "sections_eligible": 262,
    "answers": 1531,
    "n_blind_oos": 143,
    "n_clear_oos": 550,
