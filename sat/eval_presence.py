@@ -497,7 +497,24 @@ def split_metrics(rows: list[dict]) -> dict:
                          "clear": metrics([r for r in rows if not is_blind(r)]),
                          "clear_near": metrics([r for r in near if not is_blind(r)])},
             "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs},
-            "occ2": occ2_metrics(rows), "blind1": blind1_metrics(rows)}
+            "occ2": occ2_metrics(rows), "blind1": blind1_metrics(rows), "answers": answers_metrics(rows)}
+
+
+# Sections whose answer still waits for the owner's ruling on what counts as present (QGZ 219848841:L:00: a grey
+# object that is always there; the S2 answers say present, the S1 answers absent). Marked, and left out of
+# answers.settled, until the basis is decided.
+PENDING_BASIS = {("QGZ", "219848841:L:00")}
+
+
+def answers_metrics(rows: list[dict]) -> dict:
+    """The current judge on the cells whose S1 and S2 answers agree (``agree`` True: both answers exist for the section,
+    the S1 scene and its paired S2 day, and say the same), the count where they disagree, and the cells without a
+    section waiting for the answer basis (PENDING_BASIS). Side by side; the main figures are unchanged."""
+    agree = [r for r in rows if r.get("agree") is True]
+    return {"agree": metrics(agree), "disagree_n": sum(1 for r in rows if r.get("agree") is False),
+            "both_answered_n": sum(1 for r in rows if r.get("agree") is not None),
+            "settled": metrics([r for r in rows if not r.get("pending_basis")]),
+            "pending_basis_n": sum(1 for r in rows if r.get("pending_basis"))}
 
 
 def _freeze(site: dict) -> str:
@@ -513,6 +530,9 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     lab = labels_s1(out, sid) if s1_truth else labels(out, sid)
     days = {} if s1_truth else s1_of_days(out, sid)
     match = s1_match(out, sid, by_scene=s1_truth)
+    # the other kind of answer, for answers.agree: S1 answers by (section, scene), S2 answers by (section, day)
+    other_s1 = {} if s1_truth else {(a["section_id"], a["s1"]): a["y"] for a in labels_s1(out, sid)}
+    other_s2 = {(a["section_id"], a["date"]): a["y"] for a in labels(out, sid)} if s1_truth else {}
     est = est2_scenes(out, sid)
     feats = quay_features(out, sid)
     own = calibrated(out, sid)
@@ -570,7 +590,11 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
                "oos": (not own) or (a.get("date") or s1[:10]) >= freeze}
         if s1_truth:
             row.update(s2_date=a.get("s2_date"), s2_dt_h=a.get("s2_dt_h"), note=a.get("note") or "")
-        pb = bp.p_blind(resident, a["section_id"], exclude_s1={s1, a.get("date") or s1[:10], a.get("s2_date") or ""})
+            other = other_s2.get((a["section_id"], a.get("s2_date") or ""))
+        else:
+            other = other_s1.get((a["section_id"], s1))
+        row.update(agree=None if other is None else other == a["y"], pending_basis=(sid, a["section_id"]) in PENDING_BASIS)
+        pb =bp.p_blind(resident, a["section_id"], exclude_s1={s1, a.get("date") or s1[:10], a.get("s2_date") or ""})
         row.update(p_resident=pb, p_blind1=round(max(p, pb), 3))
         o2 = occ2.get(s1, {}).get(a["section_id"])
         row.update(p_occ2=None if o2 is None or o2.get("p_occ") is None else round(float(o2["p_occ"]), 3),
