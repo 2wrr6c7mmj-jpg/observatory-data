@@ -108,14 +108,48 @@ class NetworkRetryTest(unittest.TestCase):
             if req.full_url == cdse.TOKEN_URL:
                 return FakeResp(200, json.dumps({"access_token": "tok", "expires_in": 600}).encode(), {})
             n["process"] += 1
-            if n["process"] == 1:
-                raise ConnectionResetError(104, "reset")
+            if n["process"] == 1:  # the request never left: sent again
+                raise urllib.error.URLError(ConnectionRefusedError(111, "Connection refused"))
             return FakeResp(200, img, {"x-processingunits-spent": "1.5"})
         c = self.client(opener)
         t = datetime(2026, 10, 1, tzinfo=timezone.utc)
         _data, pu = c.process([0, 0, 1, 1], 4, 4, t, t, with_lia=False)
         self.assertEqual(pu, 1.5)
         self.assertEqual((c.requests, c.network_retries, len(c.waits)), (2, 1, 1))
+        self.assertEqual(c.processing_units, 1.5)
+
+    def test_process_not_sent_again_after_it_may_have_been_served(self):
+        """A timeout or a reset after the request went out: never sent again, the estimated PU recorded."""
+        t = datetime(2026, 10, 1, tzinfo=timezone.utc)
+        for exc in (TimeoutError("The read operation timed out"), urllib.error.URLError(TimeoutError("timed out")),
+                    ConnectionResetError(104, "reset"), http.client.RemoteDisconnected("closed")):
+            calls = []
+
+            def opener(req, timeout=None, exc=exc):
+                if req.full_url == cdse.TOKEN_URL:
+                    return FakeResp(200, json.dumps({"access_token": "tok", "expires_in": 600}).encode(), {})
+                calls.append(1)
+                raise exc
+            c = self.client(opener)
+            with self.assertRaises(cdse.NetworkError) as cm:
+                c.process([0, 0, 1, 1], 512, 512, t, t, with_lia=True)
+            self.assertTrue(cm.exception.sent)
+            est = cdse.estimate_pu(512, 512, 3)
+            self.assertEqual((len(calls), c.requests, c.waits), (1, 1, []), type(exc).__name__)
+            self.assertEqual(cm.exception.pu_estimate, est)
+            self.assertEqual(c.processing_units, est)
+            self.assertFalse(c.pu_reported)
+
+    def test_refused_and_unresolved_are_not_sent(self):
+        import socket
+        self.assertTrue(cdse.NetworkError("x").sent)  # unless known otherwise, it may have been served
+        for exc, sent in ((urllib.error.URLError(ConnectionRefusedError(111, "refused")), False),
+                          (urllib.error.URLError(socket.gaierror(-2, "Name or service not known")), False),
+                          (ConnectionRefusedError(111, "refused"), False),
+                          (urllib.error.URLError(TimeoutError("timed out")), True), (ConnectionResetError(104, "r"), True)):
+            with self.assertRaises(cdse.NetworkError) as cm:
+                cdse._http("https://sh.dataspace.copernicus.eu/x", b"", opener=lambda req, timeout=None, exc=exc: (_ for _ in ()).throw(exc))
+            self.assertEqual(cm.exception.sent, sent, repr(exc))
 
     def test_token_retries_429_5xx_and_network(self):
         seq = [lambda: (_ for _ in ()).throw(urllib.error.URLError("dns")), (503, b"busy", {}), (429, b"slow", {"Retry-After": "45"}),
@@ -166,6 +200,8 @@ class NetworkRetryTest(unittest.TestCase):
             if req.full_url == cdse.PROCESS_URL:
                 n["k"] += 1
                 if n["k"] == 1:
+                    raise urllib.error.URLError(ConnectionRefusedError(111, "refused"))
+                if n["k"] == 3:
                     raise TimeoutError("timed out")
             return fake(req, timeout)
         c = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i", client_secret="s",
@@ -176,6 +212,13 @@ class NetworkRetryTest(unittest.TestCase):
         self.assertIn(cdse.backoff(0), clock.slept)
         self.assertEqual(c.requests, 2)
         self.assertEqual(len(c.window), 2)  # the resend is in the 60 s window
+        # a timeout after the request went out: not sent again; its estimate counts in the cap and in the window
+        with self.assertRaises(cdse.NetworkError):
+            c.process(g.bbox, g.width, g.height, t, t, True)
+        est = cdse.estimate_pu(g.width, g.height, 3)
+        self.assertEqual(c.requests, 3)
+        self.assertAlmostEqual(c.processing_units, 0.5 + est)
+        self.assertAlmostEqual(sum(p for _t, p in c.window), 0.5 + max(est, 0.5))
 
     def run_main(self, out, cli, sites, land):
         with mock.patch.object(run, "load_mask", return_value=(land.astype(np.uint8), {})), \
@@ -287,6 +330,38 @@ class FailedScenePUTest(unittest.TestCase):
             self.assertAlmostEqual(float(rows[0]["processing_units"]), 0.03 + 1.53, places=3)  # the 10 m answer too
             self.assertAlmostEqual(r["processing_units"], 1.56, places=3)
 
+    def test_s2_day_fetched_again_keeps_the_earlier_pu(self):
+        class Broken(FakeS2):
+            def process_raw(self, payload, accept, input_bands):
+                data, pu = super().process_raw(payload, accept, input_bands)
+                return (b"not a tar" if accept != "image/png" else data), pu
+        t1 = datetime(2026, 10, 30, 6, tzinfo=timezone.utc)
+        t2 = datetime(2026, 11, 2, 6, tzinfo=timezone.utc)
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            s2.update_site(Broken({"2026-10-29": (5.0, 0.0)}), out, S2_SITE, t1, 10, log=quiet)
+            s2.update_site(FakeS2({"2026-10-29": (5.0, 0.0)}), out, S2_SITE, t2, 10, log=quiet)
+            rows = s2.read_rows(out / "s2_scenes.csv")
+            self.assertEqual([r["result"] for r in rows], ["clear"])
+            self.assertEqual(s2.earlier_fetches(rows[0]), [{"retrieved_utc": "2026-10-30T06:00:00Z", "processing_units": "1.56",
+                                                            "result": "error"}])
+            store = run.Store(out, [S2_SITE])
+            self.assertAlmostEqual(run.site_month_pu(store, S2_SITE["id"], "2026-10"), 1.56, places=3)
+            self.assertAlmostEqual(run.site_month_pu(store, S2_SITE["id"], "2026-11"), 1.56, places=3)
+
+    def test_s2_network_down_stops_the_days(self):
+        class Down(FakeS2):
+            def process_raw(self, payload, accept, input_bands):
+                self.requests += 1
+                self.calls.append(1)
+                raise cdse.NetworkError("CDSE に接続できない", sent=False)
+        cli = Down({"2026-10-21": (5.0, 0.0), "2026-10-23": (5.0, 0.0), "2026-10-25": (5.0, 0.0)})
+        with tempfile.TemporaryDirectory() as d:
+            r = s2.update_site(cli, Path(d), S2_SITE, datetime(2026, 10, 30, 6, tzinfo=timezone.utc), 10, log=quiet)
+            self.assertEqual(len(cli.calls), s2.NET_FAILURES_PER_SITE)
+            self.assertIn("接続の失敗", r["stopped_network"])
+            self.assertEqual(r["errors"], 2)
+
     def test_s2_rows_written_when_the_run_stops_midway(self):
         class Stops(FakeS2):
             def process_raw(self, payload, accept, input_bands):
@@ -335,6 +410,51 @@ class QuayRefetchTest(unittest.TestCase):
                 s = run.process_site(cli, store, SITE, mask, NOW, None, 100.0, 12, log=quiet)
                 self.assertEqual((s["new"], cli.processed), (0, []))
             self.assertEqual(len(store.rows), 2)  # the ship rows of the first count stay
+
+    def test_refetch_failure_without_pu_is_not_counted(self):
+        chip, land = chip_and_land()
+        mask = land.astype(np.uint8)
+
+        class Refused(FakeClient):
+            def process(self, *a, **k):
+                self.requests += 1
+                self.processed.append(a[3])
+                raise cdse.NetworkError("CDSE に接続できない（ConnectionRefusedError）", sent=False)
+        with tempfile.TemporaryDirectory() as d:
+            store = run.Store(Path(d), [SITE])
+            run.process_site(FakeClient(chip), store, SITE, mask, NOW, None, 100.0, 12, log=quiet)
+            with mock.patch.object(run.QuayContext, "baseline", lambda self, o: ({}, {})):
+                for _ in range(run.QUAY_REFETCH_MAX + 1):
+                    run.process_site(Refused(chip), store, SITE, mask, NOW, None, 100.0, 12, log=quiet)
+                for sc in store.status["scenes"]:
+                    self.assertNotIn("quay_refetch_failures", sc)
+                    self.assertNotEqual(sc.get("quay_result"), "error")  # never given up for want of a connection
+                    self.assertIn("ConnectionRefusedError", sc["quay_refetch_error"])
+                    self.assertNotIn("earlier_fetches", sc)
+                cli = Refused(chip)
+                run.process_site(cli, store, SITE, mask, NOW, None, 100.0, 12, log=quiet)
+                self.assertTrue(cli.processed)  # still tried
+
+    def test_timeout_after_sending_counts_the_estimate(self):
+        chip, land = chip_and_land()
+
+        class TimedOut(FakeClient):
+            def process(self, bbox, w, h, *a, **k):
+                self.requests += 1
+                self.processed.append(a[0])
+                e = cdse.NetworkError("CDSE に応答が途中で途切れた（TimeoutError）")
+                e.pu_estimate = cdse.estimate_pu(w, h, 3)
+                self.processing_units += e.pu_estimate
+                raise e
+        g = Grid.for_site(SITE)
+        with tempfile.TemporaryDirectory() as d:
+            store = run.Store(Path(d), [SITE])
+            s = run.process_site(TimedOut(chip), store, SITE, land.astype(np.uint8), NOW, None, 100.0, 12, log=quiet)
+            self.assertEqual(s["errors"], 2)
+            est = cdse.estimate_pu(g.width, g.height, 3)
+            self.assertEqual([(x["processing_units"], x["pu_source"]) for x in store.status["scenes"]], [(est, "estimate")] * 2)
+            month = store.status["scenes"][0]["retrieved_utc"][:7]
+            self.assertAlmostEqual(run.site_month_pu(store, "TST", month), 2 * est, places=3)
 
     def test_successful_refetch_keeps_the_first_pu(self):
         chip, land = chip_and_land()
@@ -506,6 +626,42 @@ class AtomicWriteTest(unittest.TestCase):
             self.assertIn("disk full", st["last_run"]["save_error"])
             self.assertEqual([s["processing_units"] for s in st["scenes"]], [4.883, 4.883])  # site_month_pu sees them
             self.assertEqual((out / "ship_counts.csv").read_bytes(), before)  # old file, not a half-written one
+            # the scenes have no row: saved as save_error (PU kept), fetched again once by the next run
+            self.assertEqual([s["result"] for s in st["scenes"]], ["save_error", "save_error"])
+            store = run.Store(out, [SITE])
+            self.assertEqual(store.done("TST", run.mask_tag(SITE)), set())
+            cli = FakeClient(chip)
+            run.process_site(cli, store, SITE, land.astype(np.uint8), NOW, None, 100.0, 12, log=quiet)
+            self.assertEqual(len(cli.processed), 2)
+            month = store.status["scenes"][0]["retrieved_utc"][:7]
+            self.assertAlmostEqual(run.site_month_pu(store, "TST", month), 4 * 4.883, places=3)  # both fetches, once each
+            self.assertEqual([s["result"] for s in store.status["scenes"]], ["counted", "counted"])
+
+    def test_second_save_failure_gives_up(self):
+        s = {"result": "save_error", "earlier_fetches": [{"result": "save_error", "processing_units": 1.0}]}
+        self.assertTrue(run.scene_done(s))
+        self.assertFalse(run.scene_done({"result": "save_error"}))
+        self.assertFalse(run.scene_done({"result": "error"}))
+        self.assertTrue(run.scene_done({"result": "counted"}))
+
+    def test_scenes_whose_rows_were_written_stay_counted(self):
+        chip, land = chip_and_land()
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            store = run.Store(out, [SITE])
+            run.process_site(FakeClient(chip), store, SITE, land.astype(np.uint8), NOW, None, 100.0, 12, log=quiet)
+            real = run.Store.save_records
+
+            def half(self):  # ship_counts.csv is written, then the rest fails
+                run.write_csv(self.out / "ship_counts.csv", self.rows, run.CSV_FIELDS)
+                raise OSError("disk full")
+            with mock.patch.object(run.Store, "save_records", half), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(OSError):
+                    store.save({"run_utc": "2026-10-30T05:17:00Z", "requests": 3, "processing_units": 9.766,
+                                "pu_source": "header", "scenes": 2})
+            self.assertTrue(real)
+            st = json.loads((out / "status.json").read_text())
+            self.assertEqual([s["result"] for s in st["scenes"]], ["counted", "counted"])
 
 
 # ---------- 2. the port archive records its PU and scenes however the run ends ----------
@@ -552,6 +708,60 @@ class PortArchivePUTest(unittest.TestCase):
             self.assertEqual(len(usage), 1)
             self.assertAlmostEqual(float(usage[0]["processing_units"]), 2 * 0.5, places=3)
             self.assertEqual(usage[0]["site_id"], "TPA")
+
+    def test_run_s1_stops_after_two_network_errors_and_records_the_estimate(self):
+        """Every process request times out: 2 sends in all (not 4 per scene for every scene), their estimate recorded."""
+        g = Grid.for_site(PA_SITE)
+        mask = np.zeros((g.height, g.width), np.uint8)
+        mask[:, : g.width // 4] = 1
+        clock = Clock()
+        fake = PAFake(g)
+        sends = []
+
+        def opener(req, timeout=None):
+            if req.full_url == cdse.PROCESS_URL:
+                sends.append(1)
+                raise TimeoutError("The read operation timed out")
+            return fake(req, timeout)
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            c = pa.LimitedClient(50.0, 500, 1000, 1000, clock=clock, sleep=clock.sleep, client_id="i", client_secret="s",
+                                 opener=opener)
+            s = pa.run_s1(c, PA_SITE, d / "o", d / "t", mask, NOW, log=quiet)
+            est = cdse.estimate_pu(g.width, g.height, 3)
+            self.assertEqual(len(sends), pa.NET_FAILURES_PER_SITE)
+            self.assertIn("接続の失敗", s["stopped"])
+            self.assertAlmostEqual(s["processing_units"], 2 * est, places=3)
+            rows = [r for r in pa.read_csv(d / "o" / "s1_scenes.csv") if r["result"] == "error"]
+            self.assertEqual([float(r["processing_units"]) for r in rows], [est, est])
+            self.assertTrue(all("見込み" in r["error"] for r in rows))
+
+    def test_baseline_403_midway_records_usage_then_raises(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            self.setup(d, fail_on=99)
+            second = {**PA_SITE, "id": "TPB"}
+            (d / "ports.json").write_text(json.dumps({"sites": [PA_SITE, second]}), encoding="utf-8")
+            ran = []
+
+            def baseline_port(client, site, *a, **k):
+                ran.append(site["id"])
+                client.requests += 3
+                client.processing_units += 1.25  # spent before the 403
+                raise cdse.CredentialError("Sentinel Hub がアクセスを拒否（HTTP 403）")
+            month = datetime.now(timezone.utc).strftime("%Y-%m")
+            with mock.patch.object(pa, "baseline_port", side_effect=baseline_port), \
+                    contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(cdse.CredentialError):
+                    pa.main(["baseline", "--ports", str(d / "ports.json"), "--only", "TPA", "TPB", "--cap", "50",
+                             "--budget-month", month, "--mask-dir", str(d / "masks"), "--base-dir", str(d / "base"),
+                             "--out", str(d / "out")])
+            self.assertEqual(ran, ["TPA"])  # the run stops at the 403: the second port is not tried
+            usage = pa.read_csv(d / "out" / "TPA" / "usage.csv")
+            self.assertEqual(len(usage), 1)
+            self.assertEqual((usage[0]["requests"], usage[0]["processing_units"], usage[0]["archive_version"]),
+                             ("3", "1.25", "baseline-bl-1"))
+            self.assertFalse((d / "out" / "TPB" / "usage.csv").exists())
 
     def test_run_s1_saves_on_network_error_raised_through(self):
         g = Grid.for_site(PA_SITE)

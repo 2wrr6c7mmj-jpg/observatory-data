@@ -66,7 +66,11 @@ EST_FULL_PU = 1.6             # budget check before a full request
 EST_PRE_PU = 0.05
 FIELDS = ["site_id", "mask_version", "date", "acquired_utc", "platform", "tile_cloud_pct",
           "pre_cloud", "pre_cloud_a", "cloud", "cloud_a", "valid", "result", "image", "thumb",
-          "processing_units", "s2_version", "retrieved_utc", "attempts"]
+          "processing_units", "s2_version", "retrieved_utc", "attempts",
+          # the earlier fetches of a day fetched again (an error retried): JSON [{retrieved_utc, processing_units, result}],
+          # as status.json's earlier_fetches of the S1 scenes, so run.site_month_pu still counts their PU
+          "earlier_fetches"]
+NET_FAILURES_PER_SITE = 2     # network errors of consecutive days after which a site's days stop (as sat/run.py)
 MAX_ERROR_ATTEMPTS = 2        # a day that failed this many times is not tried again
 RESULTS = ("clear", "cloudy", "pre_cloudy", "tile_cloudy", "partial", "no_data", "error")
 
@@ -273,6 +277,15 @@ def write_rows(path: Path, rows: list[dict]) -> None:
     atomic.write_csv(path, sorted(rows, key=lambda r: (r["date"], r["site_id"], r["mask_version"])), FIELDS)
 
 
+def earlier_fetches(row: dict) -> list[dict]:
+    """The earlier fetches of a day (column earlier_fetches, JSON); [] when none or unreadable."""
+    try:
+        v = json.loads(row.get("earlier_fetches") or "[]")
+    except ValueError:
+        return []
+    return [x for x in v if isinstance(x, dict)] if isinstance(v, list) else []
+
+
 def _pct(x) -> str:
     return "-" if x is None else f"{100 * float(x):.1f}%"
 
@@ -318,7 +331,12 @@ def update_site(client, out: Path, site: dict, now: datetime, days: int = LOOKBA
 def _days(client, out, site, now, grid, tag, pre_a, max_a, rows, mine, done, older, since, before_since, feats, in_a,
           summary, limit, pu0, log) -> None:
     """The loop of update_site over the catalog's days; ``rows`` is changed in place."""
+    net_failures = 0
     for d in day_groups(feats):
+        if net_failures >= NET_FAILURES_PER_SITE:  # the network to CDSE is down: the rest waits for the next run
+            summary["stopped_network"] = f"接続の失敗が {net_failures} 回続いたため止める"
+            log(f"{site['id']} S2: {summary['stopped_network']}")
+            break
         if d["date"] in done:
             continue
         if d["date"] in older or (since and before_since and d["date"] < since):
@@ -372,11 +390,21 @@ def _days(client, out, site, now, grid, tag, pre_a, max_a, rows, mine, done, old
             row["result"] = "error"
             # the PU of a response that was received but could not be read (tar, PNG, shape): spent all the same
             pu_day = max(pu_day, client.processing_units - pu_before)
+            net_failures = net_failures + 1 if isinstance(e, cdse.NetworkError) else 0
             log(f"{site['id']} S2 {d['date']}: 失敗 {str(e)[:200]}")
+        else:
+            net_failures = 0
         row["processing_units"] = round(pu_day, 3)
         if row["result"] == "error":
             prev = mine.get(d["date"])
             row["attempts"] = (int(prev.get("attempts") or 1) if prev and prev.get("result") == "error" else 0) + 1
+        prev = mine.get(d["date"])
+        if prev is not None:  # the day fetched again: the PU of the earlier fetch stay on record
+            earlier = earlier_fetches(prev)
+            if float(prev.get("processing_units") or 0) > 0:
+                earlier.append({k: prev.get(k) for k in ("retrieved_utc", "processing_units", "result")})
+            if earlier:
+                row["earlier_fetches"] = json.dumps(earlier, ensure_ascii=False, separators=(",", ":"))
         rows[:] = [r for r in rows if not (r["site_id"] == site["id"] and r["mask_version"] == tag and r["date"] == d["date"])]
         rows.append(row)
         summary["days"] += 1

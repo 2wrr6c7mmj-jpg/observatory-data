@@ -76,6 +76,7 @@ S2_RESERVE_PU = 3.0         # run_s2 keeps this much of the port's cap free befo
 # spends only what the days cost; the cap is an upper bound.
 S2_HEADROOM_PU = S2_RESERVE_PU + s2.EST_PRE_PU + s2.EST_FULL_PU
 RAW_KEEP = 3
+NET_FAILURES_PER_SITE = 2   # network errors of consecutive scenes / days after which a port stops (as sat/run.py)
 DONE_RESULTS = ("counted", "skipped_low_coverage", "skipped_footprint")
 SCENE_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "result",
                 "coverage", "incidence_deg", "candidates", "harbour_candidates", "quay_candidates"] + \
@@ -170,6 +171,13 @@ class LimitedClient(cdse.Client):
                 h, data = super()._post_sh(url, payload, accept)
             except cdse.CredentialError:
                 self._count_resends(req0, 1)
+                raise
+            except cdse.NetworkError as e:
+                if e.sent and key is not None:  # a process request that may have been served: its estimate in the window
+                    self._count_resends(req0, 1)
+                    self.window.append((self.clock(), est))
+                else:
+                    self._count_resends(req0, 0)
                 raise
             except cdse.CDSEError as e:
                 self._count_resends(req0, 0)
@@ -659,6 +667,7 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
     summary = {"catalog_acquisitions": len(acqs), "counted": 0, "skipped": 0, "footprint_skipped": 0, "errors": 0,
                "stopped": None}
     pu0 = client.processing_units
+    net_failures = 0
     log(f"{site['id']} S1: 撮影 {len(acqs)} 回（過去 {days} 日）、済み {len(done)}")
     try:
         for acq in acqs:
@@ -686,10 +695,18 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
                 raise
             except Exception as e:
                 row.update(result="error", error=str(e)[:300])
+                if getattr(e, "pu_estimate", None):  # no answer to a request that may have been served: its estimate
+                    row.update(processing_units=e.pu_estimate, error=f"{str(e)[:240]}（PU は見込み）")
                 rows.append(row)
                 summary["errors"] += 1
                 log(f"{site['id']} S1 {a}: 失敗 {str(e)[:200]}")
+                net_failures = net_failures + 1 if isinstance(e, cdse.NetworkError) else 0
+                if net_failures >= NET_FAILURES_PER_SITE:  # the network to CDSE is down: no more requests this run
+                    summary["stopped"] = f"接続の失敗が {net_failures} 回続いたため止める"
+                    log(f"{site['id']} S1: {summary['stopped']}")
+                    break
                 continue
+            net_failures = 0
             row["processing_units"] = pu
             try:
                 vv, vh, lia = decode_chip(data)
@@ -830,6 +847,9 @@ def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left
         for k in ("days", "clear", "cloudy", "skipped", "deferred", "errors"):
             tot[k] += s.get(k, 0)
         tot["processing_units"] = round(tot["processing_units"] + s.get("processing_units", 0), 3)
+        if s.get("stopped_network"):
+            tot["stopped"] = s["stopped_network"]
+            break
         end -= timedelta(days=days)
     return tot
 
@@ -852,7 +872,7 @@ def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, t
     if not s2_on:
         s2s = {"stopped": "S2 なし（S1 だけの取得）"}
     elif s1.get("stopped"):
-        s2s = {"stopped": "S1 で上限"}
+        s2s = {"stopped": f"S1 で停止（{s1['stopped']}）"[:300]}
     else:
         s2s = run_s2(client, site, out, now, lambda: client.cap_pu - client.processing_units, deadline_left, log=log,
                      s2_days=s2_days)

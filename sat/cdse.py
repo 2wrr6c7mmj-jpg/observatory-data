@@ -6,8 +6,10 @@ and are never printed, logged or written. Error messages say what went wrong
 """
 from __future__ import annotations
 
+import errno
 import http.client
 import json
+import socket
 import os
 import time
 import urllib.error
@@ -51,8 +53,30 @@ class CredentialError(CDSEError):
 
 class NetworkError(CDSEError):
     """No HTTP answer: the connection failed, was reset or timed out (URLError, TimeoutError, ConnectionResetError,
-    RemoteDisconnected, IncompleteRead ...). Retried a few times by Client; then the caller's scene or site fails, never
-    the whole run."""
+    RemoteDisconnected, IncompleteRead ...). Then the caller's scene or site fails, never the whole run.
+
+    ``sent``: False only when the request certainly never reached the server (connection refused, name not resolved,
+    no route): those are sent again by Client. Otherwise (a timeout or a reset after the request went out) the server
+    may have processed it: a process request is then never sent again, and Client records the estimated PU
+    (``pu_estimate``) as spent, so the caps never undercount."""
+
+    def __init__(self, message: str, sent: bool = True):
+        super().__init__(message)
+        self.sent = sent
+        self.pu_estimate: float | None = None
+
+
+_NOT_SENT_ERRNO = {errno.ECONNREFUSED, errno.ENETUNREACH, errno.EHOSTUNREACH}
+
+
+def _not_sent(e: BaseException) -> bool:
+    """Did the request certainly not leave (no connection was made)?"""
+    for x in (e, getattr(e, "reason", None)):
+        if isinstance(x, (ConnectionRefusedError, socket.gaierror)):
+            return True
+        if isinstance(x, OSError) and not isinstance(x, TimeoutError) and getattr(x, "errno", None) in _NOT_SENT_ERRNO:
+            return True
+    return False
 
 
 # Retries of one call (each send counts as a request): a network error or HTTP 429 / 5xx is sent again after
@@ -91,7 +115,9 @@ def _http(url: str, data: bytes | None = None, headers: dict | None = None, time
     except (OSError, http.client.HTTPException) as e:  # URLError, TimeoutError, ConnectionResetError, RemoteDisconnected, ...
         reason = getattr(e, "reason", None) or e
         host = urllib.parse.urlsplit(url).netloc
-        raise NetworkError(f"CDSE（{host}）に接続できない（{type(e).__name__}: {str(reason)[:200]}）") from None
+        sent = not _not_sent(e)
+        what = "応答が途中で途切れた" if sent else "接続できない"
+        raise NetworkError(f"CDSE（{host}）に{what}（{type(e).__name__}: {str(reason)[:200]}）", sent=sent) from None
 
 
 def _retry_after(h: dict) -> float:
@@ -171,8 +197,9 @@ class Client:
             self.requests += 1
             try:
                 status, h, data = _http(url, body, headers, opener=self._opener)
-            except NetworkError:
-                if attempt == NET_ATTEMPTS - 1:
+            except NetworkError as e:
+                # a process request that may have reached the server is never sent again (it may have spent PU)
+                if attempt == NET_ATTEMPTS - 1 or (e.sent and url == PROCESS_URL):
                     raise
                 self.network_retries += 1
                 self._wait(backoff(attempt))
@@ -217,6 +244,19 @@ class Client:
             payload["next"] = nxt
         return feats
 
+    def _send_process(self, payload: dict, accept: str, est: float) -> tuple[dict, bytes]:
+        """A process request. When it may have reached the server but no answer came (NetworkError ``sent``), the
+        estimated PU are recorded as spent (processing_units, pu_reported False) and kept on the error
+        (``pu_estimate``) for the scene's record."""
+        try:
+            return self._post_sh(PROCESS_URL, payload, accept)
+        except NetworkError as e:
+            if e.sent:
+                e.pu_estimate = est
+                self.processing_units += est
+                self.pu_reported = False
+            raise
+
     def process(self, bbox: list[float], width: int, height: int, t_from: datetime, t_to: datetime,
                 with_lia: bool = True, upsampling: str = "NEAREST") -> tuple[bytes, float | None]:
         """``upsampling``: interpolation of the S1 GRD (Sentinel Hub docs: for Sentinel-1 it applies
@@ -239,7 +279,7 @@ class Client:
                        "responses": [{"identifier": "default", "format": {"type": "image/png"}}]},
             "evalscript": evalscript(with_lia),
         }
-        h, data = self._post_sh(PROCESS_URL, payload, "image/png")
+        h, data = self._send_process(payload, "image/png", estimate_pu(width, height, 3 if with_lia else 2))
         self.last_headers = sorted(h)  # names only, for the probe
         pu = h.get("x-processingunits-spent")
         try:
@@ -256,7 +296,9 @@ class Client:
     def process_raw(self, payload: dict, accept: str, input_bands: int) -> tuple[bytes, float]:
         """Any Process API request (Sentinel-2 in sat/s2.py); PU from the response header, else estimated
         (no orthorectification factor)."""
-        h, data = self._post_sh(PROCESS_URL, payload, accept)
+        out = payload.get("output", {})
+        est = round(max(0.005, out.get("width", 0) * out.get("height", 0) / 512 ** 2 * max(input_bands / 3, 1)), 3)
+        h, data = self._send_process(payload, accept, est)
         self.last_headers = sorted(h)
         pu = h.get("x-processingunits-spent")
         try:
@@ -265,8 +307,7 @@ class Client:
             pu = None
         if pu is None:
             self.pu_reported = False
-            out = payload.get("output", {})
-            pu = round(max(0.005, out.get("width", 0) * out.get("height", 0) / 512 ** 2 * max(input_bands / 3, 1)), 3)
+            pu = est
         self.processing_units += pu
         return data, pu
 

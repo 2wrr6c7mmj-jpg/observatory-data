@@ -142,6 +142,17 @@ def mask_since(site: dict) -> str | None:
     return s2.mask_since(site)
 
 
+def scene_done(s: dict) -> bool:
+    """A status entry that needs no fetch: not an error, and not a scene whose records could not be written
+    (``save_error``, fetched again once; after a second save failure it is given up, so the PU are not spent again
+    and again while the disk or the code is broken)."""
+    if s.get("result") == "error":
+        return False
+    if s.get("result") == "save_error":
+        return any(f.get("result") == "save_error" for f in s.get("earlier_fetches") or [])
+    return True
+
+
 def row_mask_tag(r: dict) -> str:
     """Mask version of a published row or scene (entries written before v2 have none: v1)."""
     return r.get("mask_version") or f"{r['site_id']}-land-v1"
@@ -212,8 +223,11 @@ def site_month_pu(store: "Store", site_id: str, month: str) -> float:
             if str(f.get("retrieved_utc") or "").startswith(month):
                 pu += float(f.get("processing_units") or 0)
     for r in s2.read_rows(store.out / "s2_scenes.csv"):
-        if r.get("site_id") == site_id and str(r.get("retrieved_utc") or "").startswith(month):
-            pu += float(r.get("processing_units") or 0)
+        if r.get("site_id") != site_id:
+            continue
+        for f in [r] + s2.earlier_fetches(r):
+            if str(f.get("retrieved_utc") or "").startswith(month):
+                pu += float(f.get("processing_units") or 0)
     return pu
 
 
@@ -304,6 +318,7 @@ class Store:
         self.new_anchorage = False
         self.class_rows = read_csv(out / "berth_class_counts.csv")
         self.new_class = False
+        self.noted: set[tuple] = set()  # scenes recorded by this run (note_scene)
 
     def site(self, site_id: str) -> dict | None:
         return self.by_id.get(site_id)
@@ -330,7 +345,7 @@ class Store:
     def done(self, site_id: str, tag: str) -> set[str]:
         keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id and row_mask_tag(r) == tag}
         keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
-                 if s["site_id"] == site_id and row_mask_tag(s) == tag and s.get("result") != "error"}
+                 if s["site_id"] == site_id and row_mask_tag(s) == tag and scene_done(s)}
         return keys
 
     def quay_done(self, site_id: str, tag: str) -> set[str]:
@@ -387,7 +402,7 @@ class Store:
         """Scenes of the site counted (or tried) with any mask version."""
         keys = {r["acquired_utc"] for r in self.rows if r["site_id"] == site_id}
         keys |= {s["acquired_utc"] for s in self.status.get("scenes", [])
-                 if s["site_id"] == site_id and s.get("result") != "error"}
+                 if s["site_id"] == site_id and scene_done(s)}
         return keys
 
     def has_rows(self, site_id: str, tag: str) -> bool:
@@ -410,6 +425,7 @@ class Store:
                 entry["earlier_fetches"] = earlier + [f for f in entry.get("earlier_fetches") or [] if f not in earlier]
             if old.get("quay_refetch_failures"):
                 entry.setdefault("quay_refetch_failures", old["quay_refetch_failures"])
+        self.noted.add(key)
         sc = [s for s in self.status.get("scenes", []) if (s["site_id"], s["acquired_utc"], row_mask_tag(s)) != key]
         sc.append(entry)
         sc.sort(key=lambda s: (s["acquired_utc"], s["site_id"], row_mask_tag(s)))
@@ -417,19 +433,24 @@ class Store:
 
     def note_refetch_failure(self, entry: dict, error: str) -> None:
         """A scene fetched again for its quay count (already counted) failed: its first record stays as it was
-        (processing_units, coverage, detector_info, result); the failure and its PU go into ``earlier_fetches`` and
-        ``quay_refetch_failures``. After QUAY_REFETCH_MAX failures the scene is given up for the quay count
-        (quay_result error, so quay_done holds it and it is never fetched again)."""
+        (processing_units, coverage, detector_info, result). A failure that spent PU (the chip came but could not be
+        read, or no answer came to a request that may have been served: the estimate) goes into ``earlier_fetches``
+        and ``quay_refetch_failures``; after QUAY_REFETCH_MAX of them the scene is given up for the quay count
+        (quay_result error, so quay_done holds it and it is never fetched again). A failure without PU (the request
+        never left) is only noted (quay_refetch_error) and tried again next time."""
         key = (entry["site_id"], entry["acquired_utc"], row_mask_tag(entry))
         old = self.scene_entry(*key)
         if old is None:  # a row without a status entry (older records): keep what is known of it
             old = {k: v for k, v in entry.items() if k not in ("result", "error", "processing_units", "retrieved_utc", "coverage")}
             old["result"] = "counted"
             self.note_scene(old)
-        if float(entry.get("processing_units") or 0) > 0:
-            old.setdefault("earlier_fetches", []).append({"retrieved_utc": entry.get("retrieved_utc"),
-                                                          "processing_units": entry.get("processing_units"),
-                                                          "result": "error"})
+        if not float(entry.get("processing_units") or 0) > 0:
+            # nothing spent (e.g. the connection was refused): tried again next time, never counted toward giving up
+            old["quay_refetch_error"] = error[:300]
+            return
+        old.setdefault("earlier_fetches", []).append({"retrieved_utc": entry.get("retrieved_utc"),
+                                                      "processing_units": entry.get("processing_units"),
+                                                      "result": "error"})
         n = int(old.get("quay_refetch_failures") or 0) + 1
         old["quay_refetch_failures"] = n
         old["quay_refetch_error"] = error[:300]
@@ -460,6 +481,7 @@ class Store:
             self.save_records()
         except BaseException as e:
             run["save_error"] = f"{type(e).__name__}: {str(e)[:300]}"
+            self.mark_unsaved(run["save_error"])
             raise
         finally:
             self.status["last_run"] = run
@@ -467,6 +489,21 @@ class Store:
             self.status["series_breaks"] = series_breaks(self.sites)
             atomic.write_text(self.out / "status.json", json.dumps(self.status, ensure_ascii=False, indent=1) + "\n")
         atomic.write_text(self.out / "meta.json", json.dumps(build_meta(self.rows, self.sites, self.out), ensure_ascii=False, indent=1) + "\n")
+
+    def mark_unsaved(self, error: str) -> None:
+        """The records of this run's counted scenes may not be written: those without a row in ship_counts.csv as
+        it is on disk become ``save_error`` (their PU stay; scene_done fetches them again once)."""
+        try:
+            on_disk = {(r["site_id"], r["acquired_utc"], row_mask_tag(r)) for r in read_csv(self.out / "ship_counts.csv")}
+        except Exception:  # noqa: BLE001  (unreadable: none of this run's rows is known to be there)
+            on_disk = set()
+        for s in self.status.get("scenes", []):
+            key = (s["site_id"], s["acquired_utc"], row_mask_tag(s))
+            if key in self.noted and s.get("result") == "counted" and key not in on_disk:
+                s["result"] = "save_error"
+                s["save_error"] = error
+                if s.get("quay_result") == "counted":
+                    s.pop("quay_result")
 
     def save_records(self) -> None:
         """The counts, detections, quay records, est-2, chips and the presence evaluation (everything but the PU)."""
@@ -1656,7 +1693,11 @@ def process_site(client, store: Store, site: dict, mask: np.ndarray, now: dateti
             raise
         except Exception as e:  # one bad scene does not stop the run; it is retried next time
             entry.update(result="error", error=str(e)[:300], retrieved_utc=retrieved)
-            if pu is not None:  # the chip was received (PU spent) but could not be read
+            if pu is None:  # no answer to a request that may have been served: its estimated PU (cdse.NetworkError)
+                pu = getattr(e, "pu_estimate", None)
+                if pu is not None:
+                    entry["pu_source"] = "estimate"
+            if pu is not None:  # the chip was received (PU spent) but could not be read, or the estimate above
                 entry["processing_units"] = pu
             failed(entry, refetch, str(e))
             summary["errors"] += 1
