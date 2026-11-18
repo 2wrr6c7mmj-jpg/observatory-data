@@ -4243,9 +4243,9 @@
    "sites": {
     "BHI": {
      "lines": {
-      "naval": 1,
-      "civil": 0,
-      "unknown": 2
+      "naval": 9,
+      "civil": 1,
+      "unknown": 1
      },
      "lines_version": "BHI-quay-v1",
      "confidence": null,
@@ -4255,8 +4255,8 @@
     "DXE": {
      "lines": {
       "naval": 8,
-      "civil": 0,
-      "unknown": 13
+      "civil": 10,
+      "unknown": 3
      },
      "lines_version": "DXE-quay-v1",
      "confidence": "中（溫約瑟の地図の点と桟橋の形による推定。OSM の軍の区域は桟橋の岸に無い）",
@@ -4265,9 +4265,9 @@
     },
     "HKG": {
      "lines": {
-      "naval": 3,
-      "civil": 1,
-      "unknown": 4
+      "naval": 7,
+      "civil": 3,
+      "unknown": 2
      },
      "lines_version": "HKG-quay-v1",
      "confidence": "中（溫約瑟の地図の点と、昂船洲の海軍基地として広く知られた港池。OSM に軍の区域は無い）",
@@ -4287,7 +4287,7 @@
     },
     "JMN": {
      "lines": {
-      "naval": 23,
+      "naval": 38,
       "civil": 0,
       "unknown": 0
      },
@@ -4298,7 +4298,7 @@
     },
     "LSN": {
      "lines": {
-      "naval": 16,
+      "naval": 19,
       "civil": 0,
       "unknown": 0
      },
@@ -4310,8 +4310,8 @@
     "LYG": {
      "lines": {
       "naval": 5,
-      "civil": 0,
-      "unknown": 6
+      "civil": 1,
+      "unknown": 5
      },
      "lines_version": "LYG-quay-v1",
      "confidence": null,
@@ -4331,7 +4331,7 @@
     },
     "NDS": {
      "lines": {
-      "naval": 1,
+      "naval": 12,
       "civil": 0,
       "unknown": 1
      },
@@ -4342,9 +4342,9 @@
     },
     "PDG": {
      "lines": {
-      "naval": 7,
-      "civil": 0,
-      "unknown": 4
+      "naval": 13,
+      "civil": 4,
+      "unknown": 0
      },
      "lines_version": "PDG-quay-v1",
      "confidence": null,
@@ -4353,9 +4353,9 @@
     },
     "QDH": {
      "lines": {
-      "naval": 9,
-      "civil": 0,
-      "unknown": 13
+      "naval": 13,
+      "civil": 4,
+      "unknown": 9
      },
      "lines_version": "QDH-quay-v2",
      "confidence": null,
@@ -4364,7 +4364,7 @@
     },
     "QGZ": {
      "lines": {
-      "naval": 23,
+      "naval": 41,
       "civil": 0,
       "unknown": 0
      },
@@ -4375,7 +4375,7 @@
     },
     "QJG": {
      "lines": {
-      "naval": 5,
+      "naval": 11,
       "civil": 0,
       "unknown": 0
      },
@@ -4386,7 +4386,7 @@
     },
     "SLP": {
      "lines": {
-      "naval": 10,
+      "naval": 14,
       "civil": 0,
       "unknown": 0
      },
@@ -4397,9 +4397,9 @@
     },
     "STU": {
      "lines": {
-      "naval": 11,
-      "civil": 2,
-      "unknown": 17
+      "naval": 29,
+      "civil": 11,
+      "unknown": 8
      },
      "lines_version": "STU-quay-v1",
      "confidence": null,
@@ -4408,7 +4408,7 @@
     },
     "SWS": {
      "lines": {
-      "naval": 17,
+      "naval": 16,
       "civil": 5,
       "unknown": 5
      },
@@ -4419,7 +4419,7 @@
     },
     "SYL": {
      "lines": {
-      "naval": 9,
+      "naval": 31,
       "civil": 0,
       "unknown": 10
      },
@@ -4430,7 +4430,7 @@
     },
     "WHI": {
      "lines": {
-      "naval": 5,
+      "naval": 8,
       "civil": 0,
       "unknown": 0
      },
@@ -4452,9 +4452,9 @@
     },
     "XMN": {
      "lines": {
-      "naval": 8,
-      "civil": 31,
-      "unknown": 35
+      "naval": 7,
+      "civil": 39,
+      "unknown": 28
      },
      "lines_version": "XMN-quay-v1",
      "confidence": null,
@@ -4463,9 +4463,9 @@
     },
     "XSN": {
      "lines": {
-      "naval": 9,
-      "civil": 0,
-      "unknown": 2
+      "naval": 32,
+      "civil": 2,
+      "unknown": 0
      },
      "lines_version": "XSN-quay-v1",
      "confidence": null,
@@ -4474,9 +4474,9 @@
     },
     "ZDH": {
      "lines": {
-      "naval": 24,
-      "civil": 1,
-      "unknown": 16
+      "naval": 59,
+      "civil": 12,
+      "unknown": 4
      },
      "lines_version": "ZDH-quay-v1",
      "confidence": null,
@@ -4485,7 +4485,7 @@
     },
     "ZJG": {
      "lines": {
-      "naval": 5,
+      "naval": 41,
       "civil": 1,
       "unknown": 6
      },
@@ -9436,15 +9436,15 @@
    "version": "eval-presence-5",
    "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
    "status": {
-    "ZJG": "標本 57 撮影×区間（標本外 0）",
-    "SYL": "標本外 19 撮影×区間（較正の流用）",
-    "SLP": "標本外 141 撮影×区間（較正の流用）",
-    "QGZ": "標本外 118 撮影×区間（較正の流用）",
-    "ZDH": "標本外 77 撮影×区間（較正の流用）",
-    "QJG": "標本外 176 撮影×区間（較正の流用）",
-    "QDH": "標本外 157 撮影×区間（較正の流用）",
-    "XSN": "標本外 182 撮影×区間（較正の流用）",
-    "LSN": "標本外 167 撮影×区間（較正の流用）",
+    "ZJG": "標本 44 撮影×区間（標本外 0）",
+    "SYL": "標本外 14 撮影×区間（較正の流用）",
+    "SLP": "標本外 125 撮影×区間（較正の流用）",
+    "QGZ": "標本外 102 撮影×区間（較正の流用）",
+    "ZDH": "標本外 49 撮影×区間（較正の流用）",
+    "QJG": "標本外 56 撮影×区間（較正の流用）",
+    "QDH": "標本外 133 撮影×区間（較正の流用）",
+    "XSN": "標本外 71 撮影×区間（較正の流用）",
+    "LSN": "標本外 143 撮影×区間（較正の流用）",
     "SWS": "標本 0",
     "XMN": "標本 0",
     "STU": "標本 0",
