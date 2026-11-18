@@ -154,6 +154,17 @@ def report(cs: list[dict], pp: list[float], boot: int) -> dict:
             "change_flag": flag_hits(cs)}
 
 
+def by_port(cs: list[dict]) -> dict:
+    """{site_id: {scenes, cells, present}}: how few scenes a port's out-of-sample number rests on."""
+    res: dict = {}
+    for c in cs:
+        d = res.setdefault(c["site_id"], {"scenes": set(), "cells": 0, "present": 0})
+        d["scenes"].add(c["scene"])
+        d["cells"] += 1
+        d["present"] += c["y"]
+    return {k: {"scenes": len(v["scenes"]), "cells": v["cells"], "present": v["present"]} for k, v in sorted(res.items())}
+
+
 def check_no_future(train: list[dict], test_start: str) -> None:
     """The training cells and every answer in their features are from before test_start (raises otherwise)."""
     for c in train:
@@ -183,7 +194,7 @@ def forward(cs: list[dict], fit_before: str, boot: int) -> dict:
         pred += pp
         wins.append({"from": a, "to": None if b == "9999-12-31" else b, "train_n": len(tr), "test_n": len(te),
                      "coef": [_r(x, 4) for x in m["coef"]], "intercept": _r(m["intercept"], 4)})
-    return {"windows": wins, **report(test, pred, boot)}
+    return {"windows": wins, "by_port": by_port(test), **report(test, pred, boot)}
 
 
 def calibrate(out: Path, sites: list[dict], fit_before: str = FIT_BEFORE, boot: int = BOOT, now: datetime | None = None) -> dict:
@@ -198,13 +209,16 @@ def calibrate(out: Path, sites: list[dict], fit_before: str = FIT_BEFORE, boot: 
     hp = [pres1.predict(model, c["x"]) for c in hold]
     return {"version": pres1.VERSION, "generated_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "fit_before": fit_before,
             "truth": "s2", "cells": len(cs), "train_n": len(train), "holdout_n": len(hold),
+            "holdout_scenes": len({c["scene"] for c in hold}), "holdout_by_port": by_port(hold),
             "train_last_label_day": max((c["date"] for c in train), default=None),
             "train_last_answer_used": max((c["last_answer_used"] for c in train if c["last_answer_used"]), default=None),
             "bootstrap": {"B": boot, "unit": "scene", "seed": SEED},
             "note": ("pres-1a の係数（model：fit_before より前のラベルの日の升だけで当てた。各升の res はその撮影の日より前の答えだけ）と標本外の評価。"
                      "holdout＝fit_before 以後の升（この係数の標本外）、forward＝前進検証（各窓をそれより前の升だけで当てた係数で判定）。"
                      "changed＝区間の答えが直前の答えから変わった升（pres-1a が現行の判定より弱い所）、same＝変わらなかった升。"
-                     "*_ci95＝撮影を単位にしたブートストラップの 95% 区間、diff＝pres1 − current（同じ再標本の対）。閾値 0.5"),
+                     "*_ci95＝撮影を単位にしたブートストラップの 95% 区間、diff＝pres1 − current（同じ再標本の対）。閾値 0.5。"
+                     "限定：(1) holdout は係数については標本外だが、変数の組と C は 2部が全升の前進検証で選んだので、手法の選び方については標本外ではない"
+                     "（数字はやや良く出ている可能性がある）。(2) holdout の撮影は少なく港が偏る（holdout_by_port）。港ごとの on の判断（設計書 §4.3 条件 2）にはまだ足りない"),
             "model": model, "holdout": report(hold, hp, boot), "forward": forward(cs, fit_before, boot)}
 
 

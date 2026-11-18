@@ -6,9 +6,9 @@
  "calibration": {
   "version": "pres-1a",
   "fit_before": "2026-06-01",
-  "generated_utc": "2026-11-18T10:01:24Z"
+  "generated_utc": "2026-11-18T14:17:50Z"
  },
- "note": "試行（並行系列）。公開の画面は読まない。p_pres1＝在の確率（pres-1a：現行の判定 p_current と、区間の撮影の日より前の所有者の答えの割合 res_rate＝(在＋1)／(答え＋2)・数 res_n のロジスティック回帰）。change_flag＝現行の判定（p_current ≥ 0.5）が区間の直前の答え prev_y と食い違う（1）／同じ（0）／直前の答えなし（null）：目視の確認の順番付け用で、数には入れない。pres-1a は「前と同じ」に強く、答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）",
+ "note": "試行（並行系列）。公開の画面は読まない。p_pres1＝在の確率（pres-1a：現行の判定 p_current と、区間の撮影の日より前の所有者の答えの割合 res_rate＝(在＋1)／(答え＋2)・数 res_n のロジスティック回帰）。change_flag＝現行の判定（p_current ≥ 0.5）が区間の直前の答え prev_y と食い違う（1）／同じ（0）／直前の答えなし（null）：目視の確認の順番付け用で、数には入れない。pres-1a は「前と同じ」に強く、答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）。prev_age_days＝直前の答え（prev_date）から撮影までの日数。直前の答えが古い港がある（2026-11 時点の最新の撮影で ZDH は区間の中央値 200 日超）：古い答えほど今の在/不在を表さず、p_pres1 も change_flag も当てにならない（扱いは変えていない。日数を見て読むこと）",
  "credit": "Contains modified Copernicus Sentinel data 2024, 2025, 2026",
  "attribution": "岸壁の線・区間：(c) OpenStreetMap contributors（ODbL 1.0）",
  "scenes": [
@@ -26,6 +26,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.261,
      "change_flag": 1
     },
@@ -36,6 +37,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.81,
      "change_flag": 1
     },
@@ -46,6 +48,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.81,
      "change_flag": 0
     },
@@ -56,6 +59,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.907,
      "change_flag": 0
     },
@@ -66,6 +70,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.65,
      "change_flag": 1
     },
@@ -76,6 +81,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.261,
      "change_flag": 1
     },
@@ -86,6 +92,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 208,
      "p_pres1": 0.65,
      "change_flag": 0
     }
@@ -105,6 +112,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.261,
      "change_flag": 1
     },
@@ -115,6 +123,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.81,
      "change_flag": 1
     },
@@ -125,6 +134,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.81,
      "change_flag": 0
     },
@@ -135,6 +145,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.697,
      "change_flag": 1
     },
@@ -145,6 +156,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.65,
      "change_flag": 1
     },
@@ -155,6 +167,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.077,
      "change_flag": 0
     },
@@ -165,6 +178,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 220,
      "p_pres1": 0.65,
      "change_flag": 0
     }
@@ -184,6 +198,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.261,
      "change_flag": 1
     },
@@ -194,6 +209,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.81,
      "change_flag": 1
     },
@@ -204,6 +220,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.5,
      "change_flag": 1
     },
@@ -214,6 +231,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.907,
      "change_flag": 0
     },
@@ -224,6 +242,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.65,
      "change_flag": 1
     },
@@ -234,6 +253,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.077,
      "change_flag": 0
     },
@@ -244,6 +264,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 232,
      "p_pres1": 0.65,
      "change_flag": 0
     }
@@ -263,6 +284,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.077,
      "change_flag": 0
     },
@@ -273,6 +295,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.81,
      "change_flag": 1
     },
@@ -283,6 +306,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.81,
      "change_flag": 0
     },
@@ -293,6 +317,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.697,
      "change_flag": 1
     },
@@ -303,6 +328,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.65,
      "change_flag": 1
     },
@@ -313,6 +339,7 @@
      "res_n": 7,
      "prev_y": 0,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.261,
      "change_flag": 1
     },
@@ -323,6 +350,7 @@
      "res_n": 7,
      "prev_y": 1,
      "prev_date": "2026-03-15",
+     "prev_age_days": 244,
      "p_pres1": 0.304,
      "change_flag": 1
     }

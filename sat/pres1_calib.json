@@ -1,11 +1,54 @@
 {
  "version": "pres-1a",
- "generated_utc": "2026-11-18T10:01:24Z",
+ "generated_utc": "2026-11-18T14:17:50Z",
  "fit_before": "2026-06-01",
  "truth": "s2",
  "cells": 737,
  "train_n": 542,
  "holdout_n": 195,
+ "holdout_scenes": 19,
+ "holdout_by_port": {
+  "LSN": {
+   "scenes": 4,
+   "cells": 72,
+   "present": 6
+  },
+  "QDH": {
+   "scenes": 3,
+   "cells": 50,
+   "present": 10
+  },
+  "QGZ": {
+   "scenes": 1,
+   "cells": 12,
+   "present": 5
+  },
+  "QJG": {
+   "scenes": 4,
+   "cells": 28,
+   "present": 8
+  },
+  "SLP": {
+   "scenes": 1,
+   "cells": 15,
+   "present": 2
+  },
+  "SYL": {
+   "scenes": 1,
+   "cells": 3,
+   "present": 2
+  },
+  "XSN": {
+   "scenes": 1,
+   "cells": 7,
+   "present": 3
+  },
+  "ZJG": {
+   "scenes": 4,
+   "cells": 8,
+   "present": 8
+  }
+ },
  "train_last_label_day": "2026-05-31",
  "train_last_answer_used": "2026-04-25",
  "bootstrap": {
@@ -13,7 +56,7 @@
   "unit": "scene",
   "seed": 0
  },
- "note": "pres-1a の係数（model：fit_before より前のラベルの日の升だけで当てた。各升の res はその撮影の日より前の答えだけ）と標本外の評価。holdout＝fit_before 以後の升（この係数の標本外）、forward＝前進検証（各窓をそれより前の升だけで当てた係数で判定）。changed＝区間の答えが直前の答えから変わった升（pres-1a が現行の判定より弱い所）、same＝変わらなかった升。*_ci95＝撮影を単位にしたブートストラップの 95% 区間、diff＝pres1 − current（同じ再標本の対）。閾値 0.5",
+ "note": "pres-1a の係数（model：fit_before より前のラベルの日の升だけで当てた。各升の res はその撮影の日より前の答えだけ）と標本外の評価。holdout＝fit_before 以後の升（この係数の標本外）、forward＝前進検証（各窓をそれより前の升だけで当てた係数で判定）。changed＝区間の答えが直前の答えから変わった升（pres-1a が現行の判定より弱い所）、same＝変わらなかった升。*_ci95＝撮影を単位にしたブートストラップの 95% 区間、diff＝pres1 − current（同じ再標本の対）。閾値 0.5。限定：(1) holdout は係数については標本外だが、変数の組と C は 2部が全升の前進検証で選んだので、手法の選び方については標本外ではない（数字はやや良く出ている可能性がある）。(2) holdout の撮影は少なく港が偏る（holdout_by_port）。港ごとの on の判断（設計書 §4.3 条件 2）にはまだ足りない",
  "model": {
   "features": [
    "p_current",
@@ -735,6 +778,53 @@
     "intercept": -0.7527
    }
   ],
+  "by_port": {
+   "LSN": {
+    "scenes": 6,
+    "cells": 107,
+    "present": 14
+   },
+   "QDH": {
+    "scenes": 6,
+    "cells": 100,
+    "present": 26
+   },
+   "QGZ": {
+    "scenes": 6,
+    "cells": 76,
+    "present": 30
+   },
+   "QJG": {
+    "scenes": 7,
+    "cells": 49,
+    "present": 14
+   },
+   "SLP": {
+    "scenes": 6,
+    "cells": 95,
+    "present": 13
+   },
+   "SYL": {
+    "scenes": 5,
+    "cells": 14,
+    "present": 7
+   },
+   "XSN": {
+    "scenes": 3,
+    "cells": 25,
+    "present": 18
+   },
+   "ZDH": {
+    "scenes": 2,
+    "cells": 14,
+    "present": 7
+   },
+   "ZJG": {
+    "scenes": 12,
+    "cells": 36,
+    "present": 34
+   }
+  },
   "all": {
    "n": 516,
    "scenes": 53,

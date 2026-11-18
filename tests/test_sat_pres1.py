@@ -233,5 +233,61 @@ class WriteTest(unittest.TestCase):
             self.assertIn("status", pres1.meta_ref())
 
 
+class NeverStopsTest(unittest.TestCase):
+    """An error in pres-1 (a calibration file cut short, a bad answers file) never stops the evaluation nor the map's counts
+    (quay_blind, quay_naval50) that eval_presence.refresh writes after it: the pres-1 fields are null and a warning is printed."""
+    BROKEN = {"fit_before": "2026-06-01", "model": {"coef": [1.0, 2.0, 3.0]}}   # no mean / sd / intercept
+
+    def test_broken_calibration_nulls_the_fields(self):
+        slp = [s for s in ep.load_sites() if s["id"] == "SLP"]
+        with mock.patch.object(pres1, "load_calib", return_value=self.BROKEN), mock.patch("sys.stderr"):
+            res = ep.evaluate(OUT, slp)
+        rows = res["sites"]["SLP"]["rows"]
+        self.assertTrue(rows)
+        self.assertTrue(all(r[k] is None for r in rows for k in pres1.PRES1_FIELDS))
+        self.assertTrue(all(r["p"] is not None for r in rows))                 # the current judge is untouched
+        self.assertEqual(res["sites"]["SLP"]["pres1"]["n"], 0)
+        t = ep.table(res)
+        self.assertIsNone(next(x for x in t if x["site_id"] == "SLP")["f1_pres1"])
+
+    def test_block_error_and_columns(self):
+        with mock.patch("sys.stderr"):
+            b = pres1.safe_block([{"y": 1, "p": 1.0, "p_pres1": 0.9, "pres1_oos": True, "prev_y": 1}], lambda *a: 1 / 0)
+        self.assertIn("error", b)
+        cols = ep.pres1_columns(b)
+        self.assertIsNone(cols["n_pres1"])
+        self.assertIsNone(cols["change_flag_recall"])
+
+    def test_refresh_goes_on_to_the_map_counts(self):
+        calls = []
+        with tempfile.TemporaryDirectory() as d, mock.patch("sys.stderr"), \
+                mock.patch.object(pres1, "block", side_effect=RuntimeError("block")), \
+                mock.patch.object(pres1, "write", side_effect=ValueError("write")), \
+                mock.patch.object(ep, "write_naval50", side_effect=lambda out, sites: calls.append("naval50") or 0), \
+                mock.patch.object(ep, "write_blind", side_effect=lambda out, sites: calls.append("blind") or {}):
+            r = ep.refresh(Path(d), [s for s in ep.load_sites() if s["id"] == "SLP"])
+            self.assertTrue((Path(d) / "eval" / "presence.json").exists())
+        self.assertEqual(sorted(calls), ["blind", "naval50"])
+        self.assertEqual(r["pres1"], {})
+
+
+class PrevAgeTest(unittest.TestCase):
+    def test_days_since_previous_answer(self):
+        self.assertEqual(pres1._days("2026-03-15", "2026-11-14T10:00:00Z"), 244)
+        self.assertIsNone(pres1._days(None, "2026-11-14T10:00:00Z"))
+        d = json.loads((OUT / pres1.OUT_DIR / "ZDH.json").read_text(encoding="utf-8"))
+        c = d["scenes"][-1]["sections"]
+        self.assertTrue(all("prev_age_days" in x for x in c))
+        self.assertIn("prev_age_days", d["note"])
+
+    def test_calibration_reports_ports_of_the_holdout(self):
+        d = json.loads(pres1.CALIB_PATH.read_text(encoding="utf-8"))
+        hp = d["holdout_by_port"]
+        self.assertEqual(sum(v["cells"] for v in hp.values()), d["holdout_n"])
+        self.assertEqual(sum(v["scenes"] for v in hp.values()), d["holdout_scenes"])
+        self.assertIn("手法の選び方", d["note"])
+        self.assertIn("limits", pres1.meta_ref())
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -32,6 +32,8 @@ from __future__ import annotations
 
 import json
 import math
+import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -214,6 +216,52 @@ def block(rows: list[dict], metrics) -> dict:
                             "recall": round(hit / len(changed), 3) if changed else None}}
 
 
+# ---------------------------------------------------------------- never stop the evaluation (the map's counts are written after it)
+PRES1_FIELDS = ("res_rate", "res_n", "prev_y", "change_flag", "p_pres1", "pres1_oos")
+
+
+def _warn(where: str, e: BaseException) -> str:
+    msg = f"pres1 {where}: {type(e).__name__}: {str(e)[:200]}"
+    print(msg, file=sys.stderr)
+    return msg
+
+
+def safe_annotate(rows: list[dict], out: Path, site_id: str) -> str | None:
+    """annotate() that never raises: on any error (a calibration file cut short, a bad answers file) every pres-1 field of
+    the rows is null and the warning is returned (and printed). The current judge and everything else stay as they are, and
+    eval_presence.refresh goes on to quay_blind and quay_naval50 (the map's counts)."""
+    try:
+        annotate(rows, answers(out, site_id), load_calib())
+        return None
+    except Exception as e:  # noqa: BLE001
+        for r in rows:
+            r.update({k: None for k in PRES1_FIELDS})
+        return _warn(f"{site_id} annotate", e)
+
+
+def safe_block(rows: list[dict], metrics) -> dict:
+    """block() that never raises: {"version", "error"} instead."""
+    try:
+        return block(rows, metrics)
+    except Exception as e:  # noqa: BLE001
+        return {"version": VERSION, "error": _warn("block", e)}
+
+
+def safe_write(out: Path, sites: list[dict]) -> dict:
+    """write() that never raises: {} on an error (quay_pres1 is left as it was)."""
+    try:
+        return write(out, sites)
+    except Exception as e:  # noqa: BLE001
+        _warn("write", e)
+        return {}
+
+
+def _days(a: str | None, b: str) -> int | None:
+    if not a:
+        return None
+    return (date.fromisoformat(b[:10]) - date.fromisoformat(a[:10])).days
+
+
 # ---------------------------------------------------------------- the newest scenes (quay_pres1/<site>.json)
 def scene_rows(out: Path, site: dict, calib: dict, keep: int = KEEP_SCENES) -> list[dict]:
     """The newest ``keep`` stored est-2 scenes of the site: per eligible labelled section (naval, berth, >= 50 m) the current
@@ -240,7 +288,8 @@ def scene_rows(out: Path, site: dict, calib: dict, keep: int = KEEP_SCENES) -> l
             p = ep.judge_est2(st, ep.MIN_LENGTH_M)
             h = history(ans, sec_id, acq)
             cells.append({"section_id": sec_id, "p_current": round(p, 3), "res_rate": round(h["res_rate"], 3), "res_n": h["res_n"],
-                          "prev_y": h["prev_y"], "prev_date": h["prev_date"], "p_pres1": round(predict(model, vector(p, h)), 3),
+                          "prev_y": h["prev_y"], "prev_date": h["prev_date"],
+                          "prev_age_days": _days(h["prev_date"], acq), "p_pres1": round(predict(model, vector(p, h)), 3),
                           "change_flag": change_flag(p, h)})
         res.append({"acquired_utc": acq, "relative_orbit": est[acq].get("relative_orbit"),
                     "present_pres1": sum(1 for c in cells if c["p_pres1"] >= THRESHOLD),
@@ -255,7 +304,9 @@ def site_doc(site: dict, m: str, calib: dict, scenes: list[dict]) -> dict:
             "note": ("試行（並行系列）。公開の画面は読まない。p_pres1＝在の確率（pres-1a：現行の判定 p_current と、区間の撮影の日より前の所有者の答えの割合 "
                      "res_rate＝(在＋1)／(答え＋2)・数 res_n のロジスティック回帰）。change_flag＝現行の判定（p_current ≥ 0.5）が区間の直前の答え prev_y と"
                      "食い違う（1）／同じ（0）／直前の答えなし（null）：目視の確認の順番付け用で、数には入れない。pres-1a は「前と同じ」に強く、"
-                     "答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）"),
+                     "答えが前回から変わった升（入港・出港）では現行の判定より弱い（評価は eval/presence.json の pres1、sat/pres1_calib.json）。"
+                     "prev_age_days＝直前の答え（prev_date）から撮影までの日数。直前の答えが古い港がある（2026-11 時点の最新の撮影で ZDH は区間の中央値 200 日超）："
+                     "古い答えほど今の在/不在を表さず、p_pres1 も change_flag も当てにならない（扱いは変えていない。日数を見て読むこと）"),
             "credit": "Contains modified Copernicus Sentinel data 2024, 2025, 2026",
             "attribution": "岸壁の線・区間：(c) OpenStreetMap contributors（ODbL 1.0）",
             "scenes": scenes}
@@ -295,6 +346,14 @@ def settings(calib: dict | None = None) -> dict:
                     "fit_before 以後の升を標本外として評価する（較正に使った升の指標は出さない）"),
             "sites": "sites.json の quay.pres1：off（既定）／trial（quay_pres1 と評価票の併記だけ）／on（未使用。切り替えの条件は設計書 §4.3）。湛江は off",
             "weakness": "答えが前回から変わった升（入港・出港）では現行の判定より当たらない。変化は change_flag で別に見る",
+            "limits": [
+                "holdout（fit_before 以後の升）は係数については標本外だが、変数の組（p_current・res_rate・res_n）と C の選択は 2部が全升の前進検証で決めたので、"
+                "手法の選び方については標本外ではない（数字はやや良く出ている可能性がある）",
+                "holdout の撮影は少なく港が偏る（pres1_calib.json の holdout_by_port：撮影 19、LSN・QDH が升の約 6 割、XSN・SYL・SLP・QGZ は 1 撮影ずつ）。"
+                "港ごとの on の判断（設計書 §4.3 条件 2）にはまだ足りない",
+                "直前の答えが古い区間がある（quay_pres1 の prev_age_days）。古い答えに基づく p_pres1・change_flag は当てにならない",
+            ],
+            "holdout_by_port": (calib or {}).get("holdout_by_port"),
             "fit_before": (calib or {}).get("fit_before"), "model": (calib or {}).get("model")}
 
 
@@ -302,6 +361,7 @@ def meta_ref(out: Path | None = None) -> dict:
     """sat/meta.json quay.presence_trial (sat/run.build_meta): never raises."""
     try:
         s = settings()
-        return {k: s[k] for k in ("version", "status", "files", "calibration", "design", "p_pres1", "change_flag", "sites", "weakness", "fit_before")}
+        return {k: s[k] for k in ("version", "status", "files", "calibration", "design", "p_pres1", "change_flag", "sites", "weakness", "limits",
+                                  "fit_before", "holdout_by_port")}
     except Exception as e:  # noqa: BLE001
         return {"version": VERSION, "status": f"読めない（{type(e).__name__}）"}

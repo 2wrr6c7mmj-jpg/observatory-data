@@ -507,7 +507,7 @@ def split_metrics(rows: list[dict]) -> dict:
                          "clear_near": metrics([r for r in near if not is_blind(r)])},
             "by_conf": {c: metrics([r for r in rows if (r.get("line_conf") or "unknown") == c]) for c in confs},
             "occ2": occ2_metrics(rows), "blind1": blind1_metrics(rows), "answers": answers_metrics(rows),
-            "pres1": pres1.block(rows, metrics)}
+            "pres1": pres1.safe_block(rows, metrics)}
 
 
 # Sections whose answer still waits for the owner's ruling on what counts as present (QGZ 219848841:L:00: a grey
@@ -618,7 +618,8 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
     rows, dropped = nearest_day_per_scene(rows)
     cnt["other_day_of_scene"] = dropped
     # pres-1a and the change flag beside the judge (sat/pres1): the section's answers before the scene only
-    pres1.annotate(rows, pres1.answers(out, sid), pres1.load_calib())
+    # (never raises: on an error the pres-1 fields are null and a warning is printed; the rest of the evaluation goes on)
+    pres1.safe_annotate(rows, out, sid)
     cnt["used"] = len(rows)
     ins = [r for r in rows if not r["oos"]]
     oos = [r for r in rows if r["oos"]]
@@ -635,7 +636,7 @@ def evaluate_site(out: Path, site: dict, truth: str = "s2") -> dict:
             "by_source": {src: {"n": sum(1 for r in rows if r["source"] == src),
                                 "min50": metrics([r for r in rows if r["source"] == src]),
                                 "any_length": metrics([r for r in rows if r["source"] == src], "p_any")} for src in SOURCES},
-            "in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos), "pres1": pres1.block(rows, metrics),
+            "in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos), "pres1": pres1.safe_block(rows, metrics),
             "status": _status(len(ins), len(oos), own), "rows": rows}
 
 
@@ -693,7 +694,7 @@ def evaluate_one(out: Path, sites: list[dict], truth: str) -> dict:
     all_rows = [r for r in res.values() for r in r["rows"]]
     ins = [r for r in all_rows if not r["oos"]]
     oos = [r for r in all_rows if r["oos"]]
-    tot = {"in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos), "pres1": pres1.block(all_rows, metrics),
+    tot = {"in_sample": split_metrics(ins), "out_of_sample": split_metrics(oos), "pres1": pres1.safe_block(all_rows, metrics),
            "by_source": {src: {"n": sum(1 for r in all_rows if r["source"] == src), "min50": metrics([r for r in all_rows if r["source"] == src])}
                          for src in SOURCES}}
     return {"truth": truth, "truth_note": TRUTH_NOTE[truth], "total": tot, "sites": res}
@@ -737,13 +738,15 @@ def occ2_columns(rows: list[dict]) -> dict:
 def pres1_columns(b: dict) -> dict:
     """The pres-1 columns of the table from a pres1 block (sat/pres1.block): pres-1a and the current judge on pres-1's
     out-of-sample cells, on the cells whose answer changed, and the change flag."""
+    if not b or b.get("error") or "pres1" not in b:   # pres-1 failed (pres1.safe_block): the columns are empty
+        b = {"n": None, "pres1": {}, "current": {}, "changed": {"n": None, "pres1": {}, "current": {}}, "change_flag": {}}
     out = {"n_pres1": b["n"]}
     for tag, m in (("pres1", b["pres1"]), ("cur_pres1", b["current"])):
-        out.update({f"recall_{tag}": m["recall"], f"precision_{tag}": m["precision"], f"f1_{tag}": m["f1"], f"brier_{tag}": m["brier"]})
-    out.update({"n_pres1_changed": b["changed"]["n"], "accuracy_pres1_changed": b["changed"]["pres1"]["accuracy"],
-                "accuracy_cur_pres1_changed": b["changed"]["current"]["accuracy"],
-                "change_flags": b["change_flag"]["flags"], "change_flag_precision": b["change_flag"]["precision"],
-                "change_flag_recall": b["change_flag"]["recall"]})
+        out.update({f"recall_{tag}": m.get("recall"), f"precision_{tag}": m.get("precision"), f"f1_{tag}": m.get("f1"), f"brier_{tag}": m.get("brier")})
+    out.update({"n_pres1_changed": b["changed"]["n"], "accuracy_pres1_changed": b["changed"]["pres1"].get("accuracy"),
+                "accuracy_cur_pres1_changed": b["changed"]["current"].get("accuracy"),
+                "change_flags": b["change_flag"].get("flags"), "change_flag_precision": b["change_flag"].get("precision"),
+                "change_flag_recall": b["change_flag"].get("recall")})
     return out
 
 
@@ -769,7 +772,7 @@ def table(res: dict) -> list[dict]:
                      "not_naval": r["labels"]["not_naval"], "no_berth": r["labels"].get("no_berth", 0),
                      "no_scene": r["labels"]["no_scene"] + r["labels"]["no_s1_pairing"],
                      "other_day_of_scene": r["labels"]["other_day_of_scene"], "status": r["status"], **occ2_columns(r.get("rows") or []),
-                     **pres1_columns(r.get("pres1") or pres1.block(r.get("rows") or [], metrics))})
+                     **pres1_columns(r.get("pres1") or pres1.safe_block(r.get("rows") or [], metrics))})
     t = res["total"]["in_sample"]["min50"]
     to = res["total"]["out_of_sample"]["min50"]
     tn, ton = res["total"]["in_sample"]["near"]["min50"], res["total"]["out_of_sample"]["near"]["min50"]
@@ -791,7 +794,7 @@ def table(res: dict) -> list[dict]:
                  "not_naval": sum(x["not_naval"] for x in rows), "no_berth": sum(x["no_berth"] for x in rows), "no_scene": sum(x["no_scene"] for x in rows),
                  "other_day_of_scene": sum(x["other_day_of_scene"] for x in rows), "status": _status(t["n"], to["n"]),
                  **occ2_columns([x for r in res["sites"].values() for x in (r.get("rows") or [])]),
-                 **pres1_columns(res["total"].get("pres1") or pres1.block([x for r in res["sites"].values() for x in (r.get("rows") or [])], metrics))})
+                 **pres1_columns(res["total"].get("pres1") or pres1.safe_block([x for r in res["sites"].values() for x in (r.get("rows") or [])], metrics))})
     return rows
 
 
@@ -993,7 +996,7 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
             snapshot(out, sites, now)
             state = "updated"
     r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites),
-         "naval50": write_naval50(out, sites), "pres1": pres1.write(out, sites)}
+         "naval50": write_naval50(out, sites), "pres1": pres1.safe_write(out, sites)}
     if log:
         log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行、"
             f"quay_pres1 {len(r['pres1'])} 港")
@@ -1214,7 +1217,7 @@ def main(argv=None) -> int:
     write(a.out, res)
     write_blind(a.out)
     write_naval50(a.out)
-    pres1.write(a.out, load_sites())
+    pres1.safe_write(a.out, load_sites())
     print(f"正解 {res['truth']}（other_truth {res['other_truth']['truth']}）", file=sys.stderr)
     for row in table(res):
         print(f"{row['name']}: 標本内 n={row['n']} 再現率={row['recall']} 適合率={row['precision']} ブライア={row['brier']}"
