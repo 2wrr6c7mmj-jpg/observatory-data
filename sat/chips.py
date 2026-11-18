@@ -20,6 +20,7 @@ import struct
 from pathlib import Path
 from typing import Callable
 
+from . import atomic
 from .grid import Grid, m_per_deg
 
 CHIPS_VERSION = "chips-1"
@@ -126,8 +127,7 @@ def _dump(obj) -> str:
 def _write_if_changed(path: Path, text: str) -> None:
     if path.exists() and path.read_text(encoding="utf-8") == text:
         return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    atomic.write_text(path, text)
 
 
 def _remove(out: Path, rel: str) -> None:

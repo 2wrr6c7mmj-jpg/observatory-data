@@ -6,7 +6,10 @@ and are never printed, logged or written. Error messages say what went wrong
 """
 from __future__ import annotations
 
+import errno
+import http.client
 import json
+import socket
 import os
 import time
 import urllib.error
@@ -48,6 +51,46 @@ class CredentialError(CDSEError):
     pass
 
 
+class NetworkError(CDSEError):
+    """No HTTP answer: the connection failed, was reset or timed out (URLError, TimeoutError, ConnectionResetError,
+    RemoteDisconnected, IncompleteRead ...). Then the caller's scene or site fails, never the whole run.
+
+    ``sent``: False only when the request certainly never reached the server (connection refused, name not resolved,
+    no route): those are sent again by Client. Otherwise (a timeout or a reset after the request went out) the server
+    may have processed it: a process request is then never sent again, and Client records the estimated PU
+    (``pu_estimate``) as spent, so the caps never undercount."""
+
+    def __init__(self, message: str, sent: bool = True):
+        super().__init__(message)
+        self.sent = sent
+        self.pu_estimate: float | None = None
+
+
+_NOT_SENT_ERRNO = {errno.ECONNREFUSED, errno.ENETUNREACH, errno.EHOSTUNREACH}
+
+
+def _not_sent(e: BaseException) -> bool:
+    """Did the request certainly not leave (no connection was made)?"""
+    for x in (e, getattr(e, "reason", None)):
+        if isinstance(x, (ConnectionRefusedError, socket.gaierror)):
+            return True
+        if isinstance(x, OSError) and not isinstance(x, TimeoutError) and getattr(x, "errno", None) in _NOT_SENT_ERRNO:
+            return True
+    return False
+
+
+# Retries of one call (each send counts as a request): a network error or HTTP 429 / 5xx is sent again after
+# NET_BACKOFF_S x 2^n seconds (n = 0, 1, 2: 5, 10, 20 s; at most NET_BACKOFF_MAX_S), so one call sends at most
+# NET_ATTEMPTS requests in about a minute -- far below the account's 300 requests per minute.
+NET_ATTEMPTS = 4
+NET_BACKOFF_S = 5.0
+NET_BACKOFF_MAX_S = 60.0
+
+
+def backoff(attempt: int) -> float:
+    return min(NET_BACKOFF_S * 2 ** attempt, NET_BACKOFF_MAX_S)
+
+
 def evalscript(with_lia: bool) -> str:
     bands = '"VV", "VH", "localIncidenceAngle"' if with_lia else '"VV", "VH"'
     # VV/VH default to linear power (sigma0 with backCoeff SIGMA0_ELLIPSOID); the angle is in degrees.
@@ -64,8 +107,24 @@ def _http(url: str, data: bytes | None = None, headers: dict | None = None, time
         with opener(req, timeout=timeout) as resp:
             return resp.status, {k.lower(): v for k, v in resp.headers.items()}, resp.read()
     except urllib.error.HTTPError as e:
-        body = e.read() if hasattr(e, "read") else b""
+        try:
+            body = e.read() if hasattr(e, "read") else b""
+        except (OSError, http.client.HTTPException):
+            body = b""
         return e.code, {k.lower(): v for k, v in (e.headers or {}).items()}, body
+    except (OSError, http.client.HTTPException) as e:  # URLError, TimeoutError, ConnectionResetError, RemoteDisconnected, ...
+        reason = getattr(e, "reason", None) or e
+        host = urllib.parse.urlsplit(url).netloc
+        sent = not _not_sent(e)
+        what = "応答が途中で途切れた" if sent else "接続できない"
+        raise NetworkError(f"CDSE（{host}）に{what}（{type(e).__name__}: {str(reason)[:200]}）", sent=sent) from None
+
+
+def _retry_after(h: dict) -> float:
+    try:
+        return max(0.0, float(h.get("retry-after") or 0))
+    except (TypeError, ValueError):  # an HTTP date: use our own wait
+        return 0.0
 
 
 def _short(body: bytes, n: int = 300) -> str:
@@ -84,6 +143,10 @@ class Client:
         self.processing_units = 0.0
         self.pu_reported = True  # False when any process response lacked the PU header
         self.last_headers: list[str] = []
+        self.network_retries = 0  # sends repeated after a network error or HTTP 429 / 5xx (catalog, process and token)
+
+    def _wait(self, seconds: float) -> None:
+        time.sleep(seconds)
 
     def token(self) -> str:
         if self._token and time.time() < self._token_exp - 60:
@@ -93,8 +156,21 @@ class Client:
             raise CredentialError(f"CDSE の資格情報が設定されていません（{', '.join(missing)} が空）。リポジトリの Secrets を確かめてください")
         data = urllib.parse.urlencode({"grant_type": "client_credentials", "client_id": self._id,
                                        "client_secret": self._secret}).encode()
-        status, _h, body = _http(TOKEN_URL, data, {"Content-Type": "application/x-www-form-urlencoded"},
-                                 timeout=60, opener=self._opener)
+        for attempt in range(NET_ATTEMPTS):  # 429 / 5xx and network errors: retried with a growing wait
+            try:
+                status, h, body = _http(TOKEN_URL, data, {"Content-Type": "application/x-www-form-urlencoded"},
+                                        timeout=60, opener=self._opener)
+            except NetworkError:
+                if attempt == NET_ATTEMPTS - 1:
+                    raise
+                self.network_retries += 1
+                self._wait(backoff(attempt))
+                continue
+            if (status == 429 or status >= 500) and attempt < NET_ATTEMPTS - 1:
+                self.network_retries += 1
+                self._wait(min(max(_retry_after(h), backoff(attempt)), 120))
+                continue
+            break
         if status != 200:
             try:
                 err = json.loads(body)
@@ -115,10 +191,19 @@ class Client:
 
     def _post_sh(self, url: str, payload: dict, accept: str) -> tuple[dict, bytes]:
         body = json.dumps(payload).encode()
-        for attempt in range(4):
+        status, data = None, b""
+        for attempt in range(NET_ATTEMPTS):
             headers = {"Authorization": "Bearer " + self.token(), "Content-Type": "application/json", "Accept": accept}
             self.requests += 1
-            status, h, data = _http(url, body, headers, opener=self._opener)
+            try:
+                status, h, data = _http(url, body, headers, opener=self._opener)
+            except NetworkError as e:
+                # a process request that may have reached the server is never sent again (it may have spent PU)
+                if attempt == NET_ATTEMPTS - 1 or (e.sent and url == PROCESS_URL):
+                    raise
+                self.network_retries += 1
+                self._wait(backoff(attempt))
+                continue
             if status == 200:
                 return h, data
             if status == 401 and attempt == 0:
@@ -129,10 +214,13 @@ class Client:
             if status == 403:
                 raise CredentialError(f"Sentinel Hub がアクセスを拒否（HTTP 403）。アカウントの権限か無料枠を確かめてください: {_short(data)}")
             if status == 429 or status >= 500:
-                wait = float(h.get("retry-after") or 0) or 20 * (attempt + 1)
-                if status == 429 and attempt == 3:
+                wait = _retry_after(h) or 20 * (attempt + 1)
+                if status == 429 and attempt == NET_ATTEMPTS - 1:
                     raise CDSEError(f"Sentinel Hub の利用制限（HTTP 429）。無料枠の処理単位かリクエスト数の上限の可能性: {_short(data)}")
-                time.sleep(min(wait, 120))
+                if attempt == NET_ATTEMPTS - 1:
+                    break
+                self.network_retries += 1
+                self._wait(min(wait, 120))
                 continue
             raise CDSEError(f"Sentinel Hub がリクエストを受け付けません（HTTP {status}）: {_short(data)}")
         raise CDSEError(f"Sentinel Hub への要求が繰り返し失敗しました（HTTP {status}）: {_short(data)}")
@@ -156,6 +244,21 @@ class Client:
             payload["next"] = nxt
         return feats
 
+    def _send_process(self, payload: dict, accept: str, est: float) -> tuple[dict, bytes]:
+        """A process request. When it may have reached the server but no answer came (NetworkError ``sent``), the
+        estimated PU are recorded as spent (processing_units, pu_reported False) and kept on the error
+        (``pu_estimate``) for the scene's record."""
+        try:
+            return self._post_sh(PROCESS_URL, payload, accept)
+        except NetworkError as e:
+            if e.sent:
+                # a subclass may have set a larger estimate (port_archive.LimitedClient: the largest header PU seen
+                # for this request's size), the same value it counts in its rate window
+                e.pu_estimate = max(est, e.pu_estimate or 0.0)
+                self.processing_units += e.pu_estimate
+                self.pu_reported = False
+            raise
+
     def process(self, bbox: list[float], width: int, height: int, t_from: datetime, t_to: datetime,
                 with_lia: bool = True, upsampling: str = "NEAREST") -> tuple[bytes, float | None]:
         """``upsampling``: interpolation of the S1 GRD (Sentinel Hub docs: for Sentinel-1 it applies
@@ -178,7 +281,7 @@ class Client:
                        "responses": [{"identifier": "default", "format": {"type": "image/png"}}]},
             "evalscript": evalscript(with_lia),
         }
-        h, data = self._post_sh(PROCESS_URL, payload, "image/png")
+        h, data = self._send_process(payload, "image/png", estimate_pu(width, height, 3 if with_lia else 2))
         self.last_headers = sorted(h)  # names only, for the probe
         pu = h.get("x-processingunits-spent")
         try:
@@ -195,7 +298,9 @@ class Client:
     def process_raw(self, payload: dict, accept: str, input_bands: int) -> tuple[bytes, float]:
         """Any Process API request (Sentinel-2 in sat/s2.py); PU from the response header, else estimated
         (no orthorectification factor)."""
-        h, data = self._post_sh(PROCESS_URL, payload, accept)
+        out = payload.get("output", {})
+        est = round(max(0.005, out.get("width", 0) * out.get("height", 0) / 512 ** 2 * max(input_bands / 3, 1)), 3)
+        h, data = self._send_process(payload, accept, est)
         self.last_headers = sorted(h)
         pu = h.get("x-processingunits-spent")
         try:
@@ -204,8 +309,7 @@ class Client:
             pu = None
         if pu is None:
             self.pu_reported = False
-            out = payload.get("output", {})
-            pu = round(max(0.005, out.get("width", 0) * out.get("height", 0) / 512 ** 2 * max(input_bands / 3, 1)), 3)
+            pu = est
         self.processing_units += pu
         return data, pu
 

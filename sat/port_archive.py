@@ -28,16 +28,19 @@ once (``row_key``: run_utc, site_id, use, requests, PU), so rows added on differ
 rows copied to several branches or files count once. Rate: at most ``--pu-per-min`` PU and ``--req-per-min`` requests in any 60 s (the account limit is
 300 / 300 shared by all jobs); HTTP 429 is waited for and retried.
 
-Limits: cdse.Client retries HTTP 429 / 5xx by itself (up to 4 sends per call, 20-120 s apart) inside one
-gated call. Those extra sends are not checked against the window or the caps before they go out; they are
+Limits: cdse.Client retries HTTP 429 / 5xx (up to 4 sends per call, 20-120 s apart) and network errors
+(timeouts, resets: 5, 10, 20 s apart, on this client's clock) by itself inside one gated call. Those extra sends are not checked against the window or the caps before they go out; they are
 added to the 60 s window (0 PU) and to the request count afterwards, so the request cap and the request
 rate can be passed by at most 3 requests per call. Only one job runs at a time (one concurrency group).
+
+Records: the scenes of ``run`` (s1_scenes.csv, detections) and the S2 days are written however the run ends, and the
+port's usage row (ports/<site>/usage.csv) too, also when a 403 / 401 or an unexpected error stops it midway (the error
+is raised again afterwards): a scene already fetched is never fetched again for want of its record.
 """
 from __future__ import annotations
 
 import argparse
 import csv
-import io
 import json
 import sys
 import time
@@ -47,7 +50,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import cdse, s2
+from . import atomic, cdse, s2
 from . import color as fcolor
 from .detect import DETECTOR_VERSION, LENGTH_CLASSES, detect
 from .grid import Grid
@@ -73,6 +76,7 @@ S2_RESERVE_PU = 3.0         # run_s2 keeps this much of the port's cap free befo
 # spends only what the days cost; the cap is an upper bound.
 S2_HEADROOM_PU = S2_RESERVE_PU + s2.EST_PRE_PU + s2.EST_FULL_PU
 RAW_KEEP = 3
+NET_FAILURES_PER_SITE = 2   # network errors of consecutive scenes / days after which a port stops (as sat/run.py)
 DONE_RESULTS = ("counted", "skipped_low_coverage", "skipped_footprint")
 SCENE_FIELDS = ["site_id", "acquired_utc", "platform", "orbit_direction", "relative_orbit", "result",
                 "coverage", "incidence_deg", "candidates", "harbour_candidates", "quay_candidates"] + \
@@ -168,6 +172,14 @@ class LimitedClient(cdse.Client):
             except cdse.CredentialError:
                 self._count_resends(req0, 1)
                 raise
+            except cdse.NetworkError as e:
+                if e.sent and key is not None:  # a process request that may have been served: its estimate in the window
+                    self._count_resends(req0, 1)
+                    self.window.append((self.clock(), est))
+                    e.pu_estimate = est  # and the same value in processing_units (cdse.Client._send_process)
+                else:
+                    self._count_resends(req0, 0)
+                raise
             except cdse.CDSEError as e:
                 self._count_resends(req0, 0)
                 if "429" in str(e) and attempt < 5:
@@ -186,6 +198,10 @@ class LimitedClient(cdse.Client):
                 self.seen_pu[key] = max(self.seen_pu.get(key, 0.0), pu)
             return h, data
         raise cdse.CDSEError("HTTP 429 が続いた")
+
+    def _wait(self, seconds: float) -> None:
+        """cdse.Client's own waits between resends (network errors, 429 / 5xx) on this client's clock."""
+        self.sleep(seconds)
 
     def _count_resends(self, req0: int, keep: int) -> None:
         """Sends made by cdse.Client's own retries (429 / 5xx / expired token) go into the window as 0 PU."""
@@ -232,13 +248,8 @@ def read_csv(path: Path) -> list[dict]:
 
 
 def write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=fields, lineterminator="\n", extrasaction="ignore")
-    w.writeheader()
-    for r in rows:
-        w.writerow({k: ("" if r.get(k) is None else r.get(k)) for k in fields})
-    path.write_text(buf.getvalue(), encoding="utf-8")
+    """Atomic (sat/atomic.py): a failure midway leaves the old file."""
+    atomic.write_csv(path, rows, fields)
 
 
 def month_usage(paths: list[Path], month: str) -> tuple[float, int]:
@@ -657,92 +668,109 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
     summary = {"catalog_acquisitions": len(acqs), "counted": 0, "skipped": 0, "footprint_skipped": 0, "errors": 0,
                "stopped": None}
     pu0 = client.processing_units
+    net_failures = 0
     log(f"{site['id']} S1: 撮影 {len(acqs)} 回（過去 {days} 日）、済み {len(done)}")
-    for acq in acqs:
-        a = acq["acquired_utc"]
-        if a in done:
-            continue
-        row = {"site_id": site["id"], "acquired_utc": a, "platform": acq["platform"],
-               "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
-               "mask_version": tag, "detector_version": DETECTOR_VERSION,
-               "archive_version": ARCHIVE_VERSION, "retrieved_utc": cdse.iso(datetime.now(timezone.utc))}
-        share = footprint_share(acq.get("geometries") or [], grid, ~land)
-        if share is not None and share < MIN_COVERAGE:  # catalog footprint: no request, no PU
-            row.update(result="skipped_footprint", coverage=share, processing_units=0)
-            rows.append(row)
-            summary["footprint_skipped"] += 1
-            log(f"{site['id']} S1 {a}: 足跡が水域の {share:.0%} しか覆わないため取らない")
-            continue
-        try:
-            data, pu = client.process(grid.bbox, grid.width, grid.height, acq["t_from"], acq["t_to"], True)
-        except BudgetStop as e:
-            summary["stopped"] = str(e)
-            log(f"{site['id']} S1: {e}")
-            break
-        except cdse.CredentialError:
-            raise
-        except Exception as e:
-            row.update(result="error", error=str(e)[:300])
-            rows.append(row)
-            summary["errors"] += 1
-            log(f"{site['id']} S1 {a}: 失敗 {str(e)[:200]}")
-            continue
-        row["processing_units"] = pu
-        try:
-            vv, vh, lia = decode_chip(data)
-            valid_water = np.isfinite(vv) & ~land
-            coverage = valid_water.sum() / water_px if water_px else 0.0
-            row["coverage"] = round(float(coverage), 3)
-            if coverage < MIN_COVERAGE:
-                row["result"] = "skipped_low_coverage"
-                summary["skipped"] += 1
-                rows.append(row)
-                log(f"{site['id']} S1 {a}: 水域の {coverage:.0%} しか写っていない")
+    try:
+        for acq in acqs:
+            a = acq["acquired_utc"]
+            if a in done:
                 continue
-            tmp_raw.mkdir(parents=True, exist_ok=True)
-            (tmp_raw / f"{site['id']}-{stamp(a)}.png").write_bytes(data)
-            if lia is not None and np.isfinite(lia[valid_water]).any():
-                row["incidence_deg"] = round(float(np.nanmedian(lia[valid_water])), 2)
-            if mask is not None:
-                dets, _info = detect(vv, vh, land, grid.pixel_m)
-            else:
-                dets = []
-            row["candidates"] = len(dets) if mask is not None else ""
-            row["harbour_candidates"] = sum(d["zone"] == "harbour" for d in dets) if mask is not None else ""
-            row["quay_candidates"] = sum(d["zone"] == "quay" for d in dets) if mask is not None else ""
-            for name, _lo, _hi in LENGTH_CLASSES:
-                row[f"len_{name}"] = sum(d["length_class"] == name for d in dets) if mask is not None else ""
-            cpath, tpath = color_paths(site, a)
-            label = (f"{site['id']} {site.get('name', '')}  {a}  {acq['platform']} {acq['orbit_direction']} "
-                     f"orbit {acq['relative_orbit']}  (provisional)")
-            full, thumb = fcolor.render(vv, vh, label, f"Contains modified Copernicus Sentinel data {a[:4]}")
-            for rel, b in ((cpath, full), (tpath, thumb)):
-                (out / rel).parent.mkdir(parents=True, exist_ok=True)
-                (out / rel).write_bytes(b)
-            row.update(color_image=cpath, color_thumb=tpath, result="counted")
-            for i, d in enumerate(sorted(dets, key=lambda d: (d["row"], d["col"]))):
-                lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
-                feats_by_month.setdefault(a[:7], []).append({
-                    "type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [round(float(lon), 6), round(float(lat), 6)]},
-                    "properties": {"site_id": site["id"], "acquired_utc": a, "n": i + 1,
-                                   "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
-                                   "relative_orbit": acq["relative_orbit"], "zone": d["zone"],
-                                   "length_m": d["length_m"], "width_m": d["width_m"], "length_class": d["length_class"],
-                                   "pixels": d["pixels"], "peak_vv_db": d["peak_vv_db"],
-                                   "contrast_vv_db": d["contrast_vv_db"], "vh_ratio_db": d["vh_ratio_db"],
-                                   "status": "candidate", "reliability": "A", "credibility": "3",
-                                   "mask_version": row["mask_version"], "detector_version": DETECTOR_VERSION,
-                                   "image": cpath}})
-            summary["counted"] += 1
-            log(f"{site['id']} S1 {a} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}: "
-                f"候補 {row['candidates']}（港内 {row['harbour_candidates']}、岸壁帯 {row['quay_candidates']}）、"
-                f"{pu} PU、水域の {coverage:.0%}")
-        except Exception as e:  # PU spent: record the failure, go on
-            row.update(result="error", error=f"検出・描画で失敗: {str(e)[:280]}")
-            summary["errors"] += 1
-            log(f"{site['id']} S1 {a}: 検出・描画で失敗 {str(e)[:200]}")
-        rows.append(row)
+            row = {"site_id": site["id"], "acquired_utc": a, "platform": acq["platform"],
+                   "orbit_direction": acq["orbit_direction"], "relative_orbit": acq["relative_orbit"],
+                   "mask_version": tag, "detector_version": DETECTOR_VERSION,
+                   "archive_version": ARCHIVE_VERSION, "retrieved_utc": cdse.iso(datetime.now(timezone.utc))}
+            share = footprint_share(acq.get("geometries") or [], grid, ~land)
+            if share is not None and share < MIN_COVERAGE:  # catalog footprint: no request, no PU
+                row.update(result="skipped_footprint", coverage=share, processing_units=0)
+                rows.append(row)
+                summary["footprint_skipped"] += 1
+                log(f"{site['id']} S1 {a}: 足跡が水域の {share:.0%} しか覆わないため取らない")
+                continue
+            try:
+                data, pu = client.process(grid.bbox, grid.width, grid.height, acq["t_from"], acq["t_to"], True)
+            except BudgetStop as e:
+                summary["stopped"] = str(e)
+                log(f"{site['id']} S1: {e}")
+                break
+            except cdse.CredentialError:
+                raise
+            except Exception as e:
+                row.update(result="error", error=str(e)[:300])
+                if getattr(e, "pu_estimate", None):  # no answer to a request that may have been served: its estimate
+                    row.update(processing_units=e.pu_estimate, error=f"{str(e)[:240]}（PU は見込み）")
+                rows.append(row)
+                summary["errors"] += 1
+                log(f"{site['id']} S1 {a}: 失敗 {str(e)[:200]}")
+                net_failures = net_failures + 1 if isinstance(e, cdse.NetworkError) else 0
+                if net_failures >= NET_FAILURES_PER_SITE:  # the network to CDSE is down: no more requests this run
+                    summary["stopped"] = f"接続の失敗が {net_failures} 回続いたため止める"
+                    log(f"{site['id']} S1: {summary['stopped']}")
+                    break
+                continue
+            net_failures = 0
+            row["processing_units"] = pu
+            try:
+                vv, vh, lia = decode_chip(data)
+                valid_water = np.isfinite(vv) & ~land
+                coverage = valid_water.sum() / water_px if water_px else 0.0
+                row["coverage"] = round(float(coverage), 3)
+                if coverage < MIN_COVERAGE:
+                    row["result"] = "skipped_low_coverage"
+                    summary["skipped"] += 1
+                    rows.append(row)
+                    log(f"{site['id']} S1 {a}: 水域の {coverage:.0%} しか写っていない")
+                    continue
+                tmp_raw.mkdir(parents=True, exist_ok=True)
+                (tmp_raw / f"{site['id']}-{stamp(a)}.png").write_bytes(data)
+                if lia is not None and np.isfinite(lia[valid_water]).any():
+                    row["incidence_deg"] = round(float(np.nanmedian(lia[valid_water])), 2)
+                if mask is not None:
+                    dets, _info = detect(vv, vh, land, grid.pixel_m)
+                else:
+                    dets = []
+                row["candidates"] = len(dets) if mask is not None else ""
+                row["harbour_candidates"] = sum(d["zone"] == "harbour" for d in dets) if mask is not None else ""
+                row["quay_candidates"] = sum(d["zone"] == "quay" for d in dets) if mask is not None else ""
+                for name, _lo, _hi in LENGTH_CLASSES:
+                    row[f"len_{name}"] = sum(d["length_class"] == name for d in dets) if mask is not None else ""
+                cpath, tpath = color_paths(site, a)
+                label = (f"{site['id']} {site.get('name', '')}  {a}  {acq['platform']} {acq['orbit_direction']} "
+                         f"orbit {acq['relative_orbit']}  (provisional)")
+                full, thumb = fcolor.render(vv, vh, label, f"Contains modified Copernicus Sentinel data {a[:4]}")
+                for rel, b in ((cpath, full), (tpath, thumb)):
+                    (out / rel).parent.mkdir(parents=True, exist_ok=True)
+                    (out / rel).write_bytes(b)
+                row.update(color_image=cpath, color_thumb=tpath, result="counted")
+                for i, d in enumerate(sorted(dets, key=lambda d: (d["row"], d["col"]))):
+                    lon, lat = grid.to_lonlat(d["row"] + 0.5, d["col"] + 0.5)
+                    feats_by_month.setdefault(a[:7], []).append({
+                        "type": "Feature",
+                        "geometry": {"type": "Point", "coordinates": [round(float(lon), 6), round(float(lat), 6)]},
+                        "properties": {"site_id": site["id"], "acquired_utc": a, "n": i + 1,
+                                       "platform": acq["platform"], "orbit_direction": acq["orbit_direction"],
+                                       "relative_orbit": acq["relative_orbit"], "zone": d["zone"],
+                                       "length_m": d["length_m"], "width_m": d["width_m"], "length_class": d["length_class"],
+                                       "pixels": d["pixels"], "peak_vv_db": d["peak_vv_db"],
+                                       "contrast_vv_db": d["contrast_vv_db"], "vh_ratio_db": d["vh_ratio_db"],
+                                       "status": "candidate", "reliability": "A", "credibility": "3",
+                                       "mask_version": row["mask_version"], "detector_version": DETECTOR_VERSION,
+                                       "image": cpath}})
+                summary["counted"] += 1
+                log(f"{site['id']} S1 {a} {acq['platform']} {acq['orbit_direction']} 軌道{acq['relative_orbit']}: "
+                    f"候補 {row['candidates']}（港内 {row['harbour_candidates']}、岸壁帯 {row['quay_candidates']}）、"
+                    f"{pu} PU、水域の {coverage:.0%}")
+            except Exception as e:  # PU spent: record the failure, go on
+                row.update(result="error", error=f"検出・描画で失敗: {str(e)[:280]}")
+                summary["errors"] += 1
+                log(f"{site['id']} S1 {a}: 検出・描画で失敗 {str(e)[:200]}")
+            rows.append(row)
+    finally:  # the scenes done so far (their PU) are recorded however the loop ends (403 / 401, a network error, ...)
+        _save_s1(out, path, others, rows, feats_by_month)
+    summary["processing_units"] = round(client.processing_units - pu0, 3)
+    return summary
+
+
+def _save_s1(out: Path, path: Path, others: list[dict], rows: list[dict], feats_by_month: dict) -> None:
     write_csv(path, sorted(others + rows, key=lambda r: (r["acquired_utc"], r.get("mask_version") or "")), SCENE_FIELDS)
     for month, feats in feats_by_month.items():
         p = out / "detections" / f"{month}.geojson"
@@ -753,10 +781,7 @@ def run_s1(client: LimitedClient, site: dict, out: Path, tmp_raw: Path, mask: np
         fc["features"].sort(key=lambda f: (f["properties"]["acquired_utc"], f["properties"].get("mask_version") or "",
                                            f["properties"]["n"]))
         fc["attribution"] = credit(f["properties"]["acquired_utc"][:4] for f in fc["features"])
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    summary["processing_units"] = round(client.processing_units - pu0, 3)
-    return summary
+        atomic.write_text(p, json.dumps(fc, ensure_ascii=False, separators=(",", ":")) + "\n")
 
 
 def raw_subdir(site: dict) -> str:
@@ -823,6 +848,9 @@ def run_s2(client: LimitedClient, site: dict, out: Path, now: datetime, cap_left
         for k in ("days", "clear", "cloudy", "skipped", "deferred", "errors"):
             tot[k] += s.get(k, 0)
         tot["processing_units"] = round(tot["processing_units"] + s.get("processing_units", 0), 3)
+        if s.get("stopped_network"):
+            tot["stopped"] = s["stopped_network"]
+            break
         end -= timedelta(days=days)
     return tot
 
@@ -845,7 +873,7 @@ def run_port(client: LimitedClient, site: dict, out_root: Path, raw_dir: Path, t
     if not s2_on:
         s2s = {"stopped": "S2 なし（S1 だけの取得）"}
     elif s1.get("stopped"):
-        s2s = {"stopped": "S1 で上限"}
+        s2s = {"stopped": f"S1 で停止（{s1['stopped']}）"[:300]}
     else:
         s2s = run_s2(client, site, out, now, lambda: client.cap_pu - client.processing_units, deadline_left, log=log,
                      s2_days=s2_days)
@@ -946,6 +974,13 @@ def baseline_port(client: LimitedClient, site: dict, mask: np.ndarray, base_dir:
     return summary
 
 
+def partial_result(client: LimitedClient, site: dict, error: str) -> dict:
+    """run_port's result for a run that stopped midway: what the client spent (the usage row is written all the same)."""
+    return {"site_id": site["id"], "s1": {}, "s2": {}, "requests": client.requests,
+            "processing_units": round(client.processing_units, 3),
+            "pu_source": "header" if client.pu_reported else "estimate", "cap_pu": client.cap_pu, "error": error}
+
+
 def usage_row(res: dict, now: datetime) -> dict:
     return {"run_utc": cdse.iso(now), "site_id": res["site_id"], "requests": res["requests"],
             "processing_units": res["processing_units"], "pu_source": res["pu_source"],
@@ -1035,7 +1070,10 @@ def main(argv=None) -> int:
                                deadline=time.monotonic() + args.max_minutes * 60, budget_month=args.budget_month)
         byid = {p["id"]: p for p in ports}
         out = {"run_utc": cdse.iso(now), "cap_pu": args.cap, "ports": []}
+        fatal = None
         for pid in args.only:
+            if fatal is not None:
+                break
             site = byid[pid]
             pu0, req0 = client.processing_units, client.requests
             try:
@@ -1056,11 +1094,12 @@ def main(argv=None) -> int:
                                   lookback=args.lookback,
                                   max_scenes=int(sp[1]) if sp and len(sp) > 1 else BASELINE_MAX_SCENES,
                                   only_orbits=only, orbit_max=omax, top=top)
-            except (BudgetStop, FileNotFoundError, cdse.CDSEError) as e:
-                if isinstance(e, cdse.CredentialError) and not isinstance(e, BudgetStop):
-                    raise
+            except BaseException as e:  # noqa: BLE001
                 s = {"site_id": pid, "error": str(e)[:300]}
                 print(f"{pid}: {e}", file=sys.stderr)
+                if not isinstance(e, (BudgetStop, FileNotFoundError, cdse.CDSEError)) or (
+                        isinstance(e, cdse.CredentialError) and not isinstance(e, BudgetStop)):
+                    fatal = e  # 403 / 401 or an unexpected error: the port's PU are recorded below, then the run stops
             s.update(processing_units=round(client.processing_units - pu0, 3), requests=client.requests - req0)
             out["ports"].append(s)
             d = args.out / pid
@@ -1068,6 +1107,8 @@ def main(argv=None) -> int:
                 "run_utc": cdse.iso(now), "site_id": pid, "requests": s["requests"], "processing_units": s["processing_units"],
                 "pu_source": "header" if client.pu_reported else "estimate", "s1_processing_units": s["processing_units"],
                 "cap_pu": args.cap, "archive_version": "baseline-bl-1"}], USAGE_FIELDS)
+        if fatal is not None:
+            raise fatal
         out.update(processing_units=round(client.processing_units, 3), requests=client.requests)
         text = json.dumps(out, ensure_ascii=False, indent=1)
         if args.summary:
@@ -1130,12 +1171,19 @@ def main(argv=None) -> int:
     site = next(s for s in ports if s["id"] == args.port)
     client = LimitedClient(args.cap, args.req, args.pu_per_min, args.req_per_min,
                            deadline=time.monotonic() + args.max_minutes * 60, budget_month=args.budget_month)
-    res = run_port(client, site, args.out, args.raw_dir, args.tmp, args.mask_dir, now,
-                   log=lambda s: print(s, file=sys.stderr, flush=True), days_from=args.days_from,
-                   days_to=args.days_to, s2_on=not args.s1_only, s2_days=args.s2_days)
-    res["trend"] = trend(args.out / site["id"], mask_tag(site))
     out = args.out / site["id"]
-    write_csv(out / "usage.csv", read_csv(out / "usage.csv") + [usage_row(res, now)], USAGE_FIELDS)
+    res = None
+    try:
+        res = run_port(client, site, args.out, args.raw_dir, args.tmp, args.mask_dir, now,
+                       log=lambda s: print(s, file=sys.stderr, flush=True), days_from=args.days_from,
+                       days_to=args.days_to, s2_on=not args.s1_only, s2_days=args.s2_days)
+    except BaseException as e:  # a 403 / 401 (CredentialError), a network error, ...: the PU spent is still recorded
+        res = partial_result(client, site, f"{type(e).__name__}: {str(e)[:300]}")
+        print(f"{site['id']}: 途中で止まった（使った PU は usage.csv に記録）: {res['error']}", file=sys.stderr)
+        raise
+    finally:
+        write_csv(out / "usage.csv", read_csv(out / "usage.csv") + [usage_row(res, now)], USAGE_FIELDS)
+    res["trend"] = trend(args.out / site["id"], mask_tag(site))
     text = json.dumps(res, ensure_ascii=False, indent=1)
     if args.summary:
         args.summary.write_text(text + "\n", encoding="utf-8")

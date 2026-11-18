@@ -79,7 +79,9 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import berths
+import io
+
+from . import atomic, berths
 from . import blind_prior as bp
 from . import occ2_schema as o2s
 from . import pres1
@@ -973,7 +975,7 @@ def snapshot(out: Path, sites: list[dict] | None = None, now: datetime | None = 
                     "写しを更新する。規則を変えた PR では python -m sat.eval_presence --snapshot で写しを更新し、変わった升の数を PR に書く"),
            "table": presence_table(out, sites)}
     (out / "eval").mkdir(parents=True, exist_ok=True)
-    (out / "eval" / SNAPSHOT_FILE).write_text(json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    atomic.write_text(out / "eval" / SNAPSHOT_FILE, json.dumps(doc, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
     return doc
 
 
@@ -1048,10 +1050,11 @@ def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
             stale.unlink()
     for sid, rows in res.items():
         d.mkdir(parents=True, exist_ok=True)
-        with (d / f"{sid}.csv").open("w", encoding="utf-8", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=BLIND_COLUMNS, lineterminator="\n")
-            w.writeheader()
-            w.writerows(rows)
+        f = io.StringIO()
+        w = csv.DictWriter(f, fieldnames=BLIND_COLUMNS, lineterminator="\n")
+        w.writeheader()
+        w.writerows(rows)
+        atomic.write_text(d / f"{sid}.csv", f.getvalue())
     return {sid: len(rows) for sid, rows in res.items()}
 
 
@@ -1143,10 +1146,11 @@ def write_naval50(out: Path, sites: list[dict] | None = None) -> int:
     boxes: dict = {}
     rows = naval50_counts(out, sites, boxes)
     if rows:
-        with (out / NAVAL50_FILE).open("w", encoding="utf-8", newline="") as f:
-            w = csv.DictWriter(f, fieldnames=NAVAL50_COLUMNS, lineterminator="\n")
-            w.writeheader()
-            w.writerows(rows)
+        f = io.StringIO()
+        w = csv.DictWriter(f, fieldnames=NAVAL50_COLUMNS, lineterminator="\n")
+        w.writeheader()
+        w.writerows(rows)
+        atomic.write_text(out / NAVAL50_FILE, f.getvalue())
         write_naval50_boxes(out, rows, boxes)
         from . import close_pairs   # the S1 scenes with a clear S2 image within a day (user 2026-11-15: keep them every day)
         close_pairs.update(out, rows, boxes)
@@ -1170,7 +1174,7 @@ def write_naval50_boxes(out: Path, rows: list[dict], boxes: dict) -> int:
     n = 0
     for sid in sorted({r["site_id"] for r in rows}):
         doc = naval50_box_doc(sid, rows, boxes.get(sid, {}))
-        (d / f"{sid}.json").write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+        atomic.write_text(d / f"{sid}.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n")
         n += 1
     return n
 
@@ -1196,8 +1200,8 @@ def compare_tables(old: dict, new: dict) -> dict:
 def write(out: Path, res: dict) -> None:
     d = out / "eval"
     d.mkdir(parents=True, exist_ok=True)
-    (d / "presence.json").write_text(json.dumps(res, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    (d / "meta.json").write_text(json.dumps(meta(res), ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    atomic.write_text(d / "presence.json", json.dumps(res, ensure_ascii=False, indent=1) + "\n")
+    atomic.write_text(d / "meta.json", json.dumps(meta(res), ensure_ascii=False, indent=1) + "\n")
 
 
 def main(argv=None) -> int:

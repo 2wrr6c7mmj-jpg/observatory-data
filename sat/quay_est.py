@@ -333,8 +333,8 @@ class ZonePrior:
         return cls(model, site_id, st)
 
     def save(self, path: Path) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(self.state, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        from . import atomic
+        atomic.write_text(path, json.dumps(self.state, ensure_ascii=False, indent=1) + "\n")
 
     def alpha(self, zid: str):
         z = self.state["zones"].get(zid)
@@ -365,6 +365,21 @@ class ZonePrior:
         h.append({"acquired_utc": acquired_utc, "prior_hash": self.digest(), "updated": used, "note": note,
                   "alpha": {k: v["alpha"] for k, v in sorted(self.state["zones"].items())}})
         self.state["history"] = sorted(h, key=lambda x: x["acquired_utc"])[-400:]
+
+    def without(self, acquired_utc: str) -> "ZonePrior":
+        """The prior to estimate ``acquired_utc`` with: this one, unless the scene already updated it (a scene fetched
+        again, e.g. for its quay count). Then a copy whose alpha is the one the scene was first estimated with (its
+        ``history`` entry, recorded before its update), or alpha0 when that entry is gone: a scene never informs its
+        own prior. The copy is for the estimate only (never saved, never updated)."""
+        if acquired_utc not in self.state.get("applied", []):
+            return self
+        import copy
+        h = next((x for x in self.state.get("history", []) if x["acquired_utc"] == acquired_utc), None)
+        st = copy.deepcopy(self.state)
+        for zid, z in st["zones"].items():
+            past = (h or {}).get("alpha", {}).get(zid)
+            z["alpha"] = list(past) if past is not None else list(z["alpha0"])
+        return ZonePrior(self.model, self.site_id, st)
 
     def update(self, acquired_utc: str, soft: dict[str, list[np.ndarray]]) -> bool:
         if acquired_utc in self.state["applied"]:
