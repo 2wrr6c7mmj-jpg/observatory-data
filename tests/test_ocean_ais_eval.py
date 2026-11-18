@@ -442,7 +442,8 @@ class RepoTest(unittest.TestCase):
         # the evaluator publishes only below ais_eval/ and only after the tests
         self.assertIn("tests.test_ocean_ais_eval", ev)
         self.assertIn("steps.tests.outcome == 'success'", ev)
-        self.assertGreaterEqual(ev.count("git pull -q --rebase"), 1)
+        # rebased onto main before the push (tools/push_retry.sh aborts a failed rebase and tries again)
+        self.assertIn("tools/push_retry.sh", ev)
 
     def test_published_state_has_no_raw_ais(self):
         d = ROOT / "docs" / "data" / "ocean" / "ais_eval"

@@ -3,7 +3,8 @@ on:
   pull_request:
   push:
     branches: [main]
-    paths: ['collectors/**', 'tests/**', 'jso/**', 'notam/**', 'sat/**', 'ocean/**', 'analysis/**', 'tools/**']
+    paths: ['collectors/**', 'tests/**', 'jso/**', 'notam/**', 'sat/**', 'ocean/**', 'analysis/**', 'tools/**',
+            'translate/**', 'exercises/**', '.github/**']
 permissions:
   contents: read
 jobs:

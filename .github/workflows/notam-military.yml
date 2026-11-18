@@ -46,8 +46,5 @@ jobs:
           git -c user.name="observatory-data bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -q -m "データ更新: NOTAM・航行警報 軍事・発射 ($(date -u +%Y-%m-%dT%H:%MZ))"
           # Other workflows push to main (other directories); rebase onto them.
-          for i in 1 2 3 4; do
-            git pull -q --rebase && git push && exit 0
-            sleep 20
-          done
-          exit 1
+          # rebase onto main; a failed rebase is aborted and tried again (tools/push_retry.sh)
+          bash tools/push_retry.sh --tries 4 --title notam-military

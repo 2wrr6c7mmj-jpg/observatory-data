@@ -9433,7 +9433,7 @@
   "presence_evaluation": {
    "file": "eval/presence.json",
    "meta": "eval/meta.json",
-   "version": "eval-presence-5",
+   "version": "eval-presence-6",
    "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
    "status": {
     "ZJG": "標本 44 撮影×区間（標本外 0）",
@@ -9461,6 +9461,65 @@
     "WHI": "標本 0"
    },
    "note": "海軍の岸壁（naval の線、50 m 以上）の撮影×区間ごとの在/不在を所有者の目視と突き合わせた評価票（再現率・適合率・ブライア、港別と全体、判定の出所別）。毎日の実行が保存済みのファイルから作り直す（PU 0）。定義と港別の表は eval/meta.json"
+  },
+  "presence_trial": {
+   "version": "pres-1a",
+   "status": "試行（並行系列）。公開の数・画面は変えない",
+   "files": "quay_pres1/<地点>.json",
+   "calibration": "sat/pres1_calib.json",
+   "design": "docs/data/sat/eval/pres1-design.md",
+   "p_pres1": "在の確率。logit p＝b0＋b1·z(p_current)＋b2·z(res_rate)＋b3·z(res_n)（z＝学習の升の平均と標準偏差で標準化）。p_current＝現行の判定（est-2／s1-recount）、res_rate＝(在＋1)／(答え＋2)、res_n＝答えの数：区間の、撮影の日（ラベルの日と S1 の日の早い方）より前の日の所有者の答え（S2 の日の答えと S1 の撮影の答え、1 日 1 つ、両方あれば S2）。撮影の日以後の答えは使わない。答えの無い区間は 0.5・0",
+   "change_flag": "現行の判定（p_current ≥ 0.5）が区間の直前の答えと食い違うと 1、同じなら 0、直前の答えが無ければ null。変化の兆し（要確認）で、数には入れない",
+   "sites": "sites.json の quay.pres1：off（既定）／trial（quay_pres1 と評価票の併記だけ）／on（未使用。切り替えの条件は設計書 §4.3）。湛江は off",
+   "weakness": "答えが前回から変わった升（入港・出港）では現行の判定より当たらない。変化は change_flag で別に見る",
+   "limits": [
+    "holdout（fit_before 以後の升）は係数については標本外だが、変数の組（p_current・res_rate・res_n）と C の選択は 2部が全升の前進検証で決めたので、手法の選び方については標本外ではない（数字はやや良く出ている可能性がある）",
+    "holdout の撮影は少なく港が偏る（pres1_calib.json の holdout_by_port：撮影 19、LSN・QDH が升の約 6 割、XSN・SYL・SLP・QGZ は 1 撮影ずつ）。港ごとの on の判断（設計書 §4.3 条件 2）にはまだ足りない",
+    "直前の答えが古い区間がある（quay_pres1 の prev_age_days）。古い答えに基づく p_pres1・change_flag は当てにならない"
+   ],
+   "fit_before": "2026-06-01",
+   "holdout_by_port": {
+    "LSN": {
+     "scenes": 4,
+     "cells": 72,
+     "present": 6
+    },
+    "QDH": {
+     "scenes": 3,
+     "cells": 50,
+     "present": 10
+    },
+    "QGZ": {
+     "scenes": 1,
+     "cells": 12,
+     "present": 5
+    },
+    "QJG": {
+     "scenes": 4,
+     "cells": 28,
+     "present": 8
+    },
+    "SLP": {
+     "scenes": 1,
+     "cells": 15,
+     "present": 2
+    },
+    "SYL": {
+     "scenes": 1,
+     "cells": 3,
+     "present": 2
+    },
+    "XSN": {
+     "scenes": 1,
+     "cells": 7,
+     "present": 3
+    },
+    "ZJG": {
+     "scenes": 4,
+     "cells": 8,
+     "present": 8
+    }
+   }
   },
   "baselines": [
    {
