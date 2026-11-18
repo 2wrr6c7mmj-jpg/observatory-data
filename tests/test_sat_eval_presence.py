@@ -273,8 +273,10 @@ class EvaluateRepoTest(unittest.TestCase):
         # and four more of 2026-11-10 (structures bright in every scene, the owner's answer 8/8 absent)
         # and one of 2026-11-12 (the coastline's section on the reclaimed platform, land since 2026 but water in the mask; the
         # other section on it, 219848835:L:01, is not in the review set)
-        self.assertEqual(q["sections"]["no_berth"], 8)
-        self.assertFalse({x["section_id"] for x in q["rows"]} & {"582517902:L:01", "582517902:R:00", "15387629:L:06", "15388243:L:15",
+        # hires-1 (2026-11-18, high-resolution imagery over the owner's answers): 582517902:L:01 and 15388243:L:15 berth warships
+        # and are evaluated again; the revetments, seaward faces and the pier under construction are out (10 of the review set)
+        self.assertEqual(q["sections"]["no_berth"], 10)
+        self.assertFalse({x["section_id"] for x in q["rows"]} & {"582517902:R:00", "15387629:L:06",
                                                                  "219848837:L:02", "219848837:L:07", "1564921419:R:00",
                                                                  "219848835:L:00"})
         self.assertGreater(q["labels"]["no_berth"], 0)

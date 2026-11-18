@@ -221,9 +221,15 @@ class GuardTest(unittest.TestCase):
                 bt = berths.Berths(s, quay_lines.load(site_id, int(s.get("quay_lines_version", quay_lines.LINES_VERSION))),
                                    naval=True)
                 (_way, cl), = bt.nearest_line([(lon, lat)], bt.keep_m)
-                self.assertEqual(cl, "naval")
                 reg = freg.active(freg.load(site_id), day)
                 ship = (site_id, lon, lat) in {(m[0], m[1], m[2]) for m in MARGIN_SHIPS}
+                if ship:
+                    self.assertEqual(cl, "naval")
+                else:
+                    # hires-1 (2026-11-18): the shores of the two structures were read as no berth on the high-resolution
+                    # imagery (a revetment, a rocky shore), so no berth line may be near; the guard is still tried as on one
+                    self.assertIn(cl, ("naval", None))
+                    cl = "naval"
                 vv, bl = flat(base, rise, spread)
                 for thr in (3.5, 6.0):
                     d1, d2, d3 = (self.cands((lon, lat, ln)) for _ in range(3))

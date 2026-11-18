@@ -408,6 +408,10 @@ def geojson(sites: list[dict]) -> dict:
             gtype = "LineString"
             if not coords and (e.get("added") or e.get("berth") is False):   # an added section, or a berth-false part of a line
                 coords, gtype = clip(lines, e), "MultiLineString"
+                # hires-1 (2026-11-18): a berth-false part drawn along the display line of its sections (a band that never
+                # holds a vertex of the OSM line) carries that line for the map
+                if not coords and (e.get("part") or {}).get("line"):
+                    coords = [e["part"]["line"]]
             if not coords:
                 continue
             n[e["class"]] += 1
@@ -417,7 +421,7 @@ def geojson(sites: list[dict]) -> dict:
                                          "kind": e["kind"], "class": e["class"], "conf": e.get("conf"), "why": e.get("why"),
                                          "basis": e.get("basis"), "fixed": bool(e.get("fixed")), "added": bool(e.get("added")),
                                          "berth": e.get("berth") is not False,
-                                         "part": ({k: v for k, v in e["part"].items() if k != "polygon"}
+                                         "part": ({k: v for k, v in e["part"].items() if k not in ("polygon", "line")}
                                                   if e.get("part") else None),
                                          "version": berths.NAVAL_VERSION,
                                          "since_utc": berths.naval_since(site["id"]),

@@ -73,5 +73,18 @@
     "sites.json の MAW は造船所の監視地点（区画 A1＝馬尾造船所の岸壁）"
    ]
   }
- ]
+ ],
+ "hires": {
+  "version": "hires-1",
+  "date": "2026-11-18",
+  "source": "Esri World Imagery Wayback（解像度 0.3〜0.6 m の過去の版）の目視、AI の判断（hires-1、2026-11-18）",
+  "owner": "所有者の指示（2026-11-18）：所有者の S2 の答えより高解像度の画像を優先する",
+  "dates": "撮影 2014-12-18／2019-12-07／2020-12-27／2022-07-09／2025-02-09",
+  "sections": 5,
+  "verdicts": {
+   "E": 3,
+   "N": 2
+  },
+  "record": "docs/data/sat/labels/hires-berth-read.csv"
+ }
 }
