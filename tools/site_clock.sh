@@ -6,7 +6,10 @@
 # job that hands over to the next run when it ends (see site-clock.yml).
 set -u
 RUN_SECONDS=${RUN_SECONDS:-19800}          # 5 h 30 min (the job limit is 6 h)
-UPKEEP_EVERY=${UPKEEP_EVERY:-1200}         # 20 min
+# Upkeep every 3 hours, 60 steps: every 20 minutes exhausted D1's free daily
+# row reads (5 million) by 12:00 JST on 2026-11-18, which took the site's API down.
+UPKEEP_EVERY=${UPKEEP_EVERY:-10800}        # 3 h
+UPKEEP_STEPS=${UPKEEP_STEPS:-60}
 TRANSLATE_EVERY=${TRANSLATE_EVERY:-3600}   # 60 min
 TRANSLATE_MINUTES=${TRANSLATE_MINUTES:-15}
 SITE=https://observatory-watch.pages.dev
@@ -14,7 +17,7 @@ start=$(date +%s); next_upkeep=$start; next_translate=$start; upkeeps=0; transla
 
 upkeep() {
   local tasks="" bad=0 body task
-  for i in $(seq 1 100); do
+  for i in $(seq 1 "$UPKEEP_STEPS"); do
     body=$(curl -sS -m 25 -H 'Accept: application/json' "$SITE/api/maintenance") || { bad=$((bad+1)); [ $bad -ge 3 ] && break; sleep 5; continue; }
     task=$(printf '%s' "$body" | sed -n 's/.*"task":"\([^"]*\)".*/\1/p')
     tasks="$tasks ${task:-?}"
