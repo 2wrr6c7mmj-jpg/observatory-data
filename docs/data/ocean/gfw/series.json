@@ -260,7 +260,7 @@
    "B_none": 5,
    "gfw_cells_ais": 63,
    "gfw_cells_no_ais": 14,
-   "checked_utc": "2026-11-17T12:29:06Z"
+   "checked_utc": "2026-11-18T12:15:03Z"
   },
   {
    "area": "MYK",
@@ -273,7 +273,7 @@
    "B_none": 1,
    "gfw_cells_ais": 0,
    "gfw_cells_no_ais": 4,
-   "checked_utc": "2026-11-17T12:29:06Z"
+   "checked_utc": "2026-11-18T12:15:03Z"
   },
   {
    "area": "HKS",
@@ -286,7 +286,7 @@
    "B_none": 4,
    "gfw_cells_ais": 79,
    "gfw_cells_no_ais": 6,
-   "checked_utc": "2026-11-17T12:29:06Z"
+   "checked_utc": "2026-11-18T12:15:03Z"
   },
   {
    "area": "TSM",
@@ -299,7 +299,7 @@
    "B_none": 72,
    "gfw_cells_ais": 255,
    "gfw_cells_no_ais": 80,
-   "checked_utc": "2026-11-17T12:29:06Z"
+   "checked_utc": "2026-11-18T12:15:03Z"
   },
   {
    "area": "TSN",
@@ -312,7 +312,7 @@
    "B_none": 79,
    "gfw_cells_ais": 98,
    "gfw_cells_no_ais": 102,
-   "checked_utc": "2026-11-17T12:29:06Z"
+   "checked_utc": "2026-11-18T12:15:03Z"
   },
   {
    "area": "TSW",
@@ -325,7 +325,33 @@
    "B_none": 7,
    "gfw_cells_ais": 240,
    "gfw_cells_no_ais": 151,
-   "checked_utc": "2026-11-17T12:29:06Z"
+   "checked_utc": "2026-11-18T12:15:03Z"
+  },
+  {
+   "area": "BASHI",
+   "acquired_utc": "2026-11-13T09:59:50Z",
+   "A_ais": 1,
+   "A_no_ais": 0,
+   "A_none": 0,
+   "B_ais": 0,
+   "B_no_ais": 0,
+   "B_none": 1,
+   "gfw_cells_ais": 2,
+   "gfw_cells_no_ais": 1,
+   "checked_utc": "2026-11-18T12:15:03Z"
+  },
+  {
+   "area": "TWE_S",
+   "acquired_utc": "2026-11-13T09:59:50Z",
+   "A_ais": 19,
+   "A_no_ais": 3,
+   "A_none": 1,
+   "B_ais": 1,
+   "B_no_ais": 2,
+   "B_none": 17,
+   "gfw_cells_ais": 20,
+   "gfw_cells_no_ais": 6,
+   "checked_utc": "2026-11-18T12:15:03Z"
   }
  ]
 }
