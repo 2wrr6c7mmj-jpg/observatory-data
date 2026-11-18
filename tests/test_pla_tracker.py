@@ -266,6 +266,15 @@ class RunTest(unittest.TestCase):
             rc = P.main(["--out", str(t / "probe"), "--save-raw", str(t / "records.csv")])
         return rc, g.calls
 
+    def test_probe_does_not_fetch_when_the_published_date_cannot_be_read(self):
+        from datetime import datetime, timezone
+        with tempfile.TemporaryDirectory() as t:
+            published = Path(t) / "published"
+            published.mkdir()
+            (published / "status.json").write_text(json.dumps({"last_request_utc": "yesterday"}), encoding="utf-8")
+            rc, calls = self.probe(published, Path(t), datetime(2026, 11, 4, 9, 0, tzinfo=timezone.utc))
+            self.assertEqual((rc, calls), (0, []))
+
     def test_probe_records_a_request_whose_csv_cannot_be_used(self):
         from datetime import datetime, timezone
         calls = []
