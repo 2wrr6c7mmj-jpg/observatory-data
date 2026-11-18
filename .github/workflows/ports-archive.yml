@@ -45,9 +45,10 @@ env:
   # 全体 9,000、余裕 450（湛江・4 港・造船所の毎日の分と usage に残らない probe）、外洋 7,000（定期監視、11-02 ユーザー決定で 3,500 から引き上げ）。
   # 根拠：claude/配分案_2026-11 の CDSE.md・claude/設計書_外洋の定期監視（2026-11）.md §6。
   # BUDGET_MONTH・OCEAN_CAP・全体の上限と余裕は ocean-cfar-probe.yml・ocean-monitor.yml と同じ値（3 つを同じコミットで替える）。12 月は 11 月の実績を見て書き直すまで取得しない
-  BUDGET_MONTH: '2026-11'
-  OCEAN_CAP: '7000'
-  GUARD_ARGS: '--budget-month 2026-11 --cap 300 --global-cap 9000 --global-margin 450'
+  # 2026-12 の値（11-18 司令部）：外洋 6,000（11 月の実績は 18 日で 2,852 PU、月 約 4,800 のペース。港最優先の決定 11-07 で 7,000 から下げる）、全体 9,000、余裕 450、港のアーカイブ 400（下川島・三都澳の基準の作り直し 約 17 ほか）。
+  BUDGET_MONTH: '2026-12'
+  OCEAN_CAP: '6000'
+  GUARD_ARGS: '--budget-month 2026-12 --cap 400 --global-cap 9000 --global-margin 450'
   RUN_ARGS: ${{ startsWith(github.ref_name, 'probe/ports-s2new-') && '--days-from 1 --s2-days 240' || startsWith(github.ref_name, 'probe/ports-s2ext-') && '--s2-days 730' || startsWith(github.ref_name, 'probe/ports-backfill-') && '--days-from 730 --days-to 365 --s1-only' || startsWith(github.ref_name, 'probe/ports-extra-') && '--days-from 730' || '' }}
 jobs:
   locate:
