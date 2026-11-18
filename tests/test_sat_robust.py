@@ -18,7 +18,9 @@ try:
 except ImportError:  # the collect workflows do not install numpy; Tests does
     np = None
 
-if np is not None:
+if np is None:  # the classes below subclass the numpy test fakes; skip the module where they cannot be imported
+    raise unittest.SkipTest('numpy is not installed')
+else:
     from sat import atomic, cdse, png, quay_est, run, s2
     from sat import port_archive as pa
     from sat.grid import Grid
