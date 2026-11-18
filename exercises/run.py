@@ -34,7 +34,11 @@ DAY = 86400000
 # The checking rules. When they change, what was read before is read again (the stored answers were kept
 # under the old rules): 1 = first version; 2 = countries named in the text, the area named in the text,
 # numbers of the forces in the text, names checked (descriptions, earlier exercises, generic names).
-RULES = 7
+RULES = 8
+# 8 = an event that loses a source read again is built again from the answers of the sources it keeps, 「N日間」
+#     only as the length after a start day (から・より・起) or before an end day (まで・終了), an answer read with its
+#     body is kept when the body is gone. Read again once so that answers stored under 7 (if a run of 7 came
+#     first) do not keep a length read the wrong way.
 # 7 = country words that name the country (not "us", "plan", 披露, the South China Sea, インド太平洋 …), counts and
 #     numbers not taken from dates or years, month names as whole words and 「10日間」 as a length, a named report
 #     without a date joins only an event near it in time, bodies that could not be fetched are fetched again.
