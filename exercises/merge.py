@@ -2,7 +2,10 @@
 
 Two answers are the same event when
   - both carry a name and the names match after normalisation, and their dates
-    overlap (3 days' slack) or one of them is undated; or
+    overlap (3 days' slack); when one of them is undated, it must have been reported
+    from NAMED_BEFORE_DAYS before the other's start to NAMED_AFTER_DAYS after its end,
+    and when both are undated, within NAMED_UNDATED_DAYS of each other (next year's
+    Balikatan, reported without a date, is not this year's); or
   - neither has a name, they share the kind, area and at least one country,
     and their dates overlap (or, undated, they were reported within 5 days).
 An unnamed answer also joins a named event of the same area and countries
@@ -60,10 +63,40 @@ def _reported_close(a, b, days=5):
         abs((b.get("lastReported") or 0) - (a.get("firstReported") or 0)) <= days * DAY
 
 
+NAMED_BEFORE_DAYS = 60   # a plan is reported up to two months before its start
+NAMED_AFTER_DAYS = 30    # and looked back on up to a month after its end
+NAMED_UNDATED_DAYS = 45  # two undated reports of one name
+
+
+def _ms(d: date, end=False) -> int:
+    return int(datetime(d.year, d.month, d.day, tzinfo=timezone.utc).timestamp() * 1000) + (DAY - 1 if end else 0)
+
+
+def _report_gap(a, b) -> int:
+    """Days between the report periods of a and b (0 when they overlap)."""
+    a0, a1 = a.get("firstReported") or 0, a.get("lastReported") or 0
+    b0, b1 = b.get("firstReported") or 0, b.get("lastReported") or 0
+    return max(0, b0 - a1, a0 - b1) / DAY
+
+
+def close_in_time(a, b) -> bool:
+    """Dates that overlap; or, for an undated one, reports near the other's period (see the module's note)."""
+    ov = _overlap(a, b)
+    if ov is not None:
+        return ov
+    dated, undated = (a, b) if _span(a) else (b, a) if _span(b) else (None, None)
+    if dated is None:
+        return _report_gap(a, b) <= NAMED_UNDATED_DAYS
+    s, e = _span(dated)
+    lo = _ms(s - timedelta(days=NAMED_BEFORE_DAYS))
+    hi = _ms(e + timedelta(days=NAMED_AFTER_DAYS), end=True)
+    return (undated.get("firstReported") or 0) <= hi and (undated.get("lastReported") or 0) >= lo
+
+
 def same_event(a, b) -> bool:
     ov = _overlap(a, b)
     if a.get("name") and b.get("name"):
-        return norm_name(a["name"]) == norm_name(b["name"]) and ov is not False
+        return norm_name(a["name"]) == norm_name(b["name"]) and close_in_time(a, b)
     if not regions.near(a["region"], b["region"]) or not set(a["countries"]) & set(b["countries"]):
         return False
     if a.get("name") or b.get("name"):
