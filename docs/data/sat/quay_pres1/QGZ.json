@@ -776,19 +776,19 @@
    "acquired_utc": "2026-11-02T09:55:42Z",
    "relative_orbit": "171",
    "present_pres1": 6,
-   "present_current": 4,
-   "change_flags": 4,
+   "present_current": 6,
+   "change_flags": 6,
    "sections": [
     {
      "section_id": "15388243:L:15",
-     "p_current": 0.0,
+     "p_current": 1.0,
      "res_rate": 0.062,
      "res_n": 14,
      "prev_y": 0,
      "prev_date": "2026-09-22",
      "prev_age_days": 41,
-     "p_pres1": 0.039,
-     "change_flag": 0
+     "p_pres1": 0.149,
+     "change_flag": 1
     },
     {
      "section_id": "1564921419:L:00",
@@ -891,14 +891,14 @@
     },
     {
      "section_id": "582517902:L:01",
-     "p_current": 0.0,
+     "p_current": 1.0,
      "res_rate": 0.062,
      "res_n": 14,
      "prev_y": 0,
      "prev_date": "2026-09-22",
      "prev_age_days": 41,
-     "p_pres1": 0.039,
-     "change_flag": 0
+     "p_pres1": 0.149,
+     "change_flag": 1
     },
     {
      "section_id": "694211538:L:01",
@@ -928,19 +928,19 @@
    "acquired_utc": "2026-11-07T10:03:53Z",
    "relative_orbit": "69",
    "present_pres1": 6,
-   "present_current": 3,
-   "change_flags": 3,
+   "present_current": 4,
+   "change_flags": 4,
    "sections": [
     {
      "section_id": "15388243:L:15",
-     "p_current": 0.0,
+     "p_current": 1.0,
      "res_rate": 0.062,
      "res_n": 14,
      "prev_y": 0,
      "prev_date": "2026-09-22",
      "prev_age_days": 46,
-     "p_pres1": 0.039,
-     "change_flag": 0
+     "p_pres1": 0.149,
+     "change_flag": 1
     },
     {
      "section_id": "1564921419:L:00",

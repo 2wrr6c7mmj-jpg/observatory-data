@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-18T12:16:42Z",
+ "generated_utc": "2026-11-18T14:25:13Z",
  "state": "warn",
  "summary": {
   "ok": 12,
@@ -70,22 +70,17 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-17T14:44:47Z",
-   "heartbeat_age_h": 21.5,
-   "data_date": "2026-11-15",
+   "heartbeat_utc": "2026-11-18T14:21:24Z",
+   "heartbeat_age_h": 0.1,
+   "data_date": "2026-11-17",
    "data_date_tz": "UTC",
-   "data_age_days": 3,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
      "text": "SLP：最新の撮影 2026-11-07 から 11 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "STU：最新の撮影 2026-11-05 から 13 日（撮影の抜け）"
     },
     {
      "level": "warn",
@@ -99,10 +94,10 @@
     }
    ],
    "values": {
-    "latest_acquired_utc": "2026-11-15T10:33:16Z",
-    "last_run_utc": "2026-11-17T14:44:47Z",
+    "latest_acquired_utc": "2026-11-17T10:16:49Z",
+    "last_run_utc": "2026-11-18T14:21:24Z",
     "last_run_errors": 0,
-    "last_run_scenes": 0
+    "last_run_scenes": 2
    }
   },
   {
@@ -111,7 +106,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-18T12:14:47Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.2,
    "data_date": "2026-11-17",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -134,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-17T16:26:41Z",
-   "heartbeat_age_h": 19.8,
+   "heartbeat_age_h": 22.0,
    "data_date": "2026-11-17",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -178,7 +173,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-18T08:42:50Z",
-   "heartbeat_age_h": 3.6,
+   "heartbeat_age_h": 5.7,
    "data_date": "2026-11-16",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -196,7 +191,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-18T04:44:12Z",
-   "heartbeat_age_h": 7.5,
+   "heartbeat_age_h": 9.7,
    "data_date": "2026-11-18",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -214,7 +209,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-18T12:15:09Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -269,9 +264,9 @@
      "warship_median": 16,
      "warship_p10": 14,
      "warship_p90": 21,
-     "ships_median": 26,
-     "ships_p10": 24,
-     "ships_p90": 31,
+     "ships_median": 25,
+     "ships_p10": 23,
+     "ships_p90": 30,
      "in_sample": ""
     }
    },
@@ -453,7 +448,7 @@
     "trial": true,
     "mask_version": "XMN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-12T10:08:56Z",
+     "acquired_utc": "2026-11-17T10:16:49Z",
      "version": "est-1",
      "mode": 1,
      "p10": 1,
@@ -472,14 +467,14 @@
     "trial": true,
     "mask_version": "STU-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-05T10:16:50Z",
+     "acquired_utc": "2026-11-17T10:16:49Z",
      "version": "est-1",
-     "mode": 14,
-     "p10": 11,
-     "p90": 18,
-     "warship_mode": 3,
-     "warship_p10": 2,
-     "warship_p90": 6,
+     "mode": 2,
+     "p10": 1,
+     "p90": 2,
+     "warship_mode": 0,
+     "warship_p10": 0,
+     "warship_p90": 1,
      "credibility": 3,
      "in_sample": ""
     }
@@ -783,15 +778,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-17T14:37:35Z",
+   "last_success_started_utc": "2026-11-18T14:14:20Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 44105167082,
-    "started_utc": "2026-11-17T14:37:35Z",
+    "id": 44322060420,
+    "started_utc": "2026-11-18T14:14:20Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44105167082",
-    "delay_h": 9.3
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44322060420",
+    "delay_h": 9.0
    },
    "consecutive_failures": 0
   },
@@ -886,12 +881,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 194.9,
-   "usage_csv_requests": 1048,
-   "usage_csv_runs": 26,
-   "status_month_pu_before": 194.85,
-   "status_last_run_utc": "2026-11-17T14:44:47Z",
-   "usage_csv_pu_before_last_run": 194.85,
+   "usage_csv_pu": 197.913,
+   "usage_csv_requests": 1096,
+   "usage_csv_runs": 27,
+   "status_month_pu_before": 194.9,
+   "status_last_run_utc": "2026-11-18T14:21:24Z",
+   "usage_csv_pu_before_last_run": 194.9,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -1003,19 +998,19 @@
     "mask_version": "SWS-land-v2"
    },
    "XMN": {
-    "acquired_utc": "2026-11-12T10:08:56Z",
+    "acquired_utc": "2026-11-17T10:16:49Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 142,
-    "coverage": 0.999,
+    "relative_orbit": 40,
+    "coverage": 0.998,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "XMN-land-v1"
    },
    "STU": {
-    "acquired_utc": "2026-11-05T10:16:50Z",
+    "acquired_utc": "2026-11-17T10:16:49Z",
     "platform": "sentinel-1d",
     "relative_orbit": 40,
-    "coverage": 0.997,
+    "coverage": 0.987,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "STU-land-v1"
