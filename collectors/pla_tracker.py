@@ -501,7 +501,11 @@ def probe_fetch(out: Path, save_raw: Path) -> int | None:
     """Probe path (--save-raw): at most one request, recorded in ``out``/status.json; then run() on the saved CSV.
     None when no request was made."""
     published = last_request(OUT)
-    if published and (now_utc().date() - date.fromisoformat(published[:10])).days < PROBE_QUIET_DAYS:
+    try:
+        quiet = not published or (now_utc().date() - date.fromisoformat(str(published)[:10])).days >= PROBE_QUIET_DAYS
+    except ValueError:  # a date that cannot be read: the safe side, no request
+        quiet = False
+    if not quiet:
         notice(f"probe: 定時の取得が動いている（公開の status.json の last_request_utc {published}）ため CSV を取らない。"
                f"probe の取得は定時の取得と合わせて 1 日 1 回の制限を超えるので、{PROBE_QUIET_DAYS} 日以上取得の無いときだけ取る")
         return None
