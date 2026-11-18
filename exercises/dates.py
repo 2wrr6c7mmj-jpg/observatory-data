@@ -28,6 +28,11 @@ _RELATIVE = re.compile(r"日前|近日|先日|最近|本周|上周|今週|先週
                        r"monday|tuesday|wednesday|thursday|friday|saturday|sunday|yesterday|today|tomorrow|recently|earlier this", re.I)
 
 
+_LENGTH_AFTER_START = re.compile(r"\s*(?:から|より|起)\s*(?:の\s*)?(?:(\d{1,3})\s*日間|(?:为期|為期)?\s*(\d{1,3})\s*天)")
+
+_LENGTH_BEFORE_END = re.compile(r"\s*(?:まで(?:の)?|に?終了した|に?終わった)\s*(\d{1,3})\s*日間")
+
+
 def _day(y, m, d):
     try:
         last = calendar.monthrange(y, m)[1]
@@ -98,12 +103,18 @@ def parse(evidence, published=None):
         last = points[-1]
         y1 = y0 + (1 if last[0] < points[0][0] else 0)
         e = _day(y1, last[0], last[2])
-        # "11月3日から10日間" / "11月3日起为期10天": one day and a length → the last day of that length
-        length = re.search(r"(\d{1,3})\s*日間|为期\s*(\d{1,3})\s*天|為期\s*(\d{1,3})\s*天", t)
-        if len(points) == 1 and precision == "day" and s and length:
-            n = int(next(g for g in length.groups() if g))
+        # "11月3日から10日間" / "11月3日起为期10天": a length right after a start day (から・より・起) → its last day.
+        # "11月14日までの3日間" / "11月14日に終了した5日間": the day is the last day of the length.
+        # A length anywhere else in the text is not used.
+        length = _LENGTH_AFTER_START.match(t, ja[0].end())
+        to_end = _LENGTH_BEFORE_END.match(t, ja[0].end())
+        if len(points) == 1 and precision == "day" and s and (length or to_end):
+            n = int(length.group(1) or length.group(2)) if length else int(to_end.group(1))
             if 1 <= n <= 366:
-                e = s + timedelta(days=n - 1)
+                if length:
+                    e = s + timedelta(days=n - 1)
+                else:
+                    s = s - timedelta(days=n - 1)
         if not s or not e or e < s:
             return None
         return s.isoformat(), e.isoformat(), precision

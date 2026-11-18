@@ -86,10 +86,12 @@ def body_text(doc, log):
         log["blocked"] = log.get("blocked", 0) + 1
         return "", str(e)[:120], "blocked"
     except polite.SourceBlocked as e:
-        # robots.txt read and it disallows (verified): for good. Not checkable (network, 5xx, HTML): later.
-        verified = polite.check_robots(doc["url"], sources.UA).verified   # cached by polite: no new request
-        log["blocked" if verified else "errors"] = log.get("blocked" if verified else "errors", 0) + 1
-        return "", str(e)[:120], "blocked" if verified else "failed"
+        # robots.txt read and it disallows (verified), or robots.txt itself is a bot challenge: for good.
+        # Not checkable (network, 5xx, an HTML page): later.
+        r = polite.check_robots(doc["url"], sources.UA)   # cached by polite: no new request
+        permanent = r.verified or "challenge" in r.reason.lower() or "challenge" in str(e).lower()
+        log["blocked" if permanent else "errors"] = log.get("blocked" if permanent else "errors", 0) + 1
+        return "", str(e)[:120], "blocked" if permanent else "failed"
     except Exception as e:  # noqa: BLE001
         log["errors"] = log.get("errors", 0) + 1
         return "", str(e)[:120], "failed"
@@ -164,15 +166,31 @@ def ledger_events():
     return out
 
 
-def without_sources(events, urls):
+def without_sources(events, urls, answers=None, ledger_urls=()):
     """The stored events with the sources of `urls` taken out (those documents were read again in this run and
-    their new answers replace the old); an event left with no source is dropped."""
+    their new answers come in as fresh events). An event that loses a source is built again from the stored
+    answers of the sources it keeps (`answers`: url → analyses entry with doc and answer), so that countries,
+    dates, names and forces of the old answer go with it. Sources of the ledger are left to ledger_events().
+    When a kept source has no stored answer (older than KEEP_ANALYSES_DAYS), the event keeps its stored values.
+    An event left with no source is dropped."""
+    answers = answers or {}
     out = []
     for e in events:
         srcs = [s for s in e["sources"] if s.get("url") not in urls]
         if len(srcs) == len(e["sources"]):
             out.append(e)
-        elif srcs:
+            continue
+        own = [s for s in srcs if s.get("url") not in ledger_urls]
+        if not own:
+            continue   # nothing left, or only the ledger's sources: ledger_events() brings the event back
+        if all(s.get("url") in answers for s in own):
+            rebuilt = None
+            for s in own:
+                x = answers[s["url"]]
+                piece = merge.event_from({**x["doc"], "analyzedAt": x.get("at")}, x["answer"])
+                rebuilt = piece if rebuilt is None else merge._merge(rebuilt, piece)
+            out.append(rebuilt)
+        else:
             out.append({**e, "sources": srcs})
     return out
 
@@ -227,13 +245,20 @@ def main(argv=None):
     log["new"] = len(todo)
 
     fresh, read, failed, body_log, samples, seconds, reread = [], 0, 0, {}, [], [], set()
-    fetch_failed = 0
+    fetch_failed = kept_old = 0
     for doc in todo:
         if time.time() - started > a.minutes * 60 or (a.limit and read >= a.limit):
             break
         t0 = time.time()
         text, how, state = body_text(doc, body_log)
         before = analyses.get(doc_key(doc)) or old_items.get(doc_key(doc)) or {}
+        old = old_items.get(doc_key(doc)) or {}
+        if state != "ok" and old.get("ok") and old.get("body") in ("html", "pdf"):
+            # Read with its body before (under older rules), and the body cannot be fetched now (an old article's
+            # 404, robots.txt that disallows it since): the old answer stays rather than one from the headline.
+            analyses[doc_key(doc)] = {**old, "at": now, "kept": RULES, "fetch": how}
+            kept_old += 1
+            continue
         tries = (before.get("fetchTries") or 0) + 1 if state == "failed" else 0
         if state == "failed" and tries < FETCH_TRIES:
             # Not read from the headline alone yet: the body is fetched again on a later day.
@@ -265,7 +290,11 @@ def main(argv=None):
         if a.probe:
             samples.append((doc, ans, round(time.time() - t0, 1), len(text), getattr(extract.ask, "last_timings", {})))
 
-    events = merge.merge_all(without_sources(previous, reread) + ledger_events() + fresh)
+    answers = {x["doc"]["url"]: x for x in list(old_items.values()) + list(analyses.values())
+               if x.get("answer") and (x.get("doc") or {}).get("url") and x["doc"]["url"] not in reread}
+    ledger = ledger_events()
+    ledger_urls = {s["url"] for e in ledger for s in e["sources"]}
+    events = merge.merge_all(without_sources(previous, reread, answers, ledger_urls) + ledger + fresh)
     cutoff = now - KEEP_ANALYSES_DAYS * DAY
     analyses = {k: v for k, v in analyses.items() if v.get("at", 0) >= cutoff}
 
@@ -280,8 +309,8 @@ def main(argv=None):
                (e["phase"] == "done" and (e.get("end") or e.get("start") or day_of(e["lastReported"])) >= done_cut)]
 
     status = {"generatedAt": now, "model": a.model, "rules": RULES, "reread": fresh_rules, "minutes": round((time.time() - started) / 60, 1),
-              "read": read, "failed": failed, "fetchFailed": fetch_failed, "relevantNew": len(fresh), "events": len(finished),
-              "current": len(current), "left": max(0, len(todo) - read - fetch_failed),
+              "read": read, "failed": failed, "fetchFailed": fetch_failed, "keptOld": kept_old, "relevantNew": len(fresh), "events": len(finished),
+              "current": len(current), "left": max(0, len(todo) - read - fetch_failed - kept_old),
               "secondsPerDocument": round(sum(seconds) / len(seconds), 1) if seconds else None,
               "bodies": body_log, **log}
     if not a.probe or a.out != OUT:
@@ -328,8 +357,8 @@ def meta_doc():
             "region": "場所の言葉が名指しする地域。無ければ見出しの言葉、さらに無ければモデルの選んだ地域を原文にその地名があるときだけ。それ以外は『その他』",
             "forces": "戦力の記述の中の 3 以上の数は原文の数（数字か数詞）にあるときだけ。日付・年の数字（11月12日、2026年、Nov. 12）は数として数えない。無ければ戦力の記述ごと捨てる",
             "counts": "艦艇・航空機・人員の数は原文に数字としてあるときだけ。日付・年の一部の数字（『11月12日』の 12、2026 年の 2026）は照合に使わない",
-            "merge": "同じ名前の報道は期間が重なるとき 1 つの事象。片方に日付が無いときは、その報道が他方の開始の 60 日前から終了の 30 日後までに掲載されたときだけ。両方に日付が無いときは掲載が 45 日以内のときだけ（翌年の同名演習を前年の事象にまとめない）",
-            "history": "規則の版が変わっても、読み直せない過去の文書の事象は残す。読み直した文書はその新しい答えで置き換える。本文を取得できなかった文書は後日取り直す（robots.txt が禁止・ボットチャレンジは取り直さず見出しと要約だけで読む。3 日取れなければ見出しと要約だけで読む）",
+            "merge": "同じ名前の報道は期間が重なるとき 1 つの事象。片方に日付が無いときは、その報道が他方の開始の 60 日前から終了の 30 日後までに掲載されたときだけ。両方に日付が無いときは掲載が 45 日以内のときだけ（翌年の同名演習を前年の事象にまとめない）。このため、終了の 30 日より後に掲載された日付の無い回顧記事は、同じ演習でも別の事象として出ることがある（重複しうる）",
+            "history": "規則の版が変わっても、読み直せない過去の文書の事象は残す。読み直した文書はその新しい答えで置き換え、その事象は残る出典ごとの答えから組み直す（残る出典の答えが保存期間を過ぎていれば事象の値をそのまま残す）。以前本文つきで読めた文書の本文が今回取れないときは、見出しだけで読み直さず以前の答えを残す。本文を取得できなかった文書は後日取り直す（robots.txt の禁止・ボットチャレンジ（robots.txt 自体がチャレンジのときを含む）は取り直さず見出しと要約だけで読む。3 日取れなければ見出しと要約だけで読む）",
             "name": "演習名は原文に現れるときだけ。一般名（『日米共同訓練』『米軍・日本軍共同訓練』）、説明文、日付入り、年が事象と違う過去の演習名は名前として扱わない",
             "null": "null は原文に記述が無いこと",
         },
