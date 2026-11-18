@@ -24,7 +24,17 @@ missing permission means the run is skipped as before.
 At most one request for the CSV per UTC day, whichever way it is allowed and
 also on the probe path (--save-raw): ``last_request_utc`` of status.json (the
 output directory's and the published one) is checked before the request. A run
-that stops for this reason leaves status.json untouched.
+that stops for this reason leaves status.json untouched. A request made on the
+probe path is recorded too (``last_request_utc`` of the output directory's
+status.json, also when the CSV cannot be used).
+
+The probe runs apart from the daily run and its output directory is not
+published, so the daily run cannot see a probe's request. The probe therefore
+does not request the CSV while the daily run is active, i.e. while the
+published status.json shows a request within the last PROBE_QUIET_DAYS UTC
+days (the daily run requests once a day); it then says so and stops. It
+requests only when the daily run has not requested for that long (e.g. the
+collection was stopped), which is when a probe is needed.
 
 Rows are merged by date: a value changed by the source replaces the stored
 one (listed in status.json ``last_run.revised``); a date that disappears from
@@ -64,6 +74,7 @@ INT_COLUMNS = ("aircraft_total", "median_line_cross", "ships_total")
 FIELDS = SOURCE_COLUMNS + ["retrieved_utc"]
 MIN_KEEP_RATIO = 0.8  # a CSV with fewer rows than this share of the stored ones is not used
 MAX_COUNT = 400       # larger counts are treated as broken rows
+PROBE_QUIET_DAYS = 3  # the probe requests only when the published status.json has no request this recent
 
 # The Taiwan MND series and the fields compared with it (tracker -> MND daily.csv).
 COMPARE = {"aircraft_total": "aircraft", "median_line_cross": "median_line_or_adiz", "ships_total": "plan_vessels"}
@@ -360,19 +371,22 @@ def about_text() -> list[str]:
     return [text[i:i + 3800] for i in range(0, min(len(text), 5 * 3800), 3800)]
 
 
-def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -> int:
+def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None,
+        requested: dict | None = None) -> int:
+    """``requested``: the probe's own request of the CSV that ``from_file`` holds
+    (``requested_utc``, ``access`` ...), recorded in status.json like a request made here."""
     started = now_utc()
     status_path = out / "status.json"
     old_status = json.loads(status_path.read_text(encoding="utf-8")) if status_path.exists() else {}
     stored = read_stored(out / "daily.csv")
-    trace: dict = {}
-    access: dict = {}
+    trace: dict = {"requested_utc": requested["requested_utc"]} if requested and requested.get("requested_utc") else {}
+    access: dict = dict((requested or {}).get("access") or {})
     try:
         if from_file:
             text = from_file.read_text(encoding="utf-8")
             info = {"url": CSV_URL, "from_file": str(from_file),
                     "sha256": hashlib.sha256(from_file.read_bytes()).hexdigest()}
-            robots = "not checked (rebuilt from a saved file)"
+            robots = (requested or {}).get("robots") or "not checked (rebuilt from a saved file)"
         else:
             text, info, rr = fetch_csv(last_request(out, OUT), trace)
             robots = rr.reason
@@ -391,7 +405,8 @@ def run(out: Path, from_file: Path | None = None, mnd_csv: Path | None = None) -
         notice(f"PLA Activity Tracker を使わない：{e}", "warning")
         last_run = {"started_utc": iso(started), "finished_utc": iso(now_utc()), "result": "skipped", "reason": str(e),
                     **access}
-        if stored:
+        if stored or trace:  # a request that was sent is always recorded
+            out.mkdir(parents=True, exist_ok=True)
             write_atomic(status_path, dump({**old_status, "last_run": last_run,
                                             **({"last_request_utc": trace["requested_utc"]} if trace else {})}))
         return 1 if isinstance(e, polite.Challenge) else 0
@@ -482,6 +497,41 @@ META = {
 }
 
 
+def probe_fetch(out: Path, save_raw: Path) -> int | None:
+    """Probe path (--save-raw): at most one request, recorded in ``out``/status.json; then run() on the saved CSV.
+    None when no request was made."""
+    published = last_request(OUT)
+    try:
+        quiet = not published or (now_utc().date() - date.fromisoformat(str(published)[:10])).days >= PROBE_QUIET_DAYS
+    except ValueError:  # a date that cannot be read: the safe side, no request
+        quiet = False
+    if not quiet:
+        notice(f"probe: 定時の取得が動いている（公開の status.json の last_request_utc {published}）ため CSV を取らない。"
+               f"probe の取得は定時の取得と合わせて 1 日 1 回の制限を超えるので、{PROBE_QUIET_DAYS} 日以上取得の無いときだけ取る")
+        return None
+    trace: dict = {}
+    try:
+        text, info, rr = fetch_csv(last_request(out, OUT), trace)
+    except AlreadyToday as e:
+        notice(f"probe: 今日は取得済みのため CSV を取らない：{e}")
+        return None
+    except (Stop, polite.SourceBlocked) as e:
+        notice(f"probe: PLA Activity Tracker を使わない：{e}", "warning")
+        if trace:  # the request was sent: record it so that no second one is made today
+            status_path = out / "status.json"
+            old = json.loads(status_path.read_text(encoding="utf-8")) if status_path.exists() else {}
+            out.mkdir(parents=True, exist_ok=True)
+            write_atomic(status_path, dump({**old, "last_request_utc": trace["requested_utc"],
+                                            "last_run": {"started_utc": trace["requested_utc"], "finished_utc": iso(now_utc()),
+                                                         "result": "skipped", "reason": str(e), "probe": True}}))
+        return 1 if isinstance(e, polite.Challenge) else 0
+    save_raw.write_text(text, encoding="utf-8")
+    notice(f"{rr.reason}（access: {rr.access}）\n{json.dumps(info, ensure_ascii=False)}", title="pla-tracker fetch")
+    access = {"access": rr.access, **({"permission": rr.permission} if rr.permission else {})}
+    return run(out, from_file=save_raw, requested={"requested_utc": trace["requested_utc"], "access": access,
+                                                   "robots": rr.reason})
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=Path, default=OUT)
@@ -490,14 +540,9 @@ def main(argv=None) -> int:
     ap.add_argument("--save-raw", type=Path, help="probe: keep the fetched CSV here")
     a = ap.parse_args(argv)
     if a.save_raw and not a.from_file:
-        try:
-            text, info, rr = fetch_csv(last_request(a.out, OUT))
-        except AlreadyToday as e:
-            notice(f"probe: 今日は取得済みのため CSV を取らない：{e}")
+        rc = probe_fetch(a.out, a.save_raw)
+        if rc is None:
             return 0
-        a.save_raw.write_text(text, encoding="utf-8")
-        notice(f"{rr.reason}（access: {rr.access}）\n{json.dumps(info, ensure_ascii=False)}", title="pla-tracker fetch")
-        rc = run(a.out, from_file=a.save_raw)
     else:
         rc = run(a.out, from_file=a.from_file)
     if a.about:
