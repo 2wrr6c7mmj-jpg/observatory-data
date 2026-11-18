@@ -223,7 +223,6 @@ class NoBerthPhotoTest(unittest.TestCase):
 
 
 
-@unittest.skipUnless(np is not None, "numpy not installed")
 class HiresAddedLinesTest(unittest.TestCase):
     """2026-11-18 (the owner: "go on"): quays that berth warships on the 0.3-0.6 m imagery of several dates but had no berth
     line, because OSM has them as a coastline only, are berth lines by an ``added`` entry of the class file (a band along the
@@ -252,6 +251,7 @@ class HiresAddedLinesTest(unittest.TestCase):
             self.assertTrue(added[0].get("added") and added[0].get("fixed") and added[0]["class"] == "naval", sid)
 
 
+@unittest.skipUnless(np is not None, "numpy not installed")
 class EsriPiersTest(unittest.TestCase):
     """naval-1 (2026-11-05): the piers read from Esri World Imagery (QDH -1..-4, QJG -2 in place of the S2 line -1) are
     berth lines only in the naval variant (scenes from NAVAL_SINCE), naval, and never lie on an existing line (a band
