@@ -223,6 +223,34 @@ class NoBerthPhotoTest(unittest.TestCase):
 
 
 
+class HiresAddedLinesTest(unittest.TestCase):
+    """2026-11-18 (the owner: "go on"): quays that berth warships on the 0.3-0.6 m imagery of several dates but had no berth
+    line, because OSM has them as a coastline only, are berth lines by an ``added`` entry of the class file (a band along the
+    section's display line, naval). The quay lines' version and the land mask are not changed. Shantou's L:39 (the north tip
+    of the boat basin's mouth) was read "no berth" in hires-1 by mistake: type 022 boats lie there in 2018-05 and 2023-03."""
+
+    ADDED = {   # site: [(way, the section's middle point)]
+        "STU": [(23732560, (116.654529, 23.339554)), (23732560, (116.652937, 23.339088)),   # L:32, L:33: type 022 missile boats
+                (23732560, (116.65139, 23.338085))],                                         # L:39: berth again
+        "SYL": [(14129398, (109.562533, 18.187043)), (14129398, (109.561172, 18.18641)),    # L:78, L:79, L:80: the carrier
+                (14129398, (109.559791, 18.185819))],                                        # on the north face of the big pier
+        "LSN": [(696162852, (121.245591, 38.805118)), (696162852, (121.247067, 38.804918))],   # L:01, L:02: the west harbour
+        "WHI": [(379500262, (122.125091, 37.509258))],                                      # L:02: the repair yard's quay
+    }
+
+    def test_files(self):
+        sites = {s["id"]: s for s in json.loads((ROOT / "sat" / "sites.json").read_text(encoding="utf-8"))["sites"]}
+        for sid, rows in self.ADDED.items():
+            nv = berths.Berths(sites[sid], lines_of(sites[sid]), naval=True)
+            for way, mid in rows:
+                self.assertTrue(nv.point_ok("coastline", way, *mid), (sid, way, mid))
+                self.assertFalse(nv.no_berth_at(way, *mid), (sid, way, mid))
+                self.assertEqual(nv.line_class(way, *mid), "naval", (sid, way, mid))
+            added = [e for e in berths.load_classes(sid)["lines"] if e.get("added_utc") == "2026-11-18"]
+            self.assertEqual(len(added), 1, sid)
+            self.assertTrue(added[0].get("added") and added[0].get("fixed") and added[0]["class"] == "naval", sid)
+
+
 @unittest.skipUnless(np is not None, "numpy not installed")
 class EsriPiersTest(unittest.TestCase):
     """naval-1 (2026-11-05): the piers read from Esri World Imagery (QDH -1..-4, QJG -2 in place of the S2 line -1) are
