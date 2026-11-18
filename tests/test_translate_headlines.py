@@ -74,12 +74,28 @@ class MatchBatch(unittest.TestCase):
         self.assertEqual(got, [None, '海警が巡視', '米国防総省の予算'])
 
     def test_number_of_another_headline_means_a_swap(self):
-        titles = ['25th Infantry Division arrives', 'Two J-16 fighters', 'Type 055 destroyer sails']
-        got = H.match_batch(titles, answer([(1, '055型駆逐艦が出航'), (2, 'J-16戦闘機2機'), (3, '第25歩兵師団が到着')]))
-        self.assertEqual(got, [None, 'J-16戦闘機2機', None])
+        titles = ['Type 055 destroyer sails', 'Unit 1105 returns', 'PLA Navy drills']
+        got = H.match_batch(titles, answer([(1, '第1105部隊が帰還'), (2, '055型駆逐艦が出航'), (3, '中国海軍が演習')]))
+        self.assertEqual(got, [None, None, '中国海軍が演習'])
         # numbers of the headline itself (also full-width, with separators) are fine
         got = H.match_batch(['10,000 troops', 'F-35 crash'], answer([(1, '兵１００００人'), (2, 'F-35が墜落')]))
         self.assertEqual(got, ['兵１００００人', 'F-35が墜落'])
+
+    def test_short_or_rewritten_numbers_are_not_taken_for_a_swap(self):
+        cases = [
+            # one- and two-digit numbers are too common: "2" and "25" also appear in the other headlines
+            (['Two sailors injured in fire', '2 carriers sail', '25th Infantry Division arrives'],
+             ['水兵2人が火災で負傷', '空母2隻が出航', '第25歩兵師団が到着']),
+            # 100,000 written as 10万 (a "10" of another headline is not a sign of a swap)
+            (['100,000 drones ordered', 'Top 10 warships'], ['無人機10万機を発注', '軍艦トップ10']),
+            # a number in words: digits in its translation are not checked
+            (['One hundred fifty jets', 'Exercise 150 ends'], ['ジェット機150機', '演習150が終了']),
+            (['一百五十架次', 'Unit 150 deploys'], ['150機', '第150部隊が展開']),
+        ]
+        for titles, ja in cases:
+            with self.subTest(titles=titles):
+                got = H.match_batch(titles, answer(list(enumerate(ja, 1))))
+                self.assertEqual(got, ja)
 
     def test_unusable_answer(self):
         for content in ('not json', '[]', '{"ja": ["a", "b", "c"]}', '{"items": "x"}', None):
@@ -167,7 +183,7 @@ class Main(unittest.TestCase):
         before = self.write_existing()
         titles = [f'Headline {chr(65 + i)}' for i in range(H.BATCH + 3)]  # two batches
         for model in (FakeModel({}, fail=True), lambda server, body: 'not json',
-                      lambda server, body: answer([(1, 'not japanese')])):
+                      lambda server, body: '{"items": "x"}'):
             with self.subTest(model=model):
                 self.assertEqual(self.run_main(self.feed(titles), model), 1)
                 self.assertEqual(self.files(), before)
@@ -188,15 +204,25 @@ class Main(unittest.TestCase):
         self.assertEqual([x['original'] for x in pub['items']], titles[H.BATCH:])
 
     def test_swapped_answers_are_not_cached(self):
-        titles = ['25th Infantry Division arrives', 'Type 055 destroyer sails']
-        model = lambda server, body: answer([(1, '055型駆逐艦が出航'), (2, '第25歩兵師団が到着')])
-        self.assertEqual(self.run_main(self.feed(titles), model), 1)  # nothing usable: nothing written
-        self.assertFalse(os.path.exists(self.cache_path))
-        titles.append('Coast Guard patrol')
-        model = lambda server, body: answer([(1, '055型駆逐艦が出航'), (2, '第25歩兵師団が到着'), (3, '海警が巡視')])
+        titles = ['Unit 1105 returns', 'Type 055 destroyer sails', 'Coast Guard patrol']
+        model = lambda server, body: answer([(1, '055型駆逐艦が出航'), (2, '第1105部隊が帰還'), (3, '海警が巡視')])
         self.assertEqual(self.run_main(self.feed(titles), model), 0)
         self.assertEqual([v['o'] for v in self.read(self.cache_path)['items'].values()], ['Coast Guard patrol'])
 
+    def test_dropped_translations_are_not_a_failure(self):
+        # the only new headline cannot be translated (the answer equals the original, so valid() drops it):
+        # the run still writes (seen refreshed, expired entries pruned) and ends with 0, not 1 every hour
+        self.write_existing()
+        for model in (lambda server, body: answer([(1, 'HIMARS')]), lambda server, body: answer([(1, 'not japanese')])):
+            with self.subTest(model=model):
+                self.assertEqual(self.run_main(self.feed(['HIMARS', 'Pentagon budget']), model), 0)
+                cache = self.read(self.cache_path)['items']
+                self.assertNotIn(H.key('HIMARS'), cache)
+                self.assertNotIn(H.key('Expired'), cache)
+                self.assertEqual(cache[H.key('Pentagon budget')]['seen'], NOW)
+                pub = self.read(self.pub_path)
+                self.assertEqual((pub['updatedAt'], pub['pending'], pub['items']),
+                                 (NOW, 2, [{'original': 'Pentagon budget', 'translated': '米国防総省の予算'}]))
 
 if __name__ == '__main__':
     unittest.main()
