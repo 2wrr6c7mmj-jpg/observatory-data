@@ -1,20 +1,20 @@
 {
- "days": 5178,
+ "days": 5179,
  "first_day": "2012-09-14",
- "generated_utc": "2026-11-18T12:14:47Z",
- "last_day": "2026-11-17",
+ "generated_utc": "2026-11-19T12:09:03Z",
+ "last_day": "2026-11-18",
  "last_run": {
   "fetched": 1,
-  "finished_utc": "2026-11-18T12:14:47Z",
+  "finished_utc": "2026-11-19T12:09:03Z",
   "not_modified": 0,
   "result": "ok",
   "robots": "https://www.kaiho.mlit.go.jp/robots.txt: HTTP 404, no robots.txt (all allowed)",
-  "started_utc": "2026-11-18T12:14:34Z"
+  "started_utc": "2026-11-19T12:08:51Z"
  },
  "not_published": {},
  "page": {
   "links": 171,
-  "retrieved_utc": "2026-11-18T12:14:41Z",
+  "retrieved_utc": "2026-11-19T12:08:57Z",
   "sha256": "06d1b03f52dce17465e97dd89ed42729ead5b87c6acea835bf6772183554dfbd",
   "url": "https://www.kaiho.mlit.go.jp/mission/senkaku/senkaku.html"
  },
