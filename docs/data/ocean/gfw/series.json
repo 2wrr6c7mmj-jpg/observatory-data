@@ -299,7 +299,7 @@
    "B_none": 72,
    "gfw_cells_ais": 255,
    "gfw_cells_no_ais": 80,
-   "checked_utc": "2026-11-18T12:15:03Z"
+   "checked_utc": "2026-11-19T12:09:54Z"
   },
   {
    "area": "TSN",
@@ -312,7 +312,7 @@
    "B_none": 79,
    "gfw_cells_ais": 98,
    "gfw_cells_no_ais": 102,
-   "checked_utc": "2026-11-18T12:15:03Z"
+   "checked_utc": "2026-11-19T12:09:54Z"
   },
   {
    "area": "TSW",
@@ -325,7 +325,7 @@
    "B_none": 7,
    "gfw_cells_ais": 240,
    "gfw_cells_no_ais": 151,
-   "checked_utc": "2026-11-18T12:15:03Z"
+   "checked_utc": "2026-11-19T12:09:54Z"
   },
   {
    "area": "BASHI",
@@ -338,7 +338,7 @@
    "B_none": 1,
    "gfw_cells_ais": 2,
    "gfw_cells_no_ais": 1,
-   "checked_utc": "2026-11-18T12:15:03Z"
+   "checked_utc": "2026-11-19T12:09:54Z"
   },
   {
    "area": "TWE_S",
@@ -351,7 +351,7 @@
    "B_none": 17,
    "gfw_cells_ais": 20,
    "gfw_cells_no_ais": 6,
-   "checked_utc": "2026-11-18T12:15:03Z"
+   "checked_utc": "2026-11-19T12:09:54Z"
   }
  ]
 }
