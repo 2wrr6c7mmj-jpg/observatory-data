@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-19T08:58:22Z",
+ "generated_utc": "2026-11-19T08:59:48Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 2,
+  "ok": 13,
+  "warn": 1,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -110,7 +110,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-18T12:14:47Z",
-   "heartbeat_age_h": 20.7,
+   "heartbeat_age_h": 20.8,
    "data_date": "2026-11-17",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -212,22 +212,16 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-18T20:38:52Z",
-   "heartbeat_age_h": 12.3,
+   "heartbeat_utc": "2026-11-19T08:58:14Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "older_than_input",
-     "text": "最後の成功 2026-11-18T20:38:52Z が入力の更新 2026-11-19T08:58:07Z より前"
-    }
-   ],
+   "state": "ok",
+   "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-18T12:15:42Z",
+    "computed_utc_max": "2026-11-19T08:59:11Z",
     "newest_input_utc": "2026-11-19T08:58:07Z"
    }
   },
@@ -872,13 +866,13 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-18T20:38:52Z",
+   "last_success_started_utc": "2026-11-19T08:58:14Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
     "id": 44492141896,
     "started_utc": "2026-11-19T08:58:14Z",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44492141896"
    },
    "consecutive_failures": 0
