@@ -67,11 +67,18 @@ def load_port(work, port):
     return C, z['patch'].astype(np.float32), z['offs']
 
 
+def load_feats(work, kind, port):
+    """F of <work>/<kind>_<port>.npz (kind: diff or path), refused when it was made from another list of cells."""
+    path = f'{work}/{kind}_{port}.npz'; z = np.load(path)
+    if 'cells' not in z.files or str(z['cells']) != common.cells_key(work, [port]): raise common.stale(path, f'sat.pres3.{kind}feat' if kind == 'path' else 'sat.pres3.diffeat')
+    return z['F']
+
+
 def main(argv=None):
     warnings.filterwarnings('ignore')
     a = common.parser(__doc__.split('\n')[0]).parse_args(argv); work = common.work_dir(a.work)
     for p in common.ports_of(a.ports):
-        F, names = cell_feats(*load_port(work, p)); np.savez_compressed(f'{work}/diff_{p}.npz', F=F, names=np.array(names)); print(p, F.shape, flush=True)
+        F, names = cell_feats(*load_port(work, p)); np.savez_compressed(f'{work}/diff_{p}.npz', F=F, names=np.array(names), cells=common.cells_key(work, [p])); print(p, F.shape, flush=True)
 
 
 if __name__ == '__main__':

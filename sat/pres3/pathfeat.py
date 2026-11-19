@@ -46,7 +46,7 @@ def main(argv=None):
     Cs = []; Fs = []
     for p in common.ports_of(a.ports):
         C, P, offs = diffeat.load_port(work, p); F = cell_feats(C, P, offs)
-        np.savez_compressed(f'{work}/path_{p}.npz', F=F, names=np.array(NAMES)); Cs += C; Fs.append(F)
+        np.savez_compressed(f'{work}/path_{p}.npz', F=F, names=np.array(NAMES), cells=common.cells_key(work, [p])); Cs += C; Fs.append(F)
     F = np.concatenate(Fs); C = Cs; lab = [i for i, c in enumerate(C) if c['y'] is not None and not np.isnan(F[i, 31])]
     y = np.array([C[i]['y'] for i in lab]); prev = F[lab, 31]
     print('n', len(lab), 'median clear days between', np.median(F[lab, 30]))

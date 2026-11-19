@@ -72,6 +72,37 @@ def results(C, y, lab, ch, ev, O, G):
     return R, dict(pc=pc, gl=gl, hl=hl, pl=pl, hf=hf, pf=pf)
 
 
+def port_ci(C, y, idx, p, q=None, B=2000, seed=0):
+    """95% interval of the accuracy of p (or of the paired difference p minus q) when whole PORTS are resampled."""
+    idx = [i for i in idx if not np.isnan(p[i]) and (q is None or not np.isnan(q[i]))]; rng = np.random.default_rng(seed)
+    ports = sorted({C[i]['port'] for i in idx}); pos = {P: [i for i in idx if C[i]['port'] == P] for P in ports}; v = []
+    for _ in range(B):
+        j = np.concatenate([pos[ports[t]] for t in rng.integers(0, len(ports), len(ports))])
+        a = ((p[j] >= 0.5) == y[j]).mean()
+        v.append(a if q is None else a - ((q[j] >= 0.5) == y[j]).mean())
+    return [round(float(np.percentile(v, 2.5)), 3), round(float(np.percentile(v, 97.5)), 3)]
+
+
+def supplement(C, y, ev, O, S1):
+    """Numbers added after the review (published only; pres3_results.json is unchanged): without the S1 columns, without
+    Zhanjiang (whose current S1 p is in-sample), the cells whose paired S1 scene is later than the S2 day, port-level intervals."""
+    pc = S1[:, 0].astype(float); dth = S1[:, 2]; out = {}
+    for fn in ('LOPO', 'FWD'):
+        p = O[fn][KEY]; o = O[fn][('opt', 1)]; te = [i for i in ev if not np.isnan(p[i])]
+        z = [i for i in te if C[i]['port'] == 'ZJG']; nz = [i for i in te if C[i]['port'] != 'ZJG']; late = [i for i in te if dth[i] > 0]
+        out[fn.lower()] = {
+            'no_s1': acc_ci(C, y, te, o),
+            'excl_zjg': {'pres3': acc_ci(C, y, nz, p), 'no_s1': acc_ci(C, y, nz, o), 'current_s1': acc_ci(C, y, nz, pc)},
+            'zjg': {'pres3': acc_ci(C, y, z, p, 500), 'no_s1': acc_ci(C, y, z, o, 500)},
+            's1_after_s2_day': {'cells': len(late), 'of': len(te), 'max_dt_h': round(float(np.nanmax(dth[te])), 1),
+                                'by_port': {P: [sum(C[i]['port'] == P for i in late), sum(C[i]['port'] == P for i in te)] for P in common.PORTS}},
+            'port_bootstrap': {'pres3_ci': port_ci(C, y, te, p), 'pres3_minus_current_ci': port_ci(C, y, te, p, pc)},
+            'scenes_by_port': {P: len({C[i]['date'] for i in te if C[i]['port'] == P}) for P in common.PORTS}}
+    out['note'] = ('no_s1＝S1 の 3 列を使わない構成 (opt, 1)。excl_zjg＝湛江を除いた升。s1_after_s2_day＝対の S1 撮影が S2 の日より後（dt_h > 0）の升の数。'
+                   'port_bootstrap＝港を単位に引き直した 95% 区間（2,000 回）。scenes_by_port＝評価の升の撮影（港×日）の数')
+    return out
+
+
 def write_oos(path, C, y, lab, ch, cols):
     with open(path, 'w', newline='') as f:
         w = csv.writer(f, lineterminator='\n'); w.writerow(OOS_COLUMNS)
@@ -87,7 +118,7 @@ def nan_to_null(o):
     return o
 
 
-def published(R, generated_utc):
+def published(R, generated_utc, supp=None):
     """The published sheet: the results plus version, time, sources and limits. NaN (a ratio with a zero denominator) is null."""
     head = {
         'version': VERSION, 'status': '試行・研究（毎日の収集の流れには接続していない。公開の数・画面・既存の評価票は変えない）',
@@ -110,19 +141,27 @@ def published(R, generated_utc):
             '答えの無い 14 港は汎用の判定（答えなし）しか使えず、その正答率は lopo.gen_no_answers',
             '確信帯の閾値（0.1/0.9 など）は結果を見てから置いた',
             'S1 は現行の判定 p と、対の S1 撮影の帯の VH 平均 xh・時刻差 dt_h の 3 列だけ。それ以外の S1 の特徴は使っていない',
+            '湛江の現行 S1 の p は、その升自身の答えを含む期間で較正した標本内の値（評価票で 44 升とも oos:false）。それを特徴に入れているので、'
+            '湛江の pres-3 の数字（LOPO 0.886、前進 0.917）は標本外でない。S1 を使わない構成では湛江 0.750／0.833。湛江を除いた数字と S1 なしの数字は supplement',
+            'S1 の 3 列は、対の S1 撮影が S2 の日より後（dt_h > 0、最大 +79.4 時間）の升が LOPO で 365/737、前進で 302/516（旅順は 125/143・107/107）。'
+            '運用では判定日にその S1 は手に入らない。S1 を使わない構成（supplement の no_s1）は LOPO 0.870、前進 0.888',
+            '「判定日以後の答え・像が入らない」のは S2 の像と所有者の答えについて。S1 の 3 列は上の 2 項のとおり別',
+            'CI は撮影（港×日）単位。港を単位に引き直すと広がる（supplement の port_bootstrap）。撮影が 2〜3 しかない港（前進の定海・象山）の港別の CI は当てにならない',
+            '所有者が「判定できない」とした 74 件（verified=0）は正解が無いので升に入っていない（評価票と同じ扱い）',
             '直前の答えから変わった升の正答率は LOPO 0.50、前進 0.65 で、入港・出港の検知には足りない'],
         'null_rule': 'null は計算できない値（分母が 0 の適合率など）。0 は 0 と計算された値',
     }
     out = {**head, **nan_to_null(R)}
     out['config'] = dict(out['config'], note=NOTE_PUBLISHED)
+    if supp is not None: out['supplement'] = nan_to_null(supp)
     return out
 
 
-def publish(R, oos_csv, out_dir, generated_utc):
+def publish(R, oos_csv, out_dir, generated_utc, supp=None):
     """Writes exactly two files in out_dir: pres3.json and pres3_oos.csv (temporary file + replace)."""
     out_dir = Path(out_dir); js = out_dir / 'pres3.json'; cs = out_dir / 'pres3_oos.csv'
     tmp = out_dir / 'pres3.json.tmp'
-    tmp.write_text(json.dumps(published(R, generated_utc), ensure_ascii=False, indent=1, allow_nan=False) + '\n', encoding='utf-8'); tmp.replace(js)
+    tmp.write_text(json.dumps(published(R, generated_utc, supp), ensure_ascii=False, indent=1, allow_nan=False) + '\n', encoding='utf-8'); tmp.replace(js)
     tmp = out_dir / 'pres3_oos.csv.tmp'; shutil.copyfile(oos_csv, tmp); tmp.replace(cs)
     return js, cs
 
@@ -133,6 +172,9 @@ def main(argv=None):
     a = ap.parse_args(argv); work = common.work_dir(a.work)
     C, X, names, lab, y, ch, ev = fuse.load(work)
     O = pickle.load(open(f'{work}/fuse_out.pkl', 'rb')); G = pickle.load(open(f'{work}/gen_cache.pkl', 'rb'))
+    key = common.cells_key(work, common.PORTS)
+    for name, d in (('fuse_out.pkl', O), ('gen_cache.pkl', G)):
+        if d.pop(fuse.CELLS, None) != key: raise common.stale(f'{work}/{name}', 'sat.pres3.fuse')
     R, cols = results(C, y, lab, ch, ev, O, G)
     json.dump(R, open(f'{work}/pres3_results.json', 'w'), ensure_ascii=False, indent=1)
     write_oos(f'{work}/pres3_oos.csv', C, y, lab, ch, cols)
@@ -144,7 +186,7 @@ def main(argv=None):
         if fn == 'lopo': print('  gen no answers', r['gen_no_answers']['acc'], r['gen_no_answers']['ci'], 'changed', r['gen_changed']['acc'])
     if a.publish:
         now = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-        print('published', *publish(R, f'{work}/pres3_oos.csv', common.SAT / 'eval', now))
+        print('published', *publish(R, f'{work}/pres3_oos.csv', common.SAT / 'eval', now, supplement(C, y, ev, O, fuse.s1_block(C))))
 
 if __name__ == '__main__':
     sys.exit(main())

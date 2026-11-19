@@ -3,7 +3,8 @@
 What is guarded:
   1. the exemplar / history features of a cell use only the section's answers on days strictly before the cell's day
   2. the reference images (answer-free features, difference features) are made only from days strictly before the cell's day
-  3. the evaluation functions (metrics, changed cells, folds, paired difference)
+  3. the evaluation functions (metrics, changed cells, folds), that the classifiers are fitted only on the fold's training
+     cells (a fake model in place of scikit-learn), that the intervals resample whole scenes and the difference is paired
   4. the research code writes no published file other than its own two, is not wired into the daily collection, and the
      published sheet agrees with the published per-cell probabilities
 The steps that need rasterio (fetch, build) and scikit-learn (the classifiers) are not run here; the Tests workflow installs
@@ -20,6 +21,7 @@ import tempfile
 import unittest
 import warnings
 from pathlib import Path
+from unittest import mock
 
 try:
     import numpy as np
@@ -29,7 +31,7 @@ except ImportError:  # the collect workflows do not install numpy; Tests does
 from sat.pres3 import common
 
 if np is not None:
-    from sat.pres3 import diffeat, evalcv, feats, final, model, pathfeat
+    from sat.pres3 import diffeat, evalcv, feats, final, fuse, model, pathfeat
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "docs" / "data" / "sat" / "eval"
@@ -225,13 +227,136 @@ class EvaluationTest(unittest.TestCase):
         self.assertIsNone(final.acc_ci(C, y, [6], p))
 
 
+class FakeModel:
+    """Stands in for the gradient boosting (scikit-learn is not installed in the Tests workflow): records the rows given to
+    fit (column 0 of the features is the cell's row number) and predicts 0.75 for the rows of predict_proba."""
+    log = []
+
+    def fit(self, Z, y, sample_weight=None):
+        FakeModel.log.append(dict(rows=[int(v) for v in Z[:, 0]], y=list(y), w=None if sample_weight is None else list(sample_weight)))
+        return self
+
+    def predict_proba(self, Z):
+        FakeModel.log[-1].setdefault("predicted", []).append([int(v) for v in Z[:, 0]])
+        return np.column_stack([np.full(len(Z), 0.25), np.full(len(Z), 0.75)])
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class NoTestCellInTheFitTest(unittest.TestCase):
+    """The coefficients: no cell of the fold's test set (and, out of fold, no cell of the scored port) is given to fit."""
+
+    def setUp(self):
+        FakeModel.log = []
+        p = mock.patch.object(model, "hgb", lambda **kw: FakeModel()); p.start(); self.addCleanup(p.stop)
+        self.C = synth(days=6, port="AAA")[0] + synth(days=6, port="BBB")[0] + synth(days=6, port="CCC")[0]
+        self.C[5]["y"] = None                                           # a cell without an answer is never trained on
+        self.lab, self.y = model.labelled(self.C)
+        self.X = np.column_stack([np.arange(len(self.C)), np.ones(len(self.C))]).astype(np.float32)
+        self.port = lambda rows: {self.C[i]["port"] for i in rows}
+
+    def test_generic_scores_lopo(self):
+        for name, tr, te in evalcv.folds_lopo(self.C, self.lab):
+            FakeModel.log = []
+            s = model.gen_scores(self.C, self.X, self.y, tr, te, [0, 1])
+            self.assertEqual(len(FakeModel.log), 3)                      # two out-of-fold fits inside tr, then one on all of tr
+            for f in FakeModel.log:
+                self.assertFalse(set(f["rows"]) & set(te)); self.assertNotIn(name, self.port(f["rows"])); self.assertNotIn(5, f["rows"])
+                self.assertEqual(f["y"], [self.y[i] for i in f["rows"]])
+                for scored in f["predicted"]:                             # a fit never scores a port it was trained on
+                    self.assertFalse(self.port(scored) & self.port(f["rows"]))
+            self.assertEqual(sorted(FakeModel.log[-1]["rows"]), sorted(tr)); self.assertEqual(FakeModel.log[-1]["predicted"], [te])
+            self.assertTrue(np.isfinite(s[self.lab]).all()); self.assertTrue(np.isnan(s[5]))
+
+    def test_generic_scores_forward(self):
+        folds = list(evalcv.folds_fwd(self.C, self.lab, bounds=["2026-01-21", "2026-02-11"]))
+        self.assertEqual(len(folds), 2)
+        for b, tr, te in folds:
+            FakeModel.log = []
+            model.gen_scores(self.C, self.X, self.y, tr, te, [0, 1])
+            for f in FakeModel.log:
+                self.assertTrue(all(self.C[i]["date"] < b for i in f["rows"])); self.assertFalse(set(f["rows"]) & set(te))
+
+    def test_fusion_fits_only_on_the_training_cells(self):
+        ch = evalcv.changed_flags(self.C, self.lab)
+        for name, tr, te in evalcv.folds_lopo(self.C, self.lab):
+            s = np.where(np.arange(len(self.C)) % 7 == 3, np.nan, 0.0)   # training cells without a generic score are dropped
+            FakeModel.log = []; P = {}
+            sets = {"hist": self.X, "opt": self.X, "opt+diff+S1": self.X}
+            fuse.stack_fold(sets, self.y, s, ch, tr, te, P)
+            self.assertEqual(sorted(P), [("hist", 1), ("opt", 1), ("opt+diff+S1", 1), ("opt+diff+S1", 3)])
+            want = [i for i in tr if not np.isnan(s[i])]
+            for f in FakeModel.log:
+                self.assertEqual(f["rows"], want); self.assertFalse(set(f["rows"]) & set(te)); self.assertEqual(f["predicted"], [te])
+                self.assertEqual(f["y"], [self.y[i] for i in want])
+            self.assertEqual(FakeModel.log[0]["w"], [1.0] * len(want))
+            self.assertEqual(FakeModel.log[-1]["w"], [3.0 if ch[i] == 1 else 1.0 for i in want])
+            for p in P.values():                                          # a probability only on the fold's test cells
+                self.assertTrue((p[te] == 0.75).all()); self.assertTrue(np.isnan(np.delete(p, te)).all())
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class ResamplingUnitTest(unittest.TestCase):
+    """The intervals resample whole scenes (port x day), and the difference is paired on the same resample."""
+
+    def cells(self):
+        # 3 scenes of 8 cells; inside every scene half of the cells are right (p) -> any resample of whole scenes gives 0.5
+        C = [dict(port="A", date=f"2026-01-0{d}", section=str(k), y=k % 2) for d in (1, 2, 3) for k in range(8)]
+        y = np.array([c["y"] for c in C])
+        right = np.array([k < 4 for d in range(3) for k in range(8)])
+        p = np.where(right, y, 1 - y).astype(float)
+        return C, y, p, right
+
+    def test_scenes_are_the_unit(self):
+        C, y, p, right = self.cells(); idx = list(range(len(C)))
+        self.assertEqual(evalcv.boot_ci(C, idx, y, p, B=300), (0.5, 0.5))       # resampling cells would give a spread around 0.5
+        # scenes that are wholly right or wholly wrong: only multiples of 1/3 can come out, and both ends are reached
+        q = np.where(np.array([c["date"] == "2026-01-01" for c in C]), y, 1 - y).astype(float)
+        lo, hi = evalcv.boot_ci(C, idx, y, q, B=300)
+        self.assertEqual((lo, hi), (0.0, 1.0))
+        r = final.acc_ci(C, y, idx, q, B=300)
+        self.assertEqual((r["acc"], r["ci"]), (0.333, [0.0, 1.0]))
+
+    def test_difference_is_paired(self):
+        C, y, p, right = self.cells(); idx = list(range(len(C)))
+        # q is right on the same cells as p except one fewer per scene: on every resample of scenes the difference is 1/8
+        fewer = right & ~np.array([k == 0 for d in range(3) for k in range(8)])
+        q = np.where(fewer, y, 1 - y).astype(float)
+        d = final.diff_ci(C, y, idx, p, q, B=300)
+        self.assertEqual((d["diff"], d["ci"]), (0.125, [0.125, 0.125]))           # unpaired resamples would not be constant
+        # per-scene differences +1, 0, -1: the paired difference moves with the scenes drawn
+        a = np.where(np.array([c["date"] != "2026-01-03" for c in C]), y, 1 - y).astype(float)
+        b = np.where(np.array([c["date"] != "2026-01-01" for c in C]), y, 1 - y).astype(float)
+        d = final.diff_ci(C, y, idx, a, b, B=300)
+        self.assertEqual(d["diff"], 0.0); self.assertEqual(d["ci"], [-1.0, 1.0])
+
+    def test_port_level_interval(self):
+        CC = [dict(port=P, date=f"2026-01-{d:02d}", section="s", y=d % 2) for P in "AB" for d in range(1, 11)]
+        yy = np.array([c["y"] for c in CC]); pp = np.where(np.array([c["port"] == "A" for c in CC]), yy, 1 - yy).astype(float)
+        idx = list(range(len(CC)))                                                    # port A all right, port B all wrong
+        self.assertEqual(final.port_ci(CC, yy, idx, pp, B=300), [0.0, 1.0])
+        self.assertEqual(final.port_ci(CC, yy, idx, pp, pp, B=300), [0.0, 0.0])
+        lo, hi = evalcv.boot_ci(CC, idx, yy, pp, B=300)                               # scene level: 20 scenes, narrower
+        self.assertTrue(0.0 < lo < 0.5 < hi < 1.0)
+
+
 class NoPublishedFileIsTouchedTest(unittest.TestCase):
-    def test_working_directory_cannot_be_inside_the_published_tree(self):
-        with self.assertRaises(SystemExit):
-            common.work_dir(str(common.SAT / "eval"))
-        with self.assertRaises(SystemExit):
-            common.work_dir(str(common.SAT / "pres3-work" / "x"))
-        self.assertFalse((common.SAT / "pres3-work").exists())
+    def test_working_directory_cannot_be_inside_the_repository(self):
+        for inside in (common.SAT / "eval", common.SAT / "pres3-work" / "x", ROOT / "pres3-work", ROOT):
+            with self.assertRaises(SystemExit):
+                common.work_dir(str(inside))
+        self.assertFalse((common.SAT / "pres3-work").exists()); self.assertFalse((ROOT / "pres3-work").exists())
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(common.work_dir(str(Path(d) / "w")), (Path(d) / "w").resolve())
+
+    def test_files_made_from_another_cell_list_are_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            cells = Path(d) / "cells_AAA.json"; cells.write_text('[{"y": 1}]', encoding="utf-8")
+            k1 = common.cells_key(d, ["AAA"])
+            self.assertEqual(k1, common.cells_key(d, ["AAA"]))
+            cells.write_text('[{"y": 0}]', encoding="utf-8")                 # build was run again with other answers
+            self.assertNotEqual(k1, common.cells_key(d, ["AAA"]))
+            (Path(d) / "cells_BBB.json").write_text("[]", encoding="utf-8")
+            self.assertNotEqual(common.cells_key(d, ["AAA", "BBB"]), common.cells_key(d, ["BBB", "AAA"]))
 
     def test_not_wired_into_the_daily_collection(self):
         for f in sorted((ROOT / ".github" / "workflows").glob("*.yml")) + [p for p in sorted((ROOT / "sat").glob("*.py"))] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
@@ -305,6 +430,22 @@ class PublishedSheetTest(unittest.TestCase):
                 self.check(b["by_port"][port]["pres3"], col, lambda r: r["site_id"] == port)
         self.check(self.sheet["lopo"]["gen_no_answers"], "p_gen_lopo")
 
+    def test_supplement_matches_the_cells(self):
+        for fold, col in (("lopo", "p_pres3_lopo"), ("fwd", "p_pres3_fwd")):
+            sup = self.sheet["supplement"][fold]
+            self.check(sup["excl_zjg"]["pres3"], col, lambda r: r["site_id"] != "ZJG")
+            self.check(sup["excl_zjg"]["current_s1"], "p_current_s1", lambda r, col=col: r["site_id"] != "ZJG" and r[col] != "")
+            self.check(sup["zjg"]["pres3"], col, lambda r: r["site_id"] == "ZJG")
+            self.assertEqual(sup["no_s1"]["n"], self.sheet[fold]["pres3"]["n"])
+            late = sup["s1_after_s2_day"]
+            self.assertEqual(sum(v[0] for v in late["by_port"].values()), late["cells"]); self.assertEqual(late["of"], self.sheet[fold]["pres3"]["n"])
+            self.assertGreater(late["cells"], 0)            # the S1 columns do include scenes later than the S2 day: say so
+            lo, hi = sup["port_bootstrap"]["pres3_ci"]; slo, shi = self.sheet[fold]["pres3"]["ci"]
+            self.assertTrue(lo <= slo and shi <= hi)        # wider than the scene-level interval
+        text = "".join(self.sheet["limits"])
+        for word in ("湛江", "標本外でない", "dt_h > 0", "手に入らない", "74"):
+            self.assertIn(word, text)
+
     def test_changed_column_follows_the_answers(self):
         prev = {}
         for r in sorted(self.rows, key=lambda r: r["date"]):
@@ -316,7 +457,7 @@ class PublishedSheetTest(unittest.TestCase):
         self.assertEqual(self.sheet["version"], "pres-3")
         self.assertLess(self.sheet["lopo"]["pres3"]["acc"], 0.95); self.assertLess(self.sheet["fwd"]["pres3"]["acc"], 0.95)
         self.assertIn("届いていない", self.sheet["target"])
-        self.assertGreaterEqual(len(self.sheet["limits"]), 6)
+        self.assertGreaterEqual(len(self.sheet["limits"]), 12)
 
     def test_other_evaluation_sheets_are_not_rewritten_by_this_package(self):
         src = "".join(p.read_text(encoding="utf-8") for p in sorted((ROOT / "sat" / "pres3").glob("*.py")))

@@ -16,7 +16,10 @@ import warnings
 
 import numpy as np
 
-from . import common, dataset, evalcv, model
+from . import common, dataset, diffeat, evalcv, model
+
+CELLS = '__cells__'          # the key under which the two pickles store common.cells_key
+SETS_NO_W3 = ('hist', 'opt')
 
 
 def s1_block(C):
@@ -40,14 +43,30 @@ def load(work):
     return C, X, names, lab, y, ch, ev
 
 
+def stack_fold(sets, y, s, ch, tr, te, P):
+    """One fold: for every configuration, fit on the fold's training cells (those that have a generic score) and write the
+    probabilities of the fold's test cells into P[(name, weight)]. Only rows of tr are given to fit."""
+    trv = np.array([i for i in tr if not np.isnan(s[i])])
+    chg = np.array([ch[i] == 1 for i in trv])
+    for nm, Z in sets.items():
+        for w in (1, 3):
+            if w > 1 and nm in SETS_NO_W3: continue
+            m = model.stack_model().fit(Z[trv], y[trv], sample_weight=np.where(chg, w, 1.0))
+            P.setdefault((nm, w), np.full(len(y), np.nan))[te] = m.predict_proba(Z[te])[:, 1]
+
+
 def main(argv=None):
     warnings.filterwarnings('ignore')
     a = common.parser(__doc__.split('\n')[0]).parse_args(argv); work = common.work_dir(a.work)
     C, X, names, lab, y, ch, ev = load(work); phys = model.phys_cols(names)
-    D = np.concatenate([np.load(f'{work}/diff_{p}.npz')['F'] for p in common.PORTS]); PT = np.concatenate([np.load(f'{work}/path_{p}.npz')['F'] for p in common.PORTS])
+    D = np.concatenate([diffeat.load_feats(work, 'diff', p) for p in common.PORTS]); PT = np.concatenate([diffeat.load_feats(work, 'path', p) for p in common.PORTS])
     S1 = s1_block(C)
     allset = set(lab); cols = list(range(X.shape[1]))
+    key = common.cells_key(work, common.PORTS)
     cache = f'{work}/gen_cache.pkl'; G = pickle.load(open(cache, 'rb')) if os.path.exists(cache) else {}
+    if G.get(CELLS) != key:
+        if G: print('gen_cache.pkl was made from another list of cells: not used, computed again', flush=True)
+        G = {CELLS: key}
     out = {}
     for fname, folds in (('LOPO', list(evalcv.folds_lopo(C, lab))), ('FWD', list(evalcv.folds_fwd(C, lab)))):
         P = {}
@@ -55,21 +74,16 @@ def main(argv=None):
             if (fname, name) not in G:
                 G[(fname, name)] = model.gen_scores(C, X, y, tr, te, cols); pickle.dump(G, open(cache + '.tmp', 'wb')); os.replace(cache + '.tmp', cache)
                 print('gen', fname, name, 'done', flush=True)
-            s = G[(fname, name)]; A = model.adapt_feats(C, X, y, lab, phys, s, allset); trv = np.array([i for i in tr if not np.isnan(s[i])])
-            chg = np.array([ch[i] == 1 for i in trv])
+            s = G[(fname, name)]; A = model.adapt_feats(C, X, y, lab, phys, s, allset)
             sets = {'hist': A[:, :4], 'opt': A, 'opt+diff+S1': np.column_stack([A, D, S1]), 'opt+S1': np.column_stack([A, S1]),
                     'opt+diff+path+S1': np.column_stack([A, D, PT, S1]), 'opt+diff+path': np.column_stack([A, D, PT])}
-            for nm, Z in sets.items():
-                for w in (1, 3):
-                    if w > 1 and nm in ('hist', 'opt'): continue
-                    m = model.stack_model().fit(Z[trv], y[trv], sample_weight=np.where(chg, w, 1.0))
-                    P.setdefault((nm, w), np.full(len(C), np.nan))[te] = m.predict_proba(Z[te])[:, 1]
+            stack_fold(sets, y, s, ch, tr, te, P)
         te = [i for i in ev if not np.isnan(P[('opt', 1)][i])]
         for k, p in P.items():
             r = dataset.report(C, te, p, f'{fname} {k[0]} w{k[1]}')
             print(r[0], '| chg %.3f same %.3f' % (dataset.report(C, [i for i in te if ch[i] == 1], p, '')[1]['acc'], dataset.report(C, [i for i in te if ch[i] == 0], p, '')[1]['acc']), flush=True)
         out[fname] = P
-    pickle.dump(out, open(f'{work}/fuse_out.pkl', 'wb'))
+    out[CELLS] = key; pickle.dump(out, open(f'{work}/fuse_out.pkl', 'wb'))
 
 
 if __name__ == '__main__':

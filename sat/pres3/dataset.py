@@ -21,12 +21,13 @@ def load(work, ports, mode='past', cache=True):
     Cs = []; Xs = []; names = None
     for p in ports:
         cf = f'{work}/feat_{p}_{mode}.npz'; pf = f'{work}/patch_{p}.npz'
-        C = json.load(open(f'{work}/cells_{p}.json'))
-        if cache and os.path.exists(cf) and os.path.getmtime(cf) > os.path.getmtime(pf):
-            z = np.load(cf, allow_pickle=False); X = z['X']; names = [str(n) for n in z['names']]; good = z['good']
+        C = json.load(open(f'{work}/cells_{p}.json')); key = common.cells_key(work, [p])
+        z = np.load(cf, allow_pickle=False) if cache and os.path.exists(cf) and os.path.getmtime(cf) > os.path.getmtime(pf) else None
+        if z is not None and 'cells' in z.files and str(z['cells']) == key:      # made from this list of cells
+            X = z['X']; names = [str(n) for n in z['names']]; good = z['good']
         else:
             z = np.load(pf); X, names, good = feats.features(z['patch'].astype(np.float32), z['offs'], C, mode=mode)
-            np.savez_compressed(cf + '.tmp.npz', X=X, names=np.array(names), good=good); os.replace(cf + '.tmp.npz', cf)
+            np.savez_compressed(cf + '.tmp.npz', X=X, names=np.array(names), good=good, cells=key); os.replace(cf + '.tmp.npz', cf)
         for c, g in zip(C, good): c['good'] = bool(g)
         Cs += C; Xs.append(X)
     return Cs, np.concatenate(Xs), names
