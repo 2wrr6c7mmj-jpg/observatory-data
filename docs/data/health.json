@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-19T16:02:43Z",
+ "generated_utc": "2026-11-19T20:43:37Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 2,
+  "ok": 13,
+  "warn": 1,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-19T14:38:34Z",
-   "heartbeat_age_h": 1.4,
+   "heartbeat_age_h": 6.1,
    "data_date": "2026-11-19",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -105,7 +105,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-19T12:09:03Z",
-   "heartbeat_age_h": 3.9,
+   "heartbeat_age_h": 8.6,
    "data_date": "2026-11-18",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -128,7 +128,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-19T16:02:17Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 4.7,
    "data_date": "2026-11-19",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -171,8 +171,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "daily",
    "workflow": "jso-update.yml",
-   "heartbeat_utc": "2026-11-19T11:46:21Z",
-   "heartbeat_age_h": 4.3,
+   "heartbeat_utc": "2026-11-19T20:42:05Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -180,7 +180,7 @@
    "reasons": [],
    "values": {
     "passages": 1037,
-    "releases": 1585,
+    "releases": 1586,
     "intake": "自動取り込み（jso-update.yml、1 日 2 回。一覧ページと新しい資料の PDF だけを取得）"
    }
   },
@@ -190,7 +190,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-19T14:43:29Z",
-   "heartbeat_age_h": 1.3,
+   "heartbeat_age_h": 6.0,
    "data_date": "2026-11-19",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -207,23 +207,17 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-19T12:09:11Z",
-   "heartbeat_age_h": 3.9,
+   "heartbeat_utc": "2026-11-19T20:42:13Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "older_than_input",
-     "text": "最後の成功 2026-11-19T12:09:11Z が入力の更新 2026-11-19T14:43:29Z より前"
-    }
-   ],
+   "state": "ok",
+   "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-19T12:10:00Z",
-    "newest_input_utc": "2026-11-19T14:43:29Z"
+    "computed_utc_max": "2026-11-19T20:43:15Z",
+    "newest_input_utc": "2026-11-19T20:42:05Z"
    }
   },
   {
@@ -247,8 +241,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-19T15:49:14Z",
-   "heartbeat_age_h": 0.2,
+   "heartbeat_utc": "2026-11-19T18:49:00Z",
+   "heartbeat_age_h": 1.9,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -846,14 +840,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-19T11:44:40Z",
+   "last_success_started_utc": "2026-11-19T20:40:57Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 44517530638,
-    "started_utc": "2026-11-19T11:44:40Z",
+    "id": 44611146718,
+    "started_utc": "2026-11-19T20:40:57Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44517530638"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44611146718"
    },
    "consecutive_failures": 0
   },
@@ -867,14 +861,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-19T12:09:11Z",
+   "last_success_started_utc": "2026-11-19T20:42:13Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 44521223887,
-    "started_utc": "2026-11-19T12:09:11Z",
+    "id": 44611359379,
+    "started_utc": "2026-11-19T20:42:13Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44521223887"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44611359379"
    },
    "consecutive_failures": 0
   },
