@@ -179,6 +179,48 @@
      "change_flag": 1
     }
    ]
+  },
+  {
+   "acquired_utc": "2026-11-19T10:48:15Z",
+   "relative_orbit": 157,
+   "present_pres1": 1,
+   "present_current": 0,
+   "change_flags": 1,
+   "sections": [
+    {
+     "section_id": "1366235102:R:04",
+     "p_current": 0.0,
+     "res_rate": 0.778,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 32,
+     "p_pres1": 0.841,
+     "change_flag": 1
+    },
+    {
+     "section_id": "1565266188:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.222,
+     "res_n": 7,
+     "prev_y": 0,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 32,
+     "p_pres1": 0.077,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1565266188:L:04",
+     "p_current": 0.0,
+     "res_rate": 0.375,
+     "res_n": 6,
+     "prev_y": 0,
+     "prev_date": "2026-10-18",
+     "prev_age_days": 32,
+     "p_pres1": 0.195,
+     "change_flag": 0
+    }
+   ]
   }
  ]
 }
