@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-19T04:34:16Z",
+ "generated_utc": "2026-11-19T14:43:29Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -781,6 +781,23 @@
      "pad": "Commercial LC-2"
     }
    ]
+  },
+  {
+   "window_start_utc": "2026-12-10T07:00Z",
+   "window_end_utc": "2026-12-13T10:00Z",
+   "areas": [
+    [
+     9.14,
+     119.21
+    ]
+   ],
+   "notices": [
+    "aviation:B6158/26"
+   ],
+   "method": "nearest-only",
+   "site": "文昌",
+   "country": "CN",
+   "distance_km": 1464
   }
  ],
  "recorded_launches": [
@@ -1024,13 +1041,13 @@
   },
   {
    "ll2_id": "e0a11eb1-0bda-4872-b36b-140247fd5c60",
-   "name": "Long March 2D | Unknown Payload",
-   "status": "Go",
-   "net_utc": "2026-11-18T22:50:00Z",
+   "name": "Long March 2D | Shijian 24",
+   "status": "Success",
+   "net_utc": "2026-11-18T22:51:00Z",
    "rocket": "Long March 2D",
    "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
+   "orbit": "SSO",
+   "mission_type": "Government/Top Secret",
    "pad": "Launch Complex 9",
    "location": "Taiyuan Satellite Launch Center, People's Republic of China",
    "country": "CHN",
@@ -1054,6 +1071,23 @@
    "lat": 19.597275,
    "lon": 110.930753,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a2975167-7c6f-4403-99e1-b40df17c8140/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "13270554-4bdb-42ae-916f-1bb54492204f",
+   "name": "Long March 6C | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-21T03:50:00Z",
+   "rocket": "Long March 6C",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Complex 9A",
+   "location": "Taiyuan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 38.8583,
+   "lon": 111.5802,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/13270554-4bdb-42ae-916f-1bb54492204f/",
    "event_index": null
   },
   {

@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-19T04:34:16Z",
+ "generated_utc": "2026-11-19T14:43:29Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -968,6 +968,80 @@
      ],
      "circles": [],
      "text": "B5831/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2611240700 C) 2611271000\r\nD) 0700-1000\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E - \r\n092800N 1191300E -\r\n085700N 1193600E -\r\n084500N 1192000E - \r\n091600N 1185700E\r\n(27NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-12-10T07:00Z:文昌",
+   "window_start_utc": "2026-12-10T07:00Z",
+   "window_end_utc": "2026-12-13T10:00Z",
+   "site": {
+    "name": "文昌",
+    "lat": 19.61,
+    "lon": 110.95,
+    "country": "CN",
+    "method": "nearest-only",
+    "distance_km": 1464
+   },
+   "orbit": null,
+   "vehicle": {
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征5号",
+      "orbit": "低軌道・静止遷移・月惑星"
+     },
+     {
+      "name": "長征7号/7A号",
+      "orbit": "低軌道・静止遷移"
+     },
+     {
+      "name": "長征8号/8A号",
+      "orbit": "低軌道・太陽同期"
+     },
+     {
+      "name": "長征12号",
+      "orbit": "低軌道（千帆などの通信衛星群）"
+     }
+    ]
+   },
+   "notices": [
+    {
+     "key": "aviation:B6158/26",
+     "id": "B6158/26",
+     "dataset": "aviation",
+     "kind": "fall",
+     "issuer": "フィリピン（航空当局 RPHI）",
+     "country": "PH",
+     "start_utc": "2026-12-10T07:00:00Z",
+     "end_utc": "2026-12-13T10:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        9.2667,
+        118.95
+       ],
+       [
+        9.4667,
+        119.2167
+       ],
+       [
+        8.95,
+        119.6
+       ],
+       [
+        8.75,
+        119.3333
+       ],
+       [
+        9.2667,
+        118.95
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "B6158/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2612100700 C) 2612131000\r\nD) 0700-1000\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E - \r\n092800N 1191300E - \r\n085700N 1193600E - \r\n084500N 1192000E - \r\n091600N 1185700E\r\n(27NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
     }
    ]
   }
