@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-20T15:45:49Z",
+ "generated_utc": "2026-11-20T16:54:59Z",
  "state": "warn",
  "summary": {
   "ok": 12,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-20T14:14:06Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_age_h": 2.7,
    "data_date": "2026-11-20",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -105,7 +105,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-20T12:11:06Z",
-   "heartbeat_age_h": 3.6,
+   "heartbeat_age_h": 4.7,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -128,10 +128,10 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-20T15:45:23Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 1.2,
    "data_date": "2026-11-20",
    "data_date_tz": "TWT",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -151,7 +151,7 @@
    "heartbeat_age_h": null,
    "data_date": "2026-10-30",
    "data_date_tz": "TWT",
-   "data_age_days": 21,
+   "data_age_days": 22,
    "state": "halt",
    "reasons": [
     {
@@ -172,7 +172,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-20T08:44:37Z",
-   "heartbeat_age_h": 7.0,
+   "heartbeat_age_h": 8.2,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -190,7 +190,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-20T14:24:26Z",
-   "heartbeat_age_h": 1.4,
+   "heartbeat_age_h": 2.5,
    "data_date": "2026-11-20",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -208,7 +208,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-20T12:11:15Z",
-   "heartbeat_age_h": 3.6,
+   "heartbeat_age_h": 4.7,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -248,7 +248,7 @@
    "kind": "derived",
    "workflow": "exercises.yml",
    "heartbeat_utc": "2026-11-20T14:20:20Z",
-   "heartbeat_age_h": 1.4,
+   "heartbeat_age_h": 2.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -741,7 +741,7 @@
     "window_start_utc": "2026-11-24T07:00Z",
     "window_end_utc": "2026-11-27T10:00Z"
    },
-   "active_notices": 37
+   "active_notices": 36
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
