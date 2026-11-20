@@ -1,0 +1,137 @@
+{
+ "version": "raw-1",
+ "site_id": "NDS",
+ "acquired_utc": "2026-11-19T10:01:22Z",
+ "platform": "sentinel-1d",
+ "orbit_direction": "ascending",
+ "relative_orbit": 69,
+ "catalog_ids": [
+  "S1D_IW_GRDH_1SDV_20261119T100122_20261119T100147_005535_00A97C_ADB3_COG.SAFE"
+ ],
+ "retrieved_utc": "2026-11-20T14:14:35Z",
+ "processing_units": 0.35254669189453125,
+ "chip": "2026-11-19T10-01-22Z.png",
+ "encoding": {
+  "format": "PNG 16-bit RGBA",
+  "bands": [
+   "VV",
+   "VH",
+   "localIncidenceAngle",
+   "dataMask"
+  ],
+  "db": "value / 800 - 50 (0 = no data)",
+  "lia_deg": "value / 100",
+  "with_lia": true
+ },
+ "bbox": [
+  119.674,
+  26.605,
+  119.696,
+  26.624
+ ],
+ "width": 219,
+ "height": 211,
+ "pixel_m": [
+  9.977026196938704,
+  10.004590146334676
+ ],
+ "mask": "../masks/NDS-land-v1.png",
+ "mask_version": "NDS-land-v1",
+ "coverage": 0.995,
+ "detector_version": "cfar-v1",
+ "detector_params": {
+  "pfa": 1e-05,
+  "guard_m": 70.0,
+  "background_m": 150.0,
+  "min_background_fraction": 0.25,
+  "min_pixels": 3,
+  "vh_min_ratio": 2.0,
+  "quay_band_m": 50.0
+ },
+ "detector_info": {
+  "valid_fraction": 0.8035,
+  "water_fraction": 0.324,
+  "threshold_sigma": 4.265,
+  "guard_px": 8,
+  "outer_px": 24,
+  "hit_pixels": 61,
+  "clusters": 28,
+  "dropped_small": 24,
+  "dropped_vh": 0
+ },
+ "candidates": [
+  {
+   "row": 55.53846153846154,
+   "col": 34.15384615384615,
+   "rmin": 54,
+   "rmax": 57,
+   "cmin": 33,
+   "cmax": 36,
+   "pixels": 13,
+   "length_m": 44,
+   "width_m": 42,
+   "length_class": "lt50",
+   "zone": "harbour",
+   "peak_vv_db": -3.9,
+   "contrast_vv_db": 13.1,
+   "vh_ratio_db": 10.5,
+   "lon": 119.67748120828944,
+   "lat": 26.61895388261028
+  },
+  {
+   "row": 72.5,
+   "col": 50.5,
+   "rmin": 72,
+   "rmax": 73,
+   "cmin": 50,
+   "cmax": 51,
+   "pixels": 4,
+   "length_m": 20,
+   "width_m": 20,
+   "length_class": "lt50",
+   "zone": "harbour",
+   "peak_vv_db": -5.0,
+   "contrast_vv_db": 13.6,
+   "vh_ratio_db": 4.3,
+   "lon": 119.67912328767123,
+   "lat": 26.61742654028436
+  },
+  {
+   "row": 83.83333333333333,
+   "col": 129.5,
+   "rmin": 83,
+   "rmax": 85,
+   "cmin": 126,
+   "cmax": 133,
+   "pixels": 12,
+   "length_m": 83,
+   "width_m": 28,
+   "length_class": "50_100",
+   "zone": "quay",
+   "peak_vv_db": 2.5,
+   "contrast_vv_db": 16.1,
+   "vh_ratio_db": 13.9,
+   "lon": 119.6870593607306,
+   "lat": 26.616406003159558
+  },
+  {
+   "row": 87.0,
+   "col": 144.0,
+   "rmin": 87,
+   "rmax": 87,
+   "cmin": 143,
+   "cmax": 145,
+   "pixels": 3,
+   "length_m": 30,
+   "width_m": 10,
+   "length_class": "lt50",
+   "zone": "quay",
+   "peak_vv_db": 2.6,
+   "contrast_vv_db": 16.6,
+   "vh_ratio_db": 18.4,
+   "lon": 119.68851598173516,
+   "lat": 26.616120853080567
+  }
+ ],
+ "attribution": "Contains modified Copernicus Sentinel data 2026; land mask (c) OpenStreetMap contributors, ODbL 1.0"
+}
