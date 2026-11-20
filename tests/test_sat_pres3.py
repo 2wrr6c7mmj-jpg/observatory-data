@@ -358,12 +358,21 @@ class NoPublishedFileIsTouchedTest(unittest.TestCase):
             (Path(d) / "cells_BBB.json").write_text("[]", encoding="utf-8")
             self.assertNotEqual(common.cells_key(d, ["AAA", "BBB"]), common.cells_key(d, ["BBB", "AAA"]))
 
+    # confirm-1 (design 設計書_確認回し §6): the files of the confirm series are meant to take the scores of pres-3. They are
+    # not part of the daily collection (sat/run.py and what it calls, the existing workflows), which stays checked below.
+    CONFIRM_SERIES = {"confirm.py"}
+
     def test_not_wired_into_the_daily_collection(self):
         # pres3-es-probe.yml (confirm-1, PR-0) is not part of the collection: it runs only on a push to probe/pres3-es-*,
         # reads two public endpoints and writes nothing (checked below)
         flows = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
-        for f in [f for f in flows if f.name != "pres3-es-probe.yml"] + [p for p in sorted((ROOT / "sat").glob("*.py"))] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
+        for f in [f for f in flows if f.name != "pres3-es-probe.yml"] + [p for p in sorted((ROOT / "sat").glob("*.py")) if p.name not in self.CONFIRM_SERIES] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
             self.assertNotIn("pres3", f.read_text(encoding="utf-8"), f)
+        # the exempted files stay outside the daily collection: nothing that is checked above refers to them
+        for f in sorted((ROOT / "sat").glob("*.py")):
+            if f.name not in self.CONFIRM_SERIES and not f.name.startswith("confirm"):
+                for name in self.CONFIRM_SERIES:
+                    self.assertNotRegex(f.read_text(encoding="utf-8"), r"\b(import|from)\b[^\n]*\b" + name[:-3] + r"\b", f)
 
     def test_the_probe_workflow_is_read_only(self):
         t = (ROOT / ".github" / "workflows" / "pres3-es-probe.yml").read_text(encoding="utf-8")
