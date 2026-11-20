@@ -6,10 +6,21 @@ cell j only sees cells [:j]. numpy only.
 """
 import numpy as np
 ZB=[(-80,-60),(-60,-40),(-40,-20),(-20,0),(0,15),(15,30),(30,50),(50,80)]
-def chans(P,offs,C):
-    key=np.array([c['port']+c['date'] for c in C]); E=np.empty_like(P); W=np.zeros((len(C),5),np.float32)
+def water(P,offs,C):
+    """[N,5]: for every cell, the water colour of its scene (port x day) = the median over ALL the port's sections that day of
+    the pixels 70 m and more offshore. P may be float16 (the patch store): each scene is converted before the median."""
+    key=np.array([c['port']+c['date'] for c in C]); W=np.zeros((len(C),5),np.float32)
     for k in np.unique(key):
-        m=key==k; w=np.median(P[m][:,:,offs>=70,:].reshape(-1,5),0); E[m]=P[m]-w; W[m]=w
+        m=key==k; W[m]=np.median(np.asarray(P[m][:,:,offs>=70,:],np.float32).reshape(-1,5),0)
+    return W
+def chans(P,offs,C,W=None):
+    """W: the water colour per cell computed beforehand (water()) on the whole port; needed when C is a subset of the port's
+    sections (the daily scoring), where the median over the subset would be another number."""
+    if W is None: W=water(P,offs,C)
+    else: W=np.asarray(W,np.float32)
+    key=np.array([c['port']+c['date'] for c in C]); E=np.empty_like(P)
+    for k in np.unique(key):
+        m=key==k; E[m]=P[m]-W[m][0]
     vis=E[...,:3].mean(-1); nir=E[...,3]; sw=E[...,4]
     absd=np.sqrt((E[...,:3]**2).mean(-1)+E[...,3]**2+E[...,4]**2)
     return dict(vis=vis,nir=nir,sw=sw,absd=absd,rb=E[...,2]-E[...,0]),W
@@ -21,9 +32,13 @@ def good_day(C):
     for k in np.unique(key):
         m=key==k; g[m]=(np.mean(cl[m]>0.2)<0.15)
     return g&(cl<=0.2)&(nd==0)
-def features(P,offs,C,nmin=6,mode='past'):
-    X,W=chans(P,offs,C); N=len(C); F={}
-    good=good_day(C)
+def features(P,offs,C,nmin=6,mode='past',only=None,W=None,good=None):
+    """only: when given (a set of row numbers), the reference of a section is made only for these cells; the reference
+    features of the other rows stay NaN (the daily scoring wants the day's cells and the earlier answered cells, not the whole
+    history). W, good: the water colour and the clear-day flags computed beforehand on the whole port (water(), good_day()),
+    for a C that is a subset of the port's sections. The defaults are the research code's behaviour, unchanged."""
+    X,W=chans(P,offs,C,W); N=len(C); F={}
+    good=good_day(C) if good is None else np.asarray(good,bool)
     core=(offs>=-50)&(offs<=50)
     scal={}
     for nm in ('vis','nir','sw','absd','rb'):
@@ -61,7 +76,7 @@ def features(P,offs,C,nmin=6,mode='past'):
             if mode=='past': r=gg[:j][gd[:j]]
             else: r=np.r_[gg[:j][gd[:j]],gg[j+1:][gd[j+1:]]]
             nref[i]=len(r)
-            if len(r)<nmin: continue
+            if len(r)<nmin or (only is not None and i not in only): continue
             for k,nw in NW.items():
                 fq=nw[r].mean(0); t=nw[i]; L=LD[k]
                 V=(fq>0.08)&(fq<0.92)&core[None,:]; S=(fq>=0.92)
