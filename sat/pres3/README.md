@@ -14,7 +14,8 @@
 - scikit-learn（融合 `fuse` だけ。`HistGradientBoostingClassifier`）
 
 確かめた版：Python 3.13.18、numpy 2.5.3、rasterio 1.5.2、scikit-learn 1.9.1（版が違うと勾配ブースティングの結果が小数第 3 位で動くことがある）。
-CI（`.github/workflows/test.yml`）は numpy だけを入れる。`tests/test_sat_pres3.py` は numpy だけで動く部分（特徴・差分・見本と履歴・評価の関数）を試す。
+CI（`.github/workflows/test.yml`）は numpy だけを入れる。`tests/test_sat_pres3.py` は numpy だけで動く部分（特徴・差分・見本と履歴・評価の関数）を、
+`tests/test_sat_pres3_daily.py` は 1 日ずつの判定（合成データ。scikit-learn の要る 2 件は CI では飛ばす）を試す。
 
 ## 再現の手順
 
@@ -56,6 +57,45 @@ python -m sat.pres3.triage           # --json で値だけ、--no-ci で CI を�
 迷ったら作業の置き場の `data/` 以外を消して 2 からやり直す。
 
 乱数の種は固定（勾配ブースティング `random_state=0`、ブートストラップ `seed=0`）。同じ窓・同じ版なら数字は一致する。
+
+## 1 日ずつ判定する形（confirm-1、`daily.py`。PR-2）
+
+確認回し（`docs/data/sat/eval/confirm-design.md`）で毎日の判定に使う形。**まだどのワークフローからも呼ばれない**（つなぐのは後の PR）。
+判定器は pres-3o＝S1 を使わない構成 `('opt', 1)`（答えを使わない汎用の判定＋同じ区間の判定日より前の答えの見本・履歴）。
+
+ある日 d の点数が見てよいもの：**像は d 以前**（区間の参照は d より前の晴れの日）、**答えは d より前の所有者の答えだけ**（自動確定は答えではない）、
+**係数は締め日より前の答えで学んだ固定のもの**。`tests/test_sat_pres3_daily.py` が合成データで、後の日の像・答えを変えても点数が変わらないことを確かめる。
+
+置き場は 3 つとも（港・区間・日）のキーで引く（升の一覧の何行目か、では引かない）。**どれもリポジトリの外に置く**（中を指定すると止まる）。
+
+| 置き場 | 形 |
+|---|---|
+| パッチの保管 `<store>/<港>/<YYYY-MM>.npz` | `patch` [n, 24, 41, 5] float16、`cells`（升ごとの記録の JSON：区間・日・雲・影・欠測・撮影の ID と時刻。**答えは入れない**）、`offs`。1 升 約 7.6 KB（圧縮後） |
+| 係数 `<model>.npz` | 2 つの勾配ブースティングの木を配列にしたもの（節の値・特徴・閾値・欠測の行き先・子）、学習の升の港抜きの汎用の点数、特徴の名前、見出しの JSON（版 `pres3o-YYYYMM`・締め日・学習の升の数・scikit-learn と numpy の版）。pickle は使わない。**予測は numpy だけ**（scikit-learn が要るのは学習のときだけ。scikit-learn の予測と 1e-12 以内で一致） |
+| 点数の表（CSV） | `site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata, status, answers_through`（`sat/confirm.py` の入力の列と同じ名前・単位） |
+
+点数の表の読み方：`p`＝判定器の点数（0〜1、小数 6 桁。在が高い）。**空**＝像なし、または区間の参照の晴れの日が 6 日未満（判定器の入力が足りない。受け取る側が `no_reference` として回す）。
+`cloud_shadow`・`nodata`＝区間の画素のうち雲＋影（SCL 3・8・9・10）・欠測の割合（0〜1、小数 4 桁）。`status`＝`no_image`（雲＋影が 0.2 超か欠測あり）か空。
+`answers_through`＝この点数に使った、その区間の最後の答えの日（判定日より前。無ければ空）。`--diagnostics` を付けると `n_answers`（使った答えの数）・`n_reference_days`・`scene_id` も出す。
+答えは「その区間・その日のパッチが保管にあるもの」だけを使う（像の無い日の答えは見本にできない）。
+自動確定か回すかの仕分け（閾値・答えの数・日数・港の on/off）はこの表の外（`sat/confirm.py`）。
+
+```sh
+# 研究の作業の置き場のパッチを、キーで引く保管に写す（履歴の種）
+python -m sat.pres3.daily import --work "$PRES3_WORK" --store /path/to/store
+# 係数：締め日より前の答えで学ぶ（scikit-learn。港抜きの汎用の判定 9 回＋全体 1 回＋融合 1 回）
+python -m sat.pres3.daily fit --work "$PRES3_WORK" --cutoff 2026-11-01 --model /path/to/pres3o-202611.npz
+# 新しい撮影：直近 N 日を検索し、保管に無い日の窓を取ってパッチにする（rasterio・ネットワーク。CDSE は使わない）
+python -m sat.pres3.daily fetch --store /path/to/store --windows /path/to/windows --days 10
+# 判定：保管の最後の日（--since で範囲）。答えは labels/<港>-s2-answers.csv と labels/<港>-confirm-answers.csv（あれば）
+python -m sat.pres3.daily score --store /path/to/store --model /path/to/pres3o-202611.npz --out /path/to/scores.csv
+# 確かめ：研究の前進検証を 1 日ずつやり直し、pres3_oos.csv の p_opt_fwd と比べる（境界ごとに学び直す）
+python -m sat.pres3.daily check --work "$PRES3_WORK" --store /path/to/store --models /path/to/check-models
+```
+
+- 取得するタイルは港ごとに 1 つ：`inputs/scenes.csv` の最後の 365 日でいちばん多いタイル（青島港内 51STA、古鎮口 51STV。古鎮口は 2024 年までは 50SQE だった）。タイルの雲 85% 以下、1 日 1 撮影（研究の一覧と同じ選び方）。
+- 水の色の補正と「晴れの日」の印は、その日のその港の**全部の区間**のパッチから作る。保管から区間を間引くと点数が変わる（間引くなら港×日の水の色を別に残す作りに直す）。
+- 学習（`fit`）と確かめ（`check`）は、いまは研究の作業の置き場の升と特徴から学ぶ。保管と答えのファイルだけから学ぶ形（月 1 回の再学習）は後の PR。
 
 ### 取得について
 
@@ -103,6 +143,7 @@ python -m sat.pres3.triage           # --json で値だけ、--no-ci で CI を�
 | `evalcv.py` | LOPO・前進検証・撮影単位のブートストラップ・変わった升 |
 | `fuse.py` | 融合と評価、試した構成の表 |
 | `final.py` | 採用した構成の数字、公開用の JSON・CSV |
+| `daily.py` | confirm-1：1 日ずつ判定する形。パッチの保管・係数のファイル・点数の表（上の節） |
 | `triage.py` | confirm-1：確信のある升（自動確定）と回す升の仕分けの表。規則 v1。`pres3_oos.csv` だけを読む（numpy） |
 
 ## 出典

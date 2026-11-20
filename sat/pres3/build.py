@@ -36,39 +36,54 @@ def sample_points(secs):
     return geo
 
 
-def build_port(work, port):
+def day_cells(port, date, scenes, secs, geo, old):
+    """The cells and patches of one day from its fetched windows (scenes: [(file, meta)]). Several scenes on a day: the one
+    with the least nodata; None when more than half of it is nodata. old: (date, section) -> the answer and the evaluation
+    sheet's row (labels.lookup), {} for none."""
     from rasterio.warp import transform as rtransform
-    secs = labels.frames(port); old = labels.lookup(port); cells = []; P = []
-    files = sorted(glob.glob(f'{work}/data/{port}/*.npz'))
-    if not files: raise SystemExit(f'no windows in {work}/data/{port} (run sat.pres3.fetch first)')
-    geo = sample_points(secs)
+    best = None
+    for fn, m in scenes:
+        z = np.load(fn); a = np.stack([z[c].astype(np.float32) for c in CH[:4]], -1)
+        sw = np.repeat(np.repeat(z['swir16'].astype(np.float32), 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
+        scl = np.repeat(np.repeat(z['scl'], 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
+        nod = float((a[..., 3] == 0).mean())
+        if best is None or nod < best[0]: best = (nod, m, a, sw, scl)
+    nod, m, a, sw, scl = best
+    if nod > 0.5: return None
+    img = np.concatenate([a, sw[..., None]], -1) / 10000.0; cells = []; P = []
+    for sid, (lon, lat) in geo.items():
+        x, y = rtransform('EPSG:4326', m['crs'], lon.ravel().tolist(), lat.ravel().tolist())
+        c = (np.asarray(x) - m['x0']) / 10.0 - 0.5; r = (m['y1'] - np.asarray(y)) / 10.0 - 0.5
+        p = bil(img, r, c).reshape(NA, len(OFFS), 5)
+        ri = np.clip(np.round(r).astype(int), 0, scl.shape[0] - 1); ci = np.clip(np.round(c).astype(int), 0, scl.shape[1] - 1)
+        sc = scl[ri, ci]; nd = bil((img[..., 3] == 0).astype(np.float32), r, c)
+        o = old.get((date, sid)); s = secs[sid]
+        cells.append(dict(port=port, date=date, section=sid, kind=s['kind'], sector=s['sector'], length_m=s['length_m'],
+            cloud=float(np.isin(sc, [8, 9, 10]).mean()), shadow=float((sc == 3).mean()), cirrus=float((sc == 10).mean()), nodata=float(nd.mean()),
+            tile_cloud=m['cloud'], scene=m['id'], time=m['datetime'],
+            y=(o['y'] if o else None), eval=bool(o and o['eval']), y_eval=(o['y_eval'] if o else None), p_cur=(o['p_cur'] if o else None),
+            p_pres1=(o.get('p_pres1') if o else None), dt_h=(o['dt_h'] if o else None)))
+        P.append(p.astype(np.float16))
+    return cells, P
+
+
+def windows_by_day(work, port):
+    """date -> [(file, meta)] of the fetched windows of a port."""
     byday = {}
-    for fn in files:
-        z = np.load(fn); m = json.loads(str(z['meta'])); byday.setdefault(m['datetime'][:10], []).append((fn, m))
+    for fn in sorted(glob.glob(f'{work}/data/{port}/*.npz')):
+        m = json.loads(str(np.load(fn)['meta'])); byday.setdefault(m['datetime'][:10], []).append((fn, m))
+    return byday
+
+
+def build_port(work, port):
+    secs = labels.frames(port); old = labels.lookup(port); cells = []; P = []
+    byday = windows_by_day(work, port)
+    if not byday: raise SystemExit(f'no windows in {work}/data/{port} (run sat.pres3.fetch first)')
+    geo = sample_points(secs)
     for date in sorted(byday):
-        best = None
-        for fn, m in byday[date]:           # several scenes on a day: the one with the least nodata
-            z = np.load(fn); a = np.stack([z[c].astype(np.float32) for c in CH[:4]], -1)
-            sw = np.repeat(np.repeat(z['swir16'].astype(np.float32), 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
-            scl = np.repeat(np.repeat(z['scl'], 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
-            nod = float((a[..., 3] == 0).mean())
-            if best is None or nod < best[0]: best = (nod, m, a, sw, scl)
-        nod, m, a, sw, scl = best
-        if nod > 0.5: continue
-        img = np.concatenate([a, sw[..., None]], -1) / 10000.0
-        for sid, (lon, lat) in geo.items():
-            x, y = rtransform('EPSG:4326', m['crs'], lon.ravel().tolist(), lat.ravel().tolist())
-            c = (np.asarray(x) - m['x0']) / 10.0 - 0.5; r = (m['y1'] - np.asarray(y)) / 10.0 - 0.5
-            p = bil(img, r, c).reshape(NA, len(OFFS), 5)
-            ri = np.clip(np.round(r).astype(int), 0, scl.shape[0] - 1); ci = np.clip(np.round(c).astype(int), 0, scl.shape[1] - 1)
-            sc = scl[ri, ci]; nd = bil((img[..., 3] == 0).astype(np.float32), r, c)
-            o = old.get((date, sid)); s = secs[sid]
-            cells.append(dict(port=port, date=date, section=sid, kind=s['kind'], sector=s['sector'], length_m=s['length_m'],
-                cloud=float(np.isin(sc, [8, 9, 10]).mean()), shadow=float((sc == 3).mean()), cirrus=float((sc == 10).mean()), nodata=float(nd.mean()),
-                tile_cloud=m['cloud'], scene=m['id'], time=m['datetime'],
-                y=(o['y'] if o else None), eval=bool(o and o['eval']), y_eval=(o['y_eval'] if o else None), p_cur=(o['p_cur'] if o else None),
-                p_pres1=(o.get('p_pres1') if o else None), dt_h=(o['dt_h'] if o else None)))
-            P.append(p.astype(np.float16))
+        got = day_cells(port, date, byday[date], secs, geo, old)
+        if got is None: continue
+        cells += got[0]; P += got[1]
     np.savez_compressed(f'{work}/patch_{port}.npz', patch=np.stack(P), offs=OFFS)
     json.dump(cells, open(f'{work}/cells_{port}.json', 'w'), ensure_ascii=False)
     lab = [c for c in cells if c['y'] is not None]; want = {k for k, c in old.items() if c['y'] is not None and k[1] in secs}
