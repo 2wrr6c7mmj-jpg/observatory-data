@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-19T23:00:29Z",
+ "generated_utc": "2026-11-20T01:39:15Z",
  "state": "warn",
  "summary": {
   "ok": 12,
@@ -75,21 +75,31 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-19T14:38:34Z",
-   "heartbeat_age_h": 8.4,
+   "heartbeat_age_h": 11.0,
    "data_date": "2026-11-19",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "LYG：最新の撮影 2026-11-07 から 12 日（撮影の抜け）"
+     "text": "MAW：最新の撮影 2026-11-12 から 8 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "WHI：最新の撮影 2026-11-09 から 10 日（撮影の抜け）"
+     "text": "NDS：最新の撮影 2026-11-12 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "LYG：最新の撮影 2026-11-07 から 13 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "WHI：最新の撮影 2026-11-09 から 11 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -105,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-19T12:09:03Z",
-   "heartbeat_age_h": 10.9,
+   "heartbeat_age_h": 13.5,
    "data_date": "2026-11-18",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -128,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-19T16:02:17Z",
-   "heartbeat_age_h": 7.0,
+   "heartbeat_age_h": 9.6,
    "data_date": "2026-11-19",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -172,7 +182,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-19T20:42:05Z",
-   "heartbeat_age_h": 2.3,
+   "heartbeat_age_h": 5.0,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -190,10 +200,10 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-19T22:46:31Z",
-   "heartbeat_age_h": 0.2,
+   "heartbeat_age_h": 2.9,
    "data_date": "2026-11-19",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -208,7 +218,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-19T20:42:13Z",
-   "heartbeat_age_h": 2.3,
+   "heartbeat_age_h": 5.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -247,8 +257,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-19T22:13:09Z",
-   "heartbeat_age_h": 0.8,
+   "heartbeat_utc": "2026-11-20T01:36:46Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -888,15 +898,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-19T01:26:35Z",
+   "last_success_started_utc": "2026-11-20T01:25:47Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 44436929235,
-    "started_utc": "2026-11-19T01:26:35Z",
+    "id": 44653553683,
+    "started_utc": "2026-11-20T01:25:47Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44436929235",
-    "delay_h": 5.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/44653553683",
+    "delay_h": 5.7
    },
    "consecutive_failures": 0
   }
@@ -1166,8 +1176,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-18",
-   "version": "**pres-1a**（試行・並行系列）／**eval-presence-6**"
+   "date": "2026-11-19",
+   "version": "**pres-3**（試行・研究）"
   }
  },
  "credits": [
