@@ -34,6 +34,13 @@ h1{font-size:1.3rem}
 #bar button{font-size:.95rem;padding:.35rem .8rem}
 .note,small{color:#555}
 .days input{width:4rem}
+.qbox h3 small{margin-left:.4rem}
+.badge{display:inline-block;font-size:.72rem;padding:0 .35rem;border-radius:3px;color:#fff;background:#666}
+.badge.p{background:#1a6b2a}
+.badge.a{background:#555}
+body.q #bar{font-size:.9rem;gap:.4rem .8rem}
+.qcell{max-width:100%;box-sizing:border-box;overflow-x:auto}
+.qcell .sid{font-size:.72rem;color:#666;max-width:16rem;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -66,6 +73,20 @@ h1{font-size:1.3rem}
 <p class="note">S1 は Sentinel-1 IW GRD（VV・VH、10 m）の疑似カラー（R＝VV、G＝VH、B＝VV−VH、固定レンジ、3×3 Lee）。S2 は L2A 自然色。Contains modified Copernicus Sentinel data 2025, 2026。岸壁の線：© OpenStreetMap contributors（ODbL 1.0）。</p>
 </div>
 
+<div id="head-q" hidden>
+<h1>岸壁の確認待ちの一覧（Sentinel-2 自然色・試行）</h1>
+<p class="trial"><b>試行</b>：自動の判定だけでは決められなかった岸壁の区間を、全部の港からまとめて並べています。写真を見て、<b>水色の枠の中に船がいるか</b>を「在／不在／判断できない」で答えてください。答えは次の日からの自動の判定の材料（その区間の履歴と見本）になります。自動の判定の結果はここには出していません（先入観なしに見てもらうため）。</p>
+
+<h2>やること（週 1 回、15 分前後）</h2>
+<ol>
+<li>港と日ごとの箱の中に、区間が並びます。各升は<b>左が前回あなたが答えた日の写真</b>（「前回：在／不在」の札つき）、<b>右が今回の写真</b>です。水色の枠（水際から 120 m）の中を見比べます。黄色の線が岸壁（OSM）の線です。</li>
+<li><b>在</b>＝今回の写真の枠の中に船がいる／<b>不在</b>＝いない／<b>判断できない</b>＝雲・影・波・解像度（10 m）で見分けられない。迷う升は無理に決めず「判断できない」で構いません。</li>
+<li>箱の見出しの「この日の残りは全部 不在」を押すと、その港・日のまだ答えていない升が全部「不在」になります（先に「在」と「判断できない」の升だけ押すと早く済みます）。</li>
+<li>上から順に大事な升が並んでいます。途中でやめても構いません。答えはこのブラウザに自動で保存されます（閉じても続きから）。終わったら下の「答えを CSV でダウンロード」を押し、できたファイル 1 つを司令部に渡してください。</li>
+</ol>
+<p class="note">写真は Sentinel-2 L2A の自然色（B4・B3・B2、10 m）を拡大したものです。写真を押すと港全体の元の写真が開きます。<span id="q-credit">Contains modified Copernicus Sentinel data</span>。岸壁の線：© OpenStreetMap contributors（ODbL 1.0）。</p>
+</div>
+
 <div id="scene" class="days"></div>
 <div id="main">読み込み中…</div>
 
@@ -73,6 +94,7 @@ h1{font-size:1.3rem}
   <span id="prog">–</span>
   <button id="dl" type="button">答えを CSV でダウンロード</button>
   <button id="dl2" type="button" hidden>この日の軍艦の隻数 CSV</button>
+  <button id="qdrop" type="button" hidden>一覧に無い答えを消す</button>
   <span class="note" id="msg"></span>
 </div>
 
@@ -84,6 +106,9 @@ const q = new URLSearchParams(location.search);
 const SITE = (q.get('site') || '').toUpperCase();
 const OOS = q.get('oos') === '1';
 const S1 = q.get('s1') === '1';
+// QMAX: the side of a picture of the queue; two of them fit side by side on a narrow screen
+const QMAX = Math.max(120, Math.min(250, Math.floor((window.innerWidth - 80) / 2)));
+const QUEUE = q.get('queue') === '1';   // the queue of confirm-1: every port on one page (docs/data/sat/confirm/queue.json)
 const base = '../../data/sat/labels/';
 // Shown by place name; the code stays only in the URL and the CSV (machine keys).
 const NAMES = {SYL: '三亜・楡林', SLP: '三亜・亜龍湾', QGZ: '青島・古鎮口', ZDH: '舟山・定海', LSN: '大連・旅順', QDH: '青島港内', ZJG: '湛江',
@@ -93,7 +118,8 @@ const PORTS = ['SYL', 'SLP', 'QGZ', 'ZDH', 'LSN', 'QDH', 'QJG', 'XSN', 'XMN', 'S
 document.getElementById('ports').innerHTML = '港：' + PORTS.map(p => `<a href="?site=${p}">${NAMES[p]}</a>`).join('') + '<a href="?site=ZJG&oos=1">湛江（標本外）</a>'
   + '<br>S1 の同じ時刻の正解：' + ['QGZ', 'SLP', 'SYL'].map(p => `<a href="?site=${p}&s1=1">${NAMES[p]}</a>`).join('');
 document.getElementById('ports-s1').innerHTML = '港：' + ['QGZ', 'SLP', 'SYL'].map(p => `<a href="?site=${p}&s1=1">${NAMES[p]}</a>`).join('') + '<a href="?site=' + (SITE || 'QGZ') + '">S2 の確認に戻る</a>';
-if (S1) { $('head-s2').hidden = true; $('head-s1').hidden = false; document.title = '岸壁の目視確認（Sentinel-1 の同じ時刻の正解・試行）'; }
+if (QUEUE) { document.body.classList.add('q'); $('head-s2').hidden = true; $('head-q').hidden = false; document.title = '岸壁の確認待ちの一覧（Sentinel-2 自然色・試行）'; }
+else if (S1) { $('head-s2').hidden = true; $('head-s1').hidden = false; document.title = '岸壁の目視確認（Sentinel-1 の同じ時刻の正解・試行）'; }
 const CH = S1 ? [['present', '在', ''], ['absent', '不在', 'n'], ['unsure', '判断できない', 'u']]
   : [['none', 'いない', 'n'], ['1', '1列', ''], ['2', '2列', ''], ['3', '3列+', ''], ['unsure', '判断できない', 'u']];
 let R = null, ans = {}, scene = {}, key = '', UNITS = [];
@@ -123,7 +149,7 @@ function progress() {
 }
 const imgs = {};
 function image(d) {
-  if (!imgs[d.image]) imgs[d.image] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + R.site_id + '/' + d.image; });
+  if (!imgs[d.image]) imgs[d.image] = new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = d.src || (base + R.site_id + '/' + d.image); });
   return imgs[d.image];
 }
 function px(d, lon, lat) { const g = d.grid; return [(lon - g.west) / (g.east - g.west) * g.width, (g.north - lat) / (g.north - g.south) * g.height]; }
@@ -133,7 +159,7 @@ function draw(cv, s, d) {
     const xs = fr.map(p => p[0]), ys = fr.map(p => p[1]); const pad = 6;
     const x0 = Math.floor(Math.min(...xs)) - pad, y0 = Math.floor(Math.min(...ys)) - pad;
     const w = Math.ceil(Math.max(...xs)) + pad - x0, h = Math.min(Math.ceil(Math.max(...ys)) + pad, d.grid.height) - y0;
-    const z = Math.max(2, Math.min(R.zoom, Math.floor((S1 ? 250 : 330) / Math.max(w, h))));
+    const z = Math.max(2, Math.min(R.zoom, Math.floor((QUEUE ? QMAX : S1 ? 250 : 330) / Math.max(w, h))));
     cv.width = w * z; cv.height = h * z; cv.style.width = cv.width + 'px';
     ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
     if (im) ctx.drawImage(im, x0, y0, w, h, 0, 0, w * z, h * z);
@@ -228,6 +254,7 @@ const MAP1 = {present: ['1', '1'], absent: ['1', '0'], unsure: ['0', '']};
 const csvq = x => /[",\n]/.test(x) ? '"' + String(x).replace(/"/g, '""') + '"' : x;
 $('dl').onclick = () => {
   let n = 0, lines;
+  if (QUEUE) { downloadQueue(); return; }
   if (S1) {
     // key (section_id, s1_acquired_utc); a cell left at its default goes out with verified_note s2-prefill / s1-unreadable-default
     lines = ['site_id,section_id,s1_acquired_utc,relative_orbit,s2_date,dt_h,verified,verified_occupied,verified_by,verified_note'];
@@ -246,7 +273,91 @@ $('dl2').onclick = () => {
   const lines = ['site_id,date,warships_60,note']; Object.keys(scene).sort().forEach(d => lines.push(`${R.site_id},${d},${scene[d]},`));
   download(R.site_id + '-oos-scene.csv', lines.join('\n') + '\n');
 };
-load();
+
+// ---------------------------------------------------------------- the queue (?queue=1)
+// One page for every port. A cell: left the picture of the day of the owner's last answer (with the answer), right the
+// picture to judge. Three choices. Nothing of the judge is in queue.json and nothing of it is shown.
+const QCH = [['present', '在', ''], ['absent', '不在', 'n'], ['unsure', '判断できない', 'u']];
+const QBASE = '../../data/sat/';
+// one store for every version of the queue: the queue is made again every day, and an answer given yesterday must still be
+// there today. Each answer keeps the time it was given and the version of the queue it was given in.
+const QKEY = 'confirm:confirm-queue-1';
+let Q = null, qans = {};
+const qk = c => c.site_id + '|' + c.section_id + '|' + c.date;
+function qsave() { try { localStorage.setItem(QKEY, JSON.stringify({ans: qans})); } catch (e) {} qprogress(); }
+function qimg(key, date) { const m = key && Q.images[key]; return m ? {src: QBASE + m.src, image: key, grid: m.grid, date} : null; }
+function qprogress() {
+  const keys = new Set(Q.cells.map(qk)); let n = 0, off = 0;
+  Object.keys(qans).forEach(k => { if (keys.has(k)) n++; else off++; });
+  const min = Math.max(1, Math.round(Q.cells.length * (Q.seconds_per_cell || 10) / 60));
+  $('prog').textContent = `確認待ち：回答 ${n} / ${Q.cells.length}（約 ${min} 分）` + (off ? `／一覧に無い保存済みの答え ${off} 件（CSV には入ります）` : '');
+  $('qdrop').hidden = !off;
+}
+function qpaint(c, k) { c.querySelectorAll('.btns button').forEach(b => b.classList.toggle('on', !!qans[k] && b.dataset.v === qans[k].v)); }
+function qset(k, v) { if (v === null) delete qans[k]; else qans[k] = {v, t: new Date().toISOString().replace(/\.\d+Z$/, 'Z'), qv: Q.queue_version}; }
+function loadQueue() {
+  fetch(QBASE + 'confirm/queue.json', {cache: 'no-cache'})
+    .then(r => { if (!r.ok) throw 0; return r.json(); })
+    .then(j => { Q = j; R = {zoom: Q.zoom || 8};
+      try { qans = (JSON.parse(localStorage.getItem(QKEY) || '{}').ans) || {}; } catch (e) {}
+      if (Q.credit) $('q-credit').textContent = Q.credit;
+      buildQueue(); })
+    .catch(() => { $('main').textContent = '確認待ちの一覧はまだありません。'; $('prog').textContent = '–'; });
+}
+function buildQueue() {
+  const main = $('main'); main.innerHTML = '';
+  if (!Q.cells.length) { main.textContent = '確認待ちの升はありません。'; qprogress(); return; }
+  // boxes: port x day, in the order of their first cell; inside a box the cells keep the order of the queue
+  const boxes = new Map();
+  [...Q.cells].sort((a, b) => a.order - b.order).forEach(c => { const g = c.site_id + '|' + c.date; if (!boxes.has(g)) boxes.set(g, []); boxes.get(g).push(c); });
+  let bi = 0;
+  boxes.forEach(cells => {
+    const c0 = cells[0]; const box = document.createElement('div'); box.className = 'sec qbox'; bi++;
+    box.innerHTML = `<h3>${esc(NAMES[c0.site_id] ?? c0.site_id)}　${esc(c0.date)} <small>${cells.length} 升・箱 ${bi} / ${boxes.size}</small></h3>`
+      + `<div class="tools"><button type="button" data-all="absent">この日の残りは全部 不在</button><button type="button" data-all="clear">この箱の答えを消す</button></div>`;
+    const row = document.createElement('div'); row.className = 'row'; box.appendChild(row);
+    const els = [];
+    cells.forEach(c => {
+      const k = qk(c); const s = ((Q.sites[c.site_id] || {}).sections || {})[c.section_id];
+      const el = document.createElement('div'); el.className = 'cell qcell';
+      const now = qimg(c.image, c.date), prev = c.prev ? qimg(c.prev.image, c.prev.date) : null;
+      const badge = c.prev ? `<span class="badge ${c.prev.answer ? 'p' : 'a'}">前回：${c.prev.answer ? '在' : '不在'}</span> ${esc(c.prev.date)}` : '前回の答えなし';
+      el.innerHTML = `<div class="pair"><div><div class="cap">${badge}</div>${prev && s ? '<canvas class="c1"></canvas>' : `<div class="none">${c.prev ? '写真なし' : '–'}</div>`}</div>`
+        + `<div><div class="cap"><b>今回</b> ${esc(c.date)}</div>${now && s ? '<canvas class="c2"></canvas>' : '<div class="none">写真なし</div>'}</div></div>`
+        + `<div class="sid">${s ? esc((s.kind === 'pier' ? '桟橋' : '岸壁/海岸線') + '・長さ ' + s.length_m + ' m・区画 ' + (s.sector || '-')) : ''}</div><div class="btns"></div>`
+        + (now && s ? '<button type="button" class="orig" style="margin-top:2px;font-size:12px">今回の全体</button>' : '')
+        + (prev && s ? '<button type="button" class="orig1" style="margin-top:2px;margin-left:4px;font-size:12px">前回の全体</button>' : '');
+      if (now && s) { const cv = el.querySelector('.c2'); cv.style.cursor = 'zoom-in'; cv.onclick = () => showOriginal(s, now); el.querySelector('.orig').onclick = () => showOriginal(s, now); draw(cv, s, now); }
+      if (prev && s) { const cv = el.querySelector('.c1'); cv.style.cursor = 'zoom-in'; cv.onclick = () => showOriginal(s, prev); el.querySelector('.orig1').onclick = () => showOriginal(s, prev); draw(cv, s, prev); }
+      const b = el.querySelector('.btns');
+      QCH.forEach(([v, t, cl]) => { const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = t; bt.dataset.v = v;
+        if (cl === 'u') bt.classList.add('u');
+        bt.onclick = () => { qset(k, qans[k] && qans[k].v === v ? null : v); qpaint(el, k); qsave(); }; b.appendChild(bt); });
+      row.appendChild(el); els.push([el, k]); qpaint(el, k);
+    });
+    box.querySelectorAll('[data-all]').forEach(bt => bt.onclick = () => {
+      els.forEach(([el, k]) => { if (bt.dataset.all === 'clear') qset(k, null); else if (!qans[k]) qset(k, 'absent'); qpaint(el, k); });
+      qsave(); });
+    main.appendChild(box);
+  });
+  qprogress();
+}
+function downloadQueue() {
+  // every stored answer goes out, also for cells that have left the list since (merge takes any cell that was in a queue)
+  const lines = ['site_id,section_id,date,verified,verified_occupied,verified_by,verified_note,answered_utc,queue_version'];
+  const keys = Object.keys(qans).sort();
+  keys.forEach(k => { const a = qans[k], i = k.indexOf('|'), j = k.lastIndexOf('|');
+    lines.push([k.slice(0, i), k.slice(i + 1, j), k.slice(j + 1), ...MAP1[a.v], 'owner', '', a.t || '', a.qv || ''].map(x => csvq(x ?? '')).join(',')); });
+  const name = 'confirm-answers-' + new Date().toISOString().slice(0, 10) + '.csv';
+  download(name, lines.join('\n') + '\n');
+  $('msg').textContent = `${keys.length} 件を ${name} に書き出しました。このファイルを司令部に渡してください。`;
+}
+$('qdrop').onclick = () => {
+  const keys = new Set(Q.cells.map(qk)); const off = Object.keys(qans).filter(k => !keys.has(k));
+  if (!off.length || !confirm(`いまの一覧に無い升の答え ${off.length} 件を、このブラウザから消します（CSV を司令部に渡した後に押してください）。`)) return;
+  off.forEach(k => delete qans[k]); qsave();
+};
+if (QUEUE) loadQueue(); else load();
 </script>
 </body>
 </html>
