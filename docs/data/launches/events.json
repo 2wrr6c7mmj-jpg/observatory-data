@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-20T04:22:12Z",
+ "generated_utc": "2026-11-20T14:24:26Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -769,18 +769,7 @@
    "method": "nearest-only",
    "site": "文昌",
    "country": "CN",
-   "distance_km": 1464,
-   "recorded_launches": [
-    {
-     "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
-     "name": "Long March 12 | SatNet LEO Group TBD?",
-     "status": "TBC",
-     "net_utc": "2026-11-24T07:00:00Z",
-     "rocket": "Long March 12",
-     "orbit": "LEO",
-     "pad": "Commercial LC-2"
-    }
-   ]
+   "distance_km": 1464
   },
   {
    "window_start_utc": "2026-12-10T07:00Z",
@@ -797,7 +786,18 @@
    "method": "nearest-only",
    "site": "文昌",
    "country": "CN",
-   "distance_km": 1464
+   "distance_km": 1464,
+   "recorded_launches": [
+    {
+     "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
+     "name": "Long March 12 | SatNet LEO Group TBD?",
+     "status": "TBC",
+     "net_utc": "2026-12-10T07:00:00Z",
+     "rocket": "Long March 12",
+     "orbit": "LEO",
+     "pad": "Commercial LC-2"
+    }
+   ]
   }
  ],
  "recorded_launches": [
@@ -1091,23 +1091,6 @@
    "event_index": null
   },
   {
-   "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
-   "name": "Long March 12 | SatNet LEO Group TBD?",
-   "status": "TBC",
-   "net_utc": "2026-11-24T07:00:00Z",
-   "rocket": "Long March 12",
-   "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "LEO",
-   "mission_type": "Communications",
-   "pad": "Commercial LC-2",
-   "location": "Wenchang Space Launch Site, People's Republic of China",
-   "country": "CHN",
-   "lat": 19.59755,
-   "lon": 110.936481,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
-   "event_index": 33
-  },
-  {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
    "name": "Long March 2F/G | Shenzhou 24",
    "status": "TBD",
@@ -1122,6 +1105,23 @@
    "lat": 40.957893,
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "8b46d360-6b3b-423f-9036-d5568e485624",
+   "name": "Kinetica 1 | Unknown Payload",
+   "status": "TBC",
+   "net_utc": "2026-11-29T01:00:00Z",
+   "rocket": "Kinetica 1",
+   "provider": "CAS Space",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "South China Sea (launch location 3)",
+   "location": "Haiyang Oriental Spaceport",
+   "country": "CHN",
+   "lat": 21.366667,
+   "lon": 112.116667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
    "event_index": null
   },
   {
@@ -1157,6 +1157,23 @@
    "lon": 100.343333,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
    "event_index": null
+  },
+  {
+   "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
+   "name": "Long March 12 | SatNet LEO Group TBD?",
+   "status": "TBC",
+   "net_utc": "2026-12-10T07:00:00Z",
+   "rocket": "Long March 12",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "LEO",
+   "mission_type": "Communications",
+   "pad": "Commercial LC-2",
+   "location": "Wenchang Space Launch Site, People's Republic of China",
+   "country": "CHN",
+   "lat": 19.59755,
+   "lon": 110.936481,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
+   "event_index": 34
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
@@ -1275,6 +1292,40 @@
    "lat": 40.891596,
    "lon": 100.217289,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/dc570565-4dcf-4ab9-8174-bf88efef477f/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "21561fba-dc41-41b3-9d18-e13339fc3396",
+   "name": "H3-30 | IGS Optical Diversification 1",
+   "status": "Go",
+   "net_utc": "2027-01-10T23:00:00Z",
+   "rocket": "H3-30",
+   "provider": "Mitsubishi Heavy Industries",
+   "orbit": "LEO",
+   "mission_type": "Government/Top Secret",
+   "pad": "Yoshinobu Launch Complex LP-2",
+   "location": "Tanegashima Space Center, Japan",
+   "country": "JPN",
+   "lat": 30.400938,
+   "lon": 130.97564,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/21561fba-dc41-41b3-9d18-e13339fc3396/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "7149bbf6-bf27-4115-bb19-8c7c7b93fad9",
+   "name": "KAIROS | Flight 4",
+   "status": "TBD",
+   "net_utc": "2027-01-22T00:00:00Z",
+   "rocket": "Kii-based Advanced & Instant ROcket System",
+   "provider": "Space One",
+   "orbit": "SSO",
+   "mission_type": "Test Flight",
+   "pad": "Space One Launch Pad",
+   "location": "Spaceport Kii, Japan",
+   "country": "JPN",
+   "lat": 33.544224,
+   "lon": 135.889502,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/7149bbf6-bf27-4115-bb19-8c7c7b93fad9/",
    "event_index": null
   }
  ]

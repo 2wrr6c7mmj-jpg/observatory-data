@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-20T04:22:12Z",
+ "generated_utc": "2026-11-20T14:24:26Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -357,138 +357,6 @@
      ],
      "circles": [],
      "text": "P5642/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611130521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 13 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 14 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "id": "2026-11-14T01:30Z:related",
-   "window_start_utc": "2026-11-14T01:30Z",
-   "window_end_utc": "2026-11-20T05:01Z",
-   "site": null,
-   "orbit": null,
-   "vehicle": null,
-   "notices": [
-    {
-     "key": "aviation:M0627/26",
-     "id": "M0627/26",
-     "dataset": "aviation",
-     "kind": "related",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-14T01:30:00Z",
-     "end_utc": "2026-11-20T05:01:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        23.9333,
-        144.6167
-       ],
-       [
-        26.15,
-        151.2333
-       ],
-       [
-        27.7667,
-        156.6
-       ],
-       [
-        29.45,
-        165
-       ],
-       [
-        28.4,
-        165
-       ],
-       [
-        28.2,
-        163.75
-       ],
-       [
-        27,
-        157.8
-       ],
-       [
-        27,
-        155
-       ],
-       [
-        26.3333,
-        155
-       ],
-       [
-        23.45,
-        144.8167
-       ],
-       [
-        23.9333,
-        144.6167
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "M0627/26 NOTAMN \r\nQ) RJJJ/QXXXX/IV/NBO/A/000/999/3527N13927E005 \r\nA) RJTA \r\nB) 2611140130 \r\nC) 2611200501 \r\nE) DUE TO AN AEROSPACE FLIGHT ACTIVITY, THE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREA MAY BE AFFECTED THRU NOV 14-20 2026, 0130-0501 DLY. AREA: 2356N14437E - 2609N15114E - 2746N15636E - 2927N16500E - 2824N16500E - 2824N16500E - 2812N16345E - 2700N15748E - 2700N15500E - 2620N15500E - 2327N14449E - 2356N14437E ALTITUDE: SFC - UNL RMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY. F)SFC G)UNL"
-    },
-    {
-     "key": "aviation:P5648/26",
-     "id": "P5648/26",
-     "dataset": "aviation",
-     "kind": "related",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-14T01:30:00Z",
-     "end_utc": "2026-11-20T05:01:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        23.9333,
-        144.6167
-       ],
-       [
-        26.15,
-        151.2333
-       ],
-       [
-        27.7667,
-        156.6
-       ],
-       [
-        29.45,
-        165
-       ],
-       [
-        28.4,
-        165
-       ],
-       [
-        28.2,
-        163.75
-       ],
-       [
-        27,
-        157.8
-       ],
-       [
-        27,
-        155
-       ],
-       [
-        26.3333,
-        155
-       ],
-       [
-        23.45,
-        144.8167
-       ],
-       [
-        23.9333,
-        144.6167
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "P5648/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2630N15445E573\r\nA)RJJJ B)2611140130 C)2611200501\r\nD)0130/0501\r\nE)DUE TO AN AEROSPACE FLIGHT ACTIVITY, THE FLIGHT SAFETY OF THE\r\nAIRCRAFT IN FOLLOWING AREA MAY BE AFFECTED THRU NOV 14-20 2026,\r\n0130-0501 DLY\r\n\r\nAREA:\r\n2356N14437E - 2609N15114E - 2746N15636E - 2927N16500E - 2824N16500E -\r\n2824N16500E - 2812N16345E - 2700N15748E - 2700N15500E - 2620N15500E -\r\n2327N14449E - 2356N14437E\r\n\r\nALTITUDE:\r\nSFC - UNL\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY.\r\nF)SFC G)UNL"
     }
    ]
   },
@@ -922,14 +790,25 @@
    },
    "orbit": null,
    "vehicle": {
-    "basis": "ll2",
-    "name": "長征12号",
-    "rocket_ll2": "Long March 12",
-    "mission": "Long March 12 | SatNet LEO Group TBD?",
-    "orbit": "LEO",
-    "status": "TBC",
-    "net_utc": "2026-11-24T07:00:00Z",
-    "pad": "Commercial LC-2"
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征5号",
+      "orbit": "低軌道・静止遷移・月惑星"
+     },
+     {
+      "name": "長征7号/7A号",
+      "orbit": "低軌道・静止遷移"
+     },
+     {
+      "name": "長征8号/8A号",
+      "orbit": "低軌道・太陽同期"
+     },
+     {
+      "name": "長征12号",
+      "orbit": "低軌道（千帆などの通信衛星群）"
+     }
+    ]
    },
    "notices": [
     {
@@ -985,25 +864,14 @@
    },
    "orbit": null,
    "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "長征5号",
-      "orbit": "低軌道・静止遷移・月惑星"
-     },
-     {
-      "name": "長征7号/7A号",
-      "orbit": "低軌道・静止遷移"
-     },
-     {
-      "name": "長征8号/8A号",
-      "orbit": "低軌道・太陽同期"
-     },
-     {
-      "name": "長征12号",
-      "orbit": "低軌道（千帆などの通信衛星群）"
-     }
-    ]
+    "basis": "ll2",
+    "name": "長征12号",
+    "rocket_ll2": "Long March 12",
+    "mission": "Long March 12 | SatNet LEO Group TBD?",
+    "orbit": "LEO",
+    "status": "TBC",
+    "net_utc": "2026-12-10T07:00:00Z",
+    "pad": "Commercial LC-2"
    },
    "notices": [
     {
