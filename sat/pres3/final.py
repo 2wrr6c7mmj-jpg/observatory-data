@@ -1,8 +1,8 @@
 """Step 6: the numbers of the adopted configuration: <work>/pres3_results.json and <work>/pres3_oos.csv.
 
 With --publish also writes docs/data/sat/eval/pres3.json (the same numbers plus version, time, sources and limits; NaN -> null)
-and docs/data/sat/eval/pres3_oos.csv. No other published file is touched.
-    python -m sat.pres3.final --work DIR [--publish]
+and docs/data/sat/eval/pres3_oos.csv. With --publish-cells only pres3_oos.csv. No other published file is touched.
+    python -m sat.pres3.final --work DIR [--publish | --publish-cells]
 """
 from __future__ import annotations
 
@@ -23,7 +23,10 @@ from . import VERSION, common, evalcv, fuse
 KEY = ('opt+diff+S1', 1)
 NOTE = 'gen＝港を抜いた汎用の判定（答えを使わない特徴 545、HGB）。pres-3＝gen のロジット＋区間の過去の答え（見本・履歴）＋像の差分＋現行 S1 の p（HGB）。'
 NOTE_PUBLISHED = NOTE[:-len('現行 S1 の p（HGB）。')] + '現行 S1 の p・対の S1 撮影の帯の VH 平均 xh・時刻差 dt_h（HGB）。'
-OOS_COLUMNS = ['site_id', 'date', 'section_id', 'in_eval', 'y', 'changed', 'p_current_s1', 'p_gen_lopo', 'p_hist_lopo', 'p_pres3_lopo', 'p_hist_fwd', 'p_pres3_fwd']
+OOS_COLUMNS = ['site_id', 'date', 'section_id', 'in_eval', 'y', 'changed', 'p_current_s1', 'p_gen_lopo', 'p_hist_lopo', 'p_pres3_lopo', 'p_hist_fwd', 'p_pres3_fwd',
+               'p_opt_lopo', 'p_opt_fwd']         # pres-3o: the configuration without the S1 columns, ('opt', 1). Added last (confirm-1):
+#                                                   the columns before them are byte for byte what they were
+KEY_NO_S1 = ('opt', 1)
 
 
 def acc_ci(C, y, idx, p, B=2000):
@@ -69,7 +72,7 @@ def results(C, y, lab, ch, ev, O, G):
                                         'changed_in_band': sum(ch[i] == 1 for i in m), 'changed_total': sum(ch[i] == 1 for i in te)}
         r['all_labelled_cells'] = acc_ci(C, y, [i for i in lab if not np.isnan(p[i])], p)
         R[fn] = r
-    return R, dict(pc=pc, gl=gl, hl=hl, pl=pl, hf=hf, pf=pf)
+    return R, dict(pc=pc, gl=gl, hl=hl, pl=pl, hf=hf, pf=pf, ol=O['LOPO'][KEY_NO_S1], of=O['FWD'][KEY_NO_S1])
 
 
 def port_ci(C, y, idx, p, q=None, B=2000, seed=0):
@@ -88,7 +91,7 @@ def supplement(C, y, ev, O, S1):
     Zhanjiang (whose current S1 p is in-sample), the cells whose paired S1 scene is later than the S2 day, port-level intervals."""
     pc = S1[:, 0].astype(float); dth = S1[:, 2]; out = {}
     for fn in ('LOPO', 'FWD'):
-        p = O[fn][KEY]; o = O[fn][('opt', 1)]; te = [i for i in ev if not np.isnan(p[i])]
+        p = O[fn][KEY]; o = O[fn][KEY_NO_S1]; te = [i for i in ev if not np.isnan(p[i])]
         z = [i for i in te if C[i]['port'] == 'ZJG']; nz = [i for i in te if C[i]['port'] != 'ZJG']; late = [i for i in te if dth[i] > 0]
         out[fn.lower()] = {
             'no_s1': acc_ci(C, y, te, o),
@@ -107,8 +110,10 @@ def write_oos(path, C, y, lab, ch, cols):
     with open(path, 'w', newline='') as f:
         w = csv.writer(f, lineterminator='\n'); w.writerow(OOS_COLUMNS)
         fm = lambda v: '' if np.isnan(v) else f'{v:.4f}'
+        f6 = lambda v: '' if np.isnan(v) else f'{v:.6f}'      # 6 places: at 4, two cells cross the thresholds 0.95 / 0.98 of the triage tables
         for i in lab:
-            w.writerow([C[i]['port'], C[i]['date'], C[i]['section'], int(C[i]['eval']), int(y[i]), ch[i]] + [fm(cols[k][i]) for k in ('pc', 'gl', 'hl', 'pl', 'hf', 'pf')])
+            w.writerow([C[i]['port'], C[i]['date'], C[i]['section'], int(C[i]['eval']), int(y[i]), ch[i]] + [fm(cols[k][i]) for k in ('pc', 'gl', 'hl', 'pl', 'hf', 'pf')]
+                       + [f6(cols[k][i]) for k in ('ol', 'of')])
 
 
 def nan_to_null(o):
@@ -157,18 +162,21 @@ def published(R, generated_utc, supp=None):
     return out
 
 
-def publish(R, oos_csv, out_dir, generated_utc, supp=None):
-    """Writes exactly two files in out_dir: pres3.json and pres3_oos.csv (temporary file + replace)."""
+def publish(R, oos_csv, out_dir, generated_utc, supp=None, cells_only=False):
+    """Writes exactly two files in out_dir: pres3.json and pres3_oos.csv (temporary file + replace).
+    cells_only: only pres3_oos.csv (pres3.json, with its generation time, is left as it is)."""
     out_dir = Path(out_dir); js = out_dir / 'pres3.json'; cs = out_dir / 'pres3_oos.csv'
-    tmp = out_dir / 'pres3.json.tmp'
-    tmp.write_text(json.dumps(published(R, generated_utc, supp), ensure_ascii=False, indent=1, allow_nan=False) + '\n', encoding='utf-8'); tmp.replace(js)
+    if not cells_only:
+        tmp = out_dir / 'pres3.json.tmp'
+        tmp.write_text(json.dumps(published(R, generated_utc, supp), ensure_ascii=False, indent=1, allow_nan=False) + '\n', encoding='utf-8'); tmp.replace(js)
     tmp = out_dir / 'pres3_oos.csv.tmp'; shutil.copyfile(oos_csv, tmp); tmp.replace(cs)
-    return js, cs
+    return (cs,) if cells_only else (js, cs)
 
 
 def main(argv=None):
     warnings.filterwarnings('ignore')
     ap = common.parser(__doc__.split('\n')[0]); ap.add_argument('--publish', action='store_true', help='also write docs/data/sat/eval/pres3.json and pres3_oos.csv')
+    ap.add_argument('--publish-cells', action='store_true', help='write only docs/data/sat/eval/pres3_oos.csv (pres3.json is not touched)')
     a = ap.parse_args(argv); work = common.work_dir(a.work)
     C, X, names, lab, y, ch, ev = fuse.load(work)
     O = pickle.load(open(f'{work}/fuse_out.pkl', 'rb')); G = pickle.load(open(f'{work}/gen_cache.pkl', 'rb'))
@@ -184,6 +192,8 @@ def main(argv=None):
         print('  ports', {P: (v['pres3']['acc'], v['pres3']['n']) for P, v in r['by_port'].items() if v['pres3']})
         print('  bands', {k: (v['coverage'], v['confident']['acc'], v['confident']['ci']) for k, v in r['bands'].items()})
         if fn == 'lopo': print('  gen no answers', r['gen_no_answers']['acc'], r['gen_no_answers']['ci'], 'changed', r['gen_changed']['acc'])
+    if a.publish_cells and not a.publish:
+        print('published', *publish(R, f'{work}/pres3_oos.csv', common.SAT / 'eval', '', cells_only=True))
     if a.publish:
         now = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
         print('published', *publish(R, f'{work}/pres3_oos.csv', common.SAT / 'eval', now, supplement(C, y, ev, O, fuse.s1_block(C))))
