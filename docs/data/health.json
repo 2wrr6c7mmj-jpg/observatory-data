@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-20T01:39:15Z",
+ "generated_utc": "2026-11-20T07:02:13Z",
  "state": "warn",
  "summary": {
   "ok": 12,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-19T14:38:34Z",
-   "heartbeat_age_h": 11.0,
+   "heartbeat_age_h": 16.4,
    "data_date": "2026-11-19",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -115,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-19T12:09:03Z",
-   "heartbeat_age_h": 13.5,
+   "heartbeat_age_h": 18.9,
    "data_date": "2026-11-18",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-19T16:02:17Z",
-   "heartbeat_age_h": 9.6,
+   "heartbeat_age_h": 15.0,
    "data_date": "2026-11-19",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -182,7 +182,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-19T20:42:05Z",
-   "heartbeat_age_h": 5.0,
+   "heartbeat_age_h": 10.3,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -199,16 +199,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-19T22:46:31Z",
-   "heartbeat_age_h": 2.9,
-   "data_date": "2026-11-19",
+   "heartbeat_utc": "2026-11-20T04:22:12Z",
+   "heartbeat_age_h": 2.7,
+   "data_date": "2026-11-20",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-19T22:46:31Z",
-    "notam_watch_last_seen_utc": "2026-11-19T22:46:31Z",
+    "notices_last_retrieved_utc": "2026-11-20T04:22:12Z",
+    "notam_watch_last_seen_utc": "2026-11-20T04:22:12Z",
     "ll2_last_retrieved_utc": "2026-11-19T08:58:00Z"
    }
   },
@@ -218,7 +218,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-19T20:42:13Z",
-   "heartbeat_age_h": 5.0,
+   "heartbeat_age_h": 10.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -227,13 +227,13 @@
     {
      "level": "warn",
      "code": "older_than_input",
-     "text": "最後の成功 2026-11-19T20:42:13Z が入力の更新 2026-11-19T22:46:31Z より前"
+     "text": "最後の成功 2026-11-19T20:42:13Z が入力の更新 2026-11-20T04:22:12Z より前"
     }
    ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-19T20:43:15Z",
-    "newest_input_utc": "2026-11-19T22:46:31Z"
+    "newest_input_utc": "2026-11-20T04:22:12Z"
    }
   },
   {
@@ -257,8 +257,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-20T01:36:46Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_utc": "2026-11-20T04:48:44Z",
+   "heartbeat_age_h": 2.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -743,15 +743,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 9,
-   "open_now": 6,
+   "open_or_upcoming_windows": 8,
+   "open_now": 5,
    "next_start": {
     "site": "西昌",
     "country": "CN",
     "window_start_utc": "2026-11-20T10:00Z",
     "window_end_utc": "2026-11-23T14:00Z"
    },
-   "active_notices": 42
+   "active_notices": 39
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
