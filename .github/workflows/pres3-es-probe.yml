@@ -1,0 +1,33 @@
+name: pres-3 Earth Search probe
+# confirm-1 の PR-0（設計書 docs/data/sat/eval/confirm-design.md §8.1）。probe/pres3-es-* への push でだけ動く。読み取り専用。
+# Actions のランナーから (1) Element84 Earth Search の STAC 検索 1 回、(2) AWS の Sentinel-2 L2A の COG の窓 1 撮影分（6 帯）、
+# (3) STAC を使わず撮影の ID から組んだ COG のパスの直接読み、を試し、HTTP の状態・所要・転送量を check-run の注釈に出す。
+# rasterio を pip で入れられるかも確かめる。CDSE は使わない（PU 0）。main と docs/ には何も書かない。
+# 止められたら（403 など）やり直さず、そのまま注釈に出して失敗で終わる。
+on:
+  push:
+    branches: ['probe/pres3-es-*']
+permissions:
+  contents: read
+concurrency:
+  group: probe-pres3-es
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and rasterio
+        run: |
+          t0=$(date +%s)
+          if python -m pip install --disable-pip-version-check -q numpy==2.2.6 rasterio==1.5.2; then
+            echo "::notice title=pres3-es-probe pip::numpy==2.2.6 rasterio==1.5.2 installed in $(( $(date +%s) - t0 )) s: $(python -m pip list --format=freeze 2>/dev/null | grep -iE '^(numpy|rasterio|affine|attrs|certifi|click|cligj|click-plugins|pyparsing)=' | tr '\n' ' ')"
+          else
+            echo "::error title=pres3-es-probe pip::pip install numpy==2.2.6 rasterio==1.5.2 failed after $(( $(date +%s) - t0 )) s"; exit 1
+          fi
+      - name: Probe
+        run: python -m sat.pres3.es_probe --port QDH --days 10
