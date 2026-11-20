@@ -178,7 +178,7 @@ def active_sections(ledger: dict | None) -> dict:
 
 def _zjg_frame(line: list, side: int) -> list:
     """Zhanjiang has no review set: the frame is the line and its copy FRAME_M off the water side (the same sense as
-    the frames of the review sets: n = (t_y, -t_x) x side)."""
+    sat/pres3/labels.py normals(): n = (t_y, -t_x) x side)."""
     lat0 = sum(p[1] for p in line) / len(line)
     mlat = 111132.92 - 559.82 * math.cos(2 * math.radians(lat0))
     mlon = 111412.84 * math.cos(math.radians(lat0)) - 93.5 * math.cos(3 * math.radians(lat0))
