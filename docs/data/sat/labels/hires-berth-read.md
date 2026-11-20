@@ -2,10 +2,38 @@
 
 所有者の指示（2026-11-18）：高解像度の過去の衛星画像を複数使い、すべての港で、軍艦の着く岸壁とそうでない場所を切り分ける。所有者の S2（10 m）の答えと食い違う所は高解像度の画像を優先する。
 
-- 画像：Esri World Imagery Wayback（World Imagery の過去の版、解像度 0.3〜0.6 m、一部 1.2 m）。区間のまとまりごとに撮影日の違う 5 時点前後（多い所で 12 時点）を並べて目視した。画像そのものは保存・公開していない（撮影日は各行の imagery_dates）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community
+- 画像：Esri World Imagery Wayback（World Imagery の過去の版、解像度 0.3〜0.6 m、一部 1.2 m）。区間のまとまりごとに撮影日の違う 5 時点前後（多い所で 12 時点）を並べて目視した。画像そのものは保存・公開していない（撮影日は各行の imagery_dates）。取得の方法と利用条件は下の「取得の方法と利用条件」（2026-11-20 追記）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community
 - 単位：`sat/s2_labels.sections()` の約 150 m の区間（確認ページ・評価票と同じ id）。着く線（berth-1）の上の 1,282 区間と、同日の午後に着く線に足した 8 区間（下の「線を足した所」）
 - 読んだのは AI（`read_by=ai`）。艦種は読んでいない。50 m 以上の灰色の船体を軍艦、黒い細長い船体を潜水艦とした
 - 記録：`hires-berth-read.csv`（区間ごとの判定・根拠・撮影日、所有者の S2 の答えの在／答えの数、数える区間かどうかの前後）
+
+## 出典（`hires-berth-read.csv` と、これを反映した区分）
+
+- 判定のもとの画像：**Esri World Imagery Wayback**（World Imagery の過去の版）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community
+- `hires-berth-read.csv` の各行（`read_version=hires-1`）の verdict・note・imagery_dates は、この画像を AI が読んだ結果。画像・タイル・並べ図はこのリポジトリにも公開サイトにも無い
+- 区間（section_id・座標・長さ）と線は OpenStreetMap（© OpenStreetMap contributors, ODbL 1.0）に由来する。owner_present・owner_answers は所有者の Sentinel-2 の答え（Contains modified Copernicus Sentinel data 2025–2026）
+- この判定を反映した `sat/berth_class/<港>.json`（basis に「hires-1」のある項）と、地図の `docs/data/sat/berth_class.geojson` の credit にも同じ出典を入れた（2026-11-20、`sat/berth_class.py` の `ESRI_WAYBACK_CREDIT`）
+
+## 取得の方法と利用条件（2026-11-20 追記。記録の訂正）
+
+上の「並べて目視した」「画像そのものは保存・公開していない」だけでは、実際の取得の方法が伝わらないので、事実を足す（4部の調査、2026-11-20）。
+
+下で「※」を付けた事項（urllib での取得、ズーム 17〜18、区間のまとまり 147、キャッシュと図の削除、取得の前の確認が WebSearch 1 回だけだったこと）は、4部が作業の記録を調べた結果による。スクリプトもキャッシュもリポジトリには無く、**リポジトリのファイルからは確かめられない**。
+
+- 取得：Esri World Imagery Wayback のタイルを、スクリプト（Python の urllib ※）で取得した。23 港、ズーム 17〜18 ※。区間のまとまりは 147 ※（リポジトリのファイルからは数え直せない）
+- 時点の数：判読に使って記録した撮影の時点は、港ごとに 4〜12（中央値 6。12＝三亜・楡林。4＝湛江だが、**湛江は記録の文字列が途中で切れており、実際は 5 の可能性がある**〔判定の note は「5 時点」〕。その場合の最小は 5。`hires-berth-read.csv` の imagery_dates と `sat/berth_class/<港>.json` の `hires.dates` を「／」で数えた数で、23 港とも両者は同じ。内訳は 4 時点 1 港、5 時点 8 港、6 時点 6 港、7・8 時点 各 1 港、9 時点 2 港、10 時点 3 港、12 時点 1 港）。冒頭の「5 時点前後（多い所で 12 時点）」と同じ。定海は 10 時点から区画ごとに 5 時点、象山は西の 2 本だけ別に 4 時点を足している（`hires.dates` の注記）。湛江の記録は「2022 公開版（07-21」で文字列が切れていて（判定の note は「5 時点」）、数えられるのは 4
+- 判読：取得したタイルから時点を並べた図を作り、その図を AI が見て判定した（人が Esri のアプリで見たのではない）
+- 保存：タイルのキャッシュと並べ図は作業のあとに削除した ※。リポジトリ・公開サイトに画像は無い
+- **利用条件の確認は事後**。取得の前に確かめたのは WebSearch 1 回だけ ※ で、一次資料（Esri World Imagery の「Uses Permitted」、ArcGIS Online の利用条件の要約）を読んだのは取得のあと（2026-11-20）
+- Esri の条件は、人が画像を見て線をなぞり、その線（ベクトルのデータ）を公開することを認めている。一方で、ベースマップのタイルの系統的な収集（"Systematically harvest basemap tiles"）と、Esri の置く内容のダウンロード（"Download, redistribute or self-host any content hosted by Esri"）を禁じている
+- したがって、**hires-1 の取得の方法は Esri の条件に合わないおそれがある**。成果物（この表、区分ファイルへの反映、地図）を維持するか取り下げるかは、**所有者の判断待ち（2026-11-20）**
+- 今後、Esri のタイルの機械取得はしない
+
+## 同じ作業をもう一度やるとき（2026-11-20 追記）
+
+- **タイルの機械取得は不可**（Esri World Imagery・Wayback のタイルをスクリプトで集めない）。hires-1 と同じ取り方はしない
+- 代わりの候補は 2 つ。(1) 人が Esri のアプリ（World Imagery Wayback の公開アプリ）で見て判読する方式。ただし無条件に使えるとは言い切れない：Esri の条件は「Esri のソフトと一緒に使うこと。無ければ ArcGIS Online の契約」を前提にしており（4部の報告。Wayback の公開アプリは Esri のアプリ）、使う前にこの前提を満たすかを確かめる。(2) 利用条件が機械での取得・解析と派生データの公開を許す画像（例：Satellogic EarthView、1 m、CC BY 4.0。2022-07〜12 の 1 時点で、写っている港は一部）
+- hires-1 のタイルの URL・版のたどり方は、この文書にもリポジトリにも残していない（スクリプトも置いていない）
 
 ## 判定（verdict）
 

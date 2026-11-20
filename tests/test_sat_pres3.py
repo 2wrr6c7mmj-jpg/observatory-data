@@ -361,8 +361,25 @@ class NoPublishedFileIsTouchedTest(unittest.TestCase):
             self.assertNotEqual(common.cells_key(d, ["AAA", "BBB"]), common.cells_key(d, ["BBB", "AAA"]))
 
     def test_not_wired_into_the_daily_collection(self):
-        for f in sorted((ROOT / ".github" / "workflows").glob("*.yml")) + [p for p in sorted((ROOT / "sat").glob("*.py"))] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
+        # pres3-es-probe.yml (confirm-1, PR-0) is not part of the collection: it runs only on a push to probe/pres3-es-*,
+        # reads two public endpoints and writes nothing (checked below)
+        flows = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+        for f in [f for f in flows if f.name != "pres3-es-probe.yml"] + [p for p in sorted((ROOT / "sat").glob("*.py"))] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
             self.assertNotIn("pres3", f.read_text(encoding="utf-8"), f)
+
+    def test_the_probe_workflow_is_read_only(self):
+        t = (ROOT / ".github" / "workflows" / "pres3-es-probe.yml").read_text(encoding="utf-8")
+        self.assertIn("branches: ['probe/pres3-es-*']", t)
+        self.assertIn("contents: read", t)
+        for word in ("schedule", "workflow_dispatch", "pull_request", "contents: write", "git push", "secrets.", "CDSE"):
+            self.assertNotIn(word, t.split("jobs:")[1] if word == "CDSE" else t, word)
+
+    def test_probe_cog_path_from_the_scene_id(self):
+        from sat.pres3 import es_probe
+        self.assertEqual(es_probe.cog_href("S2C_51STV_20261111_0_L2A", "red"),
+                         "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/51/S/TV/2026/11/S2C_51STV_20261111_0_L2A/B04.tif")
+        self.assertTrue(es_probe.cog_href("S2A_49QDD_20230706_0_L2A", "scl").endswith("/49/Q/DD/2023/7/S2A_49QDD_20230706_0_L2A/SCL.tif"))
+        self.assertRaises(ValueError, es_probe.cog_href, "S2A_MSIL2A_20230706", "red")
 
     def test_import_needs_no_third_party_package(self):
         # the collect workflows import every test module without numpy: the package and its helpers must import bare
@@ -469,10 +486,6 @@ class PublishedSheetTest(unittest.TestCase):
         self.assertIn("json.load(open(common.SAT / 'eval' / 'presence.json'))", src)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 @unittest.skipUnless(np is not None, "numpy not installed")
 class TriageTest(unittest.TestCase):
     """confirm-1: which cells are settled automatically and which go to the owner (sat/pres3/triage.py)."""
@@ -562,6 +575,23 @@ class TriageTest(unittest.TestCase):
         self.assertTrue(all(r["p_opt_lopo"] != "" and (r["p_opt_fwd"] != "") == (r["p_pres3_fwd"] != "") for r in rows))
         self.assertTrue(all(len(r[c].split(".")[1]) == 4 for r in rows for c in final.OOS_COLUMNS[6:12] if r[c] != ""))     # the old columns keep 4 places
 
+    def test_the_old_columns_are_byte_for_byte_the_2026_11_19_file(self):
+        """The first 12 columns (header + 1,531 rows) of pres3_oos.csv as published on 2026-11-19, before the two columns were
+        added. A new publication with more cells changes this on purpose: then the hash is replaced with the file's."""
+        with open(EVAL / "pres3_oos.csv", "rb") as fh:
+            lines = fh.read().split(b"\n")
+        if len(lines) != 1533: self.skipTest("pres3_oos.csv is not the 2026-11-19 file")
+        self.assertEqual(self.old_columns_hash(lines), "8e1858fe8447f5553f0476e81501634f0dd1bb2f6bc8b9641dd81812e1f87523")
+        changed = list(lines); c = changed[1].split(b","); c[7] = b"%.4f" % (float(c[7]) + 0.0001); changed[1] = b",".join(c)
+        self.assertNotEqual(self.old_columns_hash(changed), self.old_columns_hash(lines))       # one value moved by 0.0001 is seen
+        tail = list(lines); c = tail[1].split(b","); c[12] = b"0.5"; tail[1] = b",".join(c)
+        self.assertEqual(self.old_columns_hash(tail), self.old_columns_hash(lines))             # the new columns are not part of it
+
+    @staticmethod
+    def old_columns_hash(lines):
+        import hashlib
+        return hashlib.sha256(b"".join(b",".join(l.split(b",")[:12]) + b"\n" for l in lines[:-1])).hexdigest()
+
     def test_publish_cells_only_leaves_the_sheet(self):
         with tempfile.TemporaryDirectory() as d:
             out = Path(d) / "eval"; out.mkdir(); (out / "pres3.json").write_text("{}", encoding="utf-8")
@@ -570,3 +600,6 @@ class TriageTest(unittest.TestCase):
             self.assertEqual(sorted(p.name for p in out.iterdir()), ["pres3.json", "pres3_oos.csv"])
             self.assertEqual((out / "pres3.json").read_text(encoding="utf-8"), "{}")
             self.assertEqual((out / "pres3_oos.csv").read_bytes(), src.read_bytes())
+
+if __name__ == "__main__":
+    unittest.main()
