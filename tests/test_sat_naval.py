@@ -173,6 +173,10 @@ class ClassFilesTest(unittest.TestCase):
                          "python -m sat.berth_class geojson で作り直す")
         self.assertTrue(any("OpenStreetMap" in c for c in have["credit"]))
         self.assertTrue(any("溫約瑟" in c for c in have["credit"]))
+        # hires-1 (2026-11-18): the classes read from Esri World Imagery Wayback carry Esri's source line
+        self.assertEqual(have["credit"], want["credit"])
+        self.assertTrue(any("Esri World Imagery Wayback" in c and "Source: Esri, Vantor, Earthstar Geographics, and the "
+                            "GIS User Community" in c for c in have["credit"]))
         # naval-gap-1: the start of naval-1 per site (berths.json naval_since), on the file and on every line
         self.assertEqual(have["since_utc_by_site"], json.loads(json.dumps(want["since_utc_by_site"])))
         self.assertEqual(have["since_utc_by_site"]["LSN"], berths.naval_since("LSN"))

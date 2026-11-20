@@ -30,6 +30,9 @@ line (or the ``part`` of it) is not a berth: not counted, not judged, not evalua
 Data (c) OpenStreetMap contributors, ODbL 1.0. Wen's map: 出典は docs/data/ref/wen-pla-bases.meta.json の credit.
 Lines read by eye from Esri World Imagery (QDH −1〜−4, QJG −2; 2026-11-05): Source: Esri, Vantor, Earthstar
 Geographics, and the GIS User Community (``ESRI_CREDIT`` in the published map when such a line is in it).
+Classes read from Esri World Imagery Wayback (hires-1, 2026-11-18; every entry with "hires-1" in its ``basis``): the
+same source line (``ESRI_WAYBACK_CREDIT``). How the imagery was fetched and what is open about the terms of use:
+docs/data/sat/labels/hires-berth-read.md.
 """
 from __future__ import annotations
 
@@ -55,6 +58,11 @@ MIL_VALUES = {"naval_base", "base", "barracks", "office", "training_area", "airf
 ESRI_CREDIT = ("線の一部は Esri World Imagery の目視判読（2026-11-05）。Digitized from Esri World Imagery "
                "(Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community); imagery not redistributed")
 NAVY_LAYER = "解放軍海軍、海軍陸戰隊基地及設施"
+# hires-1 (2026-11-18): the class / berth flag of sections read from Esri World Imagery Wayback (the entries with "hires-1"
+# in their basis). Only the readings are published, no imagery. The record: docs/data/sat/labels/hires-berth-read.md
+ESRI_WAYBACK_CREDIT = ("区分の一部は Esri World Imagery Wayback（World Imagery の過去の版）の画像の判読（hires-1、2026-11-18、"
+                       "読んだのは AI）。Read from Esri World Imagery Wayback (Source: Esri, Vantor, Earthstar Geographics, "
+                       "and the GIS User Community); imagery not redistributed")
 INDUSTRY_LAYER = "中國軍工及航天產業"
 
 
@@ -436,7 +444,8 @@ def geojson(sites: list[dict]) -> dict:
                      f"は naval-1 の始まり（既定 {berths.NAVAL_SINCE}、地点ごとの日は since_utc_by_site と各線の since_utc）"
                      "以降の撮影で naval の線に沿うものだけ。区分の設定は sat/berth_class/<地点>.json、根拠は basis"),
             "credit": ["Data © OpenStreetMap contributors, ODbL 1.0 (https://www.openstreetmap.org/copyright)", wen_credit()]
-            + ([ESRI_CREDIT] if any("Esri" in " ".join(f["properties"]["basis"] or []) for f in feats) else []),
+            + ([ESRI_CREDIT] if any("Esri" in " ".join(f["properties"]["basis"] or []) for f in feats) else [])
+            + ([ESRI_WAYBACK_CREDIT] if any("hires-1" in " ".join(f["properties"]["basis"] or []) for f in feats) else []),
             "counts": counts, "features": feats}
 
 
