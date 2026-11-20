@@ -7,6 +7,8 @@ What is guarded:
      cells (a fake model in place of scikit-learn), that the intervals resample whole scenes and the difference is paired
   4. the research code writes no published file other than its own two, is not wired into the daily collection, and the
      published sheet agrees with the published per-cell probabilities
+  5. confirm-1 (sat/pres3/triage.py): the rule v1 at its boundaries, and that the tables of the design
+     (docs/data/sat/eval/confirm-design.md, section 2) come out of the published per-cell file
 The steps that need rasterio (fetch, build) and scikit-learn (the classifiers) are not run here; the Tests workflow installs
 neither. Everything else needs numpy only and is skipped where numpy is missing (the collect workflows).
 """
@@ -31,7 +33,7 @@ except ImportError:  # the collect workflows do not install numpy; Tests does
 from sat.pres3 import common
 
 if np is not None:
-    from sat.pres3 import diffeat, evalcv, feats, final, fuse, model, pathfeat
+    from sat.pres3 import diffeat, evalcv, feats, final, fuse, model, pathfeat, triage
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "docs" / "data" / "sat" / "eval"
@@ -469,3 +471,102 @@ class PublishedSheetTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class TriageTest(unittest.TestCase):
+    """confirm-1: which cells are settled automatically and which go to the owner (sat/pres3/triage.py)."""
+
+    HEAD = "site_id,date,section_id,in_eval,y,changed,p_current_s1,p_gen_lopo,p_hist_lopo,p_pres3_lopo,p_hist_fwd,p_pres3_fwd,p_opt_lopo,p_opt_fwd"
+
+    def cells(self, rows):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "oos.csv"
+            f.write_text(self.HEAD + "\n" + "".join(f"{port},{date},{sec},1,{y},0,,,,0.5,,,{p},{p}\n" for port, date, sec, y, p in rows), encoding="utf-8")
+            return triage.load(f)
+
+    def test_rule_v1_boundaries(self):
+        rows = [("QDH", "2026-01-01", "a", 0, 0.01), ("QDH", "2026-01-11", "a", 0, 0.01),    # 0 and 1 earlier answers: routed
+                ("QDH", "2026-01-21", "a", 0, 0.03),                                          # 2 answers, p = 0.03 exactly: auto
+                ("QDH", "2026-01-31", "a", 0, 0.030001),                                      # just inside the band: routed
+                ("QDH", "2026-05-31", "a", 1, 0.97),                                          # 120 days after the previous answer: auto
+                ("QDH", "2026-09-29", "a", 1, 0.99),                                          # 121 days: routed
+                ("ZJG", "2026-01-01", "b", 0, 0.0), ("ZJG", "2026-01-02", "b", 0, 0.0), ("ZJG", "2026-01-03", "b", 0, 0.0),   # a port that is off
+                ("QDH", "2026-01-21", "c", 1, 1.0)]                                           # another section: its own history
+        D = self.cells(rows); a = triage.auto_v1(D, D["p_opt_lopo"])
+        self.assertEqual(a.tolist(), [False, False, True, False, True, False, False, False, False, False])
+        self.assertEqual(D["n_prev"].tolist(), [0, 1, 2, 3, 4, 5, 0, 1, 2, 0])
+        self.assertEqual(D["age"][[2, 4, 5]].tolist(), [10, 120, 121])
+        self.assertEqual(triage.auto_v1(D, D["p_opt_lopo"], ports=False).tolist()[6:9], [False, False, True])
+        self.assertEqual(triage.auto_v1(D, D["p_opt_lopo"], answers=False, age=False).tolist()[:2], [True, True])
+
+    def test_same_day_answers_are_not_earlier_answers(self):
+        D = self.cells([("QDH", "2026-01-01", "a", 0, 0.0), ("QDH", "2026-01-01", "a", 0, 0.0), ("QDH", "2026-01-02", "a", 0, 0.0)])
+        self.assertEqual(D["n_prev"].tolist(), [0, 0, 2])
+
+    def test_line_counts_routed_cells_and_never_drops_one(self):
+        D = self.cells([("QDH", f"2026-01-{d:02d}", "a", y, p) for d, y, p in ((1, 0, 0.0), (2, 0, 0.4), (3, 1, 0.99), (4, 0, 0.98), (5, 1, 0.2))])
+        p = D["p_opt_lopo"]; r = triage.line(D, triage.eval_cells(D, p), triage.band(p, 0.03), p, B=50)
+        self.assertEqual((r["n"], r["routed"], r["auto"], r["auto_errors"]), (5, 2, 3, 1))
+        self.assertEqual((r["auto_acc"], r["routed_model_acc"], r["combined_if_owner_right"]), (0.667, 0.5, 0.8))
+        self.assertEqual(len(r["auto_acc_ci"]), 2)
+
+    def test_nested_choice_stops_at_the_first_threshold_that_fails(self):
+        p = np.array([0.01, 0.025, 0.04, 0.5]); y = np.array([0, 1, 0, 1]); sel = np.ones(4, bool)
+        self.assertEqual(triage.pick(p, y, sel, 0.97), 0.02)          # 0.03 lets the wrong cell in; 0.05 is not tried after it
+
+    def test_design_numbers_from_the_published_cells(self):
+        """The design's tables (confirm-design.md 2.3, 2.5, 2.6, 5) from docs/data/sat/eval/pres3_oos.csv. The numbers belong to
+        the 1,531 cells of 2026-11-19: when the file is published again with more cells this check is skipped."""
+        D = triage.load()
+        if len(D["y"]) != 1531: self.skipTest("pres3_oos.csv is not the 2026-11-19 file the design was computed from")
+        T = triage.tables(D, ci=False); pick = lambda r: (r["routed"], r["auto"], r["auto_acc"], r["auto_errors"], r["routed_model_acc"], r["combined_if_owner_right"])
+        th = T["2.3 thresholds (pres-3o)"]
+        self.assertEqual(pick(th["lopo"]["0.03"]), (442, 295, 0.986, 4, 0.792, 0.995))
+        self.assertEqual(pick(th["lopo"]["0.02"]), (487, 250, 0.992, 2, 0.807, 0.997))
+        self.assertEqual(pick(th["lopo"]["0.05"]), (373, 364, 0.967, 12, 0.775, 0.984))
+        self.assertEqual(pick(th["fwd"]["0.03"]), (212, 304, 0.980, 6, 0.755, 0.988))
+        self.assertEqual(pick(th["fwd"]["0.5"]), (0, 516, 0.888, 58, None, 0.888))
+        ad = T["2.3 thresholds (adopted, with S1: an upper reference)"]
+        self.assertEqual((ad["lopo"]["0.05"]["auto_acc"], ad["fwd"]["0.05"]["auto_acc"], ad["lopo"]["0.1"]["auto_acc"], ad["fwd"]["0.1"]["auto_acc"]), (0.986, 0.981, 0.958, 0.963))
+        v = T["2.5 rule v1"]
+        self.assertEqual(pick(v["lopo"]), (503, 234, 0.991, 2, 0.813, 0.997)); self.assertEqual(pick(v["fwd"]), (273, 243, 0.992, 2, 0.795, 0.996))
+        self.assertEqual((v["lopo"]["routed_frac"], v["fwd"]["routed_frac"]), (0.682, 0.529))
+        self.assertEqual([(v["lopo"]["changed"][k], v["fwd"]["changed"][k]) for k in ("n", "routed", "auto_errors")], [(96, 66), (93, 63), (2, 2)])
+        self.assertEqual((v["lopo"]["same"]["auto"], v["lopo"]["same"]["auto_errors"], v["fwd"]["same"]["auto"], v["fwd"]["same"]["auto_errors"]), (231, 0, 240, 0))
+        self.assertEqual({P: (r["auto"], r["auto_errors"]) for P, r in v["lopo"]["by_port"].items()},
+                         {"ZJG": (0, 0), "SYL": (0, 0), "SLP": (65, 1), "QGZ": (23, 0), "ZDH": (0, 0), "QJG": (24, 0), "QDH": (49, 1), "XSN": (0, 0), "LSN": (73, 0)})
+        self.assertEqual([(r["routed_frac"], r["auto_acc"]) for r in v["fwd"]["steps"].values()], [(0.411, 0.980), (0.434, 0.983), (0.504, 0.988), (0.529, 0.992)])
+        for fold in ("lopo", "fwd"):        # no cell is left out: off ports and cells without history are routed, not dropped
+            self.assertEqual(sum(r["n"] for r in v[fold]["by_port"].values()), v[fold]["n"])
+            self.assertEqual(v[fold]["routed"] + v[fold]["auto"], T["cells"]["eval" if fold == "lopo" else "eval_fwd"])
+        ch = T["2.4 changed cells at 0.05/0.95"]
+        self.assertEqual((ch["lopo"]["auto_errors_on_changed"], ch["fwd"]["auto_errors_on_changed"]), ([11, 12], [10, 11]))
+        n = T["2.6 nested selection"]
+        self.assertEqual([(r["n"], r["routed_frac"], r["auto_acc"], r["auto_errors"]) for r in n[:4]],
+                         [(737, 0.573, 0.965, 11), (329, 0.331, 0.964, 8), (195, 0.323, 0.985, 2), (172, 0.267, 0.960, 5)])
+        self.assertEqual(T["5 generic judgement, confident band"], {"0.03": {"absent_n": 104, "absent_acc": 0.875, "present_n": 0}, "0.05": {"absent_n": 194, "absent_acc": 0.851, "present_n": 0}})
+
+    def test_intervals_are_close_to_the_design(self):
+        D = triage.load()
+        if len(D["y"]) != 1531: self.skipTest("pres3_oos.csv is not the 2026-11-19 file the design was computed from")
+        p = D["p_opt_lopo"]; r = triage.line(D, triage.eval_cells(D, p), triage.auto_v1(D, p), p, B=2000)
+        for got, design in ((r["auto_acc_ci"], (0.979, 1.000)), (r["routed_ci"], (0.598, 0.775))):
+            for g, d in zip(got, design): self.assertAlmostEqual(g, d, delta=0.011)
+
+    def test_the_new_columns_do_not_touch_the_old_ones(self):
+        self.assertEqual(final.OOS_COLUMNS[-2:], ["p_opt_lopo", "p_opt_fwd"])
+        with open(EVAL / "pres3_oos.csv", newline="", encoding="utf-8") as fh:
+            rows = list(csv.DictReader(fh))
+        self.assertEqual(list(rows[0]), final.OOS_COLUMNS)
+        self.assertTrue(all(r["p_opt_lopo"] != "" and (r["p_opt_fwd"] != "") == (r["p_pres3_fwd"] != "") for r in rows))
+        self.assertTrue(all(len(r[c].split(".")[1]) == 4 for r in rows for c in final.OOS_COLUMNS[6:12] if r[c] != ""))     # the old columns keep 4 places
+
+    def test_publish_cells_only_leaves_the_sheet(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "eval"; out.mkdir(); (out / "pres3.json").write_text("{}", encoding="utf-8")
+            src = Path(d) / "oos.csv"; src.write_text("site_id,date\nAAA,2026-01-01\n", encoding="utf-8")
+            final.publish({}, src, out, "", cells_only=True)
+            self.assertEqual(sorted(p.name for p in out.iterdir()), ["pres3.json", "pres3_oos.csv"])
+            self.assertEqual((out / "pres3.json").read_text(encoding="utf-8"), "{}")
+            self.assertEqual((out / "pres3_oos.csv").read_bytes(), src.read_bytes())

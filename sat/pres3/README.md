@@ -39,7 +39,13 @@ python -m sat.pres3.pathfeat
 python -m sat.pres3.fuse
 # 6. 採用した構成 ('opt+diff+S1', 1) の数字：<work>/pres3_results.json・pres3_oos.csv
 python -m sat.pres3.final            # --publish を付けると docs/data/sat/eval/pres3.json・pres3_oos.csv を書く
+                                     # --publish-cells は pres3_oos.csv だけを書く（pres3.json とその生成時刻は変えない）
+# 7. confirm-1 の仕分けの表（docs/data/sat/eval/confirm-design.md の §2）。pres3_oos.csv だけを読む。作業の置き場は要らない
+python -m sat.pres3.triage           # --json で値だけ、--no-ci で CI を省く
 ```
+
+`pres3_oos.csv` の列：`p_pres3_*` が採用した構成、`p_hist_*` が履歴だけ、`p_gen_lopo` が答えを使わない汎用の判定、
+`p_opt_lopo`・`p_opt_fwd`（末尾の 2 列、小数 6 桁）が **S1 を使わない構成 pres-3o**（`('opt', 1)`）。confirm-1 は pres-3o を使う。
 
 所要時間の目安（4 コア・15 GB、3部の実測）：取得は回線しだい（実験のときの記録では 9 港で 40 分前後）、パッチ 約 3 分、特徴 約 5 分（4 並列。湛江が最長）、
 差分・追跡 約 2 分、融合 約 38 分（大半は融合の側の学習：重みつきの学習 130 回。汎用の判定は `<work>/gen_cache.pkl` に残るが、2 回目も 30 分以上かかる）、最終の数字 約 1 分。
@@ -97,6 +103,7 @@ python -m sat.pres3.final            # --publish を付けると docs/data/sat/e
 | `evalcv.py` | LOPO・前進検証・撮影単位のブートストラップ・変わった升 |
 | `fuse.py` | 融合と評価、試した構成の表 |
 | `final.py` | 採用した構成の数字、公開用の JSON・CSV |
+| `triage.py` | confirm-1：確信のある升（自動確定）と回す升の仕分けの表。規則 v1。`pres3_oos.csv` だけを読む（numpy） |
 
 ## 出典
 
