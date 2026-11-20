@@ -363,13 +363,30 @@ class NoPublishedFileIsTouchedTest(unittest.TestCase):
     CONFIRM_SERIES = {"confirm.py"}
 
     def test_not_wired_into_the_daily_collection(self):
-        for f in sorted((ROOT / ".github" / "workflows").glob("*.yml")) + [p for p in sorted((ROOT / "sat").glob("*.py")) if p.name not in self.CONFIRM_SERIES] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
+        # pres3-es-probe.yml (confirm-1, PR-0) is not part of the collection: it runs only on a push to probe/pres3-es-*,
+        # reads two public endpoints and writes nothing (checked below)
+        flows = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+        for f in [f for f in flows if f.name != "pres3-es-probe.yml"] + [p for p in sorted((ROOT / "sat").glob("*.py")) if p.name not in self.CONFIRM_SERIES] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
             self.assertNotIn("pres3", f.read_text(encoding="utf-8"), f)
         # the exempted files stay outside the daily collection: nothing that is checked above refers to them
         for f in sorted((ROOT / "sat").glob("*.py")):
             if f.name not in self.CONFIRM_SERIES and not f.name.startswith("confirm"):
                 for name in self.CONFIRM_SERIES:
                     self.assertNotRegex(f.read_text(encoding="utf-8"), r"\b(import|from)\b[^\n]*\b" + name[:-3] + r"\b", f)
+
+    def test_the_probe_workflow_is_read_only(self):
+        t = (ROOT / ".github" / "workflows" / "pres3-es-probe.yml").read_text(encoding="utf-8")
+        self.assertIn("branches: ['probe/pres3-es-*']", t)
+        self.assertIn("contents: read", t)
+        for word in ("schedule", "workflow_dispatch", "pull_request", "contents: write", "git push", "secrets.", "CDSE"):
+            self.assertNotIn(word, t.split("jobs:")[1] if word == "CDSE" else t, word)
+
+    def test_probe_cog_path_from_the_scene_id(self):
+        from sat.pres3 import es_probe
+        self.assertEqual(es_probe.cog_href("S2C_51STV_20261111_0_L2A", "red"),
+                         "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/51/S/TV/2026/11/S2C_51STV_20261111_0_L2A/B04.tif")
+        self.assertTrue(es_probe.cog_href("S2A_49QDD_20230706_0_L2A", "scl").endswith("/49/Q/DD/2023/7/S2A_49QDD_20230706_0_L2A/SCL.tif"))
+        self.assertRaises(ValueError, es_probe.cog_href, "S2A_MSIL2A_20230706", "red")
 
     def test_import_needs_no_third_party_package(self):
         # the collect workflows import every test module without numpy: the package and its helpers must import bare
