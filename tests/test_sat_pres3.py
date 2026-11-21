@@ -584,17 +584,28 @@ class TriageTest(unittest.TestCase):
         self.assertTrue(all(r["p_opt_lopo"] != "" and (r["p_opt_fwd"] != "") == (r["p_pres3_fwd"] != "") for r in rows))
         self.assertTrue(all(len(r[c].split(".")[1]) == 4 for r in rows for c in final.OOS_COLUMNS[6:12] if r[c] != ""))     # the old columns keep 4 places
 
+    OLD_COLUMNS_ROWS = 1531
+    OLD_COLUMNS_SHA256 = "8e1858fe8447f5553f0476e81501634f0dd1bb2f6bc8b9641dd81812e1f87523"
+
     def test_the_old_columns_are_byte_for_byte_the_2026_11_19_file(self):
         """The first 12 columns (header + 1,531 rows) of pres3_oos.csv as published on 2026-11-19, before the two columns were
-        added. A new publication with more cells changes this on purpose: then the hash is replaced with the file's."""
+        added. A file with other rows (a row added or removed) FAILS here, it is not skipped: a new publication with more cells
+        changes this on purpose, and then OLD_COLUMNS_ROWS and OLD_COLUMNS_SHA256 are replaced with the new file's."""
         with open(EVAL / "pres3_oos.csv", "rb") as fh:
             lines = fh.read().split(b"\n")
-        if len(lines) != 1533: self.skipTest("pres3_oos.csv is not the 2026-11-19 file")
-        self.assertEqual(self.old_columns_hash(lines), "8e1858fe8447f5553f0476e81501634f0dd1bb2f6bc8b9641dd81812e1f87523")
+        self.assert_old_columns(lines)
         changed = list(lines); c = changed[1].split(b","); c[7] = b"%.4f" % (float(c[7]) + 0.0001); changed[1] = b",".join(c)
         self.assertNotEqual(self.old_columns_hash(changed), self.old_columns_hash(lines))       # one value moved by 0.0001 is seen
+        # the check has teeth: a row added, a row removed, a value moved each fail it (a different file is not skipped)
+        for bad in (lines[:-1] + [lines[-2], b""], lines[:1] + lines[2:], changed):
+            with self.assertRaises(AssertionError): self.assert_old_columns(bad)
         tail = list(lines); c = tail[1].split(b","); c[12] = b"0.5"; tail[1] = b",".join(c)
         self.assertEqual(self.old_columns_hash(tail), self.old_columns_hash(lines))             # the new columns are not part of it
+
+    def assert_old_columns(self, lines):
+        self.assertEqual(len(lines) - 2, self.OLD_COLUMNS_ROWS, "pres3_oos.csv has other rows than the 2026-11-19 file: "
+                         "if this is a new publication on purpose, replace OLD_COLUMNS_ROWS and OLD_COLUMNS_SHA256")
+        self.assertEqual(self.old_columns_hash(lines), self.OLD_COLUMNS_SHA256)
 
     @staticmethod
     def old_columns_hash(lines):
