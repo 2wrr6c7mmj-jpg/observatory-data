@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-21T19:22:33Z",
+ "generated_utc": "2026-11-21T21:36:48Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 2,
+  "ok": 11,
+  "warn": 3,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-21T13:40:47Z",
-   "heartbeat_age_h": 5.7,
+   "heartbeat_age_h": 7.9,
    "data_date": "2026-11-21",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -100,7 +100,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-21T11:46:18Z",
-   "heartbeat_age_h": 7.6,
+   "heartbeat_age_h": 9.8,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -129,7 +129,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-21T14:55:15Z",
-   "heartbeat_age_h": 4.5,
+   "heartbeat_age_h": 6.7,
    "data_date": "2026-11-21",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +173,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-21T08:26:43Z",
-   "heartbeat_age_h": 10.9,
+   "heartbeat_age_h": 13.2,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -190,16 +190,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-21T13:44:03Z",
-   "heartbeat_age_h": 5.6,
+   "heartbeat_utc": "2026-11-21T20:15:40Z",
+   "heartbeat_age_h": 1.4,
    "data_date": "2026-11-21",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-21T13:44:03Z",
-    "notam_watch_last_seen_utc": "2026-11-21T13:44:03Z",
+    "notices_last_retrieved_utc": "2026-11-21T20:15:40Z",
+    "notam_watch_last_seen_utc": "2026-11-21T20:15:40Z",
     "ll2_last_retrieved_utc": "2026-11-21T08:26:37Z"
    }
   },
@@ -209,16 +209,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-21T19:21:17Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 2.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-21T19:21:17Z が入力の更新 2026-11-21T20:15:40Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-21T11:47:28Z",
-    "newest_input_utc": "2026-11-21T13:44:03Z"
+    "newest_input_utc": "2026-11-21T20:15:40Z"
    }
   },
   {
@@ -242,8 +248,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-21T16:26:29Z",
-   "heartbeat_age_h": 2.9,
+   "heartbeat_utc": "2026-11-21T19:25:25Z",
+   "heartbeat_age_h": 2.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
