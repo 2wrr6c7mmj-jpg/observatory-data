@@ -731,7 +731,25 @@ def scored_cells(out: Path, site_id: str) -> list[dict]:
     return res
 
 
-def _block(states: list[dict], scored: list[dict], cfg: dict) -> dict:
+A_RECENT_DAYS = 84          # §7.5: A over the last 12 weeks too
+
+
+def _a_pairs(scored: list[dict], cfg: dict) -> list:
+    """The pairs of A: the audit sample (weighted by 1 / audit_rate) when automatic states are shown, else (the shadow
+    operation) every cell rule v1 would have made automatic."""
+    res = []
+    for r in scored:
+        if r["v1_state"] == "auto" and r["v1_value"] != "":
+            agree = int(int(r["v1_value"]) == r["y"])
+            if not cfg.get("auto_display"):
+                res.append(((r["site_id"], r["date"]), agree, 1.0))
+            elif r["audit"] == "1" and r["state"] == "auto":
+                res.append(((r["site_id"], r["date"]), agree, 1.0 / (_fnum(r["audit_rate"]) or 1.0)))
+    return res
+
+
+def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset = frozenset(), now: str | None = None) -> dict:
+    """picked: the (site, section, day) of the cells chosen for the audit (a log row with audit = 1)."""
     cnt = {s: 0 for s in STATES}
     for r in states:
         cnt[r["state"]] = cnt.get(r["state"], 0) + 1
@@ -751,6 +769,22 @@ def _block(states: list[dict], scored: list[dict], cfg: dict) -> dict:
             changed_routed += r["v1_state"] == "pending"
     a = _rate(audit) if cfg.get("auto_display") else _rate(would)
     rt = _rate(routed, ci=False)
+    # §7.5 / C5: what became of the audit sample (an expired one stays unanswered: A is computed without it), the two
+    # kinds of unconfirmed cells, and the cells of the sections added after the ledger was started
+    smp = {"picked": 0, "answered": 0, "expired": 0, "waiting": 0}
+    for r in states:
+        if (r["site_id"], r["section_id"], r["date"]) in picked:
+            smp["picked"] += 1
+            smp["answered" if r["state"] in FINAL else "expired" if now and _days(r["date"], now) > cfg["expire_days"] else "waiting"] += 1
+    unc = {"expired": 0, "superseded": 0}
+    for r in states:
+        if r["state"] == "unconfirmed" and r["reason"] in unc:
+            unc[r["reason"]] += 1
+    new = [r for r in states if (r.get("sections_version") or "1") != "1"]
+    ncnt = {}
+    for r in new:
+        ncnt[r["state"]] = ncnt.get(r["state"], 0) + 1
+    recent = [r for r in scored if now and 0 <= _days(r["date"], now) < A_RECENT_DAYS]
     den = cnt["auto"] + cnt["human"] + cnt["unconfirmed"]
     c = None
     if den and (cnt["auto"] == 0 or a["rate"] is not None) and (cnt["unconfirmed"] == 0 or rt["rate"] is not None):
@@ -762,7 +796,9 @@ def _block(states: list[dict], scored: list[dict], cfg: dict) -> dict:
             "answered": len(scored),
             "A_auto_accuracy": {**a, "basis": "audit sample, weighted by 1 / audit_rate" if cfg.get("auto_display")
                                 else "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"},
-            "would_be_auto": _rate(would), "audit": _rate(audit),
+            "A_auto_accuracy_last_12_weeks": _rate(_a_pairs(recent, cfg)),
+            "would_be_auto": _rate(would), "audit": _rate(audit), "audit_sample": smp,
+            "unconfirmed": unc, "new_sections": {"cells": len(new), "states": ncnt},
             "routed_judge_accuracy": rt,
             "changed": {"n": changed, "routed": changed_routed},
             "C_total_owner_counted_correct": c}
@@ -773,10 +809,12 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     "after frozen_utc or not" (never mixed); and by ISO week. Agreement is agreement with the owner's reading."""
     out, cfg, now = Path(out), cfg or load_config(), now or utcnow()
     frozen = (cfg.get("frozen_utc") or "")[:10]
-    states, scored = [], []
+    states, scored, picked = [], [], set()
     for site_id in known_sites(out):
         states += list(load_state(out, site_id).values())
         scored += scored_cells(out, site_id)
+        picked |= {(site_id, r["section_id"], r["date"]) for r in load_log(out, site_id) if r.get("audit") == "1"}
+    picked = frozenset(picked)
 
     def part(r):
         return "after_freeze" if frozen and r["date"] > frozen else "before_freeze"
@@ -796,15 +834,19 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
                      "agreement": "どの数字も所有者の読みとの一致。所有者の読みの誤りは入っていない",
                      "ci": "95% CI は撮影（港×日）単位のブートストラップ 1,000 回、種 0",
                      "freeze": "frozen_utc より後に撮られた升（after_freeze）だけが、規則を先に決めてから入った答え。before_freeze の数字は規則を選んだ升を含み楽観がある",
-                     "null": "null は数えられない（升が無い）。0 は数えて 0"},
+                     "null": "null は数えられない（升が無い）。0 は数えて 0",
+                     "A_last_12_weeks": "A と同じ数え方で、撮影日が generated_utc の日から 84 日（12 週）以内の升だけ",
+                     "audit_sample": "抜き取りに選んだ升（記録に audit=1 の行がある升）と、そのうち答えがあった／期限（expire_days）を過ぎて答えのない／まだ待っている升の数。期限を過ぎた升は A に入らない（A が偏りうるので数を出す）",
+                     "unconfirmed": "未確認の升の内訳：期限切れ（expired）と、後の撮影に置き換え（superseded）",
+                     "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態"},
            "parts": {}}
     for name in ("before_freeze", "after_freeze"):
         st = [r for r in states if part(r) == name]
         sc = [r for r in scored if part(r) == name]
-        blk = {"total": _block(st, sc, cfg), "by_site": {}, "by_version": {}, "by_week": {}}
+        blk = {"total": _block(st, sc, cfg, picked, now), "by_site": {}, "by_version": {}, "by_week": {}}
         for label, fn in (("by_site", lambda r: r["site_id"]), ("by_version", ver), ("by_week", week)):
             for g in sorted({fn(r) for r in st} | {fn(r) for r in sc}):
-                blk[label][g] = _block([r for r in st if fn(r) == g], [r for r in sc if fn(r) == g], cfg)
+                blk[label][g] = _block([r for r in st if fn(r) == g], [r for r in sc if fn(r) == g], cfg, picked, now)
         doc["parts"][name] = blk
     return doc
 

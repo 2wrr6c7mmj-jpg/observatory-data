@@ -571,6 +571,42 @@ class AuditTest(Base):
         self.assertEqual(t["states"]["human"], len(a))
         self.assertLessEqual(t["A_auto_accuracy"]["ci95"][0], t["A_auto_accuracy"]["rate"])
 
+    def test_summary_counts_the_sample_and_the_new_sections(self):
+        # C5 (§7.5): the audit cells that expired unanswered, the number picked, the cells of new sections, A of 12 weeks
+        c = cfg()
+        table = self.make(self.out)
+        for r in table:
+            if r["section_id"] == "S00":
+                r["p"] = "0.5"
+        cf.run(table, self.out, c, "2026-10-29T06:00:00Z")
+        a = sorted(self.audited(self.out))
+        half = a[::2]
+        cf.merge(self.answers_file([("QDH", s, d, 0) for s, d in half]), self.out, c, "2026-10-30T00:00:00Z")
+        cf.sync_sections(self.out, "QDH", [sec("N1"), sec("N2")], "2026-10-30T00:00:00Z")
+        cf.run([cell("QDH", "N1", "2026-10-30", "0.01"), cell("QDH", "N2", "2026-10-30", "0.99")], self.out, c, "2026-10-31T06:00:00Z")
+        t = cf.summary(self.out, c, "2026-11-10T00:00:00Z")["parts"]["before_freeze"]["total"]
+        late = [k for k in a if k not in half and k[1] < "2026-10-13"]          # 28 days before 2026-11-10
+        self.assertEqual(t["audit_sample"], {"picked": len(a), "answered": len(half), "expired": len(late),
+                                             "waiting": len(a) - len(half) - len(late)})
+        self.assertTrue(late and len(a) - len(half) - len(late))
+        self.assertEqual(t["unconfirmed"], {"expired": 0, "superseded": len(self.DAYS) - 1})
+        self.assertEqual(t["new_sections"], {"cells": 2, "states": {"pending": 2}})            # new sections: no answers yet
+        self.assertEqual(t["A_auto_accuracy_last_12_weeks"]["n"], t["A_auto_accuracy"]["n"])
+        self.assertEqual(t["A_auto_accuracy"]["n"], sum(1 for s, d in half if s != "S00"))
+        cf.run([], self.out, c, "2026-11-30T06:00:00Z")
+        doc = cf.summary(self.out, c, "2026-11-30T06:00:00Z")
+        t = doc["parts"]["before_freeze"]["total"]
+        self.assertEqual(t["audit_sample"], {"picked": len(a), "answered": len(half), "expired": len(a) - len(half), "waiting": 0})
+        self.assertEqual(t["unconfirmed"], {"expired": 3, "superseded": len(self.DAYS) - 1})   # S00 2026-10-28, N1, N2
+        self.assertEqual(doc["parts"]["before_freeze"]["by_site"]["QDH"]["audit_sample"], t["audit_sample"])
+        self.assertEqual(doc["parts"]["before_freeze"]["by_week"]["2026-W44"]["new_sections"]["cells"], 2)
+        # A over the last 12 weeks: nothing left 84 days after the last scored day (2026-10-28)
+        t = cf.summary(self.out, c, "2027-01-20T00:00:00Z")["parts"]["before_freeze"]["total"]
+        self.assertEqual((t["A_auto_accuracy_last_12_weeks"]["n"], t["A_auto_accuracy_last_12_weeks"]["rate"]), (0, None))
+        t = cf.summary(self.out, c, "2027-01-19T00:00:00Z")["parts"]["before_freeze"]["total"]
+        self.assertEqual(t["A_auto_accuracy_last_12_weeks"]["n"], sum(1 for s, d in half if d == "2026-10-28" and s != "S00"))
+        self.assertAlmostEqual(t["A_auto_accuracy"]["rate"], cf.summary(self.out, c, "2026-11-10T00:00:00Z")["parts"]["before_freeze"]["total"]["A_auto_accuracy"]["rate"])
+
     def test_order_changed_first_then_near_the_middle(self):
         c = cfg()
         cells = [{"key": ("QDH", "A", "d"), "state": "pending", "reason": "uncertain", "p": 0.2, "prev_answer": 0},
