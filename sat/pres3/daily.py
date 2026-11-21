@@ -198,14 +198,15 @@ def fit(C, X, names, cutoff, version=None, log=print):
 def owner_answers(port, sat_dir=None):
     """(section, date) -> 1 / 0 from the owner's answer files of the repository: labels/<port>-s2-answers.csv (Zhanjiang:
     ZJG-s2-labels.csv, verified rows) and, when it exists, labels/<port>-confirm-answers.csv (the answers of the confirmation
-    queue, the design section 6.3; rows of verified_by other than the owner are not answers). 'Cannot tell' is no answer."""
+    queue, the design section 6.3). In both files a row whose verified_by is not 'owner' (another reader, an automatic
+    decision, an empty field) is not an answer, as sat/confirm.py reads them. 'Cannot tell' is no answer."""
     sat_dir = Path(sat_dir) if sat_dir else common.SAT; out = {}
     first = sat_dir / 'labels' / ('ZJG-s2-labels.csv' if port == 'ZJG' else f'{port}-s2-answers.csv')
     for f, confirm in ((first, False), (sat_dir / 'labels' / f'{port}-confirm-answers.csv', True)):
         if not f.exists(): continue
         with open(f, newline='', encoding='utf-8') as fh:
             for r in csv.DictReader(fh):
-                if confirm and r.get('verified_by', 'owner') != 'owner': continue
+                if (r.get('verified_by') or '').strip() != 'owner': continue
                 if r.get('verified') == '1' and r.get('verified_occupied') in ('0', '1'): out[(r['section_id'], r['date'])] = int(r['verified_occupied'])
                 elif confirm: out.pop((r['section_id'], r['date']), None)       # a later 'cannot tell' withdraws the answer
     return out

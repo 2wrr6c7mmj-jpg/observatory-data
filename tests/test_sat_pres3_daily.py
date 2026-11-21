@@ -343,6 +343,18 @@ class OwnerAnswersTest(unittest.TestCase):
             self.assertEqual(daily.owner_answers("QDH", d), {("a", "2026-01-01"): 1, ("a", "2026-02-01"): 0})
             self.assertEqual(daily.owner_answers("XXX", d), {})
 
+    def test_only_the_owners_rows_of_the_first_file(self):
+        # the first answer file (labels/<port>-s2-answers.csv; ZJG-s2-labels.csv) too: verified_by must be the owner
+        with tempfile.TemporaryDirectory() as d:
+            lab = Path(d) / "labels"; lab.mkdir()
+            (lab / "QDH-s2-answers.csv").write_text("site_id,section_id,date,verified,verified_occupied,verified_c,verified_color,verified_by,verified_note\n"
+                                                    "QDH,a,2026-01-01,1,1,2,,owner,\nQDH,b,2026-01-01,1,0,0,,ai,\nQDH,c,2026-01-01,1,1,1,,,\n"
+                                                    "QDH,d,2026-01-01,1,0,0,, owner ,\n", encoding="utf-8")
+            self.assertEqual(daily.owner_answers("QDH", d), {("a", "2026-01-01"): 1, ("d", "2026-01-01"): 0})
+            (lab / "ZJG-s2-labels.csv").write_text("site_id,section_id,date,verified,verified_occupied,verified_by\n"
+                                                   "ZJG,a,2026-01-01,1,1,owner\nZJG,b,2026-01-01,1,0,auto\nZJG,c,2026-01-01,,,\n", encoding="utf-8")
+            self.assertEqual(daily.owner_answers("ZJG", d), {("a", "2026-01-01"): 1})
+
     def test_the_repository_answers(self):
         a = daily.owner_answers("ZJG"); self.assertTrue(a and set(a.values()) <= {0, 1})
         self.assertTrue(daily.owner_answers("QDH"))
