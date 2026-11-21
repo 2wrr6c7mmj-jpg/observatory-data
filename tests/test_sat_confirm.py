@@ -261,6 +261,28 @@ class RunTest(Base):
         cf.run(table, self.out, c, "2026-11-14T06:00:00Z")
         self.assertEqual(self.state()[("B", "2026-11-06")]["state"], "human")
 
+    def test_an_answered_cell_is_not_judged_again(self):
+        # C1 (§6.4-1): once the owner has answered a cell, a later run does not judge it again, whatever the table says: no
+        # new log row (scoring stays on the row from before the answer) and the state stays the owner's
+        c = cfg()
+        cf.run([cell("QDH", "A", "2026-11-01", "0.5"), cell("QDH", "B", "2026-11-01", "0.4")], self.out, c, "2026-11-02T06:00:00Z")
+        cf.merge(self.answers_file([("QDH", "A", "2026-11-01", 1), ("QDH", "B", "2026-11-01", None)]), self.out, c, "2026-11-03T00:00:00Z")
+        log = (self.out / "confirm" / "log" / "QDH" / "2026-11.csv").read_bytes()
+        st = {k: dict(v) for k, v in self.state().items()}
+        for n, p in enumerate(("0.01", "0.99", "", "0.5")):
+            cf.run([cell("QDH", "A", "2026-11-01", p, model_version=f"pres3o-v{n}"),
+                    cell("QDH", "B", "2026-11-01", p, model_version=f"pres3o-v{n}")], self.out, c, f"2026-11-{4 + n:02d}T06:00:00Z")
+            self.assertEqual((self.out / "confirm" / "log" / "QDH" / "2026-11.csv").read_bytes(), log, p)
+            self.assertEqual(self.state(), st, p)
+        self.assertEqual([(r["p"], r["state"], r["model_version"], r["y"]) for r in cf.scored_cells(self.out, "QDH")],
+                         [("0.5", "pending", "pres3o-test", 1)])
+        # a day of the review set: judged once, before its answer, and never again
+        cf.run([cell("QDH", "C", "2026-07-25", "0.2")], self.out, c, "2026-11-10T06:00:00Z")
+        n = len(cf.load_log(self.out, "QDH"))
+        cf.run([cell("QDH", "C", "2026-07-25", "0.9")], self.out, c, "2026-11-11T06:00:00Z")
+        self.assertEqual(len(cf.load_log(self.out, "QDH")), n)
+        self.assertEqual([r["p"] for r in cf.scored_cells(self.out, "QDH") if r["section_id"] == "C"], ["0.2"])
+
     def test_the_log_only_grows(self):
         c = cfg()
         logf = self.out / "confirm" / "log" / "QDH" / "2026-11.csv"
