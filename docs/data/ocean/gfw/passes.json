@@ -380,7 +380,7 @@
   {
    "area": "BASHI",
    "acquired_utc": "2026-11-13T09:59:50Z",
-   "checked_utc": "2026-11-20T12:11:59Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
    "gfw_cells_ais": 2,
    "gfw_cells_no_ais": 1,
    "status": "done",
@@ -395,7 +395,7 @@
   {
    "area": "TWE_S",
    "acquired_utc": "2026-11-13T09:59:50Z",
-   "checked_utc": "2026-11-20T12:11:59Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
    "gfw_cells_ais": 20,
    "gfw_cells_no_ais": 6,
    "status": "done",
@@ -410,7 +410,7 @@
   {
    "area": "MYK",
    "acquired_utc": "2026-11-15T09:44:01Z",
-   "checked_utc": "2026-11-20T12:11:59Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
    "gfw_cells_ais": 1,
    "gfw_cells_no_ais": 3,
    "status": "done",
@@ -425,7 +425,7 @@
   {
    "area": "SAKI_S",
    "acquired_utc": "2026-11-15T09:44:01Z",
-   "checked_utc": "2026-11-20T12:11:59Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
    "gfw_cells_ais": 1,
    "gfw_cells_no_ais": 3,
    "status": "done",
@@ -440,7 +440,7 @@
   {
    "area": "HKS",
    "acquired_utc": "2026-11-15T10:32:46Z",
-   "checked_utc": "2026-11-20T12:11:59Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
    "gfw_cells_ais": 278,
    "gfw_cells_no_ais": 26,
    "status": "done",
@@ -451,6 +451,36 @@
    "B_no_ais": 7,
    "B_none": 46,
    "first_done_utc": "2026-11-20T12:11:59Z"
+  },
+  {
+   "area": "BASHI",
+   "acquired_utc": "2026-11-15T21:51:23Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
+   "gfw_cells_ais": 9,
+   "gfw_cells_no_ais": 2,
+   "status": "done",
+   "A_ais": 8,
+   "A_no_ais": 0,
+   "A_none": 0,
+   "B_ais": 0,
+   "B_no_ais": 1,
+   "B_none": 2,
+   "first_done_utc": "2026-11-21T11:47:07Z"
+  },
+  {
+   "area": "TSS",
+   "acquired_utc": "2026-11-15T21:51:23Z",
+   "checked_utc": "2026-11-21T11:47:07Z",
+   "gfw_cells_ais": 88,
+   "gfw_cells_no_ais": 18,
+   "status": "done",
+   "A_ais": 28,
+   "A_no_ais": 2,
+   "A_none": 5,
+   "B_ais": 42,
+   "B_no_ais": 6,
+   "B_none": 18,
+   "first_done_utc": "2026-11-21T11:47:07Z"
   }
  ]
 }
