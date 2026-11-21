@@ -219,6 +219,28 @@ class RunTest(Base):
         cf.run([cell("QDH", "A", day, "0.01", n_answers="1")], self.out, c, now)
         self.assertEqual([(r["n_answers"], r["n_answers_judge"], r["v1_state"]) for r in cf.load_log(self.out, "QDH")], [("2", "1", "pending")])
 
+    def test_only_the_owner_answers(self):
+        # C4 (§6.3 (2)): a row whose verified_by is not the owner is not an answer, in the review set or in the confirm file
+        base = self.out / "labels" / "QDH-s2-answers.csv"
+        with base.open("a", encoding="utf-8") as f:
+            for by in ("judge", "", "auto", "Owner"):
+                f.write(f"QDH,B,2026-08-0{len(by) % 9 + 1},1,0,0,,{by},\n")
+        cf.run([cell("QDH", "B", "2026-11-01", "0.5")], self.out, cfg(), "2026-11-02T06:00:00Z")
+        p = cf.confirm_answers_path(self.out, "QDH")
+        with p.open("w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(cf.ANSWER_FIELDS)
+            w.writerow(["QDH", "B", "2026-11-01", "1", "0", "pres3o", "", "2026-11-03T00:00:00Z", "q"])
+            w.writerow(["QDH", "B", "2026-10-20", "1", "1", "", "", "2026-11-03T00:00:00Z", "q"])
+        a = cf.owner_answers(self.out, "QDH")
+        self.assertEqual(sorted(k for k in a if k[0] == "B"), [("B", "2026-07-24")])
+        cf.run([cell("QDH", "B", "2026-11-01", "0.5"), cell("QDH", "B", "2026-11-06", "0.01")], self.out, cfg(), "2026-11-07T06:00:00Z")
+        s = self.state()
+        self.assertNotIn(s[("B", "2026-11-01")]["state"], cf.FINAL)
+        self.assertEqual((s[("B", "2026-11-06")]["n_answers"], s[("B", "2026-11-06")]["prev_answer_date"], s[("B", "2026-11-06")]["reason"]),
+                         ("1", "2026-07-24", "few_answers"))
+        self.assertEqual([r for r in cf.scored_cells(self.out, "QDH") if r["section_id"] == "B"], [])     # nothing to score against
+
     def test_an_automatic_state_is_not_an_answer(self):
         c = cfg()
         cf.run([cell("QDH", "A", "2026-10-01", "0.01"), cell("QDH", "B", "2026-10-01", "0.99")], self.out, c, "2026-10-02T06:00:00Z")
