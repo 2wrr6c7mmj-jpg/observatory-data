@@ -19,6 +19,7 @@ import datetime as dt
 import importlib.util
 import json
 import math
+import re
 import tempfile
 import unittest
 import warnings
@@ -382,6 +383,22 @@ class NoPublishedFileIsTouchedTest(unittest.TestCase):
         self.assertIn("contents: read", t)
         for word in ("schedule", "workflow_dispatch", "pull_request", "contents: write", "git push", "secrets.", "CDSE"):
             self.assertNotIn(word, t.split("jobs:")[1] if word == "CDSE" else t, word)
+        # it runs the probe and pip, nothing of the collection (sat.run, publish.sh, the other sat / pres3 modules)
+        jobs = t.split("jobs:")[1]
+        calls = re.findall(r"(?<![\w/.-])python3?(?:\.\d+)?\s+([^\n|;&)]*)", jobs)                  # every python command line
+        self.assertEqual(sorted({re.match(r"\s*-m\s+([\w.]+)", c).group(1) if re.match(r"\s*-m\s+", c) else c.strip() for c in calls}),
+                         ["pip", "sat.pres3.es_probe"], calls)
+        for word in ("sat.run", "sat/run", "run.py", "publish.sh", "sat.confirm", "pres3.daily", "pres3.fetch", "docs", "git "):
+            self.assertFalse(word in jobs, word)
+        # and the probe script writes no file (and so nothing under docs/): it only reads sites.json and inputs/scenes.csv
+        src = (ROOT / "sat" / "pres3" / "es_probe.py").read_text(encoding="utf-8")
+        for word in ("docs", "common.SAT", ".write(", "write_text", "write_bytes", "savez", "json.dump(", "os.replace", "os.rename",
+                     "mkdir", "shutil", "tofile", "to_csv", "NamedTemporaryFile"):
+            self.assertFalse(word in src, word)
+        opens = re.findall(r"(?<![\w.])open\(([^\n]*)", src)                                     # the built-in open (not rasterio.open)
+        self.assertEqual(len(opens), 2, opens)
+        for args in opens:
+            self.assertNotRegex(args, r"""['"]\s*[rwax+bt]*[wax+][rwax+bt]*\s*['"]""", args)        # no write / append / create mode
 
     def test_probe_cog_path_from_the_scene_id(self):
         from sat.pres3 import es_probe
