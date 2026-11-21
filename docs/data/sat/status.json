@@ -6663,21 +6663,185 @@
     "version": "naval-1"
    },
    "quay_result": "counted"
+  },
+  {
+   "site_id": "WHI",
+   "acquired_utc": "2026-11-21T09:47:41Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 98,
+   "mask_version": "WHI-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261121T094741_20261121T094811_005564_00AA77_C11F_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-21T13:41:09Z",
+   "processing_units": 0.341278076171875,
+   "coverage": 1.0,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 0
+   },
+   "fixed": {
+    "structure": 1,
+    "registry": 0,
+    "registry_over_guard": 0,
+    "guarded": 0,
+    "point": 0,
+    "field": 0,
+    "high": 3,
+    "medium": 5,
+    "low": 0,
+    "no_baseline": 0,
+    "guarded_by": {
+     "naval_long": 0,
+     "naval_near": 0,
+     "yard_site": 0,
+     "yard_sector": 0,
+     "yard_line": 0
+    },
+    "version": "fix-2",
+    "revision": 2,
+    "registry_hash": ""
+   },
+   "window_excluded": {
+    "land": 2,
+    "pond": 0,
+    "enclosed": 0,
+    "anchorage": 2,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 0,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9339,
+    "water_fraction": 0.424,
+    "threshold_sigma": 4.265,
+    "guard_px": 7,
+    "outer_px": 22,
+    "hit_pixels": 159,
+    "clusters": 48,
+    "dropped_small": 33,
+    "dropped_vh": 6
+   },
+   "quay_excluded": {
+    "segments": 0,
+    "length_m": 0,
+    "max": 0,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
+  },
+  {
+   "site_id": "LSN",
+   "acquired_utc": "2026-11-21T09:48:11Z",
+   "platform": "sentinel-1d",
+   "orbit_direction": "ascending",
+   "relative_orbit": 98,
+   "mask_version": "LSN-land-v1",
+   "catalog_ids": [
+    "S1D_IW_GRDH_1SDV_20261121T094811_20261121T094828_005564_00AA77_619B_COG.SAFE"
+   ],
+   "retrieved_utc": "2026-11-21T13:40:53Z",
+   "processing_units": 1.61920166015625,
+   "coverage": 0.991,
+   "quay_band_excluded": {
+    "off_berth": 0,
+    "coastline": 19
+   },
+   "fixed": {
+    "structure": 4,
+    "registry": 0,
+    "registry_over_guard": 0,
+    "guarded": 0,
+    "point": 0,
+    "field": 0,
+    "high": 10,
+    "medium": 15,
+    "low": 7,
+    "no_baseline": 0,
+    "guarded_by": {
+     "naval_long": 0,
+     "naval_near": 0,
+     "yard_site": 0,
+     "yard_sector": 0,
+     "yard_line": 0
+    },
+    "version": "fix-2",
+    "revision": 2,
+    "registry_hash": ""
+   },
+   "window_excluded": {
+    "land": 2,
+    "pond": 1,
+    "enclosed": 0,
+    "anchorage": 7,
+    "version": "win-1"
+   },
+   "naval_excluded": {
+    "civil": 0,
+    "unknown": 0,
+    "version": "naval-1"
+   },
+   "result": "counted",
+   "detector_info": {
+    "valid_fraction": 0.9276,
+    "water_fraction": 0.2193,
+    "threshold_sigma": 4.265,
+    "guard_px": 8,
+    "outer_px": 24,
+    "hit_pixels": 460,
+    "clusters": 99,
+    "dropped_small": 54,
+    "dropped_vh": 9
+   },
+   "quay_excluded": {
+    "segments": 1,
+    "length_m": 40,
+    "max": 1,
+    "berth_version": "berth-1"
+   },
+   "quay_naval_excluded": {
+    "civil": {
+     "segments": 0,
+     "max": 0
+    },
+    "unknown": {
+     "segments": 0,
+     "max": 0
+    },
+    "version": "naval-1"
+   },
+   "quay_result": "counted"
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-20T14:14:06Z",
+  "run_utc": "2026-11-21T13:40:47Z",
   "sites": [
    {
     "site_id": "ZJG",
     "lookback_days": 6,
     "catalog_items": 2,
     "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 792.31
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "SYL",
@@ -6688,7 +6852,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 792.31
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "SLP",
@@ -6699,18 +6863,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 792.31
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "QGZ",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "ZDH",
@@ -6721,7 +6885,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "QDH",
@@ -6732,7 +6896,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "XSN",
@@ -6743,7 +6907,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "SWS",
@@ -6754,7 +6918,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "QJG",
@@ -6765,18 +6929,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 785.94
    },
    {
     "site_id": "LSN",
     "lookback_days": 6,
-    "catalog_items": 0,
-    "acquisitions": 0,
-    "new": 0,
-    "counted": 0,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "XMN",
@@ -6787,7 +6951,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "STU",
@@ -6798,7 +6962,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "MAW",
@@ -6809,7 +6973,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "PDG",
@@ -6820,18 +6984,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.41
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "NDS",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.06
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "DXE",
@@ -6842,7 +7006,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.06
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "BHI",
@@ -6853,65 +7017,32 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 790.06
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "XCD",
     "lookback_days": 6,
-    "catalog_items": 2,
-    "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 789.73
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "LYG",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 789.39
+    "budget_left_pu": 784.33
    },
    {
     "site_id": "JMN",
-    "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 789.39
-   },
-   {
-    "site_id": "HPU",
-    "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 789.39
-   },
-   {
-    "site_id": "HKG",
-    "lookback_days": 6,
-    "catalog_items": 1,
-    "acquisitions": 1,
-    "new": 0,
-    "counted": 0,
-    "skipped": 0,
-    "errors": 0,
-    "budget_left_pu": 789.39
-   },
-   {
-    "site_id": "WHI",
     "lookback_days": 6,
     "catalog_items": 0,
     "acquisitions": 0,
@@ -6919,7 +7050,40 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 789.39
+    "budget_left_pu": 784.33
+   },
+   {
+    "site_id": "HPU",
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 784.33
+   },
+   {
+    "site_id": "HKG",
+    "lookback_days": 6,
+    "catalog_items": 0,
+    "acquisitions": 0,
+    "new": 0,
+    "counted": 0,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 784.33
+   },
+   {
+    "site_id": "WHI",
+    "lookback_days": 6,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 1,
+    "counted": 1,
+    "skipped": 0,
+    "errors": 0,
+    "budget_left_pu": 783.98
    }
   ],
   "s2": [
@@ -6958,28 +7122,17 @@
    },
    {
     "site_id": "QGZ",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.009,
+    "requests": 2
    },
    {
     "site_id": "ZDH",
-    "days": 1,
-    "clear": 1,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 2.616,
-    "requests": 3
-   },
-   {
-    "site_id": "QDH",
     "days": 0,
     "clear": 0,
     "cloudy": 0,
@@ -6990,7 +7143,51 @@
     "requests": 1
    },
    {
+    "site_id": "QDH",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.007,
+    "requests": 2
+   },
+   {
     "site_id": "XSN",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "SWS",
+    "days": 0,
+    "clear": 0,
+    "cloudy": 0,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.0,
+    "requests": 1
+   },
+   {
+    "site_id": "QJG",
+    "days": 1,
+    "clear": 0,
+    "cloudy": 1,
+    "skipped": 0,
+    "deferred": 0,
+    "errors": 0,
+    "processing_units": 0.005,
+    "requests": 2
+   },
+   {
+    "site_id": "LSN",
     "days": 1,
     "clear": 0,
     "cloudy": 1,
@@ -6999,39 +7196,6 @@
     "errors": 0,
     "processing_units": 0.008,
     "requests": 2
-   },
-   {
-    "site_id": "SWS",
-    "days": 1,
-    "clear": 1,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.81,
-    "requests": 3
-   },
-   {
-    "site_id": "QJG",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
-   },
-   {
-    "site_id": "LSN",
-    "days": 0,
-    "clear": 0,
-    "cloudy": 0,
-    "skipped": 0,
-    "deferred": 0,
-    "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
    },
    {
     "site_id": "XMN",
@@ -7046,14 +7210,14 @@
    },
    {
     "site_id": "STU",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 1.394,
+    "requests": 3
    },
    {
     "site_id": "MAW",
@@ -7068,14 +7232,14 @@
    },
    {
     "site_id": "PDG",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.005,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "NDS",
@@ -7090,21 +7254,21 @@
    },
    {
     "site_id": "DXE",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.005,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "BHI",
-    "days": 1,
+    "days": 0,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 1,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -7123,14 +7287,14 @@
    },
    {
     "site_id": "LYG",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.288,
+    "requests": 3
    },
    {
     "site_id": "JMN",
@@ -7177,16 +7341,16 @@
     "requests": 1
    }
   ],
-  "s2_requests": 30,
-  "s2_processing_units": 3.444,
-  "requests": 58,
-  "processing_units": 8.203,
+  "s2_requests": 31,
+  "s2_processing_units": 1.711,
+  "requests": 56,
+  "processing_units": 3.671,
   "pu_source": "header",
-  "scenes": 5,
-  "month_pu_before": 205.852,
+  "scenes": 2,
+  "month_pu_before": 214.055,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-20T14:14:06Z",
+ "updated_utc": "2026-11-21T13:40:47Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
