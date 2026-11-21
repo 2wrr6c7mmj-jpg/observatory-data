@@ -437,12 +437,15 @@ def _apply_answers(state: dict, answers: dict) -> list[tuple[str, str]]:
 
 def _queue_rules(site_id: str, state: dict, cfg: dict, today: str) -> set:
     """§3.3: a waiting cell older than expire_days is unconfirmed (expired); of the waiting cells of a section only the
-    newest stays (the others: unconfirmed, superseded). Returns the keys of the cells in the queue: the waiting ones and
-    the automatic ones picked for the audit (not answered, not expired; exempt from "newest only" so that the sample
-    stays a random one)."""
+    newest stays, and none older than a cell the owner has answered (the others: unconfirmed, superseded; §3.3-2: an
+    answer to the newest cell does not bring back the cells it replaced, so a queue left for weeks does not double).
+    Returns the keys of the cells in the queue: the waiting ones and the automatic ones picked for the audit (not
+    answered, not expired; exempt from "newest only" so that the sample stays a random one)."""
     q = set()
     newest = {}
     for k, r in state.items():
+        if r["state"] in FINAL and cfg.get("latest_only", True):
+            newest[k[0]] = max(k[1], newest.get(k[0], k[1]))
         if r["state"] != "pending":
             continue
         if _days(r["date"], today) > cfg["expire_days"]:

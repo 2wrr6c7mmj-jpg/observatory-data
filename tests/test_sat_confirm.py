@@ -398,6 +398,52 @@ class RunTest(Base):
         m = cf.merge(self.answers_file([("QDH", "A", "2026-11-01", 1)]), self.out, c, "2026-12-01T00:00:00Z")
         self.assertEqual((m["added"], self.state()[("A", "2026-11-01")]["state"]), (1, "human"))
 
+    def test_an_answer_does_not_bring_back_the_older_cells(self):
+        # C2 (§3.3-2): the table keeps its old days (one row per cell judged so far). Answering the newest cell of a section
+        # does not bring the cells it replaced back into the queue, and a gap of two weeks does not double the queue
+        c = cfg()
+        secs = ("A", "B", "C")
+
+        def table(through):
+            days = [d for d in ("2026-11-01", "2026-11-03", "2026-11-06", "2026-11-11", "2026-11-16", "2026-11-21", "2026-11-26") if d <= through]
+            return [cell("QDH", s, d, "0.5") for s in secs for d in days]
+
+        def queue():
+            return [(x["section_id"], x["date"]) for x in json.loads((self.out / "confirm" / "queue.json").read_text(encoding="utf-8"))["cells"]]
+
+        asked = []
+
+        def answer(now):
+            q = queue()
+            asked.extend(q)
+            cf.merge(self.answers_file([("QDH", s, d, 0) for s, d in q]), self.out, c, now)
+
+        cf.run(table("2026-11-11"), self.out, c, "2026-11-12T06:00:00Z")
+        self.assertEqual(sorted(queue()), [(s, "2026-11-11") for s in secs])
+        answer("2026-11-12T12:00:00Z")
+        cf.run(table("2026-11-11"), self.out, c, "2026-11-13T06:00:00Z")
+        self.assertEqual(queue(), [])                                 # the cells before the answer stay replaced
+        s = self.state()
+        for d in ("2026-11-01", "2026-11-03", "2026-11-06"):
+            self.assertEqual((s[("A", d)]["state"], s[("A", d)]["reason"]), ("unconfirmed", "superseded"), d)
+        # a day before the answer that the table brings for the first time does not go to the owner either
+        cf.run(table("2026-11-11") + [cell("QDH", "A", "2026-11-09", "0.5")], self.out, c, "2026-11-13T07:00:00Z")
+        self.assertEqual(queue(), [])
+        self.assertEqual(self.state()[("A", "2026-11-09")]["state"], "unconfirmed")
+        # two weeks without the owner, the table growing every day
+        for day in range(14, 28):
+            cf.run(table(f"2026-11-{day:02d}"), self.out, c, f"2026-11-{day:02d}T06:00:00Z")
+            q = queue()
+            self.assertLessEqual(len(q), len(secs))
+            self.assertEqual(len({s for s, _ in q}), len(q))          # one cell per section at most
+            self.assertTrue(all(d > "2026-11-11" for _, d in q), q)   # never a cell older than the answer
+        self.assertEqual(sorted(queue()), [(s, "2026-11-26") for s in secs])
+        answer("2026-11-27T12:00:00Z")
+        cf.run(table("2026-11-26"), self.out, c, "2026-11-28T06:00:00Z")
+        self.assertEqual(queue(), [])
+        self.assertEqual(len(asked), 2 * len(secs))                   # two rounds, one cell per section each
+        self.assertEqual(self.state()[("B", "2026-11-21")]["reason"], "superseded")
+
     def test_shadow_operation_shows_everything_and_records_the_rule(self):
         c = cf.load_config()                                         # auto_display false
         cf.run([cell("QDH", "A", "2026-11-01", "0.01"), cell("QDH", "C", "2026-11-01", "0.5")], self.out, c, "2026-11-02T06:00:00Z")
