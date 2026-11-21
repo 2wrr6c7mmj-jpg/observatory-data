@@ -5,8 +5,10 @@ directory; the last class reads the repository's own label files (read only).
 """
 from __future__ import annotations
 
+import ast
 import csv
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -555,6 +557,121 @@ class AuditTest(Base):
                  {"key": ("QDH", "D", "d"), "state": "pending", "reason": "few_answers", "p": 0.01, "prev_answer": None},
                  {"key": ("QDH", "E", "d"), "state": "pending", "reason": "stale_answer", "p": 0.01, "prev_answer": 0}]
         self.assertEqual([x["key"][1] for x in cf._order(cells, c)], ["C", "B", "A", "D", "E"])
+
+
+CONFIRM_MODULES = ("sat.confirm", "sat.confirm_img")
+CONFIRM_WORKFLOW = "sat-confirm.yml"          # the workflow of the confirm series (PR-5; not there yet)
+DYNAMIC = ("__import__", "importlib", "import_module", "exec", "eval", "runpy", "run_module")
+
+
+def calls_confirm(text: str) -> bool:
+    """Does a workflow (or a shell script) run or import the confirm series?"""
+    return bool(re.search(r"sat[./]confirm|from\s+sat\s+import[^\n]*\bconfirm|import\s+sat\.confirm", text))
+
+
+def sat_imports(source: str, module: str) -> tuple[set, set]:
+    """(the sat modules a source imports, the names of dynamic import machinery it uses). Relative imports are resolved
+    against ``module`` (e.g. "sat.run"); __import__ and importlib.import_module with a literal name count as imports."""
+    tree = ast.parse(source)
+    pkg = module.rsplit(".", 1)[0] if module.count(".") else module
+    mods, dyn = set(), set()
+
+    def add(name):
+        if name == "sat" or name.startswith("sat."):
+            mods.add(name)
+
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Import):
+            for a in n.names:
+                add(a.name)
+                dyn |= {x for x in DYNAMIC if a.name.split(".")[0] == x}
+        elif isinstance(n, ast.ImportFrom):
+            base = n.module or ""
+            dyn |= {x for x in DYNAMIC if base.split(".")[0] == x or any(a.name == x for a in n.names)}
+            if n.level:
+                parts = pkg.split(".")
+                base = ".".join(parts[:len(parts) - n.level + 1] + ([n.module] if n.module else []))
+            add(base)
+            for a in n.names:
+                add(f"{base}.{a.name}")
+        elif isinstance(n, ast.Name) and n.id in DYNAMIC:
+            dyn.add(n.id)
+        elif isinstance(n, ast.Attribute) and n.attr in DYNAMIC:
+            dyn.add(n.attr)
+        if isinstance(n, ast.Call) and n.args and isinstance(n.args[0], ast.Constant) and isinstance(n.args[0].value, str):
+            f = n.func
+            name = f.id if isinstance(f, ast.Name) else f.attr if isinstance(f, ast.Attribute) else ""
+            if name in ("__import__", "import_module"):
+                target = n.args[0].value
+                if target.startswith("."):
+                    anchor = n.args[1].value if len(n.args) > 1 and isinstance(n.args[1], ast.Constant) else pkg
+                    target = anchor + target if target != "." else anchor
+                add(target)
+    return mods, dyn
+
+
+def module_file(name: str) -> Path | None:
+    p = ROOT.joinpath(*name.split("."))
+    return p.with_suffix(".py") if p.with_suffix(".py").exists() else p / "__init__.py" if (p / "__init__.py").exists() else None
+
+
+def import_closure(start: str) -> set:
+    """Every module of the sat package that ``start`` reaches through its imports (also those inside functions)."""
+    seen, todo = set(), [start]
+    while todo:
+        m = todo.pop()
+        if m in seen:
+            continue
+        seen.add(m)
+        f = module_file(m)
+        if f is not None:
+            todo += sorted(sat_imports(f.read_text(encoding="utf-8"), m if f.name != "__init__.py" else m + ".__init__")[0])
+    return {m for m in seen if module_file(m) is not None}
+
+
+class NotWiredTest(unittest.TestCase):
+    """C3: the confirm series is not part of the daily collection, and it does not use pres-3 itself (it reads a score
+    table, §6). Kept here, not in tests/test_sat_pres3.py."""
+
+    def test_the_checks_catch_what_they_are_for(self):
+        for text in ("run: python -m sat.confirm run --scores s.csv", "run: python sat/confirm.py merge", "python -m sat.confirm_img",
+                     "python -c 'from sat import confirm; confirm.main()'", "python -c 'import sat.confirm'"):
+            self.assertTrue(calls_confirm(text), text)
+        for text in ("python -m sat.run --s2", "python -m unittest discover -s tests -t .", "confirmed: true"):
+            self.assertFalse(calls_confirm(text), text)
+        for src in ("from . import confirm", "from .confirm import run", "import sat.confirm", "from sat import atomic, confirm",
+                    "def f():\n    from . import confirm_img\n", "__import__('sat.confirm')", "import importlib\nimportlib.import_module('.confirm', 'sat')"):
+            self.assertTrue(set(CONFIRM_MODULES) & sat_imports(src, "sat.run")[0], src)
+        for src in ("from .pres3 import daily", "from . import pres3", "import sat.pres3.daily", "from sat.pres3 import common",
+                    "def f():\n    from .pres3.daily import score_days\n", "__import__('sat.pres3.daily')",
+                    "import importlib\nimportlib.import_module('sat.pres3')", "importlib.import_module('.pres3', 'sat')"):
+            self.assertTrue(any(m.startswith("sat.pres3") for m in sat_imports(src, "sat.confirm")[0]), src)
+        for src in ("m = __import__(name)", "import importlib\nm = importlib.import_module(name)", "from importlib import import_module",
+                    "exec('import sat.pres3')"):
+            self.assertTrue(sat_imports(src, "sat.confirm")[1], src)
+        self.assertIn("sat.atomic", import_closure("sat.confirm"))
+        self.assertIn("sat.s2", import_closure("sat.run"))
+
+    def test_no_other_workflow_calls_the_confirm_series(self):
+        flows = sorted((ROOT / ".github" / "workflows").glob("*.y*ml"))
+        self.assertGreater(len(flows), 20)
+        for f in flows:
+            if f.name != CONFIRM_WORKFLOW:
+                self.assertFalse(calls_confirm(f.read_text(encoding="utf-8")), f.name)
+        self.assertFalse(calls_confirm((ROOT / "sat" / "publish.sh").read_text(encoding="utf-8")))
+
+    def test_the_daily_collection_does_not_import_it(self):
+        reach = import_closure("sat.run")
+        self.assertGreater(len(reach), 20)
+        self.assertEqual(reach & set(CONFIRM_MODULES), set())
+        self.assertEqual({m for m in reach if m.startswith("sat.pres3")}, set())
+
+    def test_the_confirm_series_does_not_import_pres3(self):
+        for m in CONFIRM_MODULES:
+            f = module_file(m)
+            mods, dyn = sat_imports(f.read_text(encoding="utf-8"), m)
+            self.assertEqual(dyn, set(), m)                          # no import by a name made at run time
+            self.assertEqual({x for x in import_closure(m) if x.startswith("sat.pres3")}, set(), m)
 
 
 class RepositoryTest(unittest.TestCase):
