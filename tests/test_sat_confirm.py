@@ -31,8 +31,11 @@ def sec(i: str) -> dict:
 
 
 def cell(site, section, date, p, **kw) -> dict:
+    # n_answers: the answers the judge used. 99 by default, so that the smaller count is the one of the answer files (the
+    # tests of the rule through the table); the tests of the judge's count set it
     return {"site_id": site, "section_id": section, "date": date, "acquired_utc": date + "T02:50:00Z",
-            "p": "" if p is None else str(p), "model_version": "pres3o-test", "cloud_shadow": "0.0", "nodata": "0", **kw}
+            "p": "" if p is None else str(p), "model_version": "pres3o-test", "cloud_shadow": "0.0", "nodata": "0",
+            "n_answers": "99", **kw}
 
 
 class Base(unittest.TestCase):
@@ -71,7 +74,7 @@ class Base(unittest.TestCase):
         return {str(p.relative_to(self.out)): p.read_bytes() for p in sorted(self.out.rglob("*")) if p.is_file()}
 
 
-H2 = {"n_answers": 2, "prev_answer_date": "2026-10-01", "prev_answer": 0, "prev_days": 30}
+H2 = {"n_answers": 2, "prev_answer_date": "2026-10-01", "prev_answer": 0, "prev_days": 30, "n_answers_judge": 2}
 
 
 class RuleTest(unittest.TestCase):
@@ -99,8 +102,26 @@ class RuleTest(unittest.TestCase):
         self.assertEqual(cf.decide("QDH", 0.01, True, {**H2, "n_answers": 2}, c)["state"], "auto")
         d = cf.decide("QDH", 0.01, True, {**H2, "n_answers": 1}, c)
         self.assertEqual((d["state"], d["reason"]), ("pending", "few_answers"))
-        d = cf.decide("QDH", 0.01, True, {"n_answers": 0, "prev_answer_date": None, "prev_answer": None, "prev_days": None}, c)
+        d = cf.decide("QDH", 0.01, True, {"n_answers": 0, "prev_answer_date": None, "prev_answer": None, "prev_days": None,
+                                          "n_answers_judge": 0}, c)
         self.assertEqual((d["state"], d["reason"]), ("pending", "few_answers"))
+
+    def test_the_smaller_of_the_two_counts(self):
+        # B1: the answers in the files and the answers the judge used (n_answers of the score table): the smaller one
+        c = cfg()
+        for n_file, n_judge, state, reason in ((2, 2, "auto", "confident"), (3, 2, "auto", "confident"), (2, 9, "auto", "confident"),
+                                               (1, 2, "pending", "few_answers"), (2, 1, "pending", "few_answers"),
+                                               (5, 1, "pending", "few_answers"), (1, 1, "pending", "few_answers"),
+                                               (2, 0, "pending", "few_answers"), (2, None, "pending", "answers_unknown"),
+                                               (1, None, "pending", "few_answers")):
+            d = cf.decide("QDH", 0.01, True, {**H2, "n_answers": n_file, "n_answers_judge": n_judge}, c)
+            self.assertEqual((d["state"], d["reason"]), (state, reason), (n_file, n_judge))
+        h = dict(H2); del h["n_answers_judge"]                        # no judge count at all: not known, never automatic
+        self.assertEqual(cf.decide("QDH", 0.99, True, h, c)["reason"], "answers_unknown")
+        # the reasons keep their order; 120 days still come from the files
+        self.assertEqual(cf.decide("QDH", 0.5, True, {**H2, "n_answers_judge": None}, c)["reason"], "uncertain+answers_unknown")
+        self.assertEqual(cf.decide("QDH", 0.99, True, {**H2, "n_answers_judge": 2, "prev_days": 121}, c)["reason"], "stale_answer")
+        self.assertEqual([cf.judge_count(v) for v in ("2", " 3 ", "0", "", None, "1.0", "-1", "x", "²", 2)], [2, 3, 0, None, None, None, None, None, None, 2])
 
     def test_days_since_the_last_answer(self):
         c = cfg()
@@ -158,6 +179,43 @@ class RunTest(Base):
         self.assertEqual((s[("A", "2026-11-22")]["state"], s[("A", "2026-11-22")]["reason"]), ("unconfirmed", "superseded"))
         self.assertEqual(s[("A", "2026-11-23")]["reason"], "uncertain+stale_answer")
         self.assertEqual(s[("A", "2026-11-21")]["state"], "auto")    # judged before, not in this table: untouched
+
+    def test_the_judges_count_through_the_table(self):
+        # B1: A has 2 answers in the files, B has 1. The table says how many the judge used
+        c, day, now = cfg(), "2026-11-01", "2026-11-02T06:00:00Z"
+
+        def judge(rows, header=True):
+            with tempfile.TemporaryDirectory() as t:
+                out = Path(t)
+                cf.sync_sections(out, "QDH", [sec(i) for i in ("A", "B", "C")], "2026-10-01T00:00:00Z")
+                (out / "labels").mkdir()
+                (out / "labels" / "QDH-s2-answers.csv").write_bytes((self.out / "labels" / "QDH-s2-answers.csv").read_bytes())
+                f = out / "scores.csv"
+                fields = [k for k in cf.SCORE_FIELDS if header or k != "n_answers"]
+                with f.open("w", encoding="utf-8", newline="") as fh:
+                    w = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore", lineterminator="\n")
+                    w.writeheader()
+                    w.writerows(rows)
+                cf.run(cf.read_csv(f), out, c, now)                  # as from the command line: the table read from its file
+                return {k[0]: (r["state"], r["reason"], r["n_answers"], r["n_answers_judge"]) for k, r in cf.load_state(out, "QDH").items()}
+
+        s = judge([cell("QDH", "A", day, "0.01", n_answers="2"), cell("QDH", "B", day, "0.01", n_answers="2")])
+        self.assertEqual(s["A"], ("auto", "confident", "2", "2"))                 # both 2
+        self.assertEqual(s["B"], ("pending", "few_answers", "1", "2"))            # the files say 1
+        s = judge([cell("QDH", "A", day, "0.01", n_answers="1"), cell("QDH", "C", day, "0.99", n_answers="3")])
+        self.assertEqual(s["A"], ("pending", "few_answers", "2", "1"))            # the judge used 1 (an answer without a picture)
+        self.assertEqual(s["C"], ("auto", "confident", "2", "3"))
+        s = judge([cell("QDH", "A", day, "0.01", n_answers=""), cell("QDH", "C", day, "0.99", n_answers="")])
+        self.assertEqual(s["A"], ("pending", "answers_unknown", "2", ""))         # an empty value: not known
+        self.assertEqual(s["C"], ("pending", "answers_unknown", "2", ""))
+        s = judge([cell("QDH", "A", day, "0.01"), cell("QDH", "C", day, "0.99")], header=False)
+        self.assertEqual(s["A"], ("pending", "answers_unknown", "2", ""))         # no column: not known
+        self.assertEqual(s["C"], ("pending", "answers_unknown", "2", ""))
+        self.assertEqual(judge([]), {})                                           # an empty table: nothing is judged
+        self.assertEqual(judge([], header=False), {})
+        # the judge's count goes into the log with the judgement
+        cf.run([cell("QDH", "A", day, "0.01", n_answers="1")], self.out, c, now)
+        self.assertEqual([(r["n_answers"], r["n_answers_judge"], r["v1_state"]) for r in cf.load_log(self.out, "QDH")], [("2", "1", "pending")])
 
     def test_an_automatic_state_is_not_an_answer(self):
         c = cfg()

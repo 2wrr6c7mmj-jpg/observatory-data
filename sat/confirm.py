@@ -20,10 +20,14 @@ The score table (CSV, one row per cell; SCORE_FIELDS):
     nodata                         the share without data. Over the limits of confirm.json "clear" -> no_image.
     status                         optional: "no_image" says the same directly
     answers_through                optional: the last answer day the judge used for this score (recorded in the log)
+    n_answers                      the number of the owner's answers the judge used for this score (an integer; pres-3o:
+                                   the answers whose day has a patch in the store). Missing or empty: not known, and the
+                                   cell is not settled automatically (reason answers_unknown)
 
 The rule v1 (confirm.json; decide()): automatic only when all of
-    p <= p_low or p >= p_high / at least min_answers answers of the owner in the section before the day /
-    the last of them at most max_prev_days days before the day / the port is in auto_sites.
+    p <= p_low or p >= p_high / at least min_answers answers of the owner in the section before the day, counted both
+    in the answer files and by the judge (n_answers of the table; the smaller of the two counts) / the last of them at
+    most max_prev_days days before the day (from the answer files) / the port is in auto_sites.
 Everything else is shown to the owner. Only the owner's answers count as answers: an automatic state never enters the
 history (history()), so the judge cannot confirm itself.
 
@@ -60,16 +64,17 @@ FRAME_M = 120.0
 STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image")
 FINAL = ("human", "unsure")                 # the owner has spoken: never judged again
 SCORE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "p", "model_version", "cloud_shadow", "nodata", "status",
-                "answers_through"]
+                "answers_through", "n_answers"]
 STATE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "state", "value", "source", "p", "model_version",
-                "rule_version", "reason", "prev_answer_date", "prev_answer", "n_answers", "answered_utc", "sections_version"]
+                "rule_version", "reason", "prev_answer_date", "prev_answer", "n_answers", "n_answers_judge", "answered_utc", "sections_version"]
 LOG_FIELDS = ["site_id", "section_id", "date", "judged_utc", "model_version", "rule_version", "p", "state", "value", "source",
-              "reason", "v1_state", "v1_value", "answers_through", "n_answers", "prev_answer_date", "prev_answer", "audit",
+              "reason", "v1_state", "v1_value", "answers_through", "n_answers", "n_answers_judge", "prev_answer_date", "prev_answer", "audit",
               "audit_rate", "queued", "answered_utc", "queue_version", "sections_version"]
 ANSWER_FIELDS = ["site_id", "section_id", "date", "verified", "verified_occupied", "verified_by", "verified_note",
                  "answered_utc", "queue_version"]
 # what makes a new log row: a change in any of these
 LOG_KEY = ["model_version", "rule_version", "p", "state", "value", "source", "reason", "v1_state", "v1_value", "n_answers",
+           "n_answers_judge",
            "prev_answer_date", "prev_answer", "audit", "queued", "answered_utc"]
 CREDIT = "Contains modified Copernicus Sentinel data"
 ATTRIBUTION = "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）"
@@ -286,9 +291,19 @@ def is_clear(row: dict, cfg: dict) -> bool:
     return not ((cs is not None and cs > cfg["clear"]["cloud_shadow_max"]) or (nd is not None and nd > cfg["clear"]["nodata_max"]))
 
 
+def judge_count(v) -> int | None:
+    """The n_answers column of the score table: a whole number >= 0, else None (not known)."""
+    s = "" if v is None else str(v).strip()
+    return int(s) if s.isascii() and s.isdigit() else None
+
+
 def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict) -> dict:
     """Rule v1 for one cell: {"state": auto / pending / no_image, "value": 1 / 0 / None, "reason"}. The reasons a cell is
-    shown for are joined with "+", in the order of the design (§2.5, §4)."""
+    shown for are joined with "+", in the order of the design (§2.5, §4).
+
+    The number of answers is the smaller of hist["n_answers"] (the answer files) and hist["n_answers_judge"] (the answers
+    the judge used for this score). A judge count that is missing or None is not known: the cell is shown
+    (answers_unknown), never settled on the count of the files alone. The days since the last answer come from the files."""
     if not clear:
         return {"state": "no_image", "value": None, "reason": "no_image"}
     why = []
@@ -296,8 +311,11 @@ def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict) ->
         why.append("no_reference")
     elif cfg["p_low"] < p < cfg["p_high"]:
         why.append("uncertain")
-    if hist["n_answers"] < cfg["min_answers"]:
+    nj = hist.get("n_answers_judge")
+    if min(hist["n_answers"], nj if nj is not None else hist["n_answers"]) < cfg["min_answers"]:
         why.append("few_answers")
+    elif nj is None:
+        why.append("answers_unknown")
     elif hist["prev_days"] is None or hist["prev_days"] > cfg["max_prev_days"]:
         why.append("stale_answer")
     if site_id not in cfg["auto_sites"]:
@@ -481,7 +499,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
             if p is not None and not 0.0 <= p <= 1.0:
                 res["skipped"].append(f"{site_id}:{sec}@{day} (p outside 0..1)")
                 continue
-            h = history(answers, sec, day)
+            h = {**history(answers, sec, day), "n_answers_judge": judge_count(r.get("n_answers"))}
             v1 = decide(site_id, p, is_clear(r, cfg), h, cfg)
             d = dict(v1)
             aud, rate = (False, "")
@@ -496,6 +514,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
                         "model_version": (r.get("model_version") or "").strip(), "rule_version": cfg["rule_version"],
                         "reason": d["reason"], "prev_answer_date": h["prev_answer_date"] or "",
                         "prev_answer": "" if h["prev_answer"] is None else str(h["prev_answer"]), "n_answers": str(h["n_answers"]),
+                        "n_answers_judge": "" if h["n_answers_judge"] is None else str(h["n_answers_judge"]),
                         "answered_utc": "", "sections_version": str(secs[sec].get("sections_version", ""))}
             extra[k] = {"v1_state": v1["state"], "v1_value": "" if v1["value"] is None else str(v1["value"]),
                         "answers_through": (r.get("answers_through") or "").strip() or (h["prev_answer_date"] or ""),
@@ -559,7 +578,7 @@ def _order(cells: list[dict], cfg: dict) -> list[dict]:
     main, mix = [], []
     for c in rest:
         why = c["reason"].split("+")
-        g = 2 if "uncertain" in why else 3 if ("few_answers" in why or "no_reference" in why) else 4 if "stale_answer" in why else None
+        g = 2 if "uncertain" in why else 3 if ("few_answers" in why or "answers_unknown" in why or "no_reference" in why) else 4 if "stale_answer" in why else None
         if g is None or c["state"] == "auto":
             mix.append(c)
         else:
