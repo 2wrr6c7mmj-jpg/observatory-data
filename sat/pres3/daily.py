@@ -15,9 +15,12 @@ Three stores, all keyed by (port, section, date), never by a row number:
                                                   the training cells, the feature names, and a JSON header (version, cutoff,
                                                   scikit-learn / numpy versions). numpy alone predicts from it.
     scores        a CSV, one row per cell         site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata,
-                                                  status, answers_through, n_answers: the input of sat/confirm.py (which applies
-                                                  the rule). n_answers = the owner's answers the judge used for the cell (the
-                                                  section's answers of earlier days that have a patch in the store)
+                                                  status, answers_through, n_answers, before_cutoff: the input of sat/confirm.py
+                                                  (which applies the rule). n_answers = the owner's answers the judge used for the
+                                                  cell (the section's answers of earlier days that have a patch in the store).
+                                                  before_cutoff = 1 when the day is before the model's cutoff: the coefficients
+                                                  were fitted on the answers of such days, so the score is not out of sample and
+                                                  must not decide a cell (empty otherwise)
 
     python -m sat.pres3.daily import  --work DIR --store STORE [--ports ..]       the research patches -> the patch store
     python -m sat.pres3.daily fit     --work DIR --cutoff 2026-11-01 --model M.npz   coefficients (needs scikit-learn)
@@ -50,9 +53,9 @@ MAX_CLOUD_SHADOW = 0.2          # a cell is judged when cloud + shadow <= 0.2 an
 MIN_REFERENCE_DAYS = 6          # feats.features: a section's reference needs 6 earlier clear days
 # the score table: the input of sat/confirm.py (its SCORE_FIELDS, same names, same units, then n_answers: the number of the
 # owner's answers the judge used, an integer; confirm-1 counts min(the answer file's count, n_answers) for the rule's "2 answers").
-# --diagnostics adds the last two.
+# before_cutoff: 1 for a day before the model's cutoff (a score in the training period: not out of sample). --diagnostics adds the last two.
 SCORE_COLUMNS = ['site_id', 'section_id', 'date', 'acquired_utc', 'p', 'model_version', 'cloud_shadow', 'nodata', 'status', 'answers_through',
-                 'n_answers']
+                 'n_answers', 'before_cutoff']
 DIAGNOSTIC_COLUMNS = ['n_reference_days', 'scene_id']
 NODE_FIELDS = ('value', 'feature_idx', 'num_threshold', 'missing_go_to_left', 'left', 'right', 'is_leaf')
 
@@ -258,7 +261,7 @@ def _score_days(port, C, P, offs, answers, B, days, sections, all_cells):
             out.append(dict(site_id=port, section_id=c['section'], date=d, acquired_utc=c['time'], p=f'{p:.6f}' if show else '',
                             model_version=B['meta']['model_version'], cloud_shadow=f"{c['cloud'] + c['shadow']:.4f}", nodata=f"{c['nodata']:.4f}",
                             status='' if ok else 'no_image', answers_through=pa[-1][0] if pa else '',
-                            n_answers=len(pa), n_reference_days='' if nref is None else nref, scene_id=c['scene']))
+                            n_answers=len(pa), before_cutoff='1' if d < B['meta']['cutoff'] else '', n_reference_days='' if nref is None else nref, scene_id=c['scene']))
     return out
 
 
@@ -349,7 +352,7 @@ def cmd_score(a):
         C, P, offs = store.load(port, a.until); every = sorted({c['date'] for c in C})
         days = [d for d in every if d >= a.since] if a.since else every[-1:]
         if any(d < B['meta']['cutoff'] for d in days):
-            print(f'{port}: days before the cutoff of the model ({B["meta"]["cutoff"]}) are scored: those scores are not out of sample', file=sys.stderr)
+            print(f'{port}: days before the cutoff of the model ({B["meta"]["cutoff"]}) are scored: those scores are not out of sample (before_cutoff = 1)', file=sys.stderr)
         r = score_days(port, C, P, offs, owner_answers(port, a.sat), B, days); rows += r
         print(port, 'days', len(days), 'cells', len(r), 'scored', sum(x['p'] != '' for x in r), 'no_image', sum(x['status'] == 'no_image' for x in r), flush=True)
     write_scores(a.out, rows, a.diagnostics); return 0

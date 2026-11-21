@@ -72,13 +72,14 @@ python -m sat.pres3.triage           # --json で値だけ、--no-ci で CI を�
 |---|---|
 | パッチの保管 `<store>/<港>/<YYYY-MM>.npz` | `patch` [n, 24, 41, 5] float16、`cells`（升ごとの記録の JSON：区間・日・雲・影・欠測・撮影の ID と時刻。**答えは入れない**）、`offs`。1 升 約 7.6 KB（圧縮後） |
 | 係数 `<model>.npz` | 2 つの勾配ブースティングの木を配列にしたもの（節の値・特徴・閾値・欠測の行き先・子）、学習の升の港抜きの汎用の点数、特徴の名前、見出しの JSON（版 `pres3o-YYYYMM`・締め日・学習の升の数・scikit-learn と numpy の版）。pickle は使わない。**予測は numpy だけ**（scikit-learn が要るのは学習のときだけ。scikit-learn の予測と 1e-12 以内で一致） |
-| 点数の表（CSV） | `site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata, status, answers_through`（`sat/confirm.py` の入力の列と同じ名前・単位）、`n_answers` |
+| 点数の表（CSV） | `site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata, status, answers_through`（`sat/confirm.py` の入力の列と同じ名前・単位）、`n_answers`、`before_cutoff` |
 
 点数の表の読み方：`p`＝判定器の点数（0〜1、小数 6 桁。在が高い）。**空**＝像なし、または区間の参照の晴れの日が 6 日未満（判定器の入力が足りない。受け取る側が `no_reference` として回す）。
 `cloud_shadow`・`nodata`＝区間の画素のうち雲＋影（SCL 3・8・9・10）・欠測の割合（0〜1、小数 4 桁）。`status`＝`no_image`（雲＋影が 0.2 超か欠測あり）か空。
 `answers_through`＝この点数に使った、その区間の最後の答えの日（判定日より前。無ければ空）。
 `n_answers`＝判定器がこの升の判定に実際に使った所有者の答えの数（整数。判定日より前で、その日のパッチが保管にある答え。像の無い日の答えは数えない）。
-確認回しは「答えのファイルから数えた数と `n_answers` の小さい方」を規則の「答え 2 件以上」に使う。`--diagnostics` を付けると `n_reference_days`・`scene_id` も出す。
+確認回しは「答えのファイルから数えた数と `n_answers` の小さい方」を規則の「答え 2 件以上」に使う。
+`before_cutoff`＝`1` なら判定日が係数の締め日より前（その日の答えで学んだ係数なので、点数は標本外でない。確認回しはこの行で升を決めない）。締め日以後は空。`--diagnostics` を付けると `n_reference_days`・`scene_id` も出す。
 答えは「その区間・その日のパッチが保管にあるもの」だけを使う（像の無い日の答えは見本にできない）。
 自動確定か回すかの仕分け（閾値・答えの数・日数・港の on/off）はこの表の外（`sat/confirm.py`）。
 
