@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-21T04:19:08Z",
+ "generated_utc": "2026-11-21T13:44:03Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -1058,8 +1058,8 @@
   },
   {
    "ll2_id": "a2975167-7c6f-4403-99e1-b40df17c8140",
-   "name": "Long March 8A | SatNet LEO Group TBD?",
-   "status": "Go",
+   "name": "Long March 8A | SatNet LEO Group 30",
+   "status": "Success",
    "net_utc": "2026-11-20T11:59:00Z",
    "rocket": "Long March 8A",
    "provider": "China Aerospace Science and Technology Corporation",
@@ -1074,27 +1074,10 @@
    "event_index": null
   },
   {
-   "ll2_id": "13270554-4bdb-42ae-916f-1bb54492204f",
-   "name": "Long March 6C | Unknown Payload",
-   "status": "Go",
-   "net_utc": "2026-11-21T03:50:00Z",
-   "rocket": "Long March 6C",
-   "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
-   "pad": "Launch Complex 9A",
-   "location": "Taiyuan Satellite Launch Center, People's Republic of China",
-   "country": "CHN",
-   "lat": 38.8583,
-   "lon": 111.5802,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/13270554-4bdb-42ae-916f-1bb54492204f/",
-   "event_index": null
-  },
-  {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
    "name": "Long March 2F/G | Shenzhou 24",
-   "status": "TBD",
-   "net_utc": "2026-11-25T00:00:00Z",
+   "status": "Go",
+   "net_utc": "2026-11-25T00:18:00Z",
    "rocket": "Long March 2F/G",
    "provider": "China Aerospace Science and Technology Corporation",
    "orbit": "LEO",
@@ -1105,6 +1088,40 @@
    "lat": 40.957893,
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4",
+   "name": "Long March 2D | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-26T09:35:00Z",
+   "rocket": "Long March 2D",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Complex 3 (LC-3/LA-1)",
+   "location": "Xichang Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 28.247059,
+   "lon": 102.029008,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "a6421db3-7c8a-4cf7-a659-cec195140f7f",
+   "name": "Long March 6A | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-27T13:00:00Z",
+   "rocket": "Long March 6A",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Complex 9A",
+   "location": "Taiyuan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 38.8583,
+   "lon": 111.5802,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a6421db3-7c8a-4cf7-a659-cec195140f7f/",
    "event_index": null
   },
   {
@@ -1122,6 +1139,23 @@
    "lat": 21.366667,
    "lon": 112.116667,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "13270554-4bdb-42ae-916f-1bb54492204f",
+   "name": "Long March 6C | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-11-29T03:50:00Z",
+   "rocket": "Long March 6C",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "Launch Complex 9A",
+   "location": "Taiyuan Satellite Launch Center, People's Republic of China",
+   "country": "CHN",
+   "lat": 38.8583,
+   "lon": 111.5802,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/13270554-4bdb-42ae-916f-1bb54492204f/",
    "event_index": null
   },
   {
