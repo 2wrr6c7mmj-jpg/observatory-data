@@ -597,7 +597,9 @@ def _order(cells: list[dict], cfg: dict) -> list[dict]:
 
 def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
     """queue.json for the page. Per cell: port, section, day, picture, the last answer (day, present / absent, picture) and
-    its place. No score, no judgement and no audit mark go in (§6.2): the owner reads without seeing the judge."""
+    its place. No score, no judgement and no audit mark go in (§6.2): the owner reads without seeing the judge. No file
+    name either: the page names the file it downloads after the day of the download (confirm-answers-YYYY-MM-DD.csv;
+    it holds every stored answer, of this queue and of earlier ones), and merge takes any name."""
     cells, sites, images = [], {}, {}
     for site_id, (state, secs, q, _answers) in queued.items():
         if not q:
@@ -629,7 +631,7 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
     years = sorted({k.split("|")[1][:4] for k in images} | {c["date"][:4] for c in out_cells})
     return {"version": QUEUE_VERSION, "queue_version": f"{now[:10]}-{dig}", "generated_utc": now, "rule_version": cfg["rule_version"],
             "zoom": 8, "frame_m": FRAME_M, "expire_days": cfg["expire_days"], "seconds_per_cell": 10,
-            "answers_file": f"confirm-answers-{now[:10]}.csv", "answer_fields": ANSWER_FIELDS,
+            "answer_fields": ANSWER_FIELDS,
             "credit": f"{CREDIT} {', '.join(years)}".strip(), "attribution": ATTRIBUTION,
             "note": "判定器の点数・判定・抜き取り検査の印は入れていない（所有者の読みが判定器に引きずられないように）",
             "sites": sites, "images": images, "cells": out_cells}

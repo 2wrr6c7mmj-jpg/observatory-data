@@ -556,6 +556,12 @@ class AuditTest(Base):
         for word in ('"p"', "audit\"", "v1_", "0.99", "0.01", '"state"', '"reason"', "pres3o"):
             self.assertNotIn(word, text)
         self.assertEqual([x["order"] for x in q["cells"]], list(range(len(q["cells"]))))
+        # E1: the name of the file is the page's (the day of the download), not a field of the queue
+        self.assertNotIn("answers_file", q)
+        self.assertEqual(q["answer_fields"], cf.ANSWER_FIELDS)
+        page = (ROOT / "docs" / "sat" / "label" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("const name = 'confirm-answers-' + new Date().toISOString().slice(0, 10) + '.csv';", page)
+        self.assertIn("'" + ",".join(cf.ANSWER_FIELDS) + "'", page)
         # the state files carry no audit mark either
         st = (self.out / "confirm" / "state" / "QDH" / "2026-10.csv").read_text(encoding="utf-8")
         self.assertNotIn("audit", st.splitlines()[0])
