@@ -291,7 +291,8 @@ def pick_new(feats_found, tile, have_dates, max_cloud=85):
 
 def fetch_port(store, windows, port, days, sites, now=None, log=print):
     """Search the last ``days`` days, fetch the windows of the new scenes into <windows>/data/<port>/ and put their patches
-    into the store. No retry around a refusal: an HTTP error stops the port (returned as text)."""
+    into the store. No retry around a refusal: a refusal (HTTP 4xx) or a failure that fetch.search's few retries of a transient
+    failure (no connection, cut off, 5xx) did not cure stops the port (cmd_fetch reports it). The COG reads: fetch.gdal_env."""
     from . import build, fetch
     now = now or dt.datetime.now(dt.timezone.utc); bb = sites[port]['bbox']; tile = port_tile(port); have = set(store.dates(port))
     found = fetch.search({"bbox": bb, "datetime": f"{now - dt.timedelta(days=days):%Y-%m-%dT%H:%M:%SZ}/{now:%Y-%m-%dT%H:%M:%SZ}"})

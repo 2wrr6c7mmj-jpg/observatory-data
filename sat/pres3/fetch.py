@@ -8,6 +8,9 @@ Two ways to choose the scenes:
   --start/--end      a search by date: the MGRS tile with the most scenes, the last scene of each day, cloud cover <= --max-cloud
                      (this is how the list was first made: 2024-10-01..2026-11-19 and 2023-06-01..2024-09-30, max cloud 85)
 
+A refusal (HTTP 4xx, 403 and 429 included) is not sent again; only a transient failure (no connection, cut off, timeout,
+5xx) is retried, a fixed number of times (SEARCH_TRIES, WINDOW_TRIES, GDAL_MAX_RETRY below).
+
 Contains modified Copernicus Sentinel data.
     python -m sat.pres3.fetch --work DIR [--ports QDH,XSN] [--start 2024-10-01 --end 2026-11-19 [--max-cloud 85]]
 """
@@ -15,10 +18,13 @@ from __future__ import annotations
 
 import collections
 import csv
+import http.client
 import json
 import os
+import re
 import sys
 import time
+import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
@@ -30,27 +36,66 @@ SEARCH_URL = "https://earth-search.aws.element84.com/v1/search"
 BANDS = {'blue': 10, 'green': 10, 'red': 10, 'nir': 10, 'swir16': 20, 'scl': 20}
 
 
-def gdal_env():
-    env = dict(GDAL_DISABLE_READDIR_ON_OPEN='EMPTY_DIR', CPL_VSIL_CURL_ALLOWED_EXTENSIONS='.tif', GDAL_HTTP_MAX_RETRY='4',
-               GDAL_HTTP_RETRY_DELAY='3', GDAL_HTTP_TIMEOUT='60')
+# Retries. A refusal (any 4xx: 403, 429, ...) is never sent again: it is reported as it is (the project's rule: no way around
+# a refusal or a bot check). Only a transient failure is retried: no connection, a connection cut in the middle, a timeout, a 5xx.
+SEARCH_TRIES = 4                  # the STAC search: 1 request + at most 3 re-sends of a transient failure
+SEARCH_DELAYS_S = (5, 10, 15)     #   seconds before the 1st, 2nd, 3rd re-send
+WINDOW_TRIES = 3                  # the window of a scene (fetch.main): at most 2 more tries after a transient failure
+WINDOW_DELAYS_S = (4, 8)
+# GDAL (the COG reads): GDAL_HTTP_MAX_RETRY re-sends, the first after GDAL_HTTP_RETRY_DELAY s, then about x2..x2.5 each time.
+# GDAL_HTTP_RETRY_CODES (GDAL >= 3.10) REPLACES GDAL's default list (429, 500, 502-504 and some curl errors): port/cpl_http.cpp,
+# CPLHTTPGetNewRetryDelay. GDAL matches the code as a substring of this text (strstr), so this list must not contain the digits of
+# any 4xx code; a failure without an HTTP status (no connection, cut off: code 0) is retried, as "0" is in it. Older GDAL ignores
+# the option and would retry 429: there, no retry at all (gdal_env).
+GDAL_MAX_RETRY = 3
+GDAL_RETRY_DELAY_S = 3
+GDAL_RETRY_CODES = '500,502,503,504'
+
+
+def gdal_env(gdal_version=None):
+    """The GDAL options of the COG reads. gdal_version: rasterio.__gdal_version__ (default: the installed one)."""
+    if gdal_version is None:
+        import rasterio
+        gdal_version = rasterio.__gdal_version__
+    codes_known = tuple(int(x) for x in re.findall(r'\d+', gdal_version)[:2]) >= (3, 10)
+    env = dict(GDAL_DISABLE_READDIR_ON_OPEN='EMPTY_DIR', CPL_VSIL_CURL_ALLOWED_EXTENSIONS='.tif', GDAL_HTTP_TIMEOUT='60',
+               GDAL_HTTP_MAX_RETRY=str(GDAL_MAX_RETRY if codes_known else 0), GDAL_HTTP_RETRY_DELAY=str(GDAL_RETRY_DELAY_S),
+               GDAL_HTTP_RETRY_CODES=GDAL_RETRY_CODES)
     ca = os.environ.get('CURL_CA_BUNDLE') or os.environ.get('SSL_CERT_FILE')     # a proxy's CA bundle, when the machine has one
     if ca: env['CURL_CA_BUNDLE'] = ca
     return env
 
 
-def search(body):
-    out = []; body = dict(body, collections=["sentinel-2-l2a"], limit=100)
+def transient(e):
+    """True for a failure that may be retried: no connection, a connection cut in the middle, a timeout, an HTTP 5xx.
+    False for a refusal (HTTP 4xx) and for anything else (a bad answer, a bug)."""
+    if isinstance(e, urllib.error.HTTPError): return e.code >= 500
+    if isinstance(e, urllib.error.URLError): return True                     # no HTTP status: the connection failed
+    if isinstance(e, (TimeoutError, ConnectionError, http.client.IncompleteRead, http.client.RemoteDisconnected)): return True
+    msg = str(e)                                                              # GDAL / rasterio: the HTTP status is in the text
+    if re.search(r'\b4\d\d\b', msg): return False                            # a 4xx anywhere in it: taken as a refusal
+    return bool(re.search(r'response code:?\s*5\d\d|HTTP error code:?\s*5\d\d|CURL error|timed out|Connection reset|'
+                          r'Connection refused|Could not resolve|transfer closed', msg))
+
+
+def with_retries(fn, tries, delays, sleep=time.sleep):
+    """fn() with at most tries - 1 re-sends of a transient failure (delays[k] s before the (k+1)-th); a refusal is raised at once."""
+    for k in range(tries):
+        try: return fn()
+        except Exception as e:
+            if k == tries - 1 or not transient(e): raise
+            sleep(delays[k])
+
+
+def search(body, urlopen=None, sleep=time.sleep):
+    out = []; body = dict(body, collections=["sentinel-2-l2a"], limit=100); urlopen = urlopen or urllib.request.urlopen
     while True:
         r = urllib.request.Request(SEARCH_URL, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
-        for k in range(4):
-            try: j = json.load(urllib.request.urlopen(r, timeout=90)); break
-            except Exception:
-                if k == 3: raise
-                time.sleep(5 * (k + 1))
+        j = with_retries(lambda: json.load(urlopen(r, timeout=90)), SEARCH_TRIES, SEARCH_DELAYS_S, sleep)
         out += j['features']
         nx = [l for l in j.get('links', []) if l['rel'] == 'next']
         if not nx: break
-        body = nx[0]['body']; time.sleep(0.5)
+        body = nx[0]['body']; sleep(0.5)
     return out
 
 
@@ -107,6 +152,13 @@ def pick_by_manifest(work, port):
     return fs
 
 
+def fetch_one(work, port, f, bb, read=None, sleep=time.sleep):
+    """one() with the retries of a transient failure (WINDOW_TRIES); 'ERR <id> <error>' when it fails or is refused."""
+    read = read or one
+    try: return with_retries(lambda: read(work, port, f, bb), WINDOW_TRIES, WINDOW_DELAYS_S, sleep)
+    except Exception as e: return 'ERR ' + f['id'] + ' ' + repr(e)[:150]
+
+
 def main(argv=None):
     ap = common.parser(__doc__.split('\n')[0])
     ap.add_argument('--start'); ap.add_argument('--end'); ap.add_argument('--max-cloud', type=float, default=85)
@@ -118,15 +170,8 @@ def main(argv=None):
         bb = sites[port]['bbox']
         use = pick_by_date(port, bb, a.start, a.end, a.max_cloud) if a.start else pick_by_manifest(work, port)
 
-        def run(f):
-            err = ''
-            for k in range(3):
-                try: return one(work, port, f, bb)
-                except Exception as e:
-                    err = repr(e)[:150]; time.sleep(4 * (k + 1))
-            return 'ERR ' + f['id'] + ' ' + err
         with ThreadPoolExecutor(5) as ex:
-            res = list(ex.map(run, use))
+            res = list(ex.map(lambda f: fetch_one(work, port, f, bb), use))
         errs = [r for r in res if r.startswith('ERR')]; bad += len(errs)
         print(port, dict(collections.Counter(r.split()[0] for r in res)), errs[:5], flush=True)
     return 1 if bad else 0
