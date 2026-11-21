@@ -15,7 +15,9 @@ Three stores, all keyed by (port, section, date), never by a row number:
                                                   the training cells, the feature names, and a JSON header (version, cutoff,
                                                   scikit-learn / numpy versions). numpy alone predicts from it.
     scores        a CSV, one row per cell         site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata,
-                                                  status, answers_through: the input of sat/confirm.py (which applies the rule)
+                                                  status, answers_through, n_answers: the input of sat/confirm.py (which applies
+                                                  the rule). n_answers = the owner's answers the judge used for the cell (the
+                                                  section's answers of earlier days that have a patch in the store)
 
     python -m sat.pres3.daily import  --work DIR --store STORE [--ports ..]       the research patches -> the patch store
     python -m sat.pres3.daily fit     --work DIR --cutoff 2026-11-01 --model M.npz   coefficients (needs scikit-learn)
@@ -46,9 +48,12 @@ KIND = 'pres3o'
 CELL_KEYS = ('port', 'date', 'section', 'kind', 'sector', 'length_m', 'cloud', 'shadow', 'cirrus', 'nodata', 'tile_cloud', 'scene', 'time')
 MAX_CLOUD_SHADOW = 0.2          # a cell is judged when cloud + shadow <= 0.2 and no nodata (the design, section 4: otherwise no_image)
 MIN_REFERENCE_DAYS = 6          # feats.features: a section's reference needs 6 earlier clear days
-# the score table: the input of sat/confirm.py (its SCORE_FIELDS, same names, same units). --diagnostics adds the last three.
-SCORE_COLUMNS = ['site_id', 'section_id', 'date', 'acquired_utc', 'p', 'model_version', 'cloud_shadow', 'nodata', 'status', 'answers_through']
-DIAGNOSTIC_COLUMNS = ['n_answers', 'n_reference_days', 'scene_id']
+# the score table: the input of sat/confirm.py (its SCORE_FIELDS, same names, same units, then n_answers: the number of the
+# owner's answers the judge used, an integer; confirm-1 counts min(the answer file's count, n_answers) for the rule's "2 answers").
+# --diagnostics adds the last two.
+SCORE_COLUMNS = ['site_id', 'section_id', 'date', 'acquired_utc', 'p', 'model_version', 'cloud_shadow', 'nodata', 'status', 'answers_through',
+                 'n_answers']
+DIAGNOSTIC_COLUMNS = ['n_reference_days', 'scene_id']
 NODE_FIELDS = ('value', 'feature_idx', 'num_threshold', 'missing_go_to_left', 'left', 'right', 'is_leaf')
 
 
@@ -395,7 +400,7 @@ def main(argv=None):
     p = add('fit', cmd_fit, 'work'); p.add_argument('--cutoff', required=True); p.add_argument('--model', required=True); p.add_argument('--version')
     p = add('fetch', cmd_fetch, 'store'); p.add_argument('--windows', required=True); p.add_argument('--days', type=int, default=10)
     p = add('score', cmd_score, 'store'); p.add_argument('--model', required=True); p.add_argument('--out', required=True)
-    p.add_argument('--since'); p.add_argument('--until'); p.add_argument('--diagnostics', action='store_true', help='also n_answers, n_reference_days, scene_id'); p.add_argument('--sat', help='docs/data/sat of another checkout (default: this one)')
+    p.add_argument('--since'); p.add_argument('--until'); p.add_argument('--diagnostics', action='store_true', help='also n_reference_days, scene_id'); p.add_argument('--sat', help='docs/data/sat of another checkout (default: this one)')
     p = add('check', cmd_check, 'work', 'store'); p.add_argument('--oos', default=str(common.SAT / 'eval' / 'pres3_oos.csv'))
     p.add_argument('--bounds'); p.add_argument('--models', help='a directory to keep the fitted models of the check'); p.add_argument('--tolerance', type=float, default=2e-6)
     a = ap.parse_args(argv)

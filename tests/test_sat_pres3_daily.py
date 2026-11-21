@@ -14,6 +14,7 @@ numpy only; skipped where numpy is missing (the collect workflows).
 """
 from __future__ import annotations
 
+import csv
 import importlib.util
 import tempfile
 import unittest
@@ -135,6 +136,17 @@ class DailyScoreTest(unittest.TestCase):
         r = self.score(ans=ans)[0]
         self.assertEqual((r["n_answers"], r["answers_through"]), (9, day_of(8)))
 
+    def test_n_answers_is_in_the_score_table(self):
+        # an answer of a day without a patch is in the answer file but not used by the judge: n_answers does not count it
+        ans = dict(self.ans); ans[(SECS[0], "2025-12-30")] = 1; ans[(SECS[0], "2025-12-31")] = 0
+        rows = self.score(ans=ans)
+        with tempfile.TemporaryDirectory() as d:
+            daily.write_scores(Path(d) / "s.csv", rows)
+            with open(Path(d) / "s.csv", newline="", encoding="utf-8") as fh: got = list(csv.DictReader(fh))
+        self.assertEqual([r["n_answers"] for r in got], ["10", "10", "10"])
+        rows = self.score(ans={k: v for k, v in self.ans.items() if not (k[0] == SECS[1] and k[1] >= day_of(4))})
+        self.assertEqual([r["n_answers"] for r in rows], [10, 4, 10])
+
     def test_day_by_day_equals_all_at_once(self):
         days = [day_of(k) for k in range(7, 14)]; at_once = self.score(days=days); step = []
         for d in days:
@@ -172,14 +184,16 @@ class DailyScoreTest(unittest.TestCase):
 
     def test_score_table(self):
         # the columns sat/confirm.py reads (its SCORE_FIELDS), in its order
-        self.assertEqual(daily.SCORE_COLUMNS, ["site_id", "section_id", "date", "acquired_utc", "p", "model_version", "cloud_shadow", "nodata", "status", "answers_through"])
+        self.assertEqual(daily.SCORE_COLUMNS[:10], ["site_id", "section_id", "date", "acquired_utc", "p", "model_version", "cloud_shadow", "nodata", "status", "answers_through"])
+        # then n_answers, always (not only with --diagnostics): the answers the judge used, which sat/confirm.py's rule reads
+        self.assertEqual(daily.SCORE_COLUMNS[10:], ["n_answers"]); self.assertNotIn("n_answers", daily.DIAGNOSTIC_COLUMNS)
         self.assertEqual(list(self.base[0]), daily.SCORE_COLUMNS + daily.DIAGNOSTIC_COLUMNS)
         self.assertTrue(all(0 <= float(r["p"]) <= 1 and 0 <= float(r["cloud_shadow"]) <= 1 and float(r["nodata"]) == 0 for r in self.base))
         with tempfile.TemporaryDirectory() as d:
             daily.write_scores(Path(d) / "x" / "scores.csv", self.base)
             lines = (Path(d) / "x" / "scores.csv").read_text(encoding="utf-8").splitlines()
             self.assertEqual(lines[0], ",".join(daily.SCORE_COLUMNS)); self.assertEqual(len(lines), 4)
-            self.assertTrue(lines[1].startswith(f"AAA,{SECS[0]},{self.d},{self.d}T02:00:00Z,0.")); self.assertTrue(lines[1].endswith(f",pres3o-test,0.0000,0.0000,,{day_of(9)}"))
+            self.assertTrue(lines[1].startswith(f"AAA,{SECS[0]},{self.d},{self.d}T02:00:00Z,0.")); self.assertTrue(lines[1].endswith(f",pres3o-test,0.0000,0.0000,,{day_of(9)},10"))
             daily.write_scores(Path(d) / "x" / "diag.csv", self.base, diagnostics=True)
             self.assertEqual((Path(d) / "x" / "diag.csv").read_text(encoding="utf-8").splitlines()[0], ",".join(daily.SCORE_COLUMNS + daily.DIAGNOSTIC_COLUMNS))
         with self.assertRaises(SystemExit): daily.write_scores(ROOT / "docs" / "data" / "sat" / "confirm" / "scores.csv", self.base)
