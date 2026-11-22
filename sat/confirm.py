@@ -23,6 +23,9 @@ The score table (CSV, one row per cell; SCORE_FIELDS):
     n_answers                      the number of the owner's answers the judge used for this score (an integer; pres-3o:
                                    the answers whose day has a patch in the store). Missing or empty: not known, and the
                                    cell is not settled automatically (reason answers_unknown)
+    before_cutoff                  1 (any value but empty) when the day is before the cutoff of the judge's coefficients: the
+                                   score is from the judge's training period, not out of sample (§6.4-2). Such a row is not
+                                   judged: no state, no log row, not in A; it is listed in "skipped" (reason before_cutoff)
 
 The rule v1 (confirm.json; decide()): automatic only when all of
     p <= p_low or p >= p_high / at least min_answers answers of the owner in the section before the day, counted both
@@ -64,7 +67,7 @@ FRAME_M = 120.0
 STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image")
 FINAL = ("human", "unsure")                 # the owner has spoken: never judged again
 SCORE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "p", "model_version", "cloud_shadow", "nodata", "status",
-                "answers_through", "n_answers"]
+                "answers_through", "n_answers", "before_cutoff"]
 STATE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "state", "value", "source", "p", "model_version",
                 "rule_version", "reason", "prev_answer_date", "prev_answer", "n_answers", "n_answers_judge", "answered_utc", "sections_version"]
 LOG_FIELDS = ["site_id", "section_id", "date", "judged_utc", "model_version", "rule_version", "p", "state", "value", "source",
@@ -495,6 +498,11 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
                 _day(day)
             except ValueError:
                 res["skipped"].append(f"{site_id}:{sec}@{day} (date)")
+                continue
+            if (r.get("before_cutoff") or "").strip():
+                # §6.4-2: a version judges only the days after its cutoff. A score of the training period is not a judgement
+                # to record (it would be scored against answers the judge learnt from)
+                res["skipped"].append(f"{site_id}:{sec}@{day} (before_cutoff: a score of the judge's training period)")
                 continue
             if k in state and state[k]["state"] in FINAL:
                 continue

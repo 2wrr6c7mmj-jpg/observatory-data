@@ -16,6 +16,7 @@ import http.client
 import importlib.util
 import io
 import json
+import ssl
 import threading
 import unittest
 import urllib.error
@@ -76,6 +77,29 @@ class SearchRetryTest(unittest.TestCase):
         got, stub, slept = self.run_search(http_error(503), http_error(503), http_error(403), PAGE)      # a refusal after a 5xx
         self.assertEqual(got.code, 403); self.assertEqual((len(stub.calls), slept), (3, [5, 10]))
 
+    def test_a_proxy_refusal_or_a_certificate_is_not_sent_again(self):
+        # what urllib raises when the proxy refuses the tunnel (no HTTPError: the status is only in the reason), and when the
+        # certificate does not verify
+        cert = ssl.SSLCertVerificationError(1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate")
+        for err in (urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden")),
+                    urllib.error.URLError(OSError("Tunnel connection failed: 407 Proxy Authentication Required")),
+                    urllib.error.URLError(OSError("Tunnel connection failed: 429 Too Many Requests")),
+                    urllib.error.URLError("Tunnel connection failed: 403"),
+                    urllib.error.URLError(cert), cert,
+                    urllib.error.URLError(ssl.SSLError(1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:1006)")),
+                    urllib.error.URLError("certificate has expired")):
+            got, stub, slept = self.run_search(err, PAGE)
+            self.assertIs(got, err, repr(err)); self.assertEqual((len(stub.calls), slept), (1, []), repr(err))
+            self.assertFalse(fetch.transient(err), repr(err))
+        # still sent again: a proxy's 5xx, and a failed connection whose text holds a port or an address with 4 in it
+        for err in (urllib.error.URLError(OSError("Tunnel connection failed: 502 Bad Gateway")),
+                    urllib.error.URLError(OSError("Tunnel connection failed: 503 Service Unavailable")),
+                    urllib.error.URLError(ConnectionRefusedError(111, "Connection refused to earth-search.aws.element84.com:443")),
+                    urllib.error.URLError(OSError(101, "Network is unreachable 10.0.0.4")),
+                    urllib.error.URLError(OSError(-3, "Temporary failure in name resolution")), urllib.error.URLError("[Errno 104] reset")):
+            got, stub, slept = self.run_search(err, PAGE)
+            self.assertEqual(got, [{"id": "a"}], repr(err)); self.assertEqual((len(stub.calls), slept), (2, [5]), repr(err))
+
     def test_a_bad_answer_is_not_sent_again(self):
         got, stub, slept = self.run_search(ValueError("not JSON"), PAGE)
         self.assertIsInstance(got, ValueError); self.assertEqual((len(stub.calls), slept), (1, []))
@@ -103,6 +127,11 @@ class WindowRetryTest(unittest.TestCase):
         for e in (Exception("HTTP response code: 403"), Exception("'/vsicurl/https://x/B04.tif' not recognized ... HTTP response code: 429"),
                   Exception("HTTP response code: 429 - CURL error: timed out"),           # a 4xx wins over the transient words
                   http_error(403), Exception("not recognized as a supported file format")):
+            got, calls, slept = self.run_one(e)
+            self.assertTrue(got.startswith("ERR S "), e); self.assertEqual((len(calls), slept), (1, []), e)
+        # a certificate that does not verify, as curl inside GDAL writes it (it says "CURL error" too) and as urllib does
+        for e in (Exception("CURL error: SSL certificate problem: unable to get local issuer certificate"),
+                  urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden"))):
             got, calls, slept = self.run_one(e)
             self.assertTrue(got.startswith("ERR S "), e); self.assertEqual((len(calls), slept), (1, []), e)
 

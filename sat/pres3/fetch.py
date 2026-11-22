@@ -8,8 +8,9 @@ Two ways to choose the scenes:
   --start/--end      a search by date: the MGRS tile with the most scenes, the last scene of each day, cloud cover <= --max-cloud
                      (this is how the list was first made: 2024-10-01..2026-11-19 and 2023-06-01..2024-09-30, max cloud 85)
 
-A refusal (HTTP 4xx, 403 and 429 included) is not sent again; only a transient failure (no connection, cut off, timeout,
-5xx) is retried, a fixed number of times (SEARCH_TRIES, WINDOW_TRIES, GDAL_MAX_RETRY below).
+A refusal (HTTP 4xx, 403 and 429 included; also a proxy's refusal, which urllib gives as a URLError with the status in
+its reason) and a certificate that does not verify are not sent again; only a transient failure (no connection, cut off,
+timeout, 5xx) is retried, a fixed number of times (SEARCH_TRIES, WINDOW_TRIES, GDAL_MAX_RETRY below).
 
 Contains modified Copernicus Sentinel data.
     python -m sat.pres3.fetch --work DIR [--ports QDH,XSN] [--start 2024-10-01 --end 2026-11-19 [--max-cloud 85]]
@@ -22,6 +23,7 @@ import http.client
 import json
 import os
 import re
+import ssl
 import sys
 import time
 import urllib.error
@@ -66,13 +68,27 @@ def gdal_env(gdal_version=None):
     return env
 
 
+# a 4xx status in the text of an error without an HTTP status (a proxy's "Tunnel connection failed: 403 Forbidden"); not a
+# port (":443") or a part of a number
+STATUS_4XX = re.compile(r'(?<![:\d.\-])4\d\d(?![\d.])')
+# a certificate that does not verify (urllib / ssl, and curl inside GDAL): sending again gives the same answer
+CERT_FAILURE = re.compile(r'CERTIFICATE_VERIFY_FAILED|certificate verify failed|SSL certificate problem|certificate has expired|'
+                          r'self[- ]signed certificate|unable to get local issuer certificate|hostname mismatch', re.I)
+
+
 def transient(e):
     """True for a failure that may be retried: no connection, a connection cut in the middle, a timeout, an HTTP 5xx.
-    False for a refusal (HTTP 4xx) and for anything else (a bad answer, a bug)."""
+    False for a refusal (HTTP 4xx, also one a proxy gives as the reason of a URLError), a certificate that does not verify,
+    and anything else (a bad answer, a bug)."""
     if isinstance(e, urllib.error.HTTPError): return e.code >= 500
-    if isinstance(e, urllib.error.URLError): return True                     # no HTTP status: the connection failed
+    if isinstance(e, ssl.SSLCertVerificationError): return False
+    if isinstance(e, urllib.error.URLError):                                  # no HTTP status: the connection failed, unless
+        r = e.reason                                                          # the reason is a refusal or a certificate
+        if isinstance(r, ssl.SSLCertVerificationError) or CERT_FAILURE.search(str(r)) or STATUS_4XX.search(str(r)): return False
+        return True
     if isinstance(e, (TimeoutError, ConnectionError, http.client.IncompleteRead, http.client.RemoteDisconnected)): return True
     msg = str(e)                                                              # GDAL / rasterio: the HTTP status is in the text
+    if CERT_FAILURE.search(msg): return False
     if re.search(r'\b4\d\d\b', msg): return False                            # a 4xx anywhere in it: taken as a refusal
     return bool(re.search(r'response code:?\s*5\d\d|HTTP error code:?\s*5\d\d|CURL error|timed out|Connection reset|'
                           r'Connection refused|Could not resolve|transfer closed', msg))
