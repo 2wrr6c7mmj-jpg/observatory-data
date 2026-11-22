@@ -89,6 +89,14 @@ class RuleTest(unittest.TestCase):
         self.assertIs(c["auto_display"], False)          # starts as the shadow operation (§7.2)
         self.assertEqual((c["expire_days"], c["audit"]["rate"]), (28, 0.2))
 
+    def test_the_score_table_is_the_one_daily_writes(self):
+        # the columns of sat/pres3/daily.py's score table (read from its source: confirm does not import pres3)
+        tree = ast.parse((ROOT / "sat" / "pres3" / "daily.py").read_text(encoding="utf-8"))
+        cols = next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
+                    and any(isinstance(t, ast.Name) and t.id == "SCORE_COLUMNS" for t in n.targets))
+        self.assertEqual(cf.SCORE_FIELDS, cols)
+        self.assertEqual(cf.SCORE_FIELDS[-2:], ["n_answers", "before_cutoff"])
+
     def test_threshold_edges(self):
         c = cfg()
         self.assertEqual(cf.decide("QDH", 0.03, True, H2, c), {"state": "auto", "value": 0, "reason": "confident"})
@@ -218,6 +226,35 @@ class RunTest(Base):
         # the judge's count goes into the log with the judgement
         cf.run([cell("QDH", "A", day, "0.01", n_answers="1")], self.out, c, now)
         self.assertEqual([(r["n_answers"], r["n_answers_judge"], r["v1_state"]) for r in cf.load_log(self.out, "QDH")], [("2", "1", "pending")])
+
+    def test_a_score_before_the_cutoff_is_not_judged(self):
+        # §6.4-2: the judge's coefficients were fitted on the answers before its cutoff. A row with before_cutoff is a score of
+        # that training period: no state, no log row, nothing in A (shadow operation: the would-be-automatic cells)
+        c = cf.load_config()
+        rows = [cell("QDH", "A", "2026-07-24", "0.01", before_cutoff="1"),       # a day the owner answered (the review set)
+                cell("QDH", "C", "2026-07-25", "0.99", before_cutoff="1"),
+                cell("QDH", "B", "2026-10-30", "0.5", before_cutoff=" 1 "),
+                cell("QDH", "A", "2026-11-01", "0.01", before_cutoff=""),          # after the cutoff: judged as before
+                cell("QDH", "C", "2026-11-01", "0.99")]                            # no column value at all: judged
+        r = cf.run(rows, self.out, c, "2026-11-02T06:00:00Z")
+        self.assertEqual(sorted(r["skipped"]), [f"QDH:{k} (before_cutoff: a score of the judge's training period)"
+                                                for k in ("A@2026-07-24", "B@2026-10-30", "C@2026-07-25")])
+        self.assertEqual(sorted(self.state()), [("A", "2026-11-01"), ("C", "2026-11-01")])
+        self.assertEqual(sorted((x["section_id"], x["date"]) for x in cf.load_log(self.out, "QDH")), [("A", "2026-11-01"), ("C", "2026-11-01")])
+        self.assertEqual(cf.scored_cells(self.out, "QDH"), [])
+        t = cf.summary(self.out, c, NOW)["parts"]["before_freeze"]["total"]
+        self.assertEqual((t["A_auto_accuracy"]["n"], t["would_be_auto"]["n"], t["answered"]), (0, 0, 0))
+        # the same rows without the mark: the answered days go on record and into A (what the mark keeps out)
+        with tempfile.TemporaryDirectory() as t2:
+            out2 = Path(t2)
+            cf.sync_sections(out2, "QDH", [sec(i) for i in ("A", "B", "C")], "2026-10-01T00:00:00Z")
+            (out2 / "labels").mkdir()
+            (out2 / "labels" / "QDH-s2-answers.csv").write_bytes((self.out / "labels" / "QDH-s2-answers.csv").read_bytes())
+            cf.run([{**x, "before_cutoff": ""} for x in rows], out2, c, "2026-11-02T06:00:00Z")
+            self.assertEqual(len(cf.scored_cells(out2, "QDH")), 2)
+        # a cell judged earlier (by a version whose cutoff was before it) keeps its judgement when a later table marks it
+        cf.run([cell("QDH", "A", "2026-11-01", "0.5", before_cutoff="1", model_version="pres3o-202612")], self.out, c, "2026-11-03T06:00:00Z")
+        self.assertEqual((self.state()[("A", "2026-11-01")]["p"], self.state()[("A", "2026-11-01")]["model_version"]), ("0.01", "pres3o-test"))
 
     def test_only_the_owner_answers(self):
         # C4 (§6.3 (2)): a row whose verified_by is not the owner is not an answer, in the review set or in the confirm file
