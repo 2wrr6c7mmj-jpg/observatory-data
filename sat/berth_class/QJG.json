@@ -2904,5 +2904,69 @@
    "X": 32
   },
   "record": "docs/data/sat/labels/hires-berth-read.csv"
- }
+ },
+ "radar_dark": [
+  {
+   "section": "-2:R:00",
+   "way": -2,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：中央の桟橋（手書き -2）の南西面。原寸で 2025-03・2026-02 に潜水艦（130 m 級）、2017 にも暗い船体。2021-02 は桟橋の建て替え工事中。所有者 0/8 と食い違い（10 m では黒い船体が見えない）：高解像度を優先"
+   ]
+  },
+  {
+   "section": "43251729:L:17",
+   "way": 43251729,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東岸の L 字の埠頭の西面。2020-10 に南西の角、2026-02 に西面の北に暗い細長い船体（潜水艦）。2017・2021・2025 は空（確度は中）。所有者 0/8 と食い違い：高解像度を優先"
+   ]
+  },
+  {
+   "section": "43251729:L:23",
+   "way": 43251729,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：南西の突堤の岸壁の北東面。原寸（0.3 m）で 2025-03・2026-02 に潜水艦（黒い船体、110〜130 m）が横付け。2021-02 は空",
+    "評価票（eval/presence.json）の升 8：所有者の在 7、レーダーの在 2。2026-05-12 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2026-05-12",
+    "until": "2026-10-07",
+    "present": 7,
+    "cells": 8,
+    "radar_present": 2
+   }
+  },
+  {
+   "section": "43251729:L:24",
+   "way": 43251729,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：南西の突堤の岸壁の北東面。原寸（0.3 m）で 2025-03・2026-02 に潜水艦（黒い船体、110〜130 m）が横付け。2021-02 は空",
+    "評価票（eval/presence.json）の升 8：所有者の在 8、レーダーの在 1。2025-12-28 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-12-28",
+    "until": "2026-10-07",
+    "present": 8,
+    "cells": 8,
+    "radar_present": 1
+   }
+  }
+ ]
 }

@@ -94,5 +94,40 @@
    "W": 3
   },
   "record": "docs/data/sat/labels/hires-berth-read.csv"
- }
+ },
+ "radar_dark": [
+  {
+   "section": "230389476:R:00",
+   "way": 230389476,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の大きな突堤（230389476）の両面。潜水艦が 2017（2〜3 隻）・2017-07・2021（2）・2022・2024"
+   ]
+  },
+  {
+   "section": "230389476:R:01",
+   "way": 230389476,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の大きな突堤（230389476）の両面。潜水艦が 2017（2〜3 隻）・2017-07・2021（2）・2022・2024"
+   ]
+  },
+  {
+   "section": "230389479:R:00",
+   "way": 230389479,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：北の突堤（230389479）。潜水艦が 2021・2022・2024"
+   ]
+  }
+ ]
 }
