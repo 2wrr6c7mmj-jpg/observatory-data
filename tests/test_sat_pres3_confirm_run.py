@@ -11,6 +11,11 @@ What is guarded (stubs only: no request leaves the machine):
      the tests passed and only from main, the path check runs before publishing, the re-fit is manual only, no CDSE, no
      secret, no force push, no deleted branch
   6. a re-fit learns from the store and the answer files only, from the answers before the cutoff
+  7. the pictures of days the store held already (not fetched in this run): the day's scene is read again from Earth Search
+     for the picture only (searched by the store's scene id; nothing goes into the store), within the limits (the rest is
+     left for the next run and said so), a refusal is asked once and stops only that port's pictures; a cell whose day has
+     no picture is held back from the queue (not in queue.json's cells, queued = 0 in the log, so merge refuses an answer
+     to it) and comes in once its picture is there; the days of the cells come before the days of the last answers
 numpy only; skipped where numpy is missing (the collect workflows). The workflow checks need nothing.
 """
 from __future__ import annotations
@@ -216,6 +221,164 @@ class PictureTest(unittest.TestCase):
             g = ix["days"]["2026-11-20"]["grid"]
             self.assertEqual((g["west"], g["south"], g["east"], g["north"]), tuple(bb)); self.assertGreater(g["width"], 300)
             self.assertTrue((out / "confirm" / "img" / "QDH" / "2026-11-20.webp").stat().st_size > 1000)
+
+
+HAS_PICTURES = np is not None and bool(importlib.util.find_spec("rasterio")) and bool(importlib.util.find_spec("PIL"))
+QDH_SCENE = "S2A_51STA_20261110_0_L2A"
+
+
+def write_window(path, sid):
+    """A window of QDH as sat.pres3.fetch.one writes it (EPSG:32651, 10 m, B2 / B3 / B4), over the port's bbox."""
+    from rasterio.warp import transform
+    sites = {x["id"]: x for x in json.load(open(ROOT / "sat" / "sites.json"))["sites"]}; bb = sites["QDH"]["bbox"]
+    xs, ys = transform("EPSG:4326", "EPSG:32651", [bb[0] - 0.01, bb[2] + 0.01], [bb[1] - 0.01, bb[3] + 0.01])
+    x0, y1 = xs[0] // 20 * 20, (ys[1] // 20 + 1) * 20; w = int((xs[1] - x0) // 10) + 2; h = int((y1 - ys[0]) // 10) + 2
+    band = np.full((h, w), 800, np.uint16); band[: h // 2] = 2500
+    Path(path).mkdir(parents=True, exist_ok=True)
+    np.savez(Path(path) / f"{sid}.npz", meta=json.dumps(dict(crs="EPSG:32651", x0=float(x0), y1=float(y1), id=sid)), blue=band, green=band, red=band)
+
+
+class FakeStore:
+    """The patch store of one stored day of QDH (the bulk import's day: no fetch now). put() must never be called."""
+    days = {"2026-11-10": QDH_SCENE}
+
+    def __init__(self, root):
+        self.root = Path(root)
+
+    def dates(self, port):
+        return sorted(self.days)
+
+    def load(self, port, until=None):
+        return [{"port": port, "date": d, "section": "x", "scene": sid} for d, sid in self.days.items()], np.zeros((1,)), None
+
+    def thin(self, port, today, answers=()):
+        return []
+
+    def put(self, *a, **kw):
+        raise AssertionError("a picture's window must not go into the store")
+
+
+def stac(sid, day):
+    return dict(scene(sid, day), assets={k: {"href": f"https://x/{k}.tif"} for k in ("blue", "green", "red")})
+
+
+@unittest.skipUnless(HAS_PICTURES, "numpy / rasterio / Pillow not installed")
+class PicturesAgainTest(unittest.TestCase):
+    """daily_run end to end with the store, the model and the scores stubbed: a day the store holds gets its picture again."""
+
+    def setUp(self):
+        import shutil
+        from sat import confirm
+        t = tempfile.TemporaryDirectory(); self.addCleanup(t.cleanup); self.d = Path(t.name)
+        self.out = self.d / "out"; (self.out / "labels" / "QDH").mkdir(parents=True)
+        src = ROOT / "docs" / "data" / "sat" / "labels"
+        shutil.copy(src / "QDH" / "review.json", self.out / "labels" / "QDH" / "review.json")
+        shutil.copy(src / "QDH-s2-answers.csv", self.out / "labels" / "QDH-s2-answers.csv")
+        self.sec = confirm.review_sections(self.out, "QDH")[0]["id"]
+
+    def rows(self, port, *a, **kw):
+        return [{"site_id": "QDH", "section_id": self.sec, "date": "2026-11-10", "p": "0.5", "model_version": "pres3o-202611",
+                 "cloud_shadow": "0", "nodata": "0", "n_answers": "5", "before_cutoff": "", "acquired_utc": "2026-11-10T02:57:55Z"}]
+
+    def run_daily(self, search, read, meter=None):
+        with mock.patch("urllib.request.urlopen", search), mock.patch("time.sleep"), mock.patch.object(cr, "note") as note, \
+                mock.patch.object(daily, "Store", FakeStore), mock.patch.object(cr, "latest_model", return_value=Path("m.npz")), \
+                mock.patch.object(daily, "load_model", return_value={"meta": {"model_version": "pres3o-202611"}}), \
+                mock.patch.object(daily, "score_days", side_effect=self.rows):
+            rep = cr.daily_run(self.d / "store", self.d / "win", self.out, ["QDH"], self.d / "r.json", now=NOW, meter=meter or cr.Meter(),
+                               fetch_read=read, log=lambda m: None)
+            self.notes = [c.args for c in note.call_args_list]
+        self.queue = json.loads((self.out / "confirm" / "queue.json").read_text(encoding="utf-8"))
+        self.summ = json.loads((self.out / "confirm" / "summary.json").read_text(encoding="utf-8"))
+        return rep
+
+    def log_rows(self):
+        from sat import confirm
+        return [r for r in confirm.load_log(self.out, "QDH") if (r["section_id"], r["date"]) == (self.sec, "2026-11-10")]
+
+    def test_the_picture_of_a_stored_day_is_read_again(self):
+        reads = []
+
+        def read(work, port, f, bb, env_extra=None, **kw):
+            reads.append((port, f["id"], kw)); write_window(Path(work) / "data" / port, f["id"])
+        bodies = []
+
+        def search(req, timeout=None):
+            body = json.loads(req.data); bodies.append(body)
+            feats = [stac(QDH_SCENE, "2026-11-10")] if "ids" in body or "bbox" in body else []
+            return io.BytesIO(json.dumps({"features": feats, "links": []}).encode())
+        rep = self.run_daily(search, read)
+        self.assertEqual(rep["problems"], [])
+        self.assertEqual(bodies[1]["ids"], [QDH_SCENE])                       # the store's scene of that day, searched by id
+        self.assertEqual(len(bodies), 2)                                      # the port's search (nothing new) and the search by id
+        self.assertEqual(reads, [("QDH", QDH_SCENE, {})])                    # read once, for the picture only (no base=: no patch)
+        self.assertEqual((rep["images_drawn"], rep["images_drawn_again"], rep["held"]), ([], ["QDH/2026-11-10"], []))
+        self.assertEqual(rep["ports"]["QDH"]["stored"], [])
+        self.assertEqual([(c["section_id"], c["date"], c["image"]) for c in self.queue["cells"]], [(self.sec, "2026-11-10", "QDH|2026-11-10")])
+        self.assertTrue((self.out / "confirm" / "img" / "QDH" / "2026-11-10.webp").exists())
+        self.assertEqual(self.queue["held"], [])
+        self.assertEqual([r["queued"] for r in self.log_rows()], ["1"])     # one log row: no "held, then queued" pair
+        self.assertEqual((self.summ["pictures"]["drawn_again"], self.summ["pictures"]["held_cells"]), (1, 0))
+        self.assertEqual(rep["meter"]["search_requests"], 2)
+
+    def test_the_limits_leave_the_picture_for_the_next_run_and_the_cell_waits(self):
+        read = mock.Mock(side_effect=AssertionError("no scene may be read"))
+        search = Search({"features": [scene(QDH_SCENE, "2026-11-10")], "links": []}, {"features": [stac(QDH_SCENE, "2026-11-10")], "links": []})
+        rep = self.run_daily(search, read, meter=cr.Meter(max_requests=20))
+        read.assert_not_called()
+        self.assertEqual(rep["images_left_for_the_limits"], ["QDH/2026-11-10"]); self.assertEqual(rep["problems"], [])
+        self.assertTrue(any(n[:2] == ("warning", "sat-confirm pictures") for n in self.notes))
+        self.assertEqual(self.queue["cells"], [])                                              # not shown without its picture
+        self.assertEqual(self.queue["held"], [{"site_id": "QDH", "date": "2026-11-10", "cells": 1, "prev_dates": self.queue["held"][0]["prev_dates"]}])
+        self.assertEqual((self.summ["pictures"]["left_for_the_limits"], self.summ["pictures"]["held_cells"]), (1, 1))
+        self.assertEqual([r["queued"] for r in self.log_rows()], ["0"])
+        # an answer to it is not taken (it was in no queue); the state is kept (pending)
+        from sat import confirm
+        f = self.d / "dl.csv"
+        f.write_text(",".join(confirm.ANSWER_FIELDS) + f"\nQDH,{self.sec},2026-11-10,1,1,owner,,2026-11-21T09:00:00Z,q\n", encoding="utf-8")
+        self.assertEqual(confirm.merge(f, self.out, confirm.load_config(), "2026-11-21T09:00:00Z")["rejected"], [f"QDH:{self.sec}@2026-11-10"])
+        self.assertEqual(confirm.load_state(self.out, "QDH")[(self.sec, "2026-11-10")]["state"], "pending")
+        # the next run has room: the picture is made and the cell comes in
+        reads = []
+
+        def read2(work, port, f, bb, env_extra=None, **kw):
+            reads.append(f["id"]); write_window(Path(work) / "data" / port, f["id"])
+        search = Search({"features": [scene(QDH_SCENE, "2026-11-10")], "links": []}, {"features": [stac(QDH_SCENE, "2026-11-10")], "links": []})
+        rep = self.run_daily(search, read2)
+        self.assertEqual(reads, [QDH_SCENE]); self.assertEqual(rep["images_drawn_again"], ["QDH/2026-11-10"])
+        self.assertEqual([c["image"] for c in self.queue["cells"]], ["QDH|2026-11-10"]); self.assertEqual(self.queue["held"], [])
+        self.assertEqual([r["queued"] for r in self.log_rows()], ["0", "1"])
+
+    def test_a_refused_picture_is_asked_once(self):
+        read = mock.Mock(side_effect=Exception("HTTP response code: 403"))
+        search = Search({"features": [scene(QDH_SCENE, "2026-11-10")], "links": []}, {"features": [stac(QDH_SCENE, "2026-11-10")], "links": []})
+        rep = self.run_daily(search, read)
+        self.assertEqual(read.call_count, 1); self.assertIn("QDH pictures refused", rep["problems"]); self.assertIn("QDH", rep["images_refused"])
+        self.assertEqual(self.queue["cells"], []); self.assertEqual(len(self.queue["held"]), 1)
+        for err in (http_error(403), http_error(404)):                          # the search by id refused: nothing read, asked once
+            read = mock.Mock(); search = Search({"features": [scene(QDH_SCENE, "2026-11-10")], "links": []}, err)
+            rep = self.run_daily(search, read)
+            read.assert_not_called(); self.assertEqual(search.calls, 2); self.assertIn("search pictures refused", rep["problems"])
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
+class PictureOrderTest(unittest.TestCase):
+    def test_the_days_of_the_cells_come_first_and_the_plan_writes_nothing(self):
+        from sat import confirm
+        q = {"cells": [{"site_id": "QDH", "date": "2026-11-11", "prev": {"date": "2026-10-01"}}],
+             "held": [{"site_id": "LSN", "date": "2026-11-12", "cells": 2, "prev_dates": ["2026-09-01"]}]}
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(cr.picture_order(Path(d), q), [("LSN", "2026-11-12"), ("QDH", "2026-11-11"), ("LSN", "2026-09-01"), ("QDH", "2026-10-01")])
+            out = Path(d) / "out"
+            confirm.sync_sections(out, "QDH", [{"id": "A", "way": 1, "kind": "pier", "side": 1, "sector": "A", "length_m": 150,
+                                                "line": [[120.001, 36.001], [120.002, 36.001]],
+                                                "frame": [[120.001, 36.001], [120.002, 36.001], [120.002, 36.002], [120.001, 36.002]]}],
+                                  "2026-06-01T00:00:00Z")
+            before = sorted((str(p), p.read_bytes()) for p in out.rglob("*") if p.is_file())
+            plan = cr.plan_queue([{"site_id": "QDH", "section_id": "A", "date": "2026-11-01", "p": "0.5", "model_version": "t",
+                                   "cloud_shadow": "0", "nodata": "0"}], out, confirm.load_config(), "2026-11-02T06:00:00Z")
+            self.assertEqual([(c["date"], c["image"]) for c in plan["cells"]], [("2026-11-01", None)]); self.assertNotIn("held", plan)
+            self.assertEqual(sorted((str(p), p.read_bytes()) for p in out.rglob("*") if p.is_file()), before)
 
 
 class WorkflowTest(unittest.TestCase):

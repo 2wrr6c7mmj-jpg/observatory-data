@@ -432,6 +432,8 @@ pres-3 の升の一覧（`cells_<港>.json`、9 港・86,846 升、各升に SCL
 - CSV の列：`site_id, section_id, date, verified, verified_occupied, verified_by, verified_note, answered_utc, queue_version`。在＝`1,1`、不在＝`1,0`、判断できない＝`0,`。
 - 画像：`docs/data/sat/confirm/img/<港>/<日付>.webp`（Earth Search の窓から作る自然色。s2nc と同じ色の作り＝反射率 0〜0.3、ガンマ 1/2.2、出典の帯つき）。
   港全体で 1 枚（青島港内で 35 KB 前後）。キューに升のある日と、その「直前の答えの日」だけ作る。90 日を過ぎて参照されなくなった画像は消す。
+  窓がこの実行に無い日（保管に前からある日）は、その日の撮影を Earth Search から読み直して画像だけを作る（保管には足さない。同じ上限の中で、残りは次の実行）。
+  **画像がまだ無い日の升はキューに出さない**（答えようがないため。queue.json の held に港・日だけ出し、記録は queued＝0。画像ができた次の実行で出す。期限 28 日はそのまま数える）。
 
 ### 6.3 答えが判定器に戻る道（柱 b）
 
