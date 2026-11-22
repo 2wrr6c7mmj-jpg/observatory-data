@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baseline as fbase
-from . import berths, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
+from . import berths, blcap, cdse, chips, png, quay, quay_est, quay_est2, quay_lines, render, s2, windows as fwindows
 from . import fixed as ffixed
 from . import fixed_registry as freg
 from . import atomic, raw_store
@@ -319,6 +319,8 @@ class Store:
         self.new_anchorage = False
         self.class_rows = read_csv(out / "berth_class_counts.csv")
         self.new_class = False
+        self.new_blcap: dict[str, list[dict]] = {}   # bl-cap (trial): site -> this run's scene records (quay_blcap/<site>.json)
+        self.blcap_answers: dict[str, dict] = {}
         self.noted: set[tuple] = set()  # scenes recorded by this run (note_scene)
         self.written: set[str] = set()  # scene records written by save_records (mark_unsaved)
 
@@ -401,6 +403,32 @@ class Store:
         self.class_rows = [r for r in self.class_rows if (r["site_id"], r["acquired_utc"], row_mask_tag(r)) != key] + [row]
         self.class_rows.sort(key=lambda r: (r["acquired_utc"], r["site_id"], row_mask_tag(r)))
         self.new_class = True
+
+    def owner_answers(self, site_id: str) -> dict:
+        """bl-cap: the owner's answers of the site (sat/blcap.owner_answers), read once per run."""
+        if site_id not in self.blcap_answers:
+            self.blcap_answers[site_id] = blcap.owner_answers(self.out, site_id)
+        return self.blcap_answers[site_id]
+
+    def add_blcap(self, site_id: str, entry: dict) -> None:
+        self.new_blcap.setdefault(site_id, []).append(entry)
+
+    def save_blcap(self) -> None:
+        """quay_blcap/<site>.json (bl-cap, trial): this run's scenes added to the file's (a scene counted again replaces its
+        record). Written only for a site that has a new record; never read by the counts, est-2 or the evaluation."""
+        for sid, entries in self.new_blcap.items():
+            p = self.out / "quay_blcap" / f"{sid}.json"
+            old = json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+            by = {e["acquired_utc"]: e for e in old.get("scenes", [])}
+            by.update({e["acquired_utc"]: e for e in entries})
+            scenes = [by[k] for k in sorted(by)]
+            years = sorted({k[:4] for k in by})
+            doc = {"site_id": sid, "version": blcap.VERSION, "status": "試行（並べて出すだけ）", "method": blcap.settings(),
+                   "credit": "Contains modified Copernicus Sentinel data " + "–".join(years[::max(1, len(years) - 1)]),
+                   "attribution": "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）",
+                   "scenes": scenes}
+            p.parent.mkdir(parents=True, exist_ok=True)
+            atomic.write_text(p, json.dumps(doc, ensure_ascii=False, separators=(",", ":")) + "\n")
 
     def write_windows(self, site: dict, w: "fwindows.Windows | None") -> None:
         """win-1: windows/<site>.geojson, the water regions left out (written when it changes)."""
@@ -595,6 +623,11 @@ class Store:
             self.written.add(rel)
         for sid, zp in self.zone_priors.items():
             zp.save(self.zone_prior_path(sid))
+        if self.new_blcap:
+            try:  # bl-cap (trial): a parallel file only; an error here never stops the run
+                self.save_blcap()
+            except Exception as e:  # noqa: BLE001
+                print(f"bl-cap: {type(e).__name__}: {e}", file=sys.stderr)
         est2 = None
         if self.quay_rows:
             try:  # est-2 (trial): recomputed from the stored files only (no fetch); never stops the run
@@ -1099,6 +1132,8 @@ def build_meta(rows: list[dict], sites: list[dict] | None = None, out: Path | No
                               "全船の隻数、使えた手がかりの区間数（used_*）、人の目でも判断しにくい区間の数とその期待値（hard_*、注記だけ）、"
                               "並べて見るための est-1 の 60 m 以上の値。取得済みのデータだけから毎回計算し直す"),
             "quay_est2.json": "est-2 の設定（較正した値と仮置き値）と撮影ごと・区間ごとの詳細（列数の事後確率 p_c、軍艦の確率、使った手がかり、hard_to_judge）",
+            "quay_blcap/<地点>.json": ("bl-cap（試行、並べて出すだけ）：所有者の撮影の日より前の答えで常在の区間について、空の岸壁の基準に上限（線の片側の内側の帯の p10 の 25% 点 + 3 dB）を"
+                                     "かけて数え直した片と、公開の数え方との在/不在（sites.json の quay.blcap が trial の地点だけ。公開の隻数・評価票には使わない。sat/blcap.py）"),
             "quay/blind.geojson": "数えられない可能性が高い区間（軌道ごと。内側の帯で基準の VV p10 が −8 dB を超える所。1 点だけの区間は Point）。湛江以外の地点（layout＝per_site）は quay/<地点>/blind.geojson",
             "change/<地点>/v<版>/<撮影時刻>.webp": "変化カラー（R＝今回の VV、G・B＝同じ相対軌道の基準の VV）の WebP と縮小版 .thumb.webp。基準がある撮影だけ",
         },
@@ -1289,6 +1324,13 @@ class QuayContext:
                 _GEOM_CACHE[key] = quay.Geometry(self.grid, self.mask, self.lines)
             self._geom = _GEOM_CACHE[key]
         return self._geom
+
+    def sections(self) -> list[dict]:
+        """bl-cap: the ~150 m sections of the lines (sat/s2_labels.sections: the ids of the owner's answers)."""
+        if getattr(self, "_sections", None) is None:
+            from . import s2_labels
+            self._sections = s2_labels.sections(self.geometry())
+        return self._sections
 
 
 def orbit_pairs(rows: list[dict], max_h: float = PAIR_MAX_H) -> dict:
@@ -1625,6 +1667,7 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
         except Exception as e:
             log(f"{site['id']} {acq['acquired_utc']}: 変化画像を作れなかった {str(e)[:200]}")
         store.add_quay(row, quay_features(site, acq, q, cred, bver, row["in_sample"]), extra)
+        count_blcap(store, qctx, site, acq, vv, vh, layers, q, look, bver, log)   # bl-cap (trial): only where quay.blcap is trial
         srows = []
         for sc in sectors:
             mn, mx = q["by_sector"].get(sc["id"], [0, 0])
@@ -1648,6 +1691,30 @@ def count_quay(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.nd
     ex = q.get("excluded") or {}
     xt = f"、着かない線の {ex['segments']} 区間を除外" if ex.get("segments") else ""
     return f"、岸壁の占有 {q['min']}〜{q['max']}（{len(q['segments'])} 区間{by}{xt}、基準 {bver} n={bmeta['scenes']}）{et}"
+
+
+def count_blcap(store: Store, qctx: QuayContext, site: dict, acq: dict, vv: np.ndarray, vh: np.ndarray, layers: dict,
+                q_now: dict, look, bver: str, log=print) -> None:
+    """bl-cap (trial, sat/blcap.py): the scene counted again with the baseline capped, judged on the sections resident on the
+    scene (the owner's answers before its day), beside the published count ``q_now``. The scene and baseline the count already
+    holds: no request. Never stops the run and never changes ``q_now`` or the records of the published count."""
+    try:
+        if blcap.mode(site) != "trial":   # (a typo in quay.blcap is logged here and never stops the published count)
+            return
+        geom = qctx.geometry()
+        marks = blcap.resident_sections(store.owner_answers(site["id"]), acq["acquired_utc"])
+        secs = qctx.sections()
+        if marks and any(sc["section_id"] in marks for sc in secs):
+            qc = quay.count(geom, vv, vh, quay.cap_baseline(geom, layers, blcap.MARGIN_DB, blcap.QUANTILE), look_az_deg=look)
+            bt = qctx.berths(qctx.naval(acq["acquired_utc"]))   # the same berth / naval rule as the published count
+            qc = quay.restrict(qc, lambda sg: bt.stretch_ok(sg["kind"], sg["way_id"], sg["line"]), geom.cfg["cluster_m"])
+            if bt.naval:
+                qc = quay.restrict(qc, lambda sg: bt.stretch_class(sg["way_id"], sg["line"]) == "naval", geom.cfg["cluster_m"])
+        else:
+            qc = {"segments": []}
+        store.add_blcap(site["id"], blcap.scene_entry(geom, secs, marks, q_now, qc, acq, bver))
+    except Exception as e:  # noqa: BLE001
+        log(f"{site['id']} {acq['acquired_utc']}: bl-cap（試行）で失敗 {str(e)[:200]}")
 
 
 def process_site(client, store: Store, site: dict, mask: np.ndarray, now: datetime, days: int | None,

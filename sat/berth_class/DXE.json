@@ -283,5 +283,139 @@
    "X": 2
   },
   "record": "docs/data/sat/labels/hires-berth-read.csv"
- }
+ },
+ "radar_dark": [
+  {
+   "section": "286600129:L:00",
+   "way": 286600129,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600129）の頭の沖側。潜水艦が 2016・2018・2019・2025-01・2025-09 に 1〜2 隻"
+   ]
+  },
+  {
+   "section": "286600129:R:00",
+   "way": 286600129,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600129）の頭の沖側。潜水艦が 2016・2018・2019・2025-01・2025-09 に 1〜2 隻"
+   ]
+  },
+  {
+   "section": "286600130:L:00",
+   "way": 286600130,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600130）の頭の沖側。潜水艦が 5 時点すべてに 1〜2 隻"
+   ]
+  },
+  {
+   "section": "286600130:R:00",
+   "way": 286600130,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600130）の頭の沖側。潜水艦が 5 時点すべてに 1〜2 隻"
+   ]
+  },
+  {
+   "section": "286600131:R:00",
+   "way": 286600131,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の T 字桟橋（286600131）の頭の沖側。潜水艦が 2016・2018・2025-01"
+   ]
+  },
+  {
+   "section": "286600132:L:00",
+   "way": 286600132,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600132）の頭の沖側。潜水艦が 2016（2 隻）・2018・2025-01・2025-09"
+   ]
+  },
+  {
+   "section": "286600132:R:00",
+   "way": 286600132,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600132）の頭の沖側。潜水艦が 2016（2 隻）・2018・2025-01・2025-09"
+   ]
+  },
+  {
+   "section": "286600132:R:01",
+   "way": 286600132,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600132）の頭の沖側。潜水艦が 2016（2 隻）・2018・2025-01・2025-09"
+   ]
+  },
+  {
+   "section": "286600133:L:00",
+   "way": 286600133,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600133）。2016 に頭の前に暗い船体、2018・2019 は緑の覆い、2025 は桟橋のみ（1.9 m/px、確度は低い）"
+   ]
+  },
+  {
+   "section": "286600141:L:00",
+   "way": 286600141,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600141）の頭の沖側。潜水艦が 2018・2025-01"
+   ]
+  },
+  {
+   "section": "286600141:L:01",
+   "way": 286600141,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600141）の頭の沖側。潜水艦が 2018・2025-01"
+   ]
+  },
+  {
+   "section": "286600141:R:00",
+   "way": 286600141,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286600141）の頭の沖側。潜水艦が 2018・2025-01"
+   ]
+  }
+ ]
 }

@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-21T23:58:24Z",
+ "generated_utc": "2026-11-22T06:35:35Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -75,16 +75,51 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-21T13:40:47Z",
-   "heartbeat_age_h": 10.3,
+   "heartbeat_age_h": 16.9,
    "data_date": "2026-11-21",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "MAW：最新の撮影 2026-11-12 から 9 日（撮影の抜け）"
+     "text": "ZDH：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "QJG：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "QDH：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "XSN：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "SWS：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "MAW：最新の撮影 2026-11-12 から 10 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "PDG：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "DXE：最新の撮影 2026-11-14 から 8 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -100,7 +135,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-21T11:46:18Z",
-   "heartbeat_age_h": 12.2,
+   "heartbeat_age_h": 18.8,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -129,7 +164,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-21T14:55:15Z",
-   "heartbeat_age_h": 9.1,
+   "heartbeat_age_h": 15.7,
    "data_date": "2026-11-21",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -173,7 +208,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-21T08:26:43Z",
-   "heartbeat_age_h": 15.5,
+   "heartbeat_age_h": 22.1,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 3,
@@ -190,16 +225,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-21T20:15:40Z",
-   "heartbeat_age_h": 3.7,
-   "data_date": "2026-11-21",
+   "heartbeat_utc": "2026-11-22T01:39:43Z",
+   "heartbeat_age_h": 4.9,
+   "data_date": "2026-11-22",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-21T20:15:40Z",
-    "notam_watch_last_seen_utc": "2026-11-21T20:15:40Z",
+    "notices_last_retrieved_utc": "2026-11-22T01:39:43Z",
+    "notam_watch_last_seen_utc": "2026-11-22T01:39:43Z",
     "ll2_last_retrieved_utc": "2026-11-21T08:26:37Z"
    }
   },
@@ -209,7 +244,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-21T19:21:17Z",
-   "heartbeat_age_h": 4.6,
+   "heartbeat_age_h": 11.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -218,13 +253,13 @@
     {
      "level": "warn",
      "code": "older_than_input",
-     "text": "最後の成功 2026-11-21T19:21:17Z が入力の更新 2026-11-21T20:15:40Z より前"
+     "text": "最後の成功 2026-11-21T19:21:17Z が入力の更新 2026-11-22T01:39:43Z より前"
     }
    ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-21T11:47:28Z",
-    "newest_input_utc": "2026-11-21T20:15:40Z"
+    "newest_input_utc": "2026-11-22T01:39:43Z"
    }
   },
   {
@@ -248,8 +283,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-21T22:56:27Z",
-   "heartbeat_age_h": 1.0,
+   "heartbeat_utc": "2026-11-22T04:30:34Z",
+   "heartbeat_age_h": 2.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -257,7 +292,7 @@
    "reasons": [],
    "values": {
     "events": 30,
-    "current": 15,
+    "current": 14,
     "failed": 0,
     "fetch_failed": 0
    }

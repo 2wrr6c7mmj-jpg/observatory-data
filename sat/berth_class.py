@@ -365,6 +365,8 @@ def build(site: dict, osm_dir: Path | None, out_dir: Path = CLASS_DIR) -> dict:
                        wen_credit()],
            "rule": "sat/berth_class.py の docstring（軍の区域に接する→海軍、民間の港の区域だけ→民間、造船所は造船所の地点と軍の造船所だけ海軍、ほかは不明）。fixed＝手で決めた区分",
            "lines": out_lines}
+    if old.get("radar_dark"):           # dark-1 (sat/radar_dark.py): the radar-dark marks stay, as the last key
+        doc["radar_dark"] = old["radar_dark"]
     out_dir.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     return doc
