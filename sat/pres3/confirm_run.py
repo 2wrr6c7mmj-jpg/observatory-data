@@ -4,6 +4,10 @@
              their patches into the store, thin the store's old months; then score the last --score-days days with the latest
              model (sat.pres3.daily), judge them (sat.confirm run), draw the queue's pictures (sat.confirm_img) and write
              summary.json. A port that is refused (HTTP 4xx) is skipped and reported; nothing goes around a refusal.
+             The pictures: from the windows of this run, else (a day the store held already, so not fetched now) the day's
+             scene is read again from Earth Search for the picture only (backfill: nothing goes into the store, no patch,
+             score or judgement changes), within the same limits; what the limits leave waits for the next run. A cell whose
+             day has no picture is held back from the queue until it has one (sat.confirm run hold_without_image).
              The requests and bytes are counted (the search through urllib, the COG reads from libcurl's own log) and the
              fetching stops before a scene would go over --max-requests or --max-bytes.
     refit    the coefficients of a new version from the store and the owner's answer files only: the answers of days before
@@ -177,6 +181,96 @@ def draw(out, windows, site, day, sites):
     return True
 
 
+def plan_queue(scores, out, cfg, nows):
+    """The queue sat.confirm run would make now, from a copy of <out>/confirm and <out>/labels (without the pictures): which
+    days the pictures are needed for, before the real run (so that the log of a cell holds no 'held, then queued' pair)."""
+    import shutil
+    import tempfile
+    from .. import confirm
+    out = Path(out)
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d) / 'out'
+        for sub in (confirm.DIR, 'labels'):
+            if (out / sub).exists():
+                shutil.copytree(out / sub, tmp / sub, ignore=shutil.ignore_patterns('*.webp', '*.png', '*.jpg', '*.jpeg'))
+        confirm.run(scores, tmp, cfg, nows)
+        return json.loads((tmp / confirm.DIR / 'queue.json').read_text(encoding='utf-8'))
+
+
+def picture_order(out, queue):
+    """The (site, day) the queue needs a picture for (sat.confirm_img.needed): the days of the cells first (without one the
+    cell is held back), then the days of the last answers (the picture on the left)."""
+    from .. import confirm_img
+    need = confirm_img.needed(out, queue)
+    days = {(c['site_id'], c['date']) for c in queue.get('cells', [])} | {(h['site_id'], h['date']) for h in queue.get('held', [])}
+    return [k for k in need if k in days] + [k for k in need if k not in days]
+
+
+def backfill(out, windows, need, scenes, sites, meter, log=print, read=None):
+    """Draw the pictures of days whose window is not in this run: the scene of the day (the store's 'scene' of the day's cells,
+    else the latest scene of the port's tile that day) is searched by id on Earth Search and its window read again, for the
+    picture only (nothing is put into the store). In the order of need; stops before a scene would pass the limits, the rest
+    waits for the next run. A refusal (HTTP 4xx) stops that port's pictures (or all, for the search) and is not asked again.
+    -> {drawn, left_for_the_limits, not_found, refused, failed}."""
+    from . import daily, fetch
+    from .. import confirm_trial
+    read = read or fetch.one
+    res = dict(drawn=[], left_for_the_limits=[], not_found=[], refused={}, failed={})
+    if not need: return res
+
+    def stop(port, e):
+        kind = 'refused' if refusal(e) else 'failed'; res[kind][port] = repr(e)[:300]
+        note('error', f'sat-confirm images {port} {kind}', f'{port}: {e!r}'[:600])
+
+    if meter.stopped:
+        res['left_for_the_limits'] = [f'{s}/{d}' for s, d in need]; return res
+    feats = {}
+    ids = sorted({scenes[k] for k in need if k in scenes})
+    try:
+        for k in range(0, len(ids), 100):
+            for f in fetch.search({"ids": ids[k:k + 100]}, urlopen=meter.urlopen()): feats[f['id']] = f
+    except Exception as e:                     # the search by id: every picture waits
+        stop('search', e); res['left_for_the_limits'] = []; return res
+    by_day = {}
+    for port in sorted({s for s, _ in need}):  # a day without a stored scene (not in the store): the port's tile that day
+        days = sorted(d for s, d in need if s == port and (s, d) not in scenes)
+        if not days: continue
+        try:
+            tile = daily.port_tile(port)
+        except SystemExit:
+            continue
+        try:
+            found = fetch.search({"bbox": sites[port]['bbox'], "datetime": f"{days[0]}T00:00:00Z/{days[-1]}T23:59:59Z"}, urlopen=meter.urlopen())
+        except Exception as e:
+            stop(port, e); continue
+        for f in daily.pick_new(found, tile, set()):
+            if f['properties']['datetime'][:10] in days: by_day[(port, f['properties']['datetime'][:10])] = f
+    for n, (port, day) in enumerate(need):
+        key = f'{port}/{day}'
+        if port in res['refused'] or port in res['failed']: continue
+        f = feats.get(scenes.get((port, day))) or by_day.get((port, day))
+        if f is None:
+            res['not_found'].append(key); continue
+        if not meter.room_for_a_scene():
+            res['left_for_the_limits'] = [f'{s}/{d}' for s, d in need[n:] if s not in res['refused'] and s not in res['failed']]; break
+        err = None
+        with fetch.captured_stderr() as cap:
+            try:
+                read(str(windows), port, f, confirm_trial.fetch_bbox(port, sites[port]['bbox']), env_extra={'CPL_CURL_VERBOSE': 'YES'})
+            except Exception as e:
+                err = e
+        c = fetch.curl_counts(cap.text); meter.add(c['requests'], c['bytes'], c['status']); meter.scene_bytes = max(meter.scene_bytes, c['bytes'])
+        meter.scene_requests = max(meter.scene_requests, c['requests'])
+        if err is not None:
+            stop(port, err); continue
+        time.sleep(1.0)
+        if draw(out, windows, port, day, sites): res['drawn'].append(key)
+        else: res['not_found'].append(key)
+    log(f"pictures again from Earth Search: {len(res['drawn'])} drawn, {len(res['left_for_the_limits'])} left for the limits, "
+        f"{len(res['not_found'])} not found")
+    return res
+
+
 def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, score_days=SCORE_DAYS, meter=None, max_scenes=None,
               require_frozen=False, fetch_read=None, log=print):
     from .. import confirm, confirm_img
@@ -207,9 +301,11 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
     if mf is None:
         rep['problems'].append('no model in the store'); _write(report_path, rep); return rep
     t = time.time(); B = daily.load_model(mf); rep['model'] = B['meta']['model_version']; since = f'{now - dt.timedelta(days=score_days):%Y-%m-%d}'
-    rows = []
+    rows = []; scenes = {}
     for port in ports:
         C, P, offs = store.load(port, today); ds = sorted({c['date'] for c in C if c['date'] >= since})
+        for c in C:
+            if c.get('scene'): scenes[(port, c['date'])] = c['scene']          # the scene of each stored day (the pictures)
         rr = daily.score_days(port, C, P, offs, daily.owner_answers(port, out), B, ds); rows += rr
         rep['ports'][port].update(scored_days=len(ds), cells=len(rr), with_p=sum(x['p'] != '' for x in rr))
     rep['seconds']['score'] = round(time.time() - t, 1)
@@ -225,14 +321,29 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
             note('warning', 'sat-confirm trial', msg); rep.setdefault('warnings', []).append(msg)
             skip |= {(port, i) for i in bad}
     if skip: scores = [r for r in scores if (r['site_id'], r['section_id']) not in skip]
-    res = confirm.run(scores, out, cfg, nows)
+    need = picture_order(out, plan_queue(scores, out, cfg, nows))
+    drawn = [f'{s}/{d}' for s, d in need if draw(out, windows, s, d, sites)]       # from the windows of this run
+    t_img = time.time()
+    bf = backfill(out, windows, [k for k in need if f'{k[0]}/{k[1]}' not in drawn], scenes, sites, meter, log, read=fetch_read)
+    rep['seconds']['pictures_again'] = round(time.time() - t_img, 1); rep['meter'] = meter.as_dict()
+    res = confirm.run(scores, out, cfg, nows, hold_without_image=True)
     queue = json.loads((out / confirm.DIR / 'queue.json').read_text(encoding='utf-8'))
-    drawn = [f'{s}/{d}' for s, d in confirm_img.needed(out, queue) if draw(out, windows, s, d, sites)]
-    if drawn: res = confirm.run(scores, out, cfg, nows); queue = json.loads((out / confirm.DIR / 'queue.json').read_text(encoding='utf-8'))
     gone = confirm_img.prune(out, queue, today, cfg.get('image_keep_days', 90))
-    doc = confirm.summary(out, cfg, nows); confirm._write_json(out / confirm.DIR / 'summary.json', doc)
+    held = queue.get('held', [])
+    pics = dict(as_of=nows, needed=len(need), drawn_from_this_run=len(drawn), drawn_again=len(bf['drawn']),
+                left_for_the_limits=len(bf['left_for_the_limits']), not_found=bf['not_found'],
+                held_days=[f"{h['site_id']}/{h['date']}" for h in held], held_cells=sum(h['cells'] for h in held),
+                note='画像の無い日の升はキューに出さず、画像ができた次の実行で出す。上限で残った画像は次の実行で取り直す（Earth Search の同じ撮影）')
+    doc = confirm.summary(out, cfg, nows); doc['pictures'] = pics; confirm._write_json(out / confirm.DIR / 'summary.json', doc)
+    for port in bf['refused']: rep['problems'].append(f'{port} pictures refused')
+    for port in bf['failed']: rep['problems'].append(f'{port} pictures failed')
+    if bf['left_for_the_limits']:
+        msg = (f"{len(bf['left_for_the_limits'])} pictures left for the next run ({meter.stopped}): {', '.join(bf['left_for_the_limits'])}")
+        note('warning', 'sat-confirm pictures', msg[:3000]); rep.setdefault('warnings', []).append(msg)
     rep['seconds']['confirm'] = round(time.time() - t, 1); rep['seconds']['all'] = round(time.time() - t0, 1)
-    rep.update(queued=len(queue.get('cells', [])), images_drawn=drawn, images_removed=gone, skipped=len(res.get('skipped', [])))
+    rep.update(queued=len(queue.get('cells', [])), images_drawn=drawn, images_drawn_again=bf['drawn'], images_removed=gone,
+               images_left_for_the_limits=bf['left_for_the_limits'], images_not_found=bf['not_found'], images_refused=bf['refused'],
+               images_failed=bf['failed'], held=held, skipped=len(res.get('skipped', [])))
     _write(report_path, rep)
     return rep
 
@@ -268,8 +379,11 @@ def annotate(rep):
          f"bytes {m.get('bytes')} ({(m.get('bytes') or 0) / 1e6:.1f} MB), status {m.get('status')}, limits {m.get('max_requests')} requests / "
          f"{(m.get('max_bytes') or 0) / 1e9:.1f} GB, seconds {rep.get('seconds')}")
     note('notice', 'sat-confirm ports', json.dumps({p: {k: (len(v) if k == 'stored' else v) for k, v in r.items()} for p, r in rep['ports'].items()}, ensure_ascii=False))
-    note('notice', 'sat-confirm queue', f"model {rep.get('model')}, queued {rep.get('queued')}, images drawn {len(rep.get('images_drawn', []))}, "
-         f"removed {len(rep.get('images_removed', []))}, rows skipped by sat.confirm {rep.get('skipped')}")
+    held = rep.get('held', [])
+    note('notice', 'sat-confirm queue', f"model {rep.get('model')}, queued {rep.get('queued')}, images drawn {len(rep.get('images_drawn', []))} "
+         f"(again from Earth Search {len(rep.get('images_drawn_again', []))}, left for the limits {len(rep.get('images_left_for_the_limits', []))}, "
+         f"not found {len(rep.get('images_not_found', []))}), removed {len(rep.get('images_removed', []))}, "
+         f"held back without a picture {sum(h['cells'] for h in held)} cells of {len(held)} days, rows skipped by sat.confirm {rep.get('skipped')}")
     for p in rep.get('problems', []): note('error', 'sat-confirm problem', p)
 
 

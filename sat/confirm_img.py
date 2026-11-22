@@ -51,11 +51,15 @@ def write_image(out: Path, site_id: str, date: str, refl, grid: dict, scl=None, 
 
 
 def _referenced(queue: dict) -> set:
+    """(site, day) of the queue's cells and of their last answers, and of the days held back for want of a picture."""
     ref = set()
     for c in queue.get("cells", []):
         ref.add((c["site_id"], c["date"]))
         if c.get("prev"):
             ref.add((c["site_id"], c["prev"]["date"]))
+    for h in queue.get("held", []):
+        ref.add((h["site_id"], h["date"]))
+        ref |= {(h["site_id"], d) for d in h.get("prev_dates", [])}
     return ref
 
 

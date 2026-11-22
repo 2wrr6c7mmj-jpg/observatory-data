@@ -477,9 +477,13 @@ def _queue_rules(site_id: str, state: dict, cfg: dict, today: str) -> set:
     return q
 
 
-def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str | None = None) -> dict:
+def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str | None = None, hold_without_image: bool = False) -> dict:
     """Judge the cells of the score table and bring state, log, queue and summary up to date. A cell the owner answered is
-    never judged again; a cell outside the table keeps its judgement (only the queue rules and new answers reach it)."""
+    never judged again; a cell outside the table keeps its judgement (only the queue rules and new answers reach it).
+    hold_without_image (the daily run): a cell whose day has no picture yet is held back from the queue (queued = 0 in the
+    log, so merge takes no answer for it): the page would show it with nothing to answer from. It keeps its state and
+    waits (the expiry of §3.3 still counts); queue.json lists the held days ("held": port, day, cells, the days of their
+    last answers) so that the pictures can be made, and the next run puts the cell in once its picture is there."""
     out, cfg, now = Path(out), cfg or load_config(), now or utcnow()
     today = now[:10]
     by_site = {}
@@ -487,6 +491,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
         by_site.setdefault((r.get("site_id") or "").strip(), []).append(r)
     res = {"now": now, "sites": {}, "skipped": []}
     queued = {}
+    held = {}
     pending_log = {}
     for site_id in sorted(set(known_sites(out)) | set(by_site)):
         ledger = load_sections(out, site_id)
@@ -545,9 +550,14 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
         _log_changes(out, site_id, pre, extra, now)
         _apply_answers(state, answers)
         q = _queue_rules(site_id, state, cfg, today)
+        if hold_without_image:
+            im = _images(out, site_id)
+            hk = {k for k in q if k[1] not in im}
+            q -= hk
+            held[site_id] = {k: state[k] for k in hk}
         queued[site_id] = (state, secs, q, answers)
         pending_log[site_id] = extra
-    queue = build_queue(out, queued, cfg, now)
+    queue = build_queue(out, queued, cfg, now, held if hold_without_image else None)
     for site_id, (state, secs, q, answers) in queued.items():
         extra = pending_log[site_id]
         for k in state:
@@ -570,6 +580,8 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
     _write_json(out / DIR / "summary.json", summ)
     _write_json(out / DIR / "latest.json", latest(out, cfg, now, summ))
     res["queue"] = {"queue_version": queue["queue_version"], "cells": len(queue["cells"])}
+    if hold_without_image:
+        res["held"] = {s: len(h) for s, h in sorted(held.items()) if h}
     return res
 
 
@@ -614,7 +626,20 @@ def _order(cells: list[dict], cfg: dict) -> list[dict]:
     return first + [c for _, c in keyed]
 
 
-def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
+def held_days(held: dict) -> list[dict]:
+    """The days held back for want of a picture (run(hold_without_image=True)): port, day, number of cells and the days of
+    their last answers. No section, score or judgement (§6.2)."""
+    by = {}
+    for site_id, cells in held.items():
+        for (_sec, day), r in cells.items():
+            d = by.setdefault((site_id, day), {"site_id": site_id, "date": day, "cells": 0, "prev_dates": set()})
+            d["cells"] += 1
+            if r.get("prev_answer_date"):
+                d["prev_dates"].add(r["prev_answer_date"])
+    return [dict(d, prev_dates=sorted(d["prev_dates"])) for _, d in sorted(by.items())]
+
+
+def build_queue(out: Path, queued: dict, cfg: dict, now: str, held: dict | None = None) -> dict:
     """queue.json for the page. Per cell: port, section, day, picture, the last answer (day, present / absent, picture) and
     its place. No score, no judgement and no audit mark go in (§6.2): the owner reads without seeing the judge. No file
     name either: the page names the file it downloads after the day of the download (confirm-answers-YYYY-MM-DD.csv;
@@ -655,7 +680,9 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
             "answer_fields": ANSWER_FIELDS,
             "credit": f"{CREDIT} {', '.join(years)}".strip(), "attribution": ATTRIBUTION,
             "note": "判定器の点数・判定・抜き取り検査の印は入れていない（所有者の読みが判定器に引きずられないように）",
-            "sites": sites, "images": images, "cells": out_cells}
+            "sites": sites, "images": images, "cells": out_cells,
+            **({} if held is None else {"held": held_days(held),
+                                        "held_note": "画像がまだ無い日の升は出さない（画像ができた次の実行で出す。28 日の期限はそのまま数える）"})}
 
 
 # ---------------------------------------------------------------- merge
