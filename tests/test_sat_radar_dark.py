@@ -54,8 +54,10 @@ class ListTest(unittest.TestCase):
 
     def test_the_files_agree(self):
         marks = rd.build_marks(rd._hires(), PUB["evidence"])
-        self.assertEqual({k: v for k, v in file_marks().items() if v}, marks)
-        self.assertEqual(PUB["sites"], marks)
+        self.assertEqual(PUB["sites"], marks)                   # the published list and its evidence: written together, every day
+        if {k: v for k, v in file_marks().items() if v} != marks:
+            # the daily run rebuilds radar_dark.json and warns while the class-file record is behind; it is rebuilt by hand
+            self.skipTest("the record in sat/berth_class is behind radar_dark.json: run python -m sat.radar_dark build")
         self.assertEqual(PUB["counts"], {s: len(v) for s, v in marks.items()})
         self.assertNotIn("ZJG", marks)                                     # Zhanjiang's files do not change
         self.assertNotIn(rd.KEY, json.loads((rd.CLASS_DIR / "ZJG.json").read_text(encoding="utf-8")))
@@ -160,6 +162,86 @@ class NothingCountedChangesTest(unittest.TestCase):
         self.assertTrue(all(r["radar_dark_sections"] > 0 and rd.SUBMARINE in r["radar_dark_reasons"] for r in xsn))
         self.assertTrue(all(r["radar_dark_seen"] <= r["radar_dark_sections"] for s in with_marks for r in with_marks[s]))
         self.assertTrue(all(r["radar_dark_sections"] == 0 for r in with_marks["QGZ"]))          # Guzhenkou has no mark
+
+
+class DailyRefreshTest(unittest.TestCase):
+    """1部の審査（#171 の後追い）：the daily run rebuilds the published list from the sheet it just wrote, writes no class file,
+    keeps quay_blind's three columns, and reports a class-file record that is behind."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory(); self.addCleanup(self._tmp.cleanup)
+        d = Path(self._tmp.name); self.out = d / "sat"; self.cls = d / "cls"
+        (self.out / "eval").mkdir(parents=True); (self.out / "labels").mkdir()
+        shutil.copy(OUT / "eval" / "presence.json", self.out / "eval" / "presence.json")
+        shutil.copy(OUT / "labels" / "hires-berth-read.csv", self.out / "labels" / "hires-berth-read.csv")
+        shutil.copytree(rd.CLASS_DIR, self.cls)
+
+    def test_refresh(self):
+        before = {p.name: p.read_bytes() for p in self.cls.glob("*.json")}
+        r = rd.refresh(self.out, self.cls)
+        self.assertEqual(r["stale"], []); self.assertEqual(r["counts"], PUB["counts"])
+        doc = json.loads((self.out / rd.PUBLIC).read_text(encoding="utf-8"))
+        self.assertEqual((doc["sites"], doc["evidence"]), (PUB["sites"], PUB["evidence"]))
+        self.assertEqual({p.name: p.read_bytes() for p in self.cls.glob("*.json")}, before)      # no class file written
+        t = (self.out / rd.PUBLIC).stat().st_mtime_ns
+        rd.refresh(self.out, self.cls); self.assertEqual((self.out / rd.PUBLIC).stat().st_mtime_ns, t)   # nothing new: not rewritten
+        self.assertEqual(set(rd.marks("XSN", self.out)), {e["section"] for e in PUB["sites"]["XSN"]})
+        # a new answer: a 3rd "present" of a section the radar never saw -> marked in the published list, the record is behind
+        pres = json.loads((self.out / "eval" / "presence.json").read_text(encoding="utf-8"))
+        rows = pres["sites"]["ZDH"]["rows"]; sid = "999:L:00"
+        rows += [dict(rows[0], section_id=sid, date=d, y=1, p=0.0) for d in ("2026-01-01", "2026-01-02", "2026-01-03")]
+        (self.out / "eval" / "presence.json").write_text(json.dumps(pres), encoding="utf-8")
+        r = rd.refresh(self.out, self.cls)
+        self.assertIn("ZDH", r["stale"]); self.assertIn(sid, rd.marks("ZDH", self.out))
+        self.assertEqual({p.name: p.read_bytes() for p in self.cls.glob("*.json")}, before)
+
+    def test_the_daily_writer_keeps_the_three_columns(self):
+        from sat import eval_presence as ep
+        out = Path(self._tmp.name) / "full"
+        shutil.copytree(OUT, out, ignore=shutil.ignore_patterns("images", "color", "s2", "chips", "change", "windows", "confirm"))
+        rd.refresh(out, self.cls)
+        ep.write_blind(out, [s for s in ep.load_sites() if s["id"] in ("XSN", "QGZ")])
+        for s in ("XSN", "QGZ"):
+            with (out / "quay_blind" / f"{s}.csv").open(encoding="utf-8", newline="") as f:
+                rows = list(csv.DictReader(f))
+            self.assertEqual(list(rows[0]), list(ep.BLIND_COLUMNS))
+            self.assertTrue(all(int(r["radar_dark_sections"]) > 0 for r in rows) if s == "XSN" else all(r["radar_dark_sections"] == "0" for r in rows))
+
+
+class FailureStopsNoCountTest(unittest.TestCase):
+    """1部の審査（#172）：a failure of the marks' rebuild does not stop quay_naval50, quay_pres1 and quay_blind (the same values;
+    quay_blind from the list of the day before)."""
+
+    def run_refresh(self, out, fail):
+        from sat import eval_presence as ep
+        from datetime import datetime, timezone
+        boom = mock.patch.object(rd, "refresh", side_effect=KeyError("verdict")) if fail else mock.patch.object(rd, "refresh", wraps=rd.refresh)
+        with boom, mock.patch("builtins.print") as pr:
+            r = ep.refresh(out, now=datetime(2026, 11, 22, 6, 0, tzinfo=timezone.utc))
+        return r, [c.args[0] for c in pr.call_args_list if c.args]
+
+    def files(self, out):
+        names = ["quay_naval50.csv"] + [f"quay_naval50/{p.name}" for p in sorted((out / "quay_naval50").glob("*.json"))]
+        names += [f"quay_pres1/{p.name}" for p in sorted((out / "quay_pres1").glob("*"))]
+        names += [f"quay_blind/{p.name}" for p in sorted((out / "quay_blind").glob("*.csv"))] + [rd.PUBLIC]
+        return {n: (out / n).read_bytes() for n in names}
+
+    def test_a_failing_rebuild(self):
+        with tempfile.TemporaryDirectory() as d:
+            ign = shutil.ignore_patterns("images", "color", "s2", "chips", "change", "windows", "confirm")
+            ok, bad = Path(d) / "ok", Path(d) / "bad"
+            shutil.copytree(OUT, ok, ignore=ign); shutil.copytree(OUT, bad, ignore=ign)
+            for x in (ok, bad):
+                for f in ("quay_naval50.csv",):
+                    (x / f).unlink()
+                shutil.rmtree(x / "quay_pres1", ignore_errors=True); shutil.rmtree(x / "quay_blind", ignore_errors=True)
+            r_ok, _ = self.run_refresh(ok, False)
+            r_bad, printed = self.run_refresh(bad, True)
+            self.assertIn("KeyError", r_bad["radar_dark"]["error"])
+            self.assertTrue(any("::warning title=sat radar_dark::" in t for t in printed))
+            self.assertEqual((r_bad["naval50"], r_bad["blind"], sorted(r_bad["pres1"])), (r_ok["naval50"], r_ok["blind"], sorted(r_ok["pres1"])))
+            self.assertEqual(self.files(bad), self.files(ok))              # written, the same bytes (the list of the day before)
+            self.assertTrue(r_ok["naval50"] > 0 and r_ok["pres1"] and (bad / "quay_naval50.csv").exists())
 
 
 if __name__ == "__main__":
