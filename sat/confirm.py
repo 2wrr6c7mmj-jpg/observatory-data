@@ -41,6 +41,9 @@ Files (under <out>/confirm/):
                              scored against its last row from before its answer (summary()). Never rewritten
     queue.json               what the page docs/sat/label/?queue=1 shows. No score, no judgement, no audit mark
     summary.json             the numbers of §7 (A: accuracy of the automatic cells; B: composition; C: total, labelled)
+    latest.json              what the trial page (docs/sat/confirm/) and the site show (§6.6): per port and active section the
+                             newest cell's state, and the numbers always shown beside it. Written with summary.json. No score
+                             and no judgement of a cell the owner has not seen (in the shadow operation no automatic value)
 """
 from __future__ import annotations
 
@@ -62,6 +65,7 @@ OUT = ROOT / "docs" / "data" / "sat"
 CONFIG_PATH = Path(__file__).resolve().parent / "confirm.json"
 VERSION = "confirm-1"
 QUEUE_VERSION = "confirm-queue-1"
+LATEST_VERSION = "confirm-latest-1"
 DIR = "confirm"
 FRAME_M = 120.0
 STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image")
@@ -557,7 +561,9 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
             cnt[r["state"]] = cnt.get(r["state"], 0) + 1
         res["sites"][site_id] = {"cells": len(state), "states": cnt, "queued": len(q), "log_rows": n_log}
     _write_json(out / DIR / "queue.json", queue)
-    _write_json(out / DIR / "summary.json", summary(out, cfg, now))
+    summ = summary(out, cfg, now)
+    _write_json(out / DIR / "summary.json", summ)
+    _write_json(out / DIR / "latest.json", latest(out, cfg, now, summ))
     res["queue"] = {"queue_version": queue["queue_version"], "cells": len(queue["cells"])}
     return res
 
@@ -623,7 +629,9 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
             for day in (k[1], r["prev_answer_date"]):
                 if day and day in im:
                     images[f"{site_id}|{day}"] = im[day]
-        sites[site_id] = {"sections": {i: {f: s.get(f) for f in ("id", "way", "kind", "sector", "length_m", "line", "frame")}
+        labels = section_labels(load_sections(out, site_id))
+        sites[site_id] = {"sections": {i: {**{f: s.get(f) for f in ("id", "way", "kind", "sector", "length_m", "line", "frame")},
+                                           "label": labels.get(i, ("", None))[0] or None}
                                        for i, s in sorted(used.items()) if s}}
     out_cells = []
     for n, c in enumerate(_order(cells, cfg)):
@@ -861,6 +869,142 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     return doc
 
 
+# ---------------------------------------------------------------- readable names of the sections
+KIND_JA = {"pier": "桟橋", "coastline": "海岸線", "quay": "岸壁", "breakwater": "防波堤"}
+
+
+def section_labels(ledger: dict | None) -> dict:
+    """id -> (label, sort key): "区画 A1・桟橋 3・左側 1" = the sector, the kind and the number of its OSM line among the lines of
+    that kind in the sector, the side of the line (L 左側 / R 右側, as in the id) and the piece on that side (the id's last
+    part + 1). The lines are numbered along the shore (by longitude or latitude, whichever spreads more) among the lines
+    that entered the ledger in the same sections_version, and the lines of a later version are numbered after the earlier
+    ones: a label never changes while the ledger keeps its ids (retired sections keep their numbers)."""
+    secs = (ledger or {}).get("sections", [])
+    lines = {}
+    for s in secs:
+        key = (s.get("sector") or "", s.get("kind") or "", s.get("way"))
+        pts = s.get("line") or []
+        e = lines.setdefault(key, {"v": int(s.get("sections_version") or 0), "pts": [], "first": len(lines)})
+        e["v"] = min(e["v"], int(s.get("sections_version") or 0))
+        e["pts"] += [p for p in pts if isinstance(p, (list, tuple)) and len(p) >= 2]
+    groups = {}
+    for (sector, kind, way), e in lines.items():
+        groups.setdefault((sector, kind), {}).setdefault(e["v"], []).append((way, e))
+    number = {}
+    for (sector, kind), by_v in groups.items():
+        n = 0
+        for v in sorted(by_v):
+            ws = by_v[v]
+
+            def centre(e):
+                pts = e["pts"]
+                return (sum(p[0] for p in pts) / len(pts), sum(p[1] for p in pts) / len(pts)) if pts else (0.0, 0.0)
+            cs = [centre(e) for _, e in ws]
+            lat0 = sum(c[1] for c in cs) / len(cs)
+            spread_x = (max(c[0] for c in cs) - min(c[0] for c in cs)) * math.cos(math.radians(lat0))
+            spread_y = max(c[1] for c in cs) - min(c[1] for c in cs)
+            along = (lambda c: c[0]) if spread_x >= spread_y else (lambda c: -c[1])   # west to east, or north to south
+            for (way, e), c in sorted(zip(ws, cs), key=lambda t: (along(t[1]), t[0][1]["first"])):
+                n += 1
+                number[(sector, kind, way)] = n
+    res = {}
+    for s in secs:
+        sector, kind = s.get("sector") or "", s.get("kind") or ""
+        n = number[(sector, kind, s.get("way"))]
+        parts = str(s["id"]).split(":")
+        side = {"L": "左側", "R": "右側"}.get(parts[1] if len(parts) > 2 else "", "")
+        piece = int(parts[-1]) + 1 if len(parts) > 2 and parts[-1].isdigit() else None
+        tail = (side + (f" {piece}" if piece is not None else "")).strip() if len(parts) > 2 else str(s["id"])   # another form of id: itself
+        label = "・".join(x for x in (f"区画 {sector}" if sector else "", f"{KIND_JA.get(kind, kind)} {n}", tail) if x)
+        res[s["id"]] = (label, (sector, kind, n, parts[1] if len(parts) > 2 else "", piece or 0, str(s["id"])))
+    return res
+
+
+# ---------------------------------------------------------------- latest (§6.6: the trial page and the site)
+LATEST_NOTE = "試行。在／不在は Sentinel-2（10 m）の像についての判定と、所有者が同じ像を目で見た確認。真の在／不在ではない"
+LATEST_SOURCE = "Element84 Earth Search／AWS Open Data 経由"
+
+
+def port_name(out: Path, site_id: str) -> str:
+    rv = Path(out) / "labels" / site_id / "review.json"
+    if rv.exists():
+        return json.loads(rv.read_text(encoding="utf-8")).get("name") or site_id
+    sites = Path(__file__).resolve().parent / "sites.json"
+    for s in json.loads(sites.read_text(encoding="utf-8")).get("sites", []) if sites.exists() else []:
+        if s.get("id") == site_id:
+            return s.get("name") or site_id
+    return site_id
+
+
+SITE_A_MIN_CELLS = 30      # a port's A is withheld below this many cells: one new answer would move it and tell the rule's answer
+
+
+def _numbers(block: dict, floor: int = 0) -> dict:
+    """The numbers shown beside the table (§6.6): A with its count and CI, the composition, the share that could be judged.
+    With ``floor``, A of fewer cells than that is withheld (rate and CI null, with the reason)."""
+    a = dict(block["A_auto_accuracy"])
+    if floor and a["n"] < floor:
+        a.update(rate=None, ci95=None, withheld=f"升が少ない（{floor} 升未満）")
+    # basis: "sample" = the audit sample of the automatic cells (§7.3); "shadow" = the cells rule v1 would have made automatic,
+    # all of them shown to the owner (§7.2)
+    return {"A": {"rate": a["rate"], "n": a["n"], "ci95": a.get("ci95"), "basis": "shadow" if a["basis"].startswith("shadow") else "sample",
+                  "withheld": a.get("withheld")},
+            "composition": block["composition"]["of_cells_with_image"], "no_image_of_all": block["composition"]["no_image_of_all"],
+            "judgeable_of_all": block["composition"]["judgeable_of_all"], "cells": block["cells"], "states": block["states"]}
+
+
+def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, summ: dict | None = None) -> dict:
+    """Per port and active section of the ledger: the newest cell (its state, day, and value when that is a value shown:
+    the owner's, or an automatic one while auto_display is on), and for a cell without a value the last value shown and its
+    day. In the shadow operation an automatic state is shown as waiting (the judge's answer is not shown before the owner's).
+    null is unknown; 0 is absent, only for a cell judged or confirmed absent."""
+    out, cfg, now = Path(out), cfg or load_config(), now or utcnow()
+    summ = summ or summary(out, cfg, now)
+    show_auto = bool(cfg.get("auto_display"))
+    frozen = bool(cfg.get("frozen_utc"))
+    part = "after_freeze" if frozen and summ["parts"]["after_freeze"]["total"]["cells"] else "before_freeze"
+    blk = summ["parts"][part]
+    sites, years = {}, set()
+    for site_id in known_sites(out):
+        ledger = load_sections(out, site_id)
+        secs = active_sections(ledger)
+        labels = section_labels(ledger)
+        by_sec = {}
+        for r in load_state(out, site_id).values():
+            by_sec.setdefault(r["section_id"], []).append(r)
+        rows, cnt = [], {}
+        for sid in sorted(secs, key=lambda i: labels[i][1]):
+            s = secs[sid]
+            cells = sorted(by_sec.get(sid, []), key=lambda r: r["date"])
+            row = {"id": sid, "label": labels[sid][0], "kind": s.get("kind"), "sector": s.get("sector"), "length_m": s.get("length_m"),
+                   "state": None, "date": None, "value": None, "last_date": None, "last_value": None, "last_source": None}
+            shown = [r for r in cells if (r["state"] == "human" or (show_auto and r["state"] == "auto")) and r["value"] in ("0", "1")]
+            if cells:
+                r = cells[-1]
+                years.add(r["date"][:4])
+                st = r["state"] if (show_auto or r["state"] != "auto") else "pending"
+                row.update(state=st, date=r["date"])
+                if st in ("human", "auto") and r["value"] in ("0", "1"):
+                    row["value"] = int(r["value"])
+                elif shown:
+                    q = shown[-1]
+                    row.update(last_date=q["date"], last_value=int(q["value"]), last_source="owner" if q["state"] == "human" else "auto")
+                cnt[st] = cnt.get(st, 0) + 1
+            rows.append(row)
+        sites[site_id] = {"name": port_name(out, site_id), "sections": rows, "sections_by_state": cnt,
+                          "numbers": _numbers(blk["by_site"][site_id], SITE_A_MIN_CELLS) if site_id in blk["by_site"] else None}
+    return {"version": LATEST_VERSION, "generated_utc": now, "rule_version": cfg["rule_version"], "auto_display": show_auto,
+            "frozen_utc": cfg.get("frozen_utc"), "expire_days": cfg["expire_days"], "part": part,
+            "note": LATEST_NOTE, "credit": f"{CREDIT} {', '.join(sorted(years))}".strip(), "source": LATEST_SOURCE,
+            "attribution": ATTRIBUTION,
+            "null": "null は不明（未確認・像なし・判断できない・まだ升が無い）。0 は不在と判定または確認された升だけ",
+            "notes": {"sections_by_state": "港ごとの区間の数：各区間のいちばん新しい升の状態で数えた区間の数（1 区間＝1）",
+                      "numbers.states": "升の数：全部の日の全部の升を状態ごとに数えた数（numbers.composition はその割合）",
+                      "label": "区間の読める名前：区画・種別とその区画の中での線の番号（岸に沿った順）・線の左側／右側（OSM の線の向きに対して）とその側の何番目（id の最後の番号＋1）。区間の id（OSM の線の番号:側:番号）が変わらない限り変わらない",
+                      "A": f"規則 v1 なら自動確定の升の一致率（影の運用）／自動確定の正答率（抜き取り）。港ごとの値は {SITE_A_MIN_CELLS} 升未満なら出さない（rate・ci95 は null、withheld に理由）。全体の値は升の数によらず出す"},
+            "numbers": _numbers(blk["total"]), "sites": sites}
+
+
 # ---------------------------------------------------------------- command line
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="confirm-1: cells the judge is not sure of go to the owner (no network, PU 0)")
@@ -890,6 +1034,7 @@ def main(argv=None) -> int:
     else:
         doc = summary(a.out, cfg, now)
         _write_json(a.out / DIR / "summary.json", doc)
+        _write_json(a.out / DIR / "latest.json", latest(a.out, cfg, now, doc))
         doc = {"written": str(a.out / DIR / "summary.json"), "parts": {k: v["total"]["states"] for k, v in doc["parts"].items()}}
     print(json.dumps(doc, ensure_ascii=False, indent=1))
     return 0
