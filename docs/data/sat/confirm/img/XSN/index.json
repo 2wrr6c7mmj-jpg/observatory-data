@@ -2,6 +2,17 @@
  "version": "confirm-1",
  "site_id": "XSN",
  "days": {
+  "2026-11-15": {
+   "image": "2026-11-15.webp",
+   "grid": {
+    "west": 121.679013,
+    "south": 29.515,
+    "east": 121.8,
+    "north": 29.555,
+    "width": 1172,
+    "height": 442
+   }
+  },
   "2026-11-20": {
    "image": "2026-11-20.webp",
    "grid": {

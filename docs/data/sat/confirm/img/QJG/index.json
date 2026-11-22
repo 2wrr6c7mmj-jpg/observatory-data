@@ -1,0 +1,28 @@
+{
+ "version": "confirm-1",
+ "site_id": "QJG",
+ "days": {
+  "2026-11-10": {
+   "image": "2026-11-10.webp",
+   "grid": {
+    "west": 120.57,
+    "south": 36.095,
+    "east": 120.602,
+    "north": 36.122,
+    "width": 288,
+    "height": 298
+   }
+  },
+  "2026-11-11": {
+   "image": "2026-11-11.webp",
+   "grid": {
+    "west": 120.57,
+    "south": 36.095,
+    "east": 120.602,
+    "north": 36.122,
+    "width": 288,
+    "height": 298
+   }
+  }
+ }
+}

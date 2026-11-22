@@ -1,0 +1,17 @@
+{
+ "version": "confirm-1",
+ "site_id": "LSN",
+ "days": {
+  "2026-11-11": {
+   "image": "2026-11-11.webp",
+   "grid": {
+    "west": 121.225,
+    "south": 38.785,
+    "east": 121.28,
+    "north": 38.825,
+    "width": 477,
+    "height": 442
+   }
+  }
+ }
+}

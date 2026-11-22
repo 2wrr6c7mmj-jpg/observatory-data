@@ -2,6 +2,39 @@
  "version": "confirm-1",
  "site_id": "QGZ",
  "days": {
+  "2026-11-03": {
+   "image": "2026-11-03.webp",
+   "grid": {
+    "west": 119.955,
+    "south": 35.7,
+    "east": 120.019127,
+    "north": 35.745,
+    "width": 580,
+    "height": 497
+   }
+  },
+  "2026-11-06": {
+   "image": "2026-11-06.webp",
+   "grid": {
+    "west": 119.955,
+    "south": 35.7,
+    "east": 120.019127,
+    "north": 35.745,
+    "width": 580,
+    "height": 497
+   }
+  },
+  "2026-11-11": {
+   "image": "2026-11-11.webp",
+   "grid": {
+    "west": 119.955,
+    "south": 35.7,
+    "east": 120.019127,
+    "north": 35.745,
+    "width": 580,
+    "height": 497
+   }
+  },
   "2026-11-21": {
    "image": "2026-11-21.webp",
    "grid": {

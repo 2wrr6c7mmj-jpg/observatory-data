@@ -1,0 +1,39 @@
+{
+ "version": "confirm-1",
+ "site_id": "SYL",
+ "days": {
+  "2026-11-02": {
+   "image": "2026-11-02.webp",
+   "grid": {
+    "west": 109.525,
+    "south": 18.185,
+    "east": 109.585,
+    "north": 18.245,
+    "width": 634,
+    "height": 663
+   }
+  },
+  "2026-11-09": {
+   "image": "2026-11-09.webp",
+   "grid": {
+    "west": 109.525,
+    "south": 18.185,
+    "east": 109.585,
+    "north": 18.245,
+    "width": 634,
+    "height": 663
+   }
+  },
+  "2026-11-17": {
+   "image": "2026-11-17.webp",
+   "grid": {
+    "west": 109.525,
+    "south": 18.185,
+    "east": 109.585,
+    "north": 18.245,
+    "width": 634,
+    "height": 663
+   }
+  }
+ }
+}
