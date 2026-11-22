@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岸壁区間の在／不在と確認の状態（試行）</title>
+<style>
+/* confirm-1 PR-6 (design confirm-design.md §6.6). The trial pages' plain light look (docs/sat/), with the boxes of the site's
+   DESIGN.md: a head strip (what, source, as of) / the body / a foot strip (onwards). Numbers, days and sources in a monospace face. */
+:root{--ink:#222;--ink2:#555;--ink3:#777;--line:#ddd;--line2:#c8c8c8;--face:#fff;--face2:#f7f7f5;--accent:#2a8f80;
+ --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+ --present:#1f6fb2;--absent:#555;--human:#2e7d32;--auto:#2a8f80;--wait:#9a6700;--off:#6b6b6b;--unsure:#7a4fa0}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;max-width:1180px;margin:1.5rem auto 4rem;padding:0 1rem;line-height:1.6;color:var(--ink);background:#fff}
+.crumb{font-size:.8rem;color:var(--ink3)}.crumb a{color:var(--ink2)}
+h1{font-size:clamp(1.3rem,1rem + 1.2vw,1.8rem);margin:.2rem 0 .1rem;line-height:1.3}
+h1::after{content:"";display:block;width:2.2rem;height:3px;background:var(--accent);margin-top:.45rem}
+h2{font-size:1.15rem;margin:2.2rem 0 .3rem;display:flex;justify-content:space-between;align-items:baseline;gap:1rem;border-bottom:1px solid var(--line);padding-bottom:.35rem}
+h2 a{font-size:.8rem;font-weight:normal;color:var(--accent)}
+.trial{background:#fff3cd;border:1px solid #e0c060;padding:.6rem .9rem;border-radius:4px}
+.note,small{color:var(--ink2)}
+.mono{font-family:var(--mono)}
+.src{font-family:var(--mono);font-size:.75rem;color:var(--ink3);margin:.35rem 0 0}
+.lab{font-size:.72rem;font-weight:600;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase}
+/* the strip of numbers: six across, two across on a phone */
+.strip{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--line);border-radius:10px;background:var(--face2);margin-top:1rem}
+.strip>div{padding:.75rem .9rem;border-left:1px solid var(--line);min-width:0}
+.strip>div:first-child{border-left:0}
+.strip b{display:block;font-family:var(--mono);font-size:1.55rem;line-height:1.2;margin:.15rem 0 .1rem;color:var(--ink)}
+.strip b.a{color:var(--accent)}
+.strip span.sub{display:block;font-size:.75rem;color:var(--ink2);font-family:var(--mono)}
+.strip span.na{color:var(--ink3)}
+/* the boxes of the ports */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.box{border:1px solid var(--line);border-radius:10px;background:var(--face);display:flex;flex-direction:column;min-width:0}
+.box>header,.box>footer{display:flex;justify-content:space-between;align-items:baseline;gap:.8rem;padding:.55rem .9rem;flex-wrap:wrap}
+.box>header{border-bottom:1px solid var(--line);background:var(--face2);border-radius:10px 10px 0 0}
+.box>header .name{font-weight:600}
+.box>header .name small{font-family:var(--mono);margin-left:.4rem}
+.box>footer{border-top:1px solid var(--line);margin-top:auto;font-size:.82rem}
+.box>footer a{color:var(--accent);text-decoration:none}.box>footer a:hover{text-decoration:underline}
+.stale{color:#b00020;font-weight:600}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem .8rem;padding:.45rem .9rem;border-top:1px solid #eee;align-items:center}
+.rows li:first-child{border-top:0}
+.rows .sec{font-family:var(--mono);font-size:.85rem}
+.rows .sec small{display:block;font-family:system-ui,sans-serif;font-size:.75rem;color:var(--ink3)}
+.rows .st{text-align:right;white-space:nowrap}
+.rows .when{display:block;font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
+.rows .last{display:block;font-size:.74rem;color:var(--ink3);opacity:.85}
+.v{font-weight:700;margin-right:.35rem}.v.p{color:var(--present)}.v.a{color:var(--absent)}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;border-radius:5px;padding:1px 6px;vertical-align:1px}
+.tag.human{color:var(--human);background:rgba(46,125,50,.12)}.tag.auto{color:var(--auto);background:rgba(42,143,128,.12)}
+.tag.pending{color:var(--wait);background:rgba(154,103,0,.12)}.tag.unconfirmed{color:var(--off);background:rgba(0,0,0,.06)}
+.tag.no_image{color:var(--off);background:transparent;border:1px dashed #aaa;padding:0 5px}.tag.unsure{color:var(--unsure);background:rgba(122,79,160,.12)}
+.tag.none{color:var(--ink3);background:transparent}
+.empty{padding:1rem .9rem;color:var(--ink2)}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;font-size:.82rem;margin:.6rem 0 0}
+details{margin-top:.6rem}summary{cursor:pointer;color:var(--ink2)}
+footer.page{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:.8rem;font-size:.82rem;color:var(--ink2)}
+@media (max-width:760px){
+ .strip{grid-template-columns:1fr 1fr}
+ .strip>div{border-left:0;border-top:1px solid var(--line)}
+ .strip>div:nth-child(-n+2){border-top:0}
+ .strip>div:nth-child(even){border-left:1px solid var(--line)}
+ .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<p class="crumb"><a href="../">衛星（試行）</a> / 確認回し</p>
+<h1>岸壁区間の在／不在と確認の状態（試行）</h1>
+<p class="trial" id="note"><b>試行</b>。在／不在は Sentinel-2（10 m）の像についての判定と、所有者が同じ像を目で見た確認です。真の在／不在ではありません。</p>
+<p class="note" id="mode">読み込み中…</p>
+
+<div class="strip" id="strip" aria-label="いつも並べて出す数字">
+ <div><span class="lab" id="a-lab">自動確定の正答率</span><b class="a" id="a-val">—</b><span class="sub" id="a-sub">&nbsp;</span></div>
+ <div><span class="lab">確認済み</span><b id="c-human">—</b><span class="sub">像のある升のうち</span></div>
+ <div><span class="lab" id="c-auto-lab">自動確定</span><b id="c-auto">—</b><span class="sub" id="c-auto-sub">像のある升のうち</span></div>
+ <div><span class="lab">確認待ち・未確認</span><b id="c-wait">—</b><span class="sub" id="c-wait-sub">像のある升のうち</span></div>
+ <div><span class="lab">判断できない</span><b id="c-unsure">—</b><span class="sub">像のある升のうち</span></div>
+ <div><span class="lab">判定できた升</span><b id="c-judge">—</b><span class="sub" id="c-judge-sub">全部の升のうち</span></div>
+</div>
+<p class="src" id="src">出典：—</p>
+
+<h2>港 × 区間の最新の状態 <a href="../label/?queue=1">確認ページへ →</a></h2>
+<p class="note">区間ごとに、いちばん新しい撮影日の升の状態です。経過日数はこのページを開いた日から数えます。未確認・像なし・判断できない・確認待ちの升は在／不在を出さず、最後に確かめた状態を薄く出します。</p>
+<div class="legend" id="legend"></div>
+<div class="grid" id="grid"><p class="empty">読み込み中…</p></div>
+
+<details>
+<summary>数字の決め方と、出していないもの</summary>
+<ul class="note">
+<li>升＝岸壁の区間 1 つ × Sentinel-2 の撮影 1 日。判定器（pres-3o）の点数で確信の持てる升だけを自動確定にし、それ以外は所有者の確認に回します（規則は sat/confirm.json）。</li>
+<li>自動確定の正答率は、所有者が判定器の答えを見ずに答えた結果との一致率です（抜き取り検査。影の運用の間は、規則 v1 なら自動確定になった升の一致率）。95% CI は撮影（港×日）単位のブートストラップです。</li>
+<li>構成比は像のある升のうちの割合、「判定できた升」は全部の升のうち像のある升の割合です。数字は規則・判定器・区間の版ごとに分けて <a href="../../data/sat/confirm/summary.json">summary.json</a> に出しています。</li>
+<li>判定器の点数・判定の理由・抜き取り検査の印はこのページに出しません。</li>
+<li>null（—）は不明、0 は数えて 0 です。不在は「不在と判定または確認された升」だけで、空欄を不在とは読みません。</li>
+</ul>
+</details>
+
+<footer class="page">
+<p id="credit">Contains modified Copernicus Sentinel data（Element84 Earth Search／AWS Open Data 経由）。岸壁の線：© OpenStreetMap contributors（ODbL 1.0）。</p>
+<p>データ：<a href="../../data/sat/confirm/latest.json">latest.json</a>（このページの元）・<a href="../../data/sat/confirm/summary.json">summary.json</a>・<a href="../../data/sat/confirm/queue.json">queue.json</a>。設計：<a href="../../data/sat/eval/confirm-design.md">confirm-design.md</a> §6.6・§7。</p>
+</footer>
+
+<script>
+const BASE = '../../data/sat/confirm/';
+const STALE_DAYS = 3;          // the file is written every day: older than this, the head strip says so
+const TAG = {human: '確認済み', auto: '自動', pending: '確認待ち', unconfirmed: '未確認', no_image: '像なし', unsure: '判断できない'};
+const KIND = {pier: '桟橋', coastline: '海岸線', quay: '岸壁', breakwater: '防波堤'};
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const pct = x => x === null || x === undefined ? '—' : (x * 100).toFixed(x * 100 >= 10 || x === 0 ? 0 : 1) + '%';
+const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+const ago = d => { if (!d) return ''; const n = Math.round((today - Date.parse(d + 'T00:00:00Z')) / 86400000); return n <= 0 ? '今日' : n + '日前'; };
+const hm = iso => iso ? iso.slice(0, 16).replace('T', ' ') + ' UTC' : '—';
+const word = v => v === 1 ? '在' : v === 0 ? '不在' : '—';
+
+function numbers(doc) {
+  const n = doc.numbers, shadow = !doc.auto_display;
+  $('a-lab').textContent = shadow ? '規則 v1 なら自動確定の升の一致率' : '自動確定の正答率';
+  const A = n && n.A;
+  $('a-val').textContent = A && A.rate !== null ? A.rate.toFixed(3) : '—';
+  $('a-sub').textContent = A ? (A.n ? `${A.n} 升` + (A.ci95 ? ` · CI ${A.ci95[0].toFixed(2)}–${A.ci95[1].toFixed(2)}` : '') : 'まだ答えがありません') : '—';
+  const c = (n && n.composition) || {};
+  $('c-human').textContent = pct(c.human);
+  if (shadow) { $('c-auto-lab').textContent = '自動確定'; $('c-auto').textContent = '—'; $('c-auto-sub').textContent = '影の運用中は使わない'; $('c-auto').classList.add('na'); }
+  else $('c-auto').textContent = pct(c.auto);
+  const w = c.pending === undefined ? null : (c.pending || 0) + (c.unconfirmed || 0);
+  $('c-wait').textContent = pct(w);
+  $('c-wait-sub').textContent = c.unconfirmed ? `うち未確認 ${pct(c.unconfirmed)}` : '像のある升のうち';
+  $('c-unsure').textContent = pct(c.unsure);
+  $('c-judge').textContent = pct(n ? n.judgeable_of_all : null);
+  $('c-judge-sub').textContent = n && n.cells ? `全部の ${n.cells} 升のうち（像なし ${pct(n.no_image_of_all)}）` : '全部の升のうち';
+  const part = doc.part === 'after_freeze' ? '規則を固定した後の升' : '規則を固定する前の升を含む（楽観あり）';
+  $('src').textContent = `出典：confirm/latest.json（summary.json から） · ${part} · 規則 ${doc.rule_version} · 時点 ${hm(doc.generated_utc)}`;
+}
+
+function row(s, doc) {
+  const li = el('li');
+  li.dataset.id = s.id; li.dataset.state = s.state || 'none';
+  const sec = el('span', 'sec', s.id);
+  sec.appendChild(el('small', '', [KIND[s.kind] || s.kind, s.sector ? `区画 ${s.sector}` : '', s.length_m ? `${s.length_m} m` : ''].filter(Boolean).join('・')));
+  const st = el('span', 'st');
+  if (!s.state) {
+    st.appendChild(el('span', 'tag none', 'まだありません'));
+  } else {
+    if (s.value === 0 || s.value === 1) st.appendChild(el('span', 'v ' + (s.value ? 'p' : 'a'), word(s.value)));
+    st.appendChild(el('span', 'tag ' + s.state, TAG[s.state] || s.state));
+    st.appendChild(el('span', 'when', `${s.date} · ${ago(s.date)}`));
+    if (s.value === null && s.last_value !== null) st.appendChild(el('span', 'last', `最後の確認：${word(s.last_value)}（${ago(s.last_date)}${s.last_source === 'auto' ? '・自動' : ''}）`));
+  }
+  li.append(sec, st);
+  return li;
+}
+
+function box(id, site, doc) {
+  const b = el('section', 'box'); b.dataset.site = id;
+  const h = el('header');
+  const name = el('span', 'name', site.name); name.appendChild(el('small', '', id));
+  const old = doc.generated_utc && (Date.now() - Date.parse(doc.generated_utc)) / 86400000 > STALE_DAYS;
+  const right = el('span', 'src'); right.textContent = `Sentinel-2 · 時点 ${hm(doc.generated_utc)}`;
+  if (old) right.appendChild(el('span', 'stale', ' · 古いデータ'));
+  h.append(name, right);
+  const ul = el('ul', 'rows');
+  const secs = site.sections || [];
+  if (!secs.length) ul.appendChild(el('li', 'empty', 'まだありません（区間がありません）'));
+  secs.forEach(s => ul.appendChild(row(s, doc)));
+  const f = el('footer');
+  const cnt = site.states || {};
+  const wait = (cnt.pending || 0);
+  const a = el('a', '', wait ? `確認待ち ${wait} 区間：確認ページへ →` : '確認ページへ →'); a.href = '../label/?queue=1';
+  const n = site.numbers;
+  const meta = el('span', 'src', n ? `${n.cells} 升 · 判定できた ${pct(n.judgeable_of_all)}` : 'まだ升がありません');
+  meta.style.margin = 0;
+  f.append(a, meta);
+  b.append(h, ul, f);
+  return b;
+}
+
+function empty(msg) {
+  $('grid').replaceChildren(el('p', 'empty', msg));
+  $('mode').textContent = '';
+}
+
+fetch(BASE + 'latest.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(doc => {
+  if (!doc || !doc.sites) { empty('まだありません。確認回しの記録（docs/data/sat/confirm/）はまだ公開されていません。'); return; }
+  numbers(doc);
+  $('note').innerHTML = '<b>試行</b>。' + doc.note.replace(/^試行。/, '').replace(/。?$/, '。');
+  $('mode').textContent = doc.auto_display
+    ? `自動確定は表示に使っています。「自動」の札は判定器の答え（抜き取りで所有者が確かめています）。確認待ちの升は ${doc.expire_days} 日で未確認になります。`
+    : `いまは影の運用です：判定器の答えは表示に使わず、像のある升は全部所有者の確認に回しています（「自動」の札は出しません）。確認待ちの升は ${doc.expire_days} 日で未確認になります。`;
+  const lg = $('legend');
+  ['human', ...(doc.auto_display ? ['auto'] : []), 'pending', 'unconfirmed', 'unsure', 'no_image'].forEach(k => { const s = el('span'); s.append(el('span', 'tag ' + k, TAG[k])); lg.appendChild(s); });
+  const ids = Object.keys(doc.sites);
+  if (!ids.length) { empty('まだありません（区間の台帳がありません）。'); return; }
+  $('grid').replaceChildren(...ids.map(id => box(id, doc.sites[id], doc)));
+  if (doc.credit) $('credit').textContent = `${doc.credit}（${doc.source}）。${doc.attribution.replace('(c)', '©')}。`;
+});
+</script>
+</body>
+</html>
