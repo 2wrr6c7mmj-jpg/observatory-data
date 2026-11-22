@@ -20,10 +20,14 @@ The score table (CSV, one row per cell; SCORE_FIELDS):
     nodata                         the share without data. Over the limits of confirm.json "clear" -> no_image.
     status                         optional: "no_image" says the same directly
     answers_through                optional: the last answer day the judge used for this score (recorded in the log)
+    n_answers                      the number of the owner's answers the judge used for this score (an integer; pres-3o:
+                                   the answers whose day has a patch in the store). Missing or empty: not known, and the
+                                   cell is not settled automatically (reason answers_unknown)
 
 The rule v1 (confirm.json; decide()): automatic only when all of
-    p <= p_low or p >= p_high / at least min_answers answers of the owner in the section before the day /
-    the last of them at most max_prev_days days before the day / the port is in auto_sites.
+    p <= p_low or p >= p_high / at least min_answers answers of the owner in the section before the day, counted both
+    in the answer files and by the judge (n_answers of the table; the smaller of the two counts) / the last of them at
+    most max_prev_days days before the day (from the answer files) / the port is in auto_sites.
 Everything else is shown to the owner. Only the owner's answers count as answers: an automatic state never enters the
 history (history()), so the judge cannot confirm itself.
 
@@ -60,16 +64,17 @@ FRAME_M = 120.0
 STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image")
 FINAL = ("human", "unsure")                 # the owner has spoken: never judged again
 SCORE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "p", "model_version", "cloud_shadow", "nodata", "status",
-                "answers_through"]
+                "answers_through", "n_answers"]
 STATE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "state", "value", "source", "p", "model_version",
-                "rule_version", "reason", "prev_answer_date", "prev_answer", "n_answers", "answered_utc", "sections_version"]
+                "rule_version", "reason", "prev_answer_date", "prev_answer", "n_answers", "n_answers_judge", "answered_utc", "sections_version"]
 LOG_FIELDS = ["site_id", "section_id", "date", "judged_utc", "model_version", "rule_version", "p", "state", "value", "source",
-              "reason", "v1_state", "v1_value", "answers_through", "n_answers", "prev_answer_date", "prev_answer", "audit",
+              "reason", "v1_state", "v1_value", "answers_through", "n_answers", "n_answers_judge", "prev_answer_date", "prev_answer", "audit",
               "audit_rate", "queued", "answered_utc", "queue_version", "sections_version"]
 ANSWER_FIELDS = ["site_id", "section_id", "date", "verified", "verified_occupied", "verified_by", "verified_note",
                  "answered_utc", "queue_version"]
 # what makes a new log row: a change in any of these
 LOG_KEY = ["model_version", "rule_version", "p", "state", "value", "source", "reason", "v1_state", "v1_value", "n_answers",
+           "n_answers_judge",
            "prev_answer_date", "prev_answer", "audit", "queued", "answered_utc"]
 CREDIT = "Contains modified Copernicus Sentinel data"
 ATTRIBUTION = "岸壁の線：(c) OpenStreetMap contributors（ODbL 1.0）"
@@ -286,9 +291,19 @@ def is_clear(row: dict, cfg: dict) -> bool:
     return not ((cs is not None and cs > cfg["clear"]["cloud_shadow_max"]) or (nd is not None and nd > cfg["clear"]["nodata_max"]))
 
 
+def judge_count(v) -> int | None:
+    """The n_answers column of the score table: a whole number >= 0, else None (not known)."""
+    s = "" if v is None else str(v).strip()
+    return int(s) if s.isascii() and s.isdigit() else None
+
+
 def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict) -> dict:
     """Rule v1 for one cell: {"state": auto / pending / no_image, "value": 1 / 0 / None, "reason"}. The reasons a cell is
-    shown for are joined with "+", in the order of the design (§2.5, §4)."""
+    shown for are joined with "+", in the order of the design (§2.5, §4).
+
+    The number of answers is the smaller of hist["n_answers"] (the answer files) and hist["n_answers_judge"] (the answers
+    the judge used for this score). A judge count that is missing or None is not known: the cell is shown
+    (answers_unknown), never settled on the count of the files alone. The days since the last answer come from the files."""
     if not clear:
         return {"state": "no_image", "value": None, "reason": "no_image"}
     why = []
@@ -296,8 +311,11 @@ def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict) ->
         why.append("no_reference")
     elif cfg["p_low"] < p < cfg["p_high"]:
         why.append("uncertain")
-    if hist["n_answers"] < cfg["min_answers"]:
+    nj = hist.get("n_answers_judge")
+    if min(hist["n_answers"], nj if nj is not None else hist["n_answers"]) < cfg["min_answers"]:
         why.append("few_answers")
+    elif nj is None:
+        why.append("answers_unknown")
     elif hist["prev_days"] is None or hist["prev_days"] > cfg["max_prev_days"]:
         why.append("stale_answer")
     if site_id not in cfg["auto_sites"]:
@@ -419,12 +437,15 @@ def _apply_answers(state: dict, answers: dict) -> list[tuple[str, str]]:
 
 def _queue_rules(site_id: str, state: dict, cfg: dict, today: str) -> set:
     """§3.3: a waiting cell older than expire_days is unconfirmed (expired); of the waiting cells of a section only the
-    newest stays (the others: unconfirmed, superseded). Returns the keys of the cells in the queue: the waiting ones and
-    the automatic ones picked for the audit (not answered, not expired; exempt from "newest only" so that the sample
-    stays a random one)."""
+    newest stays, and none older than a cell the owner has answered (the others: unconfirmed, superseded; §3.3-2: an
+    answer to the newest cell does not bring back the cells it replaced, so a queue left for weeks does not double).
+    Returns the keys of the cells in the queue: the waiting ones and the automatic ones picked for the audit (not
+    answered, not expired; exempt from "newest only" so that the sample stays a random one)."""
     q = set()
     newest = {}
     for k, r in state.items():
+        if r["state"] in FINAL and cfg.get("latest_only", True):
+            newest[k[0]] = max(k[1], newest.get(k[0], k[1]))
         if r["state"] != "pending":
             continue
         if _days(r["date"], today) > cfg["expire_days"]:
@@ -481,7 +502,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
             if p is not None and not 0.0 <= p <= 1.0:
                 res["skipped"].append(f"{site_id}:{sec}@{day} (p outside 0..1)")
                 continue
-            h = history(answers, sec, day)
+            h = {**history(answers, sec, day), "n_answers_judge": judge_count(r.get("n_answers"))}
             v1 = decide(site_id, p, is_clear(r, cfg), h, cfg)
             d = dict(v1)
             aud, rate = (False, "")
@@ -496,6 +517,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
                         "model_version": (r.get("model_version") or "").strip(), "rule_version": cfg["rule_version"],
                         "reason": d["reason"], "prev_answer_date": h["prev_answer_date"] or "",
                         "prev_answer": "" if h["prev_answer"] is None else str(h["prev_answer"]), "n_answers": str(h["n_answers"]),
+                        "n_answers_judge": "" if h["n_answers_judge"] is None else str(h["n_answers_judge"]),
                         "answered_utc": "", "sections_version": str(secs[sec].get("sections_version", ""))}
             extra[k] = {"v1_state": v1["state"], "v1_value": "" if v1["value"] is None else str(v1["value"]),
                         "answers_through": (r.get("answers_through") or "").strip() or (h["prev_answer_date"] or ""),
@@ -559,7 +581,7 @@ def _order(cells: list[dict], cfg: dict) -> list[dict]:
     main, mix = [], []
     for c in rest:
         why = c["reason"].split("+")
-        g = 2 if "uncertain" in why else 3 if ("few_answers" in why or "no_reference" in why) else 4 if "stale_answer" in why else None
+        g = 2 if "uncertain" in why else 3 if ("few_answers" in why or "answers_unknown" in why or "no_reference" in why) else 4 if "stale_answer" in why else None
         if g is None or c["state"] == "auto":
             mix.append(c)
         else:
@@ -575,7 +597,9 @@ def _order(cells: list[dict], cfg: dict) -> list[dict]:
 
 def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
     """queue.json for the page. Per cell: port, section, day, picture, the last answer (day, present / absent, picture) and
-    its place. No score, no judgement and no audit mark go in (§6.2): the owner reads without seeing the judge."""
+    its place. No score, no judgement and no audit mark go in (§6.2): the owner reads without seeing the judge. No file
+    name either: the page names the file it downloads after the day of the download (confirm-answers-YYYY-MM-DD.csv;
+    it holds every stored answer, of this queue and of earlier ones), and merge takes any name."""
     cells, sites, images = [], {}, {}
     for site_id, (state, secs, q, _answers) in queued.items():
         if not q:
@@ -607,7 +631,7 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str) -> dict:
     years = sorted({k.split("|")[1][:4] for k in images} | {c["date"][:4] for c in out_cells})
     return {"version": QUEUE_VERSION, "queue_version": f"{now[:10]}-{dig}", "generated_utc": now, "rule_version": cfg["rule_version"],
             "zoom": 8, "frame_m": FRAME_M, "expire_days": cfg["expire_days"], "seconds_per_cell": 10,
-            "answers_file": f"confirm-answers-{now[:10]}.csv", "answer_fields": ANSWER_FIELDS,
+            "answer_fields": ANSWER_FIELDS,
             "credit": f"{CREDIT} {', '.join(years)}".strip(), "attribution": ATTRIBUTION,
             "note": "判定器の点数・判定・抜き取り検査の印は入れていない（所有者の読みが判定器に引きずられないように）",
             "sites": sites, "images": images, "cells": out_cells}
@@ -709,7 +733,25 @@ def scored_cells(out: Path, site_id: str) -> list[dict]:
     return res
 
 
-def _block(states: list[dict], scored: list[dict], cfg: dict) -> dict:
+A_RECENT_DAYS = 84          # §7.5: A over the last 12 weeks too
+
+
+def _a_pairs(scored: list[dict], cfg: dict) -> list:
+    """The pairs of A: the audit sample (weighted by 1 / audit_rate) when automatic states are shown, else (the shadow
+    operation) every cell rule v1 would have made automatic."""
+    res = []
+    for r in scored:
+        if r["v1_state"] == "auto" and r["v1_value"] != "":
+            agree = int(int(r["v1_value"]) == r["y"])
+            if not cfg.get("auto_display"):
+                res.append(((r["site_id"], r["date"]), agree, 1.0))
+            elif r["audit"] == "1" and r["state"] == "auto":
+                res.append(((r["site_id"], r["date"]), agree, 1.0 / (_fnum(r["audit_rate"]) or 1.0)))
+    return res
+
+
+def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset = frozenset(), now: str | None = None) -> dict:
+    """picked: the (site, section, day) of the cells chosen for the audit (a log row with audit = 1)."""
     cnt = {s: 0 for s in STATES}
     for r in states:
         cnt[r["state"]] = cnt.get(r["state"], 0) + 1
@@ -729,6 +771,22 @@ def _block(states: list[dict], scored: list[dict], cfg: dict) -> dict:
             changed_routed += r["v1_state"] == "pending"
     a = _rate(audit) if cfg.get("auto_display") else _rate(would)
     rt = _rate(routed, ci=False)
+    # §7.5 / C5: what became of the audit sample (an expired one stays unanswered: A is computed without it), the two
+    # kinds of unconfirmed cells, and the cells of the sections added after the ledger was started
+    smp = {"picked": 0, "answered": 0, "expired": 0, "waiting": 0}
+    for r in states:
+        if (r["site_id"], r["section_id"], r["date"]) in picked:
+            smp["picked"] += 1
+            smp["answered" if r["state"] in FINAL else "expired" if now and _days(r["date"], now) > cfg["expire_days"] else "waiting"] += 1
+    unc = {"expired": 0, "superseded": 0}
+    for r in states:
+        if r["state"] == "unconfirmed" and r["reason"] in unc:
+            unc[r["reason"]] += 1
+    new = [r for r in states if (r.get("sections_version") or "1") != "1"]
+    ncnt = {}
+    for r in new:
+        ncnt[r["state"]] = ncnt.get(r["state"], 0) + 1
+    recent = [r for r in scored if now and 0 <= _days(r["date"], now) < A_RECENT_DAYS]
     den = cnt["auto"] + cnt["human"] + cnt["unconfirmed"]
     c = None
     if den and (cnt["auto"] == 0 or a["rate"] is not None) and (cnt["unconfirmed"] == 0 or rt["rate"] is not None):
@@ -740,7 +798,9 @@ def _block(states: list[dict], scored: list[dict], cfg: dict) -> dict:
             "answered": len(scored),
             "A_auto_accuracy": {**a, "basis": "audit sample, weighted by 1 / audit_rate" if cfg.get("auto_display")
                                 else "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"},
-            "would_be_auto": _rate(would), "audit": _rate(audit),
+            "A_auto_accuracy_last_12_weeks": _rate(_a_pairs(recent, cfg)),
+            "would_be_auto": _rate(would), "audit": _rate(audit), "audit_sample": smp,
+            "unconfirmed": unc, "new_sections": {"cells": len(new), "states": ncnt},
             "routed_judge_accuracy": rt,
             "changed": {"n": changed, "routed": changed_routed},
             "C_total_owner_counted_correct": c}
@@ -751,10 +811,12 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     "after frozen_utc or not" (never mixed); and by ISO week. Agreement is agreement with the owner's reading."""
     out, cfg, now = Path(out), cfg or load_config(), now or utcnow()
     frozen = (cfg.get("frozen_utc") or "")[:10]
-    states, scored = [], []
+    states, scored, picked = [], [], set()
     for site_id in known_sites(out):
         states += list(load_state(out, site_id).values())
         scored += scored_cells(out, site_id)
+        picked |= {(site_id, r["section_id"], r["date"]) for r in load_log(out, site_id) if r.get("audit") == "1"}
+    picked = frozenset(picked)
 
     def part(r):
         return "after_freeze" if frozen and r["date"] > frozen else "before_freeze"
@@ -774,15 +836,19 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
                      "agreement": "どの数字も所有者の読みとの一致。所有者の読みの誤りは入っていない",
                      "ci": "95% CI は撮影（港×日）単位のブートストラップ 1,000 回、種 0",
                      "freeze": "frozen_utc より後に撮られた升（after_freeze）だけが、規則を先に決めてから入った答え。before_freeze の数字は規則を選んだ升を含み楽観がある",
-                     "null": "null は数えられない（升が無い）。0 は数えて 0"},
+                     "null": "null は数えられない（升が無い）。0 は数えて 0",
+                     "A_last_12_weeks": "A と同じ数え方で、撮影日が generated_utc の日から 84 日（12 週）以内の升だけ",
+                     "audit_sample": "抜き取りに選んだ升（記録に audit=1 の行がある升）と、そのうち答えがあった／期限（expire_days）を過ぎて答えのない／まだ待っている升の数。期限を過ぎた升は A に入らない（A が偏りうるので数を出す）",
+                     "unconfirmed": "未確認の升の内訳：期限切れ（expired）と、後の撮影に置き換え（superseded）",
+                     "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態"},
            "parts": {}}
     for name in ("before_freeze", "after_freeze"):
         st = [r for r in states if part(r) == name]
         sc = [r for r in scored if part(r) == name]
-        blk = {"total": _block(st, sc, cfg), "by_site": {}, "by_version": {}, "by_week": {}}
+        blk = {"total": _block(st, sc, cfg, picked, now), "by_site": {}, "by_version": {}, "by_week": {}}
         for label, fn in (("by_site", lambda r: r["site_id"]), ("by_version", ver), ("by_week", week)):
             for g in sorted({fn(r) for r in st} | {fn(r) for r in sc}):
-                blk[label][g] = _block([r for r in st if fn(r) == g], [r for r in sc if fn(r) == g], cfg)
+                blk[label][g] = _block([r for r in st if fn(r) == g], [r for r in sc if fn(r) == g], cfg, picked, now)
         doc["parts"][name] = blk
     return doc
 

@@ -13,7 +13,7 @@
  "audit": {"rate": 0.2, "present_factor": 2.0, "stale_days": 60, "stale_factor": 2.0},
  "image_keep_days": 90,
  "notes": {
-  "rule": "設計書（確認回し）§2.5 の規則 v1：点数 p ≤ p_low または p ≥ p_high、判定日より前の所有者の答えが min_answers 件以上、直前の答えが max_prev_days 日以内、港が auto_sites にある升だけ自動確定。それ以外は確認に回す",
+  "rule": "設計書（確認回し）§2.5 の規則 v1：点数 p ≤ p_low または p ≥ p_high、判定日より前の所有者の答えが min_answers 件以上（答えのファイルから数えた数と、点数の表の n_answers＝判定器がその点数に使った答えの数の小さい方。n_answers が無い・空なら自動確定しない）、直前の答えが max_prev_days 日以内（答えのファイルから）、港が auto_sites にある升だけ自動確定。それ以外は確認に回す",
   "auto_display": "false＝影の運用（§7.2）：自動確定を状態に使わず、判定できる升を全部キューに出す。規則 v1 の結果は記録（log）の v1_state・v1_value にだけ残す",
   "frozen_utc": "規則と判定器の版を固定した時刻（§2.6・§6.4）。null の間は summary の数字は全部「固定より前」として出す。値を入れる PR で固定する",
   "audit": "§7.3 の抜き取り検査：自動確定の升を rate の率で選ぶ。在の側は present_factor 倍、直前の答えが stale_days 日を超えた升は stale_factor 倍（上限 1）。選び方は（港・区間・日・規則の版）から決まる",
