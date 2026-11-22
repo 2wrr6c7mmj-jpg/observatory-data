@@ -489,10 +489,15 @@ class RunTest(Base):
         self.assertEqual({k: rows["B"][k] for k in ("state", "date", "value", "last_date", "last_value")},
                          {"state": "no_image", "date": "2026-11-06", "value": None, "last_date": "2026-11-01", "last_value": 0})
         self.assertEqual((rows["C"]["state"], rows["C"]["date"], rows["C"]["value"]), (None, None, None))   # no cell yet
-        self.assertEqual(q["states"], {"pending": 1, "no_image": 1})
+        self.assertEqual(q["sections_by_state"], {"pending": 1, "no_image": 1})
+        self.assertEqual([r["label"] for r in q["sections"]], ["区画 A・桟橋 1・A", "区画 A・桟橋 1・B", "区画 A・桟橋 1・C"])   # ids of another form
+        self.assertEqual(q["numbers"]["A"]["rate"], None)            # a port of fewer than 30 cells: withheld
+        self.assertEqual(q["numbers"]["A"]["withheld"], "升が少ない（30 升未満）")
+        self.assertIn("sections_by_state", doc["notes"])
         self.assertEqual(doc["numbers"]["cells"], 4)
         self.assertEqual(doc["numbers"]["judgeable_of_all"], 0.75)
-        self.assertEqual(set(doc["numbers"]["A"]), {"rate", "n", "ci95", "basis"})
+        self.assertEqual(set(doc["numbers"]["A"]), {"rate", "n", "ci95", "basis", "withheld"})
+        self.assertIsNone(doc["numbers"]["A"]["withheld"])                 # the total is never withheld
         self.assertEqual(q["numbers"]["cells"], 4)
         self.assertIn("Contains modified Copernicus Sentinel data 2026", doc["credit"])
         for word in ('"p"', "0.31", "0.01", "0.4", "pres3o", "v1_", "audit", "reason"):
@@ -509,8 +514,40 @@ class RunTest(Base):
         shadow = cf.latest(self.out, cf.load_config(), "2026-11-08T06:00:00Z")
         rows = {r["id"]: r for r in shadow["sites"]["QDH"]["sections"]}
         self.assertEqual((rows["C"]["state"], rows["C"]["value"], rows["C"]["last_value"]), ("pending", None, None))
-        self.assertNotIn("auto", shadow["sites"]["QDH"]["states"])
+        self.assertNotIn("auto", shadow["sites"]["QDH"]["sections_by_state"])
+        # an owner's cell without a value (a damaged row) does not break the file
+        st = cf.load_state(self.out, "QDH")
+        st[("A", "2026-11-06")]["value"] = ""
+        cf._save_state(self.out, "QDH", st)
+        rows = {r["id"]: r for r in cf.latest(self.out, c, "2026-11-08T06:00:00Z")["sites"]["QDH"]["sections"]}
+        self.assertEqual((rows["A"]["state"], rows["A"]["value"], rows["A"]["last_value"]), ("human", None, 1))
         self.assertIs(shadow["auto_display"], False)
+
+    def test_section_labels(self):
+        # "区画・種別 番号・側 番号": the lines numbered along the shore within a sector and kind; a later ledger version numbers its
+        # lines after the earlier ones, so no label changes while the ids stay
+        def s(i, way, x, kind="pier", sector="A1", v=1):
+            return {"id": i, "way": way, "kind": kind, "sector": sector, "sections_version": v, "line": [[120.0 + x, 36.0], [120.0 + x, 36.001]]}
+        led = {"sections": [s("7:L:00", 7, 0.02), s("7:R:01", 7, 0.02), s("5:L:00", 5, 0.01), s("9:L:03", 9, 0.05, "coastline"),
+                            s("8:L:00", 8, 0.01, sector="B")]}
+        lab = {k: v[0] for k, v in cf.section_labels(led).items()}
+        self.assertEqual(lab, {"5:L:00": "区画 A1・桟橋 1・左側 1", "7:L:00": "区画 A1・桟橋 2・左側 1", "7:R:01": "区画 A1・桟橋 2・右側 2",
+                               "9:L:03": "区画 A1・海岸線 1・左側 4", "8:L:00": "区画 B・桟橋 1・左側 1"})
+        led["sections"] += [s("4:L:00", 4, 0.0, v=2), s("6:R:00", 6, 0.015, v=2)]      # west of all of them, and in between
+        lab2 = {k: v[0] for k, v in cf.section_labels(led).items()}
+        self.assertEqual({k: lab2[k] for k in lab}, lab)
+        self.assertEqual((lab2["4:L:00"], lab2["6:R:00"]), ("区画 A1・桟橋 3・左側 1", "区画 A1・桟橋 4・右側 1"))
+        led["sections"][0]["status"] = "retired"
+        self.assertEqual({k: v[0] for k, v in cf.section_labels(led).items()}, lab2)
+        # the queue carries the same labels
+        c = cfg()
+        cf.run([cell("QDH", "A", "2026-11-01", "0.5")], self.out, c, "2026-11-02T06:00:00Z")
+        q = json.loads((self.out / "confirm" / "queue.json").read_text(encoding="utf-8"))
+        self.assertEqual(q["sites"]["QDH"]["sections"]["A"]["label"], "区画 A・桟橋 1・A")
+        # the real ledgers: every label differs within a port
+        for site in ("QDH", "LSN", "ZJG"):
+            labs = [v[0] for v in cf.section_labels({"sections": [{**x, "sections_version": 1} for x in cf.review_sections(OUT, site)]}).values()]
+            self.assertEqual(len(set(labs)), len(labs), site)
 
     def test_shadow_operation_shows_everything_and_records_the_rule(self):
         c = cf.load_config()                                         # auto_display false
