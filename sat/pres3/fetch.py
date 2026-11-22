@@ -70,7 +70,9 @@ def gdal_env(gdal_version=None):
 
 # a 4xx status in the text of an error without an HTTP status (a proxy's "Tunnel connection failed: 403 Forbidden"); not a
 # port (":443") or a part of a number
-STATUS_4XX = re.compile(r'(?<![:\d.\-])4\d\d(?![\d.])')
+# a port number is not a status: "Failed to connect to host port 443 after 3 ms: Couldn't connect to server" (curl) and
+# "host:443" are failed connections, to be sent again
+STATUS_4XX = re.compile(r'(?<![:\d.\-])(?<![Pp]ort )4\d\d(?![\d.])')
 # a certificate that does not verify (urllib / ssl, and curl inside GDAL): sending again gives the same answer
 CERT_FAILURE = re.compile(r'CERTIFICATE_VERIFY_FAILED|certificate verify failed|SSL certificate problem|certificate has expired|'
                           r'self[- ]signed certificate|unable to get local issuer certificate|hostname mismatch', re.I)
@@ -89,9 +91,9 @@ def transient(e):
     if isinstance(e, (TimeoutError, ConnectionError, http.client.IncompleteRead, http.client.RemoteDisconnected)): return True
     msg = str(e)                                                              # GDAL / rasterio: the HTTP status is in the text
     if CERT_FAILURE.search(msg): return False
-    if re.search(r'\b4\d\d\b', msg): return False                            # a 4xx anywhere in it: taken as a refusal
+    if STATUS_4XX.search(msg): return False                                  # a 4xx anywhere in it (not a port): a refusal
     return bool(re.search(r'response code:?\s*5\d\d|HTTP error code:?\s*5\d\d|CURL error|timed out|Connection reset|'
-                          r'Connection refused|Could not resolve|transfer closed', msg))
+                          r'Connection refused|Could not resolve|transfer closed|Failed to connect|Couldn.t connect', msg))
 
 
 def with_retries(fn, tries, delays, sleep=time.sleep):
