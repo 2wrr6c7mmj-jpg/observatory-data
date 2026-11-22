@@ -103,7 +103,7 @@ def refusal(e):
 
 # ---------------------------------------------------------------- the daily run
 
-def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, log=print, read=None):
+def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, log=print, read=None, out=None):
     """Search, then fetch the new days of one port (sat.pres3.daily.fetch_port, with the requests counted and the limits).
     -> (stored days, the scenes left for the limits)."""
     from . import build, daily, fetch
@@ -111,6 +111,9 @@ def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, l
     read = read or fetch.one
     bb = sites[port]['bbox']; tile = daily.port_tile(port); have = set(store.dates(port))
     secs, geo, trial, wide = daily.fetch_plan(port, bb)          # the window: widened to the port's trial sections, if any
+    bad = redrawn_trial(out, port) if out is not None else []
+    if bad:          # drawn again under the same id: no patch of the new line under the old id (its reference would mix them)
+        secs = {k: v for k, v in secs.items() if k not in bad}; geo = {k: v for k, v in geo.items() if k not in bad}; trial = trial - set(bad)
     found = fetch.search({"bbox": bb, "datetime": f"{now - dt.timedelta(days=days):%Y-%m-%dT%H:%M:%SZ}/{now:%Y-%m-%dT%H:%M:%SZ}"},
                          urlopen=meter.urlopen())
     new = daily.pick_new(found, tile, have)
@@ -189,7 +192,7 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
         if meter.stopped:
             r['skipped'] = 'limits'; continue
         try:
-            r['stored'], left = fetch_port(store, windows, port, sites, meter, days, now, max_scenes, log, read=fetch_read)
+            r['stored'], left = fetch_port(store, windows, port, sites, meter, days, now, max_scenes, log, read=fetch_read, out=out)
             if left: r['left_for_the_limits'] = left
         except Exception as e:                 # reported as it is: the port waits for the next run
             kind = 'refused' if refusal(e) else 'failed'; r[kind] = repr(e)[:300]
@@ -233,6 +236,15 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
     return rep
 
 
+def redrawn_trial(out, port):
+    """The ids of the port's trial sections whose line or frame differs from the ledger's under the same id (drawn again
+    without a new id). Such a section is neither synced, judged nor stored until it gets a new id and the old one is retired."""
+    from .. import confirm, confirm_trial
+    known = {s['id']: s for s in (confirm.load_sections(out, port) or {}).get('sections', [])}
+    return [s['id'] for s in confirm_trial.sections(port)
+            if s['id'] in known and (known[s['id']].get('line') != s['line'] or known[s['id']].get('frame') != s['frame'])]
+
+
 def sync_trial(out, port, nows):
     """Add the port's trial sections (sat/confirm_trial.json) to its ledger as a later sections_version. A trial section whose
     id is in the ledger with another line or frame (drawn again under the same id) is not synced and is returned, so that one
@@ -240,8 +252,7 @@ def sync_trial(out, port, nows):
     from .. import confirm, confirm_trial
     trial = confirm_trial.sections(port)
     if not trial: return []
-    known = {s['id']: s for s in (confirm.load_sections(out, port) or {}).get('sections', [])}
-    bad = [s['id'] for s in trial if s['id'] in known and (known[s['id']].get('line') != s['line'] or known[s['id']].get('frame') != s['frame'])]
+    bad = redrawn_trial(out, port)
     confirm.sync_sections(out, port, [s for s in trial if s['id'] not in bad], nows)
     return bad
 

@@ -353,6 +353,32 @@ class RedrawnLineTest(unittest.TestCase):
             self.assertEqual(cr.sync_trial(out, "XSN", "2026-11-23T07:29:00Z"), [first[1]["id"]])   # no exception
             self.assertEqual(cr.sync_trial(out, "QGZ", "2026-11-23T07:29:00Z"), [])
             self.assertEqual(len(cf.load_sections(out, "QGZ")["sections"]), len(ct.sections("QGZ")))
+            self.assertEqual(cr.redrawn_trial(out, "XSN"), [first[1]["id"]]); self.assertEqual(cr.redrawn_trial(out, "QGZ"), [])
+
+    @unittest.skipUnless(np is not None, "numpy not installed")
+    def test_a_redrawn_section_is_not_stored(self):
+        # the fetch cuts no patch for it (no new line under the old id); the other sections as before
+        from unittest import mock as m
+        from sat.pres3 import build, confirm_run as cr, daily
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "out"; win = Path(d) / "win"; first = [dict(s) for s in ct.sections("XSN")]
+            first[0] = dict(first[0], line=[[p[0] + 0.0003, p[1]] for p in first[0]["line"]])
+            cf.sync_sections(out, "XSN", first, "2026-11-22T07:29:00Z")
+            f = {"id": "S2B_51RUN_20261120_0_L2A", "properties": {"datetime": "2026-11-20T02:57:55Z", "eo:cloud_cover": 1.0}}
+
+            def read(work, port, feat, bb, env_extra=None, **kw):
+                (win / "data" / port).mkdir(parents=True, exist_ok=True)
+                np.savez(win / "data" / port / f"{feat['id']}.npz", meta=json.dumps({"id": feat["id"]}))
+            seen = []
+            with m.patch("sat.pres3.fetch.search", return_value=[f]), m.patch.object(daily, "port_tile", return_value="51RUN"), \
+                 m.patch.object(build, "day_cells", side_effect=lambda port, day, sc, secs, geo, old, trial=(): seen.append((set(secs), set(geo), set(trial)))), \
+                 m.patch("time.sleep"):
+                cr.fetch_port(daily.Store(Path(d) / "store"), win, "XSN", {"XSN": {"bbox": SITES["XSN"]["bbox"]}}, cr.Meter(), 10,
+                              __import__("datetime").datetime(2026, 11, 22, tzinfo=__import__("datetime").timezone.utc), read=read, out=out)
+            (secs, geo, trial), = seen
+            self.assertNotIn(first[0]["id"], secs | geo | trial)
+            self.assertEqual(trial, ct.trial_ids("XSN") - {first[0]["id"]})
+            self.assertTrue(set(review_ids("XSN")) <= secs)
 
 
 if __name__ == "__main__":

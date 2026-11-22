@@ -865,7 +865,7 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
                      "audit_sample": "抜き取りに選んだ升（記録に audit=1 の行がある升）と、そのうち答えがあった／期限（expire_days）を過ぎて答えのない／まだ待っている升の数。期限を過ぎた升は A に入らない（A が偏りうるので数を出す）",
                      "unconfirmed": "未確認の升の内訳：期限切れ（expired）と、後の撮影に置き換え（superseded）",
                      "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態",
-                     "trial": "試行の区間（台帳で trial: true、sat/confirm_trial.json）は規則 v1 でも必ず所有者に回し（理由 trial）、A（自動確定の一致率・抜き取り）に入れない"},
+                     "trial": "試行の区間（台帳で trial: true、sat/confirm_trial.json）は規則 v1 でも必ず所有者に回し（理由 trial）、A（自動確定の一致率・抜き取り）に入れない。回した升の判定器の正答率（routed_judge_accuracy）と変わった升（changed）には試行の区間の升も入る"},
            "parts": {}}
     for name in ("before_freeze", "after_freeze"):
         st = [r for r in states if part(r) == name]

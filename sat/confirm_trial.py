@@ -21,7 +21,11 @@ What a trial section is, and is not:
 
     python -m sat.confirm_trial build     # write "sections" from "sources" (the test checks that the file is up to date)
     python -m sat.confirm_trial check
-Pure Python, no network.
+
+To draw a line again: give it a new id (e.g. the candidate with a version, "XSN-W-L2") and retire the old id in the ledger
+(python -m sat.confirm sections --site <site> --retire <id>). A trial section whose line differs from the ledger under the same
+id is left out by the daily run (not synced, not judged, not stored, with a warning): the old id's patches of the old line are
+not mixed with the new line in its reference. Pure Python, no network.
 """
 from __future__ import annotations
 
@@ -163,7 +167,9 @@ def check(doc: dict | None = None, review_ids: dict | None = None, ledger_dir: P
         for s in secs:
             k = known.get(s["id"])
             if k is not None and (k.get("line") != s["line"] or k.get("frame") != s["frame"]):
-                bad.append(f"{site_id} {s['id']}: the line differs from the ledger under the same id (a line drawn again needs a new id)")
+                bad.append(f"{site_id} {s['id']}: the line differs from the ledger under the same id. A line drawn again needs a new id "
+                           "(the candidate with a version); retire the old id (python -m sat.confirm sections --site <site> --retire <id>). "
+                           "Until then the daily run neither judges nor stores that section (its reference would mix the two lines)")
     if doc.get("sections", {}) != build(doc):
         bad.append("sections differ from build(sources): run python -m sat.confirm_trial build")
     for site_id, secs in doc.get("sections", {}).items():
