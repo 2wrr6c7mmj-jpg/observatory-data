@@ -107,6 +107,11 @@ class FetchTest(unittest.TestCase):
         self.assertEqual(search.calls, 1)                                                     # QGZ is not even searched
         m = cr.Meter(max_requests=1000, max_bytes=40_000_000); self.assertTrue(m.room_for_a_scene())
         m.add(10, 15_000_000); self.assertFalse(m.room_for_a_scene()); self.assertIn("bytes", m.stopped)
+        # a scene's requests: 24 (the probe: 6 files x (HEAD + 3 ranged GETs)), or the most seen in this run
+        self.assertEqual(cr.SCENE_REQUESTS, 24)
+        m = cr.Meter(max_requests=100); m.add(76, 0); self.assertTrue(m.room_for_a_scene())
+        m = cr.Meter(max_requests=100); m.add(77, 0); self.assertFalse(m.room_for_a_scene())
+        m = cr.Meter(max_requests=100); m.add(60, 0); m.scene_requests = 41; self.assertFalse(m.room_for_a_scene()); self.assertIn("+ 41", m.stopped)
 
     def test_the_cog_requests_are_counted_from_curl_s_log(self):
         log = "\n".join(["> HEAD /B04.tif HTTP/1.1", "< HTTP/1.1 200 OK", "< Content-Length: 99999999",

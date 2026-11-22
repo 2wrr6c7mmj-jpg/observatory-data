@@ -33,13 +33,13 @@ from pathlib import Path
 
 from . import common
 
-# Limits of one daily run. A scene is 6 COG files x (1 HEAD + 2 ranged GETs) = 18 requests and 7-25 MB (PR-0 probe: 18
-# requests, 6.7 MB for Qingdao; Zhanjiang's window is about 3 times larger). A normal day brings 0-3 new days per port
-# (9 ports: at most about 30 scenes, 540 requests, 0.5 GB with the searches); the limits leave room for a catch-up after a
+# Limits of one daily run. A scene is 6 COG files x (1 HEAD + 3 ranged GETs) = 24 requests and 7-25 MB (the PR-5 probe:
+# 24 requests, 11.8 MB for Qingdao; Zhanjiang's window is about 3 times larger). A normal day brings 0-3 new days per port
+# (9 ports: at most about 30 scenes, 720 requests, 0.5 GB with the searches); the limits leave room for a catch-up after a
 # missed day or two, and stop a run that would fetch far more than that (a changed catalogue, a bug).
 MAX_REQUESTS = 1000
 MAX_BYTES = 1_500_000_000
-SCENE_REQUESTS = 18                       # the cost of one scene before it is fetched (6 files x 3)
+SCENE_REQUESTS = 24                       # a scene's requests before any was seen in this run (then the most seen)
 SCENE_BYTES = 30_000_000                  # a scene's bytes before any was seen in this run (then the largest seen)
 SCORE_DAYS = 35                           # the days scored each run: the expiry of a queued cell (28 days) and a week more
 ALLOWED = (re.compile(r'^docs/data/sat/confirm/'), re.compile(r'^docs/data/sat/labels/[A-Z0-9]+-confirm-answers\.csv$'))
@@ -57,7 +57,7 @@ class Meter:
 
     def __init__(self, max_requests=MAX_REQUESTS, max_bytes=MAX_BYTES):
         self.max_requests, self.max_bytes = max_requests, max_bytes
-        self.requests = 0; self.bytes = 0; self.status = collections.Counter(); self.search_requests = 0; self.scene_bytes = 0
+        self.requests = 0; self.bytes = 0; self.status = collections.Counter(); self.search_requests = 0; self.scene_bytes = 0; self.scene_requests = 0
         self.stopped = None
 
     def add(self, requests, nbytes, status=None):
@@ -80,9 +80,9 @@ class Meter:
         return open_
 
     def room_for_a_scene(self):
-        est = max(self.scene_bytes, SCENE_BYTES)
-        if self.requests + SCENE_REQUESTS > self.max_requests:
-            self.stopped = f'requests: {self.requests} + {SCENE_REQUESTS} would pass the limit {self.max_requests}'
+        est = max(self.scene_bytes, SCENE_BYTES); nreq = max(self.scene_requests, SCENE_REQUESTS)
+        if self.requests + nreq > self.max_requests:
+            self.stopped = f'requests: {self.requests} + {nreq} would pass the limit {self.max_requests}'
         elif self.bytes + est > self.max_bytes:
             self.stopped = f'bytes: {self.bytes} + {est} would pass the limit {self.max_bytes}'
         return self.stopped is None
@@ -125,6 +125,7 @@ def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, l
             except Exception as e:
                 err = e
         c = fetch.curl_counts(cap.text); meter.add(c['requests'], c['bytes'], c['status']); meter.scene_bytes = max(meter.scene_bytes, c['bytes'])
+        meter.scene_requests = max(meter.scene_requests, c['requests'])
         if err is not None: raise err
         time.sleep(1.0)
         if secs is None: secs = labels.frames(port); geo = build.sample_points(secs)
