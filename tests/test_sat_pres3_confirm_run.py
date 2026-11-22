@@ -64,11 +64,13 @@ NOW = None if np is None else __import__("datetime").datetime(2026, 11, 21, 7, 2
 @unittest.skipUnless(np is not None, "numpy not installed")
 class FetchTest(unittest.TestCase):
     def run_fetch(self, search, read, ports=("QDH", "QGZ"), meter=None):
-        with tempfile.TemporaryDirectory() as d, mock.patch("urllib.request.urlopen", search), mock.patch("time.sleep"):
+        # cr.note: the ::error lines of the run would become annotations of the Tests check run
+        with tempfile.TemporaryDirectory() as d, mock.patch("urllib.request.urlopen", search), mock.patch("time.sleep"), mock.patch.object(cr, "note") as note:
             out = Path(d) / "out"; (out / "labels").mkdir(parents=True)
             rep = cr.daily_run(Path(d) / "store", Path(d) / "win", out, list(ports), Path(d) / "r.json", now=NOW, meter=meter or cr.Meter(),
                                fetch_read=read, log=lambda m: None)
             self.assertEqual(sorted(p.name for p in out.iterdir()), ["labels"])          # no model: nothing judged, nothing written
+            self.notes = [c.args for c in note.call_args_list]
             return rep, json.loads((Path(d) / "r.json").read_text(encoding="utf-8"))
 
     def test_a_refused_port_is_skipped_and_the_others_go_on(self):
@@ -86,6 +88,7 @@ class FetchTest(unittest.TestCase):
         self.assertEqual(calls, [("QDH", "S2B_51STA_20261118_0_L2A"), ("QGZ", "S2C_51STV_20261119_0_L2A")])   # once each: no retry
         self.assertEqual(rep["problems"][:2], ["QDH refused", "QGZ failed"]); self.assertIn("no model in the store", rep["problems"])
         self.assertEqual((rep["meter"]["search_requests"], search.calls), (2, 2))
+        self.assertEqual([n[:2] for n in self.notes], [("error", "sat-confirm QDH refused"), ("error", "sat-confirm QGZ failed")])
 
     def test_a_refused_search(self):
         for err in (http_error(403), http_error(429), urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden"))):
