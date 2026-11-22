@@ -364,7 +364,7 @@
    "B_none": 0,
    "gfw_cells_ais": 1,
    "gfw_cells_no_ais": 3,
-   "checked_utc": "2026-11-21T11:47:07Z"
+   "checked_utc": "2026-11-22T11:59:16Z"
   },
   {
    "area": "SAKI_S",
@@ -377,7 +377,7 @@
    "B_none": 1,
    "gfw_cells_ais": 1,
    "gfw_cells_no_ais": 3,
-   "checked_utc": "2026-11-21T11:47:07Z"
+   "checked_utc": "2026-11-22T11:59:16Z"
   },
   {
    "area": "HKS",
@@ -390,7 +390,7 @@
    "B_none": 46,
    "gfw_cells_ais": 278,
    "gfw_cells_no_ais": 26,
-   "checked_utc": "2026-11-21T11:47:07Z"
+   "checked_utc": "2026-11-22T11:59:16Z"
   },
   {
    "area": "BASHI",
@@ -403,7 +403,7 @@
    "B_none": 2,
    "gfw_cells_ais": 9,
    "gfw_cells_no_ais": 2,
-   "checked_utc": "2026-11-21T11:47:07Z"
+   "checked_utc": "2026-11-22T11:59:16Z"
   },
   {
    "area": "TSS",
@@ -416,7 +416,33 @@
    "B_none": 18,
    "gfw_cells_ais": 88,
    "gfw_cells_no_ais": 18,
-   "checked_utc": "2026-11-21T11:47:07Z"
+   "checked_utc": "2026-11-22T11:59:16Z"
+  },
+  {
+   "area": "OKI",
+   "acquired_utc": "2026-11-17T09:28:05Z",
+   "A_ais": 19,
+   "A_no_ais": 7,
+   "A_none": 1,
+   "B_ais": 4,
+   "B_no_ais": 3,
+   "B_none": 32,
+   "gfw_cells_ais": 90,
+   "gfw_cells_no_ais": 117,
+   "checked_utc": "2026-11-22T11:59:16Z"
+  },
+  {
+   "area": "TSW",
+   "acquired_utc": "2026-11-17T10:16:49Z",
+   "A_ais": 19,
+   "A_no_ais": 9,
+   "A_none": 6,
+   "B_ais": 58,
+   "B_no_ais": 46,
+   "B_none": 47,
+   "gfw_cells_ais": 107,
+   "gfw_cells_no_ais": 114,
+   "checked_utc": "2026-11-22T11:59:16Z"
   }
  ]
 }
