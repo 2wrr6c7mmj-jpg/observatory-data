@@ -106,33 +106,33 @@ def refusal(e):
 def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, log=print, read=None):
     """Search, then fetch the new days of one port (sat.pres3.daily.fetch_port, with the requests counted and the limits).
     -> (stored days, the scenes left for the limits)."""
-    from . import build, daily, fetch, labels
+    from . import build, daily, fetch
     import numpy as np
     read = read or fetch.one
     bb = sites[port]['bbox']; tile = daily.port_tile(port); have = set(store.dates(port))
+    secs, geo, trial, wide = daily.fetch_plan(port, bb)          # the window: widened to the port's trial sections, if any
     found = fetch.search({"bbox": bb, "datetime": f"{now - dt.timedelta(days=days):%Y-%m-%dT%H:%M:%SZ}/{now:%Y-%m-%dT%H:%M:%SZ}"},
                          urlopen=meter.urlopen())
     new = daily.pick_new(found, tile, have)
     if max_scenes is not None: new = new[-max_scenes:]
     log(f'{port} tile {tile}: {len(found)} scenes in the catalogue, {len(new)} new days')
-    secs = geo = None; done = []
+    done = []
     for k, f in enumerate(new):
         if not meter.room_for_a_scene(): return done, len(new) - k
         err = None
         with fetch.captured_stderr() as cap:                  # libcurl's log of the reads: the requests GDAL really made
             try:
-                read(str(windows), port, f, bb, env_extra={'CPL_CURL_VERBOSE': 'YES'})
+                read(str(windows), port, f, wide, env_extra={'CPL_CURL_VERBOSE': 'YES'}, **({'base': bb} if trial else {}))
             except Exception as e:
                 err = e
         c = fetch.curl_counts(cap.text); meter.add(c['requests'], c['bytes'], c['status']); meter.scene_bytes = max(meter.scene_bytes, c['bytes'])
         meter.scene_requests = max(meter.scene_requests, c['requests'])
         if err is not None: raise err
         time.sleep(1.0)
-        if secs is None: secs = labels.frames(port); geo = build.sample_points(secs)
         d = f['properties']['datetime'][:10]; fn = f'{windows}/data/{port}/{f["id"]}.npz'
-        got = build.day_cells(port, d, [(fn, json.loads(str(np.load(fn)['meta'])))], secs, geo, {})
+        got = build.day_cells(port, d, [(fn, json.loads(str(np.load(fn)['meta'])))], secs, geo, {}, trial=trial)
         if got is None: log(f'{port} {d}: more than half nodata, not stored'); continue
-        store.put(port, *got); done.append(d)
+        store.put(port, *got, trial=trial); done.append(d)
     return done, 0
 
 
@@ -159,7 +159,8 @@ def draw(out, windows, site, day, sites):
     from .. import confirm_img
     fs = window_files(windows, site, day)
     if not fs: return False
-    z = np.load(fs[-1]); meta = json.loads(str(z['meta'])); bb = sites[site]['bbox']
+    from .. import confirm_trial
+    z = np.load(fs[-1]); meta = json.loads(str(z['meta'])); bb = confirm_trial.fetch_bbox(site, sites[site]['bbox'])   # the trial sections too
     lat = (bb[1] + bb[3]) / 2; dx = 10 / (111320 * np.cos(np.radians(lat))); dy = 10 / 110540
     w = max(1, int(round((bb[2] - bb[0]) / dx))); h = max(1, int(round((bb[3] - bb[1]) / dy)))
     src_t = from_origin(meta['x0'], meta['y1'], 10, 10); dst_t = from_bounds(bb[0], bb[1], bb[2], bb[3], w, h)
@@ -209,9 +210,17 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
         rep['ports'][port].update(scored_days=len(ds), cells=len(rr), with_p=sum(x['p'] != '' for x in rr))
     rep['seconds']['score'] = round(time.time() - t, 1)
     t = time.time(); scores = [{k: str(v) for k, v in r.items()} for r in rows]
+    skip = set()
     for port in ports:
         if confirm.load_sections(out, port) is None:
             confirm.sync_sections(out, port, confirm.review_sections(out, port), nows)
+        bad = sync_trial(out, port, nows)             # the trial sections: a later sections_version of the ledger (§6.5)
+        if bad:
+            msg = (f'{port}: trial sections whose line differs from the ledger under the same id, left out of this run: {", ".join(bad)} '
+                   '(a line drawn again needs a new id: sat/confirm_trial.json)')
+            note('warning', 'sat-confirm trial', msg); rep.setdefault('warnings', []).append(msg)
+            skip |= {(port, i) for i in bad}
+    if skip: scores = [r for r in scores if (r['site_id'], r['section_id']) not in skip]
     res = confirm.run(scores, out, cfg, nows)
     queue = json.loads((out / confirm.DIR / 'queue.json').read_text(encoding='utf-8'))
     drawn = [f'{s}/{d}' for s, d in confirm_img.needed(out, queue) if draw(out, windows, s, d, sites)]
@@ -222,6 +231,19 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
     rep.update(queued=len(queue.get('cells', [])), images_drawn=drawn, images_removed=gone, skipped=len(res.get('skipped', [])))
     _write(report_path, rep)
     return rep
+
+
+def sync_trial(out, port, nows):
+    """Add the port's trial sections (sat/confirm_trial.json) to its ledger as a later sections_version. A trial section whose
+    id is in the ledger with another line or frame (drawn again under the same id) is not synced and is returned, so that one
+    redrawn line stops only itself, not the daily run of every port (sat.confirm.sync_sections would raise)."""
+    from .. import confirm, confirm_trial
+    trial = confirm_trial.sections(port)
+    if not trial: return []
+    known = {s['id']: s for s in (confirm.load_sections(out, port) or {}).get('sections', [])}
+    bad = [s['id'] for s in trial if s['id'] in known and (known[s['id']].get('line') != s['line'] or known[s['id']].get('frame') != s['frame'])]
+    confirm.sync_sections(out, port, [s for s in trial if s['id'] not in bad], nows)
+    return bad
 
 
 def _write(path, doc):
@@ -244,11 +266,13 @@ def annotate(rep):
 def store_cells(store, ports, sat_dir=None, cutoff=None):
     """(cells, features) of the answered cells of days before cutoff, from the store: the training set of a re-fit."""
     import numpy as np
+    from .. import confirm_trial
     from . import daily, feats
     C = []; X = []; names = None
     for port in ports:
-        Cp, Pp, offs = store.load(port); ans = daily.owner_answers(port, sat_dir)
-        lab = [i for i, c in enumerate(Cp) if (c['section'], c['date']) in ans and (cutoff is None or c['date'] < cutoff)]
+        Cp, Pp, offs = store.load(port); ans = daily.owner_answers(port, sat_dir); trial = confirm_trial.trial_ids(port)
+        # the trial sections (sat/confirm_trial.json) are not learnt from: the coefficients stay those of the counted sections
+        lab = [i for i, c in enumerate(Cp) if (c['section'], c['date']) in ans and (cutoff is None or c['date'] < cutoff) and c['section'] not in trial]
         if not lab: continue
         W, good = daily.day_inputs(Pp, offs, Cp)
         Xp, names, _ = feats.features(np.asarray(Pp, np.float32), offs, Cp, only=set(lab), W=W, good=good)

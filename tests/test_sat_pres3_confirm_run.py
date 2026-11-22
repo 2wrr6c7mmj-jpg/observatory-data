@@ -76,7 +76,7 @@ class FetchTest(unittest.TestCase):
     def test_a_refused_port_is_skipped_and_the_others_go_on(self):
         calls = []
 
-        def read(work, port, f, bb, env_extra=None):
+        def read(work, port, f, bb, env_extra=None, **kw):     # kw: base= for a port with trial sections (QGZ)
             calls.append((port, f["id"]))
             if port == "QDH": raise Exception("HTTP response code: 403")           # what rasterio raises for GDAL's 403
             raise RuntimeError("stop here")                                        # another failure: reported as failed

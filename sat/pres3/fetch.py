@@ -151,23 +151,48 @@ def search(body, urlopen=None, sleep=time.sleep):
     return out
 
 
-def one(work, port, f, bb, env_extra=None):
+PAD_DEG = 0.004
+
+
+def snapped(b):
+    """(x0, y0, x1, y1) of projected bounds, snapped outward to the 20 m grid (the window of every band)."""
+    return (float(np.floor(b[0] / 20) * 20), float(np.floor(b[1] / 20) * 20), float(np.ceil(b[2] / 20) * 20), float(np.ceil(b[3] / 20) * 20))
+
+
+def base_window(wide, base):
+    """Where the window of ``base`` (snapped bounds, as the window of the site's bbox alone is read) lies in the window of
+    ``wide`` (snapped bounds that contain it): {x0, y1, row, col, rows, cols} in 10 m pixels of the wide arrays (20 m pixels of
+    the 20 m bands: row / 2 ...; both windows are on the 20 m grid, so every offset is even)."""
+    if not (wide[0] <= base[0] and wide[1] <= base[1] and base[2] <= wide[2] and base[3] <= wide[3]):
+        raise ValueError(f'the base window {base} is not inside the window {wide}')
+    return dict(x0=base[0], y1=base[3], row=int(round((wide[3] - base[3]) / 10)), col=int(round((base[0] - wide[0]) / 10)),
+                rows=int(round((base[3] - base[1]) / 10)), cols=int(round((base[2] - base[0]) / 10)))
+
+
+def one(work, port, f, bb, env_extra=None, base=None):
+    """base: the site's own bbox when bb is a wider one (the port's trial sections of the confirmation queue,
+    sat.confirm_trial.fetch_bbox). The window of bb is read, widened (never narrowed) to hold the window that base alone gives,
+    and meta['base'] says where that window lies in the arrays (base_window): the existing sections are cut from it, as before."""
     import rasterio
     from rasterio.warp import transform_bounds
     from rasterio.windows import from_bounds
     fid = f['id']; dst = f'{work}/data/{port}/{fid}.npz'
     if os.path.exists(dst): return 'cached'
-    pad = 0.004; b4 = [bb[0] - pad, bb[1] - pad, bb[2] + pad, bb[3] + pad]
-    arrs = {}; meta = {}
+    pad = PAD_DEG; b4 = [bb[0] - pad, bb[1] - pad, bb[2] + pad, bb[3] + pad]
+    arrs = {}; meta = {}; bw = None
     with rasterio.Env(**gdal_env(), **(env_extra or {})):
         for name, res in BANDS.items():
             with rasterio.open(f['assets'][name]['href']) as ds:
-                b = transform_bounds('EPSG:4326', ds.crs, *b4)
                 # the window, snapped to the 20 m grid
-                x0 = np.floor(b[0] / 20) * 20; y0 = np.floor(b[1] / 20) * 20; x1 = np.ceil(b[2] / 20) * 20; y1 = np.ceil(b[3] / 20) * 20
+                x0, y0, x1, y1 = snapped(transform_bounds('EPSG:4326', ds.crs, *b4))
+                if base is not None:
+                    bs = snapped(transform_bounds('EPSG:4326', ds.crs, base[0] - pad, base[1] - pad, base[2] + pad, base[3] + pad))
+                    x0, y0, x1, y1 = min(x0, bs[0]), min(y0, bs[1]), max(x1, bs[2]), max(y1, bs[3])
+                    bw = base_window((x0, y0, x1, y1), bs)
                 w = from_bounds(x0, y0, x1, y1, ds.transform).round_offsets().round_lengths()
                 arrs[name] = ds.read(1, window=w, boundless=True, fill_value=0)
                 if name == 'blue': meta = dict(crs=str(ds.crs), x0=float(x0), y1=float(y1))
+    if bw is not None: meta['base'] = bw
     p = f['properties']
     meta.update(id=fid, datetime=p['datetime'], cloud=p.get('eo:cloud_cover'), baseline=p.get('s2:processing_baseline'),
                 boa=p.get('earthsearch:boa_offset_applied'), platform=p.get('platform'))

@@ -147,9 +147,12 @@ class Store:
         order = sorted(range(len(C)), key=lambda i: C[i]['section'])
         return [C[i] for i in order], P[order]
 
-    def put(self, port, cells, patches):
+    def put(self, port, cells, patches, trial=()):
         """cells: records with at least CELL_KEYS, every section of each of their days (the water colour and the clear flag of
-        a day are made from all its sections). A day already in the store is refused: its files are written once."""
+        a day are made from all its sections). A day already in the store is refused: its files are written once.
+        trial: the ids of the port's trial sections (sat.confirm_trial). They are stored like the others, but the water colour
+        and the clear-day flag of the day are made from the other sections only (day_flags), so that adding a trial section
+        changes no number of an existing one."""
         by = collections.defaultdict(list)
         for c, p in zip(cells, patches):
             if c['port'] != port: raise ValueError(f"a cell of {c['port']} in the store of {port}")
@@ -159,7 +162,7 @@ class Store:
             if any(x.exists() for x in f.values()): raise ValueError(f'{port} {day} is in the store already (its files are written once)')
             if len({c['section'] for c, _ in recs}) != len(recs): raise ValueError(f'{port} {day}: a section twice')
             recs.sort(key=lambda r: r[0]['section']); C = [r[0] for r in recs]; P = np.stack([r[1] for r in recs])
-            W = feats.water(P, OFFS, C); g = feats.good_day(C)
+            W, g = day_flags(P, C, trial)
             C = [dict(c, water=[float(x) for x in w], good=bool(k)) for c, w, k in zip(C, W, g)]
             for kind, keep in (('c', g), ('r', ~g)):
                 if keep.any(): self._write(f[kind], [C[i] for i in np.where(keep)[0]], P[keep])
@@ -190,6 +193,22 @@ class Store:
 
 
 OFFS = np.arange(-80, 125, 5.0)
+
+
+def day_flags(P, C, trial=()):
+    """(water colour [N, 5], clear flags [N]) of the cells of ONE day, made from the cells whose section is not in ``trial``
+    (feats.water / feats.good_day on those alone: with no trial section, exactly feats.water / feats.good_day of all). A trial
+    cell takes the day's water colour, and is clear when the day is (the share of the other sections under cloud and shadow)
+    and it is itself (cloud + shadow <= 0.2, no nodata), as feats.good_day."""
+    t = np.array([c['section'] in trial for c in C], bool)
+    if not t.any() or t.all(): return feats.water(P, OFFS, C), feats.good_day(C)
+    b = np.where(~t)[0]; Cb = [C[i] for i in b]
+    W = np.zeros((len(C), 5), np.float32); g = np.zeros(len(C), bool)
+    W[b] = feats.water(P[b], OFFS, Cb); g[b] = feats.good_day(Cb)
+    cl = np.array([c['cloud'] + c['shadow'] for c in Cb]); day_ok = bool(np.mean(cl > 0.2) < 0.15)
+    for i in np.where(t)[0]:
+        W[i] = W[b[0]]; g[i] = day_ok and C[i]['cloud'] + C[i]['shadow'] <= 0.2 and C[i]['nodata'] == 0
+    return W, g
 
 
 # ---------------------------------------------------------------- the model: trees as arrays, numpy predicts
@@ -398,14 +417,23 @@ def fetch_port(store, windows, port, days, sites, now=None, log=print):
     now = now or dt.datetime.now(dt.timezone.utc); bb = sites[port]['bbox']; tile = port_tile(port); have = set(store.dates(port))
     found = fetch.search({"bbox": bb, "datetime": f"{now - dt.timedelta(days=days):%Y-%m-%dT%H:%M:%SZ}/{now:%Y-%m-%dT%H:%M:%SZ}"})
     new = pick_new(found, tile, have); log(f'{port} tile {tile}: {len(found)} scenes in the catalogue, {len(new)} new days')
-    secs = labels.frames(port); geo = build.sample_points(secs); done = []
+    secs, geo, trial, wide = fetch_plan(port, bb); done = []
     for f in new:
-        fetch.one(str(windows), port, f, bb); time.sleep(1.0)
+        fetch.one(str(windows), port, f, wide, **({'base': bb} if trial else {})); time.sleep(1.0)
         d = f['properties']['datetime'][:10]; fn = f'{windows}/data/{port}/{f["id"]}.npz'
-        got = build.day_cells(port, d, [(fn, json.loads(str(np.load(fn)['meta'])))], secs, geo, {})
+        got = build.day_cells(port, d, [(fn, json.loads(str(np.load(fn)['meta'])))], secs, geo, {}, trial=trial)
         if got is None: log(f'{port} {d}: more than half nodata, not stored'); continue
-        store.put(port, *got); done.append(d)
+        store.put(port, *got, trial=trial); done.append(d)
     return done
+
+
+def fetch_plan(port, bb):
+    """(sections with the port's trial sections, their sample points, the trial ids, the bbox of the window to read): the
+    window is the site's bbox, widened to the trial sections (sat.confirm_trial.fetch_bbox) when the port has any."""
+    from sat import confirm_trial
+    from . import build
+    secs = labels.frames(port, trial=True); trial = frozenset(k for k, s in secs.items() if s.get('trial'))
+    return secs, build.sample_points(secs), trial, (confirm_trial.fetch_bbox(port, bb) if trial else list(bb))
 
 
 # ---------------------------------------------------------------- command line

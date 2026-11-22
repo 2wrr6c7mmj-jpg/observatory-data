@@ -304,13 +304,16 @@ def judge_count(v) -> int | None:
     return int(s) if s.isascii() and s.isdigit() else None
 
 
-def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict) -> dict:
+def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict, trial: bool = False) -> dict:
     """Rule v1 for one cell: {"state": auto / pending / no_image, "value": 1 / 0 / None, "reason"}. The reasons a cell is
     shown for are joined with "+", in the order of the design (§2.5, §4).
 
     The number of answers is the smaller of hist["n_answers"] (the answer files) and hist["n_answers_judge"] (the answers
     the judge used for this score). A judge count that is missing or None is not known: the cell is shown
-    (answers_unknown), never settled on the count of the files alone. The days since the last answer come from the files."""
+    (answers_unknown), never settled on the count of the files alone. The days since the last answer come from the files.
+
+    trial: a trial section of the ledger (sat/confirm_trial.json): always shown to the owner (reason trial), never
+    automatic, whatever its answers and score (an empty pier is watched for the day it is first used)."""
     if not clear:
         return {"state": "no_image", "value": None, "reason": "no_image"}
     why = []
@@ -327,6 +330,8 @@ def decide(site_id: str, p: float | None, clear: bool, hist: dict, cfg: dict) ->
         why.append("stale_answer")
     if site_id not in cfg["auto_sites"]:
         why.append("site_off")
+    if trial:
+        why.append("trial")
     if why:
         return {"state": "pending", "value": None, "reason": "+".join(why)}
     return {"state": "auto", "value": 1 if p >= cfg["p_high"] else 0, "reason": "confident"}
@@ -515,7 +520,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
                 res["skipped"].append(f"{site_id}:{sec}@{day} (p outside 0..1)")
                 continue
             h = {**history(answers, sec, day), "n_answers_judge": judge_count(r.get("n_answers"))}
-            v1 = decide(site_id, p, is_clear(r, cfg), h, cfg)
+            v1 = decide(site_id, p, is_clear(r, cfg), h, cfg, trial=bool(secs[sec].get("trial")))
             d = dict(v1)
             aud, rate = (False, "")
             if v1["state"] == "auto":
@@ -757,6 +762,8 @@ def _a_pairs(scored: list[dict], cfg: dict) -> list:
     operation) every cell rule v1 would have made automatic."""
     res = []
     for r in scored:
+        if r.get("trial"):
+            continue                      # a trial section is never automatic: not in A
         if r["v1_state"] == "auto" and r["v1_value"] != "":
             agree = int(int(r["v1_value"]) == r["y"])
             if not cfg.get("auto_display"):
@@ -776,7 +783,7 @@ def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset 
     would, audit, routed, changed, changed_routed = [], [], [], 0, 0
     for r in scored:
         sc, y, p = (r["site_id"], r["date"]), r["y"], _fnum(r["p"])
-        if r["v1_state"] == "auto" and r["v1_value"] != "":
+        if r["v1_state"] == "auto" and r["v1_value"] != "" and not r.get("trial"):
             would.append((sc, int(int(r["v1_value"]) == y), 1.0))
             if r["audit"] == "1" and r["state"] == "auto":
                 audit.append((sc, int(int(r["v1_value"]) == y), 1.0 / (_fnum(r["audit_rate"]) or 1.0)))
@@ -830,7 +837,8 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     states, scored, picked = [], [], set()
     for site_id in known_sites(out):
         states += list(load_state(out, site_id).values())
-        scored += scored_cells(out, site_id)
+        tr = {s["id"] for s in (load_sections(out, site_id) or {}).get("sections", []) if s.get("trial")}
+        scored += [{**r, "trial": r["section_id"] in tr} for r in scored_cells(out, site_id)]
         picked |= {(site_id, r["section_id"], r["date"]) for r in load_log(out, site_id) if r.get("audit") == "1"}
     picked = frozenset(picked)
 
@@ -856,7 +864,8 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
                      "A_last_12_weeks": "A と同じ数え方で、撮影日が generated_utc の日から 84 日（12 週）以内の升だけ",
                      "audit_sample": "抜き取りに選んだ升（記録に audit=1 の行がある升）と、そのうち答えがあった／期限（expire_days）を過ぎて答えのない／まだ待っている升の数。期限を過ぎた升は A に入らない（A が偏りうるので数を出す）",
                      "unconfirmed": "未確認の升の内訳：期限切れ（expired）と、後の撮影に置き換え（superseded）",
-                     "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態"},
+                     "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態",
+                     "trial": "試行の区間（台帳で trial: true、sat/confirm_trial.json）は規則 v1 でも必ず所有者に回し（理由 trial）、A（自動確定の一致率・抜き取り）に入れない"},
            "parts": {}}
     for name in ("before_freeze", "after_freeze"):
         st = [r for r in states if part(r) == name]
@@ -978,6 +987,8 @@ def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, sum
             cells = sorted(by_sec.get(sid, []), key=lambda r: r["date"])
             row = {"id": sid, "label": labels[sid][0], "kind": s.get("kind"), "sector": s.get("sector"), "length_m": s.get("length_m"),
                    "state": None, "date": None, "value": None, "last_date": None, "last_value": None, "last_source": None}
+            if s.get("trial"):          # a trial section (sat/confirm_trial.json): shown, never counted elsewhere
+                row.update(trial=True, role=s.get("role"), candidate=s.get("candidate"))
             shown = [r for r in cells if (r["state"] == "human" or (show_auto and r["state"] == "auto")) and r["value"] in ("0", "1")]
             if cells:
                 r = cells[-1]
@@ -1000,6 +1011,7 @@ def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, sum
             "null": "null は不明（未確認・像なし・判断できない・まだ升が無い）。0 は不在と判定または確認された升だけ",
             "notes": {"sections_by_state": "港ごとの区間の数：各区間のいちばん新しい升の状態で数えた区間の数（1 区間＝1）",
                       "numbers.states": "升の数：全部の日の全部の升を状態ごとに数えた数（numbers.composition はその割合）",
+                      "trial": "trial: true の区間は試行の区間（sat/confirm_trial.json、区画「試行」）。所有者の確認に出すだけで、公開の隻数・評価票・判定器の再学習には入れない。role：naval_empty＝軍の桟橋で今は空（使い始めを見る）、fitout＝修理・艤装の岸壁（配備の数には入れない）",
                       "label": "区間の読める名前：区画・種別とその区画の中での線の番号（岸に沿った順）・線の左側／右側（OSM の線の向きに対して）とその側の何番目（id の最後の番号＋1）。区間の id（OSM の線の番号:側:番号）が変わらない限り変わらない",
                       "A": f"規則 v1 なら自動確定の升の一致率（影の運用）／自動確定の正答率（抜き取り）。港ごとの値は {SITE_A_MIN_CELLS} 升未満なら出さない（rate・ci95 は null、withheld に理由）。全体の値は升の数によらず出す"},
             "numbers": _numbers(blk["total"]), "sites": sites}

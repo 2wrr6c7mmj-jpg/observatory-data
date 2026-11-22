@@ -1,6 +1,7 @@
 """The section frames and the owner's answers, read from the repository (read only).
 
 frames(port)   section id -> the quay line (near) and its 120 m offshore normal (far), lon/lat
+               (trial=True: with the port's trial sections of the confirmation queue, sat/confirm_trial.json, marked trial)
 lookup(port)   (date, section id) -> the answer y, whether the cell is a row of the evaluation sheet (eval/presence.json),
                and that row's current S1 judgement p
 """
@@ -38,8 +39,21 @@ def zjg_frames():
     return out
 
 
-def frames(port):
-    if port == 'ZJG': return zjg_frames()
+def frames(port, trial=False):
+    """The sections of the review set (Zhanjiang: of its geojson). trial: also the port's trial sections of the confirmation
+    queue (sat/confirm_trial.json; the daily fetch of sat-confirm cuts their patches too), each with trial=True. The research
+    code (build.py) calls it without: its cells are the review set's only."""
+    secs = zjg_frames() if port == 'ZJG' else _review_frames(port)
+    if trial:
+        from sat import confirm_trial
+        for s in confirm_trial.sections(port):
+            if s['id'] in secs: raise ValueError(f"{port} {s['id']}: a trial section with the id of a section of the review set")
+            k = len(s['line']); fr = np.asarray(s['frame'], float)
+            secs[s['id']] = dict(id=s['id'], kind=s['kind'], sector=s['sector'], length_m=s['length_m'], near=fr[:k], far=fr[k:][::-1], trial=True)
+    return secs
+
+
+def _review_frames(port):
     rv = json.load(open(common.SAT / 'labels' / port / 'review.json')); secs = {}
     for s in rv['sections']:
         k = len(s['line']); fr = np.asarray(s['frame'], float)
