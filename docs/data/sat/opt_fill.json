@@ -1,0 +1,106 @@
+{
+ "version": "opt-fill-1",
+ "status": "trial",
+ "note": "試行の系列。公開の本体の数（quay_naval50 の札・quay_est2・warship_blind・評価票）には足さない。画面に出すときは「光学で補った数（試行）」と書き、本体の数字と分ける。8 週間後（凍結 2026-11-22 以降の答えで）0.9 と 0.7 を比べ直し、足した升の適合率が 0.8 を超えるまでは本体に足さない",
+ "rule": "S1 の撮影の日に radar_dark（dark-1）の印がある対象の区間から、(a) その撮影でレーダーが数えた区間、(b) blind-2 の常在の区間（すでに 1 隻足されている）、(c) 確認回し（confirm-1）の区間の表に無い区間を除く。値は S1 の撮影の日の前後 4 日以内でいちばん近い Sentinel-2 の日のもの（同じ近さなら前の日）：その日に所有者の答えがあれば答え、無ければ pres-3o の点数 p（確認回しの state の p）。像の無い日（no_image）と所有者が判断できないとした日は使わない。窓に使える日が無ければ埋めない。所有者の在、または p ≥ 0.9 で区間 1 隻（常在と同じ下限の数え方）",
+ "threshold": 0.9,
+ "window_d": 4,
+ "excluded_sites": [
+  "ZJG"
+ ],
+ "columns": "quay_blind/<港>.csv の末尾の列 opt_fill_version, opt_fill_sections, opt_fill_scored, opt_fill_present, opt_fill_basis（sat/opt_fill.py の docstring）",
+ "caveats": [
+  "升が少ない：2部の評価の前進検証で、その日に印のある升 177・28 撮影、在のある港は 4 つ（象山・姜哥荘・青島港内・旅順）。95% CI は広い",
+  "点数は過信気味：前進検証で p 0.70〜0.90 の帯は平均 p 0.83 に対して実際の在 0.67、0.90〜0.97 の帯は 0.92 に対して 0.63（升が少ない）",
+  "S1 と S2 の日のずれ：評価は所有者の答えた S2 の日そのものの升で、運用での S1 の撮影と S2 の日のずれ（最大 4 日）の分の誤りは測っていない。ずれの間に艦が出入りする",
+  "像なしの升：11 月の dark の区間の升（区間 × S2 の日）177 のうち 80 は像が無い（no_image）。窓の中に使える日が無い区間は埋めない（scored に入らない）",
+  "大榭島・下川島・楡林など確認回しの区間の表に無い港・区間は対象外（(c)）。旅順など常在の表の無い港は quay_blind の行が無いので、この系列も無い",
+  "足す区間はほぼ潜水艦の桟橋（hires-1 の U）。所有者が 8 回とも不在と答えた U の区間もあり、正解の側にも穴がある",
+  "pres-3o は区間の答えの履歴を特徴に使う：答えの少ない区間では弱い"
+ ],
+ "policy": {
+  "submarine": "潜水艦の桟橋の在は「50 m 以上の艦（潜水艦を含む）」として軍艦の数に数える（既定。別の欄には分けない）。所有者への質問が「50 m 以上の船がいるか」で、配属の数（分母）も潜水艦を含むため。詳細の注記で「うち潜水艦の桟橋の分」を示すのは後のサイトの作業",
+  "length": "長さの規則は表示の札の規則（片の長さ − 20 m を山の数で割り 50 m 以上）を正とし、評価もこれに揃える方針（評価票の変更は別の PR）。−20 m は未較正の目安。radar_dark の印の判定だけは、緩い側として今の全長 ≥ 50 m のまま"
+ },
+ "sources": {
+  "marks": "docs/data/sat/radar_dark.json（dark-1）",
+  "scores": "docs/data/sat/confirm/state/<港>/<月>.csv の p（pres-3o、確認回し confirm-1。S1 は使わない）",
+  "answers": "docs/data/sat/labels/<港>-s2-answers.csv・<港>-confirm-answers.csv（verified_by owner）",
+  "sections": "docs/data/sat/confirm/sections/<港>.json（status active）",
+  "resident": "sat/blind_prior（blind-2、quay_blind の resident_sections）",
+  "evaluation": "2部の評価「光学で埋める」（2026-11-22）§4 の規則の案 opt-fill-1"
+ },
+ "credit": [
+  "Contains modified Copernicus Sentinel data 2023-2026（Sentinel-1・Sentinel-2。pres-3o の点数と所有者の答えは Sentinel-2 L2A の像による）",
+  "区分の一部（潜水艦の桟橋）は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed"
+ ],
+ "null": "列が空：その日の系列が作れなかった（失敗。本体の数はいつもどおり）、または対象外の港",
+ "counts": {
+  "QDH": {
+   "scenes": 3,
+   "scenes_filled": 1,
+   "present_sum": 1,
+   "latest": {
+    "acquired_utc": "2026-11-14T09:55:42Z",
+    "opt_fill_sections": 8,
+    "opt_fill_scored": 8,
+    "opt_fill_present": 0
+   }
+  },
+  "QGZ": {
+   "scenes": 6,
+   "scenes_filled": 0,
+   "present_sum": 0,
+   "latest": {
+    "acquired_utc": "2026-11-19T10:03:52Z",
+    "opt_fill_sections": 0,
+    "opt_fill_scored": 0,
+    "opt_fill_present": 0
+   }
+  },
+  "QJG": {
+   "scenes": 3,
+   "scenes_filled": 0,
+   "present_sum": 0,
+   "latest": {
+    "acquired_utc": "2026-11-14T09:55:42Z",
+    "opt_fill_sections": 2,
+    "opt_fill_scored": 2,
+    "opt_fill_present": 0
+   }
+  },
+  "SLP": {
+   "scenes": 3,
+   "scenes_filled": 0,
+   "present_sum": 0,
+   "latest": {
+    "acquired_utc": "2026-11-19T10:48:15Z",
+    "opt_fill_sections": 7,
+    "opt_fill_scored": 6,
+    "opt_fill_present": 0
+   }
+  },
+  "SYL": {
+   "scenes": 3,
+   "scenes_filled": 0,
+   "present_sum": 0,
+   "latest": {
+    "acquired_utc": "2026-11-19T10:48:15Z",
+    "opt_fill_sections": 0,
+    "opt_fill_scored": 0,
+    "opt_fill_present": 0
+   }
+  },
+  "XSN": {
+   "scenes": 3,
+   "scenes_filled": 0,
+   "present_sum": 0,
+   "latest": {
+    "acquired_utc": "2026-11-14T09:54:02Z",
+    "opt_fill_sections": 2,
+    "opt_fill_scored": 2,
+    "opt_fill_present": 0
+   }
+  }
+ }
+}

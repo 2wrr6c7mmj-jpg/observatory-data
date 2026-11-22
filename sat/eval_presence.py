@@ -84,6 +84,7 @@ import io
 from . import atomic, berths
 from . import blind_prior as bp
 from . import radar_dark
+from . import opt_fill
 from . import occ2_schema as o2s
 from . import pres1
 
@@ -814,7 +815,11 @@ def meta(res: dict) -> dict:
                                          f"（既定 {MIN_LENGTH_M:g} m。水警区の港 {'・'.join(sorted(NAVAL50_MIN_LEN))} は {min(NAVAL50_MIN_LEN.values()):g} m：022 型ミサイル艇など小型の戦闘艦艇が主のため。列名は warship_50 のまま）"),
                   f"../{BLIND_DIR}/<地点>.csv": (f"{bp.VERSION}：常在の岸壁の加算。撮影ごとに resident_sections（所有者の答えで常在とした区間の数）、resident_seen（そのうち計数が在とした数）、"
                                                  "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
-                                                 "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）"),
+                                                 "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）。"
+                                                 "radar_dark_sections・radar_dark_seen・radar_dark_reasons＝レーダーでは判定できない区間（dark-1、../radar_dark.json）。"
+                                                 f"末尾の {'・'.join(opt_fill.COLUMNS)}＝その区間を光学（pres-3o）の点数で埋める試行の系列（{opt_fill.VERSION}、../{opt_fill.OPT_FILL}。地図の札にも warship_blind にも足さない）。"
+                                                 "方針（司令部の決定 2026-11-22、数は変えない）：潜水艦の桟橋の在は 50 m 以上の艦（潜水艦を含む）として軍艦の数に数える。"
+                                                 "長さの規則は札の規則（片の長さ − 20 m を山の数で割り 50 m 以上）を正とし、評価もこれに揃える（評価票の変更は別の PR）"),
                   f"../{pres1.OUT_DIR}/<地点>.json": (f"{pres1.VERSION}（試行・並行系列、sat/pres1）：sites.json の quay.pres1 が trial／on の港の、直近 {pres1.KEEP_SCENES} 撮影の区間ごとの "
                                                     "p_current（現行の判定）・res_rate・res_n・prev_y（撮影の日より前の所有者の答え）・p_pres1・change_flag。湛江は off で書かない。公開の画面は読まない")},
         "target": res["target"],
@@ -1010,12 +1015,26 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
     if dark["stale"] and log:
         print(f"::warning title=sat radar_dark::sat/berth_class の印（radar_dark）が評価票より古い: {', '.join(dark['stale'])}"
               "（python -m sat.radar_dark build で作り直す。公開の radar_dark.json と quay_blind は今日の評価票で作った）", flush=True)
-    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "radar_dark": dark, "blind": write_blind(out, sites),
+    # opt-fill-1 (sat/opt_fill.py): the trial series beside the marks (the radar-dark sections from the optical judge's
+    # scores of the confirm run). It adds to no count: a failure leaves its columns of quay_blind empty and stops nothing
+    fill_err = None
+    try:
+        fill = opt_fill.prepare(out, [s["id"] for s in sites])
+    except Exception as e:                      # noqa: BLE001 (any failure of the trial series alone)
+        fill, fill_err = {}, repr(e)[:300]
+        print(f"::warning title=sat opt_fill::光学で埋める試行（opt-fill-1）の準備に失敗（quay_blind の opt_fill の列は空。数は変わらない）: {fill_err}", flush=True)
+    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "radar_dark": dark, "blind": write_blind(out, sites, fill),
          "naval50": write_naval50(out, sites), "pres1": pres1.safe_write(out, sites)}
+    try:
+        r["opt_fill"] = {"error": fill_err} if fill_err else opt_fill.write_public(out, fill)
+    except Exception as e:                      # noqa: BLE001
+        r["opt_fill"] = {"error": repr(e)[:300]}
+        print(f"::warning title=sat opt_fill::opt_fill.json の書き出しに失敗（数は変わらない）: {r['opt_fill']['error']}", flush=True)
     if log:
         log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行、"
             f"quay_pres1 {len(r['pres1'])} 港、radar_dark {sum(r['radar_dark']['counts'].values())} 区間（区分ファイルの記録が古い港 {r['radar_dark']['stale'] or 'なし'}"
-            f"{'、作り直しに失敗' if r['radar_dark'].get('error') else ''}）")
+            f"{'、作り直しに失敗' if r['radar_dark'].get('error') else ''}）、opt-fill（試行）"
+            f"{'失敗' if r['opt_fill'].get('error') else {k: v['present_sum'] for k, v in r['opt_fill'].items()}}")
     return r
 
 
@@ -1023,16 +1042,22 @@ BLIND_DIR = "quay_blind"
 BLIND_COLUMNS = ("site_id", "acquired_utc", "blind_version", "answers", "resident_sections", "resident_seen", "warship_blind",
                  # dark-1 (sat/radar_dark.py): the eligible sections the radar cannot judge on the scene's day, how many of them
                  # the count saw, and why ("+"-joined: submarine_berth, owner_present_radar_none). warship_blind is not changed
-                 "radar_dark_sections", "radar_dark_seen", "radar_dark_reasons")
+                 "radar_dark_sections", "radar_dark_seen", "radar_dark_reasons") + opt_fill.COLUMNS
+# opt-fill-1 (sat/opt_fill.py, trial): the radar-dark sections filled from the optical judge pres-3o, at the end. Added to no count
 
 
-def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
+def blind_counts(out: Path, sites: list[dict] | None = None, fill: dict | None = None) -> dict:
     """blind-1 (2/3): {site_id: [row, ...]} for every stored est-2 scene of the sites that have a resident table (the owner's
     answers, sat/blind_prior): the resident sections among the eligible ones, how many of them the count saw (the judge's
     presence, as presence_table) and ``warship_blind``: the sum of the resident probability of the ones it did not see, rounded.
     One section (about 150 m) stands for one warship of 50 m or more: a lower bound, ships abreast are not counted. The number is
     added to est-2's warship_median for the map; est-2's own files are not touched."""
     sites = sites or load_sites()
+    if fill is None:        # not given (by hand, the tests): the trial series as the daily run makes it (refresh gives {} on a failure)
+        try:
+            fill = opt_fill.prepare(out, [s["id"] for s in sites])
+        except Exception:                       # noqa: BLE001 (the trial series alone: its columns empty)
+            fill = {}
     res: dict = {}
     for site in sites:
         sid = site["id"]
@@ -1055,19 +1080,29 @@ def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
                          "resident_sections": len(mine), "resident_seen": sum(tab[acq][k] for k in mine),
                          "warship_blind": int(sum(prior[k] for k in mine if not tab[acq][k]) + 0.5),
                          "radar_dark_sections": len(dk), "radar_dark_seen": sum(tab[acq][k] for k in dk),
-                         "radar_dark_reasons": "+".join(r for r in radar_dark.REASONS if any(r in why[k] for k in dk))})
+                         "radar_dark_reasons": "+".join(r for r in radar_dark.REASONS if any(r in why[k] for k in dk)),
+                         **_opt_fill_row(fill, sid, acq, dk, tab[acq], mine)})
         if rows:
             res[sid] = rows
     return res
 
 
-def write_blind(out: Path, sites: list[dict] | None = None) -> dict:
+def _opt_fill_row(fill: dict | None, sid: str, acq: str, dark: list, seen: dict, resident: list) -> dict:
+    """The opt-fill columns of a quay_blind row (sat/opt_fill.py): empty when the series is not made (no context, Zhanjiang, a
+    failure). A failure here leaves the columns empty and changes no other column."""
+    try:
+        return opt_fill.fill((fill or {}).get(sid), acq, dark, seen, resident)
+    except Exception:                           # noqa: BLE001 (the trial series alone)
+        return dict(opt_fill.EMPTY)
+
+
+def write_blind(out: Path, sites: list[dict] | None = None, fill: dict | None = None) -> dict:
     """Write quay_blind/<site>.csv (all stored scenes, rewritten whole: PU 0). Returns {site_id: number of rows}.
     A site that has no row any more loses the file of an earlier run (its table lost its last resident section: the owner's
     answers replaced the AI's table, or were corrected). The map adds whatever the file says and reads a missing file as +0,
     so a file left behind would keep adding the old number (Lushun 2026-11-13: the AI's +2 after the owner's answers gave 0)."""
     sites = sites or load_sites()
-    res = blind_counts(out, sites)
+    res = blind_counts(out, sites, fill)
     d = out / BLIND_DIR
     for site in sites:
         stale = d / f"{site['id']}.csv"

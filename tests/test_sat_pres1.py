@@ -264,7 +264,7 @@ class NeverStopsTest(unittest.TestCase):
                 mock.patch.object(pres1, "block", side_effect=RuntimeError("block")), \
                 mock.patch.object(pres1, "write", side_effect=ValueError("write")), \
                 mock.patch.object(ep, "write_naval50", side_effect=lambda out, sites: calls.append("naval50") or 0), \
-                mock.patch.object(ep, "write_blind", side_effect=lambda out, sites: calls.append("blind") or {}):
+                mock.patch.object(ep, "write_blind", side_effect=lambda out, sites, *a: calls.append("blind") or {}):
             r = ep.refresh(Path(d), [s for s in ep.load_sites() if s["id"] == "SLP"])
             self.assertTrue((Path(d) / "eval" / "presence.json").exists())
         self.assertEqual(sorted(calls), ["blind", "naval50"])
