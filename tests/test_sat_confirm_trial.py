@@ -145,7 +145,7 @@ class LedgerTest(unittest.TestCase):
     def test_the_daily_run_adds_them_to_a_ledger_it_makes_or_finds(self):
         src = (ROOT / "sat" / "pres3" / "confirm_run.py").read_text(encoding="utf-8")
         i = src.index("confirm.sync_sections(out, port, confirm.review_sections(out, port), nows)")
-        j = src.index("confirm.sync_sections(out, port, trial, nows)")
+        j = src.index("bad = sync_trial(out, port, nows)")
         self.assertLess(i, j)            # the review set first (version 1 of a new ledger), then the trial sections (a later version)
 
 
@@ -276,6 +276,83 @@ class BaseWindowTest(unittest.TestCase):
                 np.testing.assert_array_equal(Pw[iw[c["section"]]].view(np.uint16), Pb[k].view(np.uint16))
             tc = [Cw[iw[i]] for i in trial]
             self.assertEqual(len(tc), len(trial)); self.assertTrue(all(c["nodata"] == 0 for c in tc))   # inside the wide arrays
+
+
+class TrialNeverAutomaticTest(unittest.TestCase):
+    """1部の審査（#170）：a trial section with 2 answers or more and a confident score is still shown to the owner (reason
+    trial), in the shadow operation too (the log's v1), and is not in A."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory(); self.addCleanup(self._tmp.cleanup)
+        self.out = Path(self._tmp.name)
+        (self.out / "labels" / "QGZ").mkdir(parents=True)
+        shutil.copy(OUT / "labels" / "QGZ" / "review.json", self.out / "labels" / "QGZ" / "review.json")
+        self.t = ct.sections("QGZ")[0]["id"]; self.e = review_ids("QGZ")[0]
+        rows = []
+        for sec in (self.t, self.e):
+            rows += [(sec, d, 0) for d in ("2026-11-01", "2026-11-05", "2026-11-09")] + [(sec, "2026-11-20", 0)]   # 3 earlier, and the day itself
+        with (self.out / "labels" / "QGZ-s2-answers.csv").open("w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(["site_id", "section_id", "date", "verified", "verified_occupied", "verified_c", "verified_color", "verified_by", "verified_note"])
+            for sec, d, y in rows: w.writerow(["QGZ", sec, d, "1", y, y, "", "owner", ""])
+        cf.sync_sections(self.out, "QGZ", cf.review_sections(self.out, "QGZ"), "2026-11-22T07:29:00Z")
+        cf.sync_sections(self.out, "QGZ", ct.sections("QGZ"), "2026-11-22T07:29:00Z")
+
+    def run_day(self, day, auto_display):
+        cfg = {**cf.load_config(), "auto_display": auto_display}
+        rows = [{"site_id": "QGZ", "section_id": sec, "date": day, "acquired_utc": day + "T02:50:00Z", "p": "0.01", "model_version": "pres3o-test",
+                 "cloud_shadow": "0.0", "nodata": "0", "n_answers": "5"} for sec in (self.t, self.e)]
+        cf.run(rows, self.out, cfg, day + "T07:40:00Z")
+        return cfg
+
+    def test_never_automatic(self):
+        self.run_day("2026-11-21", True)
+        st = cf.load_state(self.out, "QGZ")
+        self.assertEqual(st[(self.e, "2026-11-21")]["state"], "auto")                 # the same answers and score: automatic
+        r = st[(self.t, "2026-11-21")]
+        self.assertEqual(r["state"], "pending"); self.assertEqual(r["reason"], "trial")
+        log = {(x["section_id"], x["date"]): x for x in cf.load_log(self.out, "QGZ")}
+        self.assertEqual(log[(self.t, "2026-11-21")]["v1_state"], "pending")
+        self.assertIn((self.t, "2026-11-21"), {(c["section_id"], c["date"]) for c in json.loads((self.out / "confirm" / "queue.json").read_text(encoding="utf-8"))["cells"]})
+
+    def test_not_in_A_in_the_shadow_operation(self):
+        cfg = self.run_day("2026-11-20", False)                                       # the owner answered both cells of that day
+        log = {(x["section_id"], x["date"]): x for x in cf.load_log(self.out, "QGZ")}
+        self.assertEqual(log[(self.t, "2026-11-20")]["v1_state"], "pending"); self.assertEqual(log[(self.e, "2026-11-20")]["v1_state"], "auto")
+        a = cf.summary(self.out, cfg, "2026-11-22T08:00:00Z")["parts"]["before_freeze"]["total"]["A_auto_accuracy"]
+        self.assertEqual(a["n"], 1)                                                    # the existing section only
+        # an old log row that would say automatic (before this rule) is kept out of A too
+        p = cf.log_dir(self.out, "QGZ") / "2026-11.csv"
+        rows = list(csv.DictReader(p.read_text(encoding="utf-8").splitlines()))
+        for x in rows:
+            if x["section_id"] == self.t: x["v1_state"], x["v1_value"] = "auto", "0"
+        with p.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=cf.LOG_FIELDS, lineterminator="\n"); w.writeheader(); w.writerows(rows)
+        a = cf.summary(self.out, cfg, "2026-11-22T08:00:00Z")["parts"]["before_freeze"]["total"]["A_auto_accuracy"]
+        self.assertEqual(a["n"], 1)
+
+
+class RedrawnLineTest(unittest.TestCase):
+    def test_a_redrawn_line_under_the_same_id_is_reported_and_skipped(self):
+        doc = ct.load(); led_secs = json.loads(json.dumps(doc["sections"]["XSN"]))
+        led_secs[0]["line"] = [[p[0] + 0.0003, p[1]] for p in led_secs[0]["line"]]          # drawn again, same id
+        with tempfile.TemporaryDirectory() as d:
+            ld = Path(d) / "sections"; ld.mkdir()
+            (ld / "XSN.json").write_text(json.dumps({"sections": led_secs}), encoding="utf-8")
+            bad = ct.check(doc, {}, ld)
+            self.assertEqual(len(bad), 1); self.assertIn(led_secs[0]["id"], bad[0])
+            self.assertEqual(ct.check(doc, {}, Path(d) / "none"), [])
+
+    @unittest.skipUnless(np is not None, "numpy not installed")
+    def test_the_daily_run_skips_only_that_section(self):
+        from sat.pres3 import confirm_run as cr
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            first = [dict(s) for s in ct.sections("XSN")]; first[1] = dict(first[1], line=[[p[0] + 0.0003, p[1]] for p in first[1]["line"]])
+            cf.sync_sections(out, "XSN", first, "2026-11-22T07:29:00Z")
+            self.assertEqual(cr.sync_trial(out, "XSN", "2026-11-23T07:29:00Z"), [first[1]["id"]])   # no exception
+            self.assertEqual(cr.sync_trial(out, "QGZ", "2026-11-23T07:29:00Z"), [])
+            self.assertEqual(len(cf.load_sections(out, "QGZ")["sections"]), len(ct.sections("QGZ")))
 
 
 if __name__ == "__main__":

@@ -147,10 +147,23 @@ def fetch_bbox(site_id: str, bbox: list, doc: dict | None = None) -> list:
     return [min(bb[0], w[0]), min(bb[1], w[1]), max(bb[2], w[2]), max(bb[3], w[3])]
 
 
-def check(doc: dict | None = None, review_ids: dict | None = None) -> list[str]:
-    """Problems of the file: sections not up to date with the sources, an id twice, an id of the port's review set, Zhanjiang."""
+LEDGER_DIR = Path(__file__).resolve().parent.parent / "docs" / "data" / "sat" / "confirm" / "sections"
+
+
+def check(doc: dict | None = None, review_ids: dict | None = None, ledger_dir: Path = LEDGER_DIR) -> list[str]:
+    """Problems of the file: sections not up to date with the sources, an id twice, an id of the port's review set, Zhanjiang,
+    and a section whose id is in the published ledger (confirm/sections/<site>.json) with another line or frame: a line drawn
+    again needs a new id (e.g. the candidate with a version, "XSN-W-L2"); the old id stays in the ledger (retire it with
+    python -m sat.confirm sections --site <site> --retire <id>)."""
     doc = doc or load()
     bad = []
+    for site_id, secs in doc.get("sections", {}).items():
+        p = Path(ledger_dir) / f"{site_id}.json"
+        known = {s["id"]: s for s in json.loads(p.read_text(encoding="utf-8")).get("sections", [])} if p.exists() else {}
+        for s in secs:
+            k = known.get(s["id"])
+            if k is not None and (k.get("line") != s["line"] or k.get("frame") != s["frame"]):
+                bad.append(f"{site_id} {s['id']}: the line differs from the ledger under the same id (a line drawn again needs a new id)")
     if doc.get("sections", {}) != build(doc):
         bad.append("sections differ from build(sources): run python -m sat.confirm_trial build")
     for site_id, secs in doc.get("sections", {}).items():

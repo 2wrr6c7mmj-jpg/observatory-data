@@ -210,12 +210,17 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
         rep['ports'][port].update(scored_days=len(ds), cells=len(rr), with_p=sum(x['p'] != '' for x in rr))
     rep['seconds']['score'] = round(time.time() - t, 1)
     t = time.time(); scores = [{k: str(v) for k, v in r.items()} for r in rows]
-    from .. import confirm_trial
+    skip = set()
     for port in ports:
         if confirm.load_sections(out, port) is None:
             confirm.sync_sections(out, port, confirm.review_sections(out, port), nows)
-        trial = confirm_trial.sections(port)          # the trial sections: a later sections_version of the ledger (§6.5)
-        if trial: confirm.sync_sections(out, port, trial, nows)
+        bad = sync_trial(out, port, nows)             # the trial sections: a later sections_version of the ledger (§6.5)
+        if bad:
+            msg = (f'{port}: trial sections whose line differs from the ledger under the same id, left out of this run: {", ".join(bad)} '
+                   '(a line drawn again needs a new id: sat/confirm_trial.json)')
+            note('warning', 'sat-confirm trial', msg); rep.setdefault('warnings', []).append(msg)
+            skip |= {(port, i) for i in bad}
+    if skip: scores = [r for r in scores if (r['site_id'], r['section_id']) not in skip]
     res = confirm.run(scores, out, cfg, nows)
     queue = json.loads((out / confirm.DIR / 'queue.json').read_text(encoding='utf-8'))
     drawn = [f'{s}/{d}' for s, d in confirm_img.needed(out, queue) if draw(out, windows, s, d, sites)]
@@ -226,6 +231,19 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
     rep.update(queued=len(queue.get('cells', [])), images_drawn=drawn, images_removed=gone, skipped=len(res.get('skipped', [])))
     _write(report_path, rep)
     return rep
+
+
+def sync_trial(out, port, nows):
+    """Add the port's trial sections (sat/confirm_trial.json) to its ledger as a later sections_version. A trial section whose
+    id is in the ledger with another line or frame (drawn again under the same id) is not synced and is returned, so that one
+    redrawn line stops only itself, not the daily run of every port (sat.confirm.sync_sections would raise)."""
+    from .. import confirm, confirm_trial
+    trial = confirm_trial.sections(port)
+    if not trial: return []
+    known = {s['id']: s for s in (confirm.load_sections(out, port) or {}).get('sections', [])}
+    bad = [s['id'] for s in trial if s['id'] in known and (known[s['id']].get('line') != s['line'] or known[s['id']].get('frame') != s['frame'])]
+    confirm.sync_sections(out, port, [s for s in trial if s['id'] not in bad], nows)
+    return bad
 
 
 def _write(path, doc):
