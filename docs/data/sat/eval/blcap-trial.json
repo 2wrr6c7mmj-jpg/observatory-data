@@ -1,0 +1,366 @@
+{
+ "version": "blcap-1",
+ "margin_db": 3.0,
+ "quantile": 25.0,
+ "resident_rule": "answers before the scene's day >= 3, share present >= 0.75",
+ "cells": 633,
+ "recount_mismatch_vs_presence": 0,
+ "resident_cells": 78,
+ "resident_present": 60,
+ "resident_cells_design_mark": 77,
+ "now": {
+  "cells": 633,
+  "tp": 81,
+  "fn": 113,
+  "fp": 52,
+  "tn": 387,
+  "recall": 0.418,
+  "precision": 0.609,
+  "f1": 0.495,
+  "accuracy": 0.739
+ },
+ "blcap": {
+  "metrics": {
+   "cells": 633,
+   "tp": 89,
+   "fn": 105,
+   "fp": 53,
+   "tn": 386,
+   "recall": 0.459,
+   "precision": 0.627,
+   "f1": 0.53,
+   "accuracy": 0.75
+  },
+  "diff": {
+   "dfn": -8,
+   "dfp": 1,
+   "df1": 0.035,
+   "dfn_ci": [
+    -15.0,
+    -2.0
+   ],
+   "dfp_ci": [
+    0.0,
+    3.0
+   ],
+   "df1_ci": [
+    0.008,
+    0.064
+   ],
+   "dacc_ci": [
+    0.002,
+    0.023
+   ]
+  }
+ },
+ "blcap_design_mark": {
+  "metrics": {
+   "cells": 633,
+   "tp": 89,
+   "fn": 105,
+   "fp": 53,
+   "tn": 386,
+   "recall": 0.459,
+   "precision": 0.627,
+   "f1": 0.53,
+   "accuracy": 0.75
+  },
+  "diff": {
+   "dfn": -8,
+   "dfp": 1,
+   "df1": 0.035,
+   "dfn_ci": [
+    -15.0,
+    -2.0
+   ],
+   "dfp_ci": [
+    0.0,
+    3.0
+   ],
+   "df1_ci": [
+    0.008,
+    0.064
+   ],
+   "dacc_ci": [
+    0.002,
+    0.023
+   ]
+  }
+ },
+ "resident_only": {
+  "now": {
+   "cells": 78,
+   "tp": 16,
+   "fn": 44,
+   "fp": 1,
+   "tn": 17,
+   "recall": 0.267,
+   "precision": 0.941,
+   "f1": 0.416,
+   "accuracy": 0.423
+  },
+  "blcap": {
+   "cells": 78,
+   "tp": 24,
+   "fn": 36,
+   "fp": 2,
+   "tn": 16,
+   "recall": 0.4,
+   "precision": 0.923,
+   "f1": 0.558,
+   "accuracy": 0.513
+  }
+ },
+ "per_port": {
+  "SYL": {
+   "cells": 11,
+   "resident_cells": 1,
+   "resident_present": 1,
+   "now": {
+    "cells": 11,
+    "tp": 1,
+    "fn": 4,
+    "fp": 0,
+    "tn": 6,
+    "recall": 0.2,
+    "precision": 1.0,
+    "f1": 0.333,
+    "accuracy": 0.636
+   },
+   "blcap": {
+    "cells": 11,
+    "tp": 1,
+    "fn": 4,
+    "fp": 0,
+    "tn": 6,
+    "recall": 0.2,
+    "precision": 1.0,
+    "f1": 0.333,
+    "accuracy": 0.636
+   },
+   "dfn": 0,
+   "dfp": 0
+  },
+  "SLP": {
+   "cells": 110,
+   "resident_cells": 5,
+   "resident_present": 4,
+   "now": {
+    "cells": 110,
+    "tp": 10,
+    "fn": 5,
+    "fp": 7,
+    "tn": 88,
+    "recall": 0.667,
+    "precision": 0.588,
+    "f1": 0.625,
+    "accuracy": 0.891
+   },
+   "blcap": {
+    "cells": 110,
+    "tp": 10,
+    "fn": 5,
+    "fp": 7,
+    "tn": 88,
+    "recall": 0.667,
+    "precision": 0.588,
+    "f1": 0.625,
+    "accuracy": 0.891
+   },
+   "dfn": 0,
+   "dfp": 0
+  },
+  "QGZ": {
+   "cells": 102,
+   "resident_cells": 18,
+   "resident_present": 15,
+   "now": {
+    "cells": 102,
+    "tp": 27,
+    "fn": 12,
+    "fp": 12,
+    "tn": 51,
+    "recall": 0.692,
+    "precision": 0.692,
+    "f1": 0.692,
+    "accuracy": 0.765
+   },
+   "blcap": {
+    "cells": 102,
+    "tp": 30,
+    "fn": 9,
+    "fp": 12,
+    "tn": 51,
+    "recall": 0.769,
+    "precision": 0.714,
+    "f1": 0.741,
+    "accuracy": 0.794
+   },
+   "dfn": -3,
+   "dfp": 0
+  },
+  "ZDH": {
+   "cells": 49,
+   "resident_cells": 1,
+   "resident_present": 0,
+   "now": {
+    "cells": 49,
+    "tp": 19,
+    "fn": 2,
+    "fp": 12,
+    "tn": 16,
+    "recall": 0.905,
+    "precision": 0.613,
+    "f1": 0.731,
+    "accuracy": 0.714
+   },
+   "blcap": {
+    "cells": 49,
+    "tp": 19,
+    "fn": 2,
+    "fp": 13,
+    "tn": 15,
+    "recall": 0.905,
+    "precision": 0.594,
+    "f1": 0.717,
+    "accuracy": 0.694
+   },
+   "dfn": 0,
+   "dfp": 1
+  },
+  "QJG": {
+   "cells": 49,
+   "resident_cells": 7,
+   "resident_present": 7,
+   "now": {
+    "cells": 49,
+    "tp": 2,
+    "fn": 11,
+    "fp": 1,
+    "tn": 35,
+    "recall": 0.154,
+    "precision": 0.667,
+    "f1": 0.25,
+    "accuracy": 0.755
+   },
+   "blcap": {
+    "cells": 49,
+    "tp": 2,
+    "fn": 11,
+    "fp": 1,
+    "tn": 35,
+    "recall": 0.154,
+    "precision": 0.667,
+    "f1": 0.25,
+    "accuracy": 0.755
+   },
+   "dfn": 0,
+   "dfp": 0
+  },
+  "QDH": {
+   "cells": 116,
+   "resident_cells": 10,
+   "resident_present": 8,
+   "now": {
+    "cells": 116,
+    "tp": 10,
+    "fn": 19,
+    "fp": 13,
+    "tn": 74,
+    "recall": 0.345,
+    "precision": 0.435,
+    "f1": 0.385,
+    "accuracy": 0.724
+   },
+   "blcap": {
+    "cells": 116,
+    "tp": 15,
+    "fn": 14,
+    "fp": 13,
+    "tn": 74,
+    "recall": 0.517,
+    "precision": 0.536,
+    "f1": 0.526,
+    "accuracy": 0.767
+   },
+   "dfn": -5,
+   "dfp": 0
+  },
+  "XSN": {
+   "cells": 71,
+   "resident_cells": 19,
+   "resident_present": 17,
+   "now": {
+    "cells": 71,
+    "tp": 1,
+    "fn": 48,
+    "fp": 1,
+    "tn": 21,
+    "recall": 0.02,
+    "precision": 0.5,
+    "f1": 0.039,
+    "accuracy": 0.31
+   },
+   "blcap": {
+    "cells": 71,
+    "tp": 1,
+    "fn": 48,
+    "fp": 1,
+    "tn": 21,
+    "recall": 0.02,
+    "precision": 0.5,
+    "f1": 0.039,
+    "accuracy": 0.31
+   },
+   "dfn": 0,
+   "dfp": 0
+  },
+  "LSN": {
+   "cells": 125,
+   "resident_cells": 17,
+   "resident_present": 8,
+   "now": {
+    "cells": 125,
+    "tp": 11,
+    "fn": 12,
+    "fp": 6,
+    "tn": 96,
+    "recall": 0.478,
+    "precision": 0.647,
+    "f1": 0.55,
+    "accuracy": 0.856
+   },
+   "blcap": {
+    "cells": 125,
+    "tp": 11,
+    "fn": 12,
+    "fp": 6,
+    "tn": 96,
+    "recall": 0.478,
+    "precision": 0.647,
+    "f1": 0.55,
+    "accuracy": 0.856
+   },
+   "dfn": 0,
+   "dfp": 0
+  }
+ },
+ "design": {
+  "dfn": -8,
+  "dfn_ci": [
+   -15,
+   -2
+  ],
+  "dfp": 1,
+  "dfp_ci": [
+   0,
+   3
+  ],
+  "cells": 633,
+  "resident_cells": 77,
+  "source": "2部 設計書_レーダーの見落とし §5.1（633 升、対 札の規則）"
+ },
+ "bootstrap": "scenes (site x S1) drawn with replacement, 2000 draws, seed 0, paired differences",
+ "pu": 0,
+ "credit": "Contains modified Copernicus Sentinel data 2025–2026"
+}
