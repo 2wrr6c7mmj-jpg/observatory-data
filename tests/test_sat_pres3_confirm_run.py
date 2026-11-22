@@ -134,6 +134,20 @@ class WriteTest(unittest.TestCase):
             self.assertEqual(list(out.iterdir()), []); self.assertEqual(search.calls, 0)
             self.assertTrue(rep["problems"] and "frozen_utc" in rep["problems"][0])
 
+    def test_no_refit_and_no_daily_run_without_frozen_utc_on_main(self):
+        with tempfile.TemporaryDirectory() as d, mock.patch("sat.confirm.load_config", return_value={"frozen_utc": None}), \
+                mock.patch.object(cr, "refit") as refit, mock.patch.object(cr, "daily_run", wraps=cr.daily_run) as run, mock.patch.object(cr, "note"):
+            self.assertEqual(cr.main(["refit", "--store", str(Path(d) / "s"), "--out", str(Path(d) / "o"), "--require-frozen"]), 1)
+            refit.assert_not_called(); self.assertFalse((Path(d) / "o").exists())
+            with mock.patch("urllib.request.urlopen", Search()) as search:
+                self.assertEqual(cr.main(["daily", "--store", str(Path(d) / "s"), "--windows", str(Path(d) / "w"), "--out", str(Path(d) / "o"),
+                                          "--report", str(Path(d) / "r.json"), "--require-frozen"]), 1)
+            self.assertEqual(search.calls, 0); self.assertFalse((Path(d) / "o").exists())
+        with tempfile.TemporaryDirectory() as d, mock.patch("sat.confirm.load_config", return_value={"frozen_utc": "2026-12-01T00:00:00Z"}), \
+                mock.patch.object(cr, "refit", return_value=({"meta": {}}, None)) as refit, mock.patch.object(cr, "note"):
+            self.assertEqual(cr.main(["refit", "--store", str(Path(d) / "s"), "--out", str(Path(d) / "o"), "--require-frozen"]), 0)
+            refit.assert_called_once()
+
     def test_paths_outside_the_two_places_fail(self):
         ok = (" M docs/data/sat/confirm/queue.json\n?? docs/data/sat/confirm/state/QDH/2026-11.csv\n"
               "?? docs/data/sat/confirm/img/QDH/2026-11-20.webp\n M docs/data/sat/labels/QDH-confirm-answers.csv\n")
@@ -235,15 +249,30 @@ class WorkflowTest(unittest.TestCase):
             if f.name != "sat-confirm.yml":
                 self.assertNotIn("confirm-daily", f.read_text(encoding="utf-8"), f.name)
 
-    def steps(self):
-        parts = re.split(r"\n      - ", self.T.split("steps:", 1)[1])
+    def job(self, name):
+        jobs = self.T.split("\njobs:\n", 1)[1]
+        parts = re.split(r"\n  (?=[a-z]+:\n)", "\n" + jobs)
+        return next(x for x in parts if x.startswith(name + ":"))
+
+    def steps(self, job="confirm"):
+        parts = re.split(r"\n      - ", self.job(job).split("steps:", 1)[1])
         return {re.search(r"name:\s*(.+)", p).group(1).strip() if re.search(r"name:\s*(.+)", p) else p.split("\n")[0]: p for p in parts}
 
-    def test_publishing_only_after_the_tests_and_from_main(self):
+    # the run went to its end: the daily run succeeded, or it was skipped for a re-fit that succeeded
+    FINISHED = "(steps.run.outcome == 'success' || (steps.run.outcome == 'skipped' && steps.refit.outcome == 'success'))"
+
+    def test_publishing_only_after_the_tests_the_whole_run_and_the_path_check(self):
         s = self.steps(); names = list(s)
-        self.assertIn("WRITE: ${{ github.event_name != 'push' && !inputs.probe && github.ref == 'refs/heads/main' }}", self.T)
+        self.assertIn("if: github.event_name != 'push' && !inputs.probe && github.ref == 'refs/heads/main'", self.job("confirm"))
+        for n, i in (("Re-fit", "refit"), ("Daily run", "run"), ("Only docs/data/sat/confirm/ was written", "paths"), ("Tests", "tests")):
+            self.assertIn(f"id: {i}\n", s[n], n)
+        # S1: a daily run that fell over half way must not be published, and the path check must not be skipped then
+        self.assertIn("if: ${{ !cancelled() && " + self.FINISHED + " }}", s["Only docs/data/sat/confirm/ was written"])
         for n in ("Keep the new patches (branch pres3-patches)", "Publish docs/data/sat/confirm"):
-            self.assertIn("steps.tests.outcome == 'success'", s[n]); self.assertIn("env.WRITE == 'true'", s[n])
+            cond = re.search(r"if: \$\{\{(.+)\}\}", s[n]).group(1)
+            for part in ("steps.tests.outcome == 'success'", "steps.paths.outcome == 'success'", self.FINISHED):
+                self.assertIn(part, cond, n)
+            self.assertNotIn("always()", cond, n)
             self.assertLess(names.index("Only docs/data/sat/confirm/ was written"), names.index(n))
         self.assertLess(names.index("Tests"), names.index("Daily run"))
         self.assertIn("python -m unittest discover -s tests -t .", s["Tests"])
@@ -251,9 +280,22 @@ class WorkflowTest(unittest.TestCase):
         self.assertIn("git add -A docs/data/sat/confirm\n", s["Publish docs/data/sat/confirm"])
         self.assertEqual(len(re.findall(r"git pull -q --rebase origin main", self.T)), 1)
         self.assertIn("for i in 1 2 3 4", s["Publish docs/data/sat/confirm"])
-        self.assertIn("--require-frozen", s["Daily run"])
+        self.assertIn("--require-frozen", s["Daily run"]); self.assertIn("--require-frozen", s["Re-fit"])
         self.assertEqual(re.findall(r"git push[^\n]*", self.T), ["git push -q origin HEAD:refs/heads/pres3-patches || { echo \"::error title=sat-confirm store::pres3-patches に push できなかった（次の実行で取り直す）\"; exit 1; }",
                                                                   "git push -q origin HEAD:main; then exit 0; fi"])
+
+    def test_the_publish_conditions_as_actions_would_read_them(self):
+        # the conditions of Keep / Publish evaluated for the outcomes of the steps before them
+        def ok(run, refit, paths, tests="success"):
+            cond = re.search(r"if: \$\{\{(.+)\}\}", self.steps()["Publish docs/data/sat/confirm"]).group(1)
+            env = {"steps.run.outcome": run, "steps.refit.outcome": refit, "steps.paths.outcome": paths, "steps.tests.outcome": tests}
+            expr = cond.replace("!cancelled()", "True").replace("&&", " and ").replace("||", " or ")
+            for k, v in env.items(): expr = expr.replace(k, repr(v))
+            return eval(expr)
+        self.assertTrue(ok("success", "skipped", "success")); self.assertTrue(ok("skipped", "success", "success"))
+        for args in (("failure", "skipped", "skipped"), ("failure", "skipped", "success"), ("success", "skipped", "failure"),
+                     ("skipped", "failure", "skipped"), ("skipped", "skipped", "success"), ("success", "skipped", "success", "failure")):
+            self.assertFalse(ok(*args), args)
 
     def test_no_force_no_deletion_no_secret_no_cdse(self):
         for word in ("--force", "push -f", "+HEAD", "--delete", "branch -D", "push origin :", "secrets.", "CDSE", "sat.run", "publish.sh", "reset --hard",
@@ -263,15 +305,20 @@ class WorkflowTest(unittest.TestCase):
     def test_the_refit_is_manual(self):
         on = self.T.split("permissions:")[0]
         self.assertIn("workflow_dispatch:", on); self.assertIn("refit:", on); self.assertEqual(on.count("cron:"), 1)
-        s = self.steps(); self.assertIn("inputs.refit && env.WRITE == 'true'", s["Re-fit"])
-        self.assertIn("scikit-learn==1.9.1", self.T)
+        s = self.steps(); self.assertIn("if: inputs.refit\n", s["Re-fit"]); self.assertIn("--require-frozen", s["Re-fit"])
+        self.assertIn("scikit-learn==1.9.1", self.job("confirm")); self.assertNotIn("scikit-learn", self.job("probe"))
 
-    def test_the_probe_writes_nothing(self):
+    def test_the_probe_is_read_only(self):
         self.assertIn("branches: ['probe/sat-confirm-*']", self.T)
-        self.assertIn("PROBE: ${{ github.event_name == 'push' || inputs.probe }}", self.T)
-        run = self.steps()["Daily run"]
-        probe = run.split("elif")[0]
-        self.assertIn('--out "$RUNNER_TEMP/out"', probe); self.assertIn("--ports QDH --max-scenes 1", probe)
+        self.assertIn("\npermissions:\n  contents: read\n", self.T)                         # the default of every job
+        probe = self.job("probe")
+        self.assertIn("if: github.event_name == 'push' || inputs.probe", probe)
+        self.assertIn("permissions:\n      contents: read", probe)
+        for word in ("contents: write", "git push", "git commit", "git add", "--require-frozen", "refit"):
+            self.assertNotIn(word, probe, word)
+        run = self.steps("probe")["Probe run (one port, one day)"]
+        self.assertIn('--out "$RUNNER_TEMP/out"', run); self.assertIn("--ports QDH --max-scenes 1", run)
+        self.assertIn("permissions:\n      contents: write", self.job("confirm"))
 
 
 if __name__ == "__main__":

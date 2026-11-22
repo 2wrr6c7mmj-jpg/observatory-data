@@ -256,6 +256,11 @@ def store_cells(store, ports, sat_dir=None, cutoff=None):
     return C, (np.concatenate(X) if X else None), names
 
 
+def refit_allowed():
+    from .. import confirm
+    return bool(confirm.load_config().get('frozen_utc'))
+
+
 def refit(store_dir, out, cutoff, ports, log=print):
     from . import daily
     store = daily.Store(store_dir); C, X, names = store_cells(store, ports, None, cutoff)      # the answer files of the repository
@@ -294,6 +299,7 @@ def main(argv=None):
     p.add_argument('--require-frozen', action='store_true', help='stop when sat/confirm.json has no frozen_utc (the run on main)')
     p = sub.add_parser('refit'); p.add_argument('--store', required=True); p.add_argument('--out', default=str(common.SAT))
     p.add_argument('--cutoff', help='default: the 1st of this month (UTC)'); p.add_argument('--ports', default=','.join(common.PORTS))
+    p.add_argument('--require-frozen', action='store_true', help='do nothing when sat/confirm.json has no frozen_utc (the run on main)')
     sub.add_parser('paths')
     p = sub.add_parser('verdict'); p.add_argument('report')
     a = ap.parse_args(argv)
@@ -302,10 +308,13 @@ def main(argv=None):
         daily.outside_repo(a.store, 'the patch store'); daily.outside_repo(a.windows, 'the window directory')
         rep = daily_run(a.store, a.windows, a.out, common.ports_of(a.ports), a.report, days=a.days, score_days=a.score_days,
                         meter=Meter(a.max_requests, a.max_bytes), max_scenes=a.max_scenes, require_frozen=a.require_frozen)
-        annotate(rep); return 0
+        annotate(rep)
+        return 1 if 'meter' not in rep else 0          # stopped before fetching (no frozen_utc on main): nothing to publish
     if a.cmd == 'refit':
         from . import daily
         daily.outside_repo(a.store, 'the patch store')
+        if a.require_frozen and not refit_allowed():
+            note('error', 'sat-confirm refit', 'sat/confirm.json frozen_utc is null: no re-fit before the first run on main'); return 1
         cutoff = a.cutoff or f'{dt.datetime.now(dt.timezone.utc):%Y-%m}-01'
         B, mf = refit(a.store, a.out, cutoff, common.ports_of(a.ports))
         note('notice', 'sat-confirm refit', json.dumps(B['meta'], ensure_ascii=False)); return 0

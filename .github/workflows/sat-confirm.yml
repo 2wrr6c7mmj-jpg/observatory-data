@@ -2,10 +2,12 @@ name: confirm-1 daily (pres-3o)
 # 確認回し（設計書 docs/data/sat/eval/confirm-design.md §6・§8.1 の PR-5）。毎日 1 回：9 港の新しい Sentinel-2 の撮影の窓を
 # Element84 Earth Search → AWS の公開 COG から取り（CDSE は使わない。PU 0）、パッチの保管（ブランチ pres3-patches）に足し、
 # 固定した版の係数（pres3-patches の models/）で点数を付け、sat.confirm で仕分けて docs/data/sat/confirm/ に書く。
-# 書くのは docs/data/sat/confirm/ と pres3-patches だけ（最後に git status で確かめる）。公開はテストが通ったときだけ。
+# 書くのは docs/data/sat/confirm/ と pres3-patches だけ（git status で確かめる）。公開と保管への push は、テストが通り、
+# 実行が最後まで終わり、パスの検査が通ったときだけ。
 # 拒否（4xx）を受けた港は飛ばして注釈に出す（回り込まない）。要求の数と転送量を注釈に出し、上限の手前で取得を止める。
-# 月 1 回の再学習は workflow_dispatch の refit（schedule にしない）。
-# probe/sat-confirm-* への push は読み取り専用の版（1 港・1 日、一時の置き場。書き込みも push もしない）。
+# 月 1 回の再学習は workflow_dispatch の refit（schedule にしない）。main で sat/confirm.json の frozen_utc が null の間は
+# 毎日の実行も再学習も何もしない。
+# probe/sat-confirm-* への push（と dispatch の probe）は読み取り専用の別の job（contents: read。1 港・1 日、一時の置き場）。
 # cron 07:29 UTC：既存の時刻（毎時 :07 :37 :41 :43 :50 :11、01:23 03:17 03:43 03:47 05:17 06:37 12:17 19:41）と重ならない。
 # 中国沿岸の撮影は 02〜03 UTC、Earth Search に載るのは約 3 時間後（PR-0 の probe）。
 on:
@@ -24,18 +26,67 @@ on:
         type: boolean
         default: false
 permissions:
-  contents: write
+  contents: read
 concurrency:
   # 本番（schedule・dispatch）と probe（push）は別の group。既存のどの group とも別の名前
   group: confirm-daily${{ github.event_name == 'push' && format('-probe-{0}', github.ref_name) || '' }}
   cancel-in-progress: false
 jobs:
+  probe:
+    # 読み取り専用：書き込みの権限を持たない。保管は取り出すだけ、出力は一時の置き場と artifact
+    if: github.event_name == 'push' || inputs.probe
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy, Pillow and rasterio
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0 rasterio==1.5.2
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - name: The patch store (branch pres3-patches, last commit only)
+        run: |
+          git fetch -q --depth 1 origin pres3-patches
+          git worktree add -q --detach "$RUNNER_TEMP/patches" FETCH_HEAD
+          echo "::notice title=sat-confirm store::$(git -C "$RUNNER_TEMP/patches" log -1 --format='%h %cI') $(du -sh "$RUNNER_TEMP/patches" --exclude=.git | cut -f1)"
+      - name: Probe output directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          cp -r docs/data/sat/labels "$RUNNER_TEMP/out/labels"
+          if [ -d docs/data/sat/confirm ]; then cp -r docs/data/sat/confirm "$RUNNER_TEMP/out/confirm"; fi
+      - name: Probe run (one port, one day)
+        run: |
+          python -m sat.pres3.confirm_run daily --store "$RUNNER_TEMP/patches" --windows "$RUNNER_TEMP/windows" \
+            --out "$RUNNER_TEMP/out" --report "$RUNNER_TEMP/report.json" --ports QDH --max-scenes 1
+      - name: Only docs/data/sat/confirm/ was written (nothing, in a probe)
+        run: python -m sat.pres3.confirm_run paths
+      - name: Probe output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sat-confirm-probe
+          path: |
+            ${{ runner.temp }}/out/confirm
+            ${{ runner.temp }}/report.json
+          retention-days: 5
+          if-no-files-found: warn
+      - name: Report
+        if: always()
+        run: |
+          [ -f "$RUNNER_TEMP/report.json" ] || { echo "::error title=sat-confirm::報告が無い"; exit 1; }
+          python -m sat.pres3.confirm_run verdict "$RUNNER_TEMP/report.json"
+
   confirm:
+    # 本番：main の schedule・dispatch だけ
+    if: github.event_name != 'push' && !inputs.probe && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 150
-    env:
-      PROBE: ${{ github.event_name == 'push' || inputs.probe }}
-      WRITE: ${{ github.event_name != 'push' && !inputs.probe && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -53,42 +104,23 @@ jobs:
           git fetch -q --depth 1 origin pres3-patches
           git worktree add -q --detach "$RUNNER_TEMP/patches" FETCH_HEAD
           echo "::notice title=sat-confirm store::$(git -C "$RUNNER_TEMP/patches" log -1 --format='%h %cI') $(du -sh "$RUNNER_TEMP/patches" --exclude=.git | cut -f1)"
-      - name: Probe output directory
-        if: env.PROBE == 'true'
-        run: |
-          mkdir -p "$RUNNER_TEMP/out"
-          cp -r docs/data/sat/labels "$RUNNER_TEMP/out/labels"
-          if [ -d docs/data/sat/confirm ]; then cp -r docs/data/sat/confirm "$RUNNER_TEMP/out/confirm"; fi
       - name: Re-fit
-        if: inputs.refit && env.WRITE == 'true'
-        run: python -m sat.pres3.confirm_run refit --store "$RUNNER_TEMP/patches"
+        id: refit
+        if: inputs.refit
+        run: python -m sat.pres3.confirm_run refit --store "$RUNNER_TEMP/patches" --require-frozen
       - name: Daily run
         id: run
         if: ${{ !inputs.refit }}
         run: |
-          if [ "$PROBE" = "true" ]; then
-            python -m sat.pres3.confirm_run daily --store "$RUNNER_TEMP/patches" --windows "$RUNNER_TEMP/windows" \
-              --out "$RUNNER_TEMP/out" --report "$RUNNER_TEMP/report.json" --ports QDH --max-scenes 1
-          elif [ "$WRITE" = "true" ]; then
-            python -m sat.pres3.confirm_run daily --store "$RUNNER_TEMP/patches" --windows "$RUNNER_TEMP/windows" \
-              --report "$RUNNER_TEMP/report.json" --require-frozen
-          else
-            echo "::notice title=sat-confirm::not main and not a probe: nothing to do"
-          fi
+          python -m sat.pres3.confirm_run daily --store "$RUNNER_TEMP/patches" --windows "$RUNNER_TEMP/windows" \
+            --report "$RUNNER_TEMP/report.json" --require-frozen
       - name: Only docs/data/sat/confirm/ was written
+        id: paths
+        # after a run that went to its end (the daily run, or the re-fit when that is what was asked)
+        if: ${{ !cancelled() && (steps.run.outcome == 'success' || (steps.run.outcome == 'skipped' && steps.refit.outcome == 'success')) }}
         run: python -m sat.pres3.confirm_run paths
-      - name: Probe output
-        if: ${{ always() && env.PROBE == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: sat-confirm-probe
-          path: |
-            ${{ runner.temp }}/out/confirm
-            ${{ runner.temp }}/report.json
-          retention-days: 5
-          if-no-files-found: warn
       - name: Keep the new patches (branch pres3-patches)
-        if: ${{ !cancelled() && steps.tests.outcome == 'success' && env.WRITE == 'true' }}
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && steps.paths.outcome == 'success' && (steps.run.outcome == 'success' || (steps.run.outcome == 'skipped' && steps.refit.outcome == 'success')) }}
         run: |
           cd "$RUNNER_TEMP/patches"
           export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
@@ -98,7 +130,7 @@ jobs:
           git commit -q -m "pres3-patches: $(date -u +%Y-%m-%d)"
           git push -q origin HEAD:refs/heads/pres3-patches || { echo "::error title=sat-confirm store::pres3-patches に push できなかった（次の実行で取り直す）"; exit 1; }
       - name: Publish docs/data/sat/confirm
-        if: ${{ !cancelled() && steps.tests.outcome == 'success' && env.WRITE == 'true' }}
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && steps.paths.outcome == 'success' && (steps.run.outcome == 'success' || (steps.run.outcome == 'skipped' && steps.refit.outcome == 'success')) }}
         run: |
           git add -A docs/data/sat/confirm
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
