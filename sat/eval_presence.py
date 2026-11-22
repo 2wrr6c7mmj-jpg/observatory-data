@@ -715,7 +715,7 @@ def evaluate(out: Path, sites: list[dict] | None = None, now: datetime | None = 
     main_ = evaluate_one(out, sites, truth)
     other = evaluate_one(out, sites, "s1" if truth == "s2" else "s2")
     return {"version": EVAL_VERSION, "generated_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の水上艦の、撮影×岸壁区間ごとの在/不在",
+            "target": "海軍の岸壁（naval-1 の naval の線）に着く 50 m 以上の艦（潜水艦を含む）の、撮影×岸壁区間ごとの在/不在",
             "min_length_m": MIN_LENGTH_M, "threshold": THRESHOLD, "truth": truth, "truth_note": main_["truth_note"],
             "total": main_["total"], "sites": main_["sites"],
             "other_truth": {"truth": other["truth"], "truth_note": other["truth_note"], "total": other["total"],
@@ -817,7 +817,8 @@ def meta(res: dict) -> dict:
                                                  "warship_blind（計数が在としなかった常在の区間の常在度の和の四捨五入。1 区間＝50 m 以上の軍艦 1 隻の下限、横抱きは数えない。稼働状態は問わない）。"
                                                  "地図の札はこれを足す。answers＝常在の表の出所（s1＝所有者の同日の答え、s2＝所有者の S2 の日の答え、ai＝AI の判断による仮の表：所有者の答えが無い港だけ）。"
                                                  "radar_dark_sections・radar_dark_seen・radar_dark_reasons＝レーダーでは判定できない区間（dark-1、../radar_dark.json）。"
-                                                 f"末尾の {'・'.join(opt_fill.COLUMNS)}＝その区間を光学（pres-3o）の点数で埋める試行の系列（{opt_fill.VERSION}、../{opt_fill.OPT_FILL}。地図の札にも warship_blind にも足さない）。"
+                                                 f"末尾の {'・'.join(opt_fill.COLUMNS)}＝その区間を光学（pres-3o）の点数で埋める試行の系列（{opt_fill.VERSION}、../{opt_fill.OPT_FILL}。地図の札にも warship_blind にも足さない。"
+                                                 "opt_fill_basis の owner／p が在の出所＝所有者の答え／光学の点数。港別の和と出所別の和、常在の表の無い旅順の撮影の値は ../opt_fill.json）。"
                                                  "方針（司令部の決定 2026-11-22、数は変えない）：潜水艦の桟橋の在は 50 m 以上の艦（潜水艦を含む）として軍艦の数に数える。"
                                                  "長さの規則は札の規則（片の長さ − 20 m を山の数で割り 50 m 以上）を正とし、評価もこれに揃える（評価票の変更は別の PR）"),
                   f"../{pres1.OUT_DIR}/<地点>.json": (f"{pres1.VERSION}（試行・並行系列、sat/pres1）：sites.json の quay.pres1 が trial／on の港の、直近 {pres1.KEEP_SCENES} 撮影の区間ごとの "
@@ -1017,25 +1018,42 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
               "（python -m sat.radar_dark build で作り直す。公開の radar_dark.json と quay_blind は今日の評価票で作った）", flush=True)
     # opt-fill-1 (sat/opt_fill.py): the trial series beside the marks (the radar-dark sections from the optical judge's
     # scores of the confirm run). It adds to no count: a failure leaves its columns of quay_blind empty and stops nothing
-    fill_err = None
-    try:
-        fill = opt_fill.prepare(out, [s["id"] for s in sites])
-    except Exception as e:                      # noqa: BLE001 (any failure of the trial series alone)
-        fill, fill_err = {}, repr(e)[:300]
-        print(f"::warning title=sat opt_fill::光学で埋める試行（opt-fill-1）の準備に失敗（quay_blind の opt_fill の列は空。数は変わらない）: {fill_err}", flush=True)
+    fill, fill_err = opt_fill_prepare(out, sites)
     r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "radar_dark": dark, "blind": write_blind(out, sites, fill),
          "naval50": write_naval50(out, sites), "pres1": pres1.safe_write(out, sites)}
-    try:
-        r["opt_fill"] = {"error": fill_err} if fill_err else opt_fill.write_public(out, fill)
-    except Exception as e:                      # noqa: BLE001
-        r["opt_fill"] = {"error": repr(e)[:300]}
-        print(f"::warning title=sat opt_fill::opt_fill.json の書き出しに失敗（数は変わらない）: {r['opt_fill']['error']}", flush=True)
+    r["opt_fill"] = opt_fill_publish(out, fill, fill_err)
     if log:
         log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行、"
             f"quay_pres1 {len(r['pres1'])} 港、radar_dark {sum(r['radar_dark']['counts'].values())} 区間（区分ファイルの記録が古い港 {r['radar_dark']['stale'] or 'なし'}"
             f"{'、作り直しに失敗' if r['radar_dark'].get('error') else ''}）、opt-fill（試行）"
             f"{'失敗' if r['opt_fill'].get('error') else {k: v['present_sum'] for k, v in r['opt_fill'].items()}}")
     return r
+
+
+def opt_fill_prepare(out: Path, sites: list[dict]) -> tuple[dict, str | None]:
+    """(context, None) of the trial series opt-fill-1, or ({}, the reason) when it cannot be prepared (reported; the columns of
+    quay_blind are then empty and opt_fill.json says counts null). The daily run and the run by hand (main) both use it."""
+    try:
+        return opt_fill.prepare(out, [s["id"] for s in sites]), None
+    except Exception as e:                      # noqa: BLE001 (any failure of the trial series alone)
+        err = opt_fill.error_text(e)
+        print(f"::warning title=sat opt_fill::光学で埋める試行（opt-fill-1）の準備に失敗（quay_blind の opt_fill の列は空、opt_fill.json の counts は null。数は変わらない）: {err}", flush=True)
+        return {}, err
+
+
+def opt_fill_publish(out: Path, fill: dict, err: str | None) -> dict:
+    """Write opt_fill.json after quay_blind (the rows the scenes left in ``fill``). A failure of the write itself is reported and
+    one more write of counts null is tried, so that the counts of an earlier day do not stand as today's."""
+    try:
+        return opt_fill.write_public(out, fill, err)
+    except Exception as e:                      # noqa: BLE001
+        why = f"書き出しに失敗: {opt_fill.error_text(e)}"
+        print(f"::warning title=sat opt_fill::opt_fill.json の書き出しに失敗（数は変わらない。counts null で書き直しを試す）: {why}", flush=True)
+        try:
+            opt_fill.write_public(out, None, why)
+        except Exception:                       # noqa: BLE001 (the file stays as it was: the warning above says so)
+            pass
+        return {"error": why}
 
 
 BLIND_DIR = "quay_blind"
@@ -1065,6 +1083,7 @@ def blind_counts(out: Path, sites: list[dict] | None = None, fill: dict | None =
         prior = {sec: bp.p_blind(ans, sec) for sec in ans}
         prior = {k: v for k, v in prior.items() if v > 0}
         if not prior:
+            _opt_fill_only(out, site, (fill or {}).get(sid))
             continue
         tab = presence_table(out, [site], since="").get(sid) or {}
         try:
@@ -1089,11 +1108,32 @@ def blind_counts(out: Path, sites: list[dict] | None = None, fill: dict | None =
 
 def _opt_fill_row(fill: dict | None, sid: str, acq: str, dark: list, seen: dict, resident: list) -> dict:
     """The opt-fill columns of a quay_blind row (sat/opt_fill.py): empty when the series is not made (no context, Zhanjiang, a
-    failure). A failure here leaves the columns empty and changes no other column."""
+    failure). A failure here leaves the columns empty and changes no other column; the site's counts in opt_fill.json are null."""
+    ctx = (fill or {}).get(sid)
     try:
-        return opt_fill.fill((fill or {}).get(sid), acq, dark, seen, resident)
-    except Exception:                           # noqa: BLE001 (the trial series alone)
+        return opt_fill.fill(ctx, acq, dark, seen, resident)
+    except Exception as e:                      # noqa: BLE001 (the trial series alone)
+        if ctx is not None:
+            ctx["error"] = opt_fill.error_text(e)
         return dict(opt_fill.EMPTY)
+
+
+def _opt_fill_only(out: Path, site: dict, ctx: dict | None) -> None:
+    """opt-fill-1 for a site without a resident table (no quay_blind row: Lushun): when it has radar-dark sections in the confirm
+    ledger, its stored scenes are filled the same way into ``ctx`` alone (opt_fill.json, in_quay_blind false). Nothing else is
+    written, and a failure leaves the site's counts null in opt_fill.json."""
+    if ctx is None or not ctx.get("sections"):
+        return
+    try:
+        dark = radar_dark.marks(site["id"], out)
+        if not any(k in ctx["sections"] for k in dark):
+            return
+        tab = presence_table(out, [site], since="").get(site["id"]) or {}
+        for acq in sorted(tab):
+            dk = [k for k in sorted(tab[acq]) if k in dark and radar_dark.is_dark(dark[k], acq)]
+            opt_fill.fill(ctx, acq, dk, tab[acq], [], in_quay_blind=False)
+    except Exception as e:                      # noqa: BLE001 (the trial series alone)
+        ctx["error"] = opt_fill.error_text(e)
 
 
 def write_blind(out: Path, sites: list[dict] | None = None, fill: dict | None = None) -> dict:
@@ -1279,7 +1319,10 @@ def main(argv=None) -> int:
         return 0
     res = evaluate(a.out, truth=a.truth)
     write(a.out, res)
-    write_blind(a.out)
+    sites = load_sites()
+    fill, fill_err = opt_fill_prepare(a.out, sites)      # as refresh: quay_blind's trial columns and opt_fill.json from one context
+    write_blind(a.out, sites, fill)
+    opt_fill_publish(a.out, fill, fill_err)
     write_naval50(a.out)
     pres1.safe_write(a.out, load_sites())
     print(f"正解 {res['truth']}（other_truth {res['other_truth']['truth']}）", file=sys.stderr)

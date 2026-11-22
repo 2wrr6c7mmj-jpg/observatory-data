@@ -22,8 +22,14 @@ is added to quay_naval50, quay_est2, warship_blind, est-2 or eval/presence.json:
   opt_fill_sections   the sections of the rule (after (a)-(c))
   opt_fill_scored     of them, those with a usable Sentinel-2 day in the window
   opt_fill_present    of them, present (= the ships the trial would add)
-  opt_fill_basis      per scored section "section|S2 day|S2 day - S1 day (d)|owner or p|value", ";"-joined
-The rule, the caveats and the sources go to docs/data/sat/opt_fill.json (OPT_FILL).
+  opt_fill_basis      per scored section "section|S2 day|S2 day - S1 day (d)|owner or p|value", ";"-joined: the kind tells
+                      the present sections from the owner's answer (owner) from those from the score (p)
+The rule, the caveats, the sources and per scene the same values split by kind go to docs/data/sat/opt_fill.json (OPT_FILL):
+counts.<site>.rows (opt_fill_present_owner + opt_fill_present_p = opt_fill_present; the sums present_owner_sum, present_p_sum). A site with no resident table (Lushun) has no quay_blind row; when it
+has radar-dark sections in the confirm ledger, its scenes are filled the same way into opt_fill.json alone (in_quay_blind
+false: blind_counts, sat/eval_presence.py). The values are made again every day from the files of that day: an owner's
+answer that comes in later near an earlier scene changes that scene's row (p -> owner), as the marks of radar_dark do.
+A failure of the series leaves counts null with the reason (error), never the counts of an earlier day.
 
 Zhanjiang (ZJG) is left out (EXCLUDED; it has neither marks nor a quay_blind file; tests/sat_zjg_golden.py). Pure Python (no
 numpy), reads published files only, no network, PU 0. Sentinel-2 images: Contains modified Copernicus Sentinel data.
@@ -37,6 +43,8 @@ import json
 from datetime import date as _date
 from pathlib import Path
 
+from . import atomic
+
 CONFIRM_DIR = "confirm"   # docs/data/sat/confirm/ (state/<site>/<month>.csv, sections/<site>.json): published by the confirm run
 
 VERSION = "opt-fill-1"
@@ -46,19 +54,28 @@ EXCLUDED = ("ZJG",)    # Zhanjiang: left out (its outputs must not change)
 OPT_FILL = "opt_fill.json"
 COLUMNS = ("opt_fill_version", "opt_fill_sections", "opt_fill_scored", "opt_fill_present", "opt_fill_basis")
 EMPTY = {k: "" for k in COLUMNS}
+KINDS = ("owner", "p")  # where a present section comes from: the owner's answer of that S2 day, or the score p of pres-3o
 
 RULE = (f"S1 の撮影の日に radar_dark（dark-1）の印がある対象の区間から、(a) その撮影でレーダーが数えた区間、(b) blind-2 の常在の区間（すでに 1 隻足されている）、"
         f"(c) 確認回し（confirm-1）の区間の表に無い区間を除く。値は S1 の撮影の日の前後 {WINDOW_D} 日以内でいちばん近い Sentinel-2 の日のもの（同じ近さなら前の日）："
         f"その日に所有者の答えがあれば答え、無ければ pres-3o の点数 p（確認回しの state の p）。像の無い日（no_image）と所有者が判断できないとした日は使わない。"
         f"窓に使える日が無ければ埋めない。所有者の在、または p ≥ {THRESHOLD:g} で区間 1 隻（常在と同じ下限の数え方）")
 NOTE = ("試行の系列。公開の本体の数（quay_naval50 の札・quay_est2・warship_blind・評価票）には足さない。画面に出すときは「光学で補った数（試行）」と書き、本体の数字と分ける。"
-        "8 週間後（凍結 2026-11-22 以降の答えで）0.9 と 0.7 を比べ直し、足した升の適合率が 0.8 を超えるまでは本体に足さない")
+        "在は出所で分ける：counts の present_owner_sum・rows の opt_fill_present_owner＝その S2 の日の所有者の答えによる在、present_p_sum・opt_fill_present_p＝pres-3o の点数 p（≥ しきい値）による在"
+        "（present_sum・opt_fill_present は両者の和。quay_blind の行では opt_fill_basis の owner／p で分かる）。"
+        "8 週間後（凍結 2026-11-22 以降の答えで）0.9 と 0.7 を比べ直し、足した升の適合率が 0.8 を超えるまでは本体に足さない。"
+        "見直しは p 由来の升だけで採点する（答え由来の升は答えそのもので、採点に入れると適合率が上がって見える）。"
+        "値は毎日その日のファイルから作り直す：過去の撮影の日付の近くに所有者の答えが後から入ると、過去の撮影の行（quay_blind の opt_fill の列と rows）が変わる"
+        "（p 由来が答え由来に替わる、または使える日が増える）。radar_dark の印と同じ。過去の値を比べるときは版と作った日を合わせる")
 CAVEATS = [
     "升が少ない：2部の評価の前進検証で、その日に印のある升 177・28 撮影、在のある港は 4 つ（象山・姜哥荘・青島港内・旅順）。95% CI は広い",
     "点数は過信気味：前進検証で p 0.70〜0.90 の帯は平均 p 0.83 に対して実際の在 0.67、0.90〜0.97 の帯は 0.92 に対して 0.63（升が少ない）",
     f"S1 と S2 の日のずれ：評価は所有者の答えた S2 の日そのものの升で、運用での S1 の撮影と S2 の日のずれ（最大 {WINDOW_D} 日）の分の誤りは測っていない。ずれの間に艦が出入りする",
     "像なしの升：11 月の dark の区間の升（区間 × S2 の日）177 のうち 80 は像が無い（no_image）。窓の中に使える日が無い区間は埋めない（scored に入らない）",
-    "大榭島・下川島・楡林など確認回しの区間の表に無い港・区間は対象外（(c)）。旅順など常在の表の無い港は quay_blind の行が無いので、この系列も無い",
+    "対象外の港：大榭島 DXE（印 12 区間）・下川島 XCD（印 3 区間）は quay_blind の行（常在の表）が無く、確認回しの区間の表も無いので埋めない。"
+    "楡林 SYL は quay_blind の行はあるが、印の 6 区間がどれも確認回しの区間の表に無い（(c)）ので、sections はいつも 0",
+    "旅順 LSN（印 17 区間、うち確認回しの区間の表にあるのは 9）は常在の区間が無く quay_blind の行が無い。この系列の値は opt_fill.json の rows だけにある"
+    "（in_quay_blind false。地図の札の行が無いので、画面に出すなら別に読む）。残りの 8 区間は (c) で対象外",
     "足す区間はほぼ潜水艦の桟橋（hires-1 の U）。所有者が 8 回とも不在と答えた U の区間もあり、正解の側にも穴がある",
     "pres-3o は区間の答えの履歴を特徴に使う：答えの少ない区間では弱い",
 ]
@@ -77,8 +94,10 @@ SOURCES = {
     "resident": "sat/blind_prior（blind-2、quay_blind の resident_sections）",
     "evaluation": "2部の評価「光学で埋める」（2026-11-22）§4 の規則の案 opt-fill-1",
 }
+OSM_CREDIT = "岸壁の区間の線は OpenStreetMap の桟橋・岸壁の線から作った。(c) OpenStreetMap contributors（ODbL 1.0）"
 CREDIT = ["Contains modified Copernicus Sentinel data 2023-2026（Sentinel-1・Sentinel-2。pres-3o の点数と所有者の答えは Sentinel-2 L2A の像による）",
-          "区分の一部（潜水艦の桟橋）は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed"]
+          "区分の一部（潜水艦の桟橋）は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed",
+          OSM_CREDIT]
 
 
 def _day(s: str) -> _date:
@@ -153,7 +172,7 @@ def prepare(out: Path, site_ids) -> dict:
     for sid in site_ids:
         if sid in EXCLUDED:
             continue
-        res[sid] = {"sections": active_sections(out, sid), "cells": site_cells(out, sid), "rows": []}
+        res[sid] = {"sections": active_sections(out, sid), "cells": site_cells(out, sid), "rows": {}, "error": None}
     return res
 
 
@@ -174,46 +193,73 @@ def is_present(kind: str, v) -> bool:
     return v == 1 if kind == "owner" else float(v) >= THRESHOLD
 
 
-def fill(ctx: dict | None, acq: str, dark: list, seen: dict, resident) -> dict:
+def fill(ctx: dict | None, acq: str, dark: list, seen: dict, resident, in_quay_blind: bool = True) -> dict:
     """The opt-fill columns of one scene. dark = the eligible sections that are radar-dark on the scene's day, seen = section ->
-    0/1 of the radar count of the scene, resident = the resident sections (blind-2). ctx None: the empty columns."""
+    0/1 of the radar count of the scene, resident = the resident sections (blind-2). ctx None: the empty columns.
+    The scene's row of opt_fill.json (split by kind) is kept in ctx["rows"] under its time (made again: replaced, not added)."""
     if ctx is None:
         return dict(EMPTY)
     res_set = set(resident)
     secs = [k for k in sorted(dark) if not seen.get(k) and k not in res_set and k in ctx["sections"]]
-    basis, present = [], 0
+    basis, by_kind = [], dict.fromkeys(KINDS, 0)
     for k in secs:
         hit = nearest(ctx["cells"].get(k) or {}, acq)
         if hit is None:
             continue
         day, dt, (kind, v) = hit
-        present += is_present(kind, v)
+        by_kind[kind] += is_present(kind, v)
         basis.append(f"{k}|{day}|{dt:+d}|{kind}|{v if kind == 'owner' else f'{v:.3f}'}")
     row = {"opt_fill_version": VERSION, "opt_fill_sections": len(secs), "opt_fill_scored": len(basis),
-           "opt_fill_present": present, "opt_fill_basis": ";".join(basis)}
-    ctx["rows"].append({"acquired_utc": acq, **{k: row[k] for k in COLUMNS[1:4]}})
+           "opt_fill_present": sum(by_kind.values()), "opt_fill_basis": ";".join(basis)}
+    ctx["rows"][acq] = {"acquired_utc": acq, "in_quay_blind": bool(in_quay_blind),
+                        **{k: row[k] for k in COLUMNS[1:4]},
+                        **{f"opt_fill_present_{k}": n for k, n in by_kind.items()}, "opt_fill_basis": row["opt_fill_basis"]}
     return row
 
 
-def write_public(out: Path, ctx_by_site: dict) -> dict:
-    """docs/data/sat/opt_fill.json: the rule, the caveats, the sources and per site the scenes and the sums of the trial (left
-    alone when its content would not change; no time stamp). No file is made when no site has a row (Zhanjiang alone)."""
-    counts = {}
-    for sid, ctx in sorted(ctx_by_site.items()):
-        rows = sorted(ctx["rows"], key=lambda r: r["acquired_utc"])
-        if not rows:
-            continue
-        counts[sid] = {"scenes": len(rows), "scenes_filled": sum(1 for r in rows if r["opt_fill_present"]),
-                       "present_sum": sum(r["opt_fill_present"] for r in rows), "latest": rows[-1]}
-    p = Path(out) / OPT_FILL
-    if not counts and not p.exists():
-        return counts
+def _site_counts(ctx: dict) -> dict | None:
+    """The sums of a site (None with the reason when a scene of it failed: no partial sums)."""
+    if ctx.get("error"):
+        return {"error": ctx["error"], **dict.fromkeys(("scenes", "scenes_filled", "present_sum", "present_owner_sum", "present_p_sum",
+                                                        "latest", "rows"))}
+    rows = [ctx["rows"][k] for k in sorted(ctx["rows"])]
+    return {"scenes": len(rows), "scenes_filled": sum(1 for r in rows if r["opt_fill_present"]),
+            "present_sum": sum(r["opt_fill_present"] for r in rows),
+            **{f"present_{k}_sum": sum(r[f"opt_fill_present_{k}"] for r in rows) for k in KINDS},
+            "in_quay_blind": all(r["in_quay_blind"] for r in rows), "latest": rows[-1], "rows": rows}
+
+
+def error_text(e: BaseException) -> str:
+    """The reason of a failure as written to the public file: the kind and the message (short; no traceback)."""
+    return f"{type(e).__name__}: {e}"[:200]
+
+
+def render(ctx_by_site: dict | None, error: str | None = None) -> tuple[dict | None, str, str | None]:
+    """(counts, the text of opt_fill.json, error) for the contexts the scenes filled. ``error`` (the series could not be prepared
+    that day) or ctx_by_site None: counts None and the reason."""
+    counts = None
+    if error is None and ctx_by_site is not None:
+        counts = {sid: _site_counts(ctx) for sid, ctx in sorted(ctx_by_site.items()) if ctx.get("rows") or ctx.get("error")}
+    elif error is None:
+        error = "準備の結果が無い"
     doc = {"version": VERSION, "status": "trial", "note": NOTE, "rule": RULE, "threshold": THRESHOLD, "window_d": WINDOW_D,
            "excluded_sites": list(EXCLUDED), "columns": f"quay_blind/<港>.csv の末尾の列 {', '.join(COLUMNS)}（sat/opt_fill.py の docstring）",
            "caveats": CAVEATS, "policy": POLICY, "sources": SOURCES, "credit": CREDIT,
-           "null": "列が空：その日の系列が作れなかった（失敗。本体の数はいつもどおり）、または対象外の港",
-           "counts": counts}
-    text = json.dumps(doc, ensure_ascii=False, indent=1) + "\n"
+           "null": ("列が空：その日の系列が作れなかった（失敗。本体の数はいつもどおり）、または対象外の港。"
+                    "counts が null：その日の系列の準備に失敗（error に理由。前の日の数は残さない）。港の値が null：その港の撮影の一つで失敗（error に理由）"),
+           "error": error, "counts": counts}
+    return counts, json.dumps(doc, ensure_ascii=False, indent=1) + "\n", error
+
+
+def write_public(out: Path, ctx_by_site: dict | None, error: str | None = None) -> dict:
+    """docs/data/sat/opt_fill.json: the rule, the caveats, the sources and per site the scenes, the sums and the rows of the trial
+    (render(); left alone when its content would not change; no time stamp; written atomically, sat/atomic.py). On a failure
+    (``error``, or ctx_by_site None) counts are null with the reason, so that the counts of an earlier day never stand as
+    today's. No file is made when no site has a row (Zhanjiang alone) or on a failure with no earlier file."""
+    counts, text, error = render(ctx_by_site, error)
+    p = Path(out) / OPT_FILL
+    if not counts and not p.exists():
+        return counts if counts is not None else {"error": error}
     if not p.exists() or p.read_text(encoding="utf-8") != text:
-        p.write_text(text, encoding="utf-8")
-    return counts
+        atomic.write_text(p, text)
+    return counts if counts is not None else {"error": error}

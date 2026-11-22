@@ -1,7 +1,7 @@
 {
  "version": "opt-fill-1",
  "status": "trial",
- "note": "試行の系列。公開の本体の数（quay_naval50 の札・quay_est2・warship_blind・評価票）には足さない。画面に出すときは「光学で補った数（試行）」と書き、本体の数字と分ける。8 週間後（凍結 2026-11-22 以降の答えで）0.9 と 0.7 を比べ直し、足した升の適合率が 0.8 を超えるまでは本体に足さない",
+ "note": "試行の系列。公開の本体の数（quay_naval50 の札・quay_est2・warship_blind・評価票）には足さない。画面に出すときは「光学で補った数（試行）」と書き、本体の数字と分ける。在は出所で分ける：counts の present_owner_sum・rows の opt_fill_present_owner＝その S2 の日の所有者の答えによる在、present_p_sum・opt_fill_present_p＝pres-3o の点数 p（≥ しきい値）による在（present_sum・opt_fill_present は両者の和。quay_blind の行では opt_fill_basis の owner／p で分かる）。8 週間後（凍結 2026-11-22 以降の答えで）0.9 と 0.7 を比べ直し、足した升の適合率が 0.8 を超えるまでは本体に足さない。見直しは p 由来の升だけで採点する（答え由来の升は答えそのもので、採点に入れると適合率が上がって見える）。値は毎日その日のファイルから作り直す：過去の撮影の日付の近くに所有者の答えが後から入ると、過去の撮影の行（quay_blind の opt_fill の列と rows）が変わる（p 由来が答え由来に替わる、または使える日が増える）。radar_dark の印と同じ。過去の値を比べるときは版と作った日を合わせる",
  "rule": "S1 の撮影の日に radar_dark（dark-1）の印がある対象の区間から、(a) その撮影でレーダーが数えた区間、(b) blind-2 の常在の区間（すでに 1 隻足されている）、(c) 確認回し（confirm-1）の区間の表に無い区間を除く。値は S1 の撮影の日の前後 4 日以内でいちばん近い Sentinel-2 の日のもの（同じ近さなら前の日）：その日に所有者の答えがあれば答え、無ければ pres-3o の点数 p（確認回しの state の p）。像の無い日（no_image）と所有者が判断できないとした日は使わない。窓に使える日が無ければ埋めない。所有者の在、または p ≥ 0.9 で区間 1 隻（常在と同じ下限の数え方）",
  "threshold": 0.9,
  "window_d": 4,
@@ -14,7 +14,8 @@
   "点数は過信気味：前進検証で p 0.70〜0.90 の帯は平均 p 0.83 に対して実際の在 0.67、0.90〜0.97 の帯は 0.92 に対して 0.63（升が少ない）",
   "S1 と S2 の日のずれ：評価は所有者の答えた S2 の日そのものの升で、運用での S1 の撮影と S2 の日のずれ（最大 4 日）の分の誤りは測っていない。ずれの間に艦が出入りする",
   "像なしの升：11 月の dark の区間の升（区間 × S2 の日）177 のうち 80 は像が無い（no_image）。窓の中に使える日が無い区間は埋めない（scored に入らない）",
-  "大榭島・下川島・楡林など確認回しの区間の表に無い港・区間は対象外（(c)）。旅順など常在の表の無い港は quay_blind の行が無いので、この系列も無い",
+  "対象外の港：大榭島 DXE（印 12 区間）・下川島 XCD（印 3 区間）は quay_blind の行（常在の表）が無く、確認回しの区間の表も無いので埋めない。楡林 SYL は quay_blind の行はあるが、印の 6 区間がどれも確認回しの区間の表に無い（(c)）ので、sections はいつも 0",
+  "旅順 LSN（印 17 区間、うち確認回しの区間の表にあるのは 9）は常在の区間が無く quay_blind の行が無い。この系列の値は opt_fill.json の rows だけにある（in_quay_blind false。地図の札の行が無いので、画面に出すなら別に読む）。残りの 8 区間は (c) で対象外",
   "足す区間はほぼ潜水艦の桟橋（hires-1 の U）。所有者が 8 回とも不在と答えた U の区間もあり、正解の側にも穴がある",
   "pres-3o は区間の答えの履歴を特徴に使う：答えの少ない区間では弱い"
  ],
@@ -32,75 +33,411 @@
  },
  "credit": [
   "Contains modified Copernicus Sentinel data 2023-2026（Sentinel-1・Sentinel-2。pres-3o の点数と所有者の答えは Sentinel-2 L2A の像による）",
-  "区分の一部（潜水艦の桟橋）は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed"
+  "区分の一部（潜水艦の桟橋）は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed",
+  "岸壁の区間の線は OpenStreetMap の桟橋・岸壁の線から作った。(c) OpenStreetMap contributors（ODbL 1.0）"
  ],
- "null": "列が空：その日の系列が作れなかった（失敗。本体の数はいつもどおり）、または対象外の港",
+ "null": "列が空：その日の系列が作れなかった（失敗。本体の数はいつもどおり）、または対象外の港。counts が null：その日の系列の準備に失敗（error に理由。前の日の数は残さない）。港の値が null：その港の撮影の一つで失敗（error に理由）",
+ "error": null,
  "counts": {
+  "LSN": {
+   "scenes": 5,
+   "scenes_filled": 0,
+   "present_sum": 0,
+   "present_owner_sum": 0,
+   "present_p_sum": 0,
+   "in_quay_blind": false,
+   "latest": {
+    "acquired_utc": "2026-11-21T09:48:11Z",
+    "in_quay_blind": false,
+    "opt_fill_sections": 8,
+    "opt_fill_scored": 0,
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": ""
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-28T09:48:11Z",
+     "in_quay_blind": false,
+     "opt_fill_sections": 8,
+     "opt_fill_scored": 7,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1026281588:L:00|2026-10-27|-1|owner|0;1026281588:R:01|2026-10-27|-1|owner|0;1026281589:L:00|2026-10-27|-1|owner|0;1026281589:R:01|2026-10-27|-1|owner|0;1026281590:L:00|2026-10-27|-1|owner|0;1026281590:R:01|2026-10-27|-1|owner|0;995110510:L:00|2026-10-27|-1|owner|0"
+    },
+    {
+     "acquired_utc": "2026-11-02T09:56:32Z",
+     "in_quay_blind": false,
+     "opt_fill_sections": 9,
+     "opt_fill_scored": 9,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1026281588:L:00|2026-11-03|+1|p|0.010;1026281588:R:01|2026-11-03|+1|p|0.015;1026281589:L:00|2026-11-03|+1|p|0.010;1026281589:R:01|2026-11-03|+1|p|0.015;1026281590:L:00|2026-11-03|+1|p|0.011;1026281590:R:01|2026-11-03|+1|p|0.016;1026281591:L:00|2026-11-03|+1|p|0.112;1026281591:L:01|2026-11-03|+1|p|0.014;995110510:L:00|2026-11-03|+1|p|0.060"
+    },
+    {
+     "acquired_utc": "2026-11-09T09:48:11Z",
+     "in_quay_blind": false,
+     "opt_fill_sections": 9,
+     "opt_fill_scored": 9,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1026281588:L:00|2026-11-10|+1|p|0.005;1026281588:R:01|2026-11-10|+1|p|0.005;1026281589:L:00|2026-11-10|+1|p|0.005;1026281589:R:01|2026-11-10|+1|p|0.006;1026281590:L:00|2026-11-10|+1|p|0.006;1026281590:R:01|2026-11-10|+1|p|0.005;1026281591:L:00|2026-11-10|+1|p|0.112;1026281591:L:01|2026-11-10|+1|p|0.004;995110510:L:00|2026-11-10|+1|p|0.054"
+    },
+    {
+     "acquired_utc": "2026-11-14T09:56:32Z",
+     "in_quay_blind": false,
+     "opt_fill_sections": 9,
+     "opt_fill_scored": 9,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1026281588:L:00|2026-11-11|-3|p|0.007;1026281588:R:01|2026-11-11|-3|p|0.007;1026281589:L:00|2026-11-11|-3|p|0.005;1026281589:R:01|2026-11-11|-3|p|0.007;1026281590:L:00|2026-11-11|-3|p|0.006;1026281590:R:01|2026-11-11|-3|p|0.006;1026281591:L:00|2026-11-11|-3|p|0.112;1026281591:L:01|2026-11-11|-3|p|0.009;995110510:L:00|2026-11-11|-3|p|0.089"
+    },
+    {
+     "acquired_utc": "2026-11-21T09:48:11Z",
+     "in_quay_blind": false,
+     "opt_fill_sections": 8,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    }
+   ]
+  },
   "QDH": {
    "scenes": 3,
    "scenes_filled": 1,
    "present_sum": 1,
+   "present_owner_sum": 1,
+   "present_p_sum": 0,
+   "in_quay_blind": true,
    "latest": {
     "acquired_utc": "2026-11-14T09:55:42Z",
+    "in_quay_blind": true,
     "opt_fill_sections": 8,
     "opt_fill_scored": 8,
-    "opt_fill_present": 0
-   }
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": "-1:L:00|2026-11-11|-3|p|0.505;-1:R:00|2026-11-11|-3|p|0.112;-2:L:00|2026-11-11|-3|p|0.005;-2:R:00|2026-11-11|-3|p|0.323;-3:L:00|2026-11-10|-4|p|0.006;-3:R:00|2026-11-11|-3|p|0.010;-4:L:00|2026-11-10|-4|p|0.112;-4:R:00|2026-11-10|-4|p|0.009"
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-21T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 8,
+     "opt_fill_scored": 6,
+     "opt_fill_present": 1,
+     "opt_fill_present_owner": 1,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "-1:L:00|2026-10-21|+0|owner|1;-2:L:00|2026-10-21|+0|owner|0;-2:R:00|2026-10-21|+0|owner|0;-3:L:00|2026-10-21|+0|owner|0;-3:R:00|2026-10-21|+0|owner|0;-4:R:00|2026-10-21|+0|owner|0"
+    },
+    {
+     "acquired_utc": "2026-11-02T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 8,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-14T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 8,
+     "opt_fill_scored": 8,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "-1:L:00|2026-11-11|-3|p|0.505;-1:R:00|2026-11-11|-3|p|0.112;-2:L:00|2026-11-11|-3|p|0.005;-2:R:00|2026-11-11|-3|p|0.323;-3:L:00|2026-11-10|-4|p|0.006;-3:R:00|2026-11-11|-3|p|0.010;-4:L:00|2026-11-10|-4|p|0.112;-4:R:00|2026-11-10|-4|p|0.009"
+    }
+   ]
   },
   "QGZ": {
    "scenes": 6,
    "scenes_filled": 0,
    "present_sum": 0,
+   "present_owner_sum": 0,
+   "present_p_sum": 0,
+   "in_quay_blind": true,
    "latest": {
     "acquired_utc": "2026-11-19T10:03:52Z",
+    "in_quay_blind": true,
     "opt_fill_sections": 0,
     "opt_fill_scored": 0,
-    "opt_fill_present": 0
-   }
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": ""
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-21T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-10-26T10:03:53Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-02T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-07T10:03:53Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-14T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-19T10:03:52Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    }
+   ]
   },
   "QJG": {
    "scenes": 3,
    "scenes_filled": 0,
    "present_sum": 0,
+   "present_owner_sum": 0,
+   "present_p_sum": 0,
+   "in_quay_blind": true,
    "latest": {
     "acquired_utc": "2026-11-14T09:55:42Z",
+    "in_quay_blind": true,
     "opt_fill_sections": 2,
     "opt_fill_scored": 2,
-    "opt_fill_present": 0
-   }
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": "-2:R:00|2026-11-11|-3|p|0.011;43251729:L:17|2026-11-10|-4|p|0.011"
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-21T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 2,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "-2:R:00|2026-10-22|+1|owner|0;43251729:L:17|2026-10-22|+1|owner|0"
+    },
+    {
+     "acquired_utc": "2026-11-02T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 1,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-14T09:55:42Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 2,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "-2:R:00|2026-11-11|-3|p|0.011;43251729:L:17|2026-11-10|-4|p|0.011"
+    }
+   ]
   },
   "SLP": {
    "scenes": 3,
    "scenes_filled": 0,
    "present_sum": 0,
+   "present_owner_sum": 0,
+   "present_p_sum": 0,
+   "in_quay_blind": true,
    "latest": {
     "acquired_utc": "2026-11-19T10:48:15Z",
+    "in_quay_blind": true,
     "opt_fill_sections": 7,
     "opt_fill_scored": 6,
-    "opt_fill_present": 0
-   }
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": "1366235753:L:00|2026-11-17|-2|p|0.042;1366235753:L:01|2026-11-17|-2|p|0.032;230360733:L:00|2026-11-17|-2|p|0.263;230360733:L:02|2026-11-17|-2|p|0.090;230360737:L:00|2026-11-17|-2|p|0.032;230360737:L:02|2026-11-17|-2|p|0.020"
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-26T10:48:16Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 7,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-07T10:48:16Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 6,
+     "opt_fill_scored": 6,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1366235753:L:00|2026-11-07|+0|p|0.009;1366235753:L:01|2026-11-07|+0|p|0.009;230360733:L:00|2026-11-07|+0|p|0.005;230360733:L:02|2026-11-07|+0|p|0.005;230360735:L:00|2026-11-07|+0|p|0.006;230360737:L:00|2026-11-07|+0|p|0.006"
+    },
+    {
+     "acquired_utc": "2026-11-19T10:48:15Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 7,
+     "opt_fill_scored": 6,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1366235753:L:00|2026-11-17|-2|p|0.042;1366235753:L:01|2026-11-17|-2|p|0.032;230360733:L:00|2026-11-17|-2|p|0.263;230360733:L:02|2026-11-17|-2|p|0.090;230360737:L:00|2026-11-17|-2|p|0.032;230360737:L:02|2026-11-17|-2|p|0.020"
+    }
+   ]
   },
   "SYL": {
    "scenes": 3,
    "scenes_filled": 0,
    "present_sum": 0,
+   "present_owner_sum": 0,
+   "present_p_sum": 0,
+   "in_quay_blind": true,
    "latest": {
     "acquired_utc": "2026-11-19T10:48:15Z",
+    "in_quay_blind": true,
     "opt_fill_sections": 0,
     "opt_fill_scored": 0,
-    "opt_fill_present": 0
-   }
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": ""
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-26T10:48:16Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-07T10:48:16Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-19T10:48:15Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    }
+   ]
   },
   "XSN": {
    "scenes": 3,
    "scenes_filled": 0,
    "present_sum": 0,
+   "present_owner_sum": 0,
+   "present_p_sum": 0,
+   "in_quay_blind": true,
    "latest": {
     "acquired_utc": "2026-11-14T09:54:02Z",
+    "in_quay_blind": true,
     "opt_fill_sections": 2,
     "opt_fill_scored": 2,
-    "opt_fill_present": 0
-   }
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
+    "opt_fill_present_p": 0,
+    "opt_fill_basis": "286601551:L:01|2026-11-15|+1|p|0.193;286601551:R:01|2026-11-15|+1|p|0.167"
+   },
+   "rows": [
+    {
+     "acquired_utc": "2026-10-21T09:54:02Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-02T09:54:02Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 1,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "286601551:L:01|2026-11-05|+3|p|0.158"
+    },
+    {
+     "acquired_utc": "2026-11-14T09:54:02Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 2,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "286601551:L:01|2026-11-15|+1|p|0.193;286601551:R:01|2026-11-15|+1|p|0.167"
+    }
+   ]
   }
  }
 }

@@ -156,7 +156,7 @@ def build(out: Path, site_id: str) -> dict:
             "rule": (f"答えが {MIN_ANSWERS} 撮影以上あり、在の割合が {RESIDENT_MIN:g} 以上の区間＝常在。p_blind＝(在＋1)／(答え＋2)、常在でなければ 0" +
                      (f"。同日の答えで常在でも、光学写真の答え（labels/{site_id}-s2-answers.csv、photo_present／photo_answers）が {MIN_ANSWERS} 日以上あって"
                       f"在の割合が {RESIDENT_MIN:g} 未満の区間は常在としない（photo_veto。所有者の決定 2026-11-13「写真の答えを優先」）" if src == "s1" else "")),
-            "target": "軍艦（50 m 以上の水上艦）。稼働状態は問わない。構造物・艀・浮体は所有者の答えで不在",
+            "target": "軍艦（50 m 以上の艦、潜水艦を含む）。稼働状態は問わない。構造物・艀・浮体は所有者の答えで不在",
             "scenes": sorted({key for rs in ans.values() for key, _ in rs}), "n_resident": sum(1 for s in secs.values() if s["resident"]),
             "sections": dict(sorted(secs.items()))}
 
