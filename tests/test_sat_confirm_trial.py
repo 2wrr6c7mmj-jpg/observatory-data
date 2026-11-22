@@ -381,5 +381,36 @@ class RedrawnLineTest(unittest.TestCase):
             self.assertTrue(set(review_ids("XSN")) <= secs)
 
 
+    @unittest.skipUnless(np is not None, "numpy not installed")
+    def test_every_trial_section_redrawn_reads_the_site_window(self):
+        # 1部の審査（#173）: XSN-W-L's 4 sections come from one line; drawn again, all 4 go: the window read is the site's bbox
+        # (no widened window without base); with some left, the widened window comes with base
+        from unittest import mock as m
+        from sat.pres3 import build, confirm_run as cr, daily
+        bb = [float(x) for x in SITES["XSN"]["bbox"]]
+        for n_bad in (0, 1, 4):
+            with tempfile.TemporaryDirectory() as d:
+                out = Path(d) / "out"; win = Path(d) / "win"; first = [dict(s) for s in ct.sections("XSN")]
+                for k in range(n_bad):
+                    first[k] = dict(first[k], line=[[p[0] + 0.0003, p[1]] for p in first[k]["line"]])
+                cf.sync_sections(out, "XSN", first, "2026-11-22T07:29:00Z")
+                f = {"id": "S2B_51RUN_20261120_0_L2A", "properties": {"datetime": "2026-11-20T02:57:55Z", "eo:cloud_cover": 1.0}}
+                calls = []
+
+                def read(work, port, feat, wide, env_extra=None, **kw):
+                    calls.append((list(wide), kw.get("base")))
+                    (win / "data" / port).mkdir(parents=True, exist_ok=True)
+                    np.savez(win / "data" / port / f"{feat['id']}.npz", meta=json.dumps({"id": feat["id"]}))
+                with m.patch("sat.pres3.fetch.search", return_value=[f]), m.patch.object(daily, "port_tile", return_value="51RUN"), \
+                     m.patch.object(build, "day_cells", return_value=None), m.patch("time.sleep"):
+                    cr.fetch_port(daily.Store(Path(d) / "store"), win, "XSN", {"XSN": {"bbox": bb}}, cr.Meter(), 10,
+                                  __import__("datetime").datetime(2026, 11, 22, tzinfo=__import__("datetime").timezone.utc), read=read, out=out)
+                (wide, base), = calls
+                if n_bad == 4:
+                    self.assertEqual((wide, base), (bb, None))
+                else:
+                    self.assertLess(wide[0], bb[0]); self.assertEqual(base, bb)
+
+
 if __name__ == "__main__":
     unittest.main()

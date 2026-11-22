@@ -114,6 +114,7 @@ def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, l
     bad = redrawn_trial(out, port) if out is not None else []
     if bad:          # drawn again under the same id: no patch of the new line under the old id (its reference would mix them)
         secs = {k: v for k, v in secs.items() if k not in bad}; geo = {k: v for k, v in geo.items() if k not in bad}; trial = trial - set(bad)
+        if not trial: wide = list(bb)          # no trial section left: the site's own window, as before the trial sections
     found = fetch.search({"bbox": bb, "datetime": f"{now - dt.timedelta(days=days):%Y-%m-%dT%H:%M:%SZ}/{now:%Y-%m-%dT%H:%M:%SZ}"},
                          urlopen=meter.urlopen())
     new = daily.pick_new(found, tile, have)
@@ -125,7 +126,7 @@ def fetch_port(store, windows, port, sites, meter, days, now, max_scenes=None, l
         err = None
         with fetch.captured_stderr() as cap:                  # libcurl's log of the reads: the requests GDAL really made
             try:
-                read(str(windows), port, f, wide, env_extra={'CPL_CURL_VERBOSE': 'YES'}, **({'base': bb} if trial else {}))
+                read(str(windows), port, f, wide, env_extra={'CPL_CURL_VERBOSE': 'YES'}, **({'base': bb} if list(wide) != list(bb) else {}))   # a widened window always says where the site's window lies
             except Exception as e:
                 err = e
         c = fetch.curl_counts(cap.text); meter.add(c['requests'], c['bytes'], c['status']); meter.scene_bytes = max(meter.scene_bytes, c['bytes'])
