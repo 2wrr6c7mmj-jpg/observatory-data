@@ -2815,5 +2815,255 @@
    ],
    "why": "着かない区間と読んだが、表示線の中点が艦の着く面の線から 25 m 以内で同じ向き（桟橋の頭を回り込む線）なので外していない"
   }
- }
+ },
+ "radar_dark": [
+  {
+   "section": "286601551:L:01",
+   "way": 286601551,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東から 2 本目の T 字桟橋（286601551）の頭の沖側。潜水艦が 2021（2 隻）・2022・2024・2025",
+    "評価票（eval/presence.json）の升 6：所有者の在 3、レーダーの在 0。2026-01-09 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2026-01-09",
+    "until": null,
+    "present": 3,
+    "cells": 6,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601551:L:03",
+   "way": 286601551,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東から 2 本目の T 字桟橋（286601551）の頭の沖側。潜水艦が 2021（2 隻）・2022・2024・2025"
+   ]
+  },
+  {
+   "section": "286601551:R:01",
+   "way": 286601551,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東から 2 本目の T 字桟橋（286601551）の頭の沖側。潜水艦が 2021（2 隻）・2022・2024・2025",
+    "評価票（eval/presence.json）の升 8：所有者の在 3、レーダーの在 0。2026-03-15 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2026-03-15",
+    "until": null,
+    "present": 3,
+    "cells": 8,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601555:L:01",
+   "way": 286601555,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：単独の T 字桟橋（286601555）の頭の沖側。潜水艦が 2009-01・2009-12・2025-06。2018〜2024 の 6 時点は空。所有者 7/8",
+    "評価票（eval/presence.json）の升 8：所有者の在 7、レーダーの在 0。2025-07-03 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-07-03",
+    "until": null,
+    "present": 7,
+    "cells": 8,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601557:L:01",
+   "way": 286601557,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の T 字桟橋（286601557）の頭の沖側。2018 は水上艦 2〜3 隻、2021・2024（2 隻）・2025 は潜水艦。2022 は空"
+   ]
+  },
+  {
+   "section": "286601557:L:03",
+   "way": 286601557,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の T 字桟橋（286601557）の頭の沖側。2018 は水上艦 2〜3 隻、2021・2024（2 隻）・2025 は潜水艦。2022 は空"
+   ]
+  },
+  {
+   "section": "286601557:R:01",
+   "way": 286601557,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の T 字桟橋（286601557）の頭の沖側。2018 は水上艦 2〜3 隻、2021・2024（2 隻）・2025 は潜水艦。2022 は空",
+    "評価票（eval/presence.json）の升 8：所有者の在 8、レーダーの在 0。2025-04-09 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-04-09",
+    "until": null,
+    "present": 8,
+    "cells": 8,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601557:R:02",
+   "way": 286601557,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：東の T 字桟橋（286601557）の頭の沖側。2018 は水上艦 2〜3 隻、2021・2024（2 隻）・2025 は潜水艦。2022 は空",
+    "評価票（eval/presence.json）の升 4：所有者の在 4、レーダーの在 0。2025-04-09 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-04-09",
+    "until": null,
+    "present": 4,
+    "cells": 4,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601560:L:00",
+   "way": 286601560,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：中央の T 字桟橋（286601560）の頭の沖側。潜水艦が 2018・2021・2022・2025",
+    "評価票（eval/presence.json）の升 8：所有者の在 7、レーダーの在 0。2025-04-09 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-04-09",
+    "until": null,
+    "present": 7,
+    "cells": 8,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601560:R:00",
+   "way": 286601560,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：中央の T 字桟橋（286601560）の頭の沖側。潜水艦が 2018・2021・2022・2025",
+    "評価票（eval/presence.json）の升 6：所有者の在 6、レーダーの在 0。2025-04-09 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-04-09",
+    "until": null,
+    "present": 6,
+    "cells": 6,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601576:L:01",
+   "way": 286601576,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286601576）の頭の沖側。潜水艦が 2018（2 隻）・2021・2022（2 隻）・2025"
+   ]
+  },
+  {
+   "section": "286601576:L:04",
+   "way": 286601576,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286601576）の頭の沖側。潜水艦が 2018（2 隻）・2021・2022（2 隻）・2025"
+   ]
+  },
+  {
+   "section": "286601576:R:00",
+   "way": 286601576,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth",
+    "owner_present_radar_none"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：T 字桟橋（286601576）の頭の沖側。潜水艦が 2018（2 隻）・2021・2022（2 隻）・2025",
+    "評価票（eval/presence.json）の升 8：所有者の在 6、レーダーの在 0。2025-11-22 の答えで 3 回目の在"
+   ],
+   "owner": {
+    "since": "2025-11-22",
+    "until": null,
+    "present": 6,
+    "cells": 8,
+    "radar_present": 0
+   }
+  },
+  {
+   "section": "286601581:L:01",
+   "way": 286601581,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：西の T 字桟橋（286601581）の頭の沖側。潜水艦が 2022・2024（2 隻）・2025（2 隻）"
+   ]
+  },
+  {
+   "section": "286601581:R:01",
+   "way": 286601581,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：西の T 字桟橋（286601581）の頭の沖側。潜水艦が 2022・2024（2 隻）・2025（2 隻）"
+   ]
+  },
+  {
+   "section": "286601581:R:03",
+   "way": 286601581,
+   "radar_dark": true,
+   "reasons": [
+    "submarine_berth"
+   ],
+   "basis": [
+    "hires-1（2026-11-18、AI の判読）：西の T 字桟橋（286601581）の頭の沖側。潜水艦が 2022・2024（2 隻）・2025（2 隻）"
+   ]
+  }
+ ]
 }

@@ -500,6 +500,41 @@ def restrict(q: dict, keep, cluster_m: float = DEFAULTS["cluster_m"]) -> dict:
     return r
 
 
+def cap_baseline(geom: Geometry, base: dict, margin_db: float | None = None, quantile: float = 25.0,
+                 min_pixels: int = 10) -> dict:
+    """bl-cap (trial, design 設計書_レーダーの見落とし §4.2・§5.1): the "empty quay" baseline with a ceiling per line side.
+
+    A berth where a warship lies in most baseline scenes has the ship burnt into its p10, so a ship there gives no change.
+    For every profile (one water side of one line), the ceiling is the ``quantile`` (25 %) of the baseline's p10 over the
+    profile's inner-band pixels (0-30 m) plus ``margin_db``, for VV and VH apart; every band and depth pixel of the profile
+    (0-120 m) is lowered to it. The profiles are taken in the order of ``geom.profiles`` and each reads the baseline as the
+    earlier ones left it (a pixel of two profiles: the lower ceiling; the order of the design's run, kept so that its
+    numbers are reproduced). A profile with fewer than ``min_pixels`` finite inner pixels is left as it is.
+
+    ``margin_db`` None (the default): disabled, ``base`` itself is returned (the count is the same object for object).
+    Which sections use the capped count (the resident ones only) is decided by sat/blcap.py, not here: over all
+    sections the cap adds more false counts than it removes misses (design §5.1)."""
+    if margin_db is None:
+        return base
+    v = np.array(base["vv_p10"], copy=True)
+    h = np.array(base["vh_p10"], copy=True)
+    for pr in geom.profiles:
+        ni = pr["n_inner"]
+        rr, cc, val = pr["rr"][:, :ni], pr["cc"][:, :ni], pr["valid"][:, :ni]
+        a = v[rr, cc][val]   # (the working copy: a pixel an earlier profile lowered is read lowered, as in the design's run)
+        b = h[rr, cc][val]
+        a, b = a[np.isfinite(a)], b[np.isfinite(b)]
+        if len(a) < min_pixels:
+            continue
+        ca = float(np.percentile(a, quantile)) + margin_db
+        cb = float(np.percentile(b, quantile)) + margin_db if len(b) else np.inf
+        for R, C, V in ((pr["rr"], pr["cc"], pr["valid"]), (pr["drr"], pr["dcc"], pr["dvalid"])):
+            r_, c_ = R[V], C[V]
+            v[r_, c_] = np.minimum(v[r_, c_], ca)
+            h[r_, c_] = np.minimum(h[r_, c_], cb)
+    return {**base, "vv_p10": v, "vh_p10": h}
+
+
 BLIND_P10_DB = -8.0  # the baseline's VV p10 above this in the inner band: a ship there is unlikely to show
 
 

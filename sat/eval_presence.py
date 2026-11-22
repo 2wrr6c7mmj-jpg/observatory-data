@@ -83,6 +83,7 @@ import io
 
 from . import atomic, berths
 from . import blind_prior as bp
+from . import radar_dark
 from . import occ2_schema as o2s
 from . import pres1
 
@@ -925,7 +926,8 @@ def rule_versions(sites: list[dict] | None = None) -> dict:
     sites = sites or load_sites()
     cls = {}
     for p in sorted(berths.CLASS_DIR.glob("*.json")) if berths.CLASS_DIR.is_dir() else []:
-        cls[p.stem] = hashlib.sha1(p.read_bytes()).hexdigest()[:12]
+        # without the radar-dark marks (sat/radar_dark.py, dark-1): a display mark, not a rule of the presence
+        cls[p.stem] = hashlib.sha1(radar_dark.class_bytes_without_marks(p.read_text(encoding="utf-8"))).hexdigest()[:12]
     return {"berths": berths.VERSION, "berths_hash": hashlib.sha1(berths.BERTHS_PATH.read_bytes()).hexdigest()[:12],
             "naval": berths.NAVAL_VERSION, "naval_since": berths.NAVAL_SINCE, "classes": cls, "quay": _quay_version(),
             "lines": {s["id"]: int(s.get("quay_lines_version", 1)) for s in sites}}
@@ -997,16 +999,31 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
         if old.get("rules") == rule_versions(sites):
             snapshot(out, sites, now)
             state = "updated"
-    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites),
+    # dark-1: the radar-dark marks follow the sheet just written (docs/data/sat/radar_dark.json), before quay_blind reads them
+    # The marks change no count: a failure here (a record that does not read, a bug) must not stop quay_blind, quay_naval50 and
+    # quay_pres1. It is reported, and quay_blind is made from the list of an earlier day (none: no mark)
+    try:
+        dark = radar_dark.refresh(out)
+    except Exception as e:                      # noqa: BLE001 (any failure of the marks alone)
+        dark = {"counts": {}, "stale": [], "error": repr(e)[:300]}
+        print(f"::warning title=sat radar_dark::印の作り直しに失敗（前の radar_dark.json で quay_blind を作る。数は変わらない）: {dark['error']}", flush=True)
+    if dark["stale"] and log:
+        print(f"::warning title=sat radar_dark::sat/berth_class の印（radar_dark）が評価票より古い: {', '.join(dark['stale'])}"
+              "（python -m sat.radar_dark build で作り直す。公開の radar_dark.json と quay_blind は今日の評価票で作った）", flush=True)
+    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "radar_dark": dark, "blind": write_blind(out, sites),
          "naval50": write_naval50(out, sites), "pres1": pres1.safe_write(out, sites)}
     if log:
         log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行、"
-            f"quay_pres1 {len(r['pres1'])} 港")
+            f"quay_pres1 {len(r['pres1'])} 港、radar_dark {sum(r['radar_dark']['counts'].values())} 区間（区分ファイルの記録が古い港 {r['radar_dark']['stale'] or 'なし'}"
+            f"{'、作り直しに失敗' if r['radar_dark'].get('error') else ''}）")
     return r
 
 
 BLIND_DIR = "quay_blind"
-BLIND_COLUMNS = ("site_id", "acquired_utc", "blind_version", "answers", "resident_sections", "resident_seen", "warship_blind")
+BLIND_COLUMNS = ("site_id", "acquired_utc", "blind_version", "answers", "resident_sections", "resident_seen", "warship_blind",
+                 # dark-1 (sat/radar_dark.py): the eligible sections the radar cannot judge on the scene's day, how many of them
+                 # the count saw, and why ("+"-joined: submarine_berth, owner_present_radar_none). warship_blind is not changed
+                 "radar_dark_sections", "radar_dark_seen", "radar_dark_reasons")
 
 
 def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
@@ -1025,12 +1042,20 @@ def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
         if not prior:
             continue
         tab = presence_table(out, [site], since="").get(sid) or {}
+        try:
+            dark = radar_dark.marks(sid, out)
+        except Exception:                       # noqa: BLE001 (a list that does not read: no mark, the counts as always)
+            dark = {}
         rows = []
         for acq in sorted(tab):
             mine = [k for k in sorted(prior) if k in tab[acq]]
+            why = {k: radar_dark.is_dark(dark[k], acq) for k in sorted(tab[acq]) if k in dark}
+            dk = [k for k, w in why.items() if w]
             rows.append({"site_id": sid, "acquired_utc": acq, "blind_version": bp.VERSION, "answers": bp.answers_source(out, sid),
                          "resident_sections": len(mine), "resident_seen": sum(tab[acq][k] for k in mine),
-                         "warship_blind": int(sum(prior[k] for k in mine if not tab[acq][k]) + 0.5)})
+                         "warship_blind": int(sum(prior[k] for k in mine if not tab[acq][k]) + 0.5),
+                         "radar_dark_sections": len(dk), "radar_dark_seen": sum(tab[acq][k] for k in dk),
+                         "radar_dark_reasons": "+".join(r for r in radar_dark.REASONS if any(r in why[k] for k in dk))})
         if rows:
             res[sid] = rows
     return res
