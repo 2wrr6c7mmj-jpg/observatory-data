@@ -978,6 +978,8 @@ def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, sum
             cells = sorted(by_sec.get(sid, []), key=lambda r: r["date"])
             row = {"id": sid, "label": labels[sid][0], "kind": s.get("kind"), "sector": s.get("sector"), "length_m": s.get("length_m"),
                    "state": None, "date": None, "value": None, "last_date": None, "last_value": None, "last_source": None}
+            if s.get("trial"):          # a trial section (sat/confirm_trial.json): shown, never counted elsewhere
+                row.update(trial=True, role=s.get("role"), candidate=s.get("candidate"))
             shown = [r for r in cells if (r["state"] == "human" or (show_auto and r["state"] == "auto")) and r["value"] in ("0", "1")]
             if cells:
                 r = cells[-1]
@@ -1000,6 +1002,7 @@ def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, sum
             "null": "null は不明（未確認・像なし・判断できない・まだ升が無い）。0 は不在と判定または確認された升だけ",
             "notes": {"sections_by_state": "港ごとの区間の数：各区間のいちばん新しい升の状態で数えた区間の数（1 区間＝1）",
                       "numbers.states": "升の数：全部の日の全部の升を状態ごとに数えた数（numbers.composition はその割合）",
+                      "trial": "trial: true の区間は試行の区間（sat/confirm_trial.json、区画「試行」）。所有者の確認に出すだけで、公開の隻数・評価票・判定器の再学習には入れない。role：naval_empty＝軍の桟橋で今は空（使い始めを見る）、fitout＝修理・艤装の岸壁（配備の数には入れない）",
                       "label": "区間の読める名前：区画・種別とその区画の中での線の番号（岸に沿った順）・線の左側／右側（OSM の線の向きに対して）とその側の何番目（id の最後の番号＋1）。区間の id（OSM の線の番号:側:番号）が変わらない限り変わらない",
                       "A": f"規則 v1 なら自動確定の升の一致率（影の運用）／自動確定の正答率（抜き取り）。港ごとの値は {SITE_A_MIN_CELLS} 升未満なら出さない（rate・ci95 は null、withheld に理由）。全体の値は升の数によらず出す"},
             "numbers": _numbers(blk["total"]), "sites": sites}

@@ -36,27 +36,41 @@ def sample_points(secs):
     return geo
 
 
-def day_cells(port, date, scenes, secs, geo, old):
+def day_cells(port, date, scenes, secs, geo, old, trial=()):
     """The cells and patches of one day from its fetched windows (scenes: [(file, meta)]). Several scenes on a day: the one
     with the least nodata; None when more than half of it is nodata. old: (date, section) -> the answer and the evaluation
-    sheet's row (labels.lookup), {} for none."""
+    sheet's row (labels.lookup), {} for none.
+
+    trial: the ids of the port's trial sections (sat.confirm_trial). A window read wider for them carries meta['base']
+    (sat.pres3.fetch.one): the other sections are then cut from that part of the arrays, with its origin, and the nodata share
+    that decides the day is that part's: the same arrays and the same arithmetic as a window of the site's bbox alone, so their
+    patches are the same bytes. The trial sections are cut from the whole window."""
     from rasterio.warp import transform as rtransform
     best = None
     for fn, m in scenes:
         z = np.load(fn); a = np.stack([z[c].astype(np.float32) for c in CH[:4]], -1)
         sw = np.repeat(np.repeat(z['swir16'].astype(np.float32), 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
         scl = np.repeat(np.repeat(z['scl'], 2, 0), 2, 1)[:a.shape[0], :a.shape[1]]
-        nod = float((a[..., 3] == 0).mean())
+        bw = m.get('base')
+        cut = (slice(bw['row'], bw['row'] + bw['rows']), slice(bw['col'], bw['col'] + bw['cols'])) if bw else (slice(None), slice(None))
+        nod = float((a[cut][..., 3] == 0).mean())
         if best is None or nod < best[0]: best = (nod, m, a, sw, scl)
     nod, m, a, sw, scl = best
     if nod > 0.5: return None
     img = np.concatenate([a, sw[..., None]], -1) / 10000.0; cells = []; P = []
+    whole = (img, scl, m['x0'], m['y1']); bw = m.get('base')
+    if bw:
+        cut = (slice(bw['row'], bw['row'] + bw['rows']), slice(bw['col'], bw['col'] + bw['cols']))
+        part = (img[cut], scl[cut], bw['x0'], bw['y1'])
+    else:
+        part = whole
     for sid, (lon, lat) in geo.items():
+        im, sl, x0, y1 = whole if sid in trial else part
         x, y = rtransform('EPSG:4326', m['crs'], lon.ravel().tolist(), lat.ravel().tolist())
-        c = (np.asarray(x) - m['x0']) / 10.0 - 0.5; r = (m['y1'] - np.asarray(y)) / 10.0 - 0.5
-        p = bil(img, r, c).reshape(NA, len(OFFS), 5)
-        ri = np.clip(np.round(r).astype(int), 0, scl.shape[0] - 1); ci = np.clip(np.round(c).astype(int), 0, scl.shape[1] - 1)
-        sc = scl[ri, ci]; nd = bil((img[..., 3] == 0).astype(np.float32), r, c)
+        c = (np.asarray(x) - x0) / 10.0 - 0.5; r = (y1 - np.asarray(y)) / 10.0 - 0.5
+        p = bil(im, r, c).reshape(NA, len(OFFS), 5)
+        ri = np.clip(np.round(r).astype(int), 0, sl.shape[0] - 1); ci = np.clip(np.round(c).astype(int), 0, sl.shape[1] - 1)
+        sc = sl[ri, ci]; nd = bil((im[..., 3] == 0).astype(np.float32), r, c)
         o = old.get((date, sid)); s = secs[sid]
         cells.append(dict(port=port, date=date, section=sid, kind=s['kind'], sector=s['sector'], length_m=s['length_m'],
             cloud=float(np.isin(sc, [8, 9, 10]).mean()), shadow=float((sc == 3).mean()), cirrus=float((sc == 10).mean()), nodata=float(nd.mean()),
