@@ -999,11 +999,16 @@ def refresh(out: Path, sites: list[dict] | None = None, log=None, now: datetime 
         if old.get("rules") == rule_versions(sites):
             snapshot(out, sites, now)
             state = "updated"
-    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "blind": write_blind(out, sites),
+    # dark-1: the radar-dark marks follow the sheet just written (docs/data/sat/radar_dark.json), before quay_blind reads them
+    dark = radar_dark.refresh(out)
+    if dark["stale"] and log:
+        print(f"::warning title=sat radar_dark::sat/berth_class の印（radar_dark）が評価票より古い: {', '.join(dark['stale'])}"
+              "（python -m sat.radar_dark build で作り直す。公開の radar_dark.json と quay_blind は今日の評価票で作った）", flush=True)
+    r = {"presence": sum(len(x["rows"]) for x in res["sites"].values()), "snapshot": state, "radar_dark": dark, "blind": write_blind(out, sites),
          "naval50": write_naval50(out, sites), "pres1": pres1.safe_write(out, sites)}
     if log:
         log(f"eval/presence.json: {r['presence']} 升、写し {state}、quay_blind {sum(r['blind'].values())} 行、quay_naval50 {r['naval50']} 行、"
-            f"quay_pres1 {len(r['pres1'])} 港")
+            f"quay_pres1 {len(r['pres1'])} 港、radar_dark {sum(r['radar_dark']['counts'].values())} 区間（区分ファイルの記録が古い港 {r['radar_dark']['stale'] or 'なし'}）")
     return r
 
 
@@ -1030,7 +1035,7 @@ def blind_counts(out: Path, sites: list[dict] | None = None) -> dict:
         if not prior:
             continue
         tab = presence_table(out, [site], since="").get(sid) or {}
-        dark = radar_dark.marks(sid)
+        dark = radar_dark.marks(sid, out)
         rows = []
         for acq in sorted(tab):
             mine = [k for k in sorted(prior) if k in tab[acq]]

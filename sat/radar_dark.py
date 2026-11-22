@@ -15,6 +15,9 @@ A section is radar-dark for the scenes of a day ``d`` for one of two reasons:
                              day the radar first said present (``until``, inclusive), if it ever did
 
     python -m sat.radar_dark build     # write the "radar_dark" list into sat/berth_class/<site>.json and docs/data/sat/radar_dark.json
+    (the daily run: sat.eval_presence.refresh calls refresh() right after it writes eval/presence.json: docs/data/sat/radar_dark.json
+    and quay_blind follow the answers by themselves; the record in sat/berth_class/, which the daily workflow does not publish,
+    is rebuilt by hand, and the run warns while it is behind)
     python -m sat.radar_dark check     # the marks against the current hires-1 record and eval/presence.json (exit 1 on a drift)
 
 Where the marks go:
@@ -51,7 +54,10 @@ OWNER_NONE = "owner_present_radar_none"
 REASONS = {SUBMARINE: "hires-1 が潜水艦の桟橋と読んだ区間（高解像度の光学、AI の判読）。レーダーは潜水艦をほとんど数えない（miss-1 §4.1：再現率 0.05）",
            OWNER_NONE: f"所有者の Sentinel-2 の答えで {MIN_PRESENT} 回以上「在」なのに、対のレーダーの判定が一度も在にしない区間（答えは判定する日より前のものだけ）"}
 NOTE = ("レーダー（Sentinel-1）では判定できない区間。0 隻は「居ない」ではなく「レーダーでは見えない」。札の数（quay_naval50）・est-2・評価票は変えない"
-        "（印を出すだけ）。since の翌日から until の日まで（until が null なら以後ずっと）。submarine_berth は日付によらない")
+        "（印を出すだけ）。since の翌日から until の日まで（until が null なら以後ずっと）。submarine_berth は日付によらない。"
+        "印の日付は撮影の日：過去の撮影の日付の答えが後から入ると、過去の撮影の行（quay_blind）に印が付くことがある。"
+        "レーダーの判定は評価票の p（50 m 以上の片で在）を使う：評価票と札の対象が 50 m 以上の艦で、潜水艦（039 系は約 75 m）もこの線の上にあるため。"
+        "長さを問わない p_any で数える案もある（短く測られた片も在とする。未採用）。毎日の実行（eval_presence.refresh）が評価票を書いた直後に作り直す")
 
 
 def _hires(path: Path = HIRES) -> dict:
@@ -154,12 +160,36 @@ def current(out: Path = OUT, hires_path: Path = HIRES) -> tuple[dict, dict]:
     return build_marks(_hires(hires_path), ev), ev
 
 
-def marks(site_id: str, class_dir: Path = CLASS_DIR) -> dict:
-    """section -> entry of the site's class file (sat/berth_class/<site>.json "radar_dark"); {} when none."""
-    p = Path(class_dir) / f"{site_id}.json"
+def marks(site_id: str, out: Path = OUT) -> dict:
+    """section -> entry of the published list (docs/data/sat/radar_dark.json, made by refresh() from the current evaluation
+    sheet): what quay_blind reads. {} when none."""
+    p = Path(out) / PUBLIC
     if not p.exists():
         return {}
-    return {e["section"]: e for e in json.loads(p.read_text(encoding="utf-8")).get(KEY) or []}
+    return {e["section"]: e for e in (json.loads(p.read_text(encoding="utf-8")).get("sites") or {}).get(site_id) or []}
+
+
+def class_marks(site_id: str, class_dir: Path = CLASS_DIR) -> list:
+    """The record in the site's class file (sat/berth_class/<site>.json "radar_dark")."""
+    p = Path(class_dir) / f"{site_id}.json"
+    return (json.loads(p.read_text(encoding="utf-8")).get(KEY) or []) if p.exists() else []
+
+
+def stale_class_files(want: dict, class_dir: Path = CLASS_DIR) -> list[str]:
+    """The sites whose class-file record differs from the marks ``want`` (site -> [entry])."""
+    return [p.stem for p in sorted(Path(class_dir).glob("*.json")) if class_marks(p.stem, class_dir) != want.get(p.stem, [])]
+
+
+def refresh(out: Path = OUT, class_dir: Path = CLASS_DIR) -> dict:
+    """The daily part (PU 0, the same result for the same files): the marks from the hires-1 record and the evaluation sheet just
+    written, into docs/data/sat/radar_dark.json only (the class files are not touched). Returns {"counts", "stale"}: stale =
+    the sites whose sat/berth_class record is behind (python -m sat.radar_dark build)."""
+    ev = evidence_of(load_presence(out))
+    m = build_marks(_hires(Path(out) / "labels" / "hires-berth-read.csv"), ev)
+    # a set of files that never had a list and gives no mark (Zhanjiang alone: tests/sat_zjg_golden.py) gets no new file
+    if not m and not (Path(out) / PUBLIC).exists():
+        return {"counts": {}, "stale": []}
+    return {"counts": write_public(m, ev, out), "stale": stale_class_files(m, class_dir)}
 
 
 def class_bytes_without_marks(text: str) -> bytes:
@@ -184,17 +214,25 @@ def write(marks_by_site: dict, evidence: dict, out: Path = OUT, class_dir: Path 
         new = json.dumps(doc, ensure_ascii=False, indent=1) + "\n"
         if new != text:
             p.write_text(new, encoding="utf-8")
+    return write_public(marks_by_site, evidence, out, source)
+
+
+def write_public(marks_by_site: dict, evidence: dict, out: Path = OUT, source: str = "") -> dict:
+    """docs/data/sat/radar_dark.json (left alone when its content would not change). Returns {site: number of marks}."""
     pres = load_presence(out)
     doc = {"version": VERSION, "note": NOTE, "reasons": REASONS, "min_present": MIN_PRESENT, "threshold": THRESHOLD,
-           "sources": {"hires": "docs/data/sat/labels/hires-berth-read.csv（verdict U）", "evaluation": f"docs/data/sat/eval/presence.json（{pres.get('version')}）",
-                       "evaluation_generated_utc": source or pres.get("generated_utc")},
+           "sources": {"hires": "docs/data/sat/labels/hires-berth-read.csv（verdict U）", "evaluation": f"docs/data/sat/eval/presence.json（{pres.get('version')}）"},
+           # no time stamp of the sheet: it is rewritten every day, and the list only when the marks or their evidence change
            "credit": ["区分の一部は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed",
                       "所有者の答えは Sentinel-2 の画像の目視。Contains modified Copernicus Sentinel data 2023-2026"],
            "null": "since・until が null：submarine_berth だけの印（日付によらない）、または終わりの無い印",
            "counts": {s: len(v) for s, v in sorted(marks_by_site.items())},
            "sites": marks_by_site, "evidence": evidence}
-    (Path(out)).mkdir(parents=True, exist_ok=True)
-    (Path(out) / PUBLIC).write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    Path(out).mkdir(parents=True, exist_ok=True)
+    text = json.dumps(doc, ensure_ascii=False, indent=1) + "\n"
+    p = Path(out) / PUBLIC
+    if not p.exists() or p.read_text(encoding="utf-8") != text:
+        p.write_text(text, encoding="utf-8")
     return doc["counts"]
 
 
