@@ -1,6 +1,6 @@
 {
  "rule_version": "confirm-v1",
- "frozen_utc": null,
+ "frozen_utc": "2026-11-22T00:00:00Z",
  "auto_display": false,
  "p_low": 0.03,
  "p_high": 0.97,

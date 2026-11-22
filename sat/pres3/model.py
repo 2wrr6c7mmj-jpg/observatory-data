@@ -41,6 +41,16 @@ def phys_cols(names):
     return [names.index(n) for n in names if re.match(PHYS_RE, n) or n in PHYS_NAMES]
 
 
+def fill_empty(X):
+    """X with every column that is missing in ALL its rows set to 0 (a copy when there is one; confirm-1, A4). scikit-learn 1.9 cannot bin an
+    all-missing column when sample weights are given (the fit stops); a constant column is never split on, so the trees are
+    the same as without the column, and a column with any value is left as it is (no change where nothing is empty)."""
+    X = np.asarray(X); empty = np.isnan(X).all(0) if len(X) else np.zeros(X.shape[1], bool)
+    if not empty.any(): return X
+    X = X.copy(); X[:, empty] = 0.0
+    return X
+
+
 def gen_scores(C, X, y, tr, te, cols):
     """Logits. For the cells of tr: out-of-fold over the ports inside tr. For te: the model trained on all of tr."""
     s = np.full(len(C), np.nan); tr = np.array(tr)
@@ -48,9 +58,9 @@ def gen_scores(C, X, y, tr, te, cols):
     for p in ports:
         a = [i for i in tr if C[i]['port'] != p]; b = [i for i in tr if C[i]['port'] == p]
         if len(set(y[a])) < 2: continue
-        m = gen_model().fit(X[a][:, cols], y[a]); s[b] = logit(m.predict_proba(X[b][:, cols])[:, 1])
+        m = gen_model().fit(fill_empty(X[a][:, cols]), y[a]); s[b] = logit(m.predict_proba(X[b][:, cols])[:, 1])
     if len(te):
-        m = gen_model().fit(X[tr][:, cols], y[tr]); s[te] = logit(m.predict_proba(X[te][:, cols])[:, 1])
+        m = gen_model().fit(fill_empty(X[tr][:, cols]), y[tr]); s[te] = logit(m.predict_proba(X[te][:, cols])[:, 1])
     return s
 
 

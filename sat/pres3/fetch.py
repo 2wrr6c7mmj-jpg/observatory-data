@@ -35,6 +35,7 @@ import numpy as np
 from . import common
 
 SEARCH_URL = "https://earth-search.aws.element84.com/v1/search"
+USER_AGENT = 'pres3-fetch/1'          # a plain client name (the search and the COG reads)
 BANDS = {'blue': 10, 'green': 10, 'red': 10, 'nir': 10, 'swir16': 20, 'scl': 20}
 
 
@@ -62,7 +63,7 @@ def gdal_env(gdal_version=None):
     codes_known = tuple(int(x) for x in re.findall(r'\d+', gdal_version)[:2]) >= (3, 10)
     env = dict(GDAL_DISABLE_READDIR_ON_OPEN='EMPTY_DIR', CPL_VSIL_CURL_ALLOWED_EXTENSIONS='.tif', GDAL_HTTP_TIMEOUT='60',
                GDAL_HTTP_MAX_RETRY=str(GDAL_MAX_RETRY if codes_known else 0), GDAL_HTTP_RETRY_DELAY=str(GDAL_RETRY_DELAY_S),
-               GDAL_HTTP_RETRY_CODES=GDAL_RETRY_CODES)
+               GDAL_HTTP_RETRY_CODES=GDAL_RETRY_CODES, GDAL_HTTP_USERAGENT=USER_AGENT)
     ca = os.environ.get('CURL_CA_BUNDLE') or os.environ.get('SSL_CERT_FILE')     # a proxy's CA bundle, when the machine has one
     if ca: env['CURL_CA_BUNDLE'] = ca
     return env
@@ -70,7 +71,9 @@ def gdal_env(gdal_version=None):
 
 # a 4xx status in the text of an error without an HTTP status (a proxy's "Tunnel connection failed: 403 Forbidden"); not a
 # port (":443") or a part of a number
-STATUS_4XX = re.compile(r'(?<![:\d.\-])4\d\d(?![\d.])')
+# a port number is not a status: "Failed to connect to host port 443 after 3 ms: Couldn't connect to server" (curl) and
+# "host:443" are failed connections, to be sent again
+STATUS_4XX = re.compile(r'(?<![:\d.\-])(?<![Pp]ort )4\d\d(?![\d.])')
 # a certificate that does not verify (urllib / ssl, and curl inside GDAL): sending again gives the same answer
 CERT_FAILURE = re.compile(r'CERTIFICATE_VERIFY_FAILED|certificate verify failed|SSL certificate problem|certificate has expired|'
                           r'self[- ]signed certificate|unable to get local issuer certificate|hostname mismatch', re.I)
@@ -89,9 +92,42 @@ def transient(e):
     if isinstance(e, (TimeoutError, ConnectionError, http.client.IncompleteRead, http.client.RemoteDisconnected)): return True
     msg = str(e)                                                              # GDAL / rasterio: the HTTP status is in the text
     if CERT_FAILURE.search(msg): return False
-    if re.search(r'\b4\d\d\b', msg): return False                            # a 4xx anywhere in it: taken as a refusal
+    if STATUS_4XX.search(msg): return False                                  # a 4xx anywhere in it (not a port): a refusal
     return bool(re.search(r'response code:?\s*5\d\d|HTTP error code:?\s*5\d\d|CURL error|timed out|Connection reset|'
-                          r'Connection refused|Could not resolve|transfer closed', msg))
+                          r'Connection refused|Could not resolve|transfer closed|Failed to connect|Couldn.t connect', msg))
+
+
+def curl_counts(text):
+    """The HTTP requests in a libcurl verbose log (CPL_CURL_VERBOSE=YES): {'requests', 'status': {code: n}, 'bytes'}. A
+    request is a line "> GET" or "> HEAD" (a proxy's CONNECT is not counted); bytes are the Content-Length of the answers to
+    GET (the body that came over the wire; a HEAD carries none)."""
+    status = {}; n = 0; nbytes = 0; method = ''; code = ''
+    for line in text.splitlines():
+        m = re.match(r'> (GET|HEAD|CONNECT|POST) ', line)
+        if m:
+            method = m.group(1); n += method in ('GET', 'HEAD'); continue
+        m = re.match(r'< HTTP/[\d.]+ (\d{3})', line)
+        if m:
+            code = m.group(1)
+            if method in ('GET', 'HEAD'): status[code] = status.get(code, 0) + 1
+            continue
+        m = re.match(r'< content-length: (\d+)', line, flags=re.I)
+        if m and method == 'GET' and code in ('200', '206'): nbytes += int(m.group(1))
+    return dict(requests=n, status=status, bytes=nbytes)
+
+
+class captured_stderr:
+    """with captured_stderr() as c: ...  -> c.text: what C code (GDAL, curl) wrote to file descriptor 2 meanwhile."""
+
+    def __enter__(self):
+        import tempfile
+        sys.stderr.flush(); self._f = tempfile.TemporaryFile(); self._saved = os.dup(2); os.dup2(self._f.fileno(), 2); self.text = ''
+        return self
+
+    def __exit__(self, *exc):
+        sys.stderr.flush(); os.dup2(self._saved, 2); os.close(self._saved); self._f.seek(0)
+        self.text = self._f.read().decode('utf-8', 'replace'); self._f.close()
+        return False
 
 
 def with_retries(fn, tries, delays, sleep=time.sleep):
@@ -106,7 +142,7 @@ def with_retries(fn, tries, delays, sleep=time.sleep):
 def search(body, urlopen=None, sleep=time.sleep):
     out = []; body = dict(body, collections=["sentinel-2-l2a"], limit=100); urlopen = urlopen or urllib.request.urlopen
     while True:
-        r = urllib.request.Request(SEARCH_URL, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
+        r = urllib.request.Request(SEARCH_URL, data=json.dumps(body).encode(), headers={"Content-Type": "application/json", "User-Agent": USER_AGENT})
         j = with_retries(lambda: json.load(urlopen(r, timeout=90)), SEARCH_TRIES, SEARCH_DELAYS_S, sleep)
         out += j['features']
         nx = [l for l in j.get('links', []) if l['rel'] == 'next']
@@ -115,7 +151,7 @@ def search(body, urlopen=None, sleep=time.sleep):
     return out
 
 
-def one(work, port, f, bb):
+def one(work, port, f, bb, env_extra=None):
     import rasterio
     from rasterio.warp import transform_bounds
     from rasterio.windows import from_bounds
@@ -123,7 +159,7 @@ def one(work, port, f, bb):
     if os.path.exists(dst): return 'cached'
     pad = 0.004; b4 = [bb[0] - pad, bb[1] - pad, bb[2] + pad, bb[3] + pad]
     arrs = {}; meta = {}
-    with rasterio.Env(**gdal_env()):
+    with rasterio.Env(**gdal_env(), **(env_extra or {})):
         for name, res in BANDS.items():
             with rasterio.open(f['assets'][name]['href']) as ds:
                 b = transform_bounds('EPSG:4326', ds.crs, *b4)

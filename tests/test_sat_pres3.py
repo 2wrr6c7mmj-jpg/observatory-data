@@ -367,9 +367,10 @@ class NoPublishedFileIsTouchedTest(unittest.TestCase):
 
     def test_not_wired_into_the_daily_collection(self):
         # pres3-es-probe.yml (confirm-1, PR-0) is not part of the collection: it runs only on a push to probe/pres3-es-*,
-        # reads two public endpoints and writes nothing (checked below)
+        # reads two public endpoints and writes nothing (checked below). sat-confirm.yml (PR-5) is the confirm series' own
+        # workflow (tests/test_sat_pres3_confirm_run.py): the only other one that may name pres3
         flows = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
-        for f in [f for f in flows if f.name != "pres3-es-probe.yml"] + [p for p in sorted((ROOT / "sat").glob("*.py")) if p.name not in self.CONFIRM_SERIES] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
+        for f in [f for f in flows if f.name not in ("pres3-es-probe.yml", "sat-confirm.yml")] + [p for p in sorted((ROOT / "sat").glob("*.py")) if p.name not in self.CONFIRM_SERIES] + [ROOT / "sat" / "sites.json", ROOT / "sat" / "publish.sh"]:
             self.assertNotIn("pres3", f.read_text(encoding="utf-8"), f)
         # the exempted files stay outside the daily collection: nothing that is checked above refers to them
         for f in sorted((ROOT / "sat").glob("*.py")):

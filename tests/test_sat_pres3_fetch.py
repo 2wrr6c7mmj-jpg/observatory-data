@@ -96,7 +96,10 @@ class SearchRetryTest(unittest.TestCase):
                     urllib.error.URLError(OSError("Tunnel connection failed: 503 Service Unavailable")),
                     urllib.error.URLError(ConnectionRefusedError(111, "Connection refused to earth-search.aws.element84.com:443")),
                     urllib.error.URLError(OSError(101, "Network is unreachable 10.0.0.4")),
-                    urllib.error.URLError(OSError(-3, "Temporary failure in name resolution")), urllib.error.URLError("[Errno 104] reset")):
+                    urllib.error.URLError(OSError(-3, "Temporary failure in name resolution")), urllib.error.URLError("[Errno 104] reset"),
+                    # curl's text of a failed connection: "port 443" is a port, not a status
+                    urllib.error.URLError(OSError("Failed to connect to earth-search.aws.element84.com port 443 after 3 ms: Couldn't connect to server")),
+                    urllib.error.URLError("Failed to connect to 127.0.0.1 port 403 after 0 ms: Connection refused")):
             got, stub, slept = self.run_search(err, PAGE)
             self.assertEqual(got, [{"id": "a"}], repr(err)); self.assertEqual((len(stub.calls), slept), (2, [5]), repr(err))
 
@@ -131,13 +134,18 @@ class WindowRetryTest(unittest.TestCase):
             self.assertTrue(got.startswith("ERR S "), e); self.assertEqual((len(calls), slept), (1, []), e)
         # a certificate that does not verify, as curl inside GDAL writes it (it says "CURL error" too) and as urllib does
         for e in (Exception("CURL error: SSL certificate problem: unable to get local issuer certificate"),
-                  urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden"))):
+                  urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden")),
+                  Exception("CURL error: CONNECT tunnel failed, response 403"),                  # curl's text of a proxy's 403
+                  Exception("CURL error: Received HTTP code 403 from proxy after CONNECT")):
             got, calls, slept = self.run_one(e)
             self.assertTrue(got.startswith("ERR S "), e); self.assertEqual((len(calls), slept), (1, []), e)
 
     def test_a_transient_failure_is_read_again(self):
         self.assertEqual((fetch.WINDOW_TRIES, fetch.WINDOW_DELAYS_S), (3, (4, 8)))
-        for e in (Exception("HTTP response code: 503"), Exception("CURL error: Connection reset by peer"), Exception("Operation timed out"), TimeoutError()):
+        for e in (Exception("HTTP response code: 503"), Exception("CURL error: Connection reset by peer"), Exception("Operation timed out"), TimeoutError(),
+                  # curl inside GDAL, a failed connection: "port 443" is a port, not a status
+                  Exception("CURL error: Failed to connect to sentinel-cogs.s3.us-west-2.amazonaws.com port 443 after 3 ms: Couldn't connect to server"),
+                  Exception("Failed to connect to sentinel-cogs.s3.us-west-2.amazonaws.com port 443 after 3 ms: Couldn't connect to server")):
             got, calls, slept = self.run_one(e)
             self.assertEqual((got, len(calls), slept), ("ok", 2, [4]), e)
         got, calls, slept = self.run_one(*[Exception("HTTP response code: 502")] * 3)

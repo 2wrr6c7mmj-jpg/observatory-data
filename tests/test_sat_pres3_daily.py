@@ -20,6 +20,7 @@ import tempfile
 import unittest
 import warnings
 from pathlib import Path
+from unittest import mock
 
 try:
     import numpy as np
@@ -228,25 +229,65 @@ class PatchStoreTest(unittest.TestCase):
         C, P, _ = world(n_days=40)
         with tempfile.TemporaryDirectory() as d:
             a = daily.Store(Path(d) / "a"); a.put("AAA", C, P)
-            b = daily.Store(Path(d) / "b"); order = np.random.default_rng(1).permutation(len(C))
-            for part in np.array_split(order, 7): b.put("AAA", [dict(C[i], y=1, eval=True, p_cur=0.3) for i in part], P[part])     # other order, in pieces
+            b = daily.Store(Path(d) / "b"); days = sorted({c["date"] for c in C}); rng = np.random.default_rng(1)
+            for part in np.array_split(rng.permutation(len(days)), 7):            # other order, in pieces of whole days
+                ix = [i for i, c in enumerate(C) if c["date"] in {days[k] for k in part}]
+                ix = list(rng.permutation(ix))
+                b.put("AAA", [dict(C[i], y=1, eval=True, p_cur=0.3) for i in ix], P[ix])
             Ca, Pa, offs = a.load("AAA"); Cb, Pb, _ = b.load("AAA")
             self.assertEqual(Ca, Cb); np.testing.assert_array_equal(Pa, Pb); np.testing.assert_array_equal(offs, OFFS)
-            self.assertEqual(Ca, sorted(C, key=lambda c: (c["date"], c["section"]))); self.assertEqual(Pa.dtype, np.float16)
-            self.assertEqual(set(Ca[0]), set(daily.CELL_KEYS))                            # no answer, no evaluation field in the store
-            self.assertEqual(a.months("AAA"), ["2026-01", "2026-02"]); self.assertEqual(len(a.dates("AAA")), 40)
-            # a section added later, and a record put again: the others do not move
-            new = [dict(C[i], section="s:L:99") for i in (0, 3, 6)]; a.put("AAA", new, P[[0, 3, 6]] + np.float16(0.25))
-            again = dict(C[5]); a.put("AAA", [again], P[5:6] * 0)
-            Cn, Pn, _ = a.load("AAA"); at = {(c["section"], c["date"]): k for k, c in enumerate(Cn)}
-            self.assertEqual(len(Cn), len(C) + 3)
-            for i, c in enumerate(C):
-                want = P[i] * 0 if i == 5 else P[i]
-                np.testing.assert_array_equal(Pn[at[(c["section"], c["date"])]], want)
-            Cu, Pu, _ = a.load("AAA", until=day_of(9)); self.assertEqual(max(c["date"] for c in Cu), day_of(9)); self.assertEqual(len(Cu), 30 + 3)
+            self.assertEqual([{k: c[k] for k in daily.CELL_KEYS} for c in Ca], sorted(C, key=lambda c: (c["date"], c["section"])))
+            self.assertEqual(Pa.dtype, np.float16)
+            self.assertEqual(set(Ca[0]), set(daily.CELL_KEYS) | {"water", "good"})       # no answer, no evaluation field in the store
+            order = sorted(range(len(C)), key=lambda i: (C[i]["date"], C[i]["section"])); np.testing.assert_array_equal(Pa, P[order])
+            self.assertEqual(len(a.dates("AAA")), 40); self.assertTrue(all(f.name.endswith(".c.npz") for f in a.files("AAA")))   # all clear
+            Cu, Pu, _ = a.load("AAA", until=day_of(9)); self.assertEqual(max(c["date"] for c in Cu), day_of(9)); self.assertEqual(len(Cu), 30)
             self.assertRaises(ValueError, a.put, "BBB", C[:1], P[:1])
-            z = np.load(Path(d) / "a" / "AAA" / "2026-01.npz", allow_pickle=False); self.assertEqual(sorted(z.files), ["cells", "offs", "patch"])
+            self.assertRaises(ValueError, a.put, "AAA", C[:3], P[:3])                    # a day is written once
+            z = np.load(a.files("AAA")[0], allow_pickle=False); self.assertEqual(sorted(z.files), ["cells", "patch", "shape", "version"])
             self.assertEqual(daily.Store(Path(d) / "none").load("AAA")[0], [])
+
+    def test_the_patch_codec_is_lossless(self):
+        rng = np.random.default_rng(0)
+        for P in (rng.normal(0.1, 0.05, (7, 24, 41, 5)).astype(np.float16), np.zeros((1, 24, 41, 5), np.float16),
+                  np.array(rng.integers(0, 65536, (3, 24, 41, 5)), np.uint16).view(np.float16)):     # every bit pattern, NaN and inf too
+            got = daily.unpack_patch(np.frombuffer(daily.pack_patch(P), np.uint8), P.shape)
+            np.testing.assert_array_equal(got.view(np.uint16), P.view(np.uint16))
+
+    def test_thinning_keeps_the_scores(self):
+        # cloudy cells on some days; the days before the window lose them (but keep the answered ones), and every score of a
+        # day in the window is the same as from the full store: the water colour and the clear flag were stored with the day
+        C, P, ans = world(n_days=60)
+        rng = np.random.default_rng(5)
+        for i in rng.choice(len(C), 40, replace=False): C[i]["cloud"] = 0.5
+        for k in (5, 12): C = [dict(c, cloud=0.5) if c["date"] == day_of(k) and c["section"] != SECS[2] else c for c in C]   # cloudy days
+        _, names, _ = features(P[:6], C[:6]); B = toy_model(names)
+        with tempfile.TemporaryDirectory() as d:
+            full = daily.Store(Path(d) / "full"); full.put("AAA", C, P)
+            thin = daily.Store(Path(d) / "thin"); thin.put("AAA", C, P)
+            ans = {k: v for k, v in ans.items() if k[1] in (day_of(3), day_of(20)) or k[1] >= "2026-03" or k == (SECS[2], day_of(5))}
+            answered = set(ans)
+            gone = thin.thin("AAA", "2026-03-05", answers=answered, months=1)
+            self.assertTrue(gone and all(f.name[:7] < "2026-03" and f.name.endswith(".r.npz") for f in gone))
+            self.assertFalse(any(f.name.endswith(".r.npz") and f.name[:7] < "2026-03" for f in thin.files("AAA")))
+            Cf, Pf, _ = full.load("AAA"); Ct, Pt, _ = thin.load("AAA")
+            self.assertLess(len(Ct), len(Cf))
+            kept = {(c["section"], c["date"]) for c in Ct}
+            self.assertTrue(answered <= kept)                                          # answered cells stay, clear or not
+            self.assertTrue(all(c["good"] or (c["section"], c["date"]) in answered or c["date"] >= "2026-03" for c in Ct))
+            days = [day_of(k) for k in range(56, 60)]
+            want = daily.score_days("AAA", Cf, Pf, OFFS, ans, B, days)
+            self.assertEqual(daily.score_days("AAA", Ct, Pt, OFFS, ans, B, days), want)
+            self.assertTrue(any(r["p"] != "" for r in want))
+            # without the stored flags, a thinned cloudy day would turn clear (its cloudy sections are gone): the check has teeth
+            bare = [{k: c[k] for k in daily.CELL_KEYS} for c in Ct]
+            g_bare = daily.day_inputs(Pt, OFFS, bare)[1]; W, g = daily.day_inputs(Pt, OFFS, Ct)
+            self.assertTrue((g_bare & ~g).any())
+            Wf, gf = daily.day_inputs(Pf, OFFS, Cf); at = {(c["section"], c["date"]): k for k, c in enumerate(Cf)}
+            k = [at[(c["section"], c["date"])] for c in Ct]
+            np.testing.assert_array_equal(W, Wf[k]); np.testing.assert_array_equal(g, gf[k])
+            np.testing.assert_array_equal(Wf, feats.water(Pf, OFFS, Cf)); np.testing.assert_array_equal(gf, feats.good_day(Cf))
+            self.assertEqual(thin.thin("AAA", "2026-03-05", answers=answered, months=1), [])           # a second time: nothing
 
     def test_store_and_model_must_be_outside_the_repository(self):
         for p in (ROOT / "docs" / "data" / "sat" / "confirm", ROOT / "x.npz"):
@@ -309,6 +350,32 @@ class ModelFileTest(unittest.TestCase):
 
 
 @unittest.skipUnless(np is not None, "numpy not installed")
+class EmptyColumnTest(unittest.TestCase):
+    """A4: scikit-learn 1.9 stops on a column missing in every training row when sample weights are given (the fusion)."""
+
+    def test_fill_empty(self):
+        X = np.array([[1.0, np.nan, np.nan], [2.0, np.nan, 3.0]])
+        got = model.fill_empty(X); np.testing.assert_array_equal(got, [[1.0, 0.0, np.nan], [2.0, 0.0, 3.0]])
+        self.assertTrue(np.isnan(X[0, 1]))                                    # the input is not changed
+        Y = np.array([[1.0, np.nan], [np.nan, 2.0]]); self.assertIs(model.fill_empty(Y), Y)
+
+    @unittest.skipUnless(importlib.util.find_spec("sklearn"), "scikit-learn not installed (the Tests workflow does not install it)")
+    def test_fit_with_a_column_no_training_row_has(self):
+        # every section present on every training day but the last: no training cell has an earlier ABSENT day, so the exemplar
+        # columns "minus the mean of the earlier absent days" are missing in every row of the fusion's training set
+        n = 30; cut = day_of(22)
+        C, P, ans = world(n_days=n, ships={(s, k): (k != 21) if k < 22 else bool((k + j) % 2) for j, s in enumerate(SECS) for k in range(n)})
+        cells = [dict(c, y=ans[(c["section"], c["date"])], port="AAA" if c["section"] != SECS[2] else "BBB") for c in C]
+        X, names, _ = features(P, cells)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            B = daily.fit(cells, X, names, cut, log=lambda m: None)
+            self.assertEqual(B["meta"]["n_train"], 66)
+            with mock.patch.object(model, "fill_empty", lambda X: X):         # without the fix, scikit-learn stops
+                with self.assertRaises(ValueError): daily.fit(cells, X, names, cut, log=lambda m: None)
+
+
+@unittest.skipUnless(np is not None, "numpy not installed")
 class FetchChoiceTest(unittest.TestCase):
     def f(self, sid, day, cloud=10.0):
         return {"id": sid, "properties": {"datetime": day + "T02:57:55Z", "eo:cloud_cover": cloud}}
@@ -363,8 +430,12 @@ class OwnerAnswersTest(unittest.TestCase):
 @unittest.skipUnless(np is not None, "numpy not installed")
 class NotWiredTest(unittest.TestCase):
     def test_no_workflow_and_no_collector_runs_the_daily_scoring(self):
-        for f in sorted((ROOT / ".github" / "workflows").glob("*.yml")) + sorted((ROOT / "sat").glob("*.py")):
+        # sat-confirm.yml (PR-5) runs it through sat.pres3.confirm_run, and is the only workflow that may
+        flows = [f for f in sorted((ROOT / ".github" / "workflows").glob("*.yml")) if f.name != "sat-confirm.yml"]
+        self.assertGreater(len(flows), 20)
+        for f in flows + sorted((ROOT / "sat").glob("*.py")):
             self.assertNotIn("pres3.daily", f.read_text(encoding="utf-8"), f)
+            self.assertNotIn("confirm_run", f.read_text(encoding="utf-8"), f)
 
 
 if __name__ == "__main__":
