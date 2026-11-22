@@ -208,5 +208,41 @@ class DailyRefreshTest(unittest.TestCase):
             self.assertTrue(all(int(r["radar_dark_sections"]) > 0 for r in rows) if s == "XSN" else all(r["radar_dark_sections"] == "0" for r in rows))
 
 
+class FailureStopsNoCountTest(unittest.TestCase):
+    """1部の審査（#172）：a failure of the marks' rebuild does not stop quay_naval50, quay_pres1 and quay_blind (the same values;
+    quay_blind from the list of the day before)."""
+
+    def run_refresh(self, out, fail):
+        from sat import eval_presence as ep
+        from datetime import datetime, timezone
+        boom = mock.patch.object(rd, "refresh", side_effect=KeyError("verdict")) if fail else mock.patch.object(rd, "refresh", wraps=rd.refresh)
+        with boom, mock.patch("builtins.print") as pr:
+            r = ep.refresh(out, now=datetime(2026, 11, 22, 6, 0, tzinfo=timezone.utc))
+        return r, [c.args[0] for c in pr.call_args_list if c.args]
+
+    def files(self, out):
+        names = ["quay_naval50.csv"] + [f"quay_naval50/{p.name}" for p in sorted((out / "quay_naval50").glob("*.json"))]
+        names += [f"quay_pres1/{p.name}" for p in sorted((out / "quay_pres1").glob("*"))]
+        names += [f"quay_blind/{p.name}" for p in sorted((out / "quay_blind").glob("*.csv"))] + [rd.PUBLIC]
+        return {n: (out / n).read_bytes() for n in names}
+
+    def test_a_failing_rebuild(self):
+        with tempfile.TemporaryDirectory() as d:
+            ign = shutil.ignore_patterns("images", "color", "s2", "chips", "change", "windows", "confirm")
+            ok, bad = Path(d) / "ok", Path(d) / "bad"
+            shutil.copytree(OUT, ok, ignore=ign); shutil.copytree(OUT, bad, ignore=ign)
+            for x in (ok, bad):
+                for f in ("quay_naval50.csv",):
+                    (x / f).unlink()
+                shutil.rmtree(x / "quay_pres1", ignore_errors=True); shutil.rmtree(x / "quay_blind", ignore_errors=True)
+            r_ok, _ = self.run_refresh(ok, False)
+            r_bad, printed = self.run_refresh(bad, True)
+            self.assertIn("KeyError", r_bad["radar_dark"]["error"])
+            self.assertTrue(any("::warning title=sat radar_dark::" in t for t in printed))
+            self.assertEqual((r_bad["naval50"], r_bad["blind"], sorted(r_bad["pres1"])), (r_ok["naval50"], r_ok["blind"], sorted(r_ok["pres1"])))
+            self.assertEqual(self.files(bad), self.files(ok))              # written, the same bytes (the list of the day before)
+            self.assertTrue(r_ok["naval50"] > 0 and r_ok["pres1"] and (bad / "quay_naval50.csv").exists())
+
+
 if __name__ == "__main__":
     unittest.main()
