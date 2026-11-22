@@ -147,13 +147,15 @@ class NothingCountedChangesTest(unittest.TestCase):
 
     def test_quay_blind_gets_the_reason_columns_only(self):
         from sat import eval_presence as ep
-        self.assertEqual(ep.BLIND_COLUMNS[-3:], ("radar_dark_sections", "radar_dark_seen", "radar_dark_reasons"))
+        from sat import opt_fill
+        # the dark-1 columns, then the opt-fill-1 trial columns (sat/opt_fill.py) at the end
+        self.assertEqual(ep.BLIND_COLUMNS[-3 - len(opt_fill.COLUMNS):], ("radar_dark_sections", "radar_dark_seen", "radar_dark_reasons") + opt_fill.COLUMNS)
         sites = [s for s in ep.load_sites() if s["id"] in ("XSN", "QDH", "QGZ")]
         with_marks = ep.blind_counts(OUT, sites)
         with mock.patch.object(rd, "marks", return_value={}):
             without = ep.blind_counts(OUT, sites)
         self.assertEqual(sorted(with_marks), sorted(without))
-        new = ("radar_dark_sections", "radar_dark_seen", "radar_dark_reasons")
+        new = ("radar_dark_sections", "radar_dark_seen", "radar_dark_reasons") + opt_fill.COLUMNS    # opt-fill follows the marks
         for s in with_marks:
             self.assertEqual([{k: v for k, v in r.items() if k not in new} for r in with_marks[s]],
                              [{k: v for k, v in r.items() if k not in new} for r in without[s]])
