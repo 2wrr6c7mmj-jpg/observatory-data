@@ -60,7 +60,7 @@ python -m sat.pres3.triage           # --json で値だけ、--no-ci で CI を�
 
 ## 1 日ずつ判定する形（confirm-1、`daily.py`。PR-2）
 
-確認回し（`docs/data/sat/eval/confirm-design.md`）で毎日の判定に使う形。**まだどのワークフローからも呼ばれない**（つなぐのは後の PR）。
+確認回し（`docs/data/sat/eval/confirm-design.md`）で毎日の判定に使う形。毎日の実行は `.github/workflows/sat-confirm.yml` が `confirm_run.py` を通して呼ぶ（下の「毎日の実行」）。既存の収集（`sat/run.py`・ほかのワークフロー）からは呼ばない。
 判定器は pres-3o＝S1 を使わない構成 `('opt', 1)`（答えを使わない汎用の判定＋同じ区間の判定日より前の答えの見本・履歴）。
 
 ある日 d の点数が見てよいもの：**像は d 以前**（区間の参照は d より前の晴れの日）、**答えは d より前の所有者の答えだけ**（自動確定は答えではない）、
@@ -70,7 +70,7 @@ python -m sat.pres3.triage           # --json で値だけ、--no-ci で CI を�
 
 | 置き場 | 形 |
 |---|---|
-| パッチの保管 `<store>/<港>/<YYYY-MM>.npz` | `patch` [n, 24, 41, 5] float16、`cells`（升ごとの記録の JSON：区間・日・雲・影・欠測・撮影の ID と時刻。**答えは入れない**）、`offs`。1 升 約 7.6 KB（圧縮後） |
+| パッチの保管 `<store>/<港>/<YYYY>/<YYYY-MM-DD>.{c,r,a}.npz` | 1 日 1〜3 ファイル、**書いたら書き直さない**（保管は git のブランチ）。`.c`＝晴れの升、`.r`＝それ以外、`.a`＝間引きで残した答えのある升。`patch`（float16 のビット列を沖向きに差分→上位・下位バイトに分けて LZMA。可逆）、`shape`、`cells`（升ごとの記録の JSON を LZMA：区間・日・雲・影・欠測・撮影の ID と時刻と、**その日の全部の区間から作った水の色 `water` と晴れの印 `good`**。答えは入れない）。1 升 約 4.5 KB |
 | 係数 `<model>.npz` | 2 つの勾配ブースティングの木を配列にしたもの（節の値・特徴・閾値・欠測の行き先・子）、学習の升の港抜きの汎用の点数、特徴の名前、見出しの JSON（版 `pres3o-YYYYMM`・締め日・学習の升の数・scikit-learn と numpy の版）。pickle は使わない。**予測は numpy だけ**（scikit-learn が要るのは学習のときだけ。scikit-learn の予測と 1e-12 以内で一致） |
 | 点数の表（CSV） | `site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata, status, answers_through`（`sat/confirm.py` の入力の列と同じ名前・単位）、`n_answers`、`before_cutoff` |
 
@@ -98,7 +98,26 @@ python -m sat.pres3.daily check --work "$PRES3_WORK" --store /path/to/store --mo
 
 - 取得するタイルは港ごとに 1 つ：`inputs/scenes.csv` の最後の 365 日でいちばん多いタイル（青島港内 51STA、古鎮口 51STV。古鎮口は 2024 年までは 50SQE だった）。タイルの雲 85% 以下、1 日 1 撮影（研究の一覧と同じ選び方）。
 - 水の色の補正と「晴れの日」の印は、その日のその港の**全部の区間**のパッチから作る。保管から区間を間引くと点数が変わる（間引くなら港×日の水の色を別に残す作りに直す）。
-- 学習（`fit`）と確かめ（`check`）は、いまは研究の作業の置き場の升と特徴から学ぶ。保管と答えのファイルだけから学ぶ形（月 1 回の再学習）は後の PR。
+- 学習（`fit`）と確かめ（`check`）は研究の作業の置き場の升と特徴から学ぶ。毎月の再学習（`confirm_run refit`）は保管と答えのファイルだけから学ぶ（締め日より前の答えの升の特徴を保管から計算する）。
+- **間引き**：直近 18 か月（その月と前の 17 か月）は全部の升、それより古い日は `.r` を消して晴れの升（と答えのある升）だけを残す（`Store.thin`）。
+  点数に要る水の色と晴れの印は日ごとに `.c` の記録に入っているので、間引いた保管でも点数は全期間の保管と同じ（9 港・前進検証の答えのある 1,071 升で p の差 0）。
+- 学習で全部が欠測の列があると scikit-learn 1.9 が止まる（重みつきの学習、港抜きの学習の一部）。学習の行で全部が欠測の列は 0 にしてから学ぶ（`model.fill_empty`。木はその列で分けないので、空の列が無いときは何も変わらない）。
+
+### 毎日の実行（`confirm_run.py`、ワークフロー `sat-confirm.yml`）
+
+```sh
+# 毎日：取得 → 保管 → 間引き → 直近 35 日の点数 → sat.confirm run → キューの画像 → summary.json
+python -m sat.pres3.confirm_run daily --store /path/to/pres3-patches --windows /tmp/win --report /tmp/report.json
+# 月 1 回（手動）：今月 1 日を締め日に係数を学ぶ（scikit-learn 1.9.1）。<store>/models/pres3o-YYYYMM.npz と confirm/model.json
+python -m sat.pres3.confirm_run refit --store /path/to/pres3-patches
+# 書いてよい場所（docs/data/sat/confirm/・labels/<港>-confirm-answers.csv）の外に変更があれば失敗
+python -m sat.pres3.confirm_run paths
+```
+
+- 要求の数と転送量を数える（検索は urllib、COG は libcurl の記録 `CPL_CURL_VERBOSE` から）。1 回の実行の上限は 1,000 要求・1.5 GB。
+  次の 1 撮影（18 要求、その実行で見た最大の転送量か 30 MB）で上限を超えるなら取得を止め、報告に出す。
+- 拒否（4xx。プロキシの拒否・GDAL の文面も）を受けた港は飛ばして `::error` に出す。送り直さず、回り込まない。
+- User-Agent は `pres3-fetch/1`（検索と COG の両方）。
 
 ### 取得について
 
@@ -152,6 +171,7 @@ python -m sat.pres3.daily check --work "$PRES3_WORK" --store /path/to/store --mo
 | `fuse.py` | 融合と評価、試した構成の表 |
 | `final.py` | 採用した構成の数字、公開用の JSON・CSV |
 | `daily.py` | confirm-1：1 日ずつ判定する形。パッチの保管・係数のファイル・点数の表（上の節） |
+| `confirm_run.py` | confirm-1：毎日の実行と月 1 回の再学習（`sat-confirm.yml` が呼ぶ） |
 | `triage.py` | confirm-1：確信のある升（自動確定）と回す升の仕分けの表。規則 v1。`pres3_oos.csv` だけを読む（numpy） |
 
 ## 出典
