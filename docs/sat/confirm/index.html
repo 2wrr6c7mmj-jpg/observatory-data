@@ -46,6 +46,8 @@ h2 a{font-size:.8rem;font-weight:normal;color:var(--accent)}
 .rows .sec{font-size:.9rem;min-width:0}
 .rows .sec .id{display:block;font-family:var(--mono);font-size:.72rem;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rows .st{text-align:right;white-space:nowrap}
+.rows .sec .w{white-space:nowrap}
+.rows .when .left{color:var(--wait)}
 .rows .when{display:block;font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
 .rows .last{display:block;font-size:.74rem;color:var(--ink3);opacity:.85}
 .v{font-weight:700;margin-right:.35rem}.v.p{color:var(--present)}.v.a{color:var(--absent)}
@@ -64,6 +66,7 @@ footer.page{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:.8rem
  .strip>div:nth-child(-n+2){border-top:0}
  .strip>div:nth-child(even){border-left:1px solid var(--line)}
  .grid{grid-template-columns:1fr}
+ .rows .when .left{display:block}
 }
 </style>
 </head>
@@ -145,7 +148,10 @@ function row(s, doc) {
   const li = el('li');
   li.dataset.id = s.id; li.dataset.state = s.state || 'none';
   // the readable name first; the id (OSM line : side : piece) and the length under it, small and monospace
-  const sec = el('span', 'sec', s.label || s.id);
+  const sec = el('span', 'sec');
+  const name = el('span');      // the name breaks only at "・"
+  String(s.label || s.id).split('・').forEach((w, i) => name.appendChild(el('span', 'w', (i ? '・' : '') + w)));
+  sec.appendChild(name);
   sec.appendChild(el('span', 'id', [s.id, s.length_m ? `${s.length_m} m` : ''].filter(Boolean).join(' · ')));
   const st = el('span', 'st');
   if (!s.state) {
@@ -153,7 +159,12 @@ function row(s, doc) {
   } else {
     if (s.value === 0 || s.value === 1) st.appendChild(el('span', 'v ' + (s.value ? 'p' : 'a'), word(s.value)));
     st.appendChild(el('span', 'tag ' + s.state, TAG[s.state] || s.state));
-    st.appendChild(el('span', 'when', `${s.date} · ${ago(s.date)}`));
+    const when = el('span', 'when', `${s.date} · ${ago(s.date)}`);
+    if (s.state === 'pending') {      // days until the cell leaves the queue (expire_days after its scene)
+      const left = Math.max(0, doc.expire_days - Math.max(0, Math.round((today - Date.parse(s.date + 'T00:00:00Z')) / 86400000)));
+      when.appendChild(el('span', 'left', ` · 残り${left}日`));
+    }
+    st.appendChild(when);
     if (s.value === null && s.last_value !== null) st.appendChild(el('span', 'last', `最後の確認：${word(s.last_value)}（${ago(s.last_date)}${s.last_source === 'auto' ? '・自動' : ''}）`));
   }
   li.append(sec, st);
