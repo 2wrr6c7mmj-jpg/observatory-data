@@ -31,7 +31,13 @@ import math
 import sys
 from pathlib import Path
 
-from .grid import m_per_deg
+
+
+def m_per_deg(lat: float) -> tuple[float, float]:
+    """Metres per degree of latitude and of longitude at ``lat``: the same series as sat.grid.m_per_deg (that module imports
+    numpy; this one stays pure Python, the collect workflows run its tests without numpy)."""
+    p = math.radians(lat)
+    return (111132.954 - 559.822 * math.cos(2 * p) + 1.175 * math.cos(4 * p), 111412.84 * math.cos(p) - 93.5 * math.cos(3 * p))
 
 PATH = Path(__file__).resolve().parent / "confirm_trial.json"
 VERSION = "confirm-trial-1"
