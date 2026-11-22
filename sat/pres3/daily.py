@@ -15,7 +15,12 @@ Three stores, all keyed by (port, section, date), never by a row number:
                                                   the training cells, the feature names, and a JSON header (version, cutoff,
                                                   scikit-learn / numpy versions). numpy alone predicts from it.
     scores        a CSV, one row per cell         site_id, section_id, date, acquired_utc, p, model_version, cloud_shadow, nodata,
-                                                  status, answers_through: the input of sat/confirm.py (which applies the rule)
+                                                  status, answers_through, n_answers, before_cutoff: the input of sat/confirm.py
+                                                  (which applies the rule). n_answers = the owner's answers the judge used for the
+                                                  cell (the section's answers of earlier days that have a patch in the store).
+                                                  before_cutoff = 1 when the day is before the model's cutoff: the coefficients
+                                                  were fitted on the answers of such days, so the score is not out of sample and
+                                                  must not decide a cell (empty otherwise)
 
     python -m sat.pres3.daily import  --work DIR --store STORE [--ports ..]       the research patches -> the patch store
     python -m sat.pres3.daily fit     --work DIR --cutoff 2026-11-01 --model M.npz   coefficients (needs scikit-learn)
@@ -46,9 +51,12 @@ KIND = 'pres3o'
 CELL_KEYS = ('port', 'date', 'section', 'kind', 'sector', 'length_m', 'cloud', 'shadow', 'cirrus', 'nodata', 'tile_cloud', 'scene', 'time')
 MAX_CLOUD_SHADOW = 0.2          # a cell is judged when cloud + shadow <= 0.2 and no nodata (the design, section 4: otherwise no_image)
 MIN_REFERENCE_DAYS = 6          # feats.features: a section's reference needs 6 earlier clear days
-# the score table: the input of sat/confirm.py (its SCORE_FIELDS, same names, same units). --diagnostics adds the last three.
-SCORE_COLUMNS = ['site_id', 'section_id', 'date', 'acquired_utc', 'p', 'model_version', 'cloud_shadow', 'nodata', 'status', 'answers_through']
-DIAGNOSTIC_COLUMNS = ['n_answers', 'n_reference_days', 'scene_id']
+# the score table: the input of sat/confirm.py (its SCORE_FIELDS, same names, same units, then n_answers: the number of the
+# owner's answers the judge used, an integer; confirm-1 counts min(the answer file's count, n_answers) for the rule's "2 answers").
+# before_cutoff: 1 for a day before the model's cutoff (a score in the training period: not out of sample). --diagnostics adds the last two.
+SCORE_COLUMNS = ['site_id', 'section_id', 'date', 'acquired_utc', 'p', 'model_version', 'cloud_shadow', 'nodata', 'status', 'answers_through',
+                 'n_answers', 'before_cutoff']
+DIAGNOSTIC_COLUMNS = ['n_reference_days', 'scene_id']
 NODE_FIELDS = ('value', 'feature_idx', 'num_threshold', 'missing_go_to_left', 'left', 'right', 'is_leaf')
 
 
@@ -190,14 +198,15 @@ def fit(C, X, names, cutoff, version=None, log=print):
 def owner_answers(port, sat_dir=None):
     """(section, date) -> 1 / 0 from the owner's answer files of the repository: labels/<port>-s2-answers.csv (Zhanjiang:
     ZJG-s2-labels.csv, verified rows) and, when it exists, labels/<port>-confirm-answers.csv (the answers of the confirmation
-    queue, the design section 6.3; rows of verified_by other than the owner are not answers). 'Cannot tell' is no answer."""
+    queue, the design section 6.3). In both files a row whose verified_by is not 'owner' (another reader, an automatic
+    decision, an empty field) is not an answer, as sat/confirm.py reads them. 'Cannot tell' is no answer."""
     sat_dir = Path(sat_dir) if sat_dir else common.SAT; out = {}
     first = sat_dir / 'labels' / ('ZJG-s2-labels.csv' if port == 'ZJG' else f'{port}-s2-answers.csv')
     for f, confirm in ((first, False), (sat_dir / 'labels' / f'{port}-confirm-answers.csv', True)):
         if not f.exists(): continue
         with open(f, newline='', encoding='utf-8') as fh:
             for r in csv.DictReader(fh):
-                if confirm and r.get('verified_by', 'owner') != 'owner': continue
+                if (r.get('verified_by') or '').strip() != 'owner': continue
                 if r.get('verified') == '1' and r.get('verified_occupied') in ('0', '1'): out[(r['section_id'], r['date'])] = int(r['verified_occupied'])
                 elif confirm: out.pop((r['section_id'], r['date']), None)       # a later 'cannot tell' withdraws the answer
     return out
@@ -253,7 +262,7 @@ def _score_days(port, C, P, offs, answers, B, days, sections, all_cells):
             out.append(dict(site_id=port, section_id=c['section'], date=d, acquired_utc=c['time'], p=f'{p:.6f}' if show else '',
                             model_version=B['meta']['model_version'], cloud_shadow=f"{c['cloud'] + c['shadow']:.4f}", nodata=f"{c['nodata']:.4f}",
                             status='' if ok else 'no_image', answers_through=pa[-1][0] if pa else '',
-                            n_answers=len(pa), n_reference_days='' if nref is None else nref, scene_id=c['scene']))
+                            n_answers=len(pa), before_cutoff='1' if d < B['meta']['cutoff'] else '', n_reference_days='' if nref is None else nref, scene_id=c['scene']))
     return out
 
 
@@ -291,7 +300,8 @@ def pick_new(feats_found, tile, have_dates, max_cloud=85):
 
 def fetch_port(store, windows, port, days, sites, now=None, log=print):
     """Search the last ``days`` days, fetch the windows of the new scenes into <windows>/data/<port>/ and put their patches
-    into the store. No retry around a refusal: an HTTP error stops the port (returned as text)."""
+    into the store. No retry around a refusal: a refusal (HTTP 4xx) or a failure that fetch.search's few retries of a transient
+    failure (no connection, cut off, 5xx) did not cure stops the port (cmd_fetch reports it). The COG reads: fetch.gdal_env."""
     from . import build, fetch
     now = now or dt.datetime.now(dt.timezone.utc); bb = sites[port]['bbox']; tile = port_tile(port); have = set(store.dates(port))
     found = fetch.search({"bbox": bb, "datetime": f"{now - dt.timedelta(days=days):%Y-%m-%dT%H:%M:%SZ}/{now:%Y-%m-%dT%H:%M:%SZ}"})
@@ -343,7 +353,7 @@ def cmd_score(a):
         C, P, offs = store.load(port, a.until); every = sorted({c['date'] for c in C})
         days = [d for d in every if d >= a.since] if a.since else every[-1:]
         if any(d < B['meta']['cutoff'] for d in days):
-            print(f'{port}: days before the cutoff of the model ({B["meta"]["cutoff"]}) are scored: those scores are not out of sample', file=sys.stderr)
+            print(f'{port}: days before the cutoff of the model ({B["meta"]["cutoff"]}) are scored: those scores are not out of sample (before_cutoff = 1)', file=sys.stderr)
         r = score_days(port, C, P, offs, owner_answers(port, a.sat), B, days); rows += r
         print(port, 'days', len(days), 'cells', len(r), 'scored', sum(x['p'] != '' for x in r), 'no_image', sum(x['status'] == 'no_image' for x in r), flush=True)
     write_scores(a.out, rows, a.diagnostics); return 0
@@ -394,7 +404,7 @@ def main(argv=None):
     p = add('fit', cmd_fit, 'work'); p.add_argument('--cutoff', required=True); p.add_argument('--model', required=True); p.add_argument('--version')
     p = add('fetch', cmd_fetch, 'store'); p.add_argument('--windows', required=True); p.add_argument('--days', type=int, default=10)
     p = add('score', cmd_score, 'store'); p.add_argument('--model', required=True); p.add_argument('--out', required=True)
-    p.add_argument('--since'); p.add_argument('--until'); p.add_argument('--diagnostics', action='store_true', help='also n_answers, n_reference_days, scene_id'); p.add_argument('--sat', help='docs/data/sat of another checkout (default: this one)')
+    p.add_argument('--since'); p.add_argument('--until'); p.add_argument('--diagnostics', action='store_true', help='also n_reference_days, scene_id'); p.add_argument('--sat', help='docs/data/sat of another checkout (default: this one)')
     p = add('check', cmd_check, 'work', 'store'); p.add_argument('--oos', default=str(common.SAT / 'eval' / 'pres3_oos.csv'))
     p.add_argument('--bounds'); p.add_argument('--models', help='a directory to keep the fitted models of the check'); p.add_argument('--tolerance', type=float, default=2e-6)
     a = ap.parse_args(argv)
