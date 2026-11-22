@@ -1,6 +1,6 @@
 {
  "version": "confirm-1",
- "generated_utc": "2026-11-22T08:26:57Z",
+ "generated_utc": "2026-11-22T15:47:41Z",
  "rule_version": "confirm-v1",
  "frozen_utc": "2026-11-22T00:00:00Z",
  "auto_display": false,
@@ -1174,10 +1174,10 @@
   }
  },
  "pictures": {
-  "as_of": "2026-11-22T08:26:57Z",
-  "needed": 32,
-  "drawn_from_this_run": 1,
-  "drawn_again": 31,
+  "as_of": "2026-11-22T15:47:41Z",
+  "needed": 0,
+  "drawn_from_this_run": 0,
+  "drawn_again": 0,
   "left_for_the_limits": 0,
   "not_found": [],
   "held_days": [],

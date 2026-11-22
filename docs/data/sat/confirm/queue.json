@@ -1,7 +1,7 @@
 {
  "version": "confirm-queue-1",
  "queue_version": "2026-11-22-59702922",
- "generated_utc": "2026-11-22T08:26:57Z",
+ "generated_utc": "2026-11-22T15:47:41Z",
  "rule_version": "confirm-v1",
  "zoom": 8,
  "frame_m": 120.0,
@@ -51142,8 +51142,8 @@
     "height": 444
    }
   },
-  "QDH|2026-11-11": {
-   "src": "confirm/img/QDH/2026-11-11.webp",
+  "QDH|2026-11-10": {
+   "src": "confirm/img/QDH/2026-11-10.webp",
    "grid": {
     "west": 120.29,
     "south": 36.065,
@@ -51164,8 +51164,8 @@
     "height": 499
    }
   },
-  "QDH|2026-11-10": {
-   "src": "confirm/img/QDH/2026-11-10.webp",
+  "QDH|2026-11-11": {
+   "src": "confirm/img/QDH/2026-11-11.webp",
    "grid": {
     "west": 120.29,
     "south": 36.065,
@@ -51175,8 +51175,8 @@
     "height": 497
    }
   },
-  "QGZ|2026-11-11": {
-   "src": "confirm/img/QGZ/2026-11-11.webp",
+  "QGZ|2026-11-06": {
+   "src": "confirm/img/QGZ/2026-11-06.webp",
    "grid": {
     "west": 119.955,
     "south": 35.7,
@@ -51208,17 +51208,6 @@
     "height": 497
    }
   },
-  "QGZ|2026-11-06": {
-   "src": "confirm/img/QGZ/2026-11-06.webp",
-   "grid": {
-    "west": 119.955,
-    "south": 35.7,
-    "east": 120.019127,
-    "north": 35.745,
-    "width": 580,
-    "height": 497
-   }
-  },
   "QGZ|2026-05-10": {
    "src": "labels/QGZ/img/2026-05-10.webp",
    "grid": {
@@ -51228,6 +51217,17 @@
     "north": 35.745,
     "width": 498,
     "height": 499
+   }
+  },
+  "QGZ|2026-11-11": {
+   "src": "confirm/img/QGZ/2026-11-11.webp",
+   "grid": {
+    "west": 119.955,
+    "south": 35.7,
+    "east": 120.019127,
+    "north": 35.745,
+    "width": 580,
+    "height": 497
    }
   },
   "QGZ|2026-11-03": {
@@ -51241,8 +51241,8 @@
     "height": 497
    }
   },
-  "QJG|2026-11-10": {
-   "src": "confirm/img/QJG/2026-11-10.webp",
+  "QJG|2026-11-11": {
+   "src": "confirm/img/QJG/2026-11-11.webp",
    "grid": {
     "west": 120.57,
     "south": 36.095,
@@ -51263,8 +51263,8 @@
     "height": 300
    }
   },
-  "QJG|2026-11-11": {
-   "src": "confirm/img/QJG/2026-11-11.webp",
+  "QJG|2026-11-10": {
+   "src": "confirm/img/QJG/2026-11-10.webp",
    "grid": {
     "west": 120.57,
     "south": 36.095,
@@ -51274,8 +51274,8 @@
     "height": 298
    }
   },
-  "SLP|2026-11-22": {
-   "src": "confirm/img/SLP/2026-11-22.webp",
+  "SLP|2026-11-07": {
+   "src": "confirm/img/SLP/2026-11-07.webp",
    "grid": {
     "west": 109.665,
     "south": 18.185,
@@ -51296,8 +51296,8 @@
     "height": 498
    }
   },
-  "SLP|2026-11-07": {
-   "src": "confirm/img/SLP/2026-11-07.webp",
+  "SLP|2026-11-22": {
+   "src": "confirm/img/SLP/2026-11-22.webp",
    "grid": {
     "west": 109.665,
     "south": 18.185,
@@ -51362,17 +51362,6 @@
     "height": 664
    }
   },
-  "SYL|2026-11-17": {
-   "src": "confirm/img/SYL/2026-11-17.webp",
-   "grid": {
-    "west": 109.525,
-    "south": 18.185,
-    "east": 109.585,
-    "north": 18.245,
-    "width": 634,
-    "height": 663
-   }
-  },
   "SYL|2026-11-09": {
    "src": "confirm/img/SYL/2026-11-09.webp",
    "grid": {
@@ -51384,26 +51373,15 @@
     "height": 663
    }
   },
-  "XSN|2026-11-20": {
-   "src": "confirm/img/XSN/2026-11-20.webp",
+  "SYL|2026-11-17": {
+   "src": "confirm/img/SYL/2026-11-17.webp",
    "grid": {
-    "west": 121.745,
-    "south": 29.515,
-    "east": 121.8,
-    "north": 29.555,
-    "width": 533,
-    "height": 442
-   }
-  },
-  "XSN|2026-03-15": {
-   "src": "labels/XSN/img/2026-03-15.webp",
-   "grid": {
-    "west": 121.745,
-    "south": 29.515,
-    "east": 121.8,
-    "north": 29.555,
-    "width": 533,
-    "height": 443
+    "west": 109.525,
+    "south": 18.185,
+    "east": 109.585,
+    "north": 18.245,
+    "width": 634,
+    "height": 663
    }
   },
   "XSN|2026-11-15": {
@@ -51419,6 +51397,28 @@
   },
   "XSN|2026-09-18": {
    "src": "labels/XSN/img/2026-09-18.webp",
+   "grid": {
+    "west": 121.745,
+    "south": 29.515,
+    "east": 121.8,
+    "north": 29.555,
+    "width": 533,
+    "height": 443
+   }
+  },
+  "XSN|2026-11-20": {
+   "src": "confirm/img/XSN/2026-11-20.webp",
+   "grid": {
+    "west": 121.745,
+    "south": 29.515,
+    "east": 121.8,
+    "north": 29.555,
+    "width": 533,
+    "height": 442
+   }
+  },
+  "XSN|2026-03-15": {
+   "src": "labels/XSN/img/2026-03-15.webp",
    "grid": {
     "west": 121.745,
     "south": 29.515,
@@ -51472,85 +51472,8 @@
     "height": 774
    }
   },
-  "ZJG|2026-11-02": {
-   "src": "confirm/img/ZJG/2026-11-02.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
-  "ZJG|2026-04-06": {
-   "src": "confirm/img/ZJG/2026-04-06.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
   "ZJG|2026-06-22": {
    "src": "confirm/img/ZJG/2026-06-22.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
-  "ZJG|2026-01-03": {
-   "src": "confirm/img/ZJG/2026-01-03.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
-  "ZJG|2026-02-20": {
-   "src": "confirm/img/ZJG/2026-02-20.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
-  "ZJG|2026-08-09": {
-   "src": "confirm/img/ZJG/2026-08-09.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
-  "ZJG|2026-09-03": {
-   "src": "confirm/img/ZJG/2026-09-03.webp",
-   "grid": {
-    "west": 110.425,
-    "south": 21.195,
-    "east": 110.455,
-    "north": 21.265,
-    "width": 311,
-    "height": 774
-   }
-  },
-  "ZJG|2025-12-07": {
-   "src": "confirm/img/ZJG/2025-12-07.webp",
    "grid": {
     "west": 110.425,
     "south": 21.195,
@@ -51571,8 +51494,8 @@
     "height": 774
    }
   },
-  "ZJG|2025-12-17": {
-   "src": "confirm/img/ZJG/2025-12-17.webp",
+  "ZJG|2026-08-09": {
+   "src": "confirm/img/ZJG/2026-08-09.webp",
    "grid": {
     "west": 110.425,
     "south": 21.195,
@@ -51582,8 +51505,8 @@
     "height": 774
    }
   },
-  "ZJG|2025-11-12": {
-   "src": "confirm/img/ZJG/2025-11-12.webp",
+  "ZJG|2026-11-02": {
+   "src": "confirm/img/ZJG/2026-11-02.webp",
    "grid": {
     "west": 110.425,
     "south": 21.195,
@@ -51593,8 +51516,8 @@
     "height": 774
    }
   },
-  "ZJG|2025-11-22": {
-   "src": "confirm/img/ZJG/2025-11-22.webp",
+  "ZJG|2026-01-11": {
+   "src": "confirm/img/ZJG/2026-01-11.webp",
    "grid": {
     "west": 110.425,
     "south": 21.195,
@@ -51615,6 +51538,72 @@
     "height": 774
    }
   },
+  "ZJG|2025-11-22": {
+   "src": "confirm/img/ZJG/2025-11-22.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
+  "ZJG|2026-01-03": {
+   "src": "confirm/img/ZJG/2026-01-03.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
+  "ZJG|2025-12-07": {
+   "src": "confirm/img/ZJG/2025-12-07.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
+  "ZJG|2026-02-20": {
+   "src": "confirm/img/ZJG/2026-02-20.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
+  "ZJG|2026-09-03": {
+   "src": "confirm/img/ZJG/2026-09-03.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
+  "ZJG|2025-11-12": {
+   "src": "confirm/img/ZJG/2025-11-12.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
   "ZJG|2026-04-11": {
    "src": "confirm/img/ZJG/2026-04-11.webp",
    "grid": {
@@ -51626,8 +51615,19 @@
     "height": 774
    }
   },
-  "ZJG|2026-01-11": {
-   "src": "confirm/img/ZJG/2026-01-11.webp",
+  "ZJG|2026-04-06": {
+   "src": "confirm/img/ZJG/2026-04-06.webp",
+   "grid": {
+    "west": 110.425,
+    "south": 21.195,
+    "east": 110.455,
+    "north": 21.265,
+    "width": 311,
+    "height": 774
+   }
+  },
+  "ZJG|2025-12-17": {
+   "src": "confirm/img/ZJG/2025-12-17.webp",
    "grid": {
     "west": 110.425,
     "south": 21.195,
