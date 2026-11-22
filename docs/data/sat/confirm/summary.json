@@ -1,0 +1,1175 @@
+{
+ "version": "confirm-1",
+ "generated_utc": "2026-11-22T07:40:12Z",
+ "rule_version": "confirm-v1",
+ "frozen_utc": "2026-11-22T00:00:00Z",
+ "auto_display": false,
+ "notes": {
+  "A": "自動確定の升の正答率＝所有者が判定器の答えを見ずに答えた結果との一致率。約束の数字（目標：CI の下限で 0.95 以上）",
+  "B": "構成比。像のある升のうちの 自動確定／人が確認／確認待ち／未確認／判断できない と、全部の升のうちの像なし",
+  "C": "合計の一致率（参考）：人が確認した升を正答と数えた値。未確認の升は正答に数えず、回した升の判定器の正答率を掛ける。判定器の成績ではない",
+  "agreement": "どの数字も所有者の読みとの一致。所有者の読みの誤りは入っていない",
+  "ci": "95% CI は撮影（港×日）単位のブートストラップ 1,000 回、種 0",
+  "freeze": "frozen_utc より後に撮られた升（after_freeze）だけが、規則を先に決めてから入った答え。before_freeze の数字は規則を選んだ升を含み楽観がある",
+  "null": "null は数えられない（升が無い）。0 は数えて 0",
+  "A_last_12_weeks": "A と同じ数え方で、撮影日が generated_utc の日から 84 日（12 週）以内の升だけ",
+  "audit_sample": "抜き取りに選んだ升（記録に audit=1 の行がある升）と、そのうち答えがあった／期限（expire_days）を過ぎて答えのない／まだ待っている升の数。期限を過ぎた升は A に入らない（A が偏りうるので数を出す）",
+  "unconfirmed": "未確認の升の内訳：期限切れ（expired）と、後の撮影に置き換え（superseded）",
+  "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態"
+ },
+ "parts": {
+  "before_freeze": {
+   "total": {
+    "cells": 1774,
+    "states": {
+     "auto": 0,
+     "human": 0,
+     "pending": 297,
+     "unconfirmed": 205,
+     "unsure": 0,
+     "no_image": 1272
+    },
+    "composition": {
+     "of_cells_with_image": {
+      "auto": 0.0,
+      "human": 0.0,
+      "pending": 0.5916,
+      "unconfirmed": 0.4084,
+      "unsure": 0.0
+     },
+     "no_image_of_all": 0.717,
+     "judgeable_of_all": 0.283
+    },
+    "answered": 0,
+    "A_auto_accuracy": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0,
+     "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+    },
+    "A_auto_accuracy_last_12_weeks": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0
+    },
+    "would_be_auto": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0
+    },
+    "audit": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0
+    },
+    "audit_sample": {
+     "picked": 0,
+     "answered": 0,
+     "expired": 0,
+     "waiting": 0
+    },
+    "unconfirmed": {
+     "expired": 0,
+     "superseded": 205
+    },
+    "new_sections": {
+     "cells": 0,
+     "states": {}
+    },
+    "routed_judge_accuracy": {
+     "n": 0,
+     "agree": 0,
+     "rate": null
+    },
+    "changed": {
+     "n": 0,
+     "routed": 0
+    },
+    "C_total_owner_counted_correct": null
+   },
+   "by_site": {
+    "LSN": {
+     "cells": 120,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 24,
+      "unconfirmed": 67,
+      "unsure": 0,
+      "no_image": 29
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.2637,
+       "unconfirmed": 0.7363,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.2417,
+      "judgeable_of_all": 0.7583
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 67
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "QDH": {
+     "cells": 120,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 24,
+      "unconfirmed": 18,
+      "unsure": 0,
+      "no_image": 78
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.5714,
+       "unconfirmed": 0.4286,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.65,
+      "judgeable_of_all": 0.35
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 18
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "QGZ": {
+     "cells": 96,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 20,
+      "unconfirmed": 30,
+      "unsure": 0,
+      "no_image": 46
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.4,
+       "unconfirmed": 0.6,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.4792,
+      "judgeable_of_all": 0.5208
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 30
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "QJG": {
+     "cells": 120,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 24,
+      "unconfirmed": 11,
+      "unsure": 0,
+      "no_image": 85
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.6857,
+       "unconfirmed": 0.3143,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.7083,
+      "judgeable_of_all": 0.2917
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 11
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "SLP": {
+     "cells": 96,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 22,
+      "unconfirmed": 28,
+      "unsure": 0,
+      "no_image": 46
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.44,
+       "unconfirmed": 0.56,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.4792,
+      "judgeable_of_all": 0.5208
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 28
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "SYL": {
+     "cells": 108,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 21,
+      "unconfirmed": 9,
+      "unsure": 0,
+      "no_image": 78
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.7,
+       "unconfirmed": 0.3,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.7222,
+      "judgeable_of_all": 0.2778
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 9
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "XSN": {
+     "cells": 96,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 24,
+      "unconfirmed": 20,
+      "unsure": 0,
+      "no_image": 52
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.5455,
+       "unconfirmed": 0.4545,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.5417,
+      "judgeable_of_all": 0.4583
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 20
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "ZDH": {
+     "cells": 108,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 21,
+      "unconfirmed": 0,
+      "unsure": 0,
+      "no_image": 87
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 1.0,
+       "unconfirmed": 0.0,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.8056,
+      "judgeable_of_all": 0.1944
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 0
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "ZJG": {
+     "cells": 910,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 117,
+      "unconfirmed": 22,
+      "unsure": 0,
+      "no_image": 771
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.8417,
+       "unconfirmed": 0.1583,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.8473,
+      "judgeable_of_all": 0.1527
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 22
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    }
+   },
+   "by_version": {
+    "confirm-v1|pres3o-202611|sections-1": {
+     "cells": 1774,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 297,
+      "unconfirmed": 205,
+      "unsure": 0,
+      "no_image": 1272
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.5916,
+       "unconfirmed": 0.4084,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.717,
+      "judgeable_of_all": 0.283
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 205
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    }
+   },
+   "by_week": {
+    "2026-W45": {
+     "cells": 709,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 75,
+      "unconfirmed": 132,
+      "unsure": 0,
+      "no_image": 502
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.3623,
+       "unconfirmed": 0.6377,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.708,
+      "judgeable_of_all": 0.292
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 132
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "2026-W46": {
+     "cells": 685,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 87,
+      "unconfirmed": 73,
+      "unsure": 0,
+      "no_image": 525
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 0.5437,
+       "unconfirmed": 0.4562,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.7664,
+      "judgeable_of_all": 0.2336
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 73
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    },
+    "2026-W47": {
+     "cells": 380,
+     "states": {
+      "auto": 0,
+      "human": 0,
+      "pending": 135,
+      "unconfirmed": 0,
+      "unsure": 0,
+      "no_image": 245
+     },
+     "composition": {
+      "of_cells_with_image": {
+       "auto": 0.0,
+       "human": 0.0,
+       "pending": 1.0,
+       "unconfirmed": 0.0,
+       "unsure": 0.0
+      },
+      "no_image_of_all": 0.6447,
+      "judgeable_of_all": 0.3553
+     },
+     "answered": 0,
+     "A_auto_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0,
+      "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+     },
+     "A_auto_accuracy_last_12_weeks": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "would_be_auto": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit": {
+      "n": 0,
+      "agree": 0,
+      "rate": null,
+      "ci95": null,
+      "scenes": 0
+     },
+     "audit_sample": {
+      "picked": 0,
+      "answered": 0,
+      "expired": 0,
+      "waiting": 0
+     },
+     "unconfirmed": {
+      "expired": 0,
+      "superseded": 0
+     },
+     "new_sections": {
+      "cells": 0,
+      "states": {}
+     },
+     "routed_judge_accuracy": {
+      "n": 0,
+      "agree": 0,
+      "rate": null
+     },
+     "changed": {
+      "n": 0,
+      "routed": 0
+     },
+     "C_total_owner_counted_correct": null
+    }
+   }
+  },
+  "after_freeze": {
+   "total": {
+    "cells": 0,
+    "states": {
+     "auto": 0,
+     "human": 0,
+     "pending": 0,
+     "unconfirmed": 0,
+     "unsure": 0,
+     "no_image": 0
+    },
+    "composition": {
+     "of_cells_with_image": {
+      "auto": null,
+      "human": null,
+      "pending": null,
+      "unconfirmed": null,
+      "unsure": null
+     },
+     "no_image_of_all": null,
+     "judgeable_of_all": null
+    },
+    "answered": 0,
+    "A_auto_accuracy": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0,
+     "basis": "shadow operation: the cells rule v1 would have made automatic, all answered by the owner"
+    },
+    "A_auto_accuracy_last_12_weeks": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0
+    },
+    "would_be_auto": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0
+    },
+    "audit": {
+     "n": 0,
+     "agree": 0,
+     "rate": null,
+     "ci95": null,
+     "scenes": 0
+    },
+    "audit_sample": {
+     "picked": 0,
+     "answered": 0,
+     "expired": 0,
+     "waiting": 0
+    },
+    "unconfirmed": {
+     "expired": 0,
+     "superseded": 0
+    },
+    "new_sections": {
+     "cells": 0,
+     "states": {}
+    },
+    "routed_judge_accuracy": {
+     "n": 0,
+     "agree": 0,
+     "rate": null
+    },
+    "changed": {
+     "n": 0,
+     "routed": 0
+    },
+    "C_total_owner_counted_correct": null
+   },
+   "by_site": {},
+   "by_version": {},
+   "by_week": {}
+  }
+ }
+}

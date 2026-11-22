@@ -1,0 +1,17 @@
+{
+ "version": "confirm-1",
+ "site_id": "ZDH",
+ "days": {
+  "2026-11-20": {
+   "image": "2026-11-20.webp",
+   "grid": {
+    "west": 121.995,
+    "south": 29.99,
+    "east": 122.08,
+    "north": 30.035,
+    "width": 819,
+    "height": 497
+   }
+  }
+ }
+}
