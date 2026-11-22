@@ -228,7 +228,8 @@ def write_public(marks_by_site: dict, evidence: dict, out: Path = OUT, source: s
            "sources": {"hires": "docs/data/sat/labels/hires-berth-read.csv（verdict U）", "evaluation": f"docs/data/sat/eval/presence.json（{pres.get('version')}）"},
            # no time stamp of the sheet: it is rewritten every day, and the list only when the marks or their evidence change
            "credit": ["区分の一部は Esri World Imagery Wayback の画像の判読（hires-1、2026-11-18、読んだのは AI）。Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community; imagery not redistributed",
-                      "所有者の答えは Sentinel-2 の画像の目視。Contains modified Copernicus Sentinel data 2023-2026"],
+                      "所有者の答えは Sentinel-2 の画像の目視。Contains modified Copernicus Sentinel data 2023-2026",
+                      "岸壁の区間の線は OpenStreetMap の桟橋・岸壁の線から作った。(c) OpenStreetMap contributors（ODbL 1.0）"],
            "null": "since・until が null：submarine_berth だけの印（日付によらない）、または終わりの無い印",
            "counts": {s: len(v) for s, v in sorted(marks_by_site.items())},
            "sites": marks_by_site, "evidence": evidence}
