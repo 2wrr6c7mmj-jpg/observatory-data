@@ -468,6 +468,50 @@ class RunTest(Base):
         self.assertEqual(len(asked), 2 * len(secs))                   # two rounds, one cell per section each
         self.assertEqual(self.state()[("B", "2026-11-21")]["reason"], "superseded")
 
+    def test_latest_for_the_page_and_the_site(self):
+        # §6.6: per section the newest cell; a value only for the owner's answer (and an automatic one while shown); for a cell
+        # without a value the last value shown and its day. Nothing of the judge's score
+        c = cfg()
+        cf.run([cell("QDH", "A", "2026-11-01", "0.5"), cell("QDH", "B", "2026-11-01", "0.4")], self.out, c, "2026-11-02T06:00:00Z")
+        cf.merge(self.answers_file([("QDH", "A", "2026-11-01", 1), ("QDH", "B", "2026-11-01", 0)]), self.out, c, "2026-11-03T00:00:00Z")
+        cf.run([cell("QDH", "A", "2026-11-06", "0.31"), cell("QDH", "B", "2026-11-06", "0.01", cloud_shadow="0.8")],
+               self.out, c, "2026-11-07T06:00:00Z")
+        text = (self.out / "confirm" / "latest.json").read_text(encoding="utf-8")
+        doc = json.loads(text)
+        self.assertEqual(doc, cf.latest(self.out, c, "2026-11-07T06:00:00Z"))
+        self.assertEqual((doc["version"], doc["auto_display"], doc["part"], doc["expire_days"]), ("confirm-latest-1", True, "before_freeze", 28))
+        q = doc["sites"]["QDH"]
+        self.assertEqual(q["name"], "青島港内の海軍区域")              # no review set here: sat/sites.json
+        rows = {r["id"]: r for r in q["sections"]}
+        self.assertEqual(sorted(rows), ["A", "B", "C"])
+        self.assertEqual({k: rows["A"][k] for k in ("state", "date", "value", "last_date", "last_value", "last_source")},
+                         {"state": "pending", "date": "2026-11-06", "value": None, "last_date": "2026-11-01", "last_value": 1, "last_source": "owner"})
+        self.assertEqual({k: rows["B"][k] for k in ("state", "date", "value", "last_date", "last_value")},
+                         {"state": "no_image", "date": "2026-11-06", "value": None, "last_date": "2026-11-01", "last_value": 0})
+        self.assertEqual((rows["C"]["state"], rows["C"]["date"], rows["C"]["value"]), (None, None, None))   # no cell yet
+        self.assertEqual(q["states"], {"pending": 1, "no_image": 1})
+        self.assertEqual(doc["numbers"]["cells"], 4)
+        self.assertEqual(doc["numbers"]["judgeable_of_all"], 0.75)
+        self.assertEqual(set(doc["numbers"]["A"]), {"rate", "n", "ci95", "basis"})
+        self.assertEqual(q["numbers"]["cells"], 4)
+        self.assertIn("Contains modified Copernicus Sentinel data 2026", doc["credit"])
+        for word in ('"p"', "0.31", "0.01", "0.4", "pres3o", "v1_", "audit", "reason"):
+            self.assertNotIn(word, text)
+        # an answered cell is the value; an automatic one only while automatic states are shown
+        cf.merge(self.answers_file([("QDH", "A", "2026-11-06", 0)]), self.out, c, "2026-11-08T00:00:00Z")
+        cf.run([cell("QDH", "C", "2026-11-06", "0.99", n_answers="2")], self.out, c, "2026-11-08T06:00:00Z")
+        st = cf.load_state(self.out, "QDH")
+        st[("C", "2026-11-06")].update(state="auto", value="1", source="auto")      # as rule v1 with auto_display on
+        cf._save_state(self.out, "QDH", st)
+        rows = {r["id"]: r for r in cf.latest(self.out, c, "2026-11-08T06:00:00Z")["sites"]["QDH"]["sections"]}
+        self.assertEqual((rows["A"]["state"], rows["A"]["value"], rows["A"]["last_date"]), ("human", 0, None))
+        self.assertEqual((rows["C"]["state"], rows["C"]["value"]), ("auto", 1))
+        shadow = cf.latest(self.out, cf.load_config(), "2026-11-08T06:00:00Z")
+        rows = {r["id"]: r for r in shadow["sites"]["QDH"]["sections"]}
+        self.assertEqual((rows["C"]["state"], rows["C"]["value"], rows["C"]["last_value"]), ("pending", None, None))
+        self.assertNotIn("auto", shadow["sites"]["QDH"]["states"])
+        self.assertIs(shadow["auto_display"], False)
+
     def test_shadow_operation_shows_everything_and_records_the_rule(self):
         c = cf.load_config()                                         # auto_display false
         cf.run([cell("QDH", "A", "2026-11-01", "0.01"), cell("QDH", "C", "2026-11-01", "0.5")], self.out, c, "2026-11-02T06:00:00Z")

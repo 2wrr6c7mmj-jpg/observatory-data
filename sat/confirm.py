@@ -38,6 +38,9 @@ Files (under <out>/confirm/):
                              scored against its last row from before its answer (summary()). Never rewritten
     queue.json               what the page docs/sat/label/?queue=1 shows. No score, no judgement, no audit mark
     summary.json             the numbers of §7 (A: accuracy of the automatic cells; B: composition; C: total, labelled)
+    latest.json              what the trial page (docs/sat/confirm/) and the site show (§6.6): per port and active section the
+                             newest cell's state, and the numbers always shown beside it. Written with summary.json. No score
+                             and no judgement of a cell the owner has not seen (in the shadow operation no automatic value)
 """
 from __future__ import annotations
 
@@ -59,6 +62,7 @@ OUT = ROOT / "docs" / "data" / "sat"
 CONFIG_PATH = Path(__file__).resolve().parent / "confirm.json"
 VERSION = "confirm-1"
 QUEUE_VERSION = "confirm-queue-1"
+LATEST_VERSION = "confirm-latest-1"
 DIR = "confirm"
 FRAME_M = 120.0
 STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image")
@@ -549,7 +553,9 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
             cnt[r["state"]] = cnt.get(r["state"], 0) + 1
         res["sites"][site_id] = {"cells": len(state), "states": cnt, "queued": len(q), "log_rows": n_log}
     _write_json(out / DIR / "queue.json", queue)
-    _write_json(out / DIR / "summary.json", summary(out, cfg, now))
+    summ = summary(out, cfg, now)
+    _write_json(out / DIR / "summary.json", summ)
+    _write_json(out / DIR / "latest.json", latest(out, cfg, now, summ))
     res["queue"] = {"queue_version": queue["queue_version"], "cells": len(queue["cells"])}
     return res
 
@@ -853,6 +859,78 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     return doc
 
 
+# ---------------------------------------------------------------- latest (§6.6: the trial page and the site)
+LATEST_NOTE = "試行。在／不在は Sentinel-2（10 m）の像についての判定と、所有者が同じ像を目で見た確認。真の在／不在ではない"
+LATEST_SOURCE = "Element84 Earth Search／AWS Open Data 経由"
+
+
+def port_name(out: Path, site_id: str) -> str:
+    rv = Path(out) / "labels" / site_id / "review.json"
+    if rv.exists():
+        return json.loads(rv.read_text(encoding="utf-8")).get("name") or site_id
+    sites = Path(__file__).resolve().parent / "sites.json"
+    for s in json.loads(sites.read_text(encoding="utf-8")).get("sites", []) if sites.exists() else []:
+        if s.get("id") == site_id:
+            return s.get("name") or site_id
+    return site_id
+
+
+def _numbers(block: dict) -> dict:
+    """The numbers shown beside the table (§6.6): A with its count and CI, the composition, the share that could be judged."""
+    a = block["A_auto_accuracy"]
+    # basis: "sample" = the audit sample of the automatic cells (§7.3); "shadow" = the cells rule v1 would have made automatic,
+    # all of them shown to the owner (§7.2)
+    return {"A": {"rate": a["rate"], "n": a["n"], "ci95": a.get("ci95"), "basis": "shadow" if a["basis"].startswith("shadow") else "sample"},
+            "composition": block["composition"]["of_cells_with_image"], "no_image_of_all": block["composition"]["no_image_of_all"],
+            "judgeable_of_all": block["composition"]["judgeable_of_all"], "cells": block["cells"], "states": block["states"]}
+
+
+def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, summ: dict | None = None) -> dict:
+    """Per port and active section of the ledger: the newest cell (its state, day, and value when that is a value shown:
+    the owner's, or an automatic one while auto_display is on), and for a cell without a value the last value shown and its
+    day. In the shadow operation an automatic state is shown as waiting (the judge's answer is not shown before the owner's).
+    null is unknown; 0 is absent, only for a cell judged or confirmed absent."""
+    out, cfg, now = Path(out), cfg or load_config(), now or utcnow()
+    summ = summ or summary(out, cfg, now)
+    show_auto = bool(cfg.get("auto_display"))
+    frozen = bool(cfg.get("frozen_utc"))
+    part = "after_freeze" if frozen and summ["parts"]["after_freeze"]["total"]["cells"] else "before_freeze"
+    blk = summ["parts"][part]
+    sites, years = {}, set()
+    for site_id in known_sites(out):
+        secs = active_sections(load_sections(out, site_id))
+        by_sec = {}
+        for r in load_state(out, site_id).values():
+            by_sec.setdefault(r["section_id"], []).append(r)
+        rows, cnt = [], {}
+        for sid in sorted(secs):
+            s = secs[sid]
+            cells = sorted(by_sec.get(sid, []), key=lambda r: r["date"])
+            row = {"id": sid, "kind": s.get("kind"), "sector": s.get("sector"), "length_m": s.get("length_m"),
+                   "state": None, "date": None, "value": None, "last_date": None, "last_value": None, "last_source": None}
+            shown = [r for r in cells if r["state"] == "human" or (show_auto and r["state"] == "auto")]
+            if cells:
+                r = cells[-1]
+                years.add(r["date"][:4])
+                st = r["state"] if (show_auto or r["state"] != "auto") else "pending"
+                row.update(state=st, date=r["date"])
+                if st in ("human", "auto") and r["value"] != "":
+                    row["value"] = int(r["value"])
+                elif shown:
+                    q = shown[-1]
+                    row.update(last_date=q["date"], last_value=int(q["value"]), last_source="owner" if q["state"] == "human" else "auto")
+                cnt[st] = cnt.get(st, 0) + 1
+            rows.append(row)
+        sites[site_id] = {"name": port_name(out, site_id), "sections": rows, "states": cnt,
+                          "numbers": _numbers(blk["by_site"][site_id]) if site_id in blk["by_site"] else None}
+    return {"version": LATEST_VERSION, "generated_utc": now, "rule_version": cfg["rule_version"], "auto_display": show_auto,
+            "frozen_utc": cfg.get("frozen_utc"), "expire_days": cfg["expire_days"], "part": part,
+            "note": LATEST_NOTE, "credit": f"{CREDIT} {', '.join(sorted(years))}".strip(), "source": LATEST_SOURCE,
+            "attribution": ATTRIBUTION,
+            "null": "null は不明（未確認・像なし・判断できない・まだ升が無い）。0 は不在と判定または確認された升だけ",
+            "numbers": _numbers(blk["total"]), "sites": sites}
+
+
 # ---------------------------------------------------------------- command line
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="confirm-1: cells the judge is not sure of go to the owner (no network, PU 0)")
@@ -882,6 +960,7 @@ def main(argv=None) -> int:
     else:
         doc = summary(a.out, cfg, now)
         _write_json(a.out / DIR / "summary.json", doc)
+        _write_json(a.out / DIR / "latest.json", latest(a.out, cfg, now, doc))
         doc = {"written": str(a.out / DIR / "summary.json"), "parts": {k: v["total"]["states"] for k, v in doc["parts"].items()}}
     print(json.dumps(doc, ensure_ascii=False, indent=1))
     return 0
