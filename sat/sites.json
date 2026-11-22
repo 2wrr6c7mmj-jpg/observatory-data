@@ -1,5 +1,5 @@
 {
- "note": "唯一の地点の設定（multi-site PR-1）。kind＝naval|yard|island、priority＝処理の順（1 が先）、daily＝毎日の実行で取るか、publish＝trial（試行ページのみ）|public、layout＝shared（湛江：detections/・quay/ の月ごとのファイルを共用）|per_site（地点ごとの下位フォルダ）、png＝PNG の切り出し画像を作るか、sectors＝区画（bbox か polygon、role）、sector_rest＝残り、quay＝岸壁の数の地点ごとの設定（quay.pres1＝pres-1a の試行：off（既定）|trial（quay_pres1 と評価票の併記だけ）|on（未使用。切り替えの条件は docs/data/sat/eval/pres1-design.md §4.3）、pres1_since_utc＝trial にした日）、pu_month_cap＝地点ごとの月の PU の上限（全体の 1,000 PU の内側）。湛江は区画の role を書かない（A＝naval、B＝other とみなす）",
+ "note": "唯一の地点の設定（multi-site PR-1）。kind＝naval|yard|island、priority＝処理の順（1 が先）、daily＝毎日の実行で取るか、publish＝trial（試行ページのみ）|public、layout＝shared（湛江：detections/・quay/ の月ごとのファイルを共用）|per_site（地点ごとの下位フォルダ）、png＝PNG の切り出し画像を作るか、sectors＝区画（bbox か polygon、role）、sector_rest＝残り、quay＝岸壁の数の地点ごとの設定（quay.pres1＝pres-1a の試行：off（既定）|trial（quay_pres1 と評価票の併記だけ）|on（未使用。切り替えの条件は docs/data/sat/eval/pres1-design.md §4.3）、pres1_since_utc＝trial にした日。quay.blcap＝bl-cap の試行：off（既定）|trial（quay_blcap/<地点>.json を出すだけ。sat/blcap.py）、blcap_since_utc＝trial にした日）、pu_month_cap＝地点ごとの月の PU の上限（全体の 1,000 PU の内側）。湛江は区画の role を書かない（A＝naval、B＝other とみなす）",
  "sites": [
   {
    "id": "ZJG",
@@ -53,6 +53,7 @@
     ],
     "label_freeze_utc": "2026-10-27",
     "pres1": "off",
+    "blcap": "off",
     "est2_lat0": 21.2,
     "class_weights": "ZJG"
    },
@@ -215,6 +216,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "off",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "SYL"
    },
@@ -347,6 +349,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "off",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "SLP"
    },
@@ -451,6 +454,8 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "trial",
+    "blcap_since_utc": "2026-11-23",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "QGZ"
    },
@@ -564,6 +569,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "off",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "ZDH"
    },
@@ -676,6 +682,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "off",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "QJG"
    },
@@ -749,6 +756,8 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "trial",
+    "blcap_since_utc": "2026-11-23",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "QDH"
    },
@@ -844,6 +853,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "off",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "XSN"
    },
@@ -923,6 +933,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "trial",
+    "blcap": "off",
     "pres1_since_utc": "2026-11-18",
     "class_weights": "LSN"
    },
@@ -996,6 +1007,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "SWS"
    },
    "s2": {
@@ -1085,6 +1097,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "XMN"
    },
    "s2": {
@@ -1174,6 +1187,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "STU"
    },
    "s2": {
@@ -1262,6 +1276,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-11-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "MAW"
    },
    "s2": {
@@ -1349,6 +1364,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "PDG"
    },
    "s2": {
@@ -1438,6 +1454,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "NDS"
    },
    "s2": {
@@ -1527,6 +1544,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "DXE"
    },
    "s2": {
@@ -1616,6 +1634,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "BHI"
    },
    "s2": {
@@ -1706,6 +1725,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "XCD"
    },
    "s2": {
@@ -1795,6 +1815,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "LYG"
    },
    "s2": {
@@ -1879,6 +1900,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "JMN"
    },
    "s2": {
@@ -1968,6 +1990,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "HPU"
    },
    "s2": {
@@ -2069,6 +2092,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "HKG"
    },
    "s2": {
@@ -2152,6 +2176,7 @@
     "tuning_scenes": [],
     "label_freeze_utc": "2026-12-15",
     "pres1": "off",
+    "blcap": "off",
     "class_weights": "WHI"
    },
    "s2": {
