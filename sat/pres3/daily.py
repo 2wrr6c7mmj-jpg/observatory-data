@@ -1,8 +1,9 @@
 """confirm-1 (PR-2): pres-3o one day at a time. Fetch a new scene -> patches -> features -> the score p of fixed coefficients.
 
 pres-3o is the pres-3 configuration without the S1 columns, ('opt', 1): a generic judgement (545 answer-free features) fused
-with the exemplar / history features of the section's EARLIER owner answers. Nothing here is wired into a workflow yet (that
-is PR-5) and nothing here writes a published file: every path is given on the command line and must be outside docs/.
+with the exemplar / history features of the section's EARLIER owner answers. The daily workflow (sat-confirm.yml, PR-5) calls
+this through sat/pres3/confirm_run.py; nothing here writes a published file: every path is given on the command line and must
+be outside docs/.
 
 What a score of day d may see (the rule the tests guard):
     images   the patches of days <= d (the section's reference is made from the clear days strictly before d)
@@ -10,7 +11,10 @@ What a score of day d may see (the rule the tests guard):
     model    coefficients fitted on answers before the model's cutoff, stored as plain arrays
 
 Three stores, all keyed by (port, section, date), never by a row number:
-    patch store   <store>/<port>/<YYYY-MM>.npz    patch [n, 24, 41, 5] float16 + one JSON record per cell (no answers in it)
+    patch store   <store>/<port>/<YYYY>/<day>.{c,r,a}.npz   patches [n, 24, 41, 5] float16 (lossless LZMA) + one JSON record per
+                                                  cell with the day's water colour and clear flag (no answers in it). Files
+                                                  are written once; Store.thin drops the cloudy cells of the days before the
+                                                  last 18 months
     model         <model>.npz                     the trees of the two classifiers as arrays, the out-of-fold generic scores of
                                                   the training cells, the feature names, and a JSON header (version, cutoff,
                                                   scikit-learn / numpy versions). numpy alone predicts from it.
@@ -68,49 +72,124 @@ def outside_repo(path, what):
 
 # ---------------------------------------------------------------- the patch store
 
+STORE_VERSION = 'pres3-store-2'
+KEEP_MONTHS = 18                # the months (this one and the 17 before it) that keep every cell; older months keep the clear
+                                # cells (and the answered ones) only: their reference role is all that is left (design 18 months)
+
+
+def pack_patch(P):
+    """[n, 24, 41, 5] float16 -> bytes, lossless: the float16 bit patterns differenced along the 41 offsets (mod 2^16),
+    split into high and low bytes, LZMA. About 2/3 of np.savez_compressed for the same patches."""
+    import lzma
+    u = np.ascontiguousarray(np.asarray(P, np.float16)).view(np.uint16)
+    d = np.diff(u, axis=2, prepend=np.zeros(u.shape[:2] + (1,) + u.shape[3:], np.uint16))      # uint16 wraps: exact
+    return lzma.compress(np.concatenate([(d >> 8).astype(np.uint8).ravel(), (d & 255).astype(np.uint8).ravel()]).tobytes(), preset=9)
+
+
+def unpack_patch(blob, shape):
+    import lzma
+    b = np.frombuffer(lzma.decompress(bytes(blob)), np.uint8); n = b.size // 2
+    d = ((b[:n].astype(np.uint16) << 8) | b[n:].astype(np.uint16)).reshape(shape)
+    return np.cumsum(d, axis=2, dtype=np.uint16).view(np.float16)
+
+
+def first_month(day, months=KEEP_MONTHS):
+    """The first month of the window of ``months`` months that ends with the month of ``day`` (YYYY-MM)."""
+    y, m = int(day[:4]), int(day[5:7]); k = y * 12 + m - 1 - (months - 1)
+    return f'{k // 12:04d}-{k % 12 + 1:02d}'
+
+
 class Store:
-    """<root>/<port>/<YYYY-MM>.npz. One record per (section, date); a record put again replaces the old one."""
+    """The patches, one record per (port, section, date), in files that are written once and never rewritten (the store is
+    a git branch: a file written again would stay in its history once more):
+
+        <root>/<port>/<YYYY>/<YYYY-MM-DD>.c.npz   the clear cells of the day (feats.good_day)
+        <root>/<port>/<YYYY>/<YYYY-MM-DD>.r.npz   the other cells of the day
+        <root>/<port>/<YYYY>/<YYYY-MM-DD>.a.npz   (thin) the answered cells of .r, kept when .r is removed
+
+    Each record carries the day's water colour and its clear flag ('water', 'good'), made when the day was put from ALL its
+    sections (feats.water / feats.good_day), so that a day whose .r file is gone (thin) scores exactly as before. A file
+    holds: patch (pack_patch), shape, cells (JSON, UTF-8, LZMA), version. No answer is stored."""
 
     def __init__(self, root):
         self.root = Path(root)
 
-    def months(self, port):
-        return sorted(p.stem for p in (self.root / port).glob('????-??.npz'))
+    def _day_files(self, port, day):
+        d = self.root / port / day[:4]
+        return {k: d / f'{day}.{k}.npz' for k in 'cra'}
 
-    def _read(self, port, month):
-        f = self.root / port / f'{month}.npz'
-        if not f.exists(): return [], np.zeros((0, labels.NA, 41, 5), np.float16)
+    def files(self, port):
+        return sorted((self.root / port).glob('????/????-??-??.?.npz'))
+
+    def _read(self, f):
         z = np.load(f, allow_pickle=False)
-        return json.loads(str(z['cells'])), z['patch']
+        if str(z['version']) != STORE_VERSION: raise ValueError(f'{f}: not a {STORE_VERSION} file')
+        import lzma
+        return json.loads(lzma.decompress(z['cells'].tobytes()).decode('utf-8')), unpack_patch(z['patch'], tuple(int(x) for x in z['shape']))
+
+    def _write(self, f, cells, patches):
+        import lzma
+        f.parent.mkdir(parents=True, exist_ok=True); tmp = f.with_name(f.name + '.tmp')
+        P = np.asarray(patches, np.float16).reshape(-1, labels.NA, 41, 5)
+        with open(tmp, 'wb') as fh:
+            np.savez(fh, patch=np.frombuffer(pack_patch(P), np.uint8), shape=np.array(P.shape, np.int64),
+                     cells=np.frombuffer(lzma.compress(json.dumps(cells, ensure_ascii=False).encode('utf-8'), preset=9), np.uint8),
+                     version=STORE_VERSION)
+        os.replace(tmp, f)
+
+    def day(self, port, day):
+        """(cells, patches) of one day, sorted by section."""
+        C = []; P = []
+        for f in self._day_files(port, day).values():
+            if f.exists():
+                c, p = self._read(f); C += c; P.append(p)
+        P = np.concatenate(P) if P else np.zeros((0, labels.NA, 41, 5), np.float16)
+        order = sorted(range(len(C)), key=lambda i: C[i]['section'])
+        return [C[i] for i in order], P[order]
 
     def put(self, port, cells, patches):
-        """cells: records with at least CELL_KEYS (answers and evaluation fields are dropped: the store holds images only)."""
+        """cells: records with at least CELL_KEYS, every section of each of their days (the water colour and the clear flag of
+        a day are made from all its sections). A day already in the store is refused: its files are written once."""
         by = collections.defaultdict(list)
         for c, p in zip(cells, patches):
             if c['port'] != port: raise ValueError(f"a cell of {c['port']} in the store of {port}")
-            by[c['date'][:7]].append(({k: c[k] for k in CELL_KEYS}, np.asarray(p, np.float16)))
-        for month, new in by.items():
-            C, P = self._read(port, month); rec = {(c['section'], c['date']): (c, p) for c, p in zip(C, P)}
-            for c, p in new: rec[(c['section'], c['date'])] = (c, p)
-            keys = sorted(rec, key=lambda k: (k[1], k[0])); f = self.root / port / f'{month}.npz'; f.parent.mkdir(parents=True, exist_ok=True)
-            tmp = f.with_suffix('.tmp.npz')
-            np.savez_compressed(tmp, patch=np.stack([rec[k][1] for k in keys]), cells=json.dumps([rec[k][0] for k in keys], ensure_ascii=False),
-                                offs=np.arange(-80, 125, 5.0))
-            os.replace(tmp, f)
+            by[c['date']].append(({k: c[k] for k in CELL_KEYS}, np.asarray(p, np.float16)))
+        for day, recs in sorted(by.items()):
+            f = self._day_files(port, day)
+            if any(x.exists() for x in f.values()): raise ValueError(f'{port} {day} is in the store already (its files are written once)')
+            if len({c['section'] for c, _ in recs}) != len(recs): raise ValueError(f'{port} {day}: a section twice')
+            recs.sort(key=lambda r: r[0]['section']); C = [r[0] for r in recs]; P = np.stack([r[1] for r in recs])
+            W = feats.water(P, OFFS, C); g = feats.good_day(C)
+            C = [dict(c, water=[float(x) for x in w], good=bool(k)) for c, w, k in zip(C, W, g)]
+            for kind, keep in (('c', g), ('r', ~g)):
+                if keep.any(): self._write(f[kind], [C[i] for i in np.where(keep)[0]], P[keep])
 
     def load(self, port, until=None):
         """(cells, patches float16, offs), sorted by (date, section); only the days <= until when given."""
         C = []; P = []
-        for month in self.months(port):
-            if until is not None and month > until[:7]: continue
-            c, p = self._read(port, month); keep = [i for i, x in enumerate(c) if until is None or x['date'] <= until]
-            C += [c[i] for i in keep]; P.append(p[keep])
+        for f in self.files(port):
+            if until is not None and f.name[:10] > until: continue
+            c, p = self._read(f); C += c; P.append(p)
         P = np.concatenate(P) if P else np.zeros((0, labels.NA, 41, 5), np.float16)
         order = sorted(range(len(C)), key=lambda i: (C[i]['date'], C[i]['section']))
-        return [C[i] for i in order], P[order], np.arange(-80, 125, 5.0)
+        return [C[i] for i in order], P[order], OFFS.copy()
 
     def dates(self, port):
-        return sorted({c['date'] for month in self.months(port) for c in self._read(port, month)[0]})
+        return sorted({f.name[:10] for f in self.files(port)})
+
+    def thin(self, port, today, answers=(), months=KEEP_MONTHS):
+        """Remove the .r files of the days before the window of ``months`` months ending this month; the answered cells of
+        such a file ((section, date) in answers) are first written to the day's .a file. Returns the removed files."""
+        lo = first_month(today, months); gone = []
+        for f in self.files(port):
+            if not f.name.endswith('.r.npz') or f.name[:7] >= lo: continue
+            C, P = self._read(f); keep = [i for i, c in enumerate(C) if (c['section'], c['date']) in answers]
+            if keep: self._write(f.with_name(f.name[:10] + '.a.npz'), [C[i] for i in keep], P[keep])
+            f.unlink(); gone.append(f)
+        return gone
+
+
+OFFS = np.arange(-80, 125, 5.0)
 
 
 # ---------------------------------------------------------------- the model: trees as arrays, numpy predicts
@@ -180,9 +259,9 @@ def fit(C, X, names, cutoff, version=None, log=print):
     lab, y = model.labelled(C); tr = [i for i in lab if C[i]['date'] < cutoff]; cols = list(range(X.shape[1])); phys = model.phys_cols(names)
     if len(set(y[tr])) < 2: raise SystemExit(f'the answers before {cutoff} do not hold both present and absent cells')
     t = time.time(); s = model.gen_scores(C, X, y, tr, [], cols); log(f'out-of-fold generic scores: {len(tr)} cells, {time.time() - t:.0f} s')
-    t = time.time(); gen = model.gen_model().fit(X[np.array(tr)][:, cols], y[np.array(tr)]); log(f'generic classifier: {time.time() - t:.0f} s')
+    t = time.time(); gen = model.gen_model().fit(model.fill_empty(X[np.array(tr)][:, cols]), y[np.array(tr)]); log(f'generic classifier: {time.time() - t:.0f} s')
     A = model.adapt_feats(C, X, y, lab, phys, s, set(lab)); trv = np.array([i for i in tr if not np.isnan(s[i])])
-    stack = model.stack_model().fit(A[trv], y[trv], sample_weight=np.ones(len(trv)))
+    stack = model.stack_model().fit(model.fill_empty(A[trv]), y[trv], sample_weight=np.ones(len(trv)))
     meta = dict(kind=KIND, model_version=version or f'{KIND}-{cutoff[:7].replace("-", "")}', cutoff=cutoff, config="('opt', 1)",
                 n_train=len(tr), n_train_stack=len(trv), n_present=int((y[tr] == 1).sum()), ports=sorted({C[i]['port'] for i in tr}),
                 last_answer_date=max(C[i]['date'] for i in tr), n_features=len(names), n_fusion_features=int(A.shape[1]),
@@ -218,6 +297,19 @@ def usable(c):
     return c['cloud'] + c['shadow'] <= MAX_CLOUD_SHADOW and c['nodata'] == 0
 
 
+def day_inputs(P, offs, C):
+    """(water colour [N, 5], clear-cell flags [N]) of the cells. Both are made from ALL the sections of the cell's day (the
+    research code's feats.water and feats.good_day). A record that carries them ('water', 'good': written by the store when
+    the day was put, before its cloudy cells may have been thinned out) is taken as it is, so a thinned day gives the same
+    numbers as the full day."""
+    have = [i for i, c in enumerate(C) if 'water' in c and 'good' in c]
+    if len(have) == len(C) and C:
+        return np.array([C[i]['water'] for i in range(len(C))], np.float32), np.array([bool(C[i]['good']) for i in range(len(C))])
+    W = feats.water(P, offs, C); good = feats.good_day(C)
+    for i in have: W[i] = C[i]['water']; good[i] = bool(C[i]['good'])
+    return W, good
+
+
 def score_days(port, C, P, offs, answers, B, days, sections=None, all_cells=False):
     """Score rows (dicts with SCORE_COLUMNS) of the cells of ``days``.
 
@@ -232,7 +324,7 @@ def score_days(port, C, P, offs, answers, B, days, sections=None, all_cells=Fals
 
 
 def _score_days(port, C, P, offs, answers, B, days, sections, all_cells):
-    out = []; W = feats.water(P, offs, C); good = feats.good_day(C); phys = B['phys']
+    out = []; W, good = day_inputs(P, offs, C); phys = B['phys']
     date = np.array([c['date'] for c in C]); sec = np.array([c['section'] for c in C])
     for d in sorted(days):
         day = [int(i) for i in np.where(date == d)[0] if sections is None or sec[i] in sections]
@@ -327,7 +419,7 @@ def cmd_import(a):
     work = common.work_dir(a.work); store = Store(outside_repo(a.store, 'the patch store'))
     for port in common.ports_of(a.ports):
         C = json.load(open(f'{work}/cells_{port}.json')); P = np.load(f'{work}/patch_{port}.npz')['patch']
-        store.put(port, C, P); print(port, 'cells', len(C), 'days', len({c['date'] for c in C}), 'months', len(store.months(port)), flush=True)
+        store.put(port, C, P); print(port, 'cells', len(C), 'days', len(store.dates(port)), 'files', len(store.files(port)), flush=True)
     return 0
 
 
