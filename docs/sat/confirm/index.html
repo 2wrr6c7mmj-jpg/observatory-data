@@ -47,7 +47,7 @@ h2 a{font-size:.8rem;font-weight:normal;color:var(--accent)}
 .rows .sec .id{display:block;font-family:var(--mono);font-size:.72rem;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rows .st{text-align:right;white-space:nowrap}
 .rows .sec .w{white-space:nowrap}
-.rows .when .left{color:var(--wait)}
+.rows .when .left{color:var(--wait);white-space:nowrap}
 .rows .when{display:block;font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
 .rows .last{display:block;font-size:.74rem;color:var(--ink3);opacity:.85}
 .v{font-weight:700;margin-right:.35rem}.v.p{color:var(--present)}.v.a{color:var(--absent)}
@@ -150,7 +150,7 @@ function row(s, doc) {
   // the readable name first; the id (OSM line : side : piece) and the length under it, small and monospace
   const sec = el('span', 'sec');
   const name = el('span');      // the name breaks only at "・"
-  String(s.label || s.id).split('・').forEach((w, i) => name.appendChild(el('span', 'w', (i ? '・' : '') + w)));
+  String(s.label || s.id).split('・').forEach((w, i, a) => name.appendChild(el('span', 'w', w + (i < a.length - 1 ? '・' : ''))));
   sec.appendChild(name);
   sec.appendChild(el('span', 'id', [s.id, s.length_m ? `${s.length_m} m` : ''].filter(Boolean).join(' · ')));
   const st = el('span', 'st');
