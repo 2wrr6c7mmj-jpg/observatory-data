@@ -43,8 +43,8 @@ h2 a{font-size:.8rem;font-weight:normal;color:var(--accent)}
 .rows{list-style:none;margin:0;padding:0}
 .rows li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem .8rem;padding:.45rem .9rem;border-top:1px solid #eee;align-items:center}
 .rows li:first-child{border-top:0}
-.rows .sec{font-family:var(--mono);font-size:.85rem}
-.rows .sec small{display:block;font-family:system-ui,sans-serif;font-size:.75rem;color:var(--ink3)}
+.rows .sec{font-size:.9rem;min-width:0}
+.rows .sec .id{display:block;font-family:var(--mono);font-size:.72rem;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rows .st{text-align:right;white-space:nowrap}
 .rows .when{display:block;font-family:var(--mono);font-size:.74rem;color:var(--ink3)}
 .rows .last{display:block;font-size:.74rem;color:var(--ink3);opacity:.85}
@@ -94,6 +94,8 @@ footer.page{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:.8rem
 <li>升＝岸壁の区間 1 つ × Sentinel-2 の撮影 1 日。判定器（pres-3o）の点数で確信の持てる升だけを自動確定にし、それ以外は所有者の確認に回します（規則は sat/confirm.json）。</li>
 <li>自動確定の正答率は、所有者が判定器の答えを見ずに答えた結果との一致率です（抜き取り検査。影の運用の間は、規則 v1 なら自動確定になった升の一致率）。95% CI は撮影（港×日）単位のブートストラップです。</li>
 <li>構成比は像のある升のうちの割合、「判定できた升」は全部の升のうち像のある升の割合です。数字は規則・判定器・区間の版ごとに分けて <a href="../../data/sat/confirm/summary.json">summary.json</a> に出しています。</li>
+<li>区間の名前は「区画・種別と番号（区画の中で岸に沿った順）・OSM の線の向きに対する左側／右側とその側の何番目」です。下の小さな等幅の文字は区間の id（OSM の線の番号:側:番号）です。</li>
+<li>港ごとの一致率は、升が 30 未満の港では出しません（答えた直後に数字が動き、その升の規則の答えが分かってしまうため）。上の帯の全体の数字は升の数によらず出します。</li>
 <li>判定器の点数・判定の理由・抜き取り検査の印はこのページに出しません。</li>
 <li>null（—）は不明、0 は数えて 0 です。不在は「不在と判定または確認された升」だけで、空欄を不在とは読みません。</li>
 </ul>
@@ -108,7 +110,6 @@ footer.page{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:.8rem
 const BASE = '../../data/sat/confirm/';
 const STALE_DAYS = 3;          // the file is written every day: older than this, the head strip says so
 const TAG = {human: '確認済み', auto: '自動', pending: '確認待ち', unconfirmed: '未確認', no_image: '像なし', unsure: '判断できない'};
-const KIND = {pier: '桟橋', coastline: '海岸線', quay: '岸壁', breakwater: '防波堤'};
 const $ = id => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 const pct = x => x === null || x === undefined ? '—' : (x * 100).toFixed(x * 100 >= 10 || x === 0 ? 0 : 1) + '%';
@@ -116,6 +117,9 @@ const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), ne
 const ago = d => { if (!d) return ''; const n = Math.round((today - Date.parse(d + 'T00:00:00Z')) / 86400000); return n <= 0 ? '今日' : n + '日前'; };
 const hm = iso => iso ? iso.slice(0, 16).replace('T', ' ') + ' UTC' : '—';
 const word = v => v === 1 ? '在' : v === 0 ? '不在' : '—';
+
+// A of a port is withheld below 30 cells (latest.json: rate null with the reason)
+const aText = A => !A ? '—' : A.rate !== null && A.rate !== undefined ? A.rate.toFixed(3) : A.withheld ? '—（升が少ない）' : '—';
 
 function numbers(doc) {
   const n = doc.numbers, shadow = !doc.auto_display;
@@ -140,8 +144,9 @@ function numbers(doc) {
 function row(s, doc) {
   const li = el('li');
   li.dataset.id = s.id; li.dataset.state = s.state || 'none';
-  const sec = el('span', 'sec', s.id);
-  sec.appendChild(el('small', '', [KIND[s.kind] || s.kind, s.sector ? `区画 ${s.sector}` : '', s.length_m ? `${s.length_m} m` : ''].filter(Boolean).join('・')));
+  // the readable name first; the id (OSM line : side : piece) and the length under it, small and monospace
+  const sec = el('span', 'sec', s.label || s.id);
+  sec.appendChild(el('span', 'id', [s.id, s.length_m ? `${s.length_m} m` : ''].filter(Boolean).join(' · ')));
   const st = el('span', 'st');
   if (!s.state) {
     st.appendChild(el('span', 'tag none', 'まだありません'));
@@ -168,11 +173,11 @@ function box(id, site, doc) {
   if (!secs.length) ul.appendChild(el('li', 'empty', 'まだありません（区間がありません）'));
   secs.forEach(s => ul.appendChild(row(s, doc)));
   const f = el('footer');
-  const cnt = site.states || {};
+  const cnt = site.sections_by_state || {};
   const wait = (cnt.pending || 0);
   const a = el('a', '', wait ? `確認待ち ${wait} 区間：確認ページへ →` : '確認ページへ →'); a.href = '../label/?queue=1';
   const n = site.numbers;
-  const meta = el('span', 'src', n ? `${n.cells} 升 · 判定できた ${pct(n.judgeable_of_all)}` : 'まだ升がありません');
+  const meta = el('span', 'src', n ? `${n.cells} 升 · 判定できた ${pct(n.judgeable_of_all)} · 一致率 ${aText(n.A)}` : 'まだ升がありません');
   meta.style.margin = 0;
   f.append(a, meta);
   b.append(h, ul, f);
@@ -187,7 +192,8 @@ function empty(msg) {
 fetch(BASE + 'latest.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(doc => {
   if (!doc || !doc.sites) { empty('まだありません。確認回しの記録（docs/data/sat/confirm/）はまだ公開されていません。'); return; }
   numbers(doc);
-  $('note').innerHTML = '<b>試行</b>。' + doc.note.replace(/^試行。/, '').replace(/。?$/, '。');
+  const nb = el('b', '', '試行');
+  $('note').replaceChildren(nb, document.createTextNode('。' + String(doc.note || '').replace(/^試行。/, '').replace(/。?$/, '。')));
   $('mode').textContent = doc.auto_display
     ? `自動確定は表示に使っています。「自動」の札は判定器の答え（抜き取りで所有者が確かめています）。確認待ちの升は ${doc.expire_days} 日で未確認になります。`
     : `いまは影の運用です：判定器の答えは表示に使わず、像のある升は全部所有者の確認に回しています（「自動」の札は出しません）。確認待ちの升は ${doc.expire_days} 日で未確認になります。`;
