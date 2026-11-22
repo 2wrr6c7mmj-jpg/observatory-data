@@ -1,4 +1,4 @@
-site_id,acquired_utc,blind_version,answers,resident_sections,resident_seen,warship_blind
-XSN,2026-10-21T09:54:02Z,blind-2,s2,6,0,5
-XSN,2026-11-02T09:54:02Z,blind-2,s2,6,0,5
-XSN,2026-11-14T09:54:02Z,blind-2,s2,6,0,5
+site_id,acquired_utc,blind_version,answers,resident_sections,resident_seen,warship_blind,radar_dark_sections,radar_dark_seen,radar_dark_reasons
+XSN,2026-10-21T09:54:02Z,blind-2,s2,6,0,5,8,0,submarine_berth+owner_present_radar_none
+XSN,2026-11-02T09:54:02Z,blind-2,s2,6,0,5,8,0,submarine_berth+owner_present_radar_none
+XSN,2026-11-14T09:54:02Z,blind-2,s2,6,0,5,8,0,submarine_berth+owner_present_radar_none
