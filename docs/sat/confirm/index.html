@@ -55,6 +55,7 @@ h2 a{font-size:.8rem;font-weight:normal;color:var(--accent)}
 .tag.human{color:var(--human);background:rgba(46,125,50,.12)}.tag.auto{color:var(--auto);background:rgba(42,143,128,.12)}
 .tag.pending{color:var(--wait);background:rgba(154,103,0,.12)}.tag.unconfirmed{color:var(--off);background:rgba(0,0,0,.06)}
 .tag.no_image{color:var(--off);background:transparent;border:1px dashed #aaa;padding:0 5px}.tag.unsure{color:var(--unsure);background:rgba(122,79,160,.12)}
+.tag.excluded{color:var(--off);background:rgba(0,0,0,.06)}li[data-excluded="1"] .sec{opacity:.6}
 .tag.none{color:var(--ink3);background:transparent}
 .empty{padding:1rem .9rem;color:var(--ink2)}
 .legend{display:flex;flex-wrap:wrap;gap:.4rem 1rem;font-size:.82rem;margin:.6rem 0 0}
@@ -112,7 +113,7 @@ footer.page{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:.8rem
 <script>
 const BASE = '../../data/sat/confirm/';
 const STALE_DAYS = 3;          // the file is written every day: older than this, the head strip says so
-const TAG = {human: '確認済み', auto: '自動', pending: '確認待ち', unconfirmed: '未確認', no_image: '像なし', unsure: '判断できない'};
+const TAG = {human: '確認済み', auto: '自動', pending: '確認待ち', unconfirmed: '未確認', no_image: '像なし', unsure: '判断できない', excluded: '確認の対象外'};
 const $ = id => document.getElementById(id);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 const pct = x => x === null || x === undefined ? '—' : (x * 100).toFixed(x * 100 >= 10 || x === 0 ? 0 : 1) + '%';
@@ -147,6 +148,7 @@ function numbers(doc) {
 function row(s, doc) {
   const li = el('li');
   li.dataset.id = s.id; li.dataset.state = s.state || 'none';
+  if (s.excluded) li.dataset.excluded = '1';    // confirm-x1: no warship can lie at this line; judged and recorded, not shown to the owner
   // the readable name first; the id (OSM line : side : piece) and the length under it, small and monospace
   const sec = el('span', 'sec');
   const name = el('span');      // the name breaks only at "・"
@@ -167,6 +169,8 @@ function row(s, doc) {
     st.appendChild(when);
     if (s.value === null && s.last_value !== null) st.appendChild(el('span', 'last', `最後の確認：${word(s.last_value)}（${ago(s.last_date)}${s.last_source === 'auto' ? '・自動' : ''}）`));
   }
+  if (s.excluded && s.state !== 'excluded') st.appendChild(el('span', 'tag excluded', '確認の対象外'));
+  if (s.excluded) st.appendChild(el('span', 'last', `確認の対象外：${s.excluded_note || s.excluded_reason || ''}`));
   li.append(sec, st);
   return li;
 }
@@ -209,7 +213,7 @@ fetch(BASE + 'latest.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : nul
     ? `自動確定は表示に使っています。「自動」の札は判定器の答え（抜き取りで所有者が確かめています）。確認待ちの升は ${doc.expire_days} 日で未確認になります。`
     : `いまは影の運用です：判定器の答えは表示に使わず、像のある升は全部所有者の確認に回しています（「自動」の札は出しません）。確認待ちの升は ${doc.expire_days} 日で未確認になります。`;
   const lg = $('legend');
-  ['human', ...(doc.auto_display ? ['auto'] : []), 'pending', 'unconfirmed', 'unsure', 'no_image'].forEach(k => { const s = el('span'); s.append(el('span', 'tag ' + k, TAG[k])); lg.appendChild(s); });
+  ['human', ...(doc.auto_display ? ['auto'] : []), 'pending', 'unconfirmed', 'unsure', 'no_image', 'excluded'].forEach(k => { const s = el('span'); s.append(el('span', 'tag ' + k, TAG[k])); lg.appendChild(s); });
   const ids = Object.keys(doc.sites);
   if (!ids.length) { empty('まだありません（区間の台帳がありません）。'); return; }
   $('grid').replaceChildren(...ids.map(id => box(id, doc.sites[id], doc)));
