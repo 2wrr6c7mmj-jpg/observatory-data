@@ -172,7 +172,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "-2:L:00",
@@ -343,7 +344,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1036282785:L:00",
@@ -526,7 +528,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:01",
@@ -709,7 +721,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:04",
@@ -904,7 +926,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:05",
@@ -1099,7 +1131,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:06",
@@ -1294,7 +1336,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:07",
@@ -1489,7 +1541,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:08",
@@ -1684,7 +1746,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:09",
@@ -1879,7 +1951,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:10",
@@ -2074,7 +2156,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:12",
@@ -2269,7 +2361,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "1036282785:L:13",
@@ -2464,7 +2566,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:02",
@@ -2659,7 +2771,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:04",
@@ -2854,7 +2976,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:05",
@@ -3049,7 +3181,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:06",
@@ -3232,7 +3374,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:12",
@@ -3427,7 +3579,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:13",
@@ -3622,7 +3784,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "20ac97243b7e",
+    "quay_lines": "QJG-quay-v3.json:e870aa86a2ff",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "43251729:L:17",
@@ -3889,7 +4061,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "43251729:L:18",
@@ -4120,7 +4293,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "43251729:L:20",
@@ -4375,7 +4549,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "43251729:L:23",
@@ -4558,7 +4733,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "43251729:L:24",
@@ -4729,8 +4905,9 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   }
  ],
- "updated_utc": "2026-11-22T07:40:12Z"
+ "updated_utc": "2026-11-23T19:34:35Z"
 }

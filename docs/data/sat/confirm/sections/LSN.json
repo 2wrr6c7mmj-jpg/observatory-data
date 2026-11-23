@@ -148,7 +148,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281588:L:00",
@@ -283,7 +284,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281589:R:01",
@@ -418,7 +420,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281589:L:00",
@@ -541,7 +544,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281590:R:01",
@@ -676,7 +680,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281590:L:00",
@@ -799,7 +804,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281591:L:00",
@@ -922,7 +928,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "1026281591:L:01",
@@ -1045,7 +1052,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "229279250:L:09",
@@ -1252,7 +1260,9 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown",
+   "guard_reason": "berth_false: owner_present_unexplained=4"
   },
   {
    "id": "229279250:L:10",
@@ -1447,7 +1457,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "696162843:L:22",
@@ -1642,7 +1653,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "af243bb5dd88",
+    "quay_lines": "LSN-quay-v1.json:25d560294913",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "696162843:L:26",
@@ -1777,7 +1798,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "af243bb5dd88",
+    "quay_lines": "LSN-quay-v1.json:25d560294913",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "696162852:L:09",
@@ -1972,7 +2003,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "696162852:L:16",
@@ -2167,7 +2199,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995110508:R:00",
@@ -2242,7 +2275,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "af243bb5dd88",
+    "quay_lines": "LSN-quay-v1.json:25d560294913",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "995110508:L:00",
@@ -2317,7 +2360,17 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "excluded",
+   "excluded_reason": "berth_false",
+   "excluded_rule": "confirm-x1",
+   "excluded_since": "2026-11-23",
+   "excluded_basis": {
+    "berth_class": "af243bb5dd88",
+    "quay_lines": "LSN-quay-v1.json:25d560294913",
+    "berths": "berth-1:9b5ce8492c40",
+    "naval": "naval-1"
+   }
   },
   {
    "id": "995110510:R:00",
@@ -2392,7 +2445,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995110510:L:00",
@@ -2467,7 +2521,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995110516:R:00",
@@ -2566,7 +2621,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995110516:L:00",
@@ -2689,7 +2745,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995110519:R:01",
@@ -2788,7 +2845,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995110519:L:00",
@@ -2983,7 +3041,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995530596:R:01",
@@ -3070,7 +3129,8 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   },
   {
    "id": "995530596:L:00",
@@ -3277,8 +3337,9 @@
    ],
    "since": "2026-11-22",
    "sections_version": 1,
-   "status": "active"
+   "status": "active",
+   "queue": "shown"
   }
  ],
- "updated_utc": "2026-11-22T07:40:12Z"
+ "updated_utc": "2026-11-23T19:34:35Z"
 }
