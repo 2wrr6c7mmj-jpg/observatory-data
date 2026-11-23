@@ -58,7 +58,7 @@ import sys
 from datetime import date as _date, datetime, timezone
 from pathlib import Path
 
-from . import atomic
+from . import atomic, berths
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "data" / "sat"
@@ -68,7 +68,9 @@ QUEUE_VERSION = "confirm-queue-1"
 LATEST_VERSION = "confirm-latest-1"
 DIR = "confirm"
 FRAME_M = 120.0
-STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image")
+STATES = ("auto", "human", "pending", "unconfirmed", "unsure", "no_image", "excluded")
+# excluded (confirm-x1): a cell of a section no warship can lie at (exclude_sections), or whose frame is not in the picture. It
+# keeps its score p (opt-fill reads it) and goes on record, but is never in the queue, never expires and is not in A or C
 FINAL = ("human", "unsure")                 # the owner has spoken: never judged again
 SCORE_FIELDS = ["site_id", "section_id", "date", "acquired_utc", "p", "model_version", "cloud_shadow", "nodata", "status",
                 "answers_through", "n_answers", "before_cutoff"]
@@ -287,6 +289,220 @@ def history(answers: dict, section_id: str, date: str) -> dict:
             "prev_days": _days(days[-1][0], date)}
 
 
+# ---------------------------------------------------------------- confirm-x1: the sections no warship can lie at
+# 2026-11-23 (the owner, after 297 cells: "too many cells that are plainly land or not a pier"). Design: 2部「確認回しの
+# キューから艦が着き得ない区間を外す規則」§2.2・§3. A section is shown to the owner when it is a counted section (the middle
+# point of its line is on a berth line, Berths.point_ok, and the line's naval-1 class there is naval and not "berth": false:
+# the sections of eval/presence.json and hires-1's counted_after), or when it is guarded (below). The rule reads the class
+# files and quay lines as they are at the time of the run, so a change of berth_class or of the lines decides again.
+EXCLUDE_REASONS = {"off_berth_line": "着く線の外", "berth_false": "艦の着かない線（berth false）", "civil": "民用の線",
+                   "not_naval": "区分が海軍でない線", "out_of_image": "枠が画像の範囲の外"}
+SITES_PATH = ROOT / "sat" / "sites.json"
+
+
+def _file_hash(path: Path) -> str | None:
+    path = Path(path)
+    return hashlib.sha256(path.read_bytes()).hexdigest()[:12] if path.exists() else None
+
+
+def berth_rule(site_id: str):
+    """(Berths of the site with the naval rule, the ids of its quay lines, the basis) or None when the site has no entry in
+    sat/sites.json or no quay lines (then nothing is excluded). The basis names the versions of what the rule read."""
+    sites = json.loads(SITES_PATH.read_text(encoding="utf-8")).get("sites", []) if SITES_PATH.exists() else []
+    site = next((s for s in sites if s.get("id") == site_id), None)
+    if site is None:
+        return None
+    lp = ROOT / "sat" / "masks" / f"{site_id}-quay-v{int(site.get('quay_lines_version', 1))}.json"
+    if not lp.exists():
+        return None
+    lines = json.loads(lp.read_text(encoding="utf-8"))
+    b = berths.Berths(site, lines, naval=True)
+    basis = {"berth_class": _file_hash(berths.CLASS_DIR / f"{site_id}.json"), "quay_lines": f"{lp.name}:{_file_hash(lp)}",
+             "berths": f"{berths.VERSION}:{_file_hash(berths.BERTHS_PATH)}", "naval": berths.NAVAL_VERSION}
+    return b, {str(w.get("id")) for w in lines.get("ways", [])}, basis
+
+
+UNKNOWN, COUNTED = "unknown", "counted"
+
+
+def not_counted(rule, s: dict) -> str | None:
+    """Why the section is not a counted section (EXCLUDE_REASONS), or None when it is one or is not known."""
+    c = section_class(rule, s)
+    return None if c in (UNKNOWN, COUNTED) else c
+
+
+def section_class(rule, s: dict) -> str:
+    """COUNTED, a reason of EXCLUDE_REASONS, or UNKNOWN (a site without the rule's files, a line the site's quay lines do not
+    have, a trial section: shown, no mark). Judged at the middle point of the line, as hires-1 and eval/presence.json."""
+    if rule is None or s.get("trial"):
+        return UNKNOWN
+    b, ways, _ = rule
+    line, w = s.get("line") or [], str(s.get("way"))
+    if not line or w not in ways:
+        return UNKNOWN
+    lon, lat = float(line[len(line) // 2][0]), float(line[len(line) // 2][1])
+    if b.no_berth_at(w, lon, lat):
+        return "berth_false"
+    if not b.point_ok(s.get("kind"), w, lon, lat):
+        return "off_berth_line"
+    c = b.line_class(w, lon, lat)
+    return COUNTED if c == "naval" else "civil" if c == "civil" else "not_naval"
+
+
+def _pip(x: float, y: float, poly) -> bool:
+    inside = False
+    for i in range(len(poly)):
+        (x1, y1), (x2, y2) = poly[i][:2], poly[(i + 1) % len(poly)][:2]
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            inside = not inside
+    return inside
+
+
+def _lattice(frame, n: int = 32) -> list:
+    """Points on an n x n lattice over the frame's box that are inside the frame: the frame's area for the shares below."""
+    xs, ys = [p[0] for p in frame], [p[1] for p in frame]
+    w, s, e, nn = min(xs), min(ys), max(xs), max(ys)
+    pts = [(w + (e - w) * (i + 0.5) / n, s + (nn - s) * (j + 0.5) / n) for i in range(n) for j in range(n)]
+    return [p for p in pts if _pip(p[0], p[1], frame)]
+
+
+def overlap(a: list, b: list) -> float:
+    """The share of the frame ``a`` that the frame ``b`` covers (0..1; a lattice of points, pure Python)."""
+    if not a or not b:
+        return 0.0
+    bx, by = [p[0] for p in b], [p[1] for p in b]
+    if max(p[0] for p in a) < min(bx) or min(p[0] for p in a) > max(bx) or max(p[1] for p in a) < min(by) or min(p[1] for p in a) > max(by):
+        return 0.0
+    pts = _lattice(a)
+    return sum(1 for x, y in pts if _pip(x, y, b)) / len(pts) if pts else 0.0
+
+
+def in_image(frame: list, grid: dict | None) -> float:
+    """The share of the frame inside the picture's grid (1.0 when there is no grid to check against)."""
+    if not grid or not frame:
+        return 1.0
+    pts = _lattice(frame)
+    if not pts:
+        return 1.0
+    return sum(1 for x, y in pts if grid["west"] <= x <= grid["east"] and grid["south"] <= y <= grid["north"]) / len(pts)
+
+
+def guard_counts(secs: dict, why: dict, answers: dict, overlap_min: float, counted: list | None = None) -> dict:
+    """§2.2-2: for each section not counted (``why``), the owner's "present" answers that no counted section whose frame covers
+    at least ``overlap_min`` of this one's answered "present" on the same day (an answer the neighbours do not explain)."""
+    counted = [i for i in secs if why.get(i) is None] if counted is None else counted
+    pres = {}
+    for (sec, day), a in answers.items():
+        if a["y"] == 1:
+            pres.setdefault(sec, set()).add(day)
+    res = {}
+    for sid in why:
+        if why[sid] is None or not pres.get(sid):
+            continue
+        near = [t for t in counted if overlap(secs[sid].get("frame") or [], secs[t].get("frame") or []) >= overlap_min]
+        res[sid] = sum(1 for d in pres[sid] if not any(d in pres.get(t, ()) for t in near))
+    return res
+
+
+def exclude_sections(out: Path, site_id: str, ledger: dict | None, answers: dict, cfg: dict, today: str, rule=False) -> dict:
+    """confirm-x1 on the active sections of the ledger: {section_id: reason} of the sections not shown to the owner. The ledger
+    keeps every section active (sat/opt_fill.py reads the active sections and the p of their cells) and gets a mark per
+    section: queue "excluded" with excluded_reason / excluded_rule / excluded_since / excluded_basis, or queue "shown" (with
+    guard_reason when a guard keeps it). The line and frame are never touched. cfg "exclude" null: nothing is excluded (marks
+    removed). ``rule``: the Berths rule to use (tests); False reads the site's files."""
+    x = cfg.get("exclude")
+    secs = active_sections(ledger)
+    if ledger is None:
+        return {}
+    rule = berth_rule(site_id) if rule is False else rule
+    cls = {i: (section_class(rule, s) if x else UNKNOWN) for i, s in secs.items()}
+    why = {i: (None if c in (UNKNOWN, COUNTED) else c) for i, c in cls.items()}
+    guard = guard_counts(secs, why, answers, float(x.get("overlap_min", 0.3)), [i for i, c in cls.items() if c == COUNTED]) if x else {}
+    res, changed = {}, False
+    for i, s in secs.items():
+        keep = {k: s.get(k) for k in ("queue", "excluded_reason", "excluded_rule", "excluded_since", "excluded_basis", "guard_reason")}
+        for k in keep:
+            s.pop(k, None)
+        if x:
+            g = guard.get(i, 0)
+            if why[i] is not None and g < int(x.get("guard_min_present", 2)):
+                res[i] = why[i]
+                same = keep["queue"] == "excluded" and keep["excluded_reason"] == why[i] and keep["excluded_rule"] == x["rule"]
+                s.update(queue="excluded", excluded_reason=why[i], excluded_rule=x["rule"],
+                         excluded_since=keep["excluded_since"] if same else today[:10], excluded_basis=rule[2] if rule else None)
+            elif cls[i] != UNKNOWN:
+                s["queue"] = "shown"
+                if why[i] is not None:
+                    s["guard_reason"] = f"{why[i]}: owner_present_unexplained={g}"
+        changed |= any(s.get(k) != v for k, v in keep.items())
+    if changed:
+        ledger["updated_utc"] = today
+        _write_json(sections_path(out, site_id), ledger)
+    return res
+
+
+def _shown_by(log: list, sec: str | None, kind: str, since: str = "") -> list:
+    """The cells a check (valve / sample) put in a queue: log rows queued = 1 with that reason (``sec`` None: any section)."""
+    return [(r["section_id"], r["date"]) for r in log
+            if r.get("queued") == "1" and (r.get("reason") or "") == kind and (sec is None or r["section_id"] == sec)
+            and (r.get("judged_utc") or "") >= since]
+
+
+def _exclude_cells(site_id: str, state: dict, excluded: dict, cfg: dict, today: str, log: list) -> None:
+    """The waiting cells of excluded sections become excluded (reason excluded:<why>); an excluded cell of a section shown
+    again waits again (readmitted). Two checks put an excluded cell in the queue once (§2.2-4): valve, the newest of the
+    last valve_runs scored days of the section all with p >= valve_p; sample, one excluded section per port and month
+    (fixed by port, month and rule version). Their answers are kept, but the section stays excluded (not in A or C)."""
+    x = cfg.get("exclude") or {}
+    for k, r in state.items():
+        if r["state"] == "pending" and k[0] in excluded:
+            r.update(state="excluded", reason=f"excluded:{excluded[k[0]]}")
+        elif r["state"] == "excluded" and k[0] not in excluded and r["reason"] != "excluded:out_of_image":
+            r.update(state="pending", reason="readmitted")
+    if not x or not excluded:
+        return
+
+    def live(k):
+        return k in state and state[k]["state"] in ("excluded", "pending") and _days(k[1], today) <= cfg["expire_days"]
+
+    def show(k, kind):
+        state[k].update(state="pending", reason=kind)
+
+    vp, vn = float(x.get("valve_p", 0.9)), int(x.get("valve_runs", 3))
+    for sid in sorted(excluded):
+        days = sorted((k for k, r in state.items() if k[0] == sid and _fnum(r["p"]) is not None and r["state"] != "no_image"),
+                      key=lambda k: k[1])
+        streak = []
+        for k in reversed(days):
+            if _fnum(state[k]["p"]) < vp:
+                break
+            streak.append(k)
+        if len(streak) < vn:
+            continue
+        before = [k for k in _shown_by(log, sid, "valve") if k[1] >= streak[-1][1]]
+        if before:
+            if live(before[-1]):
+                show(before[-1], "valve")
+        elif live(streak[0]):
+            show(streak[0], "valve")
+    if int(x.get("sample_per_month", 0)) < 1:
+        return
+    month = today[:7]
+    before = _shown_by(log, None, "sample", since=month + "-01")
+    if before:
+        if live(before[-1]) and before[-1][0] in excluded:
+            show(before[-1], "sample")
+        return
+    pool = sorted(sid for sid in excluded if excluded[sid] != "out_of_image")
+    if not pool:
+        return
+    sid = pool[int(_unit("sample", site_id, month, cfg["rule_version"]) * len(pool))]
+    cells = sorted((k for k, r in state.items() if k[0] == sid and r["state"] == "excluded" and r["reason"] != "excluded:out_of_image"
+                    and live(k)), key=lambda k: k[1])
+    if cells:
+        show(cells[-1], "sample")
+
+
 # ---------------------------------------------------------------- the rule
 def is_clear(row: dict, cfg: dict) -> bool:
     if (row.get("status") or "").strip() == "no_image":
@@ -501,6 +717,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
             continue
         state = load_state(out, site_id)
         answers = owner_answers(out, site_id)
+        excluded = exclude_sections(out, site_id, ledger, answers, cfg, now)      # confirm-x1 (marks the ledger)
         extra = {}
         for r in by_site.get(site_id, []):
             sec, day = (r.get("section_id") or "").strip(), (r.get("date") or "").strip()[:10]
@@ -549,15 +766,19 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
         pre = {k: dict(state[k]) for k in extra if k in answers}
         _log_changes(out, site_id, pre, extra, now)
         _apply_answers(state, answers)
+        _exclude_cells(site_id, state, excluded, cfg, today, load_log(out, site_id))
         q = _queue_rules(site_id, state, cfg, today)
+        q = {k for k in q if not (k[0] in excluded and state[k]["state"] == "auto")}     # no audit of an excluded section
+        im = _images(out, site_id)
         if hold_without_image:
-            im = _images(out, site_id)
             hk = {k for k in q if k[1] not in im}
             q -= hk
             held[site_id] = {k: state[k] for k in hk}
+        q -= _out_of_image(state, secs, q, im, cfg)
         queued[site_id] = (state, secs, q, answers)
         pending_log[site_id] = extra
-    queue = build_queue(out, queued, cfg, now, held if hold_without_image else None)
+    waiting = _daily_limit(queued, cfg)
+    queue = build_queue(out, queued, cfg, now, held if hold_without_image else None, waiting)
     for site_id, (state, secs, q, answers) in queued.items():
         extra = pending_log[site_id]
         for k in state:
@@ -579,7 +800,7 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
     summ = summary(out, cfg, now)
     _write_json(out / DIR / "summary.json", summ)
     _write_json(out / DIR / "latest.json", latest(out, cfg, now, summ))
-    res["queue"] = {"queue_version": queue["queue_version"], "cells": len(queue["cells"])}
+    res["queue"] = {"queue_version": queue["queue_version"], "cells": len(queue["cells"]), "waiting": sum(waiting.values())}
     if hold_without_image:
         res["held"] = {s: len(h) for s, h in sorted(held.items()) if h}
     return res
@@ -599,6 +820,44 @@ def _images(out: Path, site_id: str) -> dict:
         for day, d in json.loads(ix.read_text(encoding="utf-8")).get("days", {}).items():
             res[day] = {"src": f"{DIR}/img/{site_id}/{d['image']}", "grid": d["grid"]}
     return res
+
+
+def _out_of_image(state: dict, secs: dict, q: set, im: dict, cfg: dict) -> set:
+    """The cells of ``q`` whose frame is not in the picture of their day (less than exclude.frame_in_image_min of it): the
+    owner would see the black around the picture or the credit strip. They become excluded (reason excluded:out_of_image) and
+    are returned. A day without a picture is not checked here (the daily run holds it back until its picture is made)."""
+    m = (cfg.get("exclude") or {}).get("frame_in_image_min")
+    if not m:
+        return set()
+    bad = set()
+    for k in sorted(q):
+        s = secs.get(k[0])
+        if s and k[1] in im and in_image(s.get("frame") or [], im[k[1]]["grid"]) < float(m):
+            state[k].update(state="excluded", reason="excluded:out_of_image")
+            bad.add(k)
+    return bad
+
+
+def _queue_cell(site_id: str, k: tuple, r: dict) -> dict:
+    return {"key": (site_id, k[0], k[1]), "state": r["state"], "reason": r["reason"], "p": _fnum(r["p"]),
+            "prev_answer": int(r["prev_answer"]) if r["prev_answer"] != "" else None,
+            "prev_answer_date": r["prev_answer_date"] or None, "acquired_utc": r["acquired_utc"]}
+
+
+def _daily_limit(queued: dict, cfg: dict) -> dict:
+    """§4-3: at most daily_max cells a day, the first ones of the order (_order); the others stay waiting for the next run
+    (their expiry still counts; queued = 0, so merge takes no answer for them). Takes them out of the queued sets and returns
+    {site: cells left for the next run}."""
+    n = cfg.get("daily_max")
+    cells = [_queue_cell(site_id, k, state[k]) for site_id, (state, _secs, q, _a) in queued.items() for k in q]
+    if not n or len(cells) <= int(n):
+        return {}
+    left = {}
+    for c in _order(cells, cfg)[int(n):]:
+        site_id, sec, day = c["key"]
+        queued[site_id][2].discard((sec, day))
+        left[site_id] = left.get(site_id, 0) + 1
+    return dict(sorted(left.items()))
 
 
 def _order(cells: list[dict], cfg: dict) -> list[dict]:
@@ -639,7 +898,7 @@ def held_days(held: dict) -> list[dict]:
     return [dict(d, prev_dates=sorted(d["prev_dates"])) for _, d in sorted(by.items())]
 
 
-def build_queue(out: Path, queued: dict, cfg: dict, now: str, held: dict | None = None) -> dict:
+def build_queue(out: Path, queued: dict, cfg: dict, now: str, held: dict | None = None, waiting: dict | None = None) -> dict:
     """queue.json for the page. Per cell: port, section, day, picture, the last answer (day, present / absent, picture) and
     its place. No score, no judgement and no audit mark go in (§6.2): the owner reads without seeing the judge. No file
     name either: the page names the file it downloads after the day of the download (confirm-answers-YYYY-MM-DD.csv;
@@ -652,9 +911,7 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str, held: dict | None 
         used = {}
         for k in q:
             r = state[k]
-            cells.append({"key": (site_id, k[0], k[1]), "state": r["state"], "reason": r["reason"], "p": _fnum(r["p"]),
-                          "prev_answer": int(r["prev_answer"]) if r["prev_answer"] != "" else None,
-                          "prev_answer_date": r["prev_answer_date"] or None, "acquired_utc": r["acquired_utc"]})
+            cells.append(_queue_cell(site_id, k, r))
             used[k[0]] = secs.get(k[0]) or next((s for s in (load_sections(out, site_id) or {}).get("sections", []) if s["id"] == k[0]), None)
             for day in (k[1], r["prev_answer_date"]):
                 if day and day in im:
@@ -663,13 +920,21 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str, held: dict | None 
         sites[site_id] = {"sections": {i: {**{f: s.get(f) for f in ("id", "way", "kind", "sector", "length_m", "line", "frame")},
                                            "label": labels.get(i, ("", None))[0] or None}
                                        for i, s in sorted(used.items()) if s}}
+    # §4-1: the cells of one port and day together (one picture after the other), the boxes in the order of their first cell
+    # and the cells of a box in the order of _order (the place of a confident cell stays fixed by its key)
+    boxes = {}
+    for c in _order(cells, cfg):
+        boxes.setdefault((c["key"][0], c["key"][2]), []).append(c)
+    m = (cfg.get("exclude") or {}).get("frame_in_image_min")
     out_cells = []
-    for n, c in enumerate(_order(cells, cfg)):
+    for n, c in enumerate(c for b in boxes.values() for c in b):
         site_id, sec, day = c["key"]
         prev = None
         if c["prev_answer_date"]:
             pk = f"{site_id}|{c['prev_answer_date']}"
-            prev = {"date": c["prev_answer_date"], "answer": c["prev_answer"], "image": pk if pk in images else None}
+            fr = ((sites.get(site_id) or {}).get("sections", {}).get(sec) or {}).get("frame") or []
+            ok = pk in images and (not m or in_image(fr, images[pk]["grid"]) >= float(m))   # an older picture of other bounds
+            prev = {"date": c["prev_answer_date"], "answer": c["prev_answer"], "image": pk if ok else None}
         ck = f"{site_id}|{day}"
         out_cells.append({"site_id": site_id, "section_id": sec, "date": day, "acquired_utc": c["acquired_utc"], "order": n,
                           "image": ck if ck in images else None, "prev": prev})
@@ -677,6 +942,8 @@ def build_queue(out: Path, queued: dict, cfg: dict, now: str, held: dict | None 
     years = sorted({k.split("|")[1][:4] for k in images} | {c["date"][:4] for c in out_cells})
     return {"version": QUEUE_VERSION, "queue_version": f"{now[:10]}-{dig}", "generated_utc": now, "rule_version": cfg["rule_version"],
             "zoom": 8, "frame_m": FRAME_M, "expire_days": cfg["expire_days"], "seconds_per_cell": 10,
+            "daily_max": cfg.get("daily_max"), "waiting": {"cells": sum((waiting or {}).values()), "by_site": waiting or {},
+                                                           "note": "1 日の上限（daily_max）を超えた升。翌日以降に出す（28 日の期限はそのまま数える）"},
             "answer_fields": ANSWER_FIELDS,
             "credit": f"{CREDIT} {', '.join(years)}".strip(), "attribution": ATTRIBUTION,
             "note": "判定器の点数・判定・抜き取り検査の印は入れていない（所有者の読みが判定器に引きずられないように）",
@@ -806,7 +1073,7 @@ def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset 
     for r in states:
         cnt[r["state"]] = cnt.get(r["state"], 0) + 1
     n_all = len(states)
-    n_img = n_all - cnt["no_image"]
+    n_img = n_all - cnt["no_image"] - cnt["excluded"]
     would, audit, routed, changed, changed_routed = [], [], [], 0, 0
     for r in scored:
         sc, y, p = (r["site_id"], r["date"]), r["y"], _fnum(r["p"])
@@ -844,6 +1111,7 @@ def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset 
     return {"cells": n_all, "states": cnt,
             "composition": {"of_cells_with_image": {s: (round(cnt[s] / n_img, 4) if n_img else None) for s in ("auto", "human", "pending", "unconfirmed", "unsure")},
                             "no_image_of_all": round(cnt["no_image"] / n_all, 4) if n_all else None,
+                            "excluded_of_all": round(cnt["excluded"] / n_all, 4) if n_all else None,
                             "judgeable_of_all": round(n_img / n_all, 4) if n_all else None},
             "answered": len(scored),
             "A_auto_accuracy": {**a, "basis": "audit sample, weighted by 1 / audit_rate" if cfg.get("auto_display")
@@ -863,9 +1131,12 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     frozen = (cfg.get("frozen_utc") or "")[:10]
     states, scored, picked = [], [], set()
     for site_id in known_sites(out):
-        states += list(load_state(out, site_id).values())
-        tr = {s["id"] for s in (load_sections(out, site_id) or {}).get("sections", []) if s.get("trial")}
-        scored += [{**r, "trial": r["section_id"] in tr} for r in scored_cells(out, site_id)]
+        led = (load_sections(out, site_id) or {}).get("sections", [])
+        xs = {s["id"] for s in led if s.get("queue") == "excluded"}
+        # confirm-x1: every cell of an excluded section is counted as excluded (B), and none is in A or C
+        states += [{**r, "state": "excluded"} if r["section_id"] in xs else r for r in load_state(out, site_id).values()]
+        tr = {s["id"] for s in led if s.get("trial")}
+        scored += [{**r, "trial": r["section_id"] in tr} for r in scored_cells(out, site_id) if r["section_id"] not in xs]
         picked |= {(site_id, r["section_id"], r["date"]) for r in load_log(out, site_id) if r.get("audit") == "1"}
     picked = frozenset(picked)
 
@@ -882,7 +1153,7 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     doc = {"version": VERSION, "generated_utc": now, "rule_version": cfg["rule_version"], "frozen_utc": cfg.get("frozen_utc"),
            "auto_display": bool(cfg.get("auto_display")),
            "notes": {"A": "自動確定の升の正答率＝所有者が判定器の答えを見ずに答えた結果との一致率。約束の数字（目標：CI の下限で 0.95 以上）",
-                     "B": "構成比。像のある升のうちの 自動確定／人が確認／確認待ち／未確認／判断できない と、全部の升のうちの像なし",
+                     "B": "構成比。像のある升のうちの 自動確定／人が確認／確認待ち／未確認／判断できない と、全部の升のうちの像なし・確認の対象外（excluded：confirm-x1 で外した区間の升と、枠が画像の外の升。像のある升にも A・C にも入れない）",
                      "C": "合計の一致率（参考）：人が確認した升を正答と数えた値。未確認の升は正答に数えず、回した升の判定器の正答率を掛ける。判定器の成績ではない",
                      "agreement": "どの数字も所有者の読みとの一致。所有者の読みの誤りは入っていない",
                      "ci": "95% CI は撮影（港×日）単位のブートストラップ 1,000 回、種 0",
@@ -986,6 +1257,7 @@ def _numbers(block: dict, floor: int = 0) -> dict:
     return {"A": {"rate": a["rate"], "n": a["n"], "ci95": a.get("ci95"), "basis": "shadow" if a["basis"].startswith("shadow") else "sample",
                   "withheld": a.get("withheld")},
             "composition": block["composition"]["of_cells_with_image"], "no_image_of_all": block["composition"]["no_image_of_all"],
+            "excluded_of_all": block["composition"].get("excluded_of_all"),
             "judgeable_of_all": block["composition"]["judgeable_of_all"], "cells": block["cells"], "states": block["states"]}
 
 
@@ -1016,6 +1288,9 @@ def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, sum
                    "state": None, "date": None, "value": None, "last_date": None, "last_value": None, "last_source": None}
             if s.get("trial"):          # a trial section (sat/confirm_trial.json): shown, never counted elsewhere
                 row.update(trial=True, role=s.get("role"), candidate=s.get("candidate"))
+            if s.get("queue") == "excluded":    # confirm-x1: kept in the list, marked
+                row.update(excluded=True, excluded_reason=s.get("excluded_reason"),
+                           excluded_note=EXCLUDE_REASONS.get(s.get("excluded_reason"), s.get("excluded_reason")))
             shown = [r for r in cells if (r["state"] == "human" or (show_auto and r["state"] == "auto")) and r["value"] in ("0", "1")]
             if cells:
                 r = cells[-1]
@@ -1039,6 +1314,7 @@ def latest(out: Path = OUT, cfg: dict | None = None, now: str | None = None, sum
             "notes": {"sections_by_state": "港ごとの区間の数：各区間のいちばん新しい升の状態で数えた区間の数（1 区間＝1）",
                       "numbers.states": "升の数：全部の日の全部の升を状態ごとに数えた数（numbers.composition はその割合）",
                       "trial": "trial: true の区間は試行の区間（sat/confirm_trial.json、区画「試行」）。所有者の確認に出すだけで、公開の隻数・評価票・判定器の再学習には入れない。role：naval_empty＝軍の桟橋で今は空（使い始めを見る）、fitout＝修理・艤装の岸壁（配備の数には入れない）",
+                      "excluded": "excluded: true の区間は確認の対象外（confirm-x1：区間の中点の線が着く線の外・berth false・民用・区分が海軍でない）。判定と記録は続け、所有者の確認には出さない。区間の線の区分（sat/berth_class）が変われば次の実行で決め直す。数（A・C）に入れない",
                       "label": "区間の読める名前：区画・種別とその区画の中での線の番号（岸に沿った順）・線の左側／右側（OSM の線の向きに対して）とその側の何番目（id の最後の番号＋1）。区間の id（OSM の線の番号:側:番号）が変わらない限り変わらない",
                       "A": f"規則 v1 なら自動確定の升の一致率（影の運用）／自動確定の正答率（抜き取り）。港ごとの値は {SITE_A_MIN_CELLS} 升未満なら出さない（rate・ci95 は null、withheld に理由）。全体の値は升の数によらず出す"},
             "numbers": _numbers(blk["total"]), "sites": sites}

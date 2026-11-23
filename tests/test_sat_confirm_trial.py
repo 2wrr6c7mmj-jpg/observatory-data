@@ -103,7 +103,7 @@ class LedgerTest(unittest.TestCase):
                  "cloud_shadow": "0.0", "nodata": "0", "n_answers": n} for i in ids]
 
     def test_a_later_version_and_the_existing_sections_untouched(self):
-        cfg = cf.load_config()
+        cfg = {**cf.load_config(), "daily_max": None}       # every waiting cell in the queue (the daily limit: tests/test_sat_confirm.py)
         for site in ("QGZ", "XSN"):
             v1 = cf.sync_sections(self.out, site, cf.review_sections(self.out, site), "2026-11-22T07:29:00Z")
             self.assertEqual(v1["sections_version"], 1)
@@ -113,7 +113,9 @@ class LedgerTest(unittest.TestCase):
             v2 = cf.sync_sections(self.out, site, ct.sections(site), "2026-11-23T07:29:00Z")
             self.assertEqual(v2["sections_version"], 2)
             self.assertEqual([s["id"] for s in v2["sections"]][:len(ids1)], ids1)
-            self.assertEqual(v2["sections"][:len(ids1)], v1["sections"])                          # the existing entries as they were
+            marks = ("queue", "excluded_reason", "excluded_rule", "excluded_since", "excluded_basis", "guard_reason")   # confirm-x1's marks
+            self.assertEqual([{k: v for k, v in s.items() if k not in marks} for s in v2["sections"][:len(ids1)]],
+                             [{k: v for k, v in s.items() if k not in marks} for s in v1["sections"]])   # the existing entries as they were
             new = v2["sections"][len(ids1):]
             self.assertEqual([s["id"] for s in new], [s["id"] for s in ct.sections(site)])
             self.assertTrue(all(s["sections_version"] == 2 and s["since"] == "2026-11-23" and s["trial"] for s in new))
@@ -287,7 +289,8 @@ class TrialNeverAutomaticTest(unittest.TestCase):
         self.out = Path(self._tmp.name)
         (self.out / "labels" / "QGZ").mkdir(parents=True)
         shutil.copy(OUT / "labels" / "QGZ" / "review.json", self.out / "labels" / "QGZ" / "review.json")
-        self.t = ct.sections("QGZ")[0]["id"]; self.e = review_ids("QGZ")[0]
+        rule = cf.berth_rule("QGZ")             # an existing section that confirm-x1 shows (a counted section)
+        self.t = ct.sections("QGZ")[0]["id"]; self.e = next(s["id"] for s in cf.review_sections(OUT, "QGZ") if cf.section_class(rule, s) == cf.COUNTED)
         rows = []
         for sec in (self.t, self.e):
             rows += [(sec, d, 0) for d in ("2026-11-01", "2026-11-05", "2026-11-09")] + [(sec, "2026-11-20", 0)]   # 3 earlier, and the day itself
