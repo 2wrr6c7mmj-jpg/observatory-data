@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-23T13:41:38Z",
+ "generated_utc": "2026-11-23T14:28:43Z",
  "state": "warn",
  "summary": {
   "ok": 12,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-22T13:36:37Z",
-   "heartbeat_age_h": 24.1,
+   "heartbeat_age_h": 24.9,
    "data_date": "2026-11-21",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -150,7 +150,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-23T13:39:56Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.8,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 4,
@@ -179,7 +179,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-22T14:52:39Z",
-   "heartbeat_age_h": 22.8,
+   "heartbeat_age_h": 23.6,
    "data_date": "2026-11-22",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -223,7 +223,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-23T09:18:59Z",
-   "heartbeat_age_h": 4.4,
+   "heartbeat_age_h": 5.2,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 4,
@@ -241,7 +241,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-23T04:02:20Z",
-   "heartbeat_age_h": 9.7,
+   "heartbeat_age_h": 10.4,
    "data_date": "2026-11-23",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -259,7 +259,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-23T13:40:07Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.8,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -293,7 +293,7 @@
    "kind": "derived",
    "workflow": "exercises.yml",
    "heartbeat_utc": "2026-11-23T12:58:50Z",
-   "heartbeat_age_h": 0.7,
+   "heartbeat_age_h": 1.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -778,15 +778,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 8,
-   "open_now": 6,
+   "open_or_upcoming_windows": 7,
+   "open_now": 5,
    "next_start": {
     "site": "文昌",
     "country": "CN",
     "window_start_utc": "2026-11-24T07:00Z",
     "window_end_utc": "2026-11-27T10:00Z"
    },
-   "active_notices": 34
+   "active_notices": 31
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
