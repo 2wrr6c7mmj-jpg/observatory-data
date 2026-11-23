@@ -440,7 +440,7 @@ pres-3 の升の一覧（`cells_<港>.json`、9 港・86,846 升、各升に SCL
 **(1) 答えの置き場**：`docs/data/sat/labels/<港>-confirm-answers.csv`（新しいファイル）。**既存の `<港>-s2-answers.csv` には足さない。**
 理由：既存のファイルは est-2 の較正・見えにくい区間の事前の割合・評価票が読む（§1.2）。そこに足すと既存の出力が動く。新しいファイルは pres-3 の毎日の判定と confirm の記録だけが読む。
 取り込みは `python -m sat.confirm merge --file <CSV>`（キューに出した升だけ受け付ける。同じ升は後の答えで上書きし、前の答えは記録に残す）。
-**取り込みの手順（2026-11-23 から）**：`python -m sat.confirm_merge --file <CSV>`。`sat.confirm merge` のあとで、答えを読む公開ファイルを毎日の実行（`sat/eval_presence.py` refresh）と同じ手順で作り直す：
+**取り込みの手順（2026-11-23 から）**：`python -m sat.confirm_merge --file <CSV>`（作り直しに失敗したら終了コード 1。そのときは commit しない）。`sat.confirm merge` のあとで、答えを読む公開ファイルを毎日の実行（`sat/eval_presence.py` refresh）と同じ手順で作り直す：
 `opt_fill_prepare` → `write_blind`（`quay_blind/<港>.csv`）→ `opt_fill_publish`（`opt_fill.json`）、それに確認回しの `summary.json`・`latest.json`。
 答えが入ると opt-fill の列の出所が p から owner に替わるので、作り直さないと `tests.test_sat_blind_prior.test_scene_counts_for_the_map` が main で落ちる（PR #177 で起きた）。
 答えの PR には作り直したファイルも入れる（数の列・quay_counts・est-2・naval50・評価票・湛江は変わらない）。このモジュールは毎日の収集から import しない（`NotWiredTest`）。`python -m sat.confirm merge` だけを使ったときは、同じ 3 段を手で回す。
@@ -534,10 +534,10 @@ pres-3 の升の一覧（`cells_<港>.json`、9 港・86,846 升、各升に SCL
   規則は実行のたびにその時点の区分ファイルと岸壁線を読むので、berth_class や線の版が変われば次の実行で決め直す（区分が naval に変われば外した升は `readmitted` で戻る）。試行の区間と、港の岸壁線に無い線の区間は外さない。
 - **保護**：所有者の在のうち、枠が 30% 以上重なる数える区間が同じ日に在でないものが 2 件以上ある区間は出す（台帳に `guard_reason`）。2026-11-23 の答えを入れた時点で 14 区間（2部の 11 区間＋キューに出ていなかった SYL `-4:L:02`、ZJG `218401620:L:00`・`13977070:L:11`）。
 - **外した区間の扱い**：台帳では `status: active` のまま `queue: "excluded"`・`excluded_reason`・`excluded_rule`・`excluded_since`・`excluded_basis`（区分ファイル・岸壁線・berths.json のハッシュ）を付ける（opt-fill が active の区間と state の p を読むため retired にしない）。
-  判定（p）・state・log は今までどおり作り、状態は `excluded`（reason `excluded:<理由>`、log は queued=0）。期限切れ・置き換えの対象外。merge はキューに出ていない升の答えを受け付けない（今のまま）。
-  summary の A・C は数える区間と保護の区間だけ、B に `excluded`（`excluded_of_all`）を別に出す。latest.json には区間を残して `excluded: true` と理由を付ける。
+  判定（p）・state・log は今までどおり作り、状態は `excluded`（reason `excluded:<理由>`、log は queued=0）。期限切れ・置き換えの対象外。merge は今までどおり「過去に一度でもキューに出た升（log に queued=1 の行がある升）」の答えを受け付ける：外す前にキューに出ていた升の答えは入る（入った答えは外した区間の升なので A・C には数えない）。外してから一度も出ていない升の答えは受け付けない。
+  summary の A・C は数える区間と保護の区間だけ、B に `excluded`（`excluded_of_all`。うち枠が画像の外 `excluded.out_of_image`）を別に出す。ただし**外す前の版（confirm-v1）の行は外す前の数え方のまま**数える（外した升は待ち、期限を過ぎれば未確認。答えのある升も A・C に残る）。confirm-v1 の数字は変わらず、除外は confirm-v1x 以後の行にだけ効く（§2.6・§7 の「版ごとに分けて出す」）。latest.json には区間を残して `excluded: true` と理由を付ける。
 - **見直しのきっかけ**：(1) 区分・線が変われば次の実行で決め直す、(2) 外した区間で p ≥ 0.9 の撮影が 3 回続いたら新しい方の 1 升を 1 回だけ出す（reason `valve`）、(3) 毎月、港ごとに外した区間から 1 区間（港・月・規則の版で決まる）の最新の升を出す（reason `sample`、答えは記録だけで A・C に入らない）。
-- **枠が画像の外**：枠の 98% 以上がその日の画像の中に無い升は出さない（`excluded:out_of_image`。湛江 `13975995` の 4 区間のように所有者に黒地や凡例の帯しか見えない升）。前回の答えの画像の範囲に枠が無いときは、前回の画像を付けない。
+- **枠が画像の外**：枠の 98% 以上がその日の画像の中に無い升は出さない（`excluded:out_of_image`。毎日の実行の注釈 notice と summary の `excluded.out_of_image` に数を出す。湛江 `13975995` の 4 区間のように所有者に黒地や凡例の帯しか見えない升）。前回の答えの画像の範囲に枠が無いときは、前回の画像を付けない。
 - **並びと上限**：キューの順（`order`）を港×日のまとまりにした（まとまりの順はその中の最上位の升の順、まとまりの中は今までの順）。1 日に出すのは `daily_max`（40 升）まで。並びの後ろを翌日に回す（queue.json の `waiting`。28 日の期限はそのまま数える）。
 - **まだ入れていないもの**：枠が 50% 以上重なる数える区間の組（15 組）を 1 枚の画像にまとめる案はページの作りが大きく変わるので入れていない。台帳に数える区間を足す（楡林の空母の突堤など）のは別件。
 

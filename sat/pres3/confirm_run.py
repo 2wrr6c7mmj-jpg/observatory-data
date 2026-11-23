@@ -327,6 +327,10 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
     bf = backfill(out, windows, [k for k in need if f'{k[0]}/{k[1]}' not in drawn], scenes, sites, meter, log, read=fetch_read)
     rep['seconds']['pictures_again'] = round(time.time() - t_img, 1); rep['meter'] = meter.as_dict()
     res = confirm.run(scores, out, cfg, nows, hold_without_image=True)
+    if res.get('out_of_image'):               # confirm-x1: cells whose frame is not in their picture leave the queue, said here
+        n = sum(len(v) for v in res['out_of_image'].values())
+        note('notice', 'sat-confirm out_of_image', f"枠が画像の範囲外の升 {n} 升をキューに出さない（excluded:out_of_image）: "
+             + ', '.join(f"{p} {' '.join(v)}" for p, v in sorted(res['out_of_image'].items()))[:2500])
     queue = json.loads((out / confirm.DIR / 'queue.json').read_text(encoding='utf-8'))
     gone = confirm_img.prune(out, queue, today, cfg.get('image_keep_days', 90))
     held = queue.get('held', [])
@@ -343,7 +347,7 @@ def daily_run(store_dir, windows, out, ports, report_path, now=None, days=10, sc
     rep['seconds']['confirm'] = round(time.time() - t, 1); rep['seconds']['all'] = round(time.time() - t0, 1)
     rep.update(queued=len(queue.get('cells', [])), images_drawn=drawn, images_drawn_again=bf['drawn'], images_removed=gone,
                images_left_for_the_limits=bf['left_for_the_limits'], images_not_found=bf['not_found'], images_refused=bf['refused'],
-               images_failed=bf['failed'], held=held, skipped=len(res.get('skipped', [])))
+               images_failed=bf['failed'], held=held, skipped=len(res.get('skipped', [])), out_of_image=res.get('out_of_image', {}))
     _write(report_path, rep)
     return rep
 

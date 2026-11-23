@@ -34,17 +34,24 @@ def rebuild(out: Path = confirm.OUT) -> dict:
     fill, err = ep.opt_fill_prepare(Path(out), sites)
     blind = ep.write_blind(Path(out), sites, fill)
     fill_doc = ep.opt_fill_publish(Path(out), fill, err)
-    return {"quay_blind": blind, "opt_fill": {k: v.get("present_sum") for k, v in fill_doc.items() if isinstance(v, dict)}
-            if not fill_doc.get("error") else {"error": fill_doc["error"]}}
+    errors = [e for e in (err, fill_doc.get("error")) if e]
+    errors += [f"{k}: {v['error']}" for k, v in fill_doc.items() if isinstance(v, dict) and v.get("error")]
+    res = {"quay_blind": blind, "opt_fill": {k: v.get("present_sum") for k, v in fill_doc.items() if isinstance(v, dict)}}
+    if errors:          # the daily run goes on with empty columns; by hand the files are not to be committed: exit 1
+        res["failed"] = errors
+    return res
 
 
 def merge_and_rebuild(file: Path, out: Path = confirm.OUT, cfg: dict | None = None, now: str | None = None,
-                      rebuild_fn=rebuild) -> dict:
+                      rebuild_fn=None) -> dict:
     cfg, now = cfg or confirm.load_config(), now or confirm.utcnow()
     res = {"merge": confirm.merge(file, out, cfg, now)}
     m = res["merge"]
     if m["added"] or m["replaced"]:
-        res["rebuild"] = rebuild_fn(out)
+        try:
+            res["rebuild"] = (rebuild_fn or rebuild)(out)
+        except Exception as e:                  # noqa: BLE001 (reported; exit 1)
+            res["rebuild"] = {"failed": [f"{type(e).__name__}: {e}"[:500]]}
         summ = confirm.summary(out, cfg, now)
         confirm._write_json(Path(out) / confirm.DIR / "summary.json", summ)
         confirm._write_json(Path(out) / confirm.DIR / "latest.json", confirm.latest(out, cfg, now, summ))
@@ -62,7 +69,10 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     doc = merge_and_rebuild(a.file, a.out, confirm.load_config(a.config), a.now)
     print(json.dumps(doc, ensure_ascii=False, indent=1))
-    return 1 if doc["merge"]["rejected"] else 0
+    failed = isinstance(doc["rebuild"], dict) and doc["rebuild"].get("failed")
+    if failed:
+        print(f"::error title=confirm_merge::公開ファイルの作り直しに失敗（このまま commit しない）: {failed}", file=sys.stderr)
+    return 1 if doc["merge"]["rejected"] or failed else 0
 
 
 if __name__ == "__main__":

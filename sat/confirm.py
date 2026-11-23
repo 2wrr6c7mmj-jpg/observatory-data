@@ -298,6 +298,9 @@ def history(answers: dict, section_id: str, date: str) -> dict:
 EXCLUDE_REASONS = {"off_berth_line": "着く線の外", "berth_false": "艦の着かない線（berth false）", "civil": "民用の線",
                    "not_naval": "区分が海軍でない線", "out_of_image": "枠が画像の範囲の外"}
 SITES_PATH = ROOT / "sat" / "sites.json"
+# The rule versions before confirm-x1: their rows are counted in summary() as they were (the numbers of a version never
+# change afterwards, design §2.6・§7). Exclusion is applied to the rows of the later versions only
+NO_EXCLUDE_VERSIONS = ("confirm-v1",)
 
 
 def _file_hash(path: Path) -> str | None:
@@ -774,7 +777,10 @@ def run(scores: list[dict], out: Path = OUT, cfg: dict | None = None, now: str |
             hk = {k for k in q if k[1] not in im}
             q -= hk
             held[site_id] = {k: state[k] for k in hk}
-        q -= _out_of_image(state, secs, q, im, cfg)
+        oi = _out_of_image(state, secs, q, im, cfg)
+        q -= oi
+        if oi:
+            res.setdefault("out_of_image", {})[site_id] = sorted(f"{s}@{d}" for s, d in oi)
         queued[site_id] = (state, secs, q, answers)
         pending_log[site_id] = extra
     waiting = _daily_limit(queued, cfg)
@@ -1095,6 +1101,7 @@ def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset 
         if (r["site_id"], r["section_id"], r["date"]) in picked:
             smp["picked"] += 1
             smp["answered" if r["state"] in FINAL else "expired" if now and _days(r["date"], now) > cfg["expire_days"] else "waiting"] += 1
+    out_img = sum(1 for r in states if r["state"] == "excluded" and r.get("reason") == "excluded:out_of_image")
     unc = {"expired": 0, "superseded": 0}
     for r in states:
         if r["state"] == "unconfirmed" and r["reason"] in unc:
@@ -1119,6 +1126,7 @@ def _block(states: list[dict], scored: list[dict], cfg: dict, picked: frozenset 
             "A_auto_accuracy_last_12_weeks": _rate(_a_pairs(recent, cfg)),
             "would_be_auto": _rate(would), "audit": _rate(audit), "audit_sample": smp,
             "unconfirmed": unc, "new_sections": {"cells": len(new), "states": ncnt},
+            "excluded": {"cells": cnt["excluded"], "out_of_image": out_img},
             "routed_judge_accuracy": rt,
             "changed": {"n": changed, "routed": changed_routed},
             "C_total_owner_counted_correct": c}
@@ -1130,13 +1138,26 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
     out, cfg, now = Path(out), cfg or load_config(), now or utcnow()
     frozen = (cfg.get("frozen_utc") or "")[:10]
     states, scored, picked = [], [], set()
+    today = now[:10]
+
+    def as_counted(r, xs):
+        """confirm-x1 in the numbers. A row of a version before it (NO_EXCLUDE_VERSIONS) is counted as that version counted
+        it: a waiting cell the exclusion took out of the queue is waiting, or unconfirmed once past expire_days (what the
+        rule of that version did with it). A row of a later version of an excluded section is counted as excluded (B) and
+        is not in A or C."""
+        if r.get("rule_version") in NO_EXCLUDE_VERSIONS:
+            if r["state"] == "excluded":
+                return {**r, "state": "unconfirmed" if _days(r["date"], today) > cfg["expire_days"] else "pending"}
+            return r
+        return {**r, "state": "excluded"} if r["section_id"] in xs else r
+
     for site_id in known_sites(out):
         led = (load_sections(out, site_id) or {}).get("sections", [])
         xs = {s["id"] for s in led if s.get("queue") == "excluded"}
-        # confirm-x1: every cell of an excluded section is counted as excluded (B), and none is in A or C
-        states += [{**r, "state": "excluded"} if r["section_id"] in xs else r for r in load_state(out, site_id).values()]
+        states += [as_counted(r, xs) for r in load_state(out, site_id).values()]
         tr = {s["id"] for s in led if s.get("trial")}
-        scored += [{**r, "trial": r["section_id"] in tr} for r in scored_cells(out, site_id) if r["section_id"] not in xs]
+        scored += [{**r, "trial": r["section_id"] in tr} for r in scored_cells(out, site_id)
+                   if r.get("rule_version") in NO_EXCLUDE_VERSIONS or r["section_id"] not in xs]
         picked |= {(site_id, r["section_id"], r["date"]) for r in load_log(out, site_id) if r.get("audit") == "1"}
     picked = frozenset(picked)
 
@@ -1162,6 +1183,7 @@ def summary(out: Path = OUT, cfg: dict | None = None, now: str | None = None) ->
                      "A_last_12_weeks": "A と同じ数え方で、撮影日が generated_utc の日から 84 日（12 週）以内の升だけ",
                      "audit_sample": "抜き取りに選んだ升（記録に audit=1 の行がある升）と、そのうち答えがあった／期限（expire_days）を過ぎて答えのない／まだ待っている升の数。期限を過ぎた升は A に入らない（A が偏りうるので数を出す）",
                      "unconfirmed": "未確認の升の内訳：期限切れ（expired）と、後の撮影に置き換え（superseded）",
+                     "excluded": "confirm-x1 で確認の対象外にした升の数と、そのうち枠が画像の範囲外（out_of_image）の升の数。confirm-v1 の行は外す前の数え方のまま（外した升は待ち、期限を過ぎれば未確認）で数え、v1 の数字は変わらない",
                      "new_sections": "区間の台帳を作った後に足された区間（sections_version が 2 以上）の升の数と状態",
                      "trial": "試行の区間（台帳で trial: true、sat/confirm_trial.json）は規則 v1 でも必ず所有者に回し（理由 trial）、A（自動確定の一致率・抜き取り）に入れない。回した升の判定器の正答率（routed_judge_accuracy）と変わった升（changed）には試行の区間の升も入る"},
            "parts": {}}

@@ -778,7 +778,8 @@ class ExcludeTest(Base):
     def run_(self, rows, now, c=None, cls=None):
         rule = (FakeRule(cls or self.cls), {"1", "2", "3", "4"}, {"berth_class": "test"})
         with mock.patch("sat.confirm.berth_rule", return_value=rule):
-            return cf.run(rows, self.out, c or cfg(auto_display=False), now)
+            self.res = cf.run(rows, self.out, c or cfg(auto_display=False), now)
+            return self.res
 
     def queue(self):
         return {(c["section_id"], c["date"]) for c in json.loads((self.out / "confirm" / "queue.json").read_text(encoding="utf-8"))["cells"]}
@@ -881,8 +882,43 @@ class ExcludeTest(Base):
         self.run_([cell("QDH", s, "2026-11-10", 0.4) for s in ("N", "E")], "2026-11-11T08:00:00Z", c)
         self.assertEqual(self.queue(), {("N", "2026-11-10")})
         self.assertEqual(self.state()[("E", "2026-11-10")]["reason"], "excluded:out_of_image")
+        self.assertEqual(self.res["out_of_image"], {"QDH": ["E@2026-11-10"]})                     # said (the daily run's notice)
+        self.assertEqual(cf.summary(self.out, c, "2026-11-11T08:00:00Z")["parts"]["before_freeze"]["total"]["excluded"]["out_of_image"], 1)
         self.assertAlmostEqual(cf.in_image(xsec("E", 1, 120.0995)["frame"], grid), 0.5, delta=0.05)
         self.assertEqual(cf.in_image(xsec("N", 1)["frame"], grid), 1.0)
+
+    def test_the_numbers_of_confirm_v1_do_not_change(self):
+        """1部の審査（#178）：the rows of confirm-v1 are counted as confirm-v1 counted them (design §2.6・§7: the numbers of a
+        version never change afterwards); the exclusion is applied to the rows of confirm-v1x on only."""
+        v1 = cfg(auto_display=False, rule_version="confirm-v1", exclude=None)        # the code before confirm-x1
+        rows = [cell("QDH", s, d, p) for s in "NFCO" for d, p in (("2026-11-01", 0.01), ("2026-11-03", 0.6))]
+        self.review_answers("QDH", [(s, d, 0) for s in "NFCO" for d in ("2026-10-01", "2026-10-02")])
+        self.run_(rows, "2026-11-04T08:00:00Z", v1)
+        cf.merge(self.answers_file([(("QDH", s, "2026-11-03", y)) for s, y in zip("NFCO", (0, 1, 0, 1))]), self.out, v1, "2026-11-04T09:00:00Z")
+        self.run_([cell("QDH", s, "2026-11-05", 0.5) for s in "NFCO"], "2026-11-06T08:00:00Z", v1)
+        now = "2026-11-07T08:00:00Z"
+        before = cf.summary(self.out, v1, now)
+        x1 = cfg(auto_display=False, exclude={**cf.load_config()["exclude"], "sample_per_month": 0})   # confirm-v1x: F, C, O excluded
+        self.run_([], now, x1)
+        self.assertEqual({k for k, r in self.state().items() if r["state"] == "excluded"}, {(s, "2026-11-05") for s in "FCO"})
+        after = cf.summary(self.out, x1, now)
+
+        def strip(b):
+            b = {k: v for k, v in b.items() if k != "excluded"}
+            b["states"] = {k: v for k, v in b["states"].items() if k != "excluded"}
+            b["composition"] = {k: v for k, v in b["composition"].items() if k != "excluded_of_all"}
+            return b
+        for part in ("before_freeze", "after_freeze"):
+            self.assertEqual(strip(after["parts"][part]["total"]), strip(before["parts"][part]["total"]))
+            self.assertEqual({k: strip(v) for k, v in after["parts"][part]["by_version"].items()},
+                             {k: strip(v) for k, v in before["parts"][part]["by_version"].items()})
+        self.assertGreater(before["parts"]["before_freeze"]["total"]["answered"], 0)
+        # a row judged under confirm-v1x in an excluded section: excluded, not in A or C
+        self.run_([cell("QDH", s, "2026-11-07", 0.5) for s in "NFCO"], "2026-11-08T08:00:00Z", x1)
+        t = cf.summary(self.out, x1, "2026-11-08T08:00:00Z")["parts"]["before_freeze"]
+        vx = [v for k, v in t["by_version"].items() if k.startswith("confirm-v1x|")][0]
+        self.assertEqual((vx["states"]["excluded"], vx["states"]["pending"]), (3, 1))
+        self.assertEqual(t["total"]["excluded"], {"cells": 3, "out_of_image": 0})
 
     def test_off_in_the_config(self):
         self.run_([cell("QDH", s, "2026-11-10", 0.4) for s in "NFCO"], "2026-11-11T08:00:00Z", cfg(auto_display=False, exclude=None))
@@ -933,6 +969,15 @@ class MergeRebuildTest(Base):
         self.assertEqual(json.loads((self.out / "confirm" / "summary.json").read_text(encoding="utf-8"))["generated_utc"], "2026-11-12T00:00:00Z")
         res = confirm_merge.merge_and_rebuild(f, self.out, c, "2026-11-12T01:00:00Z", rebuild_fn=lambda out: calls.append(out))
         self.assertEqual(len(calls), 1)                                         # nothing new: nothing made again
+        f2 = self.answers_file([("QDH", "A", "2026-11-10", 0)], name="dl2.csv")          # a failure of the rebuild: exit 1
+        with mock.patch("sat.confirm_merge.rebuild", side_effect=RuntimeError("boom")):
+            self.assertEqual(confirm_merge.main(["--file", str(f2), "--out", str(self.out), "--now", "2026-11-12T02:00:00Z"]), 1)
+        f3 = self.answers_file([("QDH", "A", "2026-11-10", 1)], name="dl3.csv")
+        with mock.patch("sat.confirm_merge.rebuild", return_value={"failed": ["opt_fill: x"]}):
+            self.assertEqual(confirm_merge.main(["--file", str(f3), "--out", str(self.out), "--now", "2026-11-12T03:00:00Z"]), 1)
+        with mock.patch("sat.confirm_merge.rebuild", return_value={"quay_blind": {}}):
+            f4 = self.answers_file([("QDH", "A", "2026-11-10", 0)], name="dl4.csv")
+            self.assertEqual(confirm_merge.main(["--file", str(f4), "--out", str(self.out), "--now", "2026-11-12T04:00:00Z"]), 0)
         src = (ROOT / "sat" / "confirm_merge.py").read_text(encoding="utf-8")
         for step in ("opt_fill_prepare", "write_blind", "opt_fill_publish"):    # the same steps as eval_presence.refresh
             self.assertIn(f"ep.{step}(", src)
