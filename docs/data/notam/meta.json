@@ -2,16 +2,16 @@
  "dataset": "notam",
  "version": "military-1",
  "title": "東アジアの軍事演習・射撃・発射・危険区域の NOTAM と航行警報（NOTAM Watch 経由）",
- "retrieved_utc": "2026-11-22T22:49:14Z",
- "evaluated_at_utc": "2026-11-22T22:49:13Z",
+ "retrieved_utc": "2026-11-23T04:02:18Z",
+ "evaluated_at_utc": "2026-11-23T04:02:17Z",
  "source_snapshot": {
   "site": "https://notam-watch.pages.dev/",
-  "file": "snapshot-5ab133e90a219a10.json",
-  "sha256": "5ab133e90a219a10af775a2e3ef2f9e89aab20fd75667e40b217f6d9b07cd269",
-  "built_utc": "2026-11-22T21:14:35.774Z",
+  "file": "snapshot-2753caf53994580e.json",
+  "sha256": "2753caf53994580e4dae477667c3f539871cd5e19840b00f8bdfedd0a789ca4a",
+  "built_utc": "2026-11-23T03:14:29.099Z",
   "counts": {
-   "aviation": 3277,
-   "maritime": 6053
+   "aviation": 3311,
+   "maritime": 6098
   },
   "via": "gzip, 1 file(s)"
  },
@@ -24,22 +24,22 @@
   "military.json": "条件に合う告知の一覧（items）。meta.json：本ファイル"
  },
  "counts": {
-  "total": 1158,
+  "total": 1178,
   "by_category": {
    "launch": 14,
-   "firing": 444,
-   "exercise": 153,
+   "firing": 445,
+   "exercise": 170,
    "military": 88,
    "gnss": 1,
-   "danger_area": 458
+   "danger_area": 460
   },
   "by_dataset": {
-   "aviation": 757,
-   "maritime": 401
+   "aviation": 774,
+   "maritime": 404
   },
   "by_status": {
-   "active": 416,
-   "upcoming": 374,
+   "active": 488,
+   "upcoming": 322,
    "unknown": 368
   },
   "with_launch_ref": 12
