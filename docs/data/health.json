@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-23T14:28:43Z",
- "state": "warn",
+ "generated_utc": "2026-11-23T16:18:59Z",
+ "state": "alert",
  "summary": {
-  "ok": 12,
+  "ok": 11,
   "warn": 2,
-  "alert": 0,
+  "alert": 1,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -74,11 +74,11 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-22T13:36:37Z",
-   "heartbeat_age_h": 24.9,
-   "data_date": "2026-11-21",
+   "heartbeat_utc": "2026-11-23T16:15:34Z",
+   "heartbeat_age_h": 0.1,
+   "data_date": "2026-11-22",
    "data_date_tz": "UTC",
-   "data_age_days": 2,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
@@ -130,18 +130,13 @@
      "level": "warn",
      "code": "scene_old",
      "text": "HPU：最新の撮影 2026-11-15 から 8 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "HKG：最新の撮影 2026-11-15 から 8 日（撮影の抜け）"
     }
    ],
    "values": {
-    "latest_acquired_utc": "2026-11-21T09:48:11Z",
-    "last_run_utc": "2026-11-22T13:36:37Z",
+    "latest_acquired_utc": "2026-11-22T10:24:50Z",
+    "last_run_utc": "2026-11-23T16:15:34Z",
     "last_run_errors": 0,
-    "last_run_scenes": 0
+    "last_run_scenes": 1
    }
   },
   {
@@ -150,16 +145,16 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-23T13:39:56Z",
-   "heartbeat_age_h": 0.8,
+   "heartbeat_age_h": 2.7,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
-   "data_age_days": 4,
-   "state": "warn",
+   "data_age_days": 5,
+   "state": "alert",
    "reasons": [
     {
-     "level": "warn",
+     "level": "alert",
      "code": "data_old",
-     "text": "最新の日 2026-11-19（JST 今日−4。週末・祝日の可能性）"
+     "text": "最新の日 2026-11-19（JST 今日−5）"
     }
    ],
    "values": {
@@ -179,12 +174,18 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-22T14:52:39Z",
-   "heartbeat_age_h": 23.6,
+   "heartbeat_age_h": 25.4,
    "data_date": "2026-11-22",
    "data_date_tz": "TWT",
-   "data_age_days": 1,
-   "state": "ok",
-   "reasons": [],
+   "data_age_days": 2,
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "data_old",
+     "text": "最新の日 2026-11-22（台湾 今日−2。元の欠けは年に数日ある）"
+    }
+   ],
    "values": {
     "robots": "https://pla-tracker.skyfaring.net/robots.txt: allowed",
     "access": "robots",
@@ -202,7 +203,7 @@
    "heartbeat_age_h": null,
    "data_date": "2026-10-30",
    "data_date_tz": "TWT",
-   "data_age_days": 24,
+   "data_age_days": 25,
    "state": "halt",
    "reasons": [
     {
@@ -223,10 +224,10 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-23T09:18:59Z",
-   "heartbeat_age_h": 5.2,
+   "heartbeat_age_h": 7.0,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
-   "data_age_days": 4,
+   "data_age_days": 5,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -241,7 +242,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-23T04:02:20Z",
-   "heartbeat_age_h": 10.4,
+   "heartbeat_age_h": 12.3,
    "data_date": "2026-11-23",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -259,7 +260,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-23T13:40:07Z",
-   "heartbeat_age_h": 0.8,
+   "heartbeat_age_h": 2.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -292,8 +293,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-23T12:58:50Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_utc": "2026-11-23T15:50:31Z",
+   "heartbeat_age_h": 0.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -726,14 +727,14 @@
     "trial": true,
     "mask_version": "HKG-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-15T10:32:46Z",
+     "acquired_utc": "2026-11-22T10:24:50Z",
      "version": "est-1",
-     "mode": 3,
-     "p10": 2,
-     "p90": 4,
-     "warship_mode": 0,
-     "warship_p10": 0,
-     "warship_p90": 1,
+     "mode": 6,
+     "p10": 4,
+     "p90": 9,
+     "warship_mode": 3,
+     "warship_p10": 1,
+     "warship_p90": 5,
      "credibility": 3,
      "in_sample": ""
     }
@@ -847,15 +848,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-22T13:26:41Z",
+   "last_success_started_utc": "2026-11-23T16:07:55Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45027515567,
-    "started_utc": "2026-11-22T13:26:41Z",
+    "id": 45212997211,
+    "started_utc": "2026-11-23T16:07:55Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45027515567",
-    "delay_h": 8.2
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45212997211",
+    "delay_h": 10.8
    },
    "consecutive_failures": 0
   },
@@ -950,12 +951,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 217.758,
-   "usage_csv_requests": 1310,
-   "usage_csv_runs": 31,
-   "status_month_pu_before": 217.726,
-   "status_last_run_utc": "2026-11-22T13:36:37Z",
-   "usage_csv_pu_before_last_run": 217.726,
+   "usage_csv_pu": 219.453,
+   "usage_csv_requests": 1360,
+   "usage_csv_runs": 32,
+   "status_month_pu_before": 217.758,
+   "status_last_run_utc": "2026-11-23T16:15:34Z",
+   "usage_csv_pu_before_last_run": 217.758,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -1166,9 +1167,9 @@
     "mask_version": "HPU-land-v1"
    },
    "HKG": {
-    "acquired_utc": "2026-11-15T10:32:46Z",
+    "acquired_utc": "2026-11-22T10:24:50Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 11,
+    "relative_orbit": 113,
     "coverage": 1.0,
     "result": "counted",
     "quay_result": "counted",
@@ -1211,8 +1212,8 @@
   ],
   "sites_configured_not_daily": [],
   "changes_latest": {
-   "date": "2026-11-22",
-   "version": "**opt-fill-1 のまま**（1部の審査の「後でよい」の指摘。quay_naval50・quay_est2・warship_blind・評価票の数と行・規則のハッシュ・quay_blind の既存の列の値・湛江は変えない。PU 0）"
+   "date": "2026-11-23",
+   "version": "**confirm-v1x / confirm-x1**（確認回しのキューの絞り込み。点数 pres-3o の p・quay_counts・est-2・naval50・評価票 eval/presence.json・blcap・opt-fill の値・quay_blind・湛江の公開の出力・過去の答えは変えない。PU 0…"
   }
  },
  "credits": [
