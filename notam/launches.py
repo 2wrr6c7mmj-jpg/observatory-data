@@ -121,6 +121,31 @@ def stated_site_inference(pos: list[float], centres: list[tuple[float, float]]) 
     return out
 
 
+TOUCH_KM = 80.0
+
+
+def touching_site(notices: list[dict]) -> str | None:
+    """The known site that one of the areas reaches: a corridor drawn from the pad (China's closure A6094/26 runs from
+    酒泉 to the Yellow Sea). A vertex within TOUCH_KM of the site, or the site inside a polygon."""
+    for name, (lat, lon, _) in SITES.items():
+        for n in notices:
+            for s in n.get("shapes", []):
+                pts = s.get("points") or []
+                if s.get("kind") == "polygon" and len(pts) >= 3 and (
+                        any(distance_km((lat, lon), p) <= TOUCH_KM for p in pts) or _inside((lat, lon), pts)):
+                    return name
+    return None
+
+
+def _inside(p, poly) -> bool:
+    x, y, inside = p[1], p[0], False
+    for i in range(len(poly)):
+        (y1, x1), (y2, x2) = poly[i], poly[i - 1]
+        if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1:
+            inside = not inside
+    return inside
+
+
 def in_east_asia(c) -> bool:
     return EAST_ASIA[0] <= c[0] <= EAST_ASIA[1] and EAST_ASIA[2] <= c[1] <= EAST_ASIA[3]
 
@@ -163,12 +188,17 @@ def _events(notices: list[dict]) -> list[dict]:
             if all(distance_km(c, k) > 20 for k in centres):
                 centres.append(c)
         stated = next((x[3]["stated_site"] for x in g if x[3].get("stated_site")), None)
+        touch = None if stated else touching_site([x[3] for x in g])
+        if touch:
+            inf = {**stated_site_inference(list(SITES[touch][:2]), centres), "method": "touching", "site": touch, "country": SITES[touch][2]}
+        else:
+            inf = stated_site_inference(stated, centres) if stated else infer_site(centres)
         out.append({
             "window_start_utc": min(x[0] for x in g).strftime("%Y-%m-%dT%H:%MZ"),
             "window_end_utc": max(x[1] for x in g).strftime("%Y-%m-%dT%H:%MZ"),
             "areas": [list(c) for c in centres],
             "notices": [x[3]["key"] for x in g],
-            **(stated_site_inference(stated, centres) if stated else infer_site(centres)),
+            **inf,
         })
     return out
 
@@ -202,7 +232,7 @@ def match_launches(ev: list[dict], ll2: list[dict], slack_hours: float = 6) -> l
                 continue
             if e.get("intercept"):
                 continue
-            if e.get("method") == "stated":
+            if e.get("method") in ("stated", "touching"):
                 near = distance_km(pad, tuple(e["site_latlon"])) <= 300
             elif e.get("method") == "aligned":
                 near = distance_km(pad, SITES[e["site"]][:2]) <= 300
@@ -252,9 +282,10 @@ def main(path: str) -> int:
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "sites": {k: list(v) for k, v in SITES.items()}, "events": ev, "recorded_launches": recorded,
     }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    zones = Z.build(ev, notices, SITES, datetime.now(timezone.utc))
+    zones = Z.build(ev, notices, SITES, datetime.now(timezone.utc), ll2)
     (OUT / "zones.json").write_text(json.dumps(zones, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(f"::notice::launch zones {len(zones['events'])} (in force or within {Z.HORIZON_DAYS} days)")
+    print(f"::notice::launch zones {len(zones['events'])} (in force or within {Z.HORIZON_DAYS} days); "
+          f"launches {len(zones['launches'])} (within {Z.LAUNCH_HORIZON_DAYS} days)")
     print(f"::notice::launch notices stored {len(history['notices'])}, events {len(ev)} "
           f"({sum(1 for e in ev if e['method'] == 'aligned')} aligned)")
     return 0

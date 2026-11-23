@@ -32,7 +32,7 @@ RANGE_NAME = re.compile(r"MANEUVERING AREA|MANEUVER AREA|TRAINING AREA|FIRING RA
 FALL = re.compile(r"\bSTAGE\s+FALLING|FALLING AREA|FALL AREA OF[\s\S]{0,60}DEBRIS|SPACE DEBRIS|ROCKET DEBRIS|DEBRIS FALL|火箭残骸|残骸坠落|残骸落|落下物", re.I)
 ROCKET = re.compile(r"ROCKET LAUNCH|SPACE LAUNCH|LAUNCH VEHICLE|MISSILE LAUNCH|火箭发射|航天发射|发射火箭|ロケット打上げ|ロケット発射", re.I)
 RELATED = re.compile(r"AEROSPACE\s+(FLIGHT|FLT)\b|航天|火箭", re.I)
-KINDS = {"rocket": "ロケット打上げ", "fall": "落下区域", "related": "打上げ関連", "intercept": "迎撃の備え"}
+KINDS = {"rocket": "ロケット打上げ", "fall": "落下区域", "related": "打上げ関連", "intercept": "迎撃の備え", "closure": "飛行制限区域"}
 
 
 def kind_of(text: str) -> str | None:
@@ -143,7 +143,10 @@ def normalise(n: dict) -> dict:
     text = n.get("text", "")
     ref = parse_iso(n.get("first_seen_utc")) or datetime.now(timezone.utc)
     cc, issuer = issuer_of(n)
-    out = {**n, "kind": kind_of(text), "stated_site": stated_site(text), "country": cc, "issuer": issuer, "period_basis": "notam-watch"}
+    kind = kind_of(text)
+    if kind is None and "cn-closure" in (n.get("evidence") or []):
+        kind = "closure"   # China's short surface-to-unlimited closure (notam/extract.mjs cnClosure)
+    out = {**n, "kind": kind, "stated_site": stated_site(text), "country": cc, "issuer": issuer, "period_basis": "notam-watch"}
     alternate = bool(re.search(r"\bALTERNATE\b|备用|予備", text))
     if not n.get("start_utc"):
         ps = text_periods(text, ref)
@@ -291,7 +294,7 @@ def merge_attempts(events: list[dict], notices: dict[str, dict]) -> list[dict]:
     return out
 
 
-def build(events: list[dict], notices: dict[str, dict], sites: dict, now: datetime) -> dict:
+def build(events: list[dict], notices: dict[str, dict], sites: dict, now: datetime, ll2: list[dict] | None = None) -> dict:
     """Launches in force at `now` or starting within HORIZON_DAYS, each with its notices."""
     horizon = now + timedelta(days=HORIZON_DAYS)
     out = []
@@ -307,7 +310,7 @@ def build(events: list[dict], notices: dict[str, dict], sites: dict, now: dateti
                        **({"alternate": True} if n.get("alternate") else {}), "polygons": polys,
                        "circles": [s for s in n.get("shapes", []) if s.get("kind") == "circle"], "text": n.get("text", "")})
         site = None
-        if e.get("method") == "stated":
+        if e.get("method") in ("stated", "touching"):
             site = {"name": e.get("site") or "告知に記載の座標", "lat": e["site_latlon"][0], "lon": e["site_latlon"][1],
                     "country": e.get("country"), "method": "stated",
                     **{k: e[k] for k in ("azimuth_deg", "inclination_deg") if k in e}}
@@ -321,4 +324,190 @@ def build(events: list[dict], notices: dict[str, dict], sites: dict, now: dateti
             "site": site, "orbit": orbit_hint(e.get("inclination_deg")), "vehicle": vehicle_of(e), "notices": ns,
         })
     out.sort(key=lambda x: x["window_start_utc"])
-    return {"generated_utc": now.strftime(ISO), "horizon_days": HORIZON_DAYS, "kinds": KINDS, "events": out}
+    return {"generated_utc": now.strftime(ISO), "horizon_days": HORIZON_DAYS, "kinds": KINDS, "events": out,
+            # launches first (the 区域 screen from 2026-11-23); "events" stays for the screen published before it
+            "launch_horizon_days": LAUNCH_HORIZON_DAYS, "launches": build_launches(ll2 or [], events, notices, sites, now)}
+
+
+# ---------- launches first (owner, 2026-11-23) ----------
+# The 区域 screen lists launches, with the notices that match them as supporting detail: East Asian launches of Launch
+# Library 2 due within LAUNCH_HORIZON_DAYS, plus launches seen only in the notices (a known site lines up with the areas).
+# A launch from an inland site (酒泉・太原・西昌) is listed only when a notice matches it. Interception airspace is not used.
+LAUNCH_HORIZON_DAYS = 7
+INLAND = {"酒泉", "太原", "西昌"}
+DONE = {"Success", "Failure", "Partial Failure"}
+LONG_SLOT = timedelta(days=3)     # a notice slot longer than this says "some time in the period", not the launch time
+SLACK = timedelta(hours=6)
+
+
+def _t(s: str | None) -> datetime | None:
+    if not s:
+        return None
+    s = s.replace("Z", "+00:00")
+    if len(s) == 16 + 6:          # "2026-11-25T00:08+00:00"
+        s = s[:16] + ":00" + s[16:]
+    return datetime.fromisoformat(s).astimezone(timezone.utc)
+
+
+def _distance_km(a, b) -> float:
+    import math
+    la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 2 * 6371.0 * math.asin(math.sqrt(h))
+
+
+def site_of(lat, lon, sites: dict) -> str | None:
+    """The known site within 300 km of a pad."""
+    if lat is None or lon is None:
+        return None
+    best = min(((n, _distance_km((lat, lon), v[:2])) for n, v in sites.items()), key=lambda x: x[1])
+    return best[0] if best[1] <= 300 else None
+
+
+def slots_of(n: dict) -> list[tuple[datetime, datetime]]:
+    ps = [(_t(p["start_utc"]), _t(p["end_utc"])) for p in n.get("periods") or []]
+    ps = [p for p in ps if p[0] and p[1]]
+    if not ps and _t(n.get("start_utc")):
+        a = _t(n["start_utc"])
+        ps = [(a, _t(n.get("end_utc")) or a + timedelta(hours=6))]
+    return sorted(ps)
+
+
+def slot_for(n: dict, net: datetime | None) -> tuple[tuple[datetime, datetime] | None, int]:
+    """(the notice's slot that holds the launch time, the number of its other slots: reserve days)."""
+    ps = slots_of(n)
+    if not ps:
+        return None, 0
+    if net is not None:
+        for p in ps:
+            if p[0] - SLACK <= net <= p[1] + SLACK:
+                return p, len(ps) - 1
+    return (ps[0], len(ps) - 1) if len(ps) == 1 else (None, len(ps))
+
+
+def estimated_window(slots: list[tuple[datetime, datetime]]) -> tuple[datetime, datetime] | None:
+    """Where the short slots of all matched notices overlap; None when there is no short slot or they do not overlap."""
+    short = [p for p in slots if p and p[1] - p[0] <= LONG_SLOT]
+    if not short:
+        return None
+    a, b = max(p[0] for p in short), min(p[1] for p in short)
+    return (a, b) if a < b else None
+
+
+ALONG_DEG = 8.0
+
+
+def _bearing(a, b) -> float:
+    import math
+    la1, lo1, la2, lo2 = map(math.radians, (a[0], a[1], b[0], b[1]))
+    y = math.sin(lo2 - lo1) * math.cos(la2)
+    x = math.cos(la1) * math.sin(la2) - math.sin(la1) * math.cos(la2) * math.cos(lo2 - lo1)
+    return (math.degrees(math.atan2(y, x)) + 360) % 360
+
+
+def _circular_mean(angles: list[float]) -> float:
+    import math
+    return (math.degrees(math.atan2(sum(math.sin(math.radians(a)) for a in angles), sum(math.cos(math.radians(a)) for a in angles))) + 360) % 360
+
+
+def _event_matches(e: dict, pad, site: str | None, net: datetime | None, sites: dict) -> bool:
+    if e.get("intercept") or net is None:
+        return False
+    a, b = _window(e)
+    if not (a - SLACK <= net <= b + SLACK):
+        return False
+    if e.get("method") in ("stated", "touching"):
+        return _distance_km(pad, tuple(e["site_latlon"])) <= 300
+    if e.get("method") == "aligned":
+        return site is not None and e.get("site") == site
+    if e.get("method") == "nearest-only":
+        return site is not None and e.get("site") == site
+    return bool(e.get("areas")) and _distance_km(pad, tuple(e["areas"][0])) <= 1500
+
+
+def _notice_out(k: str, n: dict, net: datetime | None, candidate: bool) -> dict:
+    slot, reserve = slot_for(n, net)
+    polys = [s["points"] for s in n.get("shapes", []) if s.get("kind") == "polygon" and len(s.get("points", [])) >= 3]
+    long_ = bool(slot) and slot[1] - slot[0] > LONG_SLOT
+    return {"key": k, "id": n["id"], "dataset": n["source"], "kind": n["kind"], "kind_ja": KINDS.get(n["kind"] or "", ""),
+            "issuer": n["issuer"], "country": n["country"], "start_utc": n["start_utc"], "end_utc": n["end_utc"],
+            "slot_start_utc": fmt(slot[0]) if slot else None, "slot_end_utc": fmt(slot[1]) if slot else None,
+            "role": "long" if long_ else ("main" if slot else "unknown"), "reserve_slots": reserve,
+            **({"candidate": True} if candidate else {}), "polygons": polys,
+            "circles": [s for s in n.get("shapes", []) if s.get("kind") == "circle"], "text": n.get("text", "")}
+
+
+def build_launches(ll2: list[dict], events: list[dict], notices: dict[str, dict], sites: dict, now: datetime) -> list[dict]:
+    horizon = now + timedelta(days=LAUNCH_HORIZON_DAYS)
+    rows = []
+    for r in ll2:
+        net, lat, lon = _t(r.get("net_utc")), r.get("lat"), r.get("lon")
+        if net is None or lat is None or not (-10 <= lat <= 60 and 90 <= lon <= 160):
+            continue
+        if r.get("status") in DONE or net > horizon or net < now - timedelta(days=2):
+            continue
+        rows.append((r, net, (lat, lon), site_of(lat, lon, sites)))
+    live = [e for e in events if not e.get("intercept") and _window(e)[1] >= now and _window(e)[0] <= horizon]
+    hits = {i: [j for j, (_, net, pad, site) in enumerate(rows) if _event_matches(e, pad, site, net, sites)] for i, e in enumerate(live)}
+    # Downrange areas published on their own (a Philippine NOTAM for the debris of a 西昌 launch): an event no launch took
+    # yet joins a launch when one of its notice slots holds the launch time and its areas lie on the launch's line from
+    # the pad (within ALONG_DEG of the bearing of the areas already matched), at most 4,500 km away.
+    for j, (_, net, pad, site) in enumerate(rows):
+        mine = [i for i, js in hits.items() if j in js]
+        if not mine or net is None:
+            continue
+        line = [_bearing(pad, tuple(a)) for i in mine for a in live[i].get("areas", []) if _distance_km(pad, tuple(a)) >= 100]
+        if not line:
+            continue
+        az = _circular_mean(line)
+        for i, e in enumerate(live):
+            if hits[i] or not e.get("areas"):
+                continue
+            if not any(slot_for(notices[k], net)[0] for k in e["notices"] if k in notices):
+                continue
+            if all(_distance_km(pad, tuple(a)) <= 4500 and abs((_bearing(pad, tuple(a)) - az + 180) % 360 - 180) <= ALONG_DEG for a in e["areas"]):
+                hits[i] = [j]
+    out = []
+    for j, (r, net, pad, site) in enumerate(rows):
+        evs = [i for i, js in hits.items() if j in js]
+        ns = []
+        for i in evs:
+            for k in live[i]["notices"]:
+                if k in notices and (_t(notices[k].get("end_utc")) or now) >= now and not any(x["key"] == k for x in ns):
+                    ns.append(_notice_out(k, notices[k], net, len(hits[i]) > 1))
+        if site in INLAND and not ns:
+            continue
+        # a launch already past with no notice still in force is over (its result is not in the record yet)
+        if net < now and not any((_t(x["end_utc"]) or net) >= now for x in ns):
+            continue
+        win = estimated_window([(_t(x["slot_start_utc"]), _t(x["slot_end_utc"])) for x in ns if x["slot_start_utc"]])
+        out.append({
+            "id": "ll2:" + str(r.get("ll2_id")), "basis": "ll2", "name": r.get("name"), "rocket": r.get("rocket"), "rocket_ja": rocket_ja(r.get("rocket")),
+            "provider": r.get("provider"), "status": r.get("status"), "net_utc": fmt(net),
+            "window_start_utc": r.get("window_start_utc"), "window_end_utc": r.get("window_end_utc"),
+            "orbit": r.get("orbit"), "mission_type": r.get("mission_type"), "url": r.get("url"),
+            "site": {"name": site or r.get("location"), "lat": pad[0], "lon": pad[1], "country": sites[site][2] if site else r.get("country"),
+                     "inland": site in INLAND, "pad": r.get("pad")},
+            "estimated_window": {"start_utc": fmt(win[0]), "end_utc": fmt(win[1])} if win else None,
+            "notice_state": "matched" if ns else "waiting", "notices": ns,
+        })
+    # launches seen only in the notices: a known site lines up with the areas (or the notice states the site)
+    for i, e in enumerate(live):
+        if hits[i] or e.get("method") not in ("aligned", "stated", "touching") or not e.get("site"):
+            continue
+        lat, lon, cc = sites[e["site"]]
+        ns = [_notice_out(k, notices[k], None, False) for k in e["notices"] if k in notices]
+        a, b = _window(e)
+        win = estimated_window([(_t(x["slot_start_utc"]), _t(x["slot_end_utc"])) for x in ns if x["slot_start_utc"]])
+        out.append({
+            "id": f"notice:{e['window_start_utc']}:{e['site']}", "basis": "notices", "name": None, "rocket": None, "rocket_ja": None,
+            "provider": None, "status": None, "net_utc": None, "window_start_utc": fmt(a), "window_end_utc": fmt(b),
+            "orbit": orbit_hint(e.get("inclination_deg")), "mission_type": None, "url": None,
+            "site": {"name": e["site"], "lat": lat, "lon": lon, "country": cc, "inland": e["site"] in INLAND, "pad": None},
+            **{k: e[k] for k in ("azimuth_deg", "inclination_deg") if k in e},
+            "vehicle_candidates": [{"name": a_, "orbit": b_} for a_, b_ in SITE_VEHICLES.get(e["site"], [])],
+            "estimated_window": {"start_utc": fmt(win[0]), "end_utc": fmt(win[1])} if win else None,
+            "notice_state": "matched", "notices": ns,
+        })
+    out.sort(key=lambda x: (x["estimated_window"] or {}).get("start_utc") or x["net_utc"] or x["window_start_utc"] or "")
+    return out

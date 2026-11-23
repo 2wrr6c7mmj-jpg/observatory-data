@@ -48,17 +48,28 @@ const shapes = list => (Array.isArray(list) ? list : [])
   .filter(s => s && Array.isArray(s.points) && s.points.length)
   .map(s => ({kind: s.kind, points: s.points.map(([lat, lon]) => [+lat.toFixed(4), +lon.toFixed(4)]), ...(s.radius ? {radius: s.radius} : {})}));
 
+// China's launch closures: a temporary restricted or danger area of a Chinese FIR, surface to unlimited, for a few minutes to
+// a few hours ("A6094/26 ... Q)ZXXX/QRTCA/IV/BO/W/000/999/..."). Their text names no launch, so the classifiers do not tag
+// them; notam/launch_zones.py decides from their shape and time whether a launch is behind them.
+const CN_CLOSURE = /Q\)\s*Z(?!K)[A-Z]{3}\/QR(?:TC|DC|RC)A\/[^/]*\/[^/]*\/[^/]*\/000\/999\//;
+export function cnClosure(item) {
+  const span = Number(item?.end) - Number(item?.start);
+  return CN_CLOSURE.test(String(item?.text ?? '')) && Number.isFinite(span) && span > 0 && span <= 4 * 3600000;
+}
+
 export function launchNotices(data) {
   const out = [];
   for (const [source, classify] of [['aviation', classifyAviationActivity], ['maritime', classifyMaritimeActivity]]) {
     for (const item of data?.[source]?.items ?? []) {
       const activity = classify(item);
-      if (!activity.tags.includes('launch')) continue;
+      const closure = source === 'aviation' && !activity.tags.includes('launch') && cnClosure(item);
+      if (!activity.tags.includes('launch') && !closure) continue;
+      const evidence = [...activity.evidence, ...(closure ? [{tag: 'launch', matched: 'cn-closure'}] : [])];
       out.push({
         key: `${source}:${item.id}`, source, id: item.id,
         authority: item.location ?? item.source ?? item.sourceId ?? null,
         start_utc: iso(item.start), end_utc: iso(item.end),
-        evidence: activity.evidence.filter(e => e.tag === 'launch').map(e => e.matched),
+        evidence: evidence.filter(e => e.tag === 'launch').map(e => e.matched),
         shapes: shapes(item.shapes),
         text: String(item.text ?? '').slice(0, 1500),
       });
