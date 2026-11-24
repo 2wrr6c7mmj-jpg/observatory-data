@@ -64,6 +64,10 @@ NUMBER_WORDS = re.compile(r'\b(?:one|two|three|four|five|six|seven|eight|nine|te
                           r'billions?|several|first|second|third)\b|[〇零一二三四五六七八九十百千万萬億亿兩两]', re.I)
 LATIN_WORD = re.compile(r'[A-Za-z][A-Za-z\-\.]{2,}')
 JAPANESE = re.compile(r'[ぁ-んァ-ヶ一-龠]')
+KANA = re.compile(r'[ぁ-んァ-ヶ]')
+MONTHS = {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6, 'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12}
+MONTH_RE = re.compile(r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b', re.I)
+DATE_RE = re.compile(r'(\d{1,2})\s*月\s*(?:(\d{1,2})\s*日)?')
 BAD_CHARS = re.compile(r'https?:|www\.|[<>{}\[\]`*#|\\]|\n')
 
 
@@ -188,8 +192,8 @@ def verify(script, articles, conflicts, terms, known_latin=()):
     everything = script['headline'] + body + ''.join(ln['sub'] for ln in lines)
     if BAD_CHARS.search(everything):
         why.append('URL・記号が混じっている')
-    if not JAPANESE.search(body):
-        why.append('日本語でない')
+    if not JAPANESE.search(body) or not KANA.search(script['headline']) or any(not KANA.search(ln['text']) for ln in lines):
+        why.append('日本語でない（見出しと各文にかなが無い）')
     hit = sorted({w for w in BANNED if w in everything})
     if hit:
         why.append('評価・非難・推測の語がある（' + '・'.join(hit) + '）')
@@ -203,6 +207,16 @@ def verify(script, articles, conflicts, terms, known_latin=()):
     extra = sorted(n for n in check if n not in src_nums and not (words and len(n) <= 2))
     if extra:
         why.append('元の記事に無い数がある（' + '・'.join(extra) + '）')
+    # 日付：月・日は元の記事に出ているものだけ（英語の月名も月に数える）
+    src_text = ' '.join(a.get('title', '') + ' ' + a.get('summary', '') + ' ' + a.get('titleJa', '') for a in articles)
+    src_months = {MONTHS[m.group(1).lower()] for m in MONTH_RE.finditer(src_text)} | {int(m.group(1)) for m in DATE_RE.finditer(fold(src_text))}
+    bad_dates = []
+    for m in DATE_RE.finditer(fold(body)):
+        mon, day = int(m.group(1)), m.group(2)
+        if mon not in src_months or (day and day not in src_nums):
+            bad_dates.append(m.group(0).replace(' ', ''))
+    if bad_dates:
+        why.append('元の記事に無い日付がある（' + '・'.join(bad_dates) + '）')
     # 数の食い違い：併記か、全部書かないか
     for c in conflicts:
         present = [v for v in c['values'] if v in numbers_in(body)]

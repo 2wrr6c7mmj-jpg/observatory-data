@@ -69,8 +69,8 @@ def event_meta(cand, reps):
 def source_line(meta):
     n, m = meta['sources']['count'], meta['sources']['countries']
     if m:
-        return f'この件は、独立した{n}つの報道機関、{m}か国が伝えています。'
-    return f'この件は、独立した{n}つの報道機関が伝えています。'
+        return f'この件は、独立した{n}の報道機関、{m}か国が伝えています。'
+    return f'この件は、独立した{n}の報道機関が伝えています。'
 
 
 def make_scripts(records, args, terms, tok, log, deadline):
