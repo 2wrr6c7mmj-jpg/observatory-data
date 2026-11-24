@@ -74,6 +74,10 @@ def events_part(current: dict, notices: list[dict], today: date) -> list[dict]:
     out = []
     for e in current.get("events", []):
         s, en = _d(e.get("start")), _d(e.get("end"))
+        # An exercise reported as under way with no end given is still under way today (current.json's phase).
+        ongoing = en is None and e.get("phase") == "now"
+        if ongoing:
+            en = today
         if not in_board(s, en, today) or e.get("region") in FAR or e.get("lat") is None:
             continue
         if NOT_EXERCISE.search(" ".join(str(e.get(k) or "") for k in ("name", "titleJa", "content"))):
@@ -87,7 +91,8 @@ def events_part(current: dict, notices: list[dict], today: date) -> list[dict]:
         out.append({"id": "event:" + e["id"], "kind": "event", "name": e.get("name") or e.get("titleJa"), "countries": e.get("countries", []),
                     "start": e.get("start"), "end": e.get("end"), "lat": e["lat"], "lon": e["lon"], "region": e.get("regionName"),
                     "confidence": e.get("confidence"), "confidenceBasis": e.get("confidenceBasis"), "content": e.get("content"),
-                    "forces": e.get("forces"), "sources": e.get("sources", [])[:8], "notices": near[:12], "event_id": e["id"]})
+                    "forces": e.get("forces"), "sources": e.get("sources", [])[:8], "notices": near[:12], "event_id": e["id"],
+                    **({"ongoing": True} if ongoing else {})})
     return out
 
 

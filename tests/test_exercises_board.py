@@ -39,6 +39,15 @@ class Board(unittest.TestCase):
         self.assertEqual([x["event_id"] for x in evs], ["a"])
         self.assertEqual([n["id"] for n in evs[0]["notices"]], ["LN1"])
 
+    def test_an_exercise_under_way_with_no_end_stays_listed(self):
+        ev = lambda i, **k: {"id": i, "name": i, "countries": ["中国"], "region": "taiwan-east", "lat": 23.5, "lon": 123.4,
+                             "start": "2026-11-14", "end": None, **k}
+        b = B.build({"events": [ev("now", phase="now"), ev("old", phase="done")]}, {"items": []}, {}, TODAY)
+        evs = [x for x in b["items"] if x["kind"] == "event"]
+        self.assertEqual([x["event_id"] for x in evs], ["now"])
+        self.assertTrue(evs[0]["ongoing"])
+        self.assertIsNone(evs[0]["end"])
+
     def test_forecasts_listed_with_their_basis(self):
         fc = {"calls": [{"series": "keen-sword", "year": 2026, "name": "キーン・ソード（日米）", "countries": "日本・米国", "area": "日本周辺",
                          "window_start": "2026-11-30", "window_end": "2026-12-20", "basis": "隔年の機会6回のうち5回", "probability": 0.83}]}
