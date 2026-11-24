@@ -3,7 +3,7 @@ name: Build early warning
 # 書き込むのは docs/data/ew/ だけ（meta.json は手書きなので触らない）。標準ライブラリだけで動く。
 on:
   workflow_run:
-    workflows: ['Collect PLA Activity Tracker', 'Collect JCG Senkaku', 'Collect JSO transits', 'Exercises']
+    workflows: ['Collect public data', 'Collect PLA Activity Tracker', 'Collect JCG Senkaku', 'Collect JSO transits', 'Exercises']
     types: [completed]
     branches: [main]
   push:
