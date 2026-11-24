@@ -1,11 +1,12 @@
 {
- "generated_utc": "2026-11-23T16:31:20Z",
+ "generated_utc": "2026-11-24T00:55:55Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
   "fall": "落下区域",
   "related": "打上げ関連",
-  "intercept": "迎撃の備え"
+  "intercept": "迎撃の備え",
+  "closure": "飛行制限区域"
  },
  "events": [
   {
@@ -562,6 +563,1043 @@
    ]
   },
   {
+   "id": "2026-11-25T00:08Z:酒泉",
+   "window_start_utc": "2026-11-25T00:08Z",
+   "window_end_utc": "2026-11-25T00:50Z",
+   "site": {
+    "name": "酒泉",
+    "lat": 40.96,
+    "lon": 100.29,
+    "country": "CN",
+    "method": "stated",
+    "azimuth_deg": 102.9,
+    "inclination_deg": 42.6
+   },
+   "orbit": "低軌道（宇宙ステーションと同じ約41度）",
+   "vehicle": {
+    "basis": "ll2",
+    "name": "長征2F/G号",
+    "rocket_ll2": "Long March 2F/G",
+    "mission": "Long March 2F/G | Shenzhou 24",
+    "orbit": "LEO",
+    "status": "Go",
+    "net_utc": "2026-11-25T00:18:00Z",
+    "pad": "Launch Area 91 (SLS-1 / 921)"
+   },
+   "notices": [
+    {
+     "key": "aviation:A6094/26",
+     "id": "A6094/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZXXX）",
+     "country": "CN",
+     "start_utc": "2026-11-25T00:08:00Z",
+     "end_utc": "2026-11-25T00:48:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        41.3981,
+        100.42
+       ],
+       [
+        39.8431,
+        106.1631
+       ],
+       [
+        37.2039,
+        115.9081
+       ],
+       [
+        35.9119,
+        120.6781
+       ],
+       [
+        35.0131,
+        120.1619
+       ],
+       [
+        36.3181,
+        115.4181
+       ],
+       [
+        38.9169,
+        105.9769
+       ],
+       [
+        40.5181,
+        100.1589
+       ],
+       [
+        41.3981,
+        100.42
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6094/26 NOTAMN\r\nQ)ZXXX/QRTCA/IV/BO/W/000/999/3812N11017E516\r\nA)ZLHW ZBPE ZHWH ZSHA B)2611250008 C)2611250048 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN412353E1002512-N395035E1060947-N371214E1155429-N355443E1204041-\r\nN350047E1200943-N361905E1152505-N385501E1055837-N403105E1000932,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6095/26",
+     "id": "A6095/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZSHA）",
+     "country": "CN",
+     "start_utc": "2026-11-25T00:08:00Z",
+     "end_utc": "2026-11-25T00:50:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        36.2111,
+        121.21
+       ],
+       [
+        35.09,
+        124
+       ],
+       [
+        32.9183,
+        124
+       ],
+       [
+        34.4989,
+        120.2161
+       ],
+       [
+        36.2111,
+        121.21
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6095/26 NOTAMN\r\nQ)ZSHA/QRTCA/IV/BO/W/000/999/3433N12236E121\r\nA)ZSHA B)2611250008 C)2611250050 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN361240E1211236-N350524E1240000-N325506E1240000-N342956E1201258,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-26T09:30Z:西昌",
+   "window_start_utc": "2026-11-26T09:30Z",
+   "window_end_utc": "2026-11-26T09:57Z",
+   "site": {
+    "name": "西昌",
+    "lat": 28.25,
+    "lon": 102.03,
+    "country": "CN",
+    "method": "aligned",
+    "azimuth_deg": 105.3,
+    "bearing_spread_deg": 2.0,
+    "inclination_deg": 31.8
+   },
+   "orbit": "低軌道",
+   "vehicle": {
+    "basis": "ll2",
+    "name": "長征2D号",
+    "rocket_ll2": "Long March 2D",
+    "mission": "Long March 2D | Unknown Payload",
+    "orbit": "N/A",
+    "status": "Go",
+    "net_utc": "2026-11-26T09:35:00Z",
+    "pad": "Launch Complex 3 (LC-3/LA-1)"
+   },
+   "notices": [
+    {
+     "key": "aviation:A6099/26",
+     "id": "A6099/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZPKM）",
+     "country": "CN",
+     "start_utc": "2026-11-26T09:30:00Z",
+     "end_utc": "2026-11-26T09:52:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        26.9667,
+        107.5333
+       ],
+       [
+        26.8667,
+        107.9667
+       ],
+       [
+        26.6667,
+        107.9
+       ],
+       [
+        26.7833,
+        107.4667
+       ],
+       [
+        26.9667,
+        107.5333
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6099/26 NOTAMN\r\nQ)ZPKM/QRDCA/IV/BO/W/000/999/2649N10743E014\r\nA)ZPKM B)2611260930 C)2611260952 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED \r\nBY:N265800E1073200-N265200E1075800-N264000E1075400-N264700E1072800,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6100/26",
+     "id": "A6100/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZGZU）",
+     "country": "CN",
+     "start_utc": "2026-11-26T09:31:00Z",
+     "end_utc": "2026-11-26T09:57:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        25.4333,
+        111.85
+       ],
+       [
+        25.2167,
+        112.5167
+       ],
+       [
+        24.9333,
+        112.4167
+       ],
+       [
+        25.1667,
+        111.75
+       ],
+       [
+        25.4333,
+        111.85
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6100/26 NOTAMN\r\nQ)ZGZU/QRDCA/IV/BO/W/000/999/2510N11208E022\r\nA)ZGZU B)2611260931 C)2611260957 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED \r\nBY:N252600E1115100-N251300E1123100-N245600E1122500-N251000E1114500,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA. \r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-27T04:59Z:太原",
+   "window_start_utc": "2026-11-27T04:59Z",
+   "window_end_utc": "2026-11-27T05:28Z",
+   "site": {
+    "name": "太原",
+    "lat": 38.85,
+    "lon": 111.61,
+    "country": "CN",
+    "method": "nearest-only",
+    "distance_km": 158
+   },
+   "orbit": null,
+   "vehicle": {
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征2C/2D号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "長征4B/4C号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "長征6号/6A号",
+      "orbit": "太陽同期・低軌道"
+     }
+    ]
+   },
+   "notices": [
+    {
+     "key": "aviation:A6149/26",
+     "id": "A6149/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZBPE）",
+     "country": "CN",
+     "start_utc": "2026-11-27T04:59:00Z",
+     "end_utc": "2026-11-27T05:28:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        39.3162,
+        109.8
+       ],
+       [
+        39.3121,
+        109.8597
+       ],
+       [
+        39.3001,
+        109.9176
+       ],
+       [
+        39.2804,
+        109.9719
+       ],
+       [
+        39.2537,
+        110.021
+       ],
+       [
+        39.2208,
+        110.0632
+       ],
+       [
+        39.1827,
+        110.0974
+       ],
+       [
+        39.1406,
+        110.1225
+       ],
+       [
+        39.0957,
+        110.1378
+       ],
+       [
+        39.0495,
+        110.1428
+       ],
+       [
+        39.0033,
+        110.1373
+       ],
+       [
+        38.9585,
+        110.1217
+       ],
+       [
+        38.9165,
+        110.0963
+       ],
+       [
+        38.8786,
+        110.0619
+       ],
+       [
+        38.8459,
+        110.0197
+       ],
+       [
+        38.8193,
+        109.9708
+       ],
+       [
+        38.7998,
+        109.9168
+       ],
+       [
+        38.7878,
+        109.8593
+       ],
+       [
+        38.7838,
+        109.8
+       ],
+       [
+        38.7878,
+        109.7407
+       ],
+       [
+        38.7998,
+        109.6832
+       ],
+       [
+        38.8193,
+        109.6292
+       ],
+       [
+        38.8459,
+        109.5803
+       ],
+       [
+        38.8786,
+        109.5381
+       ],
+       [
+        38.9165,
+        109.5037
+       ],
+       [
+        38.9585,
+        109.4783
+       ],
+       [
+        39.0033,
+        109.4627
+       ],
+       [
+        39.0495,
+        109.4572
+       ],
+       [
+        39.0957,
+        109.4622
+       ],
+       [
+        39.1406,
+        109.4775
+       ],
+       [
+        39.1827,
+        109.5026
+       ],
+       [
+        39.2208,
+        109.5368
+       ],
+       [
+        39.2537,
+        109.579
+       ],
+       [
+        39.2804,
+        109.6281
+       ],
+       [
+        39.3001,
+        109.6824
+       ],
+       [
+        39.3121,
+        109.7403
+       ],
+       [
+        39.3162,
+        109.8
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6149/26 NOTAMN\r\nQ)ZBPE/QRDCA/IV/BO/W/000/999/3903N10948E016\r\nA)ZBPE B)2611270459 C)2611270528 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY: \r\nN391300E1093200-N390900E1100700-N385400E1100500-N385800E1092900,BAC\r\nK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-27T12:53Z:太原",
+   "window_start_utc": "2026-11-27T12:53Z",
+   "window_end_utc": "2026-11-27T13:15Z",
+   "site": {
+    "name": "太原",
+    "lat": 38.85,
+    "lon": 111.61,
+    "country": "CN",
+    "method": "nearest-only",
+    "distance_km": 346
+   },
+   "orbit": null,
+   "vehicle": {
+    "basis": "ll2",
+    "name": "長征6A号",
+    "rocket_ll2": "Long March 6A",
+    "mission": "Long March 6A | Unknown Payload",
+    "orbit": "N/A",
+    "status": "Go",
+    "net_utc": "2026-11-27T13:00:00Z",
+    "pad": "Launch Complex 9A"
+   },
+   "notices": [
+    {
+     "key": "aviation:A6107/26",
+     "id": "A6107/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-11-27T12:53:00Z",
+     "end_utc": "2026-11-27T13:15:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        38.1333,
+        107.9333
+       ],
+       [
+        37.95,
+        108
+       ],
+       [
+        37.85,
+        107.55
+       ],
+       [
+        38.0333,
+        107.4833
+       ],
+       [
+        38.1333,
+        107.9333
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6107/26 NOTAMN\r\nQ)ZLHW/QRDCA/IV/BO/W/000/999/3800N10745E012\r\nA)ZLHW B)2611271253 C)2611271315 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN380800E1075600-N375700E1080000-N375100E1073300-N380200E1072900,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-29T03:46Z:太原",
+   "window_start_utc": "2026-11-29T03:46Z",
+   "window_end_utc": "2026-11-29T04:19Z",
+   "site": {
+    "name": "太原",
+    "lat": 38.85,
+    "lon": 111.61,
+    "country": "CN",
+    "method": "aligned",
+    "azimuth_deg": 193.9,
+    "bearing_spread_deg": 0.0,
+    "inclination_deg": 100.8
+   },
+   "orbit": "太陽同期軌道",
+   "vehicle": {
+    "basis": "ll2",
+    "name": "長征6C号",
+    "rocket_ll2": "Long March 6C",
+    "mission": "Long March 6C | Unknown Payload",
+    "orbit": "N/A",
+    "status": "Go",
+    "net_utc": "2026-11-29T03:50:00Z",
+    "pad": "Launch Complex 9A"
+   },
+   "notices": [
+    {
+     "key": "aviation:A6105/26",
+     "id": "A6105/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZPKM）",
+     "country": "CN",
+     "start_utc": "2026-11-29T03:46:00Z",
+     "end_utc": "2026-11-29T04:15:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        28.45,
+        108.5667
+       ],
+       [
+        28.4,
+        108.8833
+       ],
+       [
+        27.9833,
+        108.7833
+       ],
+       [
+        28.05,
+        108.4667
+       ],
+       [
+        28.45,
+        108.5667
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6105/26 NOTAMN\r\nQ)ZPKM/QRDCA/IV/BO/W/000/999/2813N10840E016\r\nA)ZPKM B)2611290346 C)2611290415 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN282700E1083400-N282400E1085300-N275900E1084700-N280300E1082800, \r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6106/26",
+     "id": "A6106/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZPKM）",
+     "country": "CN",
+     "start_utc": "2026-11-29T03:47:00Z",
+     "end_utc": "2026-11-29T04:19:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        27.9333,
+        108.4167
+       ],
+       [
+        27.85,
+        108.7833
+       ],
+       [
+        27.2167,
+        108.6333
+       ],
+       [
+        27.2833,
+        108.2667
+       ],
+       [
+        27.9333,
+        108.4167
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6106/26 NOTAMN\r\nQ)ZPKM/QRDCA/IV/BO/W/000/999/2734N10831E022\r\nA)ZPKM B)2611290347 C)2611290419 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN275600E1082500-N275100E1084700-N271300E1083800-N271700E1081600\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-29T21:06Z:酒泉",
+   "window_start_utc": "2026-11-29T21:06Z",
+   "window_end_utc": "2026-11-29T21:36Z",
+   "site": {
+    "name": "酒泉",
+    "lat": 40.96,
+    "lon": 100.29,
+    "country": "CN",
+    "method": "stated",
+    "azimuth_deg": 16.2,
+    "inclination_deg": 77.9
+   },
+   "orbit": "低軌道",
+   "vehicle": {
+    "basis": "ll2",
+    "name": "快舟11",
+    "rocket_ll2": "Kuaizhou 11",
+    "mission": "Kuaizhou 11 | Unknown Payload",
+    "orbit": "N/A",
+    "status": "TBD",
+    "net_utc": "2026-11-30T00:00:00Z",
+    "pad": "Launch Area 95A"
+   },
+   "notices": [
+    {
+     "key": "aviation:A6096/26",
+     "id": "A6096/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-11-29T21:06:00Z",
+     "end_utc": "2026-11-29T21:36:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        41.3531,
+        99.6631
+       ],
+       [
+        41.8439,
+        99.6631
+       ],
+       [
+        41.8331,
+        101.5
+       ],
+       [
+        40.6669,
+        101.5
+       ],
+       [
+        40.6669,
+        100.4061
+       ],
+       [
+        41,
+        100.4061
+       ],
+       [
+        41.3531,
+        99.6631
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6096/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/4115N10034E055\r\nA)ZLHW B)2611292106 C)2611292136 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN412111E0993947-N415038E0993947-N414959E1013000-N404001E1013000-N40\r\n4001E1002422-N410000E1002422, BACK TO START.VERTICAL \r\nLIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-30T22:00Z:西昌",
+   "window_start_utc": "2026-11-30T22:00Z",
+   "window_end_utc": "2026-12-21T09:00Z",
+   "site": {
+    "name": "西昌",
+    "lat": 28.25,
+    "lon": 102.03,
+    "country": "CN",
+    "method": "aligned",
+    "azimuth_deg": 125.9,
+    "bearing_spread_deg": 3.8,
+    "inclination_deg": 44.5
+   },
+   "orbit": "低軌道",
+   "vehicle": {
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征3B/3C号",
+      "orbit": "静止遷移・北斗"
+     },
+     {
+      "name": "長征2C/2D号",
+      "orbit": "低軌道"
+     }
+    ]
+   },
+   "notices": [
+    {
+     "key": "aviation:B6230/26",
+     "id": "B6230/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "issuer": "フィリピン（航空当局 RPHI）",
+     "country": "PH",
+     "start_utc": "2026-11-30T22:00:00Z",
+     "end_utc": "2026-12-21T09:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        8.7165,
+        124.95
+       ],
+       [
+        8.7153,
+        124.9646
+       ],
+       [
+        8.7115,
+        124.9788
+       ],
+       [
+        8.7054,
+        124.9921
+       ],
+       [
+        8.6971,
+        125.0041
+       ],
+       [
+        8.6868,
+        125.0145
+       ],
+       [
+        8.6749,
+        125.0229
+       ],
+       [
+        8.6618,
+        125.0291
+       ],
+       [
+        8.6478,
+        125.0329
+       ],
+       [
+        8.6333,
+        125.0341
+       ],
+       [
+        8.6189,
+        125.0329
+       ],
+       [
+        8.6049,
+        125.0291
+       ],
+       [
+        8.5917,
+        125.0229
+       ],
+       [
+        8.5799,
+        125.0144
+       ],
+       [
+        8.5696,
+        125.0041
+       ],
+       [
+        8.5613,
+        124.9921
+       ],
+       [
+        8.5552,
+        124.9788
+       ],
+       [
+        8.5514,
+        124.9646
+       ],
+       [
+        8.5501,
+        124.95
+       ],
+       [
+        8.5514,
+        124.9354
+       ],
+       [
+        8.5552,
+        124.9212
+       ],
+       [
+        8.5613,
+        124.9079
+       ],
+       [
+        8.5696,
+        124.8959
+       ],
+       [
+        8.5799,
+        124.8856
+       ],
+       [
+        8.5917,
+        124.8771
+       ],
+       [
+        8.6049,
+        124.8709
+       ],
+       [
+        8.6189,
+        124.8671
+       ],
+       [
+        8.6333,
+        124.8659
+       ],
+       [
+        8.6478,
+        124.8671
+       ],
+       [
+        8.6618,
+        124.8709
+       ],
+       [
+        8.6749,
+        124.8771
+       ],
+       [
+        8.6868,
+        124.8855
+       ],
+       [
+        8.6971,
+        124.8959
+       ],
+       [
+        8.7054,
+        124.9079
+       ],
+       [
+        8.7115,
+        124.9212
+       ],
+       [
+        8.7153,
+        124.9354
+       ],
+       [
+        8.7165,
+        124.95
+       ]
+      ]
+     ],
+     "circles": [
+      {
+       "kind": "circle",
+       "points": [
+        [
+         8.6277,
+         124.9438
+        ]
+       ],
+       "radius": 9260
+      }
+     ],
+     "text": "B6230/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/050/0838N12457E005\r\nA) RPHI B) 2611302200 C) 2612210900\r\nD) 2200-0900\r\nE) SMALL ROCKET LAUNCH ACT WILL TAKE PLACE WI:\r\n5NM RADIUS CENTERED ON 083739.56N 1245637.76E\r\n(HIRAYA FARM ESCAPE, CLAVERIA, MISAMIS ORIENTAL).\r\n\r\nRMK: EDUCATIONAL ROCKETRY ONLY.\r\n     VFR FLT AVOID THE AREA.\r\nF) SFC G) 5000FT AMSL"
+    },
+    {
+     "key": "aviation:A6142/26",
+     "id": "A6142/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZGZU）",
+     "country": "CN",
+     "start_utc": "2026-12-01T01:38:00Z",
+     "end_utc": "2026-12-01T02:03:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        21.3163,
+        112.6667
+       ],
+       [
+        21.3136,
+        112.7008
+       ],
+       [
+        21.3053,
+        112.7338
+       ],
+       [
+        21.2918,
+        112.7649
+       ],
+       [
+        21.2735,
+        112.7929
+       ],
+       [
+        21.2509,
+        112.8171
+       ],
+       [
+        21.2248,
+        112.8367
+       ],
+       [
+        21.1958,
+        112.8511
+       ],
+       [
+        21.165,
+        112.8599
+       ],
+       [
+        21.1332,
+        112.8629
+       ],
+       [
+        21.1014,
+        112.8598
+       ],
+       [
+        21.0706,
+        112.851
+       ],
+       [
+        21.0417,
+        112.8365
+       ],
+       [
+        21.0156,
+        112.8168
+       ],
+       [
+        20.9931,
+        112.7927
+       ],
+       [
+        20.9748,
+        112.7647
+       ],
+       [
+        20.9614,
+        112.7337
+       ],
+       [
+        20.9531,
+        112.7007
+       ],
+       [
+        20.9503,
+        112.6667
+       ],
+       [
+        20.9531,
+        112.6326
+       ],
+       [
+        20.9614,
+        112.5996
+       ],
+       [
+        20.9748,
+        112.5687
+       ],
+       [
+        20.9931,
+        112.5407
+       ],
+       [
+        21.0156,
+        112.5165
+       ],
+       [
+        21.0417,
+        112.4969
+       ],
+       [
+        21.0706,
+        112.4824
+       ],
+       [
+        21.1014,
+        112.4735
+       ],
+       [
+        21.1332,
+        112.4705
+       ],
+       [
+        21.165,
+        112.4734
+       ],
+       [
+        21.1958,
+        112.4822
+       ],
+       [
+        21.2248,
+        112.4966
+       ],
+       [
+        21.2509,
+        112.5162
+       ],
+       [
+        21.2735,
+        112.5404
+       ],
+       [
+        21.2918,
+        112.5685
+       ],
+       [
+        21.3053,
+        112.5995
+       ],
+       [
+        21.3136,
+        112.6326
+       ],
+       [
+        21.3163,
+        112.6667
+       ]
+      ]
+     ],
+     "circles": [
+      {
+       "kind": "circle",
+       "points": [
+        [
+         21.1333,
+         112.6833
+        ]
+       ],
+       "radius": 20000
+      }
+     ],
+     "text": "A6142/26 NOTAMN\r\nQ)ZGZU/QRDCA/IV/BO/W/000/999/2108N11240E011\r\nA)ZGZU B)2612010138 C)2612010203 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED,THE AREA WITHIN A CIRCLE \r\nCENTERED AT N210800E1124100 WITH RADIUS OF 20KM.\r\nVERTICAL LIMITS:SFC-UNL.RELATED HONGKONG ATC OPERATION.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
    "id": "2026-12-10T07:00Z:文昌",
    "window_start_utc": "2026-12-10T07:00Z",
    "window_end_utc": "2026-12-13T10:00Z",
@@ -621,6 +1659,1321 @@
      ],
      "circles": [],
      "text": "B6158/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2612100700 C) 2612131000\r\nD) 0700-1000\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E - \r\n092800N 1191300E - \r\n085700N 1193600E - \r\n084500N 1192000E - \r\n091600N 1185700E\r\n(27NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
+    }
+   ]
+  }
+ ],
+ "launch_horizon_days": 7,
+ "launches": [
+  {
+   "id": "ll2:c9605b67-8a53-4239-a8ae-577fe3b79799",
+   "basis": "ll2",
+   "name": "Long March 2F/G | Shenzhou 24",
+   "rocket": "Long March 2F/G",
+   "rocket_ja": "長征2F/G号",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "status": "Go",
+   "net_utc": "2026-11-25T00:18:00Z",
+   "window_start_utc": "2026-11-25T00:08:00Z",
+   "window_end_utc": "2026-11-25T00:48:00Z",
+   "orbit": "LEO",
+   "mission_type": "Human Exploration",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
+   "site": {
+    "name": "酒泉",
+    "lat": 40.957893,
+    "lon": 100.290944,
+    "country": "CN",
+    "inland": true,
+    "pad": "Launch Area 91 (SLS-1 / 921)"
+   },
+   "estimated_window": null,
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:A6094/26",
+     "id": "A6094/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZXXX）",
+     "country": "CN",
+     "start_utc": "2026-11-25T00:08:00Z",
+     "end_utc": "2026-11-25T00:48:00Z",
+     "slot_start_utc": "2026-11-25T00:08:00Z",
+     "slot_end_utc": "2026-11-25T00:48:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        41.3981,
+        100.42
+       ],
+       [
+        39.8431,
+        106.1631
+       ],
+       [
+        37.2039,
+        115.9081
+       ],
+       [
+        35.9119,
+        120.6781
+       ],
+       [
+        35.0131,
+        120.1619
+       ],
+       [
+        36.3181,
+        115.4181
+       ],
+       [
+        38.9169,
+        105.9769
+       ],
+       [
+        40.5181,
+        100.1589
+       ],
+       [
+        41.3981,
+        100.42
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6094/26 NOTAMN\r\nQ)ZXXX/QRTCA/IV/BO/W/000/999/3812N11017E516\r\nA)ZLHW ZBPE ZHWH ZSHA B)2611250008 C)2611250048 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN412353E1002512-N395035E1060947-N371214E1155429-N355443E1204041-\r\nN350047E1200943-N361905E1152505-N385501E1055837-N403105E1000932,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6095/26",
+     "id": "A6095/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZSHA）",
+     "country": "CN",
+     "start_utc": "2026-11-25T00:08:00Z",
+     "end_utc": "2026-11-25T00:50:00Z",
+     "slot_start_utc": "2026-11-25T00:08:00Z",
+     "slot_end_utc": "2026-11-25T00:50:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        36.2111,
+        121.21
+       ],
+       [
+        35.09,
+        124
+       ],
+       [
+        32.9183,
+        124
+       ],
+       [
+        34.4989,
+        120.2161
+       ],
+       [
+        36.2111,
+        121.21
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6095/26 NOTAMN\r\nQ)ZSHA/QRTCA/IV/BO/W/000/999/3433N12236E121\r\nA)ZSHA B)2611250008 C)2611250050 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN361240E1211236-N350524E1240000-N325506E1240000-N342956E1201258,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6149/26",
+     "id": "A6149/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZBPE）",
+     "country": "CN",
+     "start_utc": "2026-11-27T04:59:00Z",
+     "end_utc": "2026-11-27T05:28:00Z",
+     "slot_start_utc": "2026-11-27T04:59:00Z",
+     "slot_end_utc": "2026-11-27T05:28:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        39.3162,
+        109.8
+       ],
+       [
+        39.3121,
+        109.8597
+       ],
+       [
+        39.3001,
+        109.9176
+       ],
+       [
+        39.2804,
+        109.9719
+       ],
+       [
+        39.2537,
+        110.021
+       ],
+       [
+        39.2208,
+        110.0632
+       ],
+       [
+        39.1827,
+        110.0974
+       ],
+       [
+        39.1406,
+        110.1225
+       ],
+       [
+        39.0957,
+        110.1378
+       ],
+       [
+        39.0495,
+        110.1428
+       ],
+       [
+        39.0033,
+        110.1373
+       ],
+       [
+        38.9585,
+        110.1217
+       ],
+       [
+        38.9165,
+        110.0963
+       ],
+       [
+        38.8786,
+        110.0619
+       ],
+       [
+        38.8459,
+        110.0197
+       ],
+       [
+        38.8193,
+        109.9708
+       ],
+       [
+        38.7998,
+        109.9168
+       ],
+       [
+        38.7878,
+        109.8593
+       ],
+       [
+        38.7838,
+        109.8
+       ],
+       [
+        38.7878,
+        109.7407
+       ],
+       [
+        38.7998,
+        109.6832
+       ],
+       [
+        38.8193,
+        109.6292
+       ],
+       [
+        38.8459,
+        109.5803
+       ],
+       [
+        38.8786,
+        109.5381
+       ],
+       [
+        38.9165,
+        109.5037
+       ],
+       [
+        38.9585,
+        109.4783
+       ],
+       [
+        39.0033,
+        109.4627
+       ],
+       [
+        39.0495,
+        109.4572
+       ],
+       [
+        39.0957,
+        109.4622
+       ],
+       [
+        39.1406,
+        109.4775
+       ],
+       [
+        39.1827,
+        109.5026
+       ],
+       [
+        39.2208,
+        109.5368
+       ],
+       [
+        39.2537,
+        109.579
+       ],
+       [
+        39.2804,
+        109.6281
+       ],
+       [
+        39.3001,
+        109.6824
+       ],
+       [
+        39.3121,
+        109.7403
+       ],
+       [
+        39.3162,
+        109.8
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6149/26 NOTAMN\r\nQ)ZBPE/QRDCA/IV/BO/W/000/999/3903N10948E016\r\nA)ZBPE B)2611270459 C)2611270528 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY: \r\nN391300E1093200-N390900E1100700-N385400E1100500-N385800E1092900,BAC\r\nK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "ll2:b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4",
+   "basis": "ll2",
+   "name": "Long March 2D | Unknown Payload",
+   "rocket": "Long March 2D",
+   "rocket_ja": "長征2D号",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "status": "Go",
+   "net_utc": "2026-11-26T09:35:00Z",
+   "window_start_utc": "2026-11-26T09:30:00Z",
+   "window_end_utc": "2026-11-26T09:52:00Z",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4/",
+   "site": {
+    "name": "西昌",
+    "lat": 28.247059,
+    "lon": 102.029008,
+    "country": "CN",
+    "inland": true,
+    "pad": "Launch Complex 3 (LC-3/LA-1)"
+   },
+   "estimated_window": {
+    "start_utc": "2026-11-26T09:31:00Z",
+    "end_utc": "2026-11-26T09:52:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:A6099/26",
+     "id": "A6099/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZPKM）",
+     "country": "CN",
+     "start_utc": "2026-11-26T09:30:00Z",
+     "end_utc": "2026-11-26T09:52:00Z",
+     "slot_start_utc": "2026-11-26T09:30:00Z",
+     "slot_end_utc": "2026-11-26T09:52:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        26.9667,
+        107.5333
+       ],
+       [
+        26.8667,
+        107.9667
+       ],
+       [
+        26.6667,
+        107.9
+       ],
+       [
+        26.7833,
+        107.4667
+       ],
+       [
+        26.9667,
+        107.5333
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6099/26 NOTAMN\r\nQ)ZPKM/QRDCA/IV/BO/W/000/999/2649N10743E014\r\nA)ZPKM B)2611260930 C)2611260952 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED \r\nBY:N265800E1073200-N265200E1075800-N264000E1075400-N264700E1072800,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6100/26",
+     "id": "A6100/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZGZU）",
+     "country": "CN",
+     "start_utc": "2026-11-26T09:31:00Z",
+     "end_utc": "2026-11-26T09:57:00Z",
+     "slot_start_utc": "2026-11-26T09:31:00Z",
+     "slot_end_utc": "2026-11-26T09:57:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        25.4333,
+        111.85
+       ],
+       [
+        25.2167,
+        112.5167
+       ],
+       [
+        24.9333,
+        112.4167
+       ],
+       [
+        25.1667,
+        111.75
+       ],
+       [
+        25.4333,
+        111.85
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6100/26 NOTAMN\r\nQ)ZGZU/QRDCA/IV/BO/W/000/999/2510N11208E022\r\nA)ZGZU B)2611260931 C)2611260957 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED \r\nBY:N252600E1115100-N251300E1123100-N245600E1122500-N251000E1114500,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA. \r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "ll2:a6421db3-7c8a-4cf7-a659-cec195140f7f",
+   "basis": "ll2",
+   "name": "Long March 6A | Unknown Payload",
+   "rocket": "Long March 6A",
+   "rocket_ja": "長征6A号",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "status": "Go",
+   "net_utc": "2026-11-27T13:00:00Z",
+   "window_start_utc": "2026-11-27T12:53:00Z",
+   "window_end_utc": "2026-11-27T13:15:00Z",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/a6421db3-7c8a-4cf7-a659-cec195140f7f/",
+   "site": {
+    "name": "太原",
+    "lat": 38.8583,
+    "lon": 111.5802,
+    "country": "CN",
+    "inland": true,
+    "pad": "Launch Complex 9A"
+   },
+   "estimated_window": {
+    "start_utc": "2026-11-27T12:53:00Z",
+    "end_utc": "2026-11-27T13:15:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:A6107/26",
+     "id": "A6107/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-11-27T12:53:00Z",
+     "end_utc": "2026-11-27T13:15:00Z",
+     "slot_start_utc": "2026-11-27T12:53:00Z",
+     "slot_end_utc": "2026-11-27T13:15:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        38.1333,
+        107.9333
+       ],
+       [
+        37.95,
+        108
+       ],
+       [
+        37.85,
+        107.55
+       ],
+       [
+        38.0333,
+        107.4833
+       ],
+       [
+        38.1333,
+        107.9333
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6107/26 NOTAMN\r\nQ)ZLHW/QRDCA/IV/BO/W/000/999/3800N10745E012\r\nA)ZLHW B)2611271253 C)2611271315 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN380800E1075600-N375700E1080000-N375100E1073300-N380200E1072900,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "ll2:8b46d360-6b3b-423f-9036-d5568e485624",
+   "basis": "ll2",
+   "name": "Kinetica 1 | Unknown Payload",
+   "rocket": "Kinetica 1",
+   "rocket_ja": "力箭1号",
+   "provider": "CAS Space",
+   "status": "TBC",
+   "net_utc": "2026-11-29T01:00:00Z",
+   "window_start_utc": "2026-11-29T01:00:00Z",
+   "window_end_utc": "2026-11-29T04:00:00Z",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
+   "site": {
+    "name": "文昌",
+    "lat": 21.366667,
+    "lon": 112.116667,
+    "country": "CN",
+    "inland": false,
+    "pad": "South China Sea (launch location 3)"
+   },
+   "estimated_window": null,
+   "notice_state": "waiting",
+   "notices": []
+  },
+  {
+   "id": "ll2:13270554-4bdb-42ae-916f-1bb54492204f",
+   "basis": "ll2",
+   "name": "Long March 6C | Unknown Payload",
+   "rocket": "Long March 6C",
+   "rocket_ja": "長征6C号",
+   "provider": "China Aerospace Science and Technology Corporation",
+   "status": "Go",
+   "net_utc": "2026-11-29T03:50:00Z",
+   "window_start_utc": "2026-11-29T03:46:00Z",
+   "window_end_utc": "2026-11-29T04:15:00Z",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/13270554-4bdb-42ae-916f-1bb54492204f/",
+   "site": {
+    "name": "太原",
+    "lat": 38.8583,
+    "lon": 111.5802,
+    "country": "CN",
+    "inland": true,
+    "pad": "Launch Complex 9A"
+   },
+   "estimated_window": {
+    "start_utc": "2026-11-29T03:47:00Z",
+    "end_utc": "2026-11-29T04:15:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:A6105/26",
+     "id": "A6105/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZPKM）",
+     "country": "CN",
+     "start_utc": "2026-11-29T03:46:00Z",
+     "end_utc": "2026-11-29T04:15:00Z",
+     "slot_start_utc": "2026-11-29T03:46:00Z",
+     "slot_end_utc": "2026-11-29T04:15:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        28.45,
+        108.5667
+       ],
+       [
+        28.4,
+        108.8833
+       ],
+       [
+        27.9833,
+        108.7833
+       ],
+       [
+        28.05,
+        108.4667
+       ],
+       [
+        28.45,
+        108.5667
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6105/26 NOTAMN\r\nQ)ZPKM/QRDCA/IV/BO/W/000/999/2813N10840E016\r\nA)ZPKM B)2611290346 C)2611290415 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN282700E1083400-N282400E1085300-N275900E1084700-N280300E1082800, \r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:A6106/26",
+     "id": "A6106/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZPKM）",
+     "country": "CN",
+     "start_utc": "2026-11-29T03:47:00Z",
+     "end_utc": "2026-11-29T04:19:00Z",
+     "slot_start_utc": "2026-11-29T03:47:00Z",
+     "slot_end_utc": "2026-11-29T04:19:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        27.9333,
+        108.4167
+       ],
+       [
+        27.85,
+        108.7833
+       ],
+       [
+        27.2167,
+        108.6333
+       ],
+       [
+        27.2833,
+        108.2667
+       ],
+       [
+        27.9333,
+        108.4167
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6106/26 NOTAMN\r\nQ)ZPKM/QRDCA/IV/BO/W/000/999/2734N10831E022\r\nA)ZPKM B)2611290347 C)2611290419 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN275600E1082500-N275100E1084700-N271300E1083800-N271700E1081600\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "ll2:e2523821-9760-4cb4-ad1f-7ce2e30419bd",
+   "basis": "ll2",
+   "name": "Kuaizhou 11 | Unknown Payload",
+   "rocket": "Kuaizhou 11",
+   "rocket_ja": "快舟11",
+   "provider": "ExPace",
+   "status": "TBD",
+   "net_utc": "2026-11-30T00:00:00Z",
+   "window_start_utc": "2026-11-30T00:00:00Z",
+   "window_end_utc": "2026-11-30T00:00:00Z",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
+   "site": {
+    "name": "酒泉",
+    "lat": 40.969117,
+    "lon": 100.343333,
+    "country": "CN",
+    "inland": true,
+    "pad": "Launch Area 95A"
+   },
+   "estimated_window": {
+    "start_utc": "2026-11-29T21:06:00Z",
+    "end_utc": "2026-11-29T21:36:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:A6096/26",
+     "id": "A6096/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-11-29T21:06:00Z",
+     "end_utc": "2026-11-29T21:36:00Z",
+     "slot_start_utc": "2026-11-29T21:06:00Z",
+     "slot_end_utc": "2026-11-29T21:36:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        41.3531,
+        99.6631
+       ],
+       [
+        41.8439,
+        99.6631
+       ],
+       [
+        41.8331,
+        101.5
+       ],
+       [
+        40.6669,
+        101.5
+       ],
+       [
+        40.6669,
+        100.4061
+       ],
+       [
+        41,
+        100.4061
+       ],
+       [
+        41.3531,
+        99.6631
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6096/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/4115N10034E055\r\nA)ZLHW B)2611292106 C)2611292136 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN412111E0993947-N415038E0993947-N414959E1013000-N404001E1013000-N40\r\n4001E1002422-N410000E1002422, BACK TO START.VERTICAL \r\nLIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "ll2:9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+   "basis": "ll2",
+   "name": "Mir | Demo Flight",
+   "rocket": "Mir",
+   "rocket_ja": "固体燃料の宇宙発射体（国防科学研究所）",
+   "provider": "Agency for Defense Development",
+   "status": "TBD",
+   "net_utc": "2026-11-30T00:00:00Z",
+   "window_start_utc": "2026-11-30T00:00:00Z",
+   "window_end_utc": "2026-11-30T00:00:00Z",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
+   "site": {
+    "name": "済州沖（海上発射）",
+    "lat": 33.216667,
+    "lon": 126.366667,
+    "country": "KR",
+    "inland": false,
+    "pad": "ADD Offshore launch platform"
+   },
+   "estimated_window": null,
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:P5538/26",
+     "id": "P5538/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-10T06:21:00Z",
+     "end_utc": "2026-11-30T09:34:00Z",
+     "slot_start_utc": "2026-11-10T06:21:00Z",
+     "slot_end_utc": "2026-11-30T09:34:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        30.6225,
+        128.1481
+       ],
+       [
+        30.7964,
+        128.5142
+       ],
+       [
+        30.1636,
+        128.9142
+       ],
+       [
+        29.9906,
+        128.5503
+       ],
+       [
+        30.6225,
+        128.1481
+       ]
+      ],
+      [
+       [
+        24.4747,
+        132.7678
+       ],
+       [
+        25.0417,
+        133.7786
+       ],
+       [
+        22.1925,
+        135.6642
+       ],
+       [
+        21.6311,
+        134.6708
+       ],
+       [
+        24.4747,
+        132.7678
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5538/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611100621 C)2611300934\r\nD)0621/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 10 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0600-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 11 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0621-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0633-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:P5590/26",
+     "id": "P5590/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-11T05:21:00Z",
+     "end_utc": "2026-11-30T09:34:00Z",
+     "slot_start_utc": "2026-11-11T05:21:00Z",
+     "slot_end_utc": "2026-11-30T09:34:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        30.6225,
+        128.1481
+       ],
+       [
+        30.7964,
+        128.5142
+       ],
+       [
+        30.1636,
+        128.9142
+       ],
+       [
+        29.9906,
+        128.5503
+       ],
+       [
+        30.6225,
+        128.1481
+       ]
+      ],
+      [
+       [
+        24.4747,
+        132.7678
+       ],
+       [
+        25.0417,
+        133.7786
+       ],
+       [
+        22.1925,
+        135.6642
+       ],
+       [
+        21.6311,
+        134.6708
+       ],
+       [
+        24.4747,
+        132.7678
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5590/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611110521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 11 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 12 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
+    },
+    {
+     "key": "aviation:P5642/26",
+     "id": "P5642/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-13T05:21:00Z",
+     "end_utc": "2026-11-30T09:34:00Z",
+     "slot_start_utc": "2026-11-13T05:21:00Z",
+     "slot_end_utc": "2026-11-30T09:34:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        30.6225,
+        128.1481
+       ],
+       [
+        30.7964,
+        128.5142
+       ],
+       [
+        30.1636,
+        128.9142
+       ],
+       [
+        29.9906,
+        128.5503
+       ],
+       [
+        30.6225,
+        128.1481
+       ]
+      ],
+      [
+       [
+        24.4747,
+        132.7678
+       ],
+       [
+        25.0417,
+        133.7786
+       ],
+       [
+        22.1925,
+        135.6642
+       ],
+       [
+        21.6311,
+        134.6708
+       ],
+       [
+        24.4747,
+        132.7678
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5642/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611130521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 13 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 14 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "notice:2026-11-30T22:00Z:西昌",
+   "basis": "notices",
+   "name": null,
+   "rocket": null,
+   "rocket_ja": null,
+   "provider": null,
+   "status": null,
+   "net_utc": null,
+   "window_start_utc": "2026-11-30T22:00:00Z",
+   "window_end_utc": "2026-12-21T09:00:00Z",
+   "orbit": "低軌道",
+   "mission_type": null,
+   "url": null,
+   "site": {
+    "name": "西昌",
+    "lat": 28.25,
+    "lon": 102.03,
+    "country": "CN",
+    "inland": true,
+    "pad": null
+   },
+   "azimuth_deg": 125.9,
+   "inclination_deg": 44.5,
+   "vehicle_candidates": [
+    {
+     "name": "長征3B/3C号",
+     "orbit": "静止遷移・北斗"
+    },
+    {
+     "name": "長征2C/2D号",
+     "orbit": "低軌道"
+    }
+   ],
+   "estimated_window": {
+    "start_utc": "2026-12-01T01:38:00Z",
+    "end_utc": "2026-12-01T02:03:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:B6230/26",
+     "id": "B6230/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "フィリピン（航空当局 RPHI）",
+     "country": "PH",
+     "start_utc": "2026-11-30T22:00:00Z",
+     "end_utc": "2026-12-21T09:00:00Z",
+     "slot_start_utc": "2026-11-30T22:00:00Z",
+     "slot_end_utc": "2026-12-21T09:00:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        8.7165,
+        124.95
+       ],
+       [
+        8.7153,
+        124.9646
+       ],
+       [
+        8.7115,
+        124.9788
+       ],
+       [
+        8.7054,
+        124.9921
+       ],
+       [
+        8.6971,
+        125.0041
+       ],
+       [
+        8.6868,
+        125.0145
+       ],
+       [
+        8.6749,
+        125.0229
+       ],
+       [
+        8.6618,
+        125.0291
+       ],
+       [
+        8.6478,
+        125.0329
+       ],
+       [
+        8.6333,
+        125.0341
+       ],
+       [
+        8.6189,
+        125.0329
+       ],
+       [
+        8.6049,
+        125.0291
+       ],
+       [
+        8.5917,
+        125.0229
+       ],
+       [
+        8.5799,
+        125.0144
+       ],
+       [
+        8.5696,
+        125.0041
+       ],
+       [
+        8.5613,
+        124.9921
+       ],
+       [
+        8.5552,
+        124.9788
+       ],
+       [
+        8.5514,
+        124.9646
+       ],
+       [
+        8.5501,
+        124.95
+       ],
+       [
+        8.5514,
+        124.9354
+       ],
+       [
+        8.5552,
+        124.9212
+       ],
+       [
+        8.5613,
+        124.9079
+       ],
+       [
+        8.5696,
+        124.8959
+       ],
+       [
+        8.5799,
+        124.8856
+       ],
+       [
+        8.5917,
+        124.8771
+       ],
+       [
+        8.6049,
+        124.8709
+       ],
+       [
+        8.6189,
+        124.8671
+       ],
+       [
+        8.6333,
+        124.8659
+       ],
+       [
+        8.6478,
+        124.8671
+       ],
+       [
+        8.6618,
+        124.8709
+       ],
+       [
+        8.6749,
+        124.8771
+       ],
+       [
+        8.6868,
+        124.8855
+       ],
+       [
+        8.6971,
+        124.8959
+       ],
+       [
+        8.7054,
+        124.9079
+       ],
+       [
+        8.7115,
+        124.9212
+       ],
+       [
+        8.7153,
+        124.9354
+       ],
+       [
+        8.7165,
+        124.95
+       ]
+      ]
+     ],
+     "circles": [
+      {
+       "kind": "circle",
+       "points": [
+        [
+         8.6277,
+         124.9438
+        ]
+       ],
+       "radius": 9260
+      }
+     ],
+     "text": "B6230/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/050/0838N12457E005\r\nA) RPHI B) 2611302200 C) 2612210900\r\nD) 2200-0900\r\nE) SMALL ROCKET LAUNCH ACT WILL TAKE PLACE WI:\r\n5NM RADIUS CENTERED ON 083739.56N 1245637.76E\r\n(HIRAYA FARM ESCAPE, CLAVERIA, MISAMIS ORIENTAL).\r\n\r\nRMK: EDUCATIONAL ROCKETRY ONLY.\r\n     VFR FLT AVOID THE AREA.\r\nF) SFC G) 5000FT AMSL"
+    },
+    {
+     "key": "aviation:A6142/26",
+     "id": "A6142/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZGZU）",
+     "country": "CN",
+     "start_utc": "2026-12-01T01:38:00Z",
+     "end_utc": "2026-12-01T02:03:00Z",
+     "slot_start_utc": "2026-12-01T01:38:00Z",
+     "slot_end_utc": "2026-12-01T02:03:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        21.3163,
+        112.6667
+       ],
+       [
+        21.3136,
+        112.7008
+       ],
+       [
+        21.3053,
+        112.7338
+       ],
+       [
+        21.2918,
+        112.7649
+       ],
+       [
+        21.2735,
+        112.7929
+       ],
+       [
+        21.2509,
+        112.8171
+       ],
+       [
+        21.2248,
+        112.8367
+       ],
+       [
+        21.1958,
+        112.8511
+       ],
+       [
+        21.165,
+        112.8599
+       ],
+       [
+        21.1332,
+        112.8629
+       ],
+       [
+        21.1014,
+        112.8598
+       ],
+       [
+        21.0706,
+        112.851
+       ],
+       [
+        21.0417,
+        112.8365
+       ],
+       [
+        21.0156,
+        112.8168
+       ],
+       [
+        20.9931,
+        112.7927
+       ],
+       [
+        20.9748,
+        112.7647
+       ],
+       [
+        20.9614,
+        112.7337
+       ],
+       [
+        20.9531,
+        112.7007
+       ],
+       [
+        20.9503,
+        112.6667
+       ],
+       [
+        20.9531,
+        112.6326
+       ],
+       [
+        20.9614,
+        112.5996
+       ],
+       [
+        20.9748,
+        112.5687
+       ],
+       [
+        20.9931,
+        112.5407
+       ],
+       [
+        21.0156,
+        112.5165
+       ],
+       [
+        21.0417,
+        112.4969
+       ],
+       [
+        21.0706,
+        112.4824
+       ],
+       [
+        21.1014,
+        112.4735
+       ],
+       [
+        21.1332,
+        112.4705
+       ],
+       [
+        21.165,
+        112.4734
+       ],
+       [
+        21.1958,
+        112.4822
+       ],
+       [
+        21.2248,
+        112.4966
+       ],
+       [
+        21.2509,
+        112.5162
+       ],
+       [
+        21.2735,
+        112.5404
+       ],
+       [
+        21.2918,
+        112.5685
+       ],
+       [
+        21.3053,
+        112.5995
+       ],
+       [
+        21.3136,
+        112.6326
+       ],
+       [
+        21.3163,
+        112.6667
+       ]
+      ]
+     ],
+     "circles": [
+      {
+       "kind": "circle",
+       "points": [
+        [
+         21.1333,
+         112.6833
+        ]
+       ],
+       "radius": 20000
+      }
+     ],
+     "text": "A6142/26 NOTAMN\r\nQ)ZGZU/QRDCA/IV/BO/W/000/999/2108N11240E011\r\nA)ZGZU B)2612010138 C)2612010203 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED,THE AREA WITHIN A CIRCLE \r\nCENTERED AT N210800E1124100 WITH RADIUS OF 20KM.\r\nVERTICAL LIMITS:SFC-UNL.RELATED HONGKONG ATC OPERATION.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
     }
    ]
   }

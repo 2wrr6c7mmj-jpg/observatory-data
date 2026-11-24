@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-23T16:31:20Z",
+ "generated_utc": "2026-11-24T00:55:55Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -160,10 +160,15 @@
    "notices": [
     "maritime:鲁航警629/26"
    ],
-   "method": "nearest-only",
+   "method": "touching",
+   "site_latlon": [
+    35.0,
+    122.0
+   ],
    "site": "海陽（海上発射）",
    "country": "CN",
-   "distance_km": 148
+   "azimuth_deg": 337.4,
+   "inclination_deg": 108.3
   },
   {
    "window_start_utc": "2026-08-04T07:50Z",
@@ -772,6 +777,216 @@
    "distance_km": 1464
   },
   {
+   "window_start_utc": "2026-11-25T00:08Z",
+   "window_end_utc": "2026-11-25T00:50Z",
+   "areas": [
+    [
+     38.783,
+     109.729
+    ],
+    [
+     34.996,
+     122.139
+    ]
+   ],
+   "notices": [
+    "aviation:A6094/26",
+    "aviation:A6095/26"
+   ],
+   "method": "touching",
+   "site_latlon": [
+    40.96,
+    100.29
+   ],
+   "site": "酒泉",
+   "country": "CN",
+   "azimuth_deg": 102.9,
+   "inclination_deg": 42.6,
+   "recorded_launches": [
+    {
+     "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
+     "name": "Long March 2F/G | Shenzhou 24",
+     "status": "Go",
+     "net_utc": "2026-11-25T00:18:00Z",
+     "rocket": "Long March 2F/G",
+     "orbit": "LEO",
+     "pad": "Launch Area 91 (SLS-1 / 921)"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-26T09:30Z",
+   "window_end_utc": "2026-11-26T09:57Z",
+   "areas": [
+    [
+     26.85,
+     107.68
+    ],
+    [
+     25.237,
+     112.077
+    ]
+   ],
+   "notices": [
+    "aviation:A6099/26",
+    "aviation:A6100/26"
+   ],
+   "method": "aligned",
+   "site": "西昌",
+   "country": "CN",
+   "azimuth_deg": 105.3,
+   "bearing_spread_deg": 2.0,
+   "inclination_deg": 31.8,
+   "recorded_launches": [
+    {
+     "ll2_id": "b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4",
+     "name": "Long March 2D | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-26T09:35:00Z",
+     "rocket": "Long March 2D",
+     "orbit": "N/A",
+     "pad": "Launch Complex 3 (LC-3/LA-1)"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-27T04:59Z",
+   "window_end_utc": "2026-11-27T05:28Z",
+   "areas": [
+    [
+     39.057,
+     109.8
+    ]
+   ],
+   "notices": [
+    "aviation:A6149/26"
+   ],
+   "method": "nearest-only",
+   "site": "太原",
+   "country": "CN",
+   "distance_km": 158
+  },
+  {
+   "window_start_utc": "2026-11-27T12:53Z",
+   "window_end_utc": "2026-11-27T13:15Z",
+   "areas": [
+    [
+     38.02,
+     107.78
+    ]
+   ],
+   "notices": [
+    "aviation:A6107/26"
+   ],
+   "method": "nearest-only",
+   "site": "太原",
+   "country": "CN",
+   "distance_km": 346,
+   "recorded_launches": [
+    {
+     "ll2_id": "a6421db3-7c8a-4cf7-a659-cec195140f7f",
+     "name": "Long March 6A | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-27T13:00:00Z",
+     "rocket": "Long March 6A",
+     "orbit": "N/A",
+     "pad": "Launch Complex 9A"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-29T03:46Z",
+   "window_end_utc": "2026-11-29T04:19Z",
+   "areas": [
+    [
+     28.267,
+     108.653
+    ],
+    [
+     27.643,
+     108.503
+    ]
+   ],
+   "notices": [
+    "aviation:A6105/26",
+    "aviation:A6106/26"
+   ],
+   "method": "aligned",
+   "site": "太原",
+   "country": "CN",
+   "azimuth_deg": 193.9,
+   "bearing_spread_deg": 0.0,
+   "inclination_deg": 100.8,
+   "recorded_launches": [
+    {
+     "ll2_id": "13270554-4bdb-42ae-916f-1bb54492204f",
+     "name": "Long March 6C | Unknown Payload",
+     "status": "Go",
+     "net_utc": "2026-11-29T03:50:00Z",
+     "rocket": "Long March 6C",
+     "orbit": "N/A",
+     "pad": "Launch Complex 9A"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-29T21:06Z",
+   "window_end_utc": "2026-11-29T21:36Z",
+   "areas": [
+    [
+     41.248,
+     100.401
+    ]
+   ],
+   "notices": [
+    "aviation:A6096/26"
+   ],
+   "method": "touching",
+   "site_latlon": [
+    40.96,
+    100.29
+   ],
+   "site": "酒泉",
+   "country": "CN",
+   "azimuth_deg": 16.2,
+   "inclination_deg": 77.9,
+   "recorded_launches": [
+    {
+     "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
+     "name": "Kuaizhou 11 | Unknown Payload",
+     "status": "TBD",
+     "net_utc": "2026-11-30T00:00:00Z",
+     "rocket": "Kuaizhou 11",
+     "orbit": "N/A",
+     "pad": "Launch Area 95A"
+    }
+   ]
+  },
+  {
+   "window_start_utc": "2026-11-30T22:00Z",
+   "window_end_utc": "2026-12-21T09:00Z",
+   "areas": [
+    [
+     8.635,
+     124.95
+    ],
+    [
+     21.138,
+     112.667
+    ]
+   ],
+   "notices": [
+    "aviation:B6230/26",
+    "aviation:A6142/26"
+   ],
+   "method": "aligned",
+   "site": "西昌",
+   "country": "CN",
+   "azimuth_deg": 125.9,
+   "bearing_spread_deg": 3.8,
+   "inclination_deg": 44.5
+  },
+  {
    "window_start_utc": "2026-12-10T07:00Z",
    "window_end_utc": "2026-12-13T10:00Z",
    "areas": [
@@ -1088,7 +1303,7 @@
    "lat": 40.957893,
    "lon": 100.290944,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/c9605b67-8a53-4239-a8ae-577fe3b79799/",
-   "event_index": null
+   "event_index": 34
   },
   {
    "ll2_id": "b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4",
@@ -1105,7 +1320,7 @@
    "lat": 28.247059,
    "lon": 102.029008,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4/",
-   "event_index": null
+   "event_index": 35
   },
   {
    "ll2_id": "a6421db3-7c8a-4cf7-a659-cec195140f7f",
@@ -1122,7 +1337,7 @@
    "lat": 38.8583,
    "lon": 111.5802,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a6421db3-7c8a-4cf7-a659-cec195140f7f/",
-   "event_index": null
+   "event_index": 37
   },
   {
    "ll2_id": "8b46d360-6b3b-423f-9036-d5568e485624",
@@ -1156,7 +1371,7 @@
    "lat": 38.8583,
    "lon": 111.5802,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/13270554-4bdb-42ae-916f-1bb54492204f/",
-   "event_index": null
+   "event_index": 38
   },
   {
    "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
@@ -1190,7 +1405,7 @@
    "lat": 40.969117,
    "lon": 100.343333,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
-   "event_index": null
+   "event_index": 39
   },
   {
    "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
@@ -1207,7 +1422,7 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
-   "event_index": 34
+   "event_index": 41
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
