@@ -169,5 +169,14 @@ class Twins(unittest.TestCase):
         self.assertTrue(all(len(s) > 3 or not s.isascii() for t in B.place_terms() for s in t['src']))
 
 
+class Twins2(unittest.TestCase):
+    def test_country_names_do_not_count_as_overlap(self):
+        tok = lambda h: set(h.split())
+        ev = lambda countries, *heads: {'meta': {'category': 'conflict', 'countries': countries, 'place': None}, 'heads': list(heads)}
+        a = ev(['UA', 'RU', 'LY'], 'ウクライナ リビア沖 ロシア 軍艦 撃沈 ドローン')
+        b = ev(['RU', 'UA', 'PL'], 'ロシア ドローン ポーランド 空域 侵入 ウクライナ 巡航ミサイル')
+        self.assertFalse(B.same_event(a, b, tok))
+
+
 if __name__ == '__main__':
     unittest.main()

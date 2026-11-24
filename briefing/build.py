@@ -93,9 +93,10 @@ def same_event(a, b, tok):
     key = lambda m: (m['category'], frozenset(m['countries'][:2]), (m['place'] or {}).get('name'))
     if not a['meta']['countries'] or key(a['meta']) != key(b['meta']):
         return False
-    wa = set().union(*(tok(h) for h in a['heads'])) if a['heads'] else set()
-    wb = set().union(*(tok(h) for h in b['heads'])) if b['heads'] else set()
-    return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.3
+    names = set(S.COUNTRY_JA.values())   # 国名は国の組で見たので、語の重なりには数えない
+    wa = (set().union(*(tok(h) for h in a['heads'])) if a['heads'] else set()) - names
+    wb = (set().union(*(tok(h) for h in b['heads'])) if b['heads'] else set()) - names
+    return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.4
 
 
 def place_terms():
@@ -152,7 +153,8 @@ def make_scripts(records, args, terms, tok, log, deadline):
             continue
         conflicts = T.number_conflicts(reps)
         use_terms = T.glossary_for(reps, terms + places)
-        script, why, notes, tries = T.write(args.server, reps, use_terms, conflicts, known)
+        script, why, notes, tries = T.write(args.server, reps, use_terms, conflicts, known,
+                                            need_attribution=meta['category'] == 'conflict')
         if script is None:
             dropped.append({'reason': '、'.join(why), 'headline': (heads[0])[:40]})
             log(f'#{rank} hold: {"、".join(why)}')

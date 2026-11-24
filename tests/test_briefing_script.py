@@ -193,5 +193,37 @@ class Rules3(unittest.TestCase):
         self.assertNotIn('title_ja_machine', en)
 
 
+class Rules4(unittest.TestCase):
+    """4 回目の試作（2026-11-24）を受けた確かめ：紛争の出来事の帰属、定訳の機械的な置き換え、見出しの長さ。"""
+    ARTS = [{'source': 'france24', 'title': 'Ukraine says it sank a Russian warship off Libya; NATO to meet', 'summary': '', 'titleJa': ''}]
+
+    def test_conflict_needs_attribution(self):
+        flat = parsed('ウクライナ軍がロシア軍艦を撃沈', 'ウクライナ軍はリビア沖でロシアの軍艦を撃沈しました。')
+        why, _ = T.verify(flat, self.ARTS, [], [], need_attribution=True)
+        self.assertTrue(any('誰の発表' in w for w in why), why)
+        self.assertEqual(T.verify(flat, self.ARTS, [], [])[0], [])   # 紛争でなければ求めない
+        said = parsed('ウクライナ軍がロシア軍艦を撃沈', 'ウクライナ軍は、リビア沖でロシアの軍艦を撃沈したと発表しました。')
+        self.assertEqual(T.verify(said, self.ARTS, [], [], need_attribution=True)[0], [])
+
+    def test_fixed_terms_are_replaced_before_checking(self):
+        with open(os.path.join(os.path.dirname(T.__file__), 'glossary.json'), encoding='utf-8') as f:
+            terms = T.glossary_for(self.ARTS, json.load(f)['terms'])
+        raw = parsed('ロシアの戦艦を撃沈', 'ウクライナは、ロシアの戦艦を撃沈したと発表しました。', '北約は、この件を協議すると発表しました。')
+        fixed = T.apply_fixed_terms(raw, terms)
+        self.assertEqual(fixed['headline'], 'ロシアの軍艦を撃沈')
+        self.assertIn('NATOは', fixed['lines'][1]['text'])
+        self.assertEqual(T.verify(fixed, self.ARTS, [], terms)[0], [])
+        # write は置き換えてから確かめる（書き直しをさせない）
+        s, why, _, tries = T.write('x', self.ARTS, terms, [], chat_fn=lambda srv, m: json.dumps(
+            {'headline': 'ロシアの戦艦を撃沈', 'lines': [{'text': 'ウクライナは、ロシアの戦艦を撃沈したと発表しました。'}]}, ensure_ascii=False))
+        self.assertEqual((why, len(tries)), ([], 1))
+        self.assertIn('軍艦', s['lines'][0]['text'])
+
+    def test_headline_hard_limit(self):
+        self.assertEqual(T.verify(parsed('あ' * 30, 'ウクライナは、ロシアの軍艦を撃沈したと発表しました。'), self.ARTS, [], [])[0], [])
+        why, _ = T.verify(parsed('あ' * 31, 'ウクライナは、ロシアの軍艦を撃沈したと発表しました。'), self.ARTS, [], [])
+        self.assertTrue(any('見出し' in w for w in why), why)
+
+
 if __name__ == '__main__':
     unittest.main()
