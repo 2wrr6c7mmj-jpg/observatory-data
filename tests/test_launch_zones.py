@@ -159,3 +159,13 @@ class LaunchesFirst(unittest.TestCase):
                            closure("OLD", "2026-11-20T12:53:00Z", "2026-11-20T13:15:00Z", [[38.9, 111.7], [38.0, 113.0], [37.8, 112.8]])])
         tai = next(x for x in out if x["id"] == "ll2:tai")
         self.assertEqual([n["id"] for n in tai["notices"]], ["A6107/26"])
+
+    def test_a_notice_on_the_line_but_on_another_day_is_not_joined(self):
+        # A6149/26: a small 太原 danger area two days later that lies on 酒泉's bearing line (2026-11-24, live data)
+        out = launches_of([closure("A6094/26", "2026-11-25T00:08:00Z", "2026-11-25T00:48:00Z", JIUQUAN_CORRIDOR),
+                           closure("A6095/26", "2026-11-25T00:08:00Z", "2026-11-25T00:50:00Z", YELLOW_SEA),
+                           closure("A6149/26", "2026-11-27T04:59:00Z", "2026-11-27T05:28:00Z",
+                                   [[39.217, 109.533], [39.15, 110.117], [38.9, 110.083], [38.967, 109.483]])])
+        sz = next(x for x in out if x["id"] == "ll2:sz24")
+        self.assertEqual([n["id"] for n in sz["notices"]], ["A6094/26", "A6095/26"])
+        self.assertEqual(sz["estimated_window"]["start_utc"], "2026-11-25T00:08:00Z")
