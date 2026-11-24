@@ -1,6 +1,6 @@
 {
  "version": 1,
- "createdAt": 1795529703995,
+ "createdAt": 1795533657022,
  "windowHours": 24,
  "hold": false,
  "holdReason": "",
@@ -14,27 +14,27 @@
  },
  "audio": {
   "file": "latest.mp3",
-  "seconds": 103.06,
-  "bytes": 825024
+  "seconds": 103.1,
+  "bytes": 825216
  },
  "counts": {
-  "records": 929,
-  "sources": 78,
-  "clusters": 781,
-  "multiSource": 50
+  "records": 934,
+  "sources": 79,
+  "clusters": 796,
+  "multiSource": 43
  },
  "intro": {
   "start": 0,
-  "text": "東アジア情勢観測、11月24日。過去24時間の主な出来事、7件です。"
+  "text": "東アジア情勢観測、11月25日。過去24時間の主な出来事、7件です。"
  },
  "outro": {
-  "start": 97.6,
+  "start": 97.64,
   "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
  },
  "events": [
   {
-   "start": 8.33,
-   "end": 19.99,
+   "start": 8.37,
+   "end": 20.03,
    "category": "conflict",
    "label": "紛争 · リビア",
    "country": "LY",
@@ -48,22 +48,25 @@
     "lon": 20.07,
     "lat": 32.12
    },
+   "anim": {
+    "kind": "strike"
+   },
    "headline": "ウクライナ、リビアでロシア軍艦を撃沈と発表",
    "lines": [
     {
-     "start": 8.33,
+     "start": 8.37,
      "sub": "",
      "text": "ウクライナは、リビアのベンガジ港でロシアの軍艦と貨物船を撃沈したと発表しました。"
     },
     {
-     "start": 14.36,
+     "start": 14.4,
      "sub": "",
      "text": "ウクライナ保安庁は、攻撃に使ったドローンは母船から発進したと説明しています。"
     }
    ],
    "sources": {
-    "count": 8,
-    "countries": 7,
+    "count": 7,
+    "countries": 6,
     "names": [
      "キーウ・インディペンデント",
      "ジャパンタイムズ",
@@ -110,7 +113,6 @@
      "france24",
      "japantimes",
      "kyivindependent",
-     "sightline",
      "thehindu",
      "ua-state"
     ],
@@ -120,8 +122,8 @@
    }
   },
   {
-   "start": 20.89,
-   "end": 34.35,
+   "start": 20.93,
+   "end": 34.4,
    "category": "military",
    "label": "軍事 · 韓国",
    "country": "KR",
@@ -134,15 +136,18 @@
     "lon": 130.87,
     "lat": 37.5
    },
+   "anim": {
+    "kind": "aircraft"
+   },
    "headline": "ロシア軍機が韓国の防空識別圏に進入、鬱陵島に警報",
    "lines": [
     {
-     "start": 20.89,
+     "start": 20.93,
      "sub": "",
      "text": "韓国軍は、複数のロシア軍機が日本海上空の防空識別圏に一時進入したと発表しました。"
     },
     {
-     "start": 28.03,
+     "start": 28.07,
      "sub": "",
      "text": "鬱陵島では住民に避難を呼びかける空襲警報が出され、韓国はロシアに抗議しました。"
     }
@@ -204,8 +209,8 @@
    }
   },
   {
-   "start": 35.25,
-   "end": 45.57,
+   "start": 35.3,
+   "end": 45.61,
    "category": "diplomacy",
    "label": "外交 · 中国",
    "country": "CN",
@@ -218,15 +223,18 @@
     "lon": 100.29,
     "lat": 40.96
    },
+   "anim": {
+    "kind": "launch"
+   },
    "headline": "中国の神舟24号、初の外国人宇宙飛行士が搭乗へ",
    "lines": [
     {
-     "start": 35.25,
+     "start": 35.3,
      "sub": "",
      "text": "中国は、宇宙船「神舟24号」の乗組員を発表しました。"
     },
     {
-     "start": 40.17,
+     "start": 40.22,
      "sub": "",
      "text": "パキスタンのアリ氏が、外国人として初めて宇宙ステーション「天宮」に搭乗します。"
     }
@@ -289,42 +297,56 @@
    }
   },
   {
-   "start": 46.47,
-   "end": 58.67,
+   "start": 46.51,
+   "end": 58.72,
    "category": "conflict",
    "label": "紛争 · ウクライナ",
    "country": "UA",
    "countries": [
     "UA",
-    "RU"
+    "RU",
+    "LY"
    ],
    "place": {
     "name": "ザポリージャ",
     "lon": 35.14,
     "lat": 47.84
    },
+   "anim": {
+    "kind": "strike"
+   },
    "headline": "ロシア軍がザポリージャを攻撃、2人死亡",
    "lines": [
     {
-     "start": 46.47,
+     "start": 46.51,
      "sub": "",
      "text": "ウクライナのザポリージャの当局は、ロシア軍の夜間の攻撃で2人が死亡したと発表しました。"
     },
     {
-     "start": 52.87,
+     "start": 52.91,
      "sub": "",
      "text": "負傷者は数十人にのぼり、集合住宅や交通施設が被害を受けたとしています。"
     }
    ],
    "sources": {
-    "count": 5,
-    "countries": 5,
+    "count": 8,
+    "countries": 7,
     "names": [
-     "メドゥーザ 英語版",
-     "中央広播電台",
-     "フランス24"
+     "ガーディアン ロシア",
+     "キーウ・インディペンデント",
+     "メドゥーザ 英語版"
     ],
     "items": [
+     {
+      "source": "guardian-russia",
+      "title": "Italy expresses concern to Ukraine over Libya ship attacks – Europe live",
+      "url": "https://www.theguardian.com/world/live/2026/nov/24/russia-ukraine-poland-drone-patriots-latest-news-updates"
+     },
+     {
+      "source": "kyivindependent",
+      "title": "Russian attacks kill 9, injure 81 across Ukraine over past day, Zaporizhzhia residential building massively hit",
+      "url": "https://kyivindependent.com/russian-attacks-kill-9-injure-77-across-ukraine-over-past-day-zaporizhzhia-residential-building-massively-hit/"
+     },
      {
       "source": "meduza",
       "title": "Russian strikes kill two in Ukraine’s Zaporizhzhia, injure dozens",
@@ -344,11 +366,6 @@
       "source": "thehindu",
       "title": "Russian attack kills two people, wounds 22 in Ukraine's Zaporizhzhia, official says",
       "url": "https://www.thehindu.com/news/international/russian-attack-kills-two-people-wounds-22-in-ukraines-zaporizhzhia-official-says/article71737237.ece"
-     },
-     {
-      "source": "ukrinform",
-      "title": "Russian drone attack on Korosten railway station kills one, injury toll rises to three",
-      "url": "https://www.ukrinform.net/rubric-ato/4188043-russian-drone-attack-on-korosten-railway-station-kills-one-injury-toll-rises-to-three.html"
      }
     ]
    },
@@ -356,8 +373,11 @@
     "rank": 4,
     "families": [
      "france24",
+     "guardian",
+     "kyivindependent",
      "meduza",
      "rti",
+     "ru-state",
      "thehindu",
      "ua-state"
     ],
@@ -382,8 +402,8 @@
    }
   },
   {
-   "start": 59.57,
-   "end": 70.47,
+   "start": 59.62,
+   "end": 70.51,
    "category": "military",
    "label": "軍事 · ロシア",
    "country": "RU",
@@ -392,22 +412,25 @@
     "DE"
    ],
    "place": null,
+   "anim": {
+    "kind": "none"
+   },
    "headline": "ロシアの核搭載衛星の計画、ドイツのメディアが報道",
    "lines": [
     {
-     "start": 59.57,
+     "start": 59.62,
      "sub": "",
      "text": "ドイツのメディアは、ロシアが数週間以内に核兵器を載せた衛星を打ち上げる計画だと報じました。"
     },
     {
-     "start": 66.22,
+     "start": 66.26,
      "sub": "",
      "text": "NATOのルッテ事務総長は、宇宙での安全も守ると述べました。"
     }
    ],
    "sources": {
-    "count": 5,
-    "countries": 3,
+    "count": 4,
+    "countries": 2,
     "names": [
      "フランス24",
      "新頭殼",
@@ -433,11 +456,6 @@
       "source": "cna-intl",
       "title": "傳俄羅斯計劃發射核武衛星 北約矢言捍衛太空安全",
       "url": "https://www.cna.com.tw/news/aopl/202611240031.aspx"
-     },
-     {
-      "source": "guardian-russia",
-      "title": "Germany taking seriously reports Russia may be planning to launch nuclear weapons into space",
-      "url": "https://www.theguardian.com/world/2026/nov/23/russia-nuclear-weapons-space-german-intelligence"
      }
     ]
    },
@@ -446,7 +464,6 @@
     "families": [
      "cna-tw",
      "france24",
-     "guardian",
      "newtalk",
      "rti"
     ],
@@ -456,8 +473,8 @@
    }
   },
   {
-   "start": 71.37,
-   "end": 82.74,
+   "start": 71.41,
+   "end": 82.78,
    "category": "conflict",
    "label": "紛争 · イラン",
    "country": "IR",
@@ -466,15 +483,18 @@
     "US"
    ],
    "place": null,
+   "anim": {
+    "kind": "none"
+   },
    "headline": "イラン、米国の海上封鎖に「あらゆる手段」で対抗",
    "lines": [
     {
-     "start": 71.37,
+     "start": 71.41,
      "sub": "",
      "text": "イラン外務省のバガイ報道官は、米国による石油輸出の海上封鎖を容認しないと述べました。"
     },
     {
-     "start": 78.01,
+     "start": 78.06,
      "sub": "",
      "text": "報道官は、あらゆる手段で対抗し、自国を守るとしています。"
     }
@@ -511,8 +531,8 @@
    }
   },
   {
-   "start": 83.64,
-   "end": 96.7,
+   "start": 83.68,
+   "end": 96.74,
    "category": "conflict",
    "label": "紛争 · パレスチナ",
    "country": "PS",
@@ -525,28 +545,46 @@
     "lon": 34.3,
     "lat": 31.35
    },
+   "anim": {
+    "kind": "strike"
+   },
    "headline": "ガザでイスラエルの空爆、少なくとも6人死亡",
    "lines": [
     {
-     "start": 83.64,
+     "start": 83.68,
      "sub": "",
      "text": "ガザの保健当局と警察は、イスラエル軍の空爆で警察官2人を含む少なくとも6人が死亡したと発表しました。"
     },
     {
-     "start": 91.78,
+     "start": 91.82,
      "sub": "",
      "text": "このうち3人は、南部ハンユニスの警察署の近くで死亡したとしています。"
     }
    ],
    "sources": {
-    "count": 5,
-    "countries": 5,
+    "count": 7,
+    "countries": 6,
     "names": [
-     "ザ・ヒンドゥー 国際",
-     "アルジャジーラ",
-     "アルモニター"
+     "フランス24",
+     "英国公共放送 国際",
+     "ミドル・イースト・アイ"
     ],
     "items": [
+     {
+      "source": "f24",
+      "title": "Israeli strikes on Gaza kill senior Hamas security official and six other people, medics say",
+      "url": "https://www.france24.com/en/middle-east/20261124-israeli-strikes-on-gaza-kill-senior-hamas-security-official-and-six-other-people-medics-say"
+     },
+     {
+      "source": "bbc",
+      "title": "Israeli air strike kills Hamas internal security chief in Gaza",
+      "url": "https://www.bbc.co.uk/news/articles/c6rrg7ggq190o"
+     },
+     {
+      "source": "mee",
+      "title": "Gaza confirms death of Hamas internal security chief after Israeli strike",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/gaza-confirms-death-hamas-internal-security-chief-after-israeli-strike"
+     },
      {
       "source": "thehindu",
       "title": "Israeli airstrike kills senior Hamas security official in Gaza, Hamas sources say",
@@ -561,16 +599,6 @@
       "source": "almonitor",
       "title": "Israeli airstrikes in Gaza kill senior Hamas security official and six others, medics say",
       "url": "https://www.al-monitor.com/originals/2026/11/israeli-airstrikes-gaza-kill-senior-hamas-security-official-and-six-others-medics"
-     },
-     {
-      "source": "mee",
-      "title": "Israeli strike kills at least three Palestinians in southern Gaza",
-      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/israeli-strike-kills-least-three-palestinians-southern-gaza"
-     },
-     {
-      "source": "cgtn-world",
-      "title": "Israeli airstrike kills 3 Palestinians in southern Gaza, medics say",
-      "url": "https://news.cgtn.com/news/2026-11-24/Israeli-airstrike-kills-3-Palestinians-in-southern-Gaza-medics-say-1SkgFcFbE1G/p.html?UTM_Source=cgtn&UTM_Medium=rss&UTM_Campaign=World"
      }
     ]
    },
@@ -579,7 +607,9 @@
     "families": [
      "aj",
      "almonitor",
+     "bbc",
      "cn-state",
+     "france24",
      "mee",
      "thehindu"
     ],
@@ -600,14 +630,14 @@
   "tokenizer": "fugashi",
   "threshold": 0.45,
   "timing": {
-   "clusterSec": 0.06,
+   "clusterSec": 0.07,
    "scriptSec": 0.1,
-   "audioSec": 18.5,
-   "totalSec": 19.4
+   "audioSec": 32.9,
+   "totalSec": 33.7
   },
   "candidates": 0,
   "kana": {
-   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ヨッカ'",
+   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ゴ'ニチ",
    "intro+1": "カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
    "0.0": "ウクラ'イナワ、リ'ビアノ/ベンガジコ'オデ/ロ'シアノ/グンカント'/カモツセンオ'/ゲ_キチン'/_シタ'ト/ハッピョオ'/シマ'_シタ",
    "0.1": "ウクライナホア'ンチョオワ、コオゲキニ'/_ツカッタ'/ドロ'オンワ/ボセンカラ'/ハッシン'/_シタ'ト/セツメエ'/_シテ'/イマ'_ス",
