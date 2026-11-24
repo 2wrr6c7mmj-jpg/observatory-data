@@ -1,10 +1,10 @@
 {
- "generated_utc": "2026-11-24T14:49:29Z",
- "today": "2026-11-24",
+ "generated_utc": "2026-11-24T16:14:06Z",
+ "today": "2026-11-25",
  "days": 31,
  "counts": {
   "event": 0,
-  "notice": 7,
+  "notice": 6,
   "forecast": 0
  },
  "rules": {
@@ -198,64 +198,6 @@
      ],
      "text": "辽航警477/26，渤海海峡黄海北部，自11月15日1600时至29日1600时在38-51.7N121-38.2E、38-34.2N121-38.2E、38-33.9N121-07.9E、38-48.2N121-14.1E诸点连线范围内执行军事任务。禁止驶入。",
      "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/541e5ebb4d9a41da9b48f9fbd4d0dc76.html"
-    }
-   ]
-  },
-  {
-   "id": "notice:maritime:HB140/2026",
-   "kind": "notice",
-   "name": "演習（秦皇岛海事局）",
-   "countries": [
-    "中国"
-   ],
-   "start": "2026-11-22",
-   "end": "2026-11-24",
-   "lat": 39.78,
-   "lon": 120.02,
-   "region": null,
-   "notices": [
-    {
-     "key": "maritime:HB140/2026",
-     "id": "HB140/2026",
-     "issuer": "秦皇岛海事局",
-     "country": "CN",
-     "category": "exercise",
-     "start_utc": "2026-11-22T16:00:00Z",
-     "end_utc": "2026-11-24T16:00:00Z",
-     "polygons": [],
-     "text": "HB140/26 BOHAI SEA MILITARY OPERATION FROM 221600UTC TO 241600UTC NOV. IN AREA BOUNDED BY THE LINES JOINING: （1）39-55.90N 120-00.60E；（2）39-47.80N 120-13.75E； （3）39-37.60N 120-02.04E；（4）39-46.80N 119-48.00E. ENTERING PROHIBITED. HEBEI MSA CHINA.",
-     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/1297c30866739364.html"
-    },
-    {
-     "key": "maritime:冀航警832/2026",
-     "id": "冀航警832/2026",
-     "issuer": "秦皇岛海事局",
-     "country": "CN",
-     "category": "exercise",
-     "start_utc": "2026-11-22T16:00:00Z",
-     "end_utc": "2026-11-24T16:00:00Z",
-     "polygons": [
-      [
-       [
-        39.9317,
-        120.01
-       ],
-       [
-        39.7967,
-        120.2292
-       ],
-       [
-        39.6267,
-        120.034
-       ],
-       [
-        39.78,
-        119.8
-       ]
-      ]
-     ],
-     "text": "冀航警832/26，渤海，11月23日0000时至25日0000时在下列四点连线海域范围内开展军事活动: （1）39-55.90N 120-00.60E；（2）39-47.80N 120-13.75E； （3）39-37.60N 120-02.04E；（4）39-46.80N 119-48.00E。 禁止驶入。",
-     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/0ec8988e7b404dffb1bb2eac452dc575.html"
     }
    ]
   },
