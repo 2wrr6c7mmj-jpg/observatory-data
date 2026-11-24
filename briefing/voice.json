@@ -5,10 +5,15 @@
  "vvm": "15.vvm",
  "credit": "VOICEVOX:もち子(cv 明日葉よもぎ)",
  "terms": "https://vtubermochio.wixsite.com/mochizora/利用規約",
- "note": "声の差し替えは style_id と vvm（tools/voicevox_setup.sh の VVM_FILE と SHA-256）を一緒に変える。credit は声ごとの規約の表記。 tune は話す速さ・抑揚の強さ・高さ（1.0・1.0・0.0 が素のまま）。",
+ "note": "声の差し替えは style_id と vvm（tools/voicevox_setup.sh の VVM_FILE と SHA-256）を一緒に変える。credit は声ごとの規約の表記。 tune は話す速さ・抑揚の強さ・高さ（1.0・1.0・0.0 が素のまま）。ending は文末の落ち着かせ（briefing/audio.py の settle_ending。消せば何もしない）。どちらも所有者が聞いて決めた値（2026-11-24）。",
  "tune": {
-  "speed": 1.0,
-  "intonation": 1.0,
+  "speed": 1.08,
+  "intonation": 0.9,
   "pitch": 0.0
+ },
+ "ending": {
+  "peak": 0.17,
+  "open": 0.1,
+  "end": 0.0
  }
 }

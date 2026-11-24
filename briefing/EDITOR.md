@@ -50,6 +50,9 @@
   - 自信の無い語は触らない（直したつもりで悪くしない）。`check` の行に「← 調声」が付けば採用。付かなければ記法の誤りか、読みが文と違う。
 - 区切りがおかしくて聞き取りにくい文（長い漢語の連なり、助詞の無い名詞の並び）は、文を書き直してもよい（読点を入れる、「の」を入れる、2 文に分ける）。
 - 声の設定（話す速さ・抑揚の強さ・高さ）は `briefing/voice.json` の `tune`。所有者が聞いて決める値で、毎朝は変えない。
+- **文末（〜しました。〜しています。）は、合成のときに自動でそろえる**（`voice.json` の `ending`、`audio.settle_ending`）。
+  文によって文末が高いまま終わったり、最後の拍が下がりきらなかったりするのを、どの文も同じ高さへ下げる。
+  だから文末の句のカナは触らない。文は 1 文ずつ「。」で終える（文末がそろうのは 1 文の終わりだけ）。体言止め・疑問文は書かない。
 - かぎ括弧は読み上げでは外れる（字幕には出る）。
 - 続けて使う語は、報告に「読みの表に足す候補」として 1 行書く（表への追加は別の作業で入れる）。
 
@@ -98,4 +101,6 @@
 - 候補：`briefing/editor.py`（`build.pick_candidates`）。過去 24 時間の記事 → 束ね → 2 源以上 → 順位 → 同じ出来事を除く、上から 12 件。
 - 公開：`.github/workflows/briefing-publish.yml` → `python -m briefing --script`（`build.scripts_from_file`）→ 確かめ → VOICEVOX コア → `docs/data/briefing/latest.json`・`latest.mp3`。
 - 画面（observatory-watch）は GitHub Pages の `data/briefing/latest.json` を直接読む。地図の動きは各出来事の `countries`・`place`、字幕は `lines`、切り替えの時刻は `start`。`hold` が真、または作成から 36 時間を過ぎたまとめは出さない。
-- 止めたいとき：`docs/data/briefing/latest.json` の `hold` を `true` にする。
+- 止めたいとき：毎朝の定期タスクを止める（公開の処理は、定期タスクが起動したときだけ動く）。新しいまとめが出なくなり、
+  いま出ているまとめは作成から 36 時間で画面から消える。すぐ消すには、加えて `docs/data/briefing/latest.json` の `hold` を `true` にする
+  （これだけでは翌朝の公開が上書きする）。

@@ -348,25 +348,32 @@ def make_scripts(records, args, terms, tok, log, deadline):
     return events, dropped, stats
 
 
+def spread(key, text, gap):
+    """冒頭・結びの文言を 1 文ずつに分ける（文末の落ち着かせは 1 文ごとにかかる）。2 文目からのキーは key+1、key+2…"""
+    parts = [s for s in re.findall(r'[^。]+。?', text) if s.strip()] or [text]
+    return [(key if k == 0 else f'{key}+{k}', s, gap if k == len(parts) - 1 else A.SAMPLE_PAUSE['line']) for k, s in enumerate(parts)]
+
+
 def make_audio(events, now_ms, voice_root, no_audio, extra=(), tune=None):
     """音声と、各文・各出来事の開始秒。events を書き換えずに (out_events, intro, outro, mp3, pcm秒) を返す。"""
     d = datetime.datetime.fromtimestamp(now_ms / 1000, JST)
     intro = f'世界情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
     outro = '以上です。報道の見出しと要約を、機械でまとめて読み上げました。'
-    seq = [('intro', intro, A.INTRO_GAP)]
+    seq = spread('intro', intro, A.INTRO_GAP)
     for i, e in enumerate(events):
         lines = [ln['text'] for ln in e['script']['lines']]   # 出典の数は読まない（画面が json の sources から出す）
         e['spoken'] = lines
         for j, t in enumerate(lines):
             last = j == len(lines) - 1
             seq.append((f'{i}.{j}', t, A.SAMPLE_PAUSE['event'] if last else A.SAMPLE_PAUSE['line']))
-    seq.append(('outro', outro, 0.5))
+    seq += spread('outro', outro, 0.5)
     if no_audio:
         return None, intro, outro, None, 0.0, []
     voice = A.Voice(voice_root, readings=A.load_readings() + list(extra)) if extra else A.Voice(voice_root)
     voice.tune.update(tune or {})
     given = {ln['text']: ln['kana'] for e in events for ln in e['script']['lines'] if ln.get('kana')}   # 調声のカナ（文 → カナ）
-    kana = {'intro': voice.kana(intro)}
+    voice.calibrate([(t, given.get(t)) for _, t, _ in seq])
+    kana = {'intro': voice.kana(seq[0][1])}
     starts, pcm = A.assemble(seq, lambda t: voice.wav(t, given.get(t)))
     for key, text, _ in seq:
         if key != 'intro':

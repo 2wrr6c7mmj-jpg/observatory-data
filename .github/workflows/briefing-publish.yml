@@ -28,6 +28,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      # 公開はテスト成功時だけ（translate.yml・site-clock.yml と同じ）。briefing の試験は 1 秒かからない
+      - name: Tests (briefing)
+        run: python -m unittest discover -s tests -t . -p 'test_briefing_*.py'
       - name: Script (the input is data; size and shape are checked before anything reads it)
         env:
           SCRIPT_B64: ${{ inputs.script_b64 }}
@@ -55,6 +58,7 @@ jobs:
           bash tools/voicevox_setup.sh "$RUNNER_TEMP/vv"
       - name: Briefing (checks, voice)
         run: |
+          set -o pipefail
           mkdir -p "$RUNNER_TEMP/out"
           python -m briefing --feed "$FEED" --script "$RUNNER_TEMP/script.json" --out "$RUNNER_TEMP/out" --vv-root "$RUNNER_TEMP/vv" | tee "$RUNNER_TEMP/briefing.log"
       - name: Report (annotations) and the decision to publish

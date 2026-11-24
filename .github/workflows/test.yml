@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths: ['collectors/**', 'tests/**', 'jso/**', 'notam/**', 'sat/**', 'ocean/**', 'analysis/**', 'tools/**',
-            'translate/**', 'exercises/**', '.github/**']
+            'translate/**', 'exercises/**', 'briefing/**', '.github/**']
 permissions:
   contents: read
 jobs:

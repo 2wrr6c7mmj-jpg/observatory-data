@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import tempfile
 import unittest
 import wave
@@ -317,6 +318,76 @@ class Intonation(unittest.TestCase):
         for k, v in tune.items():
             self.assertIn(k, A.TUNE)
             self.assertTrue(A.TUNE_RANGE[k][0] <= v <= A.TUNE_RANGE[k][1], (k, v))
+
+
+def phrase(moras, accent, pause=False, ask=False):
+    """試験用のアクセント句。moras = 'シ5.75 マ5.79 シ0 タ5.57'（0 は声の出ない拍）。"""
+    ms = [mock.Mock(text=re.match(r'\D+', x).group(), pitch=float(re.search(r'[\d.]+$', x).group())) for x in moras.split()]
+    return mock.Mock(moras=ms, accent=accent, pause_mora=object() if pause else None, is_interrogative=ask)
+
+
+def pitches(ph):
+    return [round(m.pitch, 2) for m in ph.moras]
+
+
+class Ending(unittest.TestCase):
+    """文末の落ち着かせ：文末の句の山と最後の拍を、どの文も同じ高さへ下げる（上げない）。"""
+    CONF = {'peak': 0.17, 'open': 0.10, 'end': 0.0}
+
+    def test_high_ending_is_brought_down(self):
+        # 〜と発表しました。：文末の句が高く持ち上がったまま、最後の「た」が下がりきらない
+        ps = [phrase('シ0 タ5.88 ト5.64', 2), phrase('ハ5.38 ッ0 ピョ5.72 オ5.74', 4), phrase('シ5.75 マ5.79 シ0 タ5.57', 2)]
+        down, drop = A.settle_ending(ps, base=5.47, **self.CONF)
+        self.assertAlmostEqual(down, 0.15, 2)
+        self.assertEqual(pitches(ps[0]), [0, 5.88, 5.64])                 # 前の前の句は動かない
+        self.assertEqual(pitches(ps[2]), [5.62, 5.64, 0, 5.47])           # 山は 低いところ+0.17、最後の拍は 低いところ
+        self.assertEqual(pitches(ps[1]), [5.35, 0, 5.64, 5.64])           # 前の句は山へ向かって少しずつ（頭はほとんど動かない）
+
+    def test_open_ending_gets_the_lower_limit(self):
+        # 〜に搭乗します。：「す」は声が出ないので、核の「ま」で終わる。上がったまま終わらせない
+        ps = [phrase('ト5.46 オ5.56 ジョ5.62 オ5.68', 4), phrase('シ5.69 マ5.73 ス0', 2)]
+        A.settle_ending(ps, base=5.47, **self.CONF)
+        self.assertEqual(pitches(ps[1]), [5.56, 5.57, 0])
+        self.assertLess(ps[0].moras[0].pitch, 5.46)
+
+    def test_low_ending_is_left_and_nothing_goes_up(self):
+        ps = [phrase('コ5.72 オ5.80 ギ5.65', 1), phrase('シ5.39 マ5.53 シ0 タ5.50', 2)]
+        down, drop = A.settle_ending(ps, base=5.47, **self.CONF)
+        self.assertEqual((down, round(drop, 2)), (0.0, 0.03))
+        self.assertEqual(pitches(ps[0]) + pitches(ps[1]), [5.72, 5.80, 5.65, 5.39, 5.53, 0, 5.47])
+        ps = [phrase('シ0 テ5.40', 2), phrase('イ5.41 マ5.44 ス0', 2)]      # もう低い文末：触らない
+        self.assertEqual(A.settle_ending(ps, base=5.47, **self.CONF), (0.0, 0.0))
+        self.assertEqual(pitches(ps[1]), [5.41, 5.44, 0])
+
+    def test_last_mora_does_not_sink_below_the_floor(self):
+        # 山を下げたぶんで「た」が低いところを下回るなら、そこで止める
+        ps = [phrase('ア5.50 ゲ5.70', 2), phrase('マ5.90 シ0 タ5.50', 1)]
+        A.settle_ending(ps, base=5.47, **self.CONF)
+        self.assertEqual(pitches(ps[1]), [5.64, 0, 5.47])
+
+    def test_pause_question_and_short(self):
+        ps = [phrase('ハ5.40 ッ0 ピョ5.72 オ5.74', 4, pause=True), phrase('シ5.75 マ5.79 シ0 タ5.57', 2)]
+        A.settle_ending(ps, base=5.47, **self.CONF)
+        self.assertEqual(pitches(ps[0]), [5.40, 0, 5.72, 5.74])           # 間（読点）の前の句は動かさない
+        ps = [phrase('イ5.50 キ5.80 マ5.85 ス5.90 カ5.95', 3, ask=True)]
+        self.assertEqual(A.settle_ending(ps, base=5.47, **self.CONF), (0.0, 0.0))   # 疑問の上がりは残す
+        self.assertEqual(A.settle_ending([phrase('ハ5.80 イ5.90', 1)], **self.CONF), (0.0, 0.0))   # 拍が少なく基準が無い
+        self.assertEqual(A.settle_ending([], base=5.47, **self.CONF), (0.0, 0.0))
+
+    def test_base_from_the_sentence_itself(self):
+        self.assertEqual(A.low_pitch([0, 5.9, 5.3, 5.5, 5.7, 0, 5.6, 5.8, 5.4, 5.45, 5.65, 5.75]), 5.4)
+        self.assertIsNone(A.low_pitch([0, 5.5, 5.6]))
+
+    def test_conf(self):
+        self.assertEqual(A.ending_of(self.CONF), self.CONF)
+        for bad in (None, {}, {'peak': 0.17, 'open': 0.10}, {'peak': 0.17, 'open': 0.10, 'end': 2}, {'peak': True, 'open': 0.1, 'end': 0}):
+            self.assertIsNone(A.ending_of(bad))
+        self.assertEqual(A.ending_of(A.load_voice().get('ending')), A.load_voice()['ending'])   # voice.json の値は範囲の中
+
+    def test_intro_and_outro_are_spoken_sentence_by_sentence(self):
+        self.assertEqual(B.spread('outro', '以上です。機械で読み上げました。', 0.5),
+                         [('outro', '以上です。', A.SAMPLE_PAUSE['line']), ('outro+1', '機械で読み上げました。', 0.5)])
+        self.assertEqual(B.spread('intro', '一文だけ', 0.8), [('intro', '一文だけ', 0.8)])
 
 
 if __name__ == '__main__':

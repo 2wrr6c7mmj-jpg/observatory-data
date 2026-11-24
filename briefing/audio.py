@@ -92,6 +92,67 @@ def spoken(text):
     return text.replace('「', '').replace('」', '').replace('『', '').replace('』', '')
 
 
+# 文末の落ち着かせ（voice.json の "ending"）。合成器は文によって、文末の句を高く持ち上げたまま終えたり、最後の拍を
+# 下げきらなかったりする（聞くと、文末が上がったり下がったりして聞こえる）。どの文も同じ形で終わるように寄せる。
+# 値は高さ（VOICEVOX の pitch、対数）の差で、低いところ（声の出る拍を低い順に並べた 1 割目）から測る。
+#   peak：文末の句の山の上限（〜ました。）   open：核のあとに声の出る拍が無い文末（〜ます。）の山の上限
+#   end ：核のあとの最後の拍（〜ました。の「た」）の上限
+ENDING_RANGE = {'peak': (0.05, 0.40), 'open': (0.02, 0.30), 'end': (-0.05, 0.15)}
+
+
+def ending_of(conf):
+    """voice.json の "ending" から、使える値だけ。3 つそろわなければ None（何もしない）。"""
+    out = {}
+    for key, (lo, hi) in ENDING_RANGE.items():
+        v = (conf or {}).get(key)
+        if isinstance(v, (int, float)) and not isinstance(v, bool) and lo <= v <= hi:
+            out[key] = float(v)
+    return out if len(out) == len(ENDING_RANGE) else None
+
+
+def low_pitch(pitches):
+    """声の出る拍の高さを低い順に並べた 1 割目（その声の「低いところ」）。拍が少なければ None。"""
+    voiced = sorted(p for p in pitches if p > 0)
+    return voiced[len(voiced) // 10] if len(voiced) >= 4 else None
+
+
+def settle_ending(phrases, peak, open, end, base=None):
+    """phrases（AudioQuery の accent_phrases）の文末を書き換える。下げるだけで、上げない。疑問の文は触らない。
+    1. 文末の句の山が上限を超えていれば、文末の句と（間を置かずに続く）その前の句を、山へ向かって少しずつ下げる。
+       句の中の形（どこで上がり、どこで下がるか）は変えない。
+    2. 核のあとの最後の拍が上限より高ければ、核の直後からその拍へ向かって下げる。
+    base は低いところ（省けばその文から）。返すのは (山を下げた量, 最後の拍を下げた量)。"""
+    if base is None:
+        base = low_pitch(m.pitch for ap in phrases for m in ap.moras)
+    if base is None or not phrases or phrases[-1].is_interrogative:
+        return 0.0, 0.0
+    last = phrases[-1].moras
+    vi = [i for i, m in enumerate(last) if m.pitch > 0]
+    if not vi:
+        return 0.0, 0.0
+    after = [i for i in vi if i >= phrases[-1].accent]   # 核のあとの、声の出る拍
+    floor = base + end
+    top = max(vi, key=lambda i: last[i].pitch)
+    down = max(0.0, last[top].pitch - (base + (peak if after else open)))
+    if down:
+        lead = list(phrases[-2].moras) if len(phrases) > 1 and not phrases[-2].pause_mora else []
+        ramp = lead + list(last[:top + 1])
+        for k, m in enumerate(ramp, 1):
+            if m.pitch > 0:
+                m.pitch -= down * k / len(ramp)
+        for i in vi:
+            if i > top:   # 山のあと：同じだけ下げる。核のあとの拍は、もう floor より低ければそこで止める
+                p = last[i].pitch
+                last[i].pitch = max(p - down, min(p, floor)) if i in after else p - down
+    drop = 0.0
+    if after:
+        first, tail = phrases[-1].accent, after[-1]
+        drop = max(0.0, last[tail].pitch - floor)
+        for i in after:
+            last[i].pitch -= drop * (i - first + 1) / (tail - first + 1)
+    return down, drop
+
+
 class Voice:
     """VOICEVOX コアの合成器。root は tools/voicevox_setup.sh が作ったディレクトリ（onnxruntime/・dict/・vvm/）。"""
 
@@ -118,6 +179,8 @@ class Voice:
             self.synth.load_voice_model(m)
         self.style = self.voice['style_id']
         self.tune = dict(self.voice.get('tune') or {})
+        self.ending = ending_of(self.voice.get('ending'))
+        self.base = None    # 文末の落ち着かせの基準（その回の全部の文の低いところ）。calibrate が入れる
         self.untuned = []   # 調声のカナが使えず、文から読んだ文
 
     def kana(self, text):
@@ -135,14 +198,25 @@ class Voice:
             return None
         return kana if bare(kana) == bare(self.kana(text)) else None
 
-    def wav(self, text, kana=None):
-        """1 文の音声。kana（調声のカナ）が使えればそれで、だめなら文から。声の設定（voice.json の tune）を当てる。"""
+    def query(self, text, kana=None):
+        """1 文の読み方（AudioQuery）。kana（調声のカナ）が使えればそれで、だめなら文から。"""
         use = self.tuned(text, kana)
-        if kana and not use:
+        return self.synth.create_audio_query_from_kana(use, self.style) if use else self.synth.create_audio_query(spoken(text), self.style)
+
+    def calibrate(self, pairs):
+        """pairs = [(文, 調声のカナ または None)…]：その回の全部の文から、声の低いところを決める（文末の高さを文どうしでそろえる）。"""
+        if self.ending:
+            self.base = low_pitch(m.pitch for text, kana in pairs for ap in self.query(text, kana).accent_phrases for m in ap.moras)
+
+    def wav(self, text, kana=None):
+        """1 文の音声。声の設定（voice.json の tune）と、文末の落ち着かせ（ending）を当てる。"""
+        if kana and not self.tuned(text, kana):
             self.untuned.append(text)
-        q = self.synth.create_audio_query_from_kana(use, self.style) if use else self.synth.create_audio_query(spoken(text), self.style)
+        q = self.query(text, kana)
         for key, attr in TUNE.items():
             v = self.tune.get(key)
             if isinstance(v, (int, float)) and not isinstance(v, bool) and TUNE_RANGE[key][0] <= v <= TUNE_RANGE[key][1]:
                 setattr(q, attr, float(v))
+        if self.ending:
+            settle_ending(q.accent_phrases, base=self.base, **self.ending)
         return self.synth.synthesis(q, self.style)
