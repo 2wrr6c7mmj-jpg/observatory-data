@@ -1,0 +1,425 @@
+{
+ "generated_utc": "2026-11-24T04:18:30Z",
+ "today": "2026-11-24",
+ "days": 31,
+ "counts": {
+  "event": 0,
+  "notice": 7,
+  "forecast": 0
+ },
+ "rules": {
+  "event": "公式の発表・報道から読んだ演習。実施中か今後31日に始まるもの。日付不明・東アジアと西太平洋の外・事故や災害対応は除く。期間が重なり500km以内の告知を添える",
+  "notice": "中国・ロシア・北朝鮮が出した射撃・演習・軍事活動の告知（NOTAM・航行警報）。発出元・期間・場所の近いものをまとめる",
+  "forecast": "定例の演習の見込み（forecast.json）。根拠は過去の記録"
+ },
+ "items": [
+  {
+   "id": "notice:maritime:LYG149/2026",
+   "kind": "notice",
+   "name": "射撃（盐城海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-10-14",
+   "end": "2026-12-01",
+   "lat": 34.09,
+   "lon": 120.41,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:LYG149/2026",
+     "id": "LYG149/2026",
+     "issuer": "盐城海事局",
+     "country": "CN",
+     "category": "firing",
+     "start_utc": "2026-10-14T16:00:00Z",
+     "end_utc": "2026-12-01T16:00:00Z",
+     "polygons": [],
+     "text": "LYG149/26 SOUTH YELLOW SEA GUN FIRING 1600UTC TO 1600UTC DAILY FROM 14 OCT TO 30 NOV IN AREA BOUNDED BY THE LINES JOINING 34-01.69N120-22.15E，34-09.72N120-20.85E，34-04.30N120-31.52E, ENTERING PROHIBITED. LYGMSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/e5387c6dc4025132.html"
+    },
+    {
+     "key": "maritime:云航警171/2026",
+     "id": "云航警171/2026",
+     "issuer": "盐城海事局",
+     "country": "CN",
+     "category": "firing",
+     "start_utc": "2026-10-14T16:00:00Z",
+     "end_utc": "2026-11-30T16:00:00Z",
+     "polygons": [
+      [
+       [
+        34.0282,
+        120.3692
+       ],
+       [
+        34.162,
+        120.3475
+       ],
+       [
+        34.0717,
+        120.5253
+       ]
+      ]
+     ],
+     "text": "云航警171/26，黄海南部，自10月15日至11月30日每日0000时至2400时在34-01.69N120-22.15E，34-09.72N120-20.85E，34-04.30N120-31.52E诸点连线范围内进行实弹射击。禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/f74f010bff5242dfb9d0d76cb5254a5a.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:LYG153/2026",
+   "kind": "notice",
+   "name": "演習（连云港海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-11-01",
+   "end": "2026-12-13",
+   "lat": 34.91,
+   "lon": 119.38,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:LYG153/2026",
+     "id": "LYG153/2026",
+     "issuer": "连云港海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-01T21:00:00Z",
+     "end_utc": "2026-12-13T10:30:00Z",
+     "polygons": [],
+     "text": "LYG153/26 SOUTH YELLOW SEA MILITARY ACTIVITIES IN AREA A BOUNDED BY THE LINES JOINING 34-55.500N 119-14.900E, 34-55.500N 119-17.100E, 34-52.800N 119-17.100E AND 34-52.800N 119-14.900E AND AREA B BOUNDED BY THE LINES JOINING 34-56.696N 119-26.684E, 34-56.404N 119-32.558E, 34-54.583N 119-32.636E AND 34-53.606N 119-26.936E 2100UTC TO 1030UTC DAILY FROM 1 NOV TO 12 DEC. ENTERING PROHIBITED. LIANYUNGANG MSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/4b4bf4201dd4e1ae.html"
+    },
+    {
+     "key": "maritime:云航警177/2026",
+     "id": "云航警177/2026",
+     "issuer": "连云港海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-01T21:00:00Z",
+     "end_utc": "2026-12-12T10:30:00Z",
+     "polygons": [
+      [
+       [
+        34.925,
+        119.2483
+       ],
+       [
+        34.925,
+        119.285
+       ],
+       [
+        34.88,
+        119.285
+       ],
+       [
+        34.88,
+        119.2483
+       ]
+      ],
+      [
+       [
+        34.9449,
+        119.4447
+       ],
+       [
+        34.9401,
+        119.5426
+       ],
+       [
+        34.9097,
+        119.5439
+       ],
+       [
+        34.8934,
+        119.4489
+       ]
+      ]
+     ],
+     "text": "云航警177/26，黄海南部，11月2日至12月12日每日0500时至1830时，在34-55.500N 119-14.900E、34-55.500N 119-17.100E、34-52.800N 119-17.100E和34-52.800N 119-14.900E四点连线范围内以及34-56.696N 119-26.684E、34-56.404N 119-32.558E、34-54.583N 119-32.636E和34-53.606N 119-26.936E四点连线范围内进行军事活动，禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/8e756b9ca09b44949dc894d8417ce077.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:LN411/2026",
+   "kind": "notice",
+   "name": "軍事活動（大连海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-11-15",
+   "end": "2026-11-29",
+   "lat": 38.7,
+   "lon": 121.41,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:LN411/2026",
+     "id": "LN411/2026",
+     "issuer": "大连海事局",
+     "country": "CN",
+     "category": "military",
+     "start_utc": "2026-11-15T08:00:00Z",
+     "end_utc": "2026-11-29T08:00:00Z",
+     "polygons": [],
+     "text": "LN411/26 BOHAI STRAIT AND NORTH YELLOW SEA MILITARY MISSION IN AREA BOUNDED BY THE LINES JOINING 38-51.7N121-38.2E,38-34.2N121-38.2E,38-33.9N121-07.9E,38-48.2N121-14.1E FROM 150800UTC TO 290800UTC NOV.ENTERING PROHIBITED. LIAONING MSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/987480fee6bb8b81.html"
+    },
+    {
+     "key": "maritime:辽航警477/2026",
+     "id": "辽航警477/2026",
+     "issuer": "大连海事局",
+     "country": "CN",
+     "category": "military",
+     "start_utc": "2026-11-15T08:00:00Z",
+     "end_utc": "2026-11-29T08:00:00Z",
+     "polygons": [
+      [
+       [
+        38.8617,
+        121.6367
+       ],
+       [
+        38.57,
+        121.6367
+       ],
+       [
+        38.565,
+        121.1317
+       ],
+       [
+        38.8033,
+        121.235
+       ]
+      ]
+     ],
+     "text": "辽航警477/26，渤海海峡黄海北部，自11月15日1600时至29日1600时在38-51.7N121-38.2E、38-34.2N121-38.2E、38-33.9N121-07.9E、38-48.2N121-14.1E诸点连线范围内执行军事任务。禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/541e5ebb4d9a41da9b48f9fbd4d0dc76.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:HB140/2026",
+   "kind": "notice",
+   "name": "演習（秦皇岛海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-11-22",
+   "end": "2026-11-24",
+   "lat": 39.78,
+   "lon": 120.02,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:HB140/2026",
+     "id": "HB140/2026",
+     "issuer": "秦皇岛海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-22T16:00:00Z",
+     "end_utc": "2026-11-24T16:00:00Z",
+     "polygons": [],
+     "text": "HB140/26 BOHAI SEA MILITARY OPERATION FROM 221600UTC TO 241600UTC NOV. IN AREA BOUNDED BY THE LINES JOINING: （1）39-55.90N 120-00.60E；（2）39-47.80N 120-13.75E； （3）39-37.60N 120-02.04E；（4）39-46.80N 119-48.00E. ENTERING PROHIBITED. HEBEI MSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/1297c30866739364.html"
+    },
+    {
+     "key": "maritime:冀航警832/2026",
+     "id": "冀航警832/2026",
+     "issuer": "秦皇岛海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-22T16:00:00Z",
+     "end_utc": "2026-11-24T16:00:00Z",
+     "polygons": [
+      [
+       [
+        39.9317,
+        120.01
+       ],
+       [
+        39.7967,
+        120.2292
+       ],
+       [
+        39.6267,
+        120.034
+       ],
+       [
+        39.78,
+        119.8
+       ]
+      ]
+     ],
+     "text": "冀航警832/26，渤海，11月23日0000时至25日0000时在下列四点连线海域范围内开展军事活动: （1）39-55.90N 120-00.60E；（2）39-47.80N 120-13.75E； （3）39-37.60N 120-02.04E；（4）39-46.80N 119-48.00E。 禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/0ec8988e7b404dffb1bb2eac452dc575.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:HN237/2026",
+   "kind": "notice",
+   "name": "演習（清澜海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-11-23",
+   "end": "2026-11-28",
+   "lat": 19.93,
+   "lon": 111.1,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:HN237/2026",
+     "id": "HN237/2026",
+     "issuer": "清澜海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-23T01:00:00Z",
+     "end_utc": "2026-11-28T09:00:00Z",
+     "polygons": [],
+     "text": "HN237/26 SOUTH CHINA SEA .MILITARY EXERCISES IN AREA BOUNDED BY THE LINES JOINING 20-05.77N /111-12.22E、20-01.58N/110-55.62E、19-45.77N/110-59.92E AND 19-50.28N/111-16.87E FROM 230100 UTC TO 280900 UTC NOV. ENTERING PROHIBITED. HAINAN MSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/d1b7ba9241ded54a.html"
+    },
+    {
+     "key": "maritime:琼航警245/2026",
+     "id": "琼航警245/2026",
+     "issuer": "清澜海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-23T01:00:00Z",
+     "end_utc": "2026-11-28T09:00:00Z",
+     "polygons": [
+      [
+       [
+        20.0962,
+        111.2037
+       ],
+       [
+        20.0263,
+        110.927
+       ],
+       [
+        19.7628,
+        110.9987
+       ],
+       [
+        19.838,
+        111.2812
+       ]
+      ]
+     ],
+     "text": "琼航警245/26，南海，11月23日0900时至11月28日1700时，在20-05.77N /111-12.22E、20-01.58N/110-55.62E、19-45.77N/110-59.92E和19-50.28N/111-16.87E 诸点连线水域范围内开展军事训练，禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/3de36ce1cd5143f3b88c098c28b7b031.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:FJ214/2026",
+   "kind": "notice",
+   "name": "演習（漳州海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-11-24",
+   "end": "2026-11-27",
+   "lat": 23.59,
+   "lon": 117.82,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:FJ214/2026",
+     "id": "FJ214/2026",
+     "issuer": "漳州海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-24T01:00:00Z",
+     "end_utc": "2026-11-27T05:30:00Z",
+     "polygons": [],
+     "text": "FJ214/26 ZHANGZHOU COASTAL AREA ,MILITARY EXERCISES, IN AREA BOUNDED BY THE LINES JOINING (1）23-38-31N、117-43-38E (2）23-38-31N、117-54-48E (3）23-32-00N、117-54-48E (4）23-32-00N、117-43-38E FROM 240100 UTC TO 240300 UTC NOV，FROM 260430 UTC TO 260730 UTC NOV，FROM 270430 UTC TO 270530 UTC NOV. ENTERING PROHIBITED． FUJIAN MSA CHINA．",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/d686c660ca4b1155.html"
+    },
+    {
+     "key": "maritime:闽航警215/2026",
+     "id": "闽航警215/2026",
+     "issuer": "漳州海事局",
+     "country": "CN",
+     "category": "exercise",
+     "start_utc": "2026-11-24T01:00:00Z",
+     "end_utc": "2026-11-27T05:30:00Z",
+     "polygons": [
+      [
+       [
+        23.6419,
+        117.7272
+       ],
+       [
+        23.6419,
+        117.9133
+       ],
+       [
+        23.5333,
+        117.9133
+       ],
+       [
+        23.5333,
+        117.7272
+       ]
+      ]
+     ],
+     "text": "闽航警215/26，漳州沿海，11月24日0900时-1100时，26日1230时-1530时，27日1230时-1330时，在以下四点连线范围内进行军事活动： (1）23-38-31N、117-43-38E (2）23-38-31N、117-54-48E (3）23-32-00N、117-54-48E (4）23-32-00N、117-43-38E 禁止进入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/184bbd0605eb425ea558726307479925.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:琼航警248/2026",
+   "kind": "notice",
+   "name": "射撃（洋浦海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-11-24",
+   "end": "2026-11-26",
+   "lat": 19.92,
+   "lon": 108.72,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:琼航警248/2026",
+     "id": "琼航警248/2026",
+     "issuer": "洋浦海事局",
+     "country": "CN",
+     "category": "firing",
+     "start_utc": "2026-11-24T02:00:00Z",
+     "end_utc": "2026-11-26T05:00:00Z",
+     "polygons": [
+      [
+       [
+        19.8333,
+        108.9
+       ],
+       [
+        20,
+        108.9
+       ],
+       [
+        20,
+        108.55
+       ],
+       [
+        19.8333,
+        108.55
+       ]
+      ]
+     ],
+     "text": "琼航警248/26，北部湾，11月24日1000时至1800时和26日0800时至1300时将在19-50N 108-54E、20-00N 108-54E、20-00N 108-33E及19-50N 108-33E诸点连线水域范围内进行实弹射击训练。禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/cc2271c379bc4a9d9f0396825bde6d6c.html"
+    }
+   ]
+  }
+ ]
+}
