@@ -105,3 +105,21 @@ test('the same id twice in one dataset becomes one item (the later start)', () =
   validate(out, m);
   assert.equal(m.duplicates_merged, 1);
 });
+
+test('history: past notices are kept with their times, issuer, categories and area box; a re-run keeps the first sighting', async () => {
+  const {mergeHistory} = await import('./military.mjs');
+  const now = Date.UTC(2026, 10, 24);
+  const past = {id: 'LN416/2026', sourceName: '葫芦岛海事局', sourceCountry: 'CN', text: 'LN416/26 BOHAI SEA MILITARY EXERCISES IN AREA',
+    staticSchedule: {periods: [{start: Date.UTC(2026, 10, 23, 17), end: Date.UTC(2026, 10, 24, 0)}]},
+    shapes: [{kind: 'polygon', points: [[40.36, 120.6], [40.2, 120.9], [40.0, 120.5]]}]};
+  const civil = {id: 'X1', sourceName: '大连海事局', sourceCountry: 'CN', text: '大连 航道 疏浚', shapes: []};
+  const one = mergeHistory({}, {maritime: {items: [past, civil]}, aviation: {items: []}}, now);
+  assert.equal(one.added, 1);
+  const r = one.history.notices['maritime:LN416/2026'];
+  assert.equal(r.issuer, '葫芦岛海事局'); assert.equal(r.category, 'exercise');
+  assert.equal(r.start_utc, '2026-11-23T17:00:00Z'); assert.deepEqual(r.box, [40, 120.5, 40.36, 120.9]);
+  const two = mergeHistory(one.history, {maritime: {items: [past]}, aviation: {items: []}}, now + 3600e3);
+  assert.equal(two.added, 0);
+  assert.equal(two.history.notices['maritime:LN416/2026'].first_seen_utc, '2026-11-24T00:00:00Z');
+  assert.equal(two.history.notices['maritime:LN416/2026'].last_seen_utc, '2026-11-24T01:00:00Z');
+});

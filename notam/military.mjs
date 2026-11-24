@@ -254,6 +254,58 @@ export function build(data, {now = Date.now(), snapshot = {}, launches = new Map
   return items;
 }
 
+// ---------- history (2026-11-24) ----------
+// Every classified East Asian notice ever seen, past ones included, so the exercise screen can learn where and when firing and
+// exercise areas recur (by sea area and month). Compact: the times, the issuer, the categories, the areas' centre and box and the
+// first 300 characters of the text. Kept HISTORY_YEARS years by the notice's start; merged run to run (a notice keeps its
+// first sighting). NOTAM Watch's snapshot still holds past notices (2026-11-24: 419 Chinese ones), which seed the history.
+export const HISTORY_YEARS = 3;
+const r2 = v => Math.round(v * 100) / 100;
+export function historyRecord(item, dataset, now) {
+  if (!item || typeof item.id !== 'string' || item.cancelled) return null;
+  const {categories, q} = classify(item, dataset);
+  if (!categories.length) return null;
+  const where = area(item, q);
+  if (!where) return null;
+  const periods = dataset === 'maritime' ? maritimePeriods(item) : [];
+  const start = Number.isFinite(item.start) ? item.start : periods.length ? Math.min(...periods.map(p => p.start)) : null;
+  const end = item.permanent ? null : Number.isFinite(item.end) ? item.end : periods.length ? Math.max(...periods.map(p => p.end)) : null;
+  const pts = where.shapes.flatMap(s => s.points);
+  const lat = pts.map(p => p[0]), lon = pts.map(p => p[1]);
+  return {
+    key: `${dataset}:${item.id}`, id: item.id, dataset,
+    issuer: dataset === 'aviation' ? (item.location ?? q?.fir ?? null) : (item.sourceName ?? null),
+    country: dataset === 'aviation' ? (item.countries?.[0] ?? null) : (item.sourceCountry ?? item.countries?.[0] ?? null),
+    category: categories[0], categories,
+    start_utc: iso(start), end_utc: iso(end), permanent: !!item.permanent,
+    ...(periods.length ? {periods: periods.slice(0, 30).map(p => [iso(p.start), iso(p.end)])} : {}),
+    centre: pts.length ? [r2(lat.reduce((a, b) => a + b, 0) / lat.length), r2(lon.reduce((a, b) => a + b, 0) / lon.length)] : null,
+    box: pts.length ? [r2(Math.min(...lat)), r2(Math.min(...lon)), r2(Math.max(...lat)), r2(Math.max(...lon))] : null,
+    area_basis: where.basis,
+    text: String(item.text ?? '').slice(0, 300),
+    first_seen_utc: iso(now), last_seen_utc: iso(now),
+  };
+}
+export function mergeHistory(prev, data, now) {
+  const out = new Map(Object.entries(prev?.notices ?? {}));
+  let added = 0;
+  for (const dataset of ['aviation', 'maritime']) {
+    for (const item of data?.[dataset]?.items ?? []) {
+      const r = historyRecord(item, dataset, now);
+      if (!r) continue;
+      const old = out.get(r.key);
+      if (!old) added++;
+      out.set(r.key, old ? {...r, first_seen_utc: old.first_seen_utc} : r);
+    }
+  }
+  const cut = iso(now - HISTORY_YEARS * 365 * 86400e3);
+  for (const [k, r] of out) if (r.start_utc && r.start_utc < cut) out.delete(k);
+  const notices = Object.fromEntries([...out.entries()].sort((a, b) => String(a[1].start_utc ?? '').localeCompare(String(b[1].start_utc ?? '')) || a[0].localeCompare(b[0])));
+  return {history: {generated_utc: iso(now), years: HISTORY_YEARS,
+    note: '分類済みの東アジアの告知の履歴（過去の告知も含む）。区域は中心と範囲だけ。原文は先頭 300 字。first_seen_utc は初めて取り込んだ時刻（2026-11-24 以前の分は NOTAM Watch のスナップショットに残っていたもの）',
+    notices}, added};
+}
+
 export function counts(items) {
   const by = f => items.reduce((o, it) => ({...o, [f(it)]: (o[f(it)] || 0) + 1}), {});
   return {total: items.length, by_category: Object.fromEntries(ORDER.map(c => [c, items.filter(i => i.category === c).length])),
@@ -271,7 +323,7 @@ export function meta({items, now, snapshot, retrievedAt, duplicates = 0}) {
     source: {name: 'NOTAM Watch（notam-watch.pages.dev）が公開する航空 NOTAM と航行警報',
       origin: '航空：各国の航空当局が出した NOTAM（FAA NOTAM Search 経由）。海上：海上保安庁の航行警報、中国海事局の航行警告、台湾・韓国・フィリピン等の水路当局の告知など。各項目の source に NOTAM Watch が示す元の出典を記載',
       position: '公式の告知。演習・射撃・発射などを予告するもので、実施を示すものではない'},
-    files: {'military.json': '条件に合う告知の一覧（items）。meta.json：本ファイル'},
+    files: {'military.json': '条件に合う告知の一覧（items）。meta.json：本ファイル', 'history.json': '分類済みの告知の履歴（過去分も含む、3年、中心と範囲と原文の先頭）'},
     counts: counts(items),
     duplicates_merged: duplicates,
     region: {...REGION, note: '区域の頂点（円は中心）のどれかがこの範囲内にあれば採る。図形がない場合は航空は Q 行の座標、海上は発出元の国（JP・CN・TW・KR・KP・PH・VN）で判断し、area.basis に記す'},
@@ -368,6 +420,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await mkdir(outDir, {recursive: true});
     await writeAtomic(join(outDir, 'military.json'), {generated_utc: m.retrieved_utc, snapshot: snapshot.file ?? null, items});
     await writeAtomic(join(outDir, 'meta.json'), m);
+    const h = mergeHistory(await readJson(join(outDir, 'history.json'), {}), data, now);
+    await writeAtomic(join(outDir, 'history.json'), h.history);
+    console.log(`::notice title=NOTAM history::${Object.keys(h.history.notices).length} notices (${h.added} new)`);
     if (process.env.NOTAM_PROBE_CANDIDATES) {
       // Probe only: classified East Asian notices before the time filter, to check the time rules offline.
       const keep = ['id', 'start', 'end', 'cancelled', 'permanent', 'staticSchedule', 'sourceName', 'sourceCountry', 'countries', 'location', 'shapes', 'text', 'publicProjection', 'purpose', 'topic'];
