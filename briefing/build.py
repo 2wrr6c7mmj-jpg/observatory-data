@@ -99,6 +99,17 @@ def same_event(a, b, tok):
     return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.4
 
 
+def same_script(a, b, tok):
+    """台本どうしの比べ：分類と主な国の組が同じで、台本の語（国名を除く）が重なれば同じ出来事。
+    見出しの語では分かれたままの束を拾う（a・b は {'script', 'meta'}）。"""
+    if a['meta']['category'] != b['meta']['category'] or frozenset(a['meta']['countries'][:2]) != frozenset(b['meta']['countries'][:2]):
+        return False
+    names = set(S.COUNTRY_JA.values())
+    words = lambda e: set(tok(e['script']['headline'] + ' ' + ' '.join(ln['text'] for ln in e['script']['lines']))) - names
+    wa, wb = words(a), words(b)
+    return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.4
+
+
 def place_terms():
     """地名の表を定訳として使う（Zaporizhzhia・札波羅熱 → ザポリージャ）。3 字以下の英字の別名は誤って当たるので除く。"""
     out = []
@@ -158,6 +169,11 @@ def make_scripts(records, args, terms, tok, log, deadline):
         if script is None:
             dropped.append({'reason': '、'.join(why), 'headline': (heads[0])[:40]})
             log(f'#{rank} hold: {"、".join(why)}')
+            continue
+        dup = next((e for e in events if same_script(e, {'script': script, 'meta': meta}, tok[0])), None)
+        if dup:
+            dropped.append({'reason': '選んだ出来事と同じ（台本の語が重なる：' + dup['script']['headline'] + '）', 'headline': script['headline']})
+            log(f'#{rank} same(script): {dup["script"]["headline"]}')
             continue
         picked_heads.append(heads)
         log(f'#{rank} ok: {script["headline"]}（系列 {meta["sources"]["count"]}・国 {meta["sources"]["countries"]}）')

@@ -4,7 +4,7 @@
 JSON で渡し、答えは次を満たしたものだけ使う（verify）：
   形（headline 30 字以内（指示は 24 字）、lines 1〜2 文で合計 110 字以内、各文は 。で終わる 15〜65 字）／日本語である／URL・記号の混入が無い／
   原稿自身の評価・推測の語が無い（BANNED）／非難・懸念などの語は元の記事に対応する語があるときだけ（REPORTED）／
-  曜日・相対的な日付・時刻が無い／3 桁以上の数と件数の数は元の記事にあるものだけ／出典間で食い違う数は
+  曜日・相対的な日付・時刻が無い／です・ます調／万・億のつく数は元の記事と同じ値／3 桁以上の数と件数の数は元の記事にあるものだけ／出典間で食い違う数は
   全部を併記するか、全部を書かないか（片方だけは落とす）／定訳の表の「出てはいけない訳」が無い。
 副題（sub）は作らせない（json の lines[].sub は空文字）。出典の数は画面が json から出すので、読み上げない。
 落ちたら理由を添えて 1 回だけ書き直させ、それでも落ちたら束を hold（読まない）にして dropped に理由を残す。
@@ -105,6 +105,10 @@ KANA = re.compile(r'[ぁ-んァ-ヶ]')
 MONTHS = {'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6, 'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12}
 MONTH_RE = re.compile(r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b', re.I)
 DATE_RE = re.compile(r'(\d{1,2})\s*月\s*(?:(\d{1,2})\s*日)?')
+POLITE = re.compile(r'(ます|ました|です|でした|ません|ませんでした)。$')
+BIG_UNITS = {'trillion': 1e12, 'billion': 1e9, 'million': 1e6, 'thousand': 1e3, '兆': 1e12, '億': 1e8, '亿': 1e8, '万': 1e4, '萬': 1e4}
+BIG_SRC = re.compile(r'(\d[\d,]*(?:\.\d+)?)\s*(trillion|billion|million|thousand|兆|億|亿|万|萬)', re.I)
+BIG_JA = re.compile(r'(\d[\d,]*(?:\.\d+)?)\s*(兆|億|万)(?:\s*(\d[\d,]*)\s*万)?')
 # 誰の発表・報道かを示す形。紛争の出来事（戦果・被害の主張）では、どれか 1 つが要る。
 ATTRIB = re.compile(r'と発表|と主張|と述べ|と明らかに|によると|によれば|と伝え|と報じ|としています|と説明|と認め|と表明|と警告|と非難|と批判|と呼び|と指摘|と確認')
 BAD_CHARS = re.compile(r'https?:|www\.|[<>{}\[\]`*#|\\]|\n')
@@ -229,15 +233,36 @@ def parse(content):
     return {'headline': d['headline'].strip(), 'lines': lines}
 
 
+def mask(text, keeps):
+    """正しい表記（定訳）を一時的に隠す。「石油輸出」の中の「油輸出」、「石油タンカー」の中の「油タンカー」を誤りと数えないため。"""
+    slots = []
+    for i, k in enumerate(sorted({k for k in keeps if k}, key=len, reverse=True)):
+        if k in text:
+            text = text.replace(k, f'\x00{i}\x00')
+            slots.append((i, k))
+    return text, slots
+
+
+def unmask(text, slots):
+    for i, k in slots:
+        text = text.replace(f'\x00{i}\x00', k)
+    return text
+
+
+def big_number(n, unit):
+    return round(float(n.replace(',', '')) * BIG_UNITS[unit.lower()])
+
+
 def apply_fixed_terms(script, terms):
     """定訳に反する訳のうち、言い換えが 1 つに決まるもの（表で auto が真の語）を機械的に直す（北約 → NATO、戦艦 → 軍艦）。
     書き直しの往復を減らす。直せない誤り（実体 → 団体や企業 など）は確かめで落とす。"""
     def fix(text):
+        text, slots = mask(text, [t['ja'] for t in terms])
         for t in terms:
             if t.get('auto'):
                 for b in t.get('bad', []):
                     text = text.replace(b, t['ja'])
-        return text
+        return unmask(text, slots)
     return {'headline': fix(script['headline']), 'lines': [dict(ln, text=fix(ln['text'])) for ln in script['lines']]}
 
 
@@ -260,6 +285,8 @@ def verify(script, articles, conflicts, terms, known_latin=(), need_attribution=
         why.append(f'文の合計が {BODY_MAX} 字を超えている')
     if any(not ln['text'].endswith('。') for ln in lines):
         why.append('文が「。」で終わっていない')
+    elif any(not POLITE.search(ln['text']) for ln in lines):
+        why.append('文が です・ます調で終わっていない')
     if any(len(ln['sub']) > SUB_MAX for ln in lines):
         why.append(f'副題が {SUB_MAX} 字を超えている')
     everything = script['headline'] + body + ''.join(ln['sub'] for ln in lines)
@@ -292,13 +319,24 @@ def verify(script, articles, conflicts, terms, known_latin=(), need_attribution=
     # 数：元の記事に無い数
     src_nums = source_numbers(articles)
     words = any(NUMBER_WORDS.search(a.get('title', '') + ' ' + a.get('summary', '')) for a in articles)
-    check = {num(m.group(1)) for m in COUNT_RE.finditer(fold(body))} | {n for n in numbers_in(body) if len(n.replace('.', '')) >= 3}
+    plain = BIG_JA.sub(' ', fold(body))   # 万・億・兆のつく数は、下の「桁」で値を比べる
+    check = {num(m.group(1)) for m in COUNT_RE.finditer(plain)} | {n for n in numbers_in(plain) if len(n.replace('.', '')) >= 3}
     # 年・月・日・時を示す数は除く
     check -= {num(m.group(1)) for m in re.finditer(r'(\d+)\s*(?:年|月|日|時|分|番|世紀|期)', fold(body))
               if not COUNT_RE.search(m.group(0))}
     extra = sorted(n for n in check if n not in src_nums and not (words and len(n) <= 2))
     if extra:
         why.append('元の記事に無い数がある（' + '・'.join(extra) + '）')
+    # 桁：万・億・兆のつく数は、元の記事の同じ値（250 million は 2億5000万、2.5 million は 250万）だけ
+    src_big = {big_number(m.group(1), m.group(2)) for m in BIG_SRC.finditer(fold(src_text))}
+    src_big |= {int(n.split('.')[0]) for n in src_nums if len(n.split('.')[0]) >= 5}
+    off = []
+    for m in BIG_JA.finditer(fold(body)):
+        v = big_number(m.group(1), m.group(2)) + (big_number(m.group(3), '万') if m.group(3) else 0)
+        if v not in src_big:
+            off.append(m.group(0).replace(' ', ''))
+    if off:
+        why.append('元の記事と桁の合わない数がある（' + '・'.join(off) + '）')
     # 日付：月・日は元の記事に出ているものだけ（英語の月名も月に数える）
     src_months = {MONTHS[m.group(1).lower()] for m in MONTH_RE.finditer(src_text)} | {int(m.group(1)) for m in DATE_RE.finditer(fold(src_text))}
     bad_dates = []
@@ -313,7 +351,8 @@ def verify(script, articles, conflicts, terms, known_latin=(), need_attribution=
         present = [v for v in c['values'] if v in numbers_in(body)]
         if present and len(present) < len(c['values']):
             why.append(f'食い違う数（{c["class"]}）の一部だけを書いている（{"・".join(sorted(present))}）')
-    bad = [b for t in terms for b in t.get('bad', []) if b in everything]
+    hidden = mask(everything, [t['ja'] for t in terms])[0]
+    bad = [b for t in terms for b in t.get('bad', []) if b in hidden]
     if bad:
         why.append('定訳に反する訳がある（' + '・'.join(bad) + '）')
     unknown = sorted({w for w in LATIN_WORD.findall(everything) if w.lower() not in known})

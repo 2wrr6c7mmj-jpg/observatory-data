@@ -887,6 +887,90 @@
     "Mercury corvette"
    ],
    "ja": "コルベット「メルクーリー」"
+  },
+  {
+   "src": [
+    "Vice President",
+    "副总统",
+    "副總統"
+   ],
+   "ja": "副大統領"
+  },
+  {
+   "src": [
+    "Secretary of State",
+    "国务卿",
+    "國務卿"
+   ],
+   "ja": "国務長官",
+   "bad": [
+    "国務次官",
+    "国務卿"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Secretary General",
+    "Secretary-General",
+    "秘书长",
+    "秘書長"
+   ],
+   "ja": "事務総長",
+   "bad": [
+    "秘書長"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Rutte",
+    "吕特",
+    "呂特"
+   ],
+   "ja": "ルッテ（NATO の事務総長。首相と書かない）",
+   "bad": [
+    "ルテ"
+   ]
+  },
+  {
+   "src": [
+    "Foreign Minister",
+    "外长",
+    "外長"
+   ],
+   "ja": "外相"
+  },
+  {
+   "src": [
+    "space mission",
+    "太空任务",
+    "太空任務"
+   ],
+   "ja": "宇宙ミッション",
+   "bad": [
+    "空間ミッション"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "trading compan",
+    "贸易公司",
+    "貿易公司"
+   ],
+   "ja": "商社"
+  },
+  {
+   "src": [
+    "security service",
+    "SBU",
+    "安全局"
+   ],
+   "ja": "保安庁（ウクライナの SBU は「ウクライナ保安庁」）",
+   "bad": [
+    "セキュリティ機関"
+   ]
   }
  ]
 }

@@ -178,5 +178,19 @@ class Twins2(unittest.TestCase):
         self.assertFalse(B.same_event(a, b, tok))
 
 
+class Twins3(unittest.TestCase):
+    def test_same_script(self):
+        tok = lambda h: set(h.replace('、', ' ').replace('。', ' ').split())
+        ev = lambda cat, countries, head, *lines: {'meta': {'category': cat, 'countries': countries, 'place': None},
+                                                   'script': {'headline': head, 'lines': [{'text': t} for t in lines]}}
+        a = ev('military', ['RU', 'KR', 'JP'], '韓国 ロシア 軍機 接近 空襲警報', '韓国軍 は ロシア 軍機 が 防空識別圏 に 進入 した と 発表 しました。')
+        b = ev('military', ['KR', 'RU', 'US'], 'ロシア 軍機 が 韓国 の 防空識別圏 に 進入', '韓国 は ロシア 軍機 が 防空識別圏 に 進入 した と 発表 しました。')
+        self.assertTrue(B.same_script(a, b, tok))
+        c = ev('military', ['RU', 'KR'], 'ロシア と 韓国 が 漁業 協定 を 協議', '両国 は 漁業 協定 の 改定 を 協議 する と 発表 しました。')
+        self.assertFalse(B.same_script(a, c, tok))
+        d = ev('conflict', ['KR', 'RU'], 'ロシア 軍機 が 韓国 の 防空識別圏 に 進入', '韓国 は ロシア 軍機 が 防空識別圏 に 進入 した と 発表 しました。')
+        self.assertFalse(B.same_script(a, d, tok))   # 分類が違う
+
+
 if __name__ == '__main__':
     unittest.main()

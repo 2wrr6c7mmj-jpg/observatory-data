@@ -225,5 +225,33 @@ class Rules4(unittest.TestCase):
         self.assertTrue(any('見出し' in w for w in why), why)
 
 
+class Rules5(unittest.TestCase):
+    """5 回目の試作（2026-11-24）を受けた確かめ：定訳を含む正しい表記、です・ます調、桁。"""
+    def terms(self, arts):
+        with open(os.path.join(os.path.dirname(T.__file__), 'glossary.json'), encoding='utf-8') as f:
+            return T.glossary_for(arts, json.load(f)['terms'])
+
+    def test_correct_words_that_contain_a_bad_one(self):
+        arts = [{'source': 'mee', 'title': 'Iran vows to counter US blockade of oil exports; oil tanker seized', 'summary': '', 'titleJa': ''}]
+        terms = self.terms(arts)
+        ok = parsed('イラン、石油輸出の封鎖に対抗', 'イラン外務省は、石油輸出の封鎖に対抗すると表明し、石油タンカーの解放を求めました。')
+        self.assertEqual(T.apply_fixed_terms(ok, terms), ok)          # 「石石油輸出」にしない
+        self.assertEqual(T.verify(ok, arts, [], terms)[0], [])        # 「石油タンカー」を「油タンカー」と数えない
+        fixed = T.apply_fixed_terms(parsed('イラン、油輸出の封鎖に対抗', 'イラン外務省は、油輸出の封鎖に対抗すると表明しました。'), terms)
+        self.assertEqual(fixed['headline'], 'イラン、石油輸出の封鎖に対抗')
+
+    def test_plain_style_fails(self):
+        why, _ = T.verify(parsed('ロシアが衛星を計画', 'ドイツの新聞は、ロシアが衛星を打ち上げる計画だと報じた。'), ARTS, [], [])
+        self.assertTrue(any('です・ます' in w for w in why), why)
+
+    def test_magnitude_must_match_the_source(self):
+        arts = [{'source': 'afp', 'title': 'Astronaut carries hopes of 250 million Pakistanis', 'summary': '', 'titleJa': ''}]
+        why, _ = T.verify(parsed('パキスタンの宇宙飛行士', '宇宙飛行士は、250万人の国民の期待を担うと述べました。'), arts, [], [])
+        self.assertTrue(any('桁' in w for w in why), why)
+        self.assertEqual(T.verify(parsed('パキスタンの宇宙飛行士', '宇宙飛行士は、2億5000万人の国民の期待を担うと述べました。'), arts, [], [])[0], [])
+        arts = [{'source': 'afp', 'title': 'Budget of 2.5 million dollars approved', 'summary': '', 'titleJa': ''}]
+        self.assertEqual(T.verify(parsed('予算を承認', '政府は、予算は250万ドルだと発表しました。'), arts, [], [])[0], [])
+
+
 if __name__ == '__main__':
     unittest.main()
