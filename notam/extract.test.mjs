@@ -19,6 +19,19 @@ test('keeps launch notices from both sources with the shared rules', () => {
   assert.ok(out[0].evidence.length > 0);
 });
 
+test("keeps China's short surface-to-unlimited closures, which name no launch", () => {
+  const q = 'Q)ZXXX/QRTCA/IV/BO/W/000/999/3812N11017E516';
+  const data = {aviation: {items: [
+    {id: 'A6094/26', start: Date.UTC(2026, 10, 25, 0, 8), end: Date.UTC(2026, 10, 25, 0, 48), text: `A6094/26 NOTAMN ${q} A)ZLHW ZBPE E) A TEMPORARY RESTRICTED AREA ESTABLISHED`, shapes: []},
+    {id: 'LONG', start: Date.UTC(2026, 10, 25), end: Date.UTC(2026, 10, 26), text: `LONG NOTAMN ${q} E) A TEMPORARY RESTRICTED AREA`, shapes: []},
+    {id: 'LOW', start: Date.UTC(2026, 10, 25, 0), end: Date.UTC(2026, 10, 25, 1), text: 'LOW NOTAMN Q)ZSHA/QRTCA/IV/BO/W/000/120/3433N12236E121 E) AREA', shapes: []},
+    {id: 'KP', start: Date.UTC(2026, 10, 25, 0), end: Date.UTC(2026, 10, 25, 1), text: 'KP NOTAMN Q)ZKKP/QRTCA/IV/BO/W/000/999/3900N12500E050 E) AREA', shapes: []},
+  ]}, maritime: {items: []}};
+  const out = launchNotices(data);
+  assert.deepEqual(out.map(n => n.id), ['A6094/26']);
+  assert.deepEqual(out[0].evidence, ['cn-closure']);
+});
+
 // The transport cases below build manifests with NOTAM Watch's own (vendored) writer.
 import {fetchSnapshot} from './extract.mjs';
 import {makeSnapshotTransport, snapshotHash} from './vendor/snapshot-transport.mjs';

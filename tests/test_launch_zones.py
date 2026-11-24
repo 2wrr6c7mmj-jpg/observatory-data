@@ -97,3 +97,65 @@ class Attempts(unittest.TestCase):
                                 self.ev("2026-11-14T01:30Z", "2026-11-20T05:01Z", ["r1"]),
                                 self.ev("2026-11-15T01:30Z", "2026-11-20T05:01Z", ["r2"])], self.N)
         self.assertEqual([e["notices"] for e in out], [["i1", "i2"], ["r1"], ["r2"]])
+
+
+# ---------- launches first (2026-11-23) ----------
+NOW = datetime(2026, 11, 23, 14, 0, tzinfo=timezone.utc)
+
+
+def closure(nid, start, end, pts):
+    return {"key": "aviation:" + nid, "id": nid, "source": "aviation", "first_seen_utc": "2026-11-21T00:00:00Z",
+            "start_utc": start, "end_utc": end, "evidence": ["cn-closure"], "shapes": [{"kind": "polygon", "points": pts}],
+            "text": f"{nid} NOTAMN Q)ZXXX/QRTCA/IV/BO/W/000/999/3812N11017E516 E) A TEMPORARY RESTRICTED AREA ESTABLISHED"}
+
+
+JIUQUAN_CORRIDOR = [[41.398, 100.42], [39.843, 106.163], [37.204, 115.908], [35.912, 120.678], [35.013, 120.163],
+                    [36.318, 115.424], [38.917, 105.994], [40.518, 100.159]]
+YELLOW_SEA = [[36.211, 121.187], [35.09, 124.0], [32.918, 124.0], [34.499, 120.216]]
+LL2 = [
+    {"ll2_id": "sz24", "name": "Long March 2F/G | Shenzhou 24", "status": "Go", "net_utc": "2026-11-25T00:18:00Z",
+     "rocket": "Long March 2F/G", "lat": 40.958, "lon": 100.291, "location": "Jiuquan", "pad": "SLS-1"},
+    {"ll2_id": "tai", "name": "Long March 6A | X", "status": "Go", "net_utc": "2026-11-27T13:00:00Z",
+     "rocket": "Long March 6A", "lat": 38.85, "lon": 111.61, "location": "Taiyuan"},
+    {"ll2_id": "sea", "name": "Kinetica 1 | X", "status": "TBC", "net_utc": "2026-11-29T01:00:00Z",
+     "rocket": "Kinetica 1", "lat": 19.61, "lon": 110.95, "location": "Wenchang"},
+    {"ll2_id": "done", "name": "Long March 8A | X", "status": "Success", "net_utc": "2026-11-22T00:00:00Z",
+     "rocket": "Long March 8A", "lat": 19.61, "lon": 110.95},
+    {"ll2_id": "far", "name": "H3 | X", "status": "TBD", "net_utc": "2026-12-31T00:00:00Z", "rocket": "H3", "lat": 30.4, "lon": 130.97},
+]
+
+
+def launches_of(raw):
+    notices = {n["key"]: Z.normalise(n) for n in raw}
+    ev = L.events(list(notices.values()))
+    return Z.build_launches(LL2, ev, notices, L.SITES, NOW)
+
+
+class LaunchesFirst(unittest.TestCase):
+    def test_china_closures_are_matched_to_the_launch_from_the_site_they_reach(self):
+        out = launches_of([closure("A6094/26", "2026-11-25T00:08:00Z", "2026-11-25T00:48:00Z", JIUQUAN_CORRIDOR),
+                           closure("A6095/26", "2026-11-25T00:08:00Z", "2026-11-25T00:50:00Z", YELLOW_SEA)])
+        sz = next(x for x in out if x["id"] == "ll2:sz24")
+        self.assertEqual(sz["site"]["name"], "酒泉")
+        self.assertEqual([n["id"] for n in sz["notices"]], ["A6094/26", "A6095/26"])
+        self.assertEqual({n["kind"] for n in sz["notices"]}, {"closure"})
+        self.assertEqual(sz["estimated_window"], {"start_utc": "2026-11-25T00:08:00Z", "end_utc": "2026-11-25T00:48:00Z"})
+
+    def test_inland_without_notice_is_left_out_sea_without_notice_waits_done_and_far_are_out(self):
+        out = launches_of([])
+        self.assertEqual([x["id"] for x in out], ["ll2:sea"])
+        self.assertEqual(out[0]["notice_state"], "waiting")
+        self.assertIsNone(out[0]["estimated_window"])
+
+    def test_reserve_days_and_long_notices(self):
+        n = {"start_utc": "2026-11-24T07:00:00Z", "end_utc": "2026-11-27T10:00:00Z",
+             "periods": [{"start_utc": f"2026-11-{d}T07:00:00Z", "end_utc": f"2026-11-{d}T10:00:00Z"} for d in (24, 25, 26, 27)]}
+        slot, reserve = Z.slot_for(n, datetime(2026, 11, 26, 9, 35, tzinfo=timezone.utc))
+        self.assertEqual((slot[0].day, reserve), (26, 3))
+        self.assertIsNone(Z.estimated_window([(datetime(2026, 11, 1, tzinfo=timezone.utc), datetime(2026, 11, 30, tzinfo=timezone.utc))]))
+
+    def test_an_expired_notice_is_not_listed(self):
+        out = launches_of([closure("A6107/26", "2026-11-27T12:53:00Z", "2026-11-27T13:15:00Z", [[38.9, 111.7], [38.0, 113.0], [37.8, 112.8]]),
+                           closure("OLD", "2026-11-20T12:53:00Z", "2026-11-20T13:15:00Z", [[38.9, 111.7], [38.0, 113.0], [37.8, 112.8]])])
+        tai = next(x for x in out if x["id"] == "ll2:tai")
+        self.assertEqual([n["id"] for n in tai["notices"]], ["A6107/26"])
