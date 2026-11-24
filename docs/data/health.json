@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-23T18:43:48Z",
+ "generated_utc": "2026-11-24T02:52:28Z",
  "state": "alert",
  "summary": {
   "ok": 11,
@@ -75,61 +75,61 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-23T16:15:34Z",
-   "heartbeat_age_h": 2.5,
+   "heartbeat_age_h": 10.6,
    "data_date": "2026-11-22",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "ZDH：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "ZDH：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "QJG：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "QJG：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "QDH：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "QDH：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "XSN：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "XSN：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "SWS：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "SWS：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "MAW：最新の撮影 2026-11-12 から 11 日（撮影の抜け）"
+     "text": "MAW：最新の撮影 2026-11-12 から 12 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "PDG：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "PDG：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "DXE：最新の撮影 2026-11-14 から 9 日（撮影の抜け）"
+     "text": "DXE：最新の撮影 2026-11-14 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "JMN：最新の撮影 2026-11-15 から 8 日（撮影の抜け）"
+     "text": "JMN：最新の撮影 2026-11-15 から 9 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "HPU：最新の撮影 2026-11-15 から 8 日（撮影の抜け）"
+     "text": "HPU：最新の撮影 2026-11-15 から 9 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -145,7 +145,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-23T13:39:56Z",
-   "heartbeat_age_h": 5.1,
+   "heartbeat_age_h": 13.2,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -174,7 +174,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-23T18:43:28Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 8.2,
    "data_date": "2026-11-23",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -218,7 +218,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-23T09:18:59Z",
-   "heartbeat_age_h": 9.4,
+   "heartbeat_age_h": 17.6,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -235,16 +235,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-23T16:31:20Z",
-   "heartbeat_age_h": 2.2,
-   "data_date": "2026-11-23",
+   "heartbeat_utc": "2026-11-24T01:40:23Z",
+   "heartbeat_age_h": 1.2,
+   "data_date": "2026-11-24",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-23T16:31:20Z",
-    "notam_watch_last_seen_utc": "2026-11-23T16:31:20Z",
+    "notices_last_retrieved_utc": "2026-11-24T01:40:23Z",
+    "notam_watch_last_seen_utc": "2026-11-24T01:40:23Z",
     "ll2_last_retrieved_utc": "2026-11-23T09:18:56Z"
    }
   },
@@ -254,7 +254,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-23T13:40:07Z",
-   "heartbeat_age_h": 5.1,
+   "heartbeat_age_h": 13.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -263,13 +263,13 @@
     {
      "level": "warn",
      "code": "older_than_input",
-     "text": "最後の成功 2026-11-23T13:40:07Z が入力の更新 2026-11-23T16:31:20Z より前"
+     "text": "最後の成功 2026-11-23T13:40:07Z が入力の更新 2026-11-24T01:40:23Z より前"
     }
    ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-23T13:41:16Z",
-    "newest_input_utc": "2026-11-23T16:31:20Z"
+    "newest_input_utc": "2026-11-24T01:40:23Z"
    }
   },
   {
@@ -293,8 +293,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-23T15:50:31Z",
-   "heartbeat_age_h": 2.9,
+   "heartbeat_utc": "2026-11-24T00:53:20Z",
+   "heartbeat_age_h": 2.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -304,7 +304,7 @@
     "events": 31,
     "current": 14,
     "failed": 0,
-    "fetch_failed": 0
+    "fetch_failed": 1
    }
   }
  ],
@@ -779,7 +779,7 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 7,
+   "open_or_upcoming_windows": 14,
    "open_now": 5,
    "next_start": {
     "site": "文昌",
@@ -787,7 +787,7 @@
     "window_start_utc": "2026-11-24T07:00Z",
     "window_end_utc": "2026-11-27T10:00Z"
    },
-   "active_notices": 31
+   "active_notices": 43
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
