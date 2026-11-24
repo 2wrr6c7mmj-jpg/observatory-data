@@ -385,6 +385,11 @@ def slot_for(n: dict, net: datetime | None) -> tuple[tuple[datetime, datetime] |
     return (ps[0], len(ps) - 1) if len(ps) == 1 else (None, len(ps))
 
 
+def _holds(slot, net: datetime | None) -> bool:
+    """Whether a slot holds the launch time (with SLACK)."""
+    return bool(slot) and net is not None and slot[0] - SLACK <= net <= slot[1] + SLACK
+
+
 def estimated_window(slots: list[tuple[datetime, datetime]]) -> tuple[datetime, datetime] | None:
     """Where the short slots of all matched notices overlap; None when there is no short slot or they do not overlap."""
     short = [p for p in slots if p and p[1] - p[0] <= LONG_SLOT]
@@ -463,7 +468,7 @@ def build_launches(ll2: list[dict], events: list[dict], notices: dict[str, dict]
         for i, e in enumerate(live):
             if hits[i] or not e.get("areas"):
                 continue
-            if not any(slot_for(notices[k], net)[0] for k in e["notices"] if k in notices):
+            if not any(_holds(slot_for(notices[k], net)[0], net) for k in e["notices"] if k in notices):
                 continue
             if all(_distance_km(pad, tuple(a)) <= 4500 and abs((_bearing(pad, tuple(a)) - az + 180) % 360 - 180) <= ALONG_DEG for a in e["areas"]):
                 hits[i] = [j]
@@ -480,7 +485,9 @@ def build_launches(ll2: list[dict], events: list[dict], notices: dict[str, dict]
         # a launch already past with no notice still in force is over (its result is not in the record yet)
         if net < now and not any((_t(x["end_utc"]) or net) >= now for x in ns):
             continue
-        win = estimated_window([(_t(x["slot_start_utc"]), _t(x["slot_end_utc"])) for x in ns if x["slot_start_utc"]])
+        # the window: the short slots that hold the launch time (a notice for another day does not cut it to nothing)
+        held = [(_t(x["slot_start_utc"]), _t(x["slot_end_utc"])) for x in ns if x["slot_start_utc"]]
+        win = estimated_window([p for p in held if _holds(p, net)] or held)
         out.append({
             "id": "ll2:" + str(r.get("ll2_id")), "basis": "ll2", "name": r.get("name"), "rocket": r.get("rocket"), "rocket_ja": rocket_ja(r.get("rocket")),
             "provider": r.get("provider"), "status": r.get("status"), "net_utc": fmt(net),
