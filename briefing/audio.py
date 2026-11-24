@@ -8,6 +8,7 @@ WAV のつなぎは標準ライブラリ（wave）、mp3 は lameenc（版とハ
 import glob
 import io
 import json
+import re
 import os
 import wave
 
@@ -75,6 +76,17 @@ def to_mp3(pcm, bitrate=64):
     return bytes(enc.encode(bytes(pcm.buf))) + bytes(enc.flush())
 
 
+# 声の設定（voice.json の "tune"）：話す速さ・抑揚の強さ・高さ・文の前後の無音。範囲の外の値は使わない。
+TUNE = {'speed': 'speed_scale', 'intonation': 'intonation_scale', 'pitch': 'pitch_scale', 'pre': 'pre_phoneme_length', 'post': 'post_phoneme_length'}
+TUNE_RANGE = {'speed': (0.7, 1.4), 'intonation': (0.3, 1.6), 'pitch': (-0.15, 0.15), 'pre': (0.0, 0.5), 'post': (0.0, 0.5)}
+KANA_SCRIPT = re.compile(r"[ァ-ヶー'/、_？]+")   # VOICEVOX の AquesTalk 風記法に出る字
+
+
+def bare(kana):
+    """調声のカナから記号（下がり目 '・区切り /・間 、・無声化 _・疑問 ？）を除いた、読みだけ。"""
+    return re.sub(r"['/、_？]", '', kana or '')
+
+
 def spoken(text):
     """読み上げに渡す形：かぎ括弧を外す（「神舟24号」の、が「、しんしゅう…、の」と間のあいた読みになる）。字幕の文はそのまま。"""
     return text.replace('「', '').replace('」', '').replace('『', '').replace('』', '')
@@ -105,9 +117,32 @@ class Voice:
                 raise ValueError(f"style {self.voice['style_id']} is not in {self.voice['vvm']}")
             self.synth.load_voice_model(m)
         self.style = self.voice['style_id']
+        self.tune = dict(self.voice.get('tune') or {})
+        self.untuned = []   # 調声のカナが使えず、文から読んだ文
 
     def kana(self, text):
         return self.synth.create_audio_query(spoken(text), self.style).kana
 
-    def wav(self, text):
-        return self.synth.tts(spoken(text), self.style)
+    def tuned(self, text, kana):
+        """調声のカナ（アクセントの下がり目・句の区切り・間を直したもの）が使えるか。使えればそのカナ、だめなら None。
+        使えるのは、記法として読めて、記号を除いた読みが自動の読みと同じとき（字幕と違うことを読ませない。読みそのものを
+        変えるのは readings）。"""
+        if not kana:
+            return None
+        try:
+            self.synth.create_audio_query_from_kana(kana, self.style)
+        except Exception:
+            return None
+        return kana if bare(kana) == bare(self.kana(text)) else None
+
+    def wav(self, text, kana=None):
+        """1 文の音声。kana（調声のカナ）が使えればそれで、だめなら文から。声の設定（voice.json の tune）を当てる。"""
+        use = self.tuned(text, kana)
+        if kana and not use:
+            self.untuned.append(text)
+        q = self.synth.create_audio_query_from_kana(use, self.style) if use else self.synth.create_audio_query(spoken(text), self.style)
+        for key, attr in TUNE.items():
+            v = self.tune.get(key)
+            if isinstance(v, (int, float)) and not isinstance(v, bool) and TUNE_RANGE[key][0] <= v <= TUNE_RANGE[key][1]:
+                setattr(q, attr, float(v))
+        return self.synth.synthesis(q, self.style)

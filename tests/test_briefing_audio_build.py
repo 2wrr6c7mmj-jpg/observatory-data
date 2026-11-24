@@ -291,5 +291,33 @@ class TuningAndMap(unittest.TestCase):
         self.assertEqual((e['label'], e['countries'], e['place']), ('軍事 · 沖縄', ['JP', 'CN'], {'name': '宮古島', 'lon': 125.3, 'lat': 24.8}))
 
 
+class Intonation(unittest.TestCase):
+    """調声のカナ（アクセントの下がり目・句の区切り）と、声の設定。"""
+    AUTO = "ウクラ'イナワ、カモツ'センオ/ゲ_キチン'/_シタ'ト/ハッピョオ'/シマ'_シタ"
+    FIXED = "ウクラ'イナワ、カモツセンオ'/ゲ_キチン'/_シタ'ト/ハッピョオ'/シマ'_シタ"
+
+    def test_bare_reading_is_what_must_not_change(self):
+        self.assertEqual(A.bare(self.AUTO), A.bare(self.FIXED))
+        self.assertEqual(A.bare("ニホ'ンカイ/ジョオクウノ'"), 'ニホンカイジョオクウノ')
+        self.assertNotEqual(A.bare(self.AUTO), A.bare(self.FIXED.replace('カモツセン', 'グンカン')))
+
+    def test_script_line(self):
+        self.assertEqual(B.script_line(' 文です。 '), {'text': '文です。', 'sub': ''})
+        self.assertEqual(B.script_line({'text': '文です。', 'kana': self.FIXED}), {'text': '文です。', 'sub': '', 'kana': self.FIXED})
+        self.assertEqual(B.script_line({'text': '文です。', 'kana': 'かな <b>'}), {'text': '文です。', 'sub': ''})   # 記法に無い字は捨てる
+        self.assertIsNone(B.script_line({'kana': self.FIXED}))
+        self.assertIsNone(B.script_line(5))
+
+    def test_parse_tune(self):
+        self.assertEqual(B.parse_tune('speed=1.08,intonation=0.9,volume=3,pitch=x'), {'speed': 1.08, 'intonation': 0.9})
+        self.assertEqual(B.parse_tune(''), {})
+
+    def test_voice_file_tune_is_in_range(self):
+        tune = A.load_voice().get('tune') or {}
+        for k, v in tune.items():
+            self.assertIn(k, A.TUNE)
+            self.assertTrue(A.TUNE_RANGE[k][0] <= v <= A.TUNE_RANGE[k][1], (k, v))
+
+
 if __name__ == '__main__':
     unittest.main()

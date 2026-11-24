@@ -84,7 +84,12 @@ def cmd_check(a):
         for e in events:
             print(f'  読み #{e["rank"]}')
             for ln in e['script']['lines']:
-                print('    ' + voice.kana(ln['text']))
+                auto = voice.kana(ln['text'])
+                if ln.get('kana'):
+                    ok = voice.tuned(ln['text'], ln['kana'])
+                    print('    ' + (ok or auto) + ('   ← 調声' if ok else '   ← 調声のカナは使えない（記法の誤りか、読みが文と違う）。自動の読み'))
+                else:
+                    print('    ' + auto)
         if voice.skipped:
             print('  辞書に入らなかった読み: ' + '、'.join(voice.skipped))
     print(f'読める出来事 {len(events)} 件、確かめに落ちた出来事 {len(dropped)} 件、長さの見積もり {B.estimate_seconds(events):.0f} 秒')

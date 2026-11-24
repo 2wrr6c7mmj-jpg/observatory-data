@@ -142,6 +142,19 @@ KATAKANA = re.compile(r'[ァ-ヶー]+')
 CODE = re.compile(r'[A-Za-z]{2}')
 
 
+def parse_tune(text):
+    """--tune の「speed=1.08,intonation=0.9」→ {'speed': 1.08, 'intonation': 0.9}。読めない項目は捨てる。"""
+    out = {}
+    for part in (text or '').split(','):
+        k, _, v = part.partition('=')
+        try:
+            if k.strip() in A.TUNE:
+                out[k.strip()] = float(v)
+        except ValueError:
+            pass
+    return out
+
+
 def extra_readings(doc):
     """台本に付けたその日の読み（調声）：{"readings": [[表記, カタカナの読み, アクセント核の位置], …]}。
     形の合うものだけ、最大 40 語。briefing/readings.json の後ろに足して辞書に入れる。"""
@@ -174,6 +187,19 @@ def map_hint(ev):
     if isinstance(p, dict) and ok_name(p.get('name'), 16) and num(p.get('lon')) and num(p.get('lat')) and -180 <= p['lon'] <= 180 and -85 <= p['lat'] <= 85:
         out['place'] = {'name': p['name'].strip(), 'lon': round(float(p['lon']), 3), 'lat': round(float(p['lat']), 3)}
     return out
+
+
+def script_line(x):
+    """台本の 1 文：文字列、または {"text": 文, "kana": 調声のカナ}。形が違えば None。"""
+    if isinstance(x, str):
+        return {'text': x.strip(), 'sub': ''}
+    if isinstance(x, dict) and isinstance(x.get('text'), str):
+        row = {'text': x['text'].strip(), 'sub': ''}
+        k = x.get('kana')
+        if isinstance(k, str) and 0 < len(k) <= 400 and A.KANA_SCRIPT.fullmatch(k):
+            row['kana'] = k
+        return row
+    return None
 
 
 def apply_map_hint(meta, hint):
@@ -255,8 +281,12 @@ def scripts_from_file(records, doc, args, terms, tok, log):
         use_terms = T.glossary_for(arts, terms + places)
         lines = ev.get('lines')
         script = None
-        if isinstance(ev.get('headline'), str) and isinstance(lines, list) and all(isinstance(t, str) for t in lines):
-            script = T.apply_fixed_terms({'headline': ev['headline'].strip(), 'lines': [{'text': t.strip(), 'sub': ''} for t in lines]}, use_terms)
+        rows = [script_line(t) for t in lines] if isinstance(lines, list) else [None]
+        if isinstance(ev.get('headline'), str) and rows and all(rows):
+            script = T.apply_fixed_terms({'headline': ev['headline'].strip(), 'lines': rows}, use_terms)
+            for before, after in zip(rows, script['lines']):
+                if after['text'] != before['text']:
+                    after.pop('kana', None)   # 定訳の置き換えで文が変わったら、調声のカナは使わない
         why, notes = T.verify(script, arts, conflicts, use_terms, known + [w[0] for w in extra_readings(doc)], need_attribution=need_attribution)
         dup = None if why else next((e for e in events if same_script(e, {'script': script, 'meta': meta}, tok[0])), None)
         if dup:
@@ -318,7 +348,7 @@ def make_scripts(records, args, terms, tok, log, deadline):
     return events, dropped, stats
 
 
-def make_audio(events, now_ms, voice_root, no_audio, extra=()):
+def make_audio(events, now_ms, voice_root, no_audio, extra=(), tune=None):
     """音声と、各文・各出来事の開始秒。events を書き換えずに (out_events, intro, outro, mp3, pcm秒) を返す。"""
     d = datetime.datetime.fromtimestamp(now_ms / 1000, JST)
     intro = f'世界情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
@@ -334,11 +364,15 @@ def make_audio(events, now_ms, voice_root, no_audio, extra=()):
     if no_audio:
         return None, intro, outro, None, 0.0, []
     voice = A.Voice(voice_root, readings=A.load_readings() + list(extra)) if extra else A.Voice(voice_root)
+    voice.tune.update(tune or {})
+    given = {ln['text']: ln['kana'] for e in events for ln in e['script']['lines'] if ln.get('kana')}   # 調声のカナ（文 → カナ）
     kana = {'intro': voice.kana(intro)}
-    starts, pcm = A.assemble(seq, voice.wav)
+    starts, pcm = A.assemble(seq, lambda t: voice.wav(t, given.get(t)))
     for key, text, _ in seq:
         if key != 'intro':
-            kana[key] = voice.kana(text)
+            kana[key] = voice.tuned(text, given.get(text)) or voice.kana(text)
+    if voice.untuned:
+        kana['untuned'] = voice.untuned   # 調声のカナが使えず、文から読んだ文（検品用）
     return starts, intro, outro, A.to_mp3(pcm), pcm.seconds, kana
 
 
@@ -374,6 +408,7 @@ def main(argv=None):
     ap.add_argument('--server', default='http://127.0.0.1:8080')
     ap.add_argument('--vv-root', default=os.environ.get('VV_ROOT', ''))
     ap.add_argument('--no-audio', action='store_true')
+    ap.add_argument('--tune', default='', help='声の設定の上書き（試聴用）。例 speed=1.08,intonation=0.9')
     ap.add_argument('--script', default='', help='人が書いた台本（briefing/EDITOR.md の形）。指定すると、モデルを使わずにこの台本を確かめて読む')
     ap.add_argument('--now-ms', type=int, default=0)
     ap.add_argument('--max-events', type=int, default=8)
@@ -418,7 +453,8 @@ def main(argv=None):
     seconds, kana = 0.0, []
     intro = outro = ''
     if not hold:
-        starts, intro, outro, mp3, seconds, kana = make_audio(events, now_ms, a.vv_root, a.no_audio, extra_readings(written) if a.script else ())
+        starts, intro, outro, mp3, seconds, kana = make_audio(events, now_ms, a.vv_root, a.no_audio,
+                                                              extra_readings(written) if a.script else (), parse_tune(a.tune))
     t3 = time.time()
     counts = {'records': len(recs), 'sources': len({r.get('source') for r in recs}), 'clusters': stats['clusters'],
               'multiSource': stats['multiSource']}
