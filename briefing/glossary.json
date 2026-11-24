@@ -1,0 +1,976 @@
+{
+ "note": "定訳の表。src のどれかが元の記事にあれば、その束の台本の指示に ja を入れる。bad は台本に出てはいけない訳（出たら確かめに落とす）。 auto が真の語は、bad を ja に機械的に置き換える（言い換えが 1 つに決まるものだけ）。",
+ "terms": [
+  {
+   "src": [
+    "PLA Navy",
+    "PLAN",
+    "人民解放军海军",
+    "人民解放軍海軍"
+   ],
+   "ja": "中国海軍",
+   "bad": [
+    "PLA海軍"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "PLA",
+    "People's Liberation Army",
+    "解放军",
+    "人民解放军"
+   ],
+   "ja": "人民解放軍",
+   "bad": []
+  },
+  {
+   "src": [
+    "Eastern Theater Command",
+    "东部战区",
+    "東部戦区"
+   ],
+   "ja": "東部戦区",
+   "bad": [
+    "東方戦区",
+    "東部劇場司令部",
+    "東部戦域"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Southern Theater Command",
+    "南部战区"
+   ],
+   "ja": "南部戦区",
+   "bad": [
+    "南部劇場司令部"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "China Coast Guard",
+    "CCG",
+    "中国海警",
+    "海警局"
+   ],
+   "ja": "中国海警局（海警）",
+   "bad": [
+    "中国沿岸警備隊",
+    "沿岸警備隊"
+   ]
+  },
+  {
+   "src": [
+    "Coast Guard Administration",
+    "海巡署"
+   ],
+   "ja": "台湾の海巡署",
+   "bad": []
+  },
+  {
+   "src": [
+    "Ministry of National Defense",
+    "Ministry of National Defence",
+    "国防部"
+   ],
+   "ja": "国防部（中国なら中国国防部、台湾なら台湾国防部のように国名を付ける）",
+   "bad": []
+  },
+  {
+   "src": [
+    "Pentagon"
+   ],
+   "ja": "米国防総省",
+   "bad": [
+    "ペンタゴン"
+   ]
+  },
+  {
+   "src": [
+    "Department of Defense",
+    "Department of War"
+   ],
+   "ja": "米国防総省",
+   "bad": []
+  },
+  {
+   "src": [
+    "Joint Staff Office",
+    "統合幕僚監部"
+   ],
+   "ja": "統合幕僚監部",
+   "bad": [
+    "統合参謀本部"
+   ]
+  },
+  {
+   "src": [
+    "JMSDF",
+    "Maritime Self-Defense Force"
+   ],
+   "ja": "海上自衛隊",
+   "bad": []
+  },
+  {
+   "src": [
+    "JASDF",
+    "Air Self-Defense Force"
+   ],
+   "ja": "航空自衛隊",
+   "bad": []
+  },
+  {
+   "src": [
+    "GSDF",
+    "Ground Self-Defense Force"
+   ],
+   "ja": "陸上自衛隊",
+   "bad": []
+  },
+  {
+   "src": [
+    "Japan Coast Guard"
+   ],
+   "ja": "海上保安庁",
+   "bad": [
+    "日本沿岸警備隊"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Carrier Strike Group"
+   ],
+   "ja": "空母打撃群",
+   "bad": []
+  },
+  {
+   "src": [
+    "Liaoning"
+   ],
+   "ja": "空母「遼寧」",
+   "bad": []
+  },
+  {
+   "src": [
+    "Shandong"
+   ],
+   "ja": "空母「山東」",
+   "bad": []
+  },
+  {
+   "src": [
+    "Fujian"
+   ],
+   "ja": "空母「福建」",
+   "bad": []
+  },
+  {
+   "src": [
+    "Taiwan Strait"
+   ],
+   "ja": "台湾海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "Miyako Strait"
+   ],
+   "ja": "宮古海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "Bashi Channel"
+   ],
+   "ja": "バシー海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "Tsushima Strait"
+   ],
+   "ja": "対馬海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "South China Sea"
+   ],
+   "ja": "南シナ海",
+   "bad": []
+  },
+  {
+   "src": [
+    "East China Sea"
+   ],
+   "ja": "東シナ海",
+   "bad": []
+  },
+  {
+   "src": [
+    "Senkaku",
+    "Diaoyu"
+   ],
+   "ja": "尖閣諸島",
+   "bad": []
+  },
+  {
+   "src": [
+    "Scarborough Shoal"
+   ],
+   "ja": "スカボロー礁",
+   "bad": []
+  },
+  {
+   "src": [
+    "Second Thomas Shoal",
+    "Ayungin"
+   ],
+   "ja": "セカンド・トーマス礁",
+   "bad": []
+  },
+  {
+   "src": [
+    "DPRK",
+    "North Korea"
+   ],
+   "ja": "北朝鮮",
+   "bad": []
+  },
+  {
+   "src": [
+    "ROK",
+    "South Korea"
+   ],
+   "ja": "韓国",
+   "bad": []
+  },
+  {
+   "src": [
+    "Kim Jong Un",
+    "Kim Jong-un"
+   ],
+   "ja": "金正恩（キム・ジョンウン）総書記",
+   "bad": []
+  },
+  {
+   "src": [
+    "Xi Jinping"
+   ],
+   "ja": "習近平国家主席",
+   "bad": []
+  },
+  {
+   "src": [
+    "Lai Ching-te",
+    "William Lai"
+   ],
+   "ja": "頼清徳総統",
+   "bad": []
+  },
+  {
+   "src": [
+    "Putin"
+   ],
+   "ja": "プーチン大統領",
+   "bad": []
+  },
+  {
+   "src": [
+    "Zelensky",
+    "Zelenskyy"
+   ],
+   "ja": "ゼレンスキー大統領",
+   "bad": []
+  },
+  {
+   "src": [
+    "Trump"
+   ],
+   "ja": "トランプ大統領",
+   "bad": []
+  },
+  {
+   "src": [
+    "Kremlin"
+   ],
+   "ja": "ロシア大統領府（クレムリン）",
+   "bad": []
+  },
+  {
+   "src": [
+    "Service Members"
+   ],
+   "ja": "将兵",
+   "bad": []
+  },
+  {
+   "src": [
+    "Sgt."
+   ],
+   "ja": "軍曹",
+   "bad": []
+  },
+  {
+   "src": [
+    "HIMARS"
+   ],
+   "ja": "ハイマース（HIMARS）",
+   "bad": []
+  },
+  {
+   "src": [
+    "drone"
+   ],
+   "ja": "ドローン（無人機）",
+   "bad": []
+  },
+  {
+   "src": [
+    "warship",
+    "军舰",
+    "軍艦",
+    "战舰",
+    "戰艦"
+   ],
+   "ja": "軍艦",
+   "bad": [
+    "戦艦"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "naval mine",
+    "sea mine",
+    "limpet mine",
+    "水雷",
+    "机雷",
+    "機雷",
+    "minefield",
+    "mine-laying",
+    "laid mines",
+    "hit mines",
+    "struck mines",
+    "mines in the strait",
+    "mines in the gulf"
+   ],
+   "ja": "機雷",
+   "bad": [
+    "爆雷",
+    "地雷"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "depth charge"
+   ],
+   "ja": "爆雷"
+  },
+  {
+   "src": [
+    "oil tanker",
+    "tanker",
+    "油轮",
+    "油輪"
+   ],
+   "ja": "タンカー",
+   "bad": [
+    "油タンカー"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "shadow bank",
+    "影子银行",
+    "影子銀行"
+   ],
+   "ja": "影の銀行",
+   "bad": [
+    "陰影銀行"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "entities"
+   ],
+   "ja": "団体や企業",
+   "bad": [
+    "実体"
+   ]
+  },
+  {
+   "src": [
+    "khan younis",
+    "khan yunis",
+    "汗尤尼斯"
+   ],
+   "ja": "ハンユニス",
+   "bad": [
+    "クハンユニス",
+    "カーンユニス"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "NATO",
+    "北约",
+    "北約"
+   ],
+   "ja": "NATO",
+   "bad": [
+    "北約",
+    "北约"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "revolutionary guard",
+    "IRGC",
+    "革命卫队",
+    "革命衛隊"
+   ],
+   "ja": "イラン革命防衛隊"
+  },
+  {
+   "src": [
+    "frigate",
+    "护卫舰",
+    "巡防艦"
+   ],
+   "ja": "フリゲート"
+  },
+  {
+   "src": [
+    "destroyer",
+    "驱逐舰",
+    "驅逐艦"
+   ],
+   "ja": "駆逐艦"
+  },
+  {
+   "src": [
+    "corvette"
+   ],
+   "ja": "コルベット"
+  },
+  {
+   "src": [
+    "aircraft carrier",
+    "航空母舰",
+    "航空母艦",
+    "航母"
+   ],
+   "ja": "空母",
+   "bad": [
+    "航空母艦"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "amphibious assault ship",
+    "两栖攻击舰",
+    "兩棲攻擊艦"
+   ],
+   "ja": "強襲揚陸艦"
+  },
+  {
+   "src": [
+    "submarine",
+    "潜艇",
+    "潛艦",
+    "潜舰"
+   ],
+   "ja": "潜水艦",
+   "bad": [
+    "潜艇",
+    "潜水艇"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "unmanned surface vessel",
+    "naval drone",
+    "sea drone",
+    "drone boat",
+    "无人艇",
+    "無人艇"
+   ],
+   "ja": "水上無人艇"
+  },
+  {
+   "src": [
+    "cruise missile",
+    "巡航导弹",
+    "巡弋飛彈"
+   ],
+   "ja": "巡航ミサイル"
+  },
+  {
+   "src": [
+    "ballistic missile",
+    "弹道导弹",
+    "彈道飛彈"
+   ],
+   "ja": "弾道ミサイル"
+  },
+  {
+   "src": [
+    "hypersonic",
+    "高超音速",
+    "極音速"
+   ],
+   "ja": "極超音速"
+  },
+  {
+   "src": [
+    "air defense identification zone",
+    "air defence identification zone",
+    "ADIZ",
+    "防空识别区",
+    "防空識別區"
+   ],
+   "ja": "防空識別圏",
+   "bad": [
+    "防空識別区"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "median line",
+    "海峡中线",
+    "海峽中線"
+   ],
+   "ja": "台湾海峡の中間線"
+  },
+  {
+   "src": [
+    "strait of hormuz",
+    "hormuz",
+    "霍尔木兹",
+    "荷姆茲"
+   ],
+   "ja": "ホルムズ海峡"
+  },
+  {
+   "src": [
+    "shenzhou",
+    "神舟"
+   ],
+   "ja": "神舟",
+   "bad": [
+    "シャンジュウ",
+    "シェンチョウ"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "tiangong",
+    "天宫",
+    "天宮"
+   ],
+   "ja": "宇宙ステーション「天宮」"
+  },
+  {
+   "src": [
+    "hai kun",
+    "海鲲",
+    "海鯤"
+   ],
+   "ja": "潜水艦「海鯤」"
+  },
+  {
+   "src": [
+    "ulleung",
+    "鬱陵",
+    "郁陵"
+   ],
+   "ja": "鬱陵島"
+  },
+  {
+   "src": [
+    "fighter jet",
+    "warplane",
+    "战斗机",
+    "戰鬥機",
+    "战机",
+    "戰機"
+   ],
+   "ja": "戦闘機"
+  },
+  {
+   "src": [
+    "bomber",
+    "轰炸机",
+    "轟炸機"
+   ],
+   "ja": "爆撃機"
+  },
+  {
+   "src": [
+    "air strike",
+    "airstrike",
+    "空袭",
+    "空襲"
+   ],
+   "ja": "空爆"
+  },
+  {
+   "src": [
+    "blockade",
+    "封锁"
+   ],
+   "ja": "封鎖"
+  },
+  {
+   "src": [
+    "live-fire",
+    "live fire",
+    "实弹",
+    "實彈"
+   ],
+   "ja": "実弾射撃",
+   "bad": [
+    "実弾演習射撃"
+   ]
+  },
+  {
+   "src": [
+    "joint drill",
+    "joint exercise",
+    "联合演习",
+    "聯合演習"
+   ],
+   "ja": "合同演習"
+  },
+  {
+   "src": [
+    "astronaut",
+    "taikonaut",
+    "航天员",
+    "太空人"
+   ],
+   "ja": "宇宙飛行士"
+  },
+  {
+   "src": [
+    "Treasury Department",
+    "treasury",
+    "财政部",
+    "財政部"
+   ],
+   "ja": "財務省"
+  },
+  {
+   "src": [
+    "State Department",
+    "国务院",
+    "國務院"
+   ],
+   "ja": "国務省（米国の場合。中国の国務院は「国務院」）"
+  },
+  {
+   "src": [
+    "spokesperson",
+    "spokesman",
+    "spokeswoman",
+    "发言人",
+    "發言人"
+   ],
+   "ja": "報道官",
+   "bad": [
+    "スポークスパーソン",
+    "スポークスマン"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Foreign Ministry",
+    "foreign ministry",
+    "外交部"
+   ],
+   "ja": "外務省（中国・台湾は「外交部」）"
+  },
+  {
+   "src": [
+    "air raid alert",
+    "air raid siren",
+    "air raid warning",
+    "air-raid",
+    "空袭警报",
+    "空襲警報"
+   ],
+   "ja": "空襲警報",
+   "bad": [
+    "空爆警報"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "oil export",
+    "石油出口"
+   ],
+   "ja": "石油輸出",
+   "bad": [
+    "油輸出"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "threatens to",
+    "threatened to",
+    "threaten to"
+   ],
+   "ja": "「…すると警告しました」（「脅す」「脅迫」と書かない）",
+   "bad": [
+    "脅す",
+    "脅迫"
+   ]
+  },
+  {
+   "src": [
+    "UNRWA"
+   ],
+   "ja": "国連パレスチナ難民救済事業機関（UNRWA）",
+   "bad": [
+    "国連パレスチナ難民支援機関"
+   ]
+  },
+  {
+   "src": [
+    "Rubio",
+    "鲁比奥",
+    "盧比歐"
+   ],
+   "ja": "ルビオ",
+   "bad": [
+    "ルービオ",
+    "ルビーオ"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Vance",
+    "万斯",
+    "范斯"
+   ],
+   "ja": "バンス",
+   "bad": [
+    "ヴァンス"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Hegseth",
+    "赫格塞思"
+   ],
+   "ja": "ヘグセス"
+  },
+  {
+   "src": [
+    "Netanyahu",
+    "内塔尼亚胡",
+    "納坦雅胡"
+   ],
+   "ja": "ネタニヤフ",
+   "bad": [
+    "ネタニヤウ"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Khamenei",
+    "哈梅内伊",
+    "哈米尼"
+   ],
+   "ja": "ハメネイ"
+  },
+  {
+   "src": [
+    "Baghaei",
+    "Baqaei",
+    "Baqaee"
+   ],
+   "ja": "バガイ",
+   "bad": [
+    "バカイ",
+    "バガエイ"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Araghchi",
+    "Araqchi",
+    "阿拉格齐"
+   ],
+   "ja": "アラグチ"
+  },
+  {
+   "src": [
+    "Lavrov",
+    "拉夫罗夫",
+    "拉夫羅夫"
+   ],
+   "ja": "ラブロフ"
+  },
+  {
+   "src": [
+    "Erdogan",
+    "Erdoğan",
+    "埃尔多安"
+   ],
+   "ja": "エルドアン"
+  },
+  {
+   "src": [
+    "Macron",
+    "马克龙",
+    "馬克宏"
+   ],
+   "ja": "マクロン"
+  },
+  {
+   "src": [
+    "Starmer",
+    "斯塔默"
+   ],
+   "ja": "スターマー"
+  },
+  {
+   "src": [
+    "Wang Yi",
+    "王毅"
+   ],
+   "ja": "王毅"
+  },
+  {
+   "src": [
+    "Kim Yo Jong",
+    "Kim Yo-jong",
+    "金与正",
+    "金與正"
+   ],
+   "ja": "金与正（キム・ヨジョン）"
+  },
+  {
+   "src": [
+    "Lee Jae-myung",
+    "Lee Jae Myung",
+    "李在明"
+   ],
+   "ja": "李在明（イ・ジェミョン）"
+  },
+  {
+   "src": [
+    "Merkury",
+    "Merkuriy",
+    "Mercury corvette"
+   ],
+   "ja": "コルベット「メルクーリー」"
+  },
+  {
+   "src": [
+    "Vice President",
+    "副总统",
+    "副總統"
+   ],
+   "ja": "副大統領"
+  },
+  {
+   "src": [
+    "Secretary of State",
+    "国务卿",
+    "國務卿"
+   ],
+   "ja": "国務長官",
+   "bad": [
+    "国務次官",
+    "国務卿"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Secretary General",
+    "Secretary-General",
+    "秘书长",
+    "秘書長"
+   ],
+   "ja": "事務総長",
+   "bad": [
+    "秘書長"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "Rutte",
+    "吕特",
+    "呂特"
+   ],
+   "ja": "ルッテ（NATO の事務総長。首相と書かない）",
+   "bad": [
+    "ルテ"
+   ]
+  },
+  {
+   "src": [
+    "Foreign Minister",
+    "外长",
+    "外長"
+   ],
+   "ja": "外相"
+  },
+  {
+   "src": [
+    "space mission",
+    "太空任务",
+    "太空任務"
+   ],
+   "ja": "宇宙ミッション",
+   "bad": [
+    "空間ミッション"
+   ],
+   "auto": true
+  },
+  {
+   "src": [
+    "trading compan",
+    "贸易公司",
+    "貿易公司"
+   ],
+   "ja": "商社"
+  },
+  {
+   "src": [
+    "security service",
+    "SBU",
+    "安全局"
+   ],
+   "ja": "保安庁（ウクライナの SBU は「ウクライナ保安庁」）",
+   "bad": [
+    "セキュリティ機関"
+   ]
+  }
+ ]
+}
