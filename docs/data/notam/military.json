@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-24T03:29:37Z",
+ "generated_utc": "2026-11-24T04:15:13Z",
  "snapshot": "snapshot-9a2f231e406efb55.json",
  "items": [
   {
@@ -53825,88 +53825,6 @@
    "launch": null
   },
   {
-   "key": "aviation:D3626/26",
-   "id": "D3626/26",
-   "dataset": "aviation",
-   "type": "航空",
-   "issuer": {
-    "code": "RKRR",
-    "name": null,
-    "country": "KR"
-   },
-   "q_code": "QRMCA",
-   "category": "military",
-   "categories": [
-    "military"
-   ],
-   "basis": [
-    {
-     "by": "keyword",
-     "category": "military",
-     "rule": "forces",
-     "matched": "MILITARY OPERATION"
-    }
-   ],
-   "valid": {
-    "start_utc": "2026-11-23T03:00:00Z",
-    "end_utc": "2026-11-24T04:00:00Z",
-    "permanent": false,
-    "status": "active",
-    "basis": "item",
-    "schedule": "23 0300-0400, 24 0100-0200 0300-0400"
-   },
-   "area": {
-    "basis": "shape",
-    "shapes": [
-     {
-      "kind": "polygon",
-      "points": [
-       [
-        36.5333,
-        124.8333
-       ],
-       [
-        36.5333,
-        125.6
-       ],
-       [
-        36.0836,
-        125.6011
-       ],
-       [
-        36.0819,
-        124.5256
-       ],
-       [
-        36.3989,
-        124.5239
-       ],
-       [
-        36.5333,
-        124.8333
-       ]
-      ]
-     }
-    ]
-   },
-   "original": {
-    "text": "D3626/26 NOTAMN  \r\nQ)RKRR/QRMCA/IV/BO/W/000/400/3618N12504E035\r\nA)RKRR B)2611230300 C)2611240400\r\nD)23 0300-0400, 24 0100-0200 0300-0400\r\nE)MILITARY OPERATION AREA RK MOA 80 ACT\r\nF)SFC G)FL400"
-   },
-   "source": {
-    "name": "FAA NOTAM Search（各国の航空当局が出した NOTAM）",
-    "url": "https://notams.aim.faa.gov/notamSearch/nsapp.html#/",
-    "via": "NOTAM Watch",
-    "note": "NOTAM Watch の詳細画面の「公式原文」と同じ参照先"
-   },
-   "notam_watch": {
-    "url": "https://notam-watch.pages.dev/",
-    "dataset": "aviation",
-    "id": "D3626/26",
-    "snapshot": "snapshot-9a2f231e406efb55.json"
-   },
-   "launch": null
-  },
-  {
    "key": "aviation:D3628/26",
    "id": "D3628/26",
    "dataset": "aviation",
@@ -54780,7 +54698,7 @@
     "start_utc": "2026-11-24T03:30:00Z",
     "end_utc": "2026-11-24T09:30:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "0330/0530 0715/0930"
    },
@@ -55020,7 +54938,7 @@
     "start_utc": "2026-11-24T03:30:00Z",
     "end_utc": "2026-11-24T09:30:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "0330/0530 0715/0930"
    },
@@ -55252,7 +55170,7 @@
     "start_utc": "2026-11-24T03:30:00Z",
     "end_utc": "2026-11-24T09:30:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "0330/0530 0715/0930"
    },
@@ -55484,7 +55402,7 @@
     "start_utc": "2026-11-24T03:30:00Z",
     "end_utc": "2026-11-24T09:30:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "0330/0530 0715/0930"
    },
@@ -89821,92 +89739,6 @@
    "launch": null
   },
   {
-   "key": "aviation:E5345/26",
-   "id": "E5345/26",
-   "dataset": "aviation",
-   "type": "航空",
-   "issuer": {
-    "code": "RKRR",
-    "name": null,
-    "country": "KR"
-   },
-   "q_code": "QRTCA",
-   "category": "danger_area",
-   "categories": [
-    "danger_area"
-   ],
-   "basis": [
-    {
-     "by": "q-code",
-     "category": "danger_area",
-     "rule": "Q-RT",
-     "matched": "QRTCA"
-    }
-   ],
-   "valid": {
-    "start_utc": "2026-11-23T03:00:00Z",
-    "end_utc": "2026-11-24T04:00:00Z",
-    "permanent": false,
-    "status": "active",
-    "basis": "item",
-    "schedule": "23 0300-0400, 24 0100-0200 0300-0400"
-   },
-   "area": {
-    "basis": "shape",
-    "shapes": [
-     {
-      "kind": "polygon",
-      "points": [
-       [
-        37.0225,
-        124.8333
-       ],
-       [
-        37.0356,
-        125.6
-       ],
-       [
-        36.0836,
-        125.6011
-       ],
-       [
-        36.0819,
-        124.5256
-       ],
-       [
-        36.3989,
-        124.5239
-       ],
-       [
-        36.5333,
-        124.8333
-       ],
-       [
-        37.0225,
-        124.8333
-       ]
-      ]
-     }
-    ]
-   },
-   "original": {
-    "text": "E5345/26 NOTAMN  \r\nQ)RKRR/QRTCA/IV/BO/W/000/400/3634N12504E040\r\nA)RKRR B)2611230300 C)2611240400\r\nD)23 0300-0400, 24 0100-0200 0300-0400\r\nE)TEMPO RESTRICTED AREA ACT AS FLW\r\nAREA BOUNDED BY THE FOLLOWING\r\n370121N1245000E-370208N1253600E-360501N1253604E-360455N1243132E-36235\r\n6N1243126E-363200N1245000E-370121N1245000E\r\nF)SFC G)FL400"
-   },
-   "source": {
-    "name": "FAA NOTAM Search（各国の航空当局が出した NOTAM）",
-    "url": "https://notams.aim.faa.gov/notamSearch/nsapp.html#/",
-    "via": "NOTAM Watch",
-    "note": "NOTAM Watch の詳細画面の「公式原文」と同じ参照先"
-   },
-   "notam_watch": {
-    "url": "https://notam-watch.pages.dev/",
-    "dataset": "aviation",
-    "id": "E5345/26",
-    "snapshot": "snapshot-9a2f231e406efb55.json"
-   },
-   "launch": null
-  },
-  {
    "key": "aviation:E5378/26",
    "id": "E5378/26",
    "dataset": "aviation",
@@ -93927,7 +93759,7 @@
     "start_utc": "2026-11-24T04:00:00Z",
     "end_utc": "2026-11-27T09:00:00Z",
     "permanent": false,
-    "status": "upcoming",
+    "status": "active",
     "basis": "item",
     "schedule": "24-26 0400/1200 27 0400/0900"
    },
