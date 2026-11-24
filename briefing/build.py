@@ -24,7 +24,7 @@ from . import sources as S
 MIN_EVENTS = 3
 TARGET_SECONDS = 120      # 音声の長さの上限の目安。超えるぶんは順位の低い出来事から外す
 CHARS_PER_SEC = 6.0       # もち子さん（ノーマル）の実測：1 秒に約 6 字（2026-11-24 の試作）
-INTRO_OUTRO_SEC = 9.0     # 冒頭と結びの定型文の見積もり
+INTRO_OUTRO_SEC = 14.0    # 冒頭と結びの定型文（実測：冒頭 約 7.5 秒、結び 約 6 秒）
 CAT_JA = {'military': '軍事', 'conflict': '紛争', 'diplomacy': '外交', 'alert': '警報'}
 # 分類：配信元の既定の分類（多くは外交）に寄るので、代表の記事の半数以上に出る語で上書きする。先に当たった方。
 CAT_HINT = (
@@ -87,6 +87,27 @@ def category_of(recs, reps):
     return collections.Counter(r.get('category') for r in recs).most_common(1)[0][0]
 
 
+def same_event(a, b, tok):
+    """分類・主な国の組（先頭 2 つ）・地点が同じで、見出しの語も重なる束は、同じ出来事として 1 つだけ読む
+    （束ねが分かれた続報・別の配信元の組。a・b は {'meta', 'heads'}）。"""
+    key = lambda m: (m['category'], frozenset(m['countries'][:2]), (m['place'] or {}).get('name'))
+    if not a['meta']['countries'] or key(a['meta']) != key(b['meta']):
+        return False
+    wa = set().union(*(tok(h) for h in a['heads'])) if a['heads'] else set()
+    wb = set().union(*(tok(h) for h in b['heads'])) if b['heads'] else set()
+    return bool(wa and wb) and len(wa & wb) / min(len(wa), len(wb)) >= 0.3
+
+
+def place_terms():
+    """地名の表を定訳として使う（Zaporizhzhia・札波羅熱 → ザポリージャ）。3 字以下の英字の別名は誤って当たるので除く。"""
+    out = []
+    for p in P.table():
+        src = [a.strip() for a in p['aliases'] if a.strip() and (len(a.strip()) > 3 or not a.isascii())]
+        if src:
+            out.append({'src': src, 'ja': p['name']})
+    return out
+
+
 def estimate_seconds(events):
     """台本の字数からの音声の長さの見積もり（冒頭・結び・間を含む）。"""
     s = INTRO_OUTRO_SEC + A.INTRO_GAP
@@ -112,6 +133,7 @@ def make_scripts(records, args, terms, tok, log, deadline):
     stats = {'clusterSec': round(time.time() - tc, 2), 'clusters': len(clusters), 'multiSource': sum(1 for c in clusters if len(C.describe(c)['families']) >= 2),
              'candidates': len(cands)}
     known = [w[0] for w in A.load_readings()]
+    places = place_terms()
     events, dropped, picked_heads = [], [], []
     for rank, cand in enumerate(cands[:args.candidates], 1):
         if len(events) >= args.max_events or time.time() > deadline:
@@ -121,17 +143,23 @@ def make_scripts(records, args, terms, tok, log, deadline):
             dropped.append({'reason': '選んだ束と同じ話（見出しの語が重なる）', 'headline': heads[0][:40]})
             continue
         reps = C.representatives(cand['records'])
-        conflicts = T.number_conflicts(reps)
-        use_terms = T.glossary_for(reps, terms)
-        script, why, notes, tries = T.write(args.server, reps, use_terms, conflicts, known)
         meta = event_meta(cand, reps)
+        twin = next((e for e in events if same_event({'meta': e['meta'], 'heads': e['heads']}, {'meta': meta, 'heads': heads}, tok[0])), None)
+        if twin:
+            dropped.append({'reason': '選んだ出来事と同じ（分類・国・地点が同じで見出しの語が重なる：' + twin['script']['headline'] + '）',
+                            'headline': heads[0][:40]})
+            log(f'#{rank} same: {twin["script"]["headline"]}')
+            continue
+        conflicts = T.number_conflicts(reps)
+        use_terms = T.glossary_for(reps, terms + places)
+        script, why, notes, tries = T.write(args.server, reps, use_terms, conflicts, known)
         if script is None:
             dropped.append({'reason': '、'.join(why), 'headline': (heads[0])[:40]})
             log(f'#{rank} hold: {"、".join(why)}')
             continue
         picked_heads.append(heads)
         log(f'#{rank} ok: {script["headline"]}（系列 {meta["sources"]["count"]}・国 {meta["sources"]["countries"]}）')
-        events.append({'rank': rank, 'script': script, 'meta': meta, 'notes': notes, 'tries': tries,
+        events.append({'rank': rank, 'script': script, 'meta': meta, 'heads': heads, 'notes': notes, 'tries': tries,
                        'conflicts': conflicts, 'families': cand['stats']['families']})
     return events, dropped, stats
 

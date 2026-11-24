@@ -170,5 +170,28 @@ class Rules2(unittest.TestCase):
         self.assertEqual(T.verify(parsed('ロシアの軍艦を撃沈', 'ウクライナは、リビア沖でロシアの軍艦を撃沈したと発表しました。'), arts, [], terms)[0], [])
 
 
+class Rules3(unittest.TestCase):
+    """3 回目の試作（2026-11-24）を受けた確かめ：当事者の呼び方、英語のままの語、中国語の見出しの手がかり。"""
+    ARTS = [{'source': 'mee', 'title': "Iran vows to counter US 'piracy' and naval blockade", 'summary': 'The US Treasury announced sanctions.', 'titleJa': ''}]
+
+    def test_partisan_labels_only_inside_quotes(self):
+        why, _ = T.verify(parsed('イラン、米国の封鎖に対抗', 'イランは米国の海賊行為に対し、すべての手段を用いると表明しました。'), self.ARTS, [], [])
+        self.assertTrue(any('「」の外' in w and '海賊' in w for w in why), why)
+        ok = parsed('イラン、米国の封鎖に対抗', 'イラン外務省は、米国の封鎖を「海賊行為」と呼び、対抗すると表明しました。')
+        self.assertEqual(T.verify(ok, self.ARTS, [], [])[0], [])
+
+    def test_words_left_in_english_fail(self):
+        why, _ = T.verify(parsed('米国、イラン関連の制裁を発表', '米国 treasury はイラン関連の制裁を発表しました。'), self.ARTS, [], [])
+        self.assertTrue(any('英語のまま' in w and 'treasury' in w for w in why), why)
+        for ok in ('NATOは、ロシアの計画について協議すると発表しました。', 'ロシア軍のSu-35戦闘機が、防空識別圏に進入したと発表しました。'):
+            self.assertEqual(T.verify(parsed('ロシア軍機が進入', ok), self.ARTS, [], [])[0], [], ok)
+
+    def test_machine_translation_is_a_hint_for_chinese_headlines_only(self):
+        zh = T.article_payload({'source': 'rti', 'title': '德媒爆料 俄羅斯計畫發射核武衛星', 'titleJa': 'ドイツ紙、ロシアの核兵器衛星の計画を報道', 'summary': ''})
+        self.assertEqual(zh['title_ja_machine'], 'ドイツ紙、ロシアの核兵器衛星の計画を報道')
+        en = T.article_payload({'source': 'usni', 'title': 'Russia plans nuclear satellite', 'titleJa': 'ロシアが核衛星を計画', 'summary': ''})
+        self.assertNotIn('title_ja_machine', en)
+
+
 if __name__ == '__main__':
     unittest.main()

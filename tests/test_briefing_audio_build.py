@@ -140,5 +140,34 @@ class Meta(unittest.TestCase):
         self.assertEqual(B.trim_to_length(short)[1], [])
 
 
+class Twins(unittest.TestCase):
+    TOK = staticmethod(lambda h: set(h.split()))
+
+    def ev(self, cat, countries, place, *heads):
+        return {'meta': {'category': cat, 'countries': countries, 'place': place and {'name': place}}, 'heads': list(heads)}
+
+    def test_same_event(self):
+        a = self.ev('military', ['RU', 'KR', 'JP'], None, '韓国 ロシア 軍機 防空識別圏 警報')
+        b = self.ev('military', ['RU', 'KR'], None, 'ロシア 軍機 韓国 防空識別圏 進入')
+        self.assertTrue(B.same_event(a, b, self.TOK))
+        # 国の組が同じでも、地点が違えば別の出来事
+        c = self.ev('conflict', ['UA', 'RU', 'LY'], None, 'ウクライナ リビア沖 ロシア 軍艦 撃沈')
+        d = self.ev('conflict', ['UA', 'RU'], 'ザポリージャ', 'ロシア ウクライナ ザポリージャ 攻撃')
+        self.assertFalse(B.same_event(c, d, self.TOK))
+        # 分類が違えば別（封鎖への対抗 と 制裁）
+        e = self.ev('conflict', ['IR', 'US'], None, 'イラン 米国 封鎖 対抗')
+        f = self.ev('diplomacy', ['IR', 'US'], None, '米国 イラン 制裁 発表')
+        self.assertFalse(B.same_event(e, f, self.TOK))
+        # 国と分類が同じでも、見出しの語が重ならなければ別
+        g = self.ev('diplomacy', ['CN', 'US'], None, '首脳 会談 開催 合意')
+        h = self.ev('diplomacy', ['CN', 'US'], None, '関税 引き上げ 発表 半導体')
+        self.assertFalse(B.same_event(g, h, self.TOK))
+
+    def test_place_names_become_fixed_translations(self):
+        terms = T.glossary_for([{'title': 'Russian strike on Zaporizhzhia kills two', 'summary': '', 'titleJa': ''}], B.place_terms())
+        self.assertIn('ザポリージャ', [t['ja'] for t in terms])
+        self.assertTrue(all(len(s) > 3 or not s.isascii() for t in B.place_terms() for s in t['src']))
+
+
 if __name__ == '__main__':
     unittest.main()

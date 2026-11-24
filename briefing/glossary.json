@@ -650,6 +650,45 @@
     "太空人"
    ],
    "ja": "宇宙飛行士"
+  },
+  {
+   "src": [
+    "Treasury Department",
+    "treasury",
+    "财政部",
+    "財政部"
+   ],
+   "ja": "財務省"
+  },
+  {
+   "src": [
+    "State Department",
+    "国务院",
+    "國務院"
+   ],
+   "ja": "国務省（米国の場合。中国の国務院は「国務院」）"
+  },
+  {
+   "src": [
+    "spokesperson",
+    "spokesman",
+    "spokeswoman",
+    "发言人",
+    "發言人"
+   ],
+   "ja": "報道官",
+   "bad": [
+    "スポークスパーソン",
+    "スポークスマン"
+   ]
+  },
+  {
+   "src": [
+    "Foreign Ministry",
+    "foreign ministry",
+    "外交部"
+   ],
+   "ja": "外務省（中国・台湾は「外交部」）"
   }
  ]
 }
