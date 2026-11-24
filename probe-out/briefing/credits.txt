@@ -1,0 +1,2 @@
+VOICEVOX:もち子(cv 明日葉よもぎ)
+台本: Qwen3-8B（Apache-2.0）で機械作成。元記事の出典は latest.json の sources。

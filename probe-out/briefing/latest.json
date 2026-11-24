@@ -1,0 +1,633 @@
+{
+ "version": 1,
+ "createdAt": 1795521417920,
+ "windowHours": 24,
+ "hold": false,
+ "holdReason": "",
+ "generated": "machine",
+ "model": "Qwen3-8B",
+ "voice": {
+  "credit": "VOICEVOX:もち子(cv 明日葉よもぎ)",
+  "styleId": 20,
+  "speaker": "もち子さん",
+  "style": "ノーマル"
+ },
+ "audio": {
+  "file": "latest.mp3",
+  "seconds": 109.35,
+  "bytes": 875328
+ },
+ "counts": {
+  "records": 933,
+  "sources": 79,
+  "clusters": 784,
+  "multiSource": 49
+ },
+ "intro": {
+  "start": 0,
+  "text": "世界情勢観測、11月24日。過去24時間の主な出来事、7件です。"
+ },
+ "outro": {
+  "start": 103.47,
+  "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
+ },
+ "events": [
+  {
+   "start": 8.43,
+   "end": 18.96,
+   "category": "conflict",
+   "label": "紛争 · ウクライナ",
+   "country": "UA",
+   "countries": [
+    "UA",
+    "RU",
+    "LY"
+   ],
+   "place": null,
+   "headline": "ウクライナ軍がリビア沖でロシア軍艦を撃沈",
+   "lines": [
+    {
+     "start": 8.43,
+     "sub": "",
+     "text": "ウクライナ軍はリビア沖でロシアの軍艦を撃沈しました。"
+    },
+    {
+     "start": 12.56,
+     "sub": "",
+     "text": "撃沈された軍艦はコルベットの「メルクーリー」で、ドローンが使用されました。"
+    }
+   ],
+   "sources": {
+    "count": 9,
+    "countries": 7,
+    "names": [
+     "ジャパンタイムズ",
+     "英国公共放送 国際",
+     "フランス24"
+    ],
+    "items": [
+     {
+      "source": "japantimes",
+      "title": "Ukraine strike on Russian warship off Libya highlights Kyiv’s broadened reach",
+      "url": "https://www.japantimes.co.jp/news/2026/11/24/world/ukraine-russian-warship-libyan-coast/"
+     },
+     {
+      "source": "bbc",
+      "title": "What strike on Russian ship in Libya says about spread of Ukraine war",
+      "url": "https://www.bbc.co.uk/news/articles/cm894p88jzxpo"
+     },
+     {
+      "source": "f24",
+      "title": "How far will Ukraine war spread? Kyiv targets Russian vessels in Libya",
+      "url": "https://www.france24.com/en/tv-shows/the-debate/20261123-how-far-will-ukraine-war-spread-kyiv-targets-russian-vessels-in-libya"
+     },
+     {
+      "source": "aj",
+      "title": "What Russian warship did Ukraine just sink?",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/23/what-russian-warship-did-ukraine-just-sink?traffic_source=rss"
+     },
+     {
+      "source": "thehindu",
+      "title": "Zelenskyy hails Ukraine's attack on a Russian warship in Libya",
+      "url": "https://www.thehindu.com/news/international/zelenskyy-hails-ukraines-attack-on-a-russian-warship-in-libya/article71735901.ece"
+     },
+     {
+      "source": "defensenews",
+      "title": "Ukraine strikes Russian warship and cargo vessel with naval drones in Libya",
+      "url": "https://www.defensenews.com/video/2026/11/23/ukraine-strikes-russian-warship-and-cargo-vessel-with-naval-drones-in-libya/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 1,
+    "families": [
+     "aj",
+     "bbc",
+     "france24",
+     "gcaptain",
+     "japantimes",
+     "mee",
+     "sightline",
+     "thehindu",
+     "ua-state"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 19.86,
+   "end": 31.92,
+   "category": "military",
+   "label": "軍事 · ロシア",
+   "country": "RU",
+   "countries": [
+    "RU",
+    "KR",
+    "JP"
+   ],
+   "place": null,
+   "headline": "ロシア軍機、韓国防空識別圏に侵入　空爆警報発令",
+   "lines": [
+    {
+     "start": 19.86,
+     "sub": "",
+     "text": "韓国軍はロシアの軍用機が日本海を飛行中のため、空爆警報を発令しました。"
+    },
+    {
+     "start": 26.32,
+     "sub": "",
+     "text": "鬱陵島の住民に対し避難を呼びかけ、戦闘機を緊急出動させました。"
+    }
+   ],
+   "sources": {
+    "count": 6,
+    "countries": 6,
+    "names": [
+     "キーウ・インディペンデント",
+     "アルジャジーラ",
+     "メドゥーザ 英語版"
+    ],
+    "items": [
+     {
+      "source": "kyivindependent",
+      "title": "'Evacuation, air raid,' — Russian military aircraft approach South Korean island, trigger air raid alert",
+      "url": "https://kyivindependent.com/evacuation-air-raid-russian-aircraft-approach-south-korean-island-trigger-air-raid-alert-2/"
+     },
+     {
+      "source": "aj",
+      "title": "Why S Korea issued air raid alert after Russian jets flew near its airspace",
+      "url": "https://www.aljazeera.com/news/2026/11/24/why-s-korea-issued-air-raid-alert-after-russian-jets-flew-near-its-airspace?traffic_source=rss"
+     },
+     {
+      "source": "meduza",
+      "title": "South Korea scrambles fighter jets over Russian military aircraft, issues evacuation alert on island",
+      "url": "https://meduza.io/en/news/2026/11/24/south-korea-scrambles-fighter-jets-over-russian-military-aircraft-issues-evacuation-alert-on-island"
+     },
+     {
+      "source": "yonhap",
+      "title": "(4th LD) S. Korea briefly issues alert on eastern island after Russian warplanes near airspace",
+      "url": "https://en.yna.co.kr/view/AEN20261124002254315"
+     },
+     {
+      "source": "guardian-russia",
+      "title": "South Korea tells island residents to take shelter after Russian military aircraft approach",
+      "url": "https://www.theguardian.com/world/2026/nov/24/south-korea-tells-island-residents-to-take-shelter-after-russian-military-aircraft-approach"
+     },
+     {
+      "source": "japantimes",
+      "title": "South Korea scrambles jets as Russian warplanes enter air zone",
+      "url": "https://www.japantimes.co.jp/news/2026/11/24/asia-pacific/south-korea-jets-russia-warplanes/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 2,
+    "families": [
+     "aj",
+     "guardian",
+     "japantimes",
+     "kyivindependent",
+     "meduza",
+     "yonhap"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 32.82,
+   "end": 46.24,
+   "category": "conflict",
+   "label": "紛争 · パレスチナ",
+   "country": "PS",
+   "countries": [
+    "PS",
+    "IL"
+   ],
+   "place": {
+    "name": "ガザ",
+    "lon": 34.45,
+    "lat": 31.5
+   },
+   "headline": "イスラエル空爆でガザで少なくとも3人が死亡",
+   "lines": [
+    {
+     "start": 32.82,
+     "sub": "",
+     "text": "イスラエルの空爆によりガザで少なくとも3人が死亡しました。"
+    },
+    {
+     "start": 37.26,
+     "sub": "",
+     "text": "そのうち1人は国連パレスチナ難民支援機関UNRWAの職員で、ガザのジャバリア難民キャンプ近くの井戸の近くで働いていました。"
+    }
+   ],
+   "sources": {
+    "count": 4,
+    "countries": 4,
+    "names": [
+     "アルジャジーラ",
+     "アルモニター",
+     "ミドル・イースト・アイ"
+    ],
+    "items": [
+     {
+      "source": "aj",
+      "title": "Israeli strikes kill at least three, including UNRWA worker, in Gaza",
+      "url": "https://www.aljazeera.com/news/2026/11/23/israeli-drone-strike-kills-unrwa-worker-in-gaza?traffic_source=rss"
+     },
+     {
+      "source": "almonitor",
+      "title": "Israeli strikes kill at least three in Gaza, including worker with UN Palestinian agency",
+      "url": "https://www.al-monitor.com/originals/2026/11/israeli-strikes-kill-least-three-gaza-including-worker-un-palestinian-agency"
+     },
+     {
+      "source": "mee",
+      "title": "Israeli strike kills Unrwa worker in Gaza, the UN Palestinian agency says",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/israeli-strike-kills-worker-un-palestinian-agency-gaza-agency-says"
+     },
+     {
+      "source": "rt",
+      "title": "Israeli strikes kill three in Gaza, including UN worker – Reuters",
+      "url": "https://rt-english.com/news/649268-israel-kills-un-worker-gaza/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 5,
+    "families": [
+     "aj",
+     "almonitor",
+     "mee",
+     "ru-state"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 47.14,
+   "end": 61.28,
+   "category": "diplomacy",
+   "label": "外交 · イラン",
+   "country": "IR",
+   "countries": [
+    "IR",
+    "US",
+    "IL"
+   ],
+   "place": null,
+   "headline": "カタール首相、米国とイランの交渉再開を呼びかける",
+   "lines": [
+    {
+     "start": 47.14,
+     "sub": "",
+     "text": "カタール首相は米国とイランが交渉を再開し戦争を終わらせる必要があると述べました。"
+    },
+    {
+     "start": 53.55,
+     "sub": "",
+     "text": "カタール首相は米国国務長官マーロー・ルービオと会談し、緊張の緩和に向け取り組んでいます。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 3,
+    "names": [
+     "ザ・ヒンドゥー 国際",
+     "アルジャジーラ",
+     "ミドル・イースト・アイ"
+    ],
+    "items": [
+     {
+      "source": "thehindu",
+      "title": "Vance, Rubio meet with Qatari PM as uncertainty mounts over Trump's intentions with Iran",
+      "url": "https://www.thehindu.com/news/international/vance-rubio-meet-with-qatari-pmas-uncertainty-mounts-over-trumps-intentions-with-iran/article71737051.ece"
+     },
+     {
+      "source": "aj",
+      "title": "Qatar PM looks to revive US-Iran talks after meeting Rubio",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/24/qatar-pm-looks-to-revive-us-iran-talks-after-meeting-rubio?traffic_source=rss"
+     },
+     {
+      "source": "mee",
+      "title": "Qatar needs US and Iran to resume talks to end war, PM says",
+      "url": "https://www.middleeasteye.net/news/qatar-needs-us-iran-resume-talks-end-war-pm-says"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 8,
+    "families": [
+     "aj",
+     "mee",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 62.18,
+   "end": 78.9,
+   "category": "conflict",
+   "label": "紛争 · イラン",
+   "country": "IR",
+   "countries": [
+    "IR",
+    "US",
+    "IL"
+   ],
+   "place": null,
+   "headline": "イラン、米国封鎖に対抗するすべての手段を用意",
+   "lines": [
+    {
+     "start": 62.18,
+     "sub": "",
+     "text": "イラン外務省報道官エスマイル・バカイは米国のイラン油輸出封鎖に対し、すべての手段を用いることを表明しました。"
+    },
+    {
+     "start": 71.46,
+     "sub": "",
+     "text": "バカイ氏は「アメリカの侵略行為に耐えることはありません」と述べ、対応策を強調しました。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 3,
+    "names": [
+     "ミドル・イースト・アイ",
+     "ザ・ヒンドゥー 国際",
+     "アルジャジーラ"
+    ],
+    "items": [
+     {
+      "source": "mee",
+      "title": "Iran vows to use 'all avaliable tools' to confront US naval blockade",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/iran-vows-use-all-avaliable-tools-confront-us-naval-blockade"
+     },
+     {
+      "source": "thehindu",
+      "title": "Will use 'all available means' to counter U.S. blockade: Iran",
+      "url": "https://www.thehindu.com/news/international/will-use-all-available-means-to-counter-us-blockade-iran/article71735993.ece"
+     },
+     {
+      "source": "aj",
+      "title": "Iran says it will use ‘all available means’ to counter US blockade",
+      "url": "https://www.aljazeera.com/news/2026/11/23/iran-says-it-will-use-all-available-means-to-counter-us-blockade?traffic_source=rss"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 9,
+    "families": [
+     "aj",
+     "mee",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": [
+       "見出しが 1〜24 字でない"
+      ]
+     },
+     {
+      "attempt": 2,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 79.8,
+   "end": 88.41,
+   "category": "diplomacy",
+   "label": "外交 · イラン",
+   "country": "IR",
+   "countries": [
+    "IR",
+    "US",
+    "HK"
+   ],
+   "place": null,
+   "headline": "米国がイラン関連の新たな制裁を発表",
+   "lines": [
+    {
+     "start": 79.8,
+     "sub": "",
+     "text": "米国財務省はイラン関連の新たな制裁を発表しました。"
+    },
+    {
+     "start": 84.37,
+     "sub": "",
+     "text": "影の銀行に関与する個人や団体を対象にしています。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 3,
+    "names": [
+     "アルジャジーラ",
+     "アルモニター",
+     "ミドル・イースト・アイ"
+    ],
+    "items": [
+     {
+      "source": "aj",
+      "title": "US escalates sanctions on Iran, targets ‘shadow banking’ networks",
+      "url": "https://www.aljazeera.com/news/2026/11/23/us-escalates-sanctions-on-iran-targets-shadow-banking-networks?traffic_source=rss"
+     },
+     {
+      "source": "almonitor",
+      "title": "US imposes sanctions on dozens linked to Iran's shadow banking networks",
+      "url": "https://www.al-monitor.com/originals/2026/11/us-imposes-sanctions-dozens-linked-irans-shadow-banking-networks"
+     },
+     {
+      "source": "mee",
+      "title": "US imposes new Iran-related sanctions",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/us-imposes-new-iran-related-sanctions"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 10,
+    "families": [
+     "aj",
+     "almonitor",
+     "mee"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": [
+       "文の合計が 110 字を超えている",
+       "英語のままの語がある（entities・trading）"
+      ]
+     },
+     {
+      "attempt": 2,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 89.31,
+   "end": 102.57,
+   "category": "diplomacy",
+   "label": "外交 · 北朝鮮",
+   "country": "KP",
+   "countries": [
+    "KP",
+    "RU",
+    "UA"
+   ],
+   "place": null,
+   "headline": "北朝鮮がスイス大使館閉鎖を脅す",
+   "lines": [
+    {
+     "start": 89.31,
+     "sub": "",
+     "text": "北朝鮮はスイスの平壌駐在大使館の閉鎖を脅迫しました。"
+    },
+    {
+     "start": 94.34,
+     "sub": "",
+     "text": "スイスがロシア出身のウクライナ占領地域からの子供の移動に関与したとされる北朝鮮の児童キャンプを制裁したからです。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 2,
+    "names": [
+     "サウスチャイナ・モーニング・ポスト アジア",
+     "聯合ニュース 北朝鮮",
+     "NK News"
+    ],
+    "items": [
+     {
+      "source": "scmp-asia",
+      "title": "North Korea threatens to shut Swiss office over Russian youth camp sanctions",
+      "url": "https://www.scmp.com/news/asia/east-asia/article/3375602/north-korea-threatens-shut-swiss-office-over-russian-youth-camp-sanctions"
+     },
+     {
+      "source": "yonhap-nk",
+      "title": "(LEAD) N. Korea threatens to close Swiss office in Pyongyang over sanctions on children's camp",
+      "url": "https://en.yna.co.kr/view/AEN20261124001151315"
+     },
+     {
+      "source": "nknews",
+      "title": "North Korea threatens to force closure of Swiss diplomatic office over sanctions",
+      "url": "https://www.nknews.org/2026/11/north-korea-threatens-to-expel-swiss-diplomatic-mission-following-sanctions/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 12,
+    "families": [
+     "nknews",
+     "scmp",
+     "yonhap"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  }
+ ],
+ "dropped": [
+  {
+   "reason": "見出しが 1〜24 字でない、文が「。」で終わっていない",
+   "headline": "中国が天宮宇宙ステーションミッションの神舟24号乗組員を発表、初の外国宇宙飛行士"
+  },
+  {
+   "reason": "見出しが 1〜24 字でない、文の合計が 110 字を超えている、食い違う数（people）の一部だけを書いている（22）",
+   "headline": "ロシアの攻撃でウクライナのザポリージャで2人死亡、数十人が負傷"
+  },
+  {
+   "reason": "見出しが 1〜24 字でない、定訳に反する訳がある（北約）",
+   "headline": "ドイツ紙が暴露 ロシアが今後数週間以内に「核兵器衛星」を発射する計画 北約、宇宙"
+  },
+  {
+   "reason": "選んだ出来事と同じ（分類・国・地点が同じで見出しの語が重なる：イスラエル空爆でガザで少なくとも3人が死亡）",
+   "headline": "イスラエルの空爆、ガザで少なくとも6人のパレスチナ人が死亡、医師が発表"
+  },
+  {
+   "reason": "選んだ出来事と同じ（分類・国・地点が同じで見出しの語が重なる：ロシア軍機、韓国防空識別圏に侵入　空爆警報発令）",
+   "headline": "ロシア軍機が韓国の防空識別圏に進入 韓国が抗議"
+  },
+  {
+   "reason": "選んだ出来事と同じ（分類・国・地点が同じで見出しの語が重なる：ウクライナ軍がリビア沖でロシア軍艦を撃沈）",
+   "headline": "ロシアのドローンがポーランド空域を侵入、巡航ミサイルが国に落下した数日後 – エ"
+  },
+  {
+   "reason": "見出しが 1〜24 字でない、文が「。」で終わっていない、英語のままの語がある（Melania・Trump）",
+   "headline": "オルガ・ハラーンが Melania Trump 氏に民間人救出を支援するよう呼び"
+  }
+ ],
+ "build": {
+  "schema": "briefing-1",
+  "tokenizer": "fugashi",
+  "threshold": 0.45,
+  "timing": {
+   "clusterSec": 0.1,
+   "scriptSec": 1078.3,
+   "audioSec": 45.3,
+   "totalSec": 1125.4
+  },
+  "candidates": 49,
+  "kana": {
+   "intro": "セカイジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ヨッカ'、カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
+   "0.0": "ウクライナ'グンワ/リビア'オキデ/ロ'シアノ/グンカンオ'/ゲ_キチン'/シマ'_シタ",
+   "0.1": "ゲ_キチン'/サレタ'/グンカンワ'/コルベ'ットノ、メルク'ウリイ、デ'、ドロ'オンガ/シヨオ'/サレマ'_シタ",
+   "1.0": "カンコク'グンワ/ロ'シアノ/グンヨオ'キガ/ニホ'ンカイオ/_ヒコオチュウノ'/タメ'、クウバ_クケ'エホオオ/ハツレエ'/シマ'_シタ",
+   "1.1": "ウツリョオトオノ'/ジュウミンニ'/タ'イ_シ/ヒ'ナンオ/ヨビカケ'、セントオ'キオ/キンキュウ'/_シュツドオ'/サセマ'_シタ",
+   "2.0": "イスラ'エルノ/クウバクニ'/ヨリ'/ガ'ザデ/_スクナ'_クトモ/サン'ニンガ/シボオ'/シマ'_シタ",
+   "2.1": "ソノ'/ウ_チ'/ヒト'リワ/コクレンパレ_スチナナンミンシエンキ'カンウンルワノ/ショク'インデ、ガ'ザノ/ジャバリアナンミンキャン_プチ'カクノ/イ'ドノ/チ'カクデ/ハタライテ'/イマ'_シタ",
+   "3.0": "カタアルシュ'ショオワ/ベエコ_クト'/イ'ランガ/コオショオオ'/サイカイ'/_シ'/センソオオ'/オワラセル'/_ヒツヨオガ'/ア'ルト/ノベマ'_シタ",
+   "3.1": "カタアルシュ'ショオワ/ベエコ_クコクムチョ'オカンマアロオ、ル'ウ/ビ'オト/カイダン'/シ'、キンチョオノ'/カンワニ'/ムケトリクンデ'/イマ'_ス",
+   "4.0": "イランガイムショオホオドオ'カン/エスマ'イル、バ'カイワ/ベエコクノ'/イランユ'/ユ_シュツフ'ウサニ/タ'イシ、ス'ベテノ/シュ'ダンオ/モチイ'ル/コト'オ/ヒョオメエ'/シマ'_シタ",
+   "4.1": "バ'カイシワ、アメリカノ'/シンリャ_クコ'オイニ/タエ'ル/コトワアリマセ'ン、ト'/ノベ'、タイオオ'サクオ/キョオチョオ'/シマ'_シタ",
+   "5.0": "ベエコクザ'イムショオワ/イランカ'ンレンノ/ア'ラタナ/セエサイオ'/ハッピョオ'/シマ'_シタ",
+   "5.1": "カ'ゲノ/ギンコオニ'/カ'ンヨ/スル'/コ'ジンヤ/ダンタイオ'/タイショオニ'/_シテ'/イマ'_ス",
+   "6.0": "_キタチョオセ'ンワ/ス'イスノ/ピョンヤンチュウザイタイシ'カンノ/ヘエサオ'/キョオハ_ク'/シマ'_シタ",
+   "6.1": "ス'イスガ/ロシアシュ'ッシンノ/ウクライナセンリョオチ'イ_キカラノ/コドモノ'/イドオニ'/カ'ンヨ/_シタ'ト/サレル'/_キタチョオセ'ンノ/ジドオキャ'ンプオ/セエサイ'/_シタ'カラデ_ス",
+   "outro": "イ'ジョオデ_ス、ホオドオノ'/ミダ_シト'/ヨオヤクオ'、キ'カイデ/マトメテ'/ヨミアゲマ'_シタ"
+  }
+ }
+}
