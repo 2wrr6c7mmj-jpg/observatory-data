@@ -384,6 +384,10 @@ class Ending(unittest.TestCase):
             self.assertIsNone(A.ending_of(bad))
         self.assertEqual(A.ending_of(A.load_voice().get('ending')), A.load_voice()['ending'])   # voice.json の値は範囲の中
 
+    def test_site_name_is_read_in_two_phrases_with_the_same_reading(self):
+        self.assertEqual(A.bare(B.NAME_KANA[0]), A.bare(B.NAME_KANA[1]))
+        self.assertIn('/', B.NAME_KANA[1])
+
     def test_intro_and_outro_are_spoken_sentence_by_sentence(self):
         self.assertEqual(B.spread('outro', '以上です。機械で読み上げました。', 0.5),
                          [('outro', '以上です。', A.SAMPLE_PAUSE['line']), ('outro+1', '機械で読み上げました。', 0.5)])
