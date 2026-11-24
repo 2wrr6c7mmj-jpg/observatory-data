@@ -1,6 +1,6 @@
 {
  "version": "confirm-1",
- "generated_utc": "2026-11-23T19:34:35Z",
+ "generated_utc": "2026-11-24T19:09:55Z",
  "rule_version": "confirm-v1x",
  "frozen_utc": "2026-11-22T00:00:00Z",
  "auto_display": false,
@@ -1686,9 +1686,9 @@
   }
  },
  "pictures": {
-  "as_of": "2026-11-23T19:34:35Z",
-  "needed": 1,
-  "drawn_from_this_run": 1,
+  "as_of": "2026-11-24T19:09:55Z",
+  "needed": 0,
+  "drawn_from_this_run": 0,
   "drawn_again": 0,
   "left_for_the_limits": 0,
   "not_found": [],
