@@ -1,0 +1,49 @@
+{
+ "dataset": "ew",
+ "version": "ew-1",
+ "status": "試行",
+ "purpose": "中国が台湾・東シナ海で、演習ではなく本格的な作戦の準備に入ったかを、公開データの組み合わせで早く察知するための指標。単一の指標で結論を出さない",
+ "files": {
+  "indicators.json": "最新の判定・層ごとの点・指標ごとの値と平常値・直近 26 週の 7 日合計",
+  "backtest.json": "名前つきの大規模演習（analysis/exercises.json）の 7 日前・前日・期間中の判定と、演習の前後を除いた日の「演習」以上の割合（誤報の目安）。どちらも名前つきの一覧は採点に使わない",
+  "meta.json": "このファイル（手書き）"
+ },
+ "method": {
+  "layers": "戦略層（数か月前）・動員層（数週間前）・展開層（数日前）・行動層（数時間前）。下の層ほど早く動き、隠しにくい",
+  "count_score": "件数の指標は直近 7 日の合計（値のある日が 5 日以上。欠けた日は平均で補う）を、評価日の 365 日前から 14 日前までの 7 日合計（重ならない週、約 50 週、20 週以上必要）の中央値 m と尺度 s = max(1.4826×MAD, 0.15×m, 1) で z = (x − m)/s にし、z < 2 → 0 点、2〜3 → 1 点、3〜5 → 2 点、5 以上 → 3 点。下振れは点にしない",
+  "event_score": "演習の告知・報道（展開層）：exercises の事象のうち中国が参加し台湾・東シナ海・フィリピン海・中国沿岸・南シナ海・沖縄の地域で、評価日が期間中（終わりの翌日まで）かつ初報（firstReported）が評価日までのもの。確度「高」→ 2 点、「中」→ 1 点。exercises の公開が始まった 2026-11-14 より前は null。最新の判定だけは、名前つきの大規模演習（analysis/exercises.json）の期間中なら 3 点（過去事例の検証と誤報の目安では一覧を使わない）",
+  "verdict": "警戒：兵站系のカテゴリー（お金・医療・人員・輸送）のうち 2 つ以上で 2 点以上。不明：台湾周辺（pla-*）の指標がすべて null、または行動層で点の付いた指標が 2 つ未満。演習：展開層・行動層のどれかが 2 点以上。平常：それ以外",
+  "ceiling": "兵站系の指標はまだ収集していないため、今の判定の上限は「演習」。「平常」「演習」は行動層・展開層だけで出している",
+  "null": "null は不明（未収集・データ不足・平常値を作る週が足りない）。0 点は平常値の範囲内と確かめたという意味",
+  "lag": "日報の遅れを見込み、最新の日が評価日から 3 日以内なら、その日を評価日にする（indicators の as_of）",
+  "precedence": "台湾周辺の機数・艦艇は国防部の日報（taiwan-mnd、around-taiwan 書式）を先に使い、値の無い日だけ PLA Tracker で補う。同じ量どうしだけをつなぐ：艦艇（海軍＋公務船）は国防部の plan_vessels＋official_ships（公務船が null の日は使わない）と PLA Tracker の 2026-03-23 以降の ships_total、海軍艦艇は国防部の plan_vessels とそれより前の ships_total。例外：中間線越えは国防部の median_line_or_adiz と別の量（より狭い）なので、PLA Tracker の median_line_cross だけでつなぎ、国防部の値と混ぜない（司令部判断 2026-11-25）",
+  "publication": "統幕は公表日（pub_date）が評価日までの目撃だけを、航過日ごとに数える。公表の無い日は 0 とし、0 で埋めるのは収集で確かめた最後の公表日（jso/status.json の last_release）までとする。last_release はロシアを含む最後の公表日で、確かめた日ではないため、公表が 4 日以上無いと統幕の指標は null になる（安全側）"
+ },
+ "indicators": {
+  "pla-aircraft": "国防部の日報の aircraft（延べ機数）。値の無い日は PLA Tracker の aircraft_total（定義は同じ）",
+  "pla-crossings": "PLA Activity Tracker の median_line_cross（国防部の median_line_or_adiz より狭く、空域への進入だけの日は 0 になることが多い）",
+  "pla-ships": "海軍艦艇＋公務船。国防部の plan_vessels＋official_ships（公務船の記載がある日だけ）、無い日は PLA Tracker の ships_total（2026-03-23 以降だけ同じ量）",
+  "senkaku": "海上保安庁 尖閣諸島周辺の接続水域に入った中国海警局の船舶等（日ごとの隻数）",
+  "jso-transits": "統合幕僚監部の公表資料の中国艦艇の目撃（passages.csv の nation=CN）。評価日までに公表されたものを航過日（date）ごとに数える",
+  "exercises": "exercises（3 時間ごと、報道と公式発表の照合）",
+  "pla-navy": "国防部の日報の plan_vessels（中国海軍艦艇）。2026-03-23 より前の値の無い日は PLA Tracker の ships_total。国防部の日報の取得を止めたため 2026-10-31 以降は値が無く、過去事例の検証に使う"
+ },
+ "sources": [
+  "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net), by Adam Pan (Skyfaring), CC BY 4.0",
+  "海上保安庁ホームページ（PDL1.0）。加工したデータは海上保安庁が作成したものではない",
+  "統合幕僚監部 報道発表資料",
+  "exercises（observatory-data。出典は各事象の sources）",
+  "名前つきの大規模演習の一覧：ASPI, China Power Pressure Points「China's large-scale exercises since 2022」（analysis/exercises.json の sources）"
+ ],
+ "limits": [
+  "兵站系（お金・医療・人員・輸送）、戦略層・動員層の指標は未収集。今は「演習を見分ける」ことしかできない",
+  "展開層の演習の告知は期間中だけを数え、事前の告知（status=planned）は数えないので、名前どおり「数日前」には動かない（次の版の課題）。また 2026-11-14 より前は収集していないので、過去事例の検証では展開層が null",
+  "名前の無い示威行動・演習でも「演習」と出る。backtest.json の false_alarm を誤報の目安として見ること",
+  "平常値は直近 1 年の分布なので、活動が少しずつ増えると平常値も上がり、点が付きにくくなる",
+  "台湾国防部の日報の自動取得は 2026-10-31 に止めており、それ以降の台湾周辺の数は PLA Activity Tracker の写しに頼っている。海軍艦艇だけの数はそれ以降無い",
+  "台湾周辺の数と海保は後から取得した版を使っており、過去事例の検証では各時点の公表の遅れや後からの訂正を再現していない（統幕と演習の報道は公表日・初報の日で絞っている）",
+  "艦艇（海軍＋公務船）は公務船の記載がある日しか使えないため、2026-03 より前は週の数が足りず null になることが多い",
+  "analysis/exercises.json の演習の一覧は手で選んだ 2022-11 以降の大規模演習で、網羅していない。終わりの日は一覧の値を使う（exercises の事象と 1 日ずれることがある）"
+ ],
+ "planned": "戦略層：石油備蓄・金・揚陸艦の建造・宣伝の論調。動員層：国防動員訓練・血液と病院・退役延期と徴兵・戦争保険。展開層：フェリーの航路離脱・GPS 妨害・海底ケーブル障害。収集の前に robots.txt と利用規約を確かめる（collectors/polite.py）。個人を特定するデータは扱わない"
+}
