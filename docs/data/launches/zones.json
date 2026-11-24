@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-24T04:15:15Z",
+ "generated_utc": "2026-11-24T14:19:43Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -1159,14 +1159,37 @@
    },
    "orbit": "低軌道",
    "vehicle": {
-    "basis": "ll2",
-    "name": "快舟11",
-    "rocket_ll2": "Kuaizhou 11",
-    "mission": "Kuaizhou 11 | Unknown Payload",
-    "orbit": "N/A",
-    "status": "TBD",
-    "net_utc": "2026-11-30T00:00:00Z",
-    "pad": "Launch Area 95A"
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征2C/2D/4C号",
+      "orbit": "低軌道・太陽同期"
+     },
+     {
+      "name": "長征2F号（有人）",
+      "orbit": "宇宙ステーション（約41度）"
+     },
+     {
+      "name": "快舟1A/11号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "谷神星1号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "朱雀2E/3号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "力箭1号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "双曲線1号",
+      "orbit": "太陽同期"
+     }
+    ]
    },
    "notices": [
     {
@@ -1977,32 +2000,6 @@
    ]
   },
   {
-   "id": "ll2:8b46d360-6b3b-423f-9036-d5568e485624",
-   "basis": "ll2",
-   "name": "Kinetica 1 | Unknown Payload",
-   "rocket": "Kinetica 1",
-   "rocket_ja": "力箭1号",
-   "provider": "CAS Space",
-   "status": "TBC",
-   "net_utc": "2026-11-29T01:00:00Z",
-   "window_start_utc": "2026-11-29T01:00:00Z",
-   "window_end_utc": "2026-11-29T04:00:00Z",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
-   "site": {
-    "name": "文昌",
-    "lat": 21.366667,
-    "lon": 112.116667,
-    "country": "CN",
-    "inland": false,
-    "pad": "South China Sea (launch location 3)"
-   },
-   "estimated_window": null,
-   "notice_state": "waiting",
-   "notices": []
-  },
-  {
    "id": "ll2:13270554-4bdb-42ae-916f-1bb54492204f",
    "basis": "ll2",
    "name": "Long March 6C | Unknown Payload",
@@ -2115,27 +2112,59 @@
    ]
   },
   {
-   "id": "ll2:e2523821-9760-4cb4-ad1f-7ce2e30419bd",
-   "basis": "ll2",
-   "name": "Kuaizhou 11 | Unknown Payload",
-   "rocket": "Kuaizhou 11",
-   "rocket_ja": "快舟11",
-   "provider": "ExPace",
-   "status": "TBD",
-   "net_utc": "2026-11-30T00:00:00Z",
-   "window_start_utc": "2026-11-30T00:00:00Z",
-   "window_end_utc": "2026-11-30T00:00:00Z",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
+   "id": "notice:2026-11-29T21:06Z:酒泉",
+   "basis": "notices",
+   "name": null,
+   "rocket": null,
+   "rocket_ja": null,
+   "provider": null,
+   "status": null,
+   "net_utc": null,
+   "window_start_utc": "2026-11-29T21:06:00Z",
+   "window_end_utc": "2026-11-29T21:36:00Z",
+   "orbit": "低軌道",
+   "mission_type": null,
+   "url": null,
    "site": {
     "name": "酒泉",
-    "lat": 40.969117,
-    "lon": 100.343333,
+    "lat": 40.96,
+    "lon": 100.29,
     "country": "CN",
     "inland": true,
-    "pad": "Launch Area 95A"
+    "pad": null
    },
+   "azimuth_deg": 16.2,
+   "inclination_deg": 77.9,
+   "vehicle_candidates": [
+    {
+     "name": "長征2C/2D/4C号",
+     "orbit": "低軌道・太陽同期"
+    },
+    {
+     "name": "長征2F号（有人）",
+     "orbit": "宇宙ステーション（約41度）"
+    },
+    {
+     "name": "快舟1A/11号",
+     "orbit": "太陽同期"
+    },
+    {
+     "name": "谷神星1号",
+     "orbit": "太陽同期"
+    },
+    {
+     "name": "朱雀2E/3号",
+     "orbit": "太陽同期"
+    },
+    {
+     "name": "力箭1号",
+     "orbit": "太陽同期"
+    },
+    {
+     "name": "双曲線1号",
+     "orbit": "太陽同期"
+    }
+   ],
    "estimated_window": {
     "start_utc": "2026-11-29T21:06:00Z",
     "end_utc": "2026-11-29T21:36:00Z"
@@ -2810,6 +2839,32 @@
      "text": "A6142/26 NOTAMN\r\nQ)ZGZU/QRDCA/IV/BO/W/000/999/2108N11240E011\r\nA)ZGZU B)2612010138 C)2612010203 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED,THE AREA WITHIN A CIRCLE \r\nCENTERED AT N210800E1124100 WITH RADIUS OF 20KM.\r\nVERTICAL LIMITS:SFC-UNL.RELATED HONGKONG ATC OPERATION.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
     }
    ]
+  },
+  {
+   "id": "ll2:8b46d360-6b3b-423f-9036-d5568e485624",
+   "basis": "ll2",
+   "name": "Kinetica 1 | Unknown Payload",
+   "rocket": "Kinetica 1",
+   "rocket_ja": "力箭1号",
+   "provider": "CAS Space",
+   "status": "Go",
+   "net_utc": "2026-12-01T01:45:00Z",
+   "window_start_utc": "2026-12-01T01:38:00Z",
+   "window_end_utc": "2026-12-01T02:03:00Z",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
+   "site": {
+    "name": "文昌",
+    "lat": 21.133333,
+    "lon": 112.683333,
+    "country": "CN",
+    "inland": false,
+    "pad": "South China Sea (launch location 4)"
+   },
+   "estimated_window": null,
+   "notice_state": "waiting",
+   "notices": []
   }
  ]
 }

@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-24T04:15:15Z",
+ "generated_utc": "2026-11-24T14:19:43Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -949,18 +949,7 @@
    "site": "酒泉",
    "country": "CN",
    "azimuth_deg": 16.2,
-   "inclination_deg": 77.9,
-   "recorded_launches": [
-    {
-     "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
-     "name": "Kuaizhou 11 | Unknown Payload",
-     "status": "TBD",
-     "net_utc": "2026-11-30T00:00:00Z",
-     "rocket": "Kuaizhou 11",
-     "orbit": "N/A",
-     "pad": "Launch Area 95A"
-    }
-   ]
+   "inclination_deg": 77.9
   },
   {
    "window_start_utc": "2026-11-30T22:00Z",
@@ -1340,23 +1329,6 @@
    "event_index": 37
   },
   {
-   "ll2_id": "8b46d360-6b3b-423f-9036-d5568e485624",
-   "name": "Kinetica 1 | Unknown Payload",
-   "status": "TBC",
-   "net_utc": "2026-11-29T01:00:00Z",
-   "rocket": "Kinetica 1",
-   "provider": "CAS Space",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
-   "pad": "South China Sea (launch location 3)",
-   "location": "Haiyang Oriental Spaceport",
-   "country": "CHN",
-   "lat": 21.366667,
-   "lon": 112.116667,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
-   "event_index": null
-  },
-  {
    "ll2_id": "13270554-4bdb-42ae-916f-1bb54492204f",
    "name": "Long March 6C | Unknown Payload",
    "status": "Go",
@@ -1391,10 +1363,27 @@
    "event_index": 25
   },
   {
+   "ll2_id": "8b46d360-6b3b-423f-9036-d5568e485624",
+   "name": "Kinetica 1 | Unknown Payload",
+   "status": "Go",
+   "net_utc": "2026-12-01T01:45:00Z",
+   "rocket": "Kinetica 1",
+   "provider": "CAS Space",
+   "orbit": "N/A",
+   "mission_type": "Unknown",
+   "pad": "South China Sea (launch location 4)",
+   "location": "Haiyang Oriental Spaceport",
+   "country": "CHN",
+   "lat": 21.133333,
+   "lon": 112.683333,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/8b46d360-6b3b-423f-9036-d5568e485624/",
+   "event_index": null
+  },
+  {
    "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
    "name": "Kuaizhou 11 | Unknown Payload",
-   "status": "TBD",
-   "net_utc": "2026-11-30T00:00:00Z",
+   "status": "TBC",
+   "net_utc": "2026-12-01T08:00:00Z",
    "rocket": "Kuaizhou 11",
    "provider": "ExPace",
    "orbit": "N/A",
@@ -1405,7 +1394,7 @@
    "lat": 40.969117,
    "lon": 100.343333,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/e2523821-9760-4cb4-ad1f-7ce2e30419bd/",
-   "event_index": 39
+   "event_index": null
   },
   {
    "ll2_id": "5ce59e3a-c343-430f-ae4e-e608ba536754",
