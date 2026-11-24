@@ -167,6 +167,11 @@ def extra_readings(doc):
     return out[:40]
 
 
+# 再生画面の動き（map.anim の kind）：strike 攻撃・爆発、aircraft 航空機の移動、ship 艦船の移動、missile 発射と飛翔、
+# launch ロケット・衛星の打ち上げ、alert 警報・緊張、none 動かさない。from・to は [経度, 緯度]（航空機・艦船・ミサイルの経路）。
+ANIM_KINDS = ('strike', 'aircraft', 'ship', 'missile', 'launch', 'alert', 'none')
+
+
 def map_hint(ev):
     """台本に付けた地図の行き先（再生画面のアニメーション）。形の合う項目だけを返す。
     {"map": {"countries": ["LY", "UA", "RU"], "name": "リビア", "place": {"name": "ベンガジ", "lon": 20.07, "lat": 32.12}}}
@@ -186,6 +191,14 @@ def map_hint(ev):
     num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
     if isinstance(p, dict) and ok_name(p.get('name'), 16) and num(p.get('lon')) and num(p.get('lat')) and -180 <= p['lon'] <= 180 and -85 <= p['lat'] <= 85:
         out['place'] = {'name': p['name'].strip(), 'lon': round(float(p['lon']), 3), 'lat': round(float(p['lat']), 3)}
+    a = m.get('anim')
+    pt = lambda q: isinstance(q, list) and len(q) == 2 and all(num(v) for v in q) and -180 <= q[0] <= 180 and -85 <= q[1] <= 85
+    if isinstance(a, dict) and a.get('kind') in ANIM_KINDS:
+        anim = {'kind': a['kind']}
+        for k in ('from', 'to'):
+            if pt(a.get(k)):
+                anim[k] = [round(float(a[k][0]), 3), round(float(a[k][1]), 3)]
+        out['anim'] = anim
     return out
 
 
@@ -212,6 +225,8 @@ def apply_map_hint(meta, hint):
         meta['label'] = CAT_JA.get(meta['category'], '報道') + (' · ' + name if name else '')
     if 'place' in hint:
         meta['place'] = hint['place']
+    if 'anim' in hint:
+        meta['anim'] = hint['anim']
     return meta
 
 
@@ -399,6 +414,8 @@ def assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, no
         end = round(max(lines[-1]['start'], nxt - A.SAMPLE_PAUSE['event']), 2) if starts else 0.0
         ev = {'start': lines[0]['start'], 'end': end}
         ev.update({k: e['meta'][k] for k in ('category', 'label', 'country', 'countries', 'place')})
+        if e['meta'].get('anim'):
+            ev['anim'] = e['meta']['anim']
         ev.update({'headline': e['script']['headline'], 'lines': lines, 'sources': e['meta']['sources'],
                    'debug': {'rank': e['rank'], 'families': e['families'], 'notes': e['notes'], 'tries': e['tries'],
                              'numberConflicts': e['conflicts']}})

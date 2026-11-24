@@ -259,6 +259,13 @@ class TuningAndMap(unittest.TestCase):
         self.assertEqual(B.extra_readings({}), [])
         self.assertEqual(len(B.extra_readings({'readings': [['語%d' % i, 'ゴ', 0] for i in range(60)]})), 40)
 
+    def test_map_hint_anim(self):
+        h = B.map_hint({'map': {'anim': {'kind': 'aircraft', 'from': [131.5, 42.9], 'to': [130.87, 37.5], 'x': 1}}})
+        self.assertEqual(h['anim'], {'kind': 'aircraft', 'from': [131.5, 42.9], 'to': [130.87, 37.5]})
+        self.assertEqual(B.map_hint({'map': {'anim': {'kind': 'strike', 'from': [500, 0], 'to': 'x'}}})['anim'], {'kind': 'strike'})
+        self.assertNotIn('anim', B.map_hint({'map': {'anim': {'kind': 'explode'}}}))
+        self.assertEqual(B.apply_map_hint({'category': 'conflict', 'country': 'LY', 'countries': ['LY'], 'label': '', 'place': None}, {'anim': {'kind': 'none'}})['anim'], {'kind': 'none'})
+
     def test_map_hint(self):
         ev = {'map': {'countries': ['ly', 'UA', 'RU', 'DE', 'x1', 5], 'name': 'リビア',
                       'place': {'name': 'ベンガジ', 'lon': 20.0712, 'lat': 32.1234}}}
