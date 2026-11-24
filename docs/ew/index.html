@@ -71,7 +71,7 @@ ul{margin:6px 0;padding-left:20px}
 <div class="cap mono">総合判定</div>
 <div class="verdicts" id="verdicts"></div>
 <p id="verdictText" style="margin:12px 0 6px"></p>
-<p class="note">判定ルール：兵站系のうち 2 つ以上のカテゴリーで 2 点以上なら「警戒」、行動層で点の付いた指標が 2 つ未満なら「不明」、展開層・行動層のどれかが 2 点以上なら「演習」。演習は展開層・行動層だけが動き、本物の準備は下の層から動く、という見立てです。</p>
+<p class="note">判定ルール：兵站系のうち 2 つ以上のカテゴリーで 2 点以上なら「警戒」、台湾周辺の指標に点が無いか行動層で点の付いた指標が 2 つ未満なら「不明」、展開層・行動層のどれかが 2 点以上なら「演習」。演習は展開層・行動層だけが動き、本物の準備は下の層から動く、という見立てです。</p>
 </section>
 <section class="panel" style="flex:2 1 520px">
 <div class="cap mono">リードタイム別の最高点（収集済みの指標の数／全体）</div>
@@ -145,7 +145,7 @@ ul{margin:6px 0;padding-left:20px}
     if (ind.verdict === 'unknown') v.appendChild(el('div', {'class': 'on', 'aria-current': 'true'}, '不明'));
     var hot = ind.indicators.filter(function (i) { return ind.hot_ops.indexOf(i.id) >= 0; }).map(function (i) { return i.name; });
     document.getElementById('verdictText').textContent = ind.verdict === 'unknown'
-      ? '行動層で点の付いた指標が 2 つ未満のため、判定できません。'
+      ? '台湾周辺の指標に点が無い、または行動層で点の付いた指標が 2 つ未満のため、判定できません。'
       : ind.verdict === 'normal'
       ? '収集済みの指標は、すべて平常値から大きく外れていません。'
       : (ind.verdict === 'exercise' ? '2 点以上：' + hot.join('、') + '。兵站系は ' + (ind.ceiling ? '未収集' : '平常') + '。'
@@ -245,7 +245,7 @@ ul{margin:6px 0;padding-left:20px}
     var fa = bt.false_alarm, F = document.getElementById('fa'); F.textContent = '';
     if (fa) {
       F.appendChild(el('div', {'class': 'mono', style: 'font-size:28px;font-weight:600'}, fa.rate == null ? '—' : (fa.rate * 100).toFixed(1) + '%'));
-      F.appendChild(el('p', {'class': 'note'}, fa.days + ' 日中 ' + fa.flagged + ' 日。' + fa.note));
+      F.appendChild(el('p', {'class': 'note'}, fa.days + ' 日中 ' + fa.flagged + ' 日（判定できない日 ' + (fa.unknown_days || 0) + ' 日は除く）。' + fa.note));
     }
   }
 

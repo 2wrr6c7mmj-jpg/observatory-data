@@ -1,6 +1,6 @@
 {
  "version": "ew-1",
- "generated_utc": "2026-11-24T17:14:44Z",
+ "generated_utc": "2026-11-24T17:20:20Z",
  "as_of": "2026-11-24",
  "verdict": "normal",
  "layers": [
@@ -65,6 +65,7 @@
    "score": 0,
    "weeks": 50,
    "as_of": "2026-11-23",
+   "group": "taiwan",
    "series": [
     [
      "2026-06-01",
@@ -191,6 +192,7 @@
    "score": 0,
    "weeks": 50,
    "as_of": "2026-11-23",
+   "group": "taiwan",
    "series": [
     [
      "2026-06-01",
@@ -311,6 +313,7 @@
    "score": null,
    "reason": "直近 7 日のデータが足りない",
    "as_of": "2026-11-24",
+   "group": "taiwan",
    "note": "国防部の日報の自動取得を 2026-10-31 に止め、PLA Tracker は 2026-03 下旬から公務船と合わせた数しか無いため、それ以降は値が無い（過去事例の検証用）",
    "series": [
     [
@@ -438,6 +441,7 @@
    "score": 0,
    "weeks": 36,
    "as_of": "2026-11-23",
+   "group": "taiwan",
    "note": "公務船の数が分かる日だけ（PLA Tracker は 2026-03-23 以降の定義が同じ量）",
    "series": [
     [

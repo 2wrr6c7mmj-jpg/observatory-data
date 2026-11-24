@@ -294,6 +294,8 @@ def build_indicators(src, named, events, as_of, with_series=True):
             a['as_of'] = at.isoformat()
         item = {'layer': layer, 'id': iid, 'name': name, 'category': cat, 'source': source,
                 'kind': 'count-7d', 'status': 'collected', **a}
+        if iid.startswith('pla-'):
+            item['group'] = 'taiwan'
         if key == 'navy':
             item['note'] = '国防部の日報の自動取得を 2026-10-31 に止め、PLA Tracker は 2026-03 下旬から公務船と合わせた数しか無いため、それ以降は値が無い（過去事例の検証用）'
         if key == 'ships':
@@ -325,9 +327,10 @@ def judge(indicators):
     hot_ops = [i['id'] for i in indicators if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
     logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in indicators)
     action_scored = sum(1 for i in indicators if i['layer'] == 'action' and i['score'] is not None)
+    taiwan = [i for i in indicators if i.get('group') == 'taiwan']
     if len(hot_logistics) >= 2:
         verdict = 'alert'
-    elif action_scored < MIN_ACTION:
+    elif action_scored < MIN_ACTION or (taiwan and all(i['score'] is None for i in taiwan)):
         verdict = 'unknown'
     elif hot_ops:
         verdict = 'exercise'

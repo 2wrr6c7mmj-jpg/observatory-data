@@ -64,6 +64,11 @@ class JudgeTest(unittest.TestCase):
     def ind(self, layer, cat, score, status='collected'):
         return {'layer': layer, 'id': f'{layer}-{cat}-{score}', 'category': cat, 'score': score, 'status': status}
 
+    def test_unknown_without_taiwan_area(self):
+        t = dict(self.ind('action', 'military', None), group='taiwan')
+        j = ew.judge([t, self.ind('action', 'law_enforcement', 0), self.ind('action', 'military', 0)])
+        self.assertEqual(j['verdict'], 'unknown')
+
     def test_unknown_when_action_layer_thin(self):
         self.assertEqual(ew.judge([self.ind('action', 'military', 3)])['verdict'], 'unknown')
 

@@ -1,6 +1,6 @@
 {
  "version": "ew-1",
- "generated_utc": "2026-11-24T17:14:44Z",
+ "generated_utc": "2026-11-24T17:20:20Z",
  "note": "各時点で、その日までに公表・報道されていたものだけを使って採点した（統幕は公表日、演習の報道は初報の日で絞る）。名前つきの演習の一覧（analysis/exercises.json）は答えなので、ここと誤報の目安では採点に使わない。台湾周辺の数と海保は後から取得した版で、公表の時点は再現していない",
  "rows": [
   {
@@ -12,7 +12,7 @@
     {
      "label": "7 日前",
      "as_of": "2023-04-01",
-     "verdict": "normal",
+     "verdict": "unknown",
      "layers": {
       "strategic": null,
       "mobilization": null,
@@ -32,7 +32,7 @@
     {
      "label": "前日",
      "as_of": "2023-04-07",
-     "verdict": "normal",
+     "verdict": "unknown",
      "layers": {
       "strategic": null,
       "mobilization": null,
@@ -52,7 +52,7 @@
     {
      "label": "期間中",
      "as_of": "2023-04-11",
-     "verdict": "normal",
+     "verdict": "unknown",
      "layers": {
       "strategic": null,
       "mobilization": null,
