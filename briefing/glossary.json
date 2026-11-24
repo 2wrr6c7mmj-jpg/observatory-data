@@ -324,6 +324,332 @@
    ],
    "ja": "ドローン（無人機）",
    "bad": []
+  },
+  {
+   "src": [
+    "warship",
+    "军舰",
+    "軍艦",
+    "战舰",
+    "戰艦"
+   ],
+   "ja": "軍艦",
+   "bad": [
+    "戦艦"
+   ]
+  },
+  {
+   "src": [
+    "naval mine",
+    "sea mine",
+    "limpet mine",
+    "水雷",
+    "机雷",
+    "機雷",
+    "minefield",
+    "mine-laying",
+    "laid mines",
+    "hit mines",
+    "struck mines",
+    "mines in the strait",
+    "mines in the gulf"
+   ],
+   "ja": "機雷",
+   "bad": [
+    "爆雷",
+    "地雷"
+   ]
+  },
+  {
+   "src": [
+    "depth charge"
+   ],
+   "ja": "爆雷"
+  },
+  {
+   "src": [
+    "oil tanker",
+    "tanker",
+    "油轮",
+    "油輪"
+   ],
+   "ja": "タンカー",
+   "bad": [
+    "油タンカー"
+   ]
+  },
+  {
+   "src": [
+    "shadow bank",
+    "影子银行",
+    "影子銀行"
+   ],
+   "ja": "影の銀行",
+   "bad": [
+    "陰影銀行"
+   ]
+  },
+  {
+   "src": [
+    "entities"
+   ],
+   "ja": "団体や企業",
+   "bad": [
+    "実体"
+   ]
+  },
+  {
+   "src": [
+    "khan younis",
+    "khan yunis",
+    "汗尤尼斯"
+   ],
+   "ja": "ハンユニス",
+   "bad": [
+    "クハンユニス",
+    "カーンユニス"
+   ]
+  },
+  {
+   "src": [
+    "NATO",
+    "北约",
+    "北約"
+   ],
+   "ja": "NATO",
+   "bad": [
+    "北約",
+    "北约"
+   ]
+  },
+  {
+   "src": [
+    "revolutionary guard",
+    "IRGC",
+    "革命卫队",
+    "革命衛隊"
+   ],
+   "ja": "イラン革命防衛隊"
+  },
+  {
+   "src": [
+    "frigate",
+    "护卫舰",
+    "巡防艦"
+   ],
+   "ja": "フリゲート"
+  },
+  {
+   "src": [
+    "destroyer",
+    "驱逐舰",
+    "驅逐艦"
+   ],
+   "ja": "駆逐艦"
+  },
+  {
+   "src": [
+    "corvette"
+   ],
+   "ja": "コルベット"
+  },
+  {
+   "src": [
+    "aircraft carrier",
+    "航空母舰",
+    "航空母艦",
+    "航母"
+   ],
+   "ja": "空母",
+   "bad": [
+    "航空母艦"
+   ]
+  },
+  {
+   "src": [
+    "amphibious assault ship",
+    "两栖攻击舰",
+    "兩棲攻擊艦"
+   ],
+   "ja": "強襲揚陸艦"
+  },
+  {
+   "src": [
+    "submarine",
+    "潜艇",
+    "潛艦",
+    "潜舰"
+   ],
+   "ja": "潜水艦",
+   "bad": [
+    "潜艇",
+    "潜水艇"
+   ]
+  },
+  {
+   "src": [
+    "unmanned surface vessel",
+    "naval drone",
+    "sea drone",
+    "drone boat",
+    "无人艇",
+    "無人艇"
+   ],
+   "ja": "水上無人艇"
+  },
+  {
+   "src": [
+    "cruise missile",
+    "巡航导弹",
+    "巡弋飛彈"
+   ],
+   "ja": "巡航ミサイル"
+  },
+  {
+   "src": [
+    "ballistic missile",
+    "弹道导弹",
+    "彈道飛彈"
+   ],
+   "ja": "弾道ミサイル"
+  },
+  {
+   "src": [
+    "hypersonic",
+    "高超音速",
+    "極音速"
+   ],
+   "ja": "極超音速"
+  },
+  {
+   "src": [
+    "air defense identification zone",
+    "air defence identification zone",
+    "ADIZ",
+    "防空识别区",
+    "防空識別區"
+   ],
+   "ja": "防空識別圏",
+   "bad": [
+    "防空識別区"
+   ]
+  },
+  {
+   "src": [
+    "median line",
+    "海峡中线",
+    "海峽中線"
+   ],
+   "ja": "台湾海峡の中間線"
+  },
+  {
+   "src": [
+    "strait of hormuz",
+    "hormuz",
+    "霍尔木兹",
+    "荷姆茲"
+   ],
+   "ja": "ホルムズ海峡"
+  },
+  {
+   "src": [
+    "shenzhou",
+    "神舟"
+   ],
+   "ja": "神舟",
+   "bad": [
+    "シャンジュウ",
+    "シェンチョウ"
+   ]
+  },
+  {
+   "src": [
+    "tiangong",
+    "天宫",
+    "天宮"
+   ],
+   "ja": "宇宙ステーション「天宮」"
+  },
+  {
+   "src": [
+    "hai kun",
+    "海鲲",
+    "海鯤"
+   ],
+   "ja": "潜水艦「海鯤」"
+  },
+  {
+   "src": [
+    "ulleung",
+    "鬱陵",
+    "郁陵"
+   ],
+   "ja": "鬱陵島"
+  },
+  {
+   "src": [
+    "fighter jet",
+    "warplane",
+    "战斗机",
+    "戰鬥機",
+    "战机",
+    "戰機"
+   ],
+   "ja": "戦闘機"
+  },
+  {
+   "src": [
+    "bomber",
+    "轰炸机",
+    "轟炸機"
+   ],
+   "ja": "爆撃機"
+  },
+  {
+   "src": [
+    "air strike",
+    "airstrike",
+    "空袭",
+    "空襲"
+   ],
+   "ja": "空爆"
+  },
+  {
+   "src": [
+    "blockade",
+    "封锁"
+   ],
+   "ja": "封鎖"
+  },
+  {
+   "src": [
+    "live-fire",
+    "live fire",
+    "实弹",
+    "實彈"
+   ],
+   "ja": "実弾射撃",
+   "bad": [
+    "実弾演習射撃"
+   ]
+  },
+  {
+   "src": [
+    "joint drill",
+    "joint exercise",
+    "联合演习",
+    "聯合演習"
+   ],
+   "ja": "合同演習"
+  },
+  {
+   "src": [
+    "astronaut",
+    "taikonaut",
+    "航天员",
+    "太空人"
+   ],
+   "ja": "宇宙飛行士"
   }
  ]
 }

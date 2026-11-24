@@ -120,5 +120,14 @@ class Places(unittest.TestCase):
             self.assertIn(p['kind'], ('place', 'country', 'capital'))
 
 
+class PlaceOrder(unittest.TestCase):
+    def test_a_place_in_one_article_does_not_lead(self):
+        hits = P.find(['US Treasury sanctions Iran-linked banks', 'United States sanctions on Iran network',
+                       'US sanctions Iran shadow banking; firms based in Hong Kong'])
+        codes = P.country_codes(hits)
+        self.assertIn(codes[0], ('IR', 'US'), codes)
+        self.assertNotEqual(codes[0], 'HK')
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,3 +1,4 @@
+import os
 import json
 import unittest
 
@@ -61,7 +62,7 @@ class Verify(unittest.TestCase):
         s = good(lines=[{'text': '中国の挑発的な行動を、日本は強く非難しています。', 'sub': ''},
                         {'text': '日本の報道は、艦艇を12隻としています。', 'sub': ''}])
         why, _ = T.verify(s, ARTS, [], [])
-        self.assertTrue(any('評価・非難' in w for w in why))
+        self.assertTrue(any('評価' in w for w in why), why)
 
     def test_shape_and_injection_characters(self):
         self.assertEqual(T.verify(None, ARTS, [], [])[0], ['答えの形が違う'])
@@ -118,6 +119,55 @@ class Write(unittest.TestCase):
         s, why, _, _ = T.write('srv', ARTS[:1], [], [], chat_fn=boom)
         self.assertIsNone(s)
         self.assertIn('OSError', why[0])
+
+
+def parsed(headline, *texts):
+    return T.parse(json.dumps({'headline': headline, 'lines': [{'text': t} for t in texts]}, ensure_ascii=False))
+
+
+class Rules2(unittest.TestCase):
+    """2 回目の試作（2026-11-24）を受けた確かめ：長さ、相対的な日付、評価の語の扱い、軍事用語の定訳。"""
+    HEAD = '中国艦艇が海峡を通過'
+    BASE = '中国の艦艇が宮古海峡の付近を航行したと報じました。'
+
+    def test_one_or_two_sentences_without_sub(self):
+        self.assertEqual(T.verify(parsed(self.HEAD, self.BASE), ARTS, [], [])[0], [])
+        why, _ = T.verify(parsed(self.HEAD, self.BASE, self.BASE, self.BASE), ARTS, [], [])
+        self.assertTrue(any('文の数' in w for w in why), why)
+        why, _ = T.verify(parsed(self.HEAD, 'あ' * 59 + '。', 'い' * 59 + '。'), ARTS, [], [])
+        self.assertTrue(any('合計' in w for w in why), why)
+
+    def test_relative_dates_and_clock_times_fail(self):
+        for bad in ('中国の艦艇が月曜日に宮古海峡の付近を航行したと報じました。',
+                    '中国の艦艇が午前8時に宮古海峡の付近を航行したと報じました。',
+                    '中国の艦艇が今週、宮古海峡の付近を航行したと報じました。'):
+            why, _ = T.verify(parsed(self.HEAD, bad), ARTS, [], [])
+            self.assertTrue(any('曜日' in w for w in why), (bad, why))
+        ok = '中国の艦艇が過去24時間に宮古海峡の付近を航行したと報じました。'
+        self.assertEqual(T.verify(parsed(self.HEAD, ok), ARTS, [], [])[0], [])
+
+    def test_reported_words_need_a_source_word(self):
+        s = parsed(self.HEAD, '中国外務省は、日本の発表を非難しました。')
+        why, _ = T.verify(s, ARTS, [], [])
+        self.assertTrue(any('評価' in w for w in why), why)
+        arts = ARTS + [{'source': 'bbc', 'title': 'China condemns Japan statement', 'summary': '', 'titleJa': ''}]
+        self.assertEqual(T.verify(s, arts, [], [])[0], [])
+        # 原稿自身の評価の語は、元の記事に何があっても落とす
+        why, _ = T.verify(parsed(self.HEAD, '中国外務省は、日本の卑劣な発表を非難しました。'), arts, [], [])
+        self.assertTrue(any('原稿自身' in w for w in why), why)
+
+    def test_military_terms(self):
+        with open(os.path.join(os.path.dirname(T.__file__), 'glossary.json'), encoding='utf-8') as f:
+            glossary = json.load(f)['terms']
+        arts = [{'source': 'usni', 'title': 'Ukraine says it sank a Russian warship off Libya', 'summary': 'Oil tankers hit naval mines.', 'titleJa': ''}]
+        terms = T.glossary_for(arts, glossary)
+        self.assertIn('軍艦', [t['ja'] for t in terms])
+        self.assertIn('機雷', [t['ja'] for t in terms])
+        why, _ = T.verify(parsed('ロシアの戦艦を撃沈', 'ウクライナは、リビア沖でロシアの戦艦を撃沈したと発表しました。'), arts, [], terms)
+        self.assertTrue(any('定訳' in w and '戦艦' in w for w in why), why)
+        why, _ = T.verify(parsed('タンカーが機雷に接触', 'イランは、タンカーが爆雷に接触したと発表しました。'), arts, [], terms)
+        self.assertTrue(any('定訳' in w and '爆雷' in w for w in why), why)
+        self.assertEqual(T.verify(parsed('ロシアの軍艦を撃沈', 'ウクライナは、リビア沖でロシアの軍艦を撃沈したと発表しました。'), arts, [], terms)[0], [])
 
 
 if __name__ == '__main__':

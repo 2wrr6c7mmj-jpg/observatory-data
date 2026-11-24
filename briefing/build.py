@@ -10,6 +10,7 @@ import collections
 import datetime
 import json
 import os
+import re
 import sys
 import time
 import urllib.request
@@ -21,7 +22,18 @@ from . import script as T
 from . import sources as S
 
 MIN_EVENTS = 3
+TARGET_SECONDS = 120      # 音声の長さの上限の目安。超えるぶんは順位の低い出来事から外す
+CHARS_PER_SEC = 6.0       # もち子さん（ノーマル）の実測：1 秒に約 6 字（2026-11-24 の試作）
+INTRO_OUTRO_SEC = 9.0     # 冒頭と結びの定型文の見積もり
 CAT_JA = {'military': '軍事', 'conflict': '紛争', 'diplomacy': '外交', 'alert': '警報'}
+# 分類：配信元の既定の分類（多くは外交）に寄るので、代表の記事の半数以上に出る語で上書きする。先に当たった方。
+CAT_HINT = (
+    ('conflict', re.compile(r'air ?strike|shelling|killed|\bdead\b|wounded|casualt|\battack|bombing|bombard|\bsunk\b|\bsank\b|\bsinks?\b|'
+                            r'空爆|空袭|空襲|砲撃|炮击|炮擊|死亡|遇难|遇難|襲撃|袭击|襲擊|击沉|擊沉|撃沈', re.I)),
+    ('military', re.compile(r'warship|\bnavy\b|naval|frigate|destroyer|submarine|aircraft carrier|missile|\bdrones?\b|fighter jet|warplane|'
+                            r'\btroops\b|military|\bdrills?\b|live-fire|blockade|\bmines?\b|coast guard|'
+                            r'军舰|軍艦|海军|海軍|导弹|飛彈|演习|演習|潜艇|潛艦|军事|軍事|封锁|封鎖|水雷|機雷|海警|军机|軍機', re.I)),
+)
 JST = datetime.timezone(datetime.timedelta(hours=9))
 MODEL_NAME = 'Qwen3-8B'
 
@@ -48,7 +60,7 @@ def event_meta(cand, reps):
     """分類・国・地名・出典の欄（モデルを使わない部分）。"""
     recs = cand['records']
     st = cand['stats']
-    cat = collections.Counter(r.get('category') for r in recs).most_common(1)[0][0]
+    cat = category_of(recs, reps)
     hits = P.find([f"{r.get('title', '')} {r.get('titleJa', '')} {r.get('summary', '')}" for r in reps])
     codes = P.country_codes(hits)
     if not codes:
@@ -66,11 +78,30 @@ def event_meta(cand, reps):
     }
 
 
-def source_line(meta):
-    n, m = meta['sources']['count'], meta['sources']['countries']
-    if m:
-        return f'この件は、独立した{n}の報道機関、{m}か国が伝えています。'
-    return f'この件は、独立した{n}の報道機関が伝えています。'
+def category_of(recs, reps):
+    """束の分類：代表の記事の半数以上に紛争・軍事の語が出ればそれ、無ければ記事の分類の多数。"""
+    texts = [f"{r.get('title', '')} {r.get('summary', '')}" for r in reps]
+    for cat, rx in CAT_HINT:
+        if texts and sum(1 for t in texts if rx.search(t)) * 2 >= len(texts):
+            return cat
+    return collections.Counter(r.get('category') for r in recs).most_common(1)[0][0]
+
+
+def estimate_seconds(events):
+    """台本の字数からの音声の長さの見積もり（冒頭・結び・間を含む）。"""
+    s = INTRO_OUTRO_SEC + A.INTRO_GAP
+    for e in events:
+        lines = e['script']['lines']
+        s += sum(len(ln['text']) for ln in lines) / CHARS_PER_SEC + A.SAMPLE_PAUSE['line'] * (len(lines) - 1) + A.SAMPLE_PAUSE['event']
+    return s
+
+
+def trim_to_length(events):
+    """見積もりが TARGET_SECONDS を超えるぶんを、順位の低い出来事から外す（MIN_EVENTS は残す）。(残す, 外す)。"""
+    keep, cut = list(events), []
+    while len(keep) > MIN_EVENTS and estimate_seconds(keep) > TARGET_SECONDS:
+        cut.append(keep.pop())
+    return keep, cut
 
 
 def make_scripts(records, args, terms, tok, log, deadline):
@@ -108,11 +139,11 @@ def make_scripts(records, args, terms, tok, log, deadline):
 def make_audio(events, now_ms, voice_root, no_audio):
     """音声と、各文・各出来事の開始秒。events を書き換えずに (out_events, intro, outro, mp3, pcm秒) を返す。"""
     d = datetime.datetime.fromtimestamp(now_ms / 1000, JST)
-    intro = f'世界情勢観測、{d.month}月{d.day}日のまとめです。過去24時間の報道から、{len(events)}件の出来事をお伝えします。'
-    outro = '以上です。この音声は、公開されている報道の見出しと要約を、機械で要約して読み上げたものです。'
+    intro = f'世界情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
+    outro = '以上です。報道の見出しと要約を、機械でまとめて読み上げました。'
     seq = [('intro', intro, A.INTRO_GAP)]
     for i, e in enumerate(events):
-        lines = [ln['text'] for ln in e['script']['lines']] + [source_line(e['meta'])]
+        lines = [ln['text'] for ln in e['script']['lines']]   # 出典の数は読まない（画面が json の sources から出す）
         e['spoken'] = lines
         for j, t in enumerate(lines):
             last = j == len(lines) - 1
@@ -134,7 +165,7 @@ def assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, no
     for i, e in enumerate(events):
         lines = []
         for j, t in enumerate(e['spoken']):
-            sub = e['script']['lines'][j]['sub'] if j < len(e['script']['lines']) else '出典'
+            sub = e['script']['lines'][j].get('sub', '') if j < len(e['script']['lines']) else ''
             lines.append({'start': (starts or {}).get(f'{i}.{j}', 0.0), 'sub': sub, 'text': t})
         nxt = (starts or {}).get(f'{i + 1}.0', (starts or {}).get('outro', seconds))
         end = round(max(lines[-1]['start'], nxt - A.SAMPLE_PAUSE['event']), 2) if starts else 0.0
@@ -162,7 +193,7 @@ def main(argv=None):
     ap.add_argument('--vv-root', default=os.environ.get('VV_ROOT', ''))
     ap.add_argument('--no-audio', action='store_true')
     ap.add_argument('--now-ms', type=int, default=0)
-    ap.add_argument('--max-events', type=int, default=6)
+    ap.add_argument('--max-events', type=int, default=8)
     ap.add_argument('--candidates', type=int, default=14)
     ap.add_argument('--threshold', type=float, default=C.THRESHOLD)
     ap.add_argument('--minutes', type=float, default=30, help='台本に使う時間の上限')
@@ -182,6 +213,10 @@ def main(argv=None):
     t1 = time.time()
     terms = load_terms()
     events, dropped, stats = make_scripts(recs, a, terms, tok, log, t1 + a.minutes * 60)
+    events, cut = trim_to_length(events)
+    for e in cut:
+        dropped.append({'reason': f'長さの上限（{TARGET_SECONDS} 秒）で外した', 'headline': e['script']['headline']})
+        log(f'#{e["rank"]} cut: 長さの上限（{e["script"]["headline"]}）')
     t2 = time.time()
     voice = A.load_voice()
     hold, reason = False, ''

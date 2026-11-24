@@ -44,9 +44,13 @@ def main_place(hits):
 
 
 def country_codes(hits, limit=3):
-    """輪郭を出す国（ISO 2 文字、重複なし、最大 limit。具体的な地名・国の順）。"""
+    """輪郭を出す国（ISO 2 文字、重複なし、最大 limit）。具体的な地名・国・首都の順。
+    ただし記事の半数未満（または 1 本だけ）に出る地名は、制裁の対象の所在地など出来事の場所とは限らないので、
+    国・首都の後ろに回す（main_place と同じ線引き）。"""
+    def firm(p):
+        return p['kind'] != 'place' or (p['n'] >= 2 and p['n'] * 2 >= p['total'])
     out = []
-    for p in hits:
+    for p in [h for h in hits if firm(h)] + [h for h in hits if not firm(h)]:
         c = p.get('cc')
         if c and c not in out:
             out.append(c)

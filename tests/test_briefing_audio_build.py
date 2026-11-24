@@ -47,7 +47,7 @@ class Audio(unittest.TestCase):
 
 def feed(n_fill=40):
     kanji = '山川林田島森湖橋港空雲雪花鳥魚虫石砂'
-    recs = [{'id': f'f{i}', 'source': f'src{i}', 'title': 'filler', 'titleJa': f'{kanji[i % 18]}{kanji[(i * 7 + 3) % 18]}{kanji[(i * 5 + 1) % 18]}の話題{i}号',
+    recs = [{'id': f'f{i}', 'source': f'src{i}', 'title': 'filler', 'titleJa': f'{kanji[i % 18]}{kanji[(i * 7 + 3 + 2 * (i // 18)) % 18]}{kanji[(i * 5 + 1 + i // 18) % 18]}の話題{i}号',
              'url': f'https://e.com/f{i}', 'publishedAt': NOW - HOUR, 'category': 'diplomacy'} for i in range(n_fill)]
     for i, (s, t) in enumerate([('usni', '中国海軍の空母遼寧が宮古海峡を通過'), ('kyodo', '空母遼寧が宮古海峡を通過 防衛省発表'),
                                 ('bbc', '中国海軍の空母遼寧、宮古海峡を通過')]):
@@ -93,7 +93,9 @@ class Build(unittest.TestCase):
         self.assertLessEqual(len(e['sources']['items']), 6)
         self.assertTrue(all(i['url'].startswith('https://') for i in e['sources']['items']))
         self.assertLessEqual(len(e['countries']), 3)
-        self.assertTrue(e['lines'][-1]['text'].startswith('この件は、独立した3の報道機関、3か国'))
+        self.assertEqual(len(e['lines']), 2)
+        self.assertFalse(any('報道機関' in ln['text'] for ln in e['lines']))   # 出典の数は読まない
+        self.assertTrue(all(ln['sub'] == '' or isinstance(ln['sub'], str) for ln in e['lines']))
         self.assertEqual(doc['counts']['records'], 43)
         self.assertTrue(os.path.exists(os.path.join(out, 'credits.txt')))
 
@@ -111,11 +113,31 @@ class Build(unittest.TestCase):
         self.assertEqual(doc['events'], [])
         self.assertTrue(doc['hold'])
         self.assertEqual(len(doc['dropped']), 1)
-        self.assertIn('評価・非難', doc['dropped'][0]['reason'])
+        self.assertIn('評価', doc['dropped'][0]['reason'])
 
     def test_unsafe_url_is_dropped(self):
         self.assertIsNone(B.safe_url('javascript:alert(1)'))
         self.assertEqual(B.safe_url('https://a.example/x'), 'https://a.example/x')
+
+
+class Meta(unittest.TestCase):
+    def test_category_follows_the_words(self):
+        def cat(*titles):
+            reps = [{'title': t, 'summary': ''} for t in titles]
+            return B.category_of([dict(r, category='diplomacy') for r in reps], reps)
+        self.assertEqual(cat('Israeli airstrike kills 3 in Gaza', 'Three killed in strike on Khan Younis', 'Gaza talks'), 'conflict')
+        self.assertEqual(cat('Iran vows to counter US naval blockade', 'Navy blockade of Iranian oil'), 'military')
+        self.assertEqual(cat('US imposes sanctions on Iran-linked banks', 'Treasury sanctions network'), 'diplomacy')
+
+    def test_trim_to_length_drops_the_lowest_ranked(self):
+        ev = lambda n: {'rank': n, 'script': {'headline': 'x', 'lines': [{'text': 'あ' * 55}, {'text': 'い' * 55}]}}
+        keep, cut = B.trim_to_length([ev(i) for i in range(1, 9)])
+        self.assertLessEqual(B.estimate_seconds(keep), B.TARGET_SECONDS)
+        self.assertEqual([e['rank'] for e in keep], list(range(1, len(keep) + 1)))
+        self.assertEqual(len(keep) + len(cut), 8)
+        self.assertTrue(cut)
+        short = [{'rank': n, 'script': {'headline': 'x', 'lines': [{'text': 'あ' * 40}]}} for n in range(1, 9)]
+        self.assertEqual(B.trim_to_length(short)[1], [])
 
 
 if __name__ == '__main__':
