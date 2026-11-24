@@ -1,6 +1,6 @@
 {
  "version": 1,
- "createdAt": 1795533657022,
+ "createdAt": 1795559653002,
  "windowHours": 24,
  "hold": false,
  "holdReason": "",
@@ -14,116 +14,27 @@
  },
  "audio": {
   "file": "latest.mp3",
-  "seconds": 103.1,
-  "bytes": 825216
+  "seconds": 106.79,
+  "bytes": 854784
  },
  "counts": {
-  "records": 934,
-  "sources": 79,
-  "clusters": 796,
-  "multiSource": 43
+  "records": 964,
+  "sources": 80,
+  "clusters": 820,
+  "multiSource": 47
  },
  "intro": {
   "start": 0,
   "text": "東アジア情勢観測、11月25日。過去24時間の主な出来事、7件です。"
  },
  "outro": {
-  "start": 97.64,
+  "start": 101.33,
   "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
  },
  "events": [
   {
    "start": 8.37,
-   "end": 20.03,
-   "category": "conflict",
-   "label": "紛争 · リビア",
-   "country": "LY",
-   "countries": [
-    "LY",
-    "UA",
-    "RU"
-   ],
-   "place": {
-    "name": "ベンガジ",
-    "lon": 20.07,
-    "lat": 32.12
-   },
-   "anim": {
-    "kind": "strike"
-   },
-   "headline": "ウクライナ、リビアでロシア軍艦を撃沈と発表",
-   "lines": [
-    {
-     "start": 8.37,
-     "sub": "",
-     "text": "ウクライナは、リビアのベンガジ港でロシアの軍艦と貨物船を撃沈したと発表しました。"
-    },
-    {
-     "start": 14.4,
-     "sub": "",
-     "text": "ウクライナ保安庁は、攻撃に使ったドローンは母船から発進したと説明しています。"
-    }
-   ],
-   "sources": {
-    "count": 7,
-    "countries": 6,
-    "names": [
-     "キーウ・インディペンデント",
-     "ジャパンタイムズ",
-     "英国公共放送 国際"
-    ],
-    "items": [
-     {
-      "source": "kyivindependent",
-      "title": "Strikes on Russian ship in Libya are lawful self-defense, Ukraine says",
-      "url": "https://kyivindependent.com/strikes-on-russian-ship-in-libya-are-lawful-self-defense-ukraine-says/"
-     },
-     {
-      "source": "japantimes",
-      "title": "Ukraine strike on Russian warship off Libya highlights Kyiv’s broadened reach",
-      "url": "https://www.japantimes.co.jp/news/2026/11/24/world/ukraine-russian-warship-libyan-coast/"
-     },
-     {
-      "source": "bbc",
-      "title": "What strike on Russian ship in Libya says about spread of Ukraine war",
-      "url": "https://www.bbc.co.uk/news/articles/cm894p88jzxpo"
-     },
-     {
-      "source": "f24",
-      "title": "How far will Ukraine war spread? Kyiv targets Russian vessels in Libya",
-      "url": "https://www.france24.com/en/tv-shows/the-debate/20261123-how-far-will-ukraine-war-spread-kyiv-targets-russian-vessels-in-libya"
-     },
-     {
-      "source": "aj",
-      "title": "What Russian warship did Ukraine just sink?",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/23/what-russian-warship-did-ukraine-just-sink?traffic_source=rss"
-     },
-     {
-      "source": "thehindu",
-      "title": "Zelenskyy hails Ukraine's attack on a Russian warship in Libya",
-      "url": "https://www.thehindu.com/news/international/zelenskyy-hails-ukraines-attack-on-a-russian-warship-in-libya/article71735901.ece"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 1,
-    "families": [
-     "aj",
-     "bbc",
-     "france24",
-     "japantimes",
-     "kyivindependent",
-     "thehindu",
-     "ua-state"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 20.93,
-   "end": 34.4,
+   "end": 23.75,
    "category": "military",
    "label": "軍事 · 韓国",
    "country": "KR",
@@ -137,34 +48,48 @@
     "lat": 37.5
    },
    "anim": {
-    "kind": "aircraft"
+    "kind": "aircraft",
+    "to": [
+     130.87,
+     37.5
+    ]
    },
-   "headline": "ロシア軍機が韓国の防空識別圏に進入、鬱陵島に警報",
+   "headline": "ロシア軍機が韓国の防空識別圏に進入",
    "lines": [
     {
-     "start": 20.93,
+     "start": 8.37,
      "sub": "",
-     "text": "韓国軍は、複数のロシア軍機が日本海上空の防空識別圏に一時進入したと発表しました。"
+     "text": "韓国の合同参謀本部は、複数のロシア軍機が日本海の上空で韓国の防空識別圏に一時進入したと発表しました。"
     },
     {
-     "start": 28.07,
+     "start": 17.29,
      "sub": "",
-     "text": "鬱陵島では住民に避難を呼びかける空襲警報が出され、韓国はロシアに抗議しました。"
+     "text": "鬱陵島では住民に避難を呼びかける警報が一時出され、韓国はロシア側に抗議しました。"
     }
    ],
    "sources": {
-    "count": 6,
-    "countries": 6,
+    "count": 7,
+    "countries": 7,
     "names": [
+     "ザ・ウォー・ゾーン",
      "キーウ・インディペンデント",
-     "アルジャジーラ",
-     "メドゥーザ 英語版"
+     "聯合ニュース 英語版"
     ],
     "items": [
      {
+      "source": "twz",
+      "title": "Seoul Scrambles F-15Ks As Russian Warplanes Come Within Seconds Of Crossing Into South Korean Airspace",
+      "url": "https://www.twz.com/air/seoul-scrambles-f-15ks-as-russian-warplanes-come-within-seconds-of-crossing-into-south-korean-airspace"
+     },
+     {
       "source": "kyivindependent",
-      "title": "'Evacuation, air raid,' — Russian military aircraft approach South Korean island, trigger air raid alert",
-      "url": "https://kyivindependent.com/evacuation-air-raid-russian-aircraft-approach-south-korean-island-trigger-air-raid-alert-2/"
+      "title": "Ukraine war latest: 'Evacuation, air raid,' — Russian military aircraft approach South Korean island, trigger alert",
+      "url": "https://kyivindependent.com/ukraine-war-latest-evacuation-air-raid-russian-military-aircraft-approach-south-korean-island-trigger-alert/"
+     },
+     {
+      "source": "yonhap",
+      "title": "(5th LD) S. Korea briefly issues alert on eastern island after Russian warplanes near airspace",
+      "url": "https://en.yna.co.kr/view/AEN20261124002255315"
      },
      {
       "source": "aj",
@@ -177,30 +102,21 @@
       "url": "https://meduza.io/en/news/2026/11/24/south-korea-scrambles-fighter-jets-over-russian-military-aircraft-issues-evacuation-alert-on-island"
      },
      {
-      "source": "yonhap",
-      "title": "(4th LD) S. Korea briefly issues alert on eastern island after Russian warplanes near airspace",
-      "url": "https://en.yna.co.kr/view/AEN20261124002254315"
-     },
-     {
       "source": "guardian-russia",
       "title": "South Korea tells island residents to take shelter after Russian military aircraft approach",
       "url": "https://www.theguardian.com/world/2026/nov/24/south-korea-tells-island-residents-to-take-shelter-after-russian-military-aircraft-approach"
-     },
-     {
-      "source": "japantimes",
-      "title": "South Korea scrambles jets as Russian warplanes enter air zone",
-      "url": "https://www.japantimes.co.jp/news/2026/11/24/asia-pacific/south-korea-jets-russia-warplanes/"
      }
     ]
    },
    "debug": {
-    "rank": 2,
+    "rank": 1,
     "families": [
      "aj",
      "guardian",
      "japantimes",
      "kyivindependent",
      "meduza",
+     "twz",
      "yonhap"
     ],
     "notes": [],
@@ -209,8 +125,8 @@
    }
   },
   {
-   "start": 35.3,
-   "end": 45.61,
+   "start": 24.65,
+   "end": 38.3,
    "category": "diplomacy",
    "label": "外交 · 中国",
    "country": "CN",
@@ -226,28 +142,33 @@
    "anim": {
     "kind": "launch"
    },
-   "headline": "中国の神舟24号、初の外国人宇宙飛行士が搭乗へ",
+   "headline": "神舟24号に初の外国人宇宙飛行士",
    "lines": [
     {
-     "start": 35.3,
+     "start": 24.65,
      "sub": "",
-     "text": "中国は、宇宙船「神舟24号」の乗組員を発表しました。"
+     "text": "中国は、有人宇宙船「神舟24号」の打ち上げを前に、乗組員を発表しました。"
     },
     {
-     "start": 40.22,
+     "start": 31.21,
      "sub": "",
-     "text": "パキスタンのアリ氏が、外国人として初めて宇宙ステーション「天宮」に搭乗します。"
+     "text": "パキスタン空軍のパイロットが、宇宙ステーション「天宮」に乗り込む初めての外国人宇宙飛行士になる予定です。"
     }
    ],
    "sources": {
-    "count": 7,
-    "countries": 6,
+    "count": 10,
+    "countries": 8,
     "names": [
+     "NASASpaceflight",
      "毎日新聞 英語版",
-     "フランス24",
-     "香港フリープレス"
+     "フランス24"
     ],
     "items": [
+     {
+      "source": "nsf",
+      "title": "Tiangong Space Station to welcome first international visitor",
+      "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/"
+     },
      {
       "source": "mainichi",
       "title": "China unveils new space mission crew, with a Pakistani astronaut set to board its space station",
@@ -259,36 +180,34 @@
       "url": "https://www.france24.com/en/asia-pacific/20261124-china-to-launch-first-space-mission-with-a-foreign-astronaut"
      },
      {
+      "source": "thediplomat",
+      "title": "First Pakistani Astronaut Is About to Head to Space, on a Chinese Spacecraft",
+      "url": "https://thediplomat.com/2026/11/first-pakistani-astronaut-is-about-to-head-to-space-on-a-chinese-spacecraft/"
+     },
+     {
+      "source": "aj",
+      "title": "Pakistan’s Zeeshan Ali set for historic flight to China’s space station",
+      "url": "https://www.aljazeera.com/news/2026/11/24/pakistans-zeeshan-ali-set-for-historic-flight-to-chinas-space-station?traffic_source=rss"
+     },
+     {
       "source": "hkfp",
       "title": "China to launch space mission with first foreign astronaut",
       "url": "https://hongkongfp.com/2026/11/24/china-to-launch-space-mission-with-first-foreign-astronaut/"
-     },
-     {
-      "source": "thehindu",
-      "title": "China's Shenzhou-24 spaceship to include first foreign astronaut from Pakistan",
-      "url": "https://www.thehindu.com/sci-tech/science/chinas-shenzhou-24-spaceship-to-include-first-foreign-astronaut-from-pakistan/article71737165.ece"
-     },
-     {
-      "source": "straitstimes",
-      "title": "China’s Tiangong space station opens to the world with Pakistani astronaut as first foreign guest",
-      "url": "https://www.straitstimes.com/asia/east-asia/china-to-launch-shenzhou-24-spaceship-with-first-foreign-astronaut"
-     },
-     {
-      "source": "scmp-china",
-      "title": "‘The hope of 250 million’: China’s space station to welcome Pakistani astronaut",
-      "url": "https://www.scmp.com/news/china/science/article/3375536/pakistani-astronaut-joins-shenzhou-24-crew-heading-chinas-tiangong-space-station"
      }
     ]
    },
    "debug": {
-    "rank": 3,
+    "rank": 2,
     "families": [
+     "aj",
      "cn-state",
      "france24",
      "hkfp",
      "mainichi",
+     "nsf",
      "scmp",
      "straitstimes",
+     "thediplomat",
      "thehindu"
     ],
     "notes": [],
@@ -297,113 +216,83 @@
    }
   },
   {
-   "start": 46.51,
-   "end": 58.72,
-   "category": "conflict",
-   "label": "紛争 · ウクライナ",
-   "country": "UA",
+   "start": 39.2,
+   "end": 53.71,
+   "category": "diplomacy",
+   "label": "外交 · 北朝鮮",
+   "country": "KP",
    "countries": [
-    "UA",
-    "RU",
-    "LY"
+    "KP",
+    "CH"
    ],
    "place": {
-    "name": "ザポリージャ",
-    "lon": 35.14,
-    "lat": 47.84
+    "name": "平壌",
+    "lon": 125.75,
+    "lat": 39.02
    },
    "anim": {
-    "kind": "strike"
+    "kind": "none"
    },
-   "headline": "ロシア軍がザポリージャを攻撃、2人死亡",
+   "headline": "北朝鮮、スイス外交事務所の閉鎖を警告",
    "lines": [
     {
-     "start": 46.51,
+     "start": 39.2,
      "sub": "",
-     "text": "ウクライナのザポリージャの当局は、ロシア軍の夜間の攻撃で2人が死亡したと発表しました。"
+     "text": "北朝鮮のキム・ヨジョン氏は、スイスが平壌に開いた外交事務所の閉鎖を検討すると警告しました。"
     },
     {
-     "start": 52.91,
+     "start": 46.25,
      "sub": "",
-     "text": "負傷者は数十人にのぼり、集合住宅や交通施設が被害を受けたとしています。"
+     "text": "スイスが北朝鮮の青少年キャンプに制裁を科したことを受けたもので、スイス政府は制裁を維持するとしています。"
     }
    ],
    "sources": {
-    "count": 8,
-    "countries": 7,
+    "count": 4,
+    "countries": 3,
     "names": [
-     "ガーディアン ロシア",
-     "キーウ・インディペンデント",
-     "メドゥーザ 英語版"
+     "聯合ニュース 北朝鮮",
+     "サウスチャイナ・モーニング・ポスト アジア",
+     "中央通訊社"
     ],
     "items": [
      {
-      "source": "guardian-russia",
-      "title": "Italy expresses concern to Ukraine over Libya ship attacks – Europe live",
-      "url": "https://www.theguardian.com/world/live/2026/nov/24/russia-ukraine-poland-drone-patriots-latest-news-updates"
+      "source": "yna-nk-ko",
+      "title": "스위스, 북한 외교사무소 철수 위협에도 제재 유지",
+      "url": "https://www.yna.co.kr/view/AKR20261125001000082"
      },
      {
-      "source": "kyivindependent",
-      "title": "Russian attacks kill 9, injure 81 across Ukraine over past day, Zaporizhzhia residential building massively hit",
-      "url": "https://kyivindependent.com/russian-attacks-kill-9-injure-77-across-ukraine-over-past-day-zaporizhzhia-residential-building-massively-hit/"
+      "source": "scmp-asia",
+      "title": "North Korea threatens to shut Swiss office over Russian youth camp sanctions",
+      "url": "https://www.scmp.com/news/asia/east-asia/article/3375602/north-korea-threatens-shut-swiss-office-over-russian-youth-camp-sanctions"
      },
      {
-      "source": "meduza",
-      "title": "Russian strikes kill two in Ukraine’s Zaporizhzhia, injure dozens",
-      "url": "https://meduza.io/en/news/2026/11/24/russian-strikes-kill-two-in-ukraine-s-zaporizhzhia-injure-dozens"
+      "source": "cna-intl",
+      "title": "報復瑞士制裁兒童夏令營 北韓威脅關閉外交辦事處",
+      "url": "https://www.cna.com.tw/news/aopl/202611240074.aspx"
      },
      {
-      "source": "rti",
-      "title": "[國際] 烏克蘭札波羅熱遭俄軍襲擊 已造成2死22傷",
-      "url": "https://www.rti.org.tw/news?uid=3&pid=1053371"
-     },
-     {
-      "source": "f24",
-      "title": "Live: Russian strikes on Ukraine’s Zaporizhzhia kill two people and wound dozens more",
-      "url": "https://www.france24.com/en/europe/20261124-live-tripoli-demands-explanation-from-kyiv-for-striking-russian-ships-in-libyan-waters"
-     },
-     {
-      "source": "thehindu",
-      "title": "Russian attack kills two people, wounds 22 in Ukraine's Zaporizhzhia, official says",
-      "url": "https://www.thehindu.com/news/international/russian-attack-kills-two-people-wounds-22-in-ukraines-zaporizhzhia-official-says/article71737237.ece"
+      "source": "nknews",
+      "title": "North Korea threatens to force closure of Swiss diplomatic office over sanctions",
+      "url": "https://www.nknews.org/2026/11/north-korea-threatens-to-expel-swiss-diplomatic-mission-following-sanctions/"
      }
     ]
    },
    "debug": {
-    "rank": 4,
+    "rank": 3,
     "families": [
-     "france24",
-     "guardian",
-     "kyivindependent",
-     "meduza",
-     "rti",
-     "ru-state",
-     "thehindu",
-     "ua-state"
+     "cna-tw",
+     "nknews",
+     "scmp",
+     "yonhap"
     ],
     "notes": [],
     "tries": [],
-    "numberConflicts": [
-     {
-      "class": "people",
-      "values": {
-       "22": [
-        "rti"
-       ],
-       "24": [
-        "meduza"
-       ],
-       "40": [
-        "france24"
-       ]
-      }
-     }
-    ]
+    "numberConflicts": []
    }
   },
   {
-   "start": 59.62,
-   "end": 70.51,
+   "start": 54.61,
+   "end": 66.99,
    "category": "military",
    "label": "軍事 · ロシア",
    "country": "RU",
@@ -415,17 +304,17 @@
    "anim": {
     "kind": "none"
    },
-   "headline": "ロシアの核搭載衛星の計画、ドイツのメディアが報道",
+   "headline": "ロシアの核搭載衛星の報道でNATOが表明",
    "lines": [
     {
-     "start": 59.62,
+     "start": 54.61,
      "sub": "",
-     "text": "ドイツのメディアは、ロシアが数週間以内に核兵器を載せた衛星を打ち上げる計画だと報じました。"
+     "text": "ドイツのメディアは、ロシアが核兵器を搭載した衛星を数週間以内に打ち上げる可能性があると報じました。"
     },
     {
-     "start": 66.26,
+     "start": 61.93,
      "sub": "",
-     "text": "NATOのルッテ事務総長は、宇宙での安全も守ると述べました。"
+     "text": "NATOのルッテ事務総長は、宇宙での脅威に対しても防衛すると述べました。"
     }
    ],
    "sources": {
@@ -460,7 +349,7 @@
     ]
    },
    "debug": {
-    "rank": 5,
+    "rank": 4,
     "families": [
      "cna-tw",
      "france24",
@@ -473,57 +362,75 @@
    }
   },
   {
-   "start": 71.41,
-   "end": 82.78,
+   "start": 67.89,
+   "end": 79.83,
    "category": "conflict",
-   "label": "紛争 · イラン",
-   "country": "IR",
+   "label": "紛争 · フィンランド湾",
+   "country": "FI",
    "countries": [
-    "IR",
-    "US"
+    "FI",
+    "RU",
+    "UA"
    ],
-   "place": null,
-   "anim": {
-    "kind": "none"
+   "place": {
+    "name": "フィンランド湾",
+    "lon": 26.0,
+    "lat": 59.9
    },
-   "headline": "イラン、米国の海上封鎖に「あらゆる手段」で対抗",
+   "anim": {
+    "kind": "strike"
+   },
+   "headline": "ゼレンスキー氏、ロシア貨物船攻撃を認める",
    "lines": [
     {
-     "start": 71.41,
+     "start": 67.89,
      "sub": "",
-     "text": "イラン外務省のバガイ報道官は、米国による石油輸出の海上封鎖を容認しないと述べました。"
+     "text": "ウクライナのゼレンスキー大統領は、フィンランド湾でロシアの貨物船をドローンで攻撃したと述べました。"
     },
     {
-     "start": 78.06,
+     "start": 74.57,
      "sub": "",
-     "text": "報道官は、あらゆる手段で対抗し、自国を守るとしています。"
+     "text": "大統領は、ロシアの旗を掲げるすべての船が正当な標的だと述べました。"
     }
    ],
    "sources": {
-    "count": 2,
-    "countries": 2,
+    "count": 4,
+    "countries": 3,
     "names": [
-     "ミドル・イースト・アイ",
-     "ザ・ヒンドゥー 国際"
+     "モスクワ・タイムズ",
+     "キーウ・インディペンデント",
+     "gCaptain"
     ],
     "items": [
      {
-      "source": "mee",
-      "title": "Iran vows to use 'all avaliable tools' to confront US naval blockade",
-      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/iran-vows-use-all-avaliable-tools-confront-us-naval-blockade"
+      "source": "moscowtimes",
+      "title": "Zelensky Confirms Ukraine Was Behind Drone Attack on Russian Cargo Ship in Gulf of Finland",
+      "url": "https://www.themoscowtimes.com/2026/11/24/zelensky-confirms-ukraine-was-behind-drone-attack-on-russian-cargo-ship-in-gulf-of-finland-a94364"
      },
      {
-      "source": "thehindu",
-      "title": "Will use 'all available means' to counter U.S. blockade: Iran",
-      "url": "https://www.thehindu.com/news/international/will-use-all-available-means-to-counter-us-blockade-iran/article71735993.ece"
+      "source": "kyivindependent",
+      "title": "Zelensky confirms Ukrainian attack on Russian ship in Gulf of Finland",
+      "url": "https://kyivindependent.com/zelensky-confirms-ukrainian-attack-on-russian-ship-in-gulf-of-finland/"
+     },
+     {
+      "source": "gcaptain",
+      "title": "Zelenskyy Confirms Ukraine Hit Russian Ship in Gulf of Finland",
+      "url": "https://gcaptain.com/zelenskyy-confirms-ukraine-hit-russian-ship-in-gulf-of-finland/"
+     },
+     {
+      "source": "ukrinform",
+      "title": "Zelensky confirms strike on Russian ship in Gulf of Finland",
+      "url": "https://www.ukrinform.net/rubric-ato/4188087-zelensky-confirms-strike-on-russian-ship-in-gulf-of-finland.html"
      }
     ]
    },
    "debug": {
-    "rank": 6,
+    "rank": 5,
     "families": [
-     "mee",
-     "thehindu"
+     "gcaptain",
+     "kyivindependent",
+     "moscowtimes",
+     "ua-state"
     ],
     "notes": [],
     "tries": [],
@@ -531,49 +438,49 @@
    }
   },
   {
-   "start": 83.68,
-   "end": 96.74,
+   "start": 80.73,
+   "end": 92.3,
    "category": "conflict",
-   "label": "紛争 · パレスチナ",
+   "label": "紛争 · ガザ",
    "country": "PS",
    "countries": [
     "PS",
     "IL"
    ],
    "place": {
-    "name": "ハンユニス",
-    "lon": 34.3,
-    "lat": 31.35
+    "name": "ガザ",
+    "lon": 34.45,
+    "lat": 31.5
    },
    "anim": {
     "kind": "strike"
    },
-   "headline": "ガザでイスラエルの空爆、少なくとも6人死亡",
+   "headline": "ガザ空爆でハマス治安責任者が死亡",
    "lines": [
     {
-     "start": 83.68,
+     "start": 80.73,
      "sub": "",
-     "text": "ガザの保健当局と警察は、イスラエル軍の空爆で警察官2人を含む少なくとも6人が死亡したと発表しました。"
+     "text": "ガザの内務省は、イスラエルの空爆でハマスの内部治安機関の責任者が死亡したと発表しました。"
     },
     {
-     "start": 91.82,
+     "start": 87.46,
      "sub": "",
-     "text": "このうち3人は、南部ハンユニスの警察署の近くで死亡したとしています。"
+     "text": "イスラエル軍は、この責任者を狙った攻撃を行ったと発表しています。"
     }
    ],
    "sources": {
-    "count": 7,
-    "countries": 6,
+    "count": 6,
+    "countries": 5,
     "names": [
-     "フランス24",
+     "アルジャジーラ",
      "英国公共放送 国際",
-     "ミドル・イースト・アイ"
+     "フランス24"
     ],
     "items": [
      {
-      "source": "f24",
-      "title": "Israeli strikes on Gaza kill senior Hamas security official and six other people, medics say",
-      "url": "https://www.france24.com/en/middle-east/20261124-israeli-strikes-on-gaza-kill-senior-hamas-security-official-and-six-other-people-medics-say"
+      "source": "aj",
+      "title": "Senior Hamas security official killed in Israeli drone strikes",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/24/senior-hamas-security-official-killed-in-israeli-drone-strikes?traffic_source=rss"
      },
      {
       "source": "bbc",
@@ -581,24 +488,95 @@
       "url": "https://www.bbc.co.uk/news/articles/c6rrg7ggq190o"
      },
      {
+      "source": "f24",
+      "title": "Israeli strikes on Gaza kill senior Hamas security official and six other people, medics say",
+      "url": "https://www.france24.com/en/middle-east/20261124-israeli-strikes-on-gaza-kill-senior-hamas-security-official-and-six-other-people-medics-say"
+     },
+     {
       "source": "mee",
       "title": "Gaza confirms death of Hamas internal security chief after Israeli strike",
       "url": "https://www.middleeasteye.net/live-blog/live-blog-update/gaza-confirms-death-hamas-internal-security-chief-after-israeli-strike"
      },
      {
-      "source": "thehindu",
-      "title": "Israeli airstrike kills senior Hamas security official in Gaza, Hamas sources say",
-      "url": "https://www.thehindu.com/news/international/hamas-security-official-killed-in-israel-strikes-in-gaza/article71738279.ece"
+      "source": "almonitor",
+      "title": "Israel kills senior Hamas security official in airstrike on Gaza",
+      "url": "https://www.al-monitor.com/originals/2026/11/israel-kills-senior-hamas-security-official-airstrike-gaza"
      },
      {
+      "source": "cgtn-world",
+      "title": "Israeli airstrike kills 3 Palestinians in southern Gaza, medics say",
+      "url": "https://news.cgtn.com/news/2026-11-24/Israeli-airstrike-kills-3-Palestinians-in-southern-Gaza-medics-say-1SkgFcFbE1G/p.html?UTM_Source=cgtn&UTM_Medium=rss&UTM_Campaign=World"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 6,
+    "families": [
+     "aj",
+     "almonitor",
+     "bbc",
+     "cn-state",
+     "france24",
+     "mee"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 93.2,
+   "end": 100.43,
+   "category": "conflict",
+   "label": "紛争 · トルコ",
+   "country": "TR",
+   "countries": [
+    "TR"
+   ],
+   "place": {
+    "name": "エスキシェヒル県",
+    "lon": 30.52,
+    "lat": 39.78
+   },
+   "anim": {
+    "kind": "none"
+   },
+   "headline": "トルコ軍ヘリが訓練中に墜落、5人死亡",
+   "lines": [
+    {
+     "start": 93.2,
+     "sub": "",
+     "text": "トルコ国防省は、軍のヘリコプターが訓練飛行中に墜落し、軍人5人が死亡したと発表しました。"
+    }
+   ],
+   "sources": {
+    "count": 4,
+    "countries": 4,
+    "names": [
+     "アルジャジーラ",
+     "中央通訊社",
+     "アルモニター"
+    ],
+    "items": [
+     {
       "source": "aj",
-      "title": "Israeli air strikes in Gaza kill 7 as doctors warn of meningitis outbreak",
-      "url": "https://www.aljazeera.com/news/2026/11/24/israeli-air-strikes-in-gaza-kill-7-as-doctors-warn-of-meningitis-outbreak?traffic_source=rss"
+      "title": "Turkish military helicopter crash kills five in western Turkiye",
+      "url": "https://www.aljazeera.com/news/2026/11/24/turkish-military-helicopter-crash-kills-five-in-western-turkiye?traffic_source=rss"
+     },
+     {
+      "source": "cna-intl",
+      "title": "土耳其軍方直升機訓練時墜毀 導致5名官兵喪命",
+      "url": "https://www.cna.com.tw/news/aopl/202611250007.aspx"
      },
      {
       "source": "almonitor",
-      "title": "Israeli airstrikes in Gaza kill senior Hamas security official and six others, medics say",
-      "url": "https://www.al-monitor.com/originals/2026/11/israeli-airstrikes-gaza-kill-senior-hamas-security-official-and-six-others-medics"
+      "title": "Turkish military helicopter crashes during training flight, killing 5",
+      "url": "https://www.al-monitor.com/originals/2026/11/turkish-military-helicopter-crashes-during-training-flight-killing-5"
+     },
+     {
+      "source": "tass",
+      "title": "Five servicemen killed in Turkish military helicopter crash",
+      "url": "https://tass.com/emergencies/2224271"
      }
     ]
    },
@@ -607,11 +585,8 @@
     "families": [
      "aj",
      "almonitor",
-     "bbc",
-     "cn-state",
-     "france24",
-     "mee",
-     "thehindu"
+     "cna-tw",
+     "ru-state"
     ],
     "notes": [],
     "tries": [],
@@ -619,12 +594,7 @@
    }
   }
  ],
- "dropped": [
-  {
-   "reason": "長さの上限（120 秒）で外した",
-   "headline": "北朝鮮、スイスの平壌事務所の閉鎖を警告"
-  }
- ],
+ "dropped": [],
  "build": {
   "schema": "briefing-1",
   "tokenizer": "fugashi",
@@ -632,27 +602,26 @@
   "timing": {
    "clusterSec": 0.07,
    "scriptSec": 0.1,
-   "audioSec": 32.9,
-   "totalSec": 33.7
+   "audioSec": 33.0,
+   "totalSec": 34.1
   },
   "candidates": 0,
   "kana": {
    "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ゴ'ニチ",
    "intro+1": "カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
-   "0.0": "ウクラ'イナワ、リ'ビアノ/ベンガジコ'オデ/ロ'シアノ/グンカント'/カモツセンオ'/ゲ_キチン'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "0.1": "ウクライナホア'ンチョオワ、コオゲキニ'/_ツカッタ'/ドロ'オンワ/ボセンカラ'/ハッシン'/_シタ'ト/セツメエ'/_シテ'/イマ'_ス",
-   "1.0": "カンコク'グンワ、_フクス'ウノ/ロシアグ'ンキガ/ニホ'ンカイ/ジョオクウノ'/ボオクウ_シキベツ'ケンニ/イチ'ジ/シンニュウ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "1.1": "ウツリョオトオデワ'/ジュウミンニ'/ヒ'ナンオ/ヨビカケ'ル/クウシュウケ'エホオガ/ダ'サレ、カ'ンコクワ/ロ'シアニ/コ'オギ/シマ'_シタ",
-   "2.0": "チュ'ウゴクワ、ウチュウセン'/シンシュウ'/ニ'ジュウ/ヨン'ゴオノ/ノリクミ'インオ/ハッピョオ'/シマ'_シタ",
-   "2.1": "パキ'_スタンノ/ア'リシガ、ガイコク'ジント/_シテ'/ハジ'メテ/ウチュウ_ステ'エション/テンキュウニ'/トオジョオ'/シマ'_ス",
-   "3.0": "ウクラ'イナノ/ザポリ'イジャノ/ト'オキョクワ、ロシア'グンノ/ヤ'カンノ/コオゲキデ'/_フタリ'ガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "3.1": "_フショ'オシャワ/スウジュ'ウニンニ/ノボリ'、シュウゴオジュ'ウタクヤ/コオツウシ'セツガ/ヒ'ガイオ/ウケ'タト/_シテ'/イマ'_ス",
-   "4.0": "ド'イツノ/メ'ディアワ、ロ'シアガ/スウシュ'ウカン/イ'ナイニ/カ_クヘ'エキオ/ノセタ'/エエセエオ'/ウチアゲ'ル/ケエカクダト'/ホオジマ'_シタ",
-   "4.1": "ナ'トオノ/ル'ッテ/ジムソ'オチョオワ、ウ'チュウデノ/アンゼンモ'/マモ'ルト/ノベマ'_シタ",
-   "5.0": "イ'ラン/ガイム'ショオノ/バガイホオド'オカンワ、ベエコクニ'/ヨル'/セキユユ'_シュツノ/カイジョオフ'ウサオ/ヨオニン'/シナイト'/ノベマ'_シタ",
-   "5.1": "ホオド'オカンワ、アラユ'ル/シュ'ダンデ/タイコオシ'、ジコクオ'/マモ'ルト/_シテ'/イマ'_ス",
-   "6.0": "ガ'ザノ/ホケント'オキョ_クト/ケエサツワ'、イスラエル'グンノ/クウバクデ'/ケエサツ'カン/_フタリ'オ/_フク'ム/_スクナ'_クトモ/ロク'ニンガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "6.1": "コノウチ'/サンニ'ンワ、ナ'ンブ/ハンユ'ニスノ/ケエサ_ツショノ'/チ'カクデ/シボオ'/_シタ'ト/_シテ'/イマ'_ス",
+   "0.0": "カ'ンコクノ/ゴオドオサンボオホ'ンブワ、_フクス'ウノ/ロシアグ'ンキガ/ニホ'ンカイノ/ジョオクウデ'/カ'ンコクノ/ボオクウ_シキベツ'ケンニ/イチ'ジ/シンニュウ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "0.1": "ウルル'ンドデワ/ジュウミンニ'/ヒ'ナンオ/ヨビカケ'ル/ケエホオガ'/イチ'ジ/ダサ'レ、カ'ンコクワ/ロシアガワニ'/コ'オギ/シマ'_シタ",
+   "1.0": "チュ'ウゴクワ、ユウジンウチュウセン'/シンシュウ'/ニ'ジュウ/ヨ'ンゴオノ/ウチアゲオ'/マ'エニ、ノリクミ'インオ/ハッピョオ'/シマ'_シタ",
+   "1.1": "パ_キスタンク'ウグンノ/パ'イロットガ、ウチュウ_ステ'エション/テンキュウニ'/ノリコ'ム/ハジ'メテノ/ガイコク'ジン/ウチュウ_ヒコ'オシニ/ナ'ル/ヨテエデ'_ス",
+   "2.0": "_キタチョオセ'ンノ/キ'ム/ヨジョ'ンシワ、ス'イスガ/ピョ'ンヤンニ/ヒラ'イタ/ガイコオジム'ショノ/ヘエサオ'/ケントオ'/スルト'/ケエコ_ク'/シマ'_シタ",
+   "2.1": "ス'イスガ/_キタチョオセ'ンノ/セエショオネンキャ'ンプニ/セエサイオ'/カ'_シタ/コト'オ/ウケ'タ/モノ'デ、スイスセ'エフワ/セエサイオ'/イ'ジ/スルト'/_シテ'/イマ'_ス",
+   "3.0": "ド'イツノ/メ'ディアワ、ロ'シアガ/カ_クヘ'エキオ/トオサイ'/_シタ'/エエセエオ'/スウシュ'ウカン/イ'ナイニ/ウチアゲ'ル/カノオセエガ'/ア'ルト/ホオジマ'_シタ",
+   "3.1": "ナ'トオノ/ル'ッテ/ジムソ'オチョオワ、ウ'チュウデノ/キョ'オイニ/タ'イ_シテモ/ボオエエ'/スルト'/ノベマ'_シタ",
+   "4.0": "ウクラ'イナノ/ゼレ'ン_スキイ/ダイト'オリョオワ、フィンランド'ワンデ/ロ'シアノ/カモツセンオ'/ドロ'オンデ/コオゲキ'/_シタ'ト/ノベマ'_シタ",
+   "4.1": "ダイト'オリョオワ、ロ'シアノ/ハタ'オ/カカゲル'/ス'ベテノ/フ'ネガ/セエトオナ'/ヒョオテキダト'/ノベマ'_シタ",
+   "5.0": "ガ'ザノ/ナイム'ショオワ、イスラ'エルノ/クウバクデ'/ハ'マスノ/ナイブチアンキ'カンノ/セキニ'ンシャガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "5.1": "イスラエル'グンワ、コノ'/セキニ'ンシャオ/ネラッタ'/コオゲキオ'/オコナッタ'ト/ハッピョオ'/_シテ'/イマ'_ス",
+   "6.0": "トルココクボ'オショオワ、グ'ンノ/ヘリコ'_プタアガ/クンレン_ヒコオチュウニ'/ツイラ_ク'/シ'、グンジン'/ゴニ'ンガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
    "outro": "イ'ジョオデ_ス",
    "outro+1": "ホオドオノ'/ミダ_シト'/ヨオヤクオ'、キ'カイデ/マトメテ'/ヨミアゲマ'_シタ"
   }
