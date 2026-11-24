@@ -42,7 +42,20 @@ class Verify(unittest.TestCase):
     def test_dates_are_not_checked_as_counts(self):
         s = good(lines=[{'text': '11月24日、中国の艦艇が宮古海峡の付近を航行したと報じました。', 'sub': ''},
                         {'text': '日本の報道は、艦艇を12隻としています。', 'sub': ''}])
-        self.assertEqual(T.verify(s, ARTS, [], [])[0], [])
+        arts = ARTS + [{'source': 'bbc', 'title': 'x', 'summary': 'Reported on Nov 24.', 'titleJa': ''}]
+        self.assertEqual(T.verify(s, arts, [], [])[0], [])
+
+    def test_dates_must_be_in_the_sources(self):
+        arts = [{'source': 'mee', 'title': 'Blockade reinstated in July', 'summary': 'Imposed in April, halted on 13 June.', 'titleJa': ''}]
+        ok = good(lines=[{'text': '封鎖は4月に始まり、6月13日に解除されました。', 'sub': ''}, {'text': '7月に再び実施されたと伝えています。', 'sub': ''}])
+        self.assertEqual(T.verify(ok, arts, [], [])[0], [])
+        bad = good(lines=[{'text': '封鎖は4月13日に始まり、8月2日に解除されました。', 'sub': ''}, {'text': '7月に再び実施されたと伝えています。', 'sub': ''}])
+        why = T.verify(bad, arts, [], [])[0]
+        self.assertTrue(any('日付' in w and '8月2日' in w for w in why), why)
+
+    def test_headline_in_chinese_fails(self):
+        why = T.verify(good(headline='北約矢言捍衛太空安全'), ARTS, [], [])[0]
+        self.assertTrue(any('かな' in w for w in why), why)
 
     def test_banned_words(self):
         s = good(lines=[{'text': '中国の挑発的な行動を、日本は強く非難しています。', 'sub': ''},

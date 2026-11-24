@@ -1011,6 +1011,20 @@
    ],
    "cc": "VE",
    "kind": "country"
+  },
+  {
+   "id": "benghazi",
+   "name": "ベンガジ",
+   "lonlat": [
+    20.07,
+    32.12
+   ],
+   "aliases": [
+    "benghazi",
+    "ベンガジ"
+   ],
+   "cc": "LY",
+   "kind": "place"
   }
  ]
 }

@@ -102,9 +102,13 @@ class Clustering(unittest.TestCase):
 
 class Places(unittest.TestCase):
     def test_place_is_not_taken_from_capital_and_codes_follow(self):
-        hits = P.find(['The Kremlin said Ukraine hit a ship in the Mediterranean'])
+        hits = P.find(['The Kremlin said Ukraine hit a ship in the Mediterranean', 'Mediterranean attack, Kyiv says'])
         self.assertEqual(P.main_place(hits)['name'], '地中海')
         self.assertEqual(P.country_codes(hits)[:2], ['UA', 'RU'])
+
+    def test_place_in_one_article_only_is_not_used(self):
+        hits = P.find(['Sanctions hit firms in Hong Kong', 'US adds sanctions', 'More sanctions on Iran'])
+        self.assertIsNone(P.main_place(hits))
 
     def test_no_place_gives_none(self):
         self.assertIsNone(P.main_place(P.find(['Russia and Ukraine talk'])))

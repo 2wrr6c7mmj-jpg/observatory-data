@@ -93,7 +93,7 @@ class Build(unittest.TestCase):
         self.assertLessEqual(len(e['sources']['items']), 6)
         self.assertTrue(all(i['url'].startswith('https://') for i in e['sources']['items']))
         self.assertLessEqual(len(e['countries']), 3)
-        self.assertTrue(e['lines'][-1]['text'].startswith('この件は、独立した3つ'))
+        self.assertTrue(e['lines'][-1]['text'].startswith('この件は、独立した3の報道機関、3か国'))
         self.assertEqual(doc['counts']['records'], 43)
         self.assertTrue(os.path.exists(os.path.join(out, 'credits.txt')))
 
