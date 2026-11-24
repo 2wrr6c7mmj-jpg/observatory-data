@@ -1,0 +1,10 @@
+# 台本・束ね・音声に使う Python の部品（版とハッシュを固定。pip install --require-hashes -r briefing/requirements.txt）
+# voicevox_core は PyPI に無いので tools/voicevox_setup.sh が GitHub のリリースから SHA-256 を確かめて入れる。
+fugashi==1.5.2 \
+    --hash=sha256:83bc7bf08f81a3c3992bf10b8c681720898a826c6c3dffa80e1296e005f4bfb8 \
+    --hash=sha256:0e79d3f09d847d07eddf8e62ad9840b11331102bc31ecd66455c62581af11638
+unidic-lite==1.0.8 \
+    --hash=sha256:db9d4572d9fdd4d00a97949d4b0741ec480ee05a7e7e2e32f547500dae27b245
+lameenc==1.8.1 \
+    --hash=sha256:693a6cb42494dde1ae78756f1323b07dea041a152a1f4805639490bfea0e9ba3 \
+    --hash=sha256:0399f7dec7c8d626c913023a3c7cbd89314dab6f0e67ac4a335a4a4cb8c23de3

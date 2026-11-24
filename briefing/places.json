@@ -1,0 +1,1016 @@
+{
+ "note": "座標は [経度, 緯度] の 10 進（大まかな位置。国・海域は代表点）。地名は別名の部分一致で台本の元の記事から決める（モデルには決めさせない）。 kind: place（地点に使う）／country（国。輪郭用）／capital（首都・政府の通称。国の輪郭にだけ使い、地点には使わない：「クレムリンは…」などで首都が出ても出来事の場所ではないため）。",
+ "places": [
+  {
+   "id": "taiwan-strait",
+   "name": "台湾海峡",
+   "lonlat": [
+    119.5,
+    24.5
+   ],
+   "aliases": [
+    "taiwan strait",
+    "台湾海峡",
+    "台灣海峽",
+    "台湾海峡",
+    "타이완 해협",
+    "тайваньский пролив"
+   ],
+   "cc": "TW",
+   "kind": "place"
+  },
+  {
+   "id": "taipei",
+   "name": "台北",
+   "lonlat": [
+    121.56,
+    25.04
+   ],
+   "aliases": [
+    "taipei",
+    "台北"
+   ],
+   "cc": "TW",
+   "kind": "capital"
+  },
+  {
+   "id": "taiwan",
+   "name": "台湾",
+   "lonlat": [
+    121.0,
+    23.7
+   ],
+   "aliases": [
+    "taiwan",
+    "台湾",
+    "台灣",
+    "타이완",
+    "대만"
+   ],
+   "cc": "TW",
+   "kind": "country"
+  },
+  {
+   "id": "bashi-channel",
+   "name": "バシー海峡",
+   "lonlat": [
+    121.0,
+    20.5
+   ],
+   "aliases": [
+    "bashi channel",
+    "バシー海峡",
+    "巴士海峽"
+   ],
+   "cc": "TW",
+   "kind": "place"
+  },
+  {
+   "id": "miyako-strait",
+   "name": "宮古海峡",
+   "lonlat": [
+    125.3,
+    24.8
+   ],
+   "aliases": [
+    "miyako strait",
+    "宮古海峡",
+    "宮古島",
+    "miyako"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "yonaguni",
+   "name": "与那国島",
+   "lonlat": [
+    123.0,
+    24.45
+   ],
+   "aliases": [
+    "yonaguni",
+    "与那国"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "senkaku",
+   "name": "尖閣諸島",
+   "lonlat": [
+    123.47,
+    25.75
+   ],
+   "aliases": [
+    "senkaku",
+    "diaoyu",
+    "尖閣",
+    "釣魚"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "okinawa",
+   "name": "沖縄",
+   "lonlat": [
+    127.7,
+    26.3
+   ],
+   "aliases": [
+    "okinawa",
+    "沖縄",
+    "沖繩"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "tsushima-strait",
+   "name": "対馬海峡",
+   "lonlat": [
+    129.5,
+    34.0
+   ],
+   "aliases": [
+    "tsushima",
+    "対馬"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "tsugaru-strait",
+   "name": "津軽海峡",
+   "lonlat": [
+    140.7,
+    41.5
+   ],
+   "aliases": [
+    "tsugaru",
+    "津軽"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "sea-of-japan",
+   "name": "日本海",
+   "lonlat": [
+    134.0,
+    40.0
+   ],
+   "aliases": [
+    "sea of japan",
+    "east sea",
+    "日本海",
+    "동해"
+   ],
+   "cc": "JP",
+   "kind": "place"
+  },
+  {
+   "id": "east-china-sea",
+   "name": "東シナ海",
+   "lonlat": [
+    125.0,
+    29.0
+   ],
+   "aliases": [
+    "east china sea",
+    "東シナ海",
+    "東海",
+    "동중국해"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "south-china-sea",
+   "name": "南シナ海",
+   "lonlat": [
+    113.0,
+    12.0
+   ],
+   "aliases": [
+    "south china sea",
+    "南シナ海",
+    "南海",
+    "남중국해"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "scarborough",
+   "name": "スカボロー礁",
+   "lonlat": [
+    117.76,
+    15.18
+   ],
+   "aliases": [
+    "scarborough",
+    "黃岩島",
+    "黄岩岛",
+    "黄岩島",
+    "スカボロー"
+   ],
+   "cc": "PH",
+   "kind": "place"
+  },
+  {
+   "id": "second-thomas",
+   "name": "セカンド・トーマス礁",
+   "lonlat": [
+    115.86,
+    9.72
+   ],
+   "aliases": [
+    "second thomas",
+    "ayungin",
+    "仁愛礁",
+    "仁爱礁",
+    "セカンド・トーマス"
+   ],
+   "cc": "PH",
+   "kind": "place"
+  },
+  {
+   "id": "spratly",
+   "name": "南沙諸島",
+   "lonlat": [
+    114.0,
+    9.5
+   ],
+   "aliases": [
+    "spratly",
+    "南沙",
+    "スプラトリー"
+   ],
+   "cc": "PH",
+   "kind": "place"
+  },
+  {
+   "id": "paracel",
+   "name": "西沙諸島",
+   "lonlat": [
+    112.0,
+    16.5
+   ],
+   "aliases": [
+    "paracel",
+    "西沙",
+    "パラセル"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "luzon-strait",
+   "name": "ルソン海峡",
+   "lonlat": [
+    121.0,
+    20.5
+   ],
+   "aliases": [
+    "luzon strait",
+    "ルソン海峡"
+   ],
+   "cc": "PH",
+   "kind": "place"
+  },
+  {
+   "id": "manila",
+   "name": "マニラ",
+   "lonlat": [
+    120.98,
+    14.6
+   ],
+   "aliases": [
+    "manila",
+    "マニラ"
+   ],
+   "cc": "PH",
+   "kind": "capital"
+  },
+  {
+   "id": "philippines",
+   "name": "フィリピン",
+   "lonlat": [
+    122.0,
+    12.8
+   ],
+   "aliases": [
+    "philippines",
+    "philippine",
+    "フィリピン",
+    "菲律賓",
+    "필리핀"
+   ],
+   "cc": "PH",
+   "kind": "country"
+  },
+  {
+   "id": "beijing",
+   "name": "北京",
+   "lonlat": [
+    116.4,
+    39.9
+   ],
+   "aliases": [
+    "beijing",
+    "北京"
+   ],
+   "cc": "CN",
+   "kind": "capital"
+  },
+  {
+   "id": "shanghai",
+   "name": "上海",
+   "lonlat": [
+    121.47,
+    31.23
+   ],
+   "aliases": [
+    "shanghai",
+    "上海"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "qingdao",
+   "name": "青島",
+   "lonlat": [
+    120.38,
+    36.07
+   ],
+   "aliases": [
+    "qingdao",
+    "青島",
+    "青岛"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "dalian",
+   "name": "大連",
+   "lonlat": [
+    121.6,
+    38.9
+   ],
+   "aliases": [
+    "dalian",
+    "大連",
+    "大连"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "zhanjiang",
+   "name": "湛江",
+   "lonlat": [
+    110.4,
+    21.2
+   ],
+   "aliases": [
+    "zhanjiang",
+    "湛江"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "sanya",
+   "name": "三亜",
+   "lonlat": [
+    109.5,
+    18.25
+   ],
+   "aliases": [
+    "sanya",
+    "三亜",
+    "三亚"
+   ],
+   "cc": "CN",
+   "kind": "place"
+  },
+  {
+   "id": "hong-kong",
+   "name": "香港",
+   "lonlat": [
+    114.17,
+    22.32
+   ],
+   "aliases": [
+    "hong kong",
+    "香港"
+   ],
+   "cc": "HK",
+   "kind": "place"
+  },
+  {
+   "id": "china",
+   "name": "中国",
+   "lonlat": [
+    104.0,
+    35.0
+   ],
+   "aliases": [
+    "china",
+    "chinese",
+    "中国",
+    "中國",
+    "中华",
+    "pla ",
+    "解放軍",
+    "解放军"
+   ],
+   "cc": "CN",
+   "kind": "country"
+  },
+  {
+   "id": "pyongyang",
+   "name": "平壌",
+   "lonlat": [
+    125.75,
+    39.02
+   ],
+   "aliases": [
+    "pyongyang",
+    "平壌",
+    "평양"
+   ],
+   "cc": "KP",
+   "kind": "capital"
+  },
+  {
+   "id": "north-korea",
+   "name": "北朝鮮",
+   "lonlat": [
+    127.0,
+    40.0
+   ],
+   "aliases": [
+    "north korea",
+    "dprk",
+    "北朝鮮",
+    "朝鮮民主",
+    "북한",
+    "kim jong"
+   ],
+   "cc": "KP",
+   "kind": "country"
+  },
+  {
+   "id": "seoul",
+   "name": "ソウル",
+   "lonlat": [
+    126.98,
+    37.57
+   ],
+   "aliases": [
+    "seoul",
+    "ソウル",
+    "서울"
+   ],
+   "cc": "KR",
+   "kind": "capital"
+  },
+  {
+   "id": "south-korea",
+   "name": "韓国",
+   "lonlat": [
+    127.8,
+    36.4
+   ],
+   "aliases": [
+    "south korea",
+    "韓国",
+    "한국",
+    "republic of korea"
+   ],
+   "cc": "KR",
+   "kind": "country"
+  },
+  {
+   "id": "korean-peninsula",
+   "name": "朝鮮半島",
+   "lonlat": [
+    127.5,
+    38.0
+   ],
+   "aliases": [
+    "korean peninsula",
+    "朝鮮半島",
+    "한반도"
+   ],
+   "cc": "KP",
+   "kind": "place"
+  },
+  {
+   "id": "tokyo",
+   "name": "東京",
+   "lonlat": [
+    139.69,
+    35.69
+   ],
+   "aliases": [
+    "tokyo",
+    "東京"
+   ],
+   "cc": "JP",
+   "kind": "capital"
+  },
+  {
+   "id": "japan",
+   "name": "日本",
+   "lonlat": [
+    138.0,
+    37.0
+   ],
+   "aliases": [
+    "japan",
+    "日本"
+   ],
+   "cc": "JP",
+   "kind": "country"
+  },
+  {
+   "id": "guam",
+   "name": "グアム",
+   "lonlat": [
+    144.79,
+    13.44
+   ],
+   "aliases": [
+    "guam",
+    "グアム"
+   ],
+   "cc": "US",
+   "kind": "place"
+  },
+  {
+   "id": "hawaii",
+   "name": "ハワイ",
+   "lonlat": [
+    -157.9,
+    21.4
+   ],
+   "aliases": [
+    "hawaii",
+    "pearl harbor",
+    "ハワイ",
+    "真珠湾"
+   ],
+   "cc": "US",
+   "kind": "place"
+  },
+  {
+   "id": "washington",
+   "name": "ワシントン",
+   "lonlat": [
+    -77.04,
+    38.9
+   ],
+   "aliases": [
+    "washington d",
+    "pentagon",
+    "white house",
+    "ペンタゴン",
+    "米国防総省",
+    "ホワイトハウス"
+   ],
+   "cc": "US",
+   "kind": "capital"
+  },
+  {
+   "id": "united-states",
+   "name": "アメリカ",
+   "lonlat": [
+    -98.0,
+    39.0
+   ],
+   "aliases": [
+    "united states",
+    "u.s.",
+    "米国",
+    "アメリカ",
+    "美国"
+   ],
+   "cc": "US",
+   "kind": "country"
+  },
+  {
+   "id": "moscow",
+   "name": "モスクワ",
+   "lonlat": [
+    37.62,
+    55.75
+   ],
+   "aliases": [
+    "moscow",
+    "kremlin",
+    "モスクワ",
+    "クレムリン",
+    "москв"
+   ],
+   "cc": "RU",
+   "kind": "capital"
+  },
+  {
+   "id": "russia",
+   "name": "ロシア",
+   "lonlat": [
+    100.0,
+    60.0
+   ],
+   "aliases": [
+    "russia",
+    "ロシア",
+    "俄罗斯",
+    "россия"
+   ],
+   "cc": "RU",
+   "kind": "country"
+  },
+  {
+   "id": "kyiv",
+   "name": "キーウ",
+   "lonlat": [
+    30.52,
+    50.45
+   ],
+   "aliases": [
+    "kyiv",
+    "kiev",
+    "キーウ",
+    "киев"
+   ],
+   "cc": "UA",
+   "kind": "capital"
+  },
+  {
+   "id": "ukraine",
+   "name": "ウクライナ",
+   "lonlat": [
+    31.0,
+    49.0
+   ],
+   "aliases": [
+    "ukraine",
+    "ウクライナ",
+    "乌克兰",
+    "україн"
+   ],
+   "cc": "UA",
+   "kind": "country"
+  },
+  {
+   "id": "black-sea",
+   "name": "黒海",
+   "lonlat": [
+    34.0,
+    43.5
+   ],
+   "aliases": [
+    "black sea",
+    "黒海"
+   ],
+   "cc": "UA",
+   "kind": "place"
+  },
+  {
+   "id": "crimea",
+   "name": "クリミア",
+   "lonlat": [
+    34.0,
+    45.0
+   ],
+   "aliases": [
+    "crimea",
+    "クリミア"
+   ],
+   "cc": "UA",
+   "kind": "place"
+  },
+  {
+   "id": "donbas",
+   "name": "ドンバス",
+   "lonlat": [
+    37.8,
+    48.0
+   ],
+   "aliases": [
+    "donbas",
+    "donetsk",
+    "donbass",
+    "ドンバス",
+    "ドネツク"
+   ],
+   "cc": "UA",
+   "kind": "place"
+  },
+  {
+   "id": "kharkiv",
+   "name": "ハルキウ",
+   "lonlat": [
+    36.23,
+    49.99
+   ],
+   "aliases": [
+    "kharkiv",
+    "ハルキウ"
+   ],
+   "cc": "UA",
+   "kind": "place"
+  },
+  {
+   "id": "zaporizhzhia",
+   "name": "ザポリージャ",
+   "lonlat": [
+    35.14,
+    47.84
+   ],
+   "aliases": [
+    "zaporizhzhia",
+    "ザポリージャ"
+   ],
+   "cc": "UA",
+   "kind": "place"
+  },
+  {
+   "id": "baltic-sea",
+   "name": "バルト海",
+   "lonlat": [
+    19.0,
+    57.0
+   ],
+   "aliases": [
+    "baltic",
+    "バルト"
+   ],
+   "cc": null,
+   "kind": "place"
+  },
+  {
+   "id": "gaza",
+   "name": "ガザ",
+   "lonlat": [
+    34.45,
+    31.5
+   ],
+   "aliases": [
+    "gaza",
+    "ガザ"
+   ],
+   "cc": "PS",
+   "kind": "place"
+  },
+  {
+   "id": "israel",
+   "name": "イスラエル",
+   "lonlat": [
+    34.85,
+    31.0
+   ],
+   "aliases": [
+    "israel",
+    "イスラエル"
+   ],
+   "cc": "IL",
+   "kind": "country"
+  },
+  {
+   "id": "lebanon",
+   "name": "レバノン",
+   "lonlat": [
+    35.85,
+    33.85
+   ],
+   "aliases": [
+    "lebanon",
+    "レバノン"
+   ],
+   "cc": "LB",
+   "kind": "country"
+  },
+  {
+   "id": "syria",
+   "name": "シリア",
+   "lonlat": [
+    38.0,
+    35.0
+   ],
+   "aliases": [
+    "syria",
+    "シリア"
+   ],
+   "cc": "SY",
+   "kind": "country"
+  },
+  {
+   "id": "iran",
+   "name": "イラン",
+   "lonlat": [
+    53.7,
+    32.4
+   ],
+   "aliases": [
+    "iran",
+    "tehran",
+    "イラン",
+    "テヘラン"
+   ],
+   "cc": "IR",
+   "kind": "country"
+  },
+  {
+   "id": "red-sea",
+   "name": "紅海",
+   "lonlat": [
+    38.5,
+    20.0
+   ],
+   "aliases": [
+    "red sea",
+    "houthi",
+    "紅海",
+    "フーシ"
+   ],
+   "cc": "YE",
+   "kind": "place"
+  },
+  {
+   "id": "yemen",
+   "name": "イエメン",
+   "lonlat": [
+    48.0,
+    15.5
+   ],
+   "aliases": [
+    "yemen",
+    "イエメン"
+   ],
+   "cc": "YE",
+   "kind": "country"
+  },
+  {
+   "id": "strait-of-hormuz",
+   "name": "ホルムズ海峡",
+   "lonlat": [
+    56.4,
+    26.6
+   ],
+   "aliases": [
+    "hormuz",
+    "ホルムズ"
+   ],
+   "cc": "IR",
+   "kind": "place"
+  },
+  {
+   "id": "iraq",
+   "name": "イラク",
+   "lonlat": [
+    44.0,
+    33.0
+   ],
+   "aliases": [
+    "iraq",
+    "イラク"
+   ],
+   "cc": "IQ",
+   "kind": "country"
+  },
+  {
+   "id": "sudan",
+   "name": "スーダン",
+   "lonlat": [
+    30.0,
+    15.5
+   ],
+   "aliases": [
+    "sudan",
+    "スーダン"
+   ],
+   "cc": "SD",
+   "kind": "country"
+  },
+  {
+   "id": "india",
+   "name": "インド",
+   "lonlat": [
+    78.0,
+    22.0
+   ],
+   "aliases": [
+    "india",
+    "インド"
+   ],
+   "cc": "IN",
+   "kind": "country"
+  },
+  {
+   "id": "pakistan",
+   "name": "パキスタン",
+   "lonlat": [
+    69.5,
+    30.0
+   ],
+   "aliases": [
+    "pakistan",
+    "パキスタン"
+   ],
+   "cc": "PK",
+   "kind": "country"
+  },
+  {
+   "id": "australia",
+   "name": "オーストラリア",
+   "lonlat": [
+    134.0,
+    -25.0
+   ],
+   "aliases": [
+    "australia",
+    "オーストラリア"
+   ],
+   "cc": "AU",
+   "kind": "country"
+  },
+  {
+   "id": "vietnam",
+   "name": "ベトナム",
+   "lonlat": [
+    106.0,
+    16.0
+   ],
+   "aliases": [
+    "vietnam",
+    "ベトナム"
+   ],
+   "cc": "VN",
+   "kind": "country"
+  },
+  {
+   "id": "arctic",
+   "name": "北極海",
+   "lonlat": [
+    0.0,
+    85.0
+   ],
+   "aliases": [
+    "arctic",
+    "北極"
+   ],
+   "cc": null,
+   "kind": "place"
+  },
+  {
+   "id": "libya",
+   "name": "リビア",
+   "lonlat": [
+    17.0,
+    27.0
+   ],
+   "aliases": [
+    "libya",
+    "リビア"
+   ],
+   "cc": "LY",
+   "kind": "country"
+  },
+  {
+   "id": "mediterranean",
+   "name": "地中海",
+   "lonlat": [
+    18.0,
+    35.0
+   ],
+   "aliases": [
+    "mediterranean",
+    "地中海"
+   ],
+   "cc": null,
+   "kind": "place"
+  },
+  {
+   "id": "venezuela",
+   "name": "ベネズエラ",
+   "lonlat": [
+    -66.0,
+    7.0
+   ],
+   "aliases": [
+    "venezuela",
+    "ベネズエラ"
+   ],
+   "cc": "VE",
+   "kind": "country"
+  }
+ ]
+}

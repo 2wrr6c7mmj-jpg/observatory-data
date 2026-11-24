@@ -1,0 +1,329 @@
+{
+ "note": "定訳の表。src のどれかが元の記事にあれば、その束の台本の指示に ja を入れる。bad は台本に出てはいけない訳（出たら確かめに落とす）。",
+ "terms": [
+  {
+   "src": [
+    "PLA Navy",
+    "PLAN",
+    "人民解放军海军",
+    "人民解放軍海軍"
+   ],
+   "ja": "中国海軍",
+   "bad": [
+    "PLA海軍"
+   ]
+  },
+  {
+   "src": [
+    "PLA",
+    "People's Liberation Army",
+    "解放军",
+    "人民解放军"
+   ],
+   "ja": "人民解放軍",
+   "bad": []
+  },
+  {
+   "src": [
+    "Eastern Theater Command",
+    "东部战区",
+    "東部戦区"
+   ],
+   "ja": "東部戦区",
+   "bad": [
+    "東方戦区",
+    "東部劇場司令部",
+    "東部戦域"
+   ]
+  },
+  {
+   "src": [
+    "Southern Theater Command",
+    "南部战区"
+   ],
+   "ja": "南部戦区",
+   "bad": [
+    "南部劇場司令部"
+   ]
+  },
+  {
+   "src": [
+    "China Coast Guard",
+    "CCG",
+    "中国海警",
+    "海警局"
+   ],
+   "ja": "中国海警局（海警）",
+   "bad": [
+    "中国沿岸警備隊",
+    "沿岸警備隊"
+   ]
+  },
+  {
+   "src": [
+    "Coast Guard Administration",
+    "海巡署"
+   ],
+   "ja": "台湾の海巡署",
+   "bad": []
+  },
+  {
+   "src": [
+    "Ministry of National Defense",
+    "Ministry of National Defence",
+    "国防部"
+   ],
+   "ja": "国防部（中国なら中国国防部、台湾なら台湾国防部のように国名を付ける）",
+   "bad": []
+  },
+  {
+   "src": [
+    "Pentagon"
+   ],
+   "ja": "米国防総省",
+   "bad": [
+    "ペンタゴン"
+   ]
+  },
+  {
+   "src": [
+    "Department of Defense",
+    "Department of War"
+   ],
+   "ja": "米国防総省",
+   "bad": []
+  },
+  {
+   "src": [
+    "Joint Staff Office",
+    "統合幕僚監部"
+   ],
+   "ja": "統合幕僚監部",
+   "bad": [
+    "統合参謀本部"
+   ]
+  },
+  {
+   "src": [
+    "JMSDF",
+    "Maritime Self-Defense Force"
+   ],
+   "ja": "海上自衛隊",
+   "bad": []
+  },
+  {
+   "src": [
+    "JASDF",
+    "Air Self-Defense Force"
+   ],
+   "ja": "航空自衛隊",
+   "bad": []
+  },
+  {
+   "src": [
+    "GSDF",
+    "Ground Self-Defense Force"
+   ],
+   "ja": "陸上自衛隊",
+   "bad": []
+  },
+  {
+   "src": [
+    "Japan Coast Guard"
+   ],
+   "ja": "海上保安庁",
+   "bad": [
+    "日本沿岸警備隊"
+   ]
+  },
+  {
+   "src": [
+    "Carrier Strike Group"
+   ],
+   "ja": "空母打撃群",
+   "bad": []
+  },
+  {
+   "src": [
+    "Liaoning"
+   ],
+   "ja": "空母「遼寧」",
+   "bad": []
+  },
+  {
+   "src": [
+    "Shandong"
+   ],
+   "ja": "空母「山東」",
+   "bad": []
+  },
+  {
+   "src": [
+    "Fujian"
+   ],
+   "ja": "空母「福建」",
+   "bad": []
+  },
+  {
+   "src": [
+    "Taiwan Strait"
+   ],
+   "ja": "台湾海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "Miyako Strait"
+   ],
+   "ja": "宮古海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "Bashi Channel"
+   ],
+   "ja": "バシー海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "Tsushima Strait"
+   ],
+   "ja": "対馬海峡",
+   "bad": []
+  },
+  {
+   "src": [
+    "South China Sea"
+   ],
+   "ja": "南シナ海",
+   "bad": []
+  },
+  {
+   "src": [
+    "East China Sea"
+   ],
+   "ja": "東シナ海",
+   "bad": []
+  },
+  {
+   "src": [
+    "Senkaku",
+    "Diaoyu"
+   ],
+   "ja": "尖閣諸島",
+   "bad": []
+  },
+  {
+   "src": [
+    "Scarborough Shoal"
+   ],
+   "ja": "スカボロー礁",
+   "bad": []
+  },
+  {
+   "src": [
+    "Second Thomas Shoal",
+    "Ayungin"
+   ],
+   "ja": "セカンド・トーマス礁",
+   "bad": []
+  },
+  {
+   "src": [
+    "DPRK",
+    "North Korea"
+   ],
+   "ja": "北朝鮮",
+   "bad": []
+  },
+  {
+   "src": [
+    "ROK",
+    "South Korea"
+   ],
+   "ja": "韓国",
+   "bad": []
+  },
+  {
+   "src": [
+    "Kim Jong Un",
+    "Kim Jong-un"
+   ],
+   "ja": "金正恩（キム・ジョンウン）総書記",
+   "bad": []
+  },
+  {
+   "src": [
+    "Xi Jinping"
+   ],
+   "ja": "習近平国家主席",
+   "bad": []
+  },
+  {
+   "src": [
+    "Lai Ching-te",
+    "William Lai"
+   ],
+   "ja": "頼清徳総統",
+   "bad": []
+  },
+  {
+   "src": [
+    "Putin"
+   ],
+   "ja": "プーチン大統領",
+   "bad": []
+  },
+  {
+   "src": [
+    "Zelensky",
+    "Zelenskyy"
+   ],
+   "ja": "ゼレンスキー大統領",
+   "bad": []
+  },
+  {
+   "src": [
+    "Trump"
+   ],
+   "ja": "トランプ大統領",
+   "bad": []
+  },
+  {
+   "src": [
+    "Kremlin"
+   ],
+   "ja": "ロシア大統領府（クレムリン）",
+   "bad": []
+  },
+  {
+   "src": [
+    "Service Members"
+   ],
+   "ja": "将兵",
+   "bad": []
+  },
+  {
+   "src": [
+    "Sgt."
+   ],
+   "ja": "軍曹",
+   "bad": []
+  },
+  {
+   "src": [
+    "HIMARS"
+   ],
+   "ja": "ハイマース（HIMARS）",
+   "bad": []
+  },
+  {
+   "src": [
+    "drone"
+   ],
+   "ja": "ドローン（無人機）",
+   "bad": []
+  }
+ ]
+}

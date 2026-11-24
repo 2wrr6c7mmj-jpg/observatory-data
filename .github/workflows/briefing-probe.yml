@@ -1,0 +1,90 @@
+name: Briefing probe
+# 世界情勢観測「報道のまとめ」の裏方（briefing/）の動作確認。probe/briefing-* ブランチへの push でだけ動く。
+# 公開の feed（observatory-watch.pages.dev/api/feeds、translate.yml と同じ読み取り）から過去 24 時間の記事を取り、
+# 束ね → 台本（llama.cpp の Qwen3-8B）→ 音声（VOICEVOX コア）→ latest.json と latest.mp3 を作る。
+# 結果は check-run の注釈と、その probe ブランチへのコミット（probe-out/briefing/）で返す。main・docs/ には書かない。
+on:
+  push:
+    branches: ['probe/briefing-*']
+permissions:
+  contents: write   # the probe branch only (the commit of probe-out/briefing/)
+concurrency:
+  group: probe-briefing-${{ github.ref_name }}
+  cancel-in-progress: false
+env:
+  MODEL: unsloth/Qwen3-8B-GGUF:Q4_K_M
+  LLAMA_CACHE: /home/runner/.cache/llama
+  FEED: https://observatory-watch.pages.dev/api/feeds
+jobs:
+  briefing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # no token in .git/config while the model and the engine run
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        run: python -m unittest discover -s tests -t .
+      - uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/llama
+          key: llama-model-qwen3-8b-q4km-a6adef13   # MODEL_REV in tools/llama_server.sh
+      - name: Start the model server
+        run: bash tools/llama_server.sh -np 1
+      - name: Python parts (pinned, hashes checked) and VOICEVOX (pinned, SHA-256 checked)
+        run: |
+          python -m pip install --disable-pip-version-check -q --require-hashes -r briefing/requirements.txt
+          bash tools/voicevox_setup.sh "$RUNNER_TEMP/vv"
+      - name: Briefing
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          python -m briefing --feed "$FEED" --out "$RUNNER_TEMP/out" --vv-root "$RUNNER_TEMP/vv" --minutes 45 | tee "$RUNNER_TEMP/briefing.log"
+      - name: Report (annotations)
+        if: always()
+        run: |
+          python - <<'P'
+          import json, os
+          out = os.environ['RUNNER_TEMP'] + '/out/latest.json'
+          if not os.path.exists(out):
+              print('::error title=briefing::latest.json was not made')
+              raise SystemExit(0)
+          d = json.load(open(out, encoding='utf-8'))
+          nl = '%0A'
+          b = d['build']
+          print(f"::notice title=briefing summary::hold={d['hold']} {d.get('holdReason','')} events={len(d['events'])} dropped={len(d['dropped'])} "
+                f"audio={d['audio'] and d['audio']['seconds']}s bytes={d['audio'] and d['audio']['bytes']} counts={d['counts']} timing={b['timing']} tokenizer={b['tokenizer']}")
+          for i, e in enumerate(d['events'][:8], 1):
+              s = e['sources']
+              msg = (f"[{e['label']}] {e['headline']} | 出典 {s['count']} 系列 / {s['countries']} 国 | place={e['place']} countries={e['countries']} | "
+                     f"{e['start']}-{e['end']}s{nl}" + nl.join(f"{ln['start']}s {ln['text']}" for ln in e['lines'])
+                     + nl + 'sources: ' + ', '.join(x['source'] for x in s['items']) + nl + 'notes: ' + '; '.join(e['debug']['notes']))
+              print(f"::notice title=event {i}::{msg}")
+          if d['dropped']:
+              print('::notice title=dropped::' + nl.join(f"{x['headline']}: {x['reason']}" for x in d['dropped'][:20]))
+          print(f"::notice title=intro/outro::{d['intro']['text']}{nl}{d['outro']['text']}")
+          P
+      - name: Commit the result to the probe branch
+        if: always()
+        env:
+          PUSH_TOKEN: ${{ github.token }}
+        run: |
+          dest=probe-out/briefing
+          mkdir -p "$dest"
+          cp -f "$RUNNER_TEMP"/out/* "$dest"/ 2>/dev/null || true
+          cp -f "$RUNNER_TEMP/briefing.log" "$dest"/briefing.log 2>/dev/null || true
+          git add "$dest"
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "probe: 報道のまとめの試作の結果 ($(date -u +%Y-%m-%dT%H:%MZ))"
+          basic=$(printf 'x-access-token:%s' "$PUSH_TOKEN" | base64 | tr -d '\n')
+          echo "::add-mask::$basic"
+          for i in 1 2 3; do
+            GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.https://github.com/.extraheader GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $basic" \
+              git push -q origin "HEAD:refs/heads/${GITHUB_REF_NAME}" && exit 0
+            sleep 10
+          done
+          echo "::error title=briefing::the result could not be pushed to the probe branch"; exit 1

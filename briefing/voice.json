@@ -1,0 +1,9 @@
+{
+ "speaker": "もち子さん",
+ "style": "ノーマル",
+ "style_id": 20,
+ "vvm": "15.vvm",
+ "credit": "VOICEVOX:もち子(cv 明日葉よもぎ)",
+ "terms": "https://vtubermochio.wixsite.com/mochizora/利用規約",
+ "note": "声の差し替えは style_id と vvm（tools/voicevox_setup.sh の VVM_FILE と SHA-256）を一緒に変える。credit は声ごとの規約の表記。"
+}
