@@ -9,6 +9,7 @@ from unittest import mock
 from briefing import audio as A
 from briefing import build as B
 from briefing import script as T
+from briefing import editor as E
 
 NOW = 1_800_000_000_000
 HOUR = 3600 * 1000
@@ -190,6 +191,104 @@ class Twins3(unittest.TestCase):
         self.assertFalse(B.same_script(a, c, tok))
         d = ev('conflict', ['KR', 'RU'], 'ロシア 軍機 が 韓国 の 防空識別圏 に 進入', '韓国 は ロシア 軍機 が 防空識別圏 に 進入 した と 発表 しました。')
         self.assertFalse(B.same_script(a, d, tok))   # 分類が違う
+
+
+class Editor(unittest.TestCase):
+    """台本を人（毎朝の Claude）が書く経路：候補の出力、確かめ、人の台本での公開。"""
+    LINES = ['防衛省は、中国海軍の空母遼寧が宮古海峡を通過したと発表しました。', 'USNIとBBCも、同じ通過を報じています。']
+
+    def setUp(self):
+        self.d = tempfile.mkdtemp()
+        doc = feed()
+        for r in doc['records']:
+            r['id'] = (r['id'].encode().hex() + '0' * 24)[:24]   # 本物の id のように長くする（key は頭 12 字）
+        self.feed = os.path.join(self.d, 'feed.json')
+        with open(self.feed, 'w') as f:
+            json.dump(doc, f)
+
+    def script(self, lines=None, key=('6d3000000000', '6d3100000000')):
+        p = os.path.join(self.d, 'script.json')
+        with open(p, 'w', encoding='utf-8') as f:
+            json.dump({'version': 1, 'events': [{'key': list(key), 'headline': '遼寧が宮古海峡を通過', 'lines': lines or self.LINES}]}, f, ensure_ascii=False)
+        return p
+
+    def test_candidates_file(self):
+        out = os.path.join(self.d, 'cands.json')
+        self.assertEqual(E.main(['candidates', '--feed', self.feed, '--out', out, '--now-ms', str(NOW)]), 0)
+        with open(out, encoding='utf-8') as f:
+            d = json.load(f)
+        self.assertEqual(len(d['candidates']), 1)
+        c = d['candidates'][0]
+        self.assertEqual((c['sources']['count'], c['place'], c['needAttribution']), (3, '宮古海峡', False))
+        self.assertTrue(c['key'] and all(len(k) == E.KEY_LEN for k in c['key']))
+        self.assertEqual(len(c['articles']), 3)
+        self.assertIn('bodyChars', d['limits'])
+
+    def test_check_passes_and_fails(self):
+        run = lambda path: E.main(['check', '--feed', self.feed, '--script', path, '--now-ms', str(NOW)])
+        with mock.patch.object(B, 'MIN_EVENTS', 1):
+            self.assertEqual(run(self.script()), 0)
+            self.assertEqual(run(self.script(lines=['防衛省は、中国海軍の空母遼寧が宮古海峡を通過したと発表した。'])), 1)   # だ・である調
+            self.assertEqual(run(self.script(key=('ffffffffffff',))), 1)                                              # 記事が無い
+
+    def test_publish_with_a_written_script(self):
+        out = os.path.join(self.d, 'out')
+        with mock.patch.object(B, 'MIN_EVENTS', 1):
+            rc = B.main(['--feed', self.feed, '--script', self.script(), '--out', out, '--now-ms', str(NOW), '--no-audio'])
+        with open(os.path.join(out, 'latest.json'), encoding='utf-8') as f:
+            doc = json.load(f)
+        self.assertEqual((rc, doc['model'], doc['hold'], len(doc['events'])), (0, 'Claude', False, 1))
+        e = doc['events'][0]
+        self.assertEqual((e['sources']['count'], e['place']['name'], e['category']), (3, '宮古海峡', 'military'))   # 記事から取り直した値
+        self.assertEqual([ln['text'] for ln in e['lines']], self.LINES)
+        self.assertEqual([ln['sub'] for ln in e['lines']], ['', ''])
+        with open(os.path.join(out, 'credits.txt'), encoding='utf-8') as f:
+            self.assertIn('Claude', f.read())
+
+    def test_brackets_are_not_read_aloud(self):
+        self.assertEqual(A.spoken('宇宙船「神舟24号」の乗組員'), '宇宙船神舟24号の乗組員')
+
+
+class TuningAndMap(unittest.TestCase):
+    """その日の読みの指定（調声）と、地図の行き先の指定（アニメーション）。"""
+    def test_extra_readings_keep_only_well_formed_words(self):
+        doc = {'readings': [['神舟', 'シンシュウ', 0], ['天宮', 'てんきゅう', 0], ['x' * 30, 'ア', 0], ['酒泉', 'シュセン', 9], ['鬱陵島', 'ウルルンド', 3],
+                            'bad', ['a', 'ア'], ['危険<b>', 'キケン', 0]]}
+        self.assertEqual(B.extra_readings(doc), [('神舟', 'シンシュウ', 0), ('鬱陵島', 'ウルルンド', 3)])
+        self.assertEqual(B.extra_readings({}), [])
+        self.assertEqual(len(B.extra_readings({'readings': [['語%d' % i, 'ゴ', 0] for i in range(60)]})), 40)
+
+    def test_map_hint(self):
+        ev = {'map': {'countries': ['ly', 'UA', 'RU', 'DE', 'x1', 5], 'name': 'リビア',
+                      'place': {'name': 'ベンガジ', 'lon': 20.0712, 'lat': 32.1234}}}
+        self.assertEqual(B.map_hint(ev), {'countries': ['LY', 'UA', 'RU'], 'name': 'リビア', 'place': {'name': 'ベンガジ', 'lon': 20.071, 'lat': 32.123}})
+        self.assertEqual(B.map_hint({'map': {'place': {'name': 'どこか', 'lon': 200, 'lat': 10}, 'name': 'https://x'}}), {})
+        self.assertEqual(B.map_hint({'map': 'LY'}), {})
+        self.assertEqual(B.map_hint({}), {})
+
+    def test_map_hint_overrides_the_machine_values(self):
+        meta = {'category': 'conflict', 'label': '紛争 · ウクライナ', 'country': 'UA', 'countries': ['UA', 'RU'], 'place': None}
+        out = B.apply_map_hint(dict(meta), {'countries': ['LY', 'UA'], 'name': 'リビア', 'place': {'name': 'ベンガジ', 'lon': 20.07, 'lat': 32.12}})
+        self.assertEqual((out['country'], out['countries'], out['label'], out['place']['name']), ('LY', ['LY', 'UA'], '紛争 · リビア', 'ベンガジ'))
+        self.assertEqual(B.apply_map_hint(dict(meta), {}), meta)
+
+    def test_written_script_carries_the_map(self):
+        d = tempfile.mkdtemp()
+        doc = feed()
+        for r in doc['records']:
+            r['id'] = (r['id'].encode().hex() + '0' * 24)[:24]
+        p, sp, out = os.path.join(d, 'feed.json'), os.path.join(d, 'script.json'), os.path.join(d, 'out')
+        with open(p, 'w') as f:
+            json.dump(doc, f)
+        with open(sp, 'w', encoding='utf-8') as f:
+            json.dump({'version': 1, 'readings': [['遼寧', 'リョーニン', 0]], 'events': [{
+                'key': ['6d3000000000'], 'headline': '遼寧が宮古海峡を通過', 'lines': Editor.LINES,
+                'map': {'countries': ['JP', 'CN'], 'name': '沖縄', 'place': {'name': '宮古島', 'lon': 125.3, 'lat': 24.8}}}]}, f, ensure_ascii=False)
+        with mock.patch.object(B, 'MIN_EVENTS', 1):
+            B.main(['--feed', p, '--script', sp, '--out', out, '--now-ms', str(NOW), '--no-audio'])
+        with open(os.path.join(out, 'latest.json'), encoding='utf-8') as f:
+            e = json.load(f)['events'][0]
+        self.assertEqual((e['label'], e['countries'], e['place']), ('軍事 · 沖縄', ['JP', 'CN'], {'name': '宮古島', 'lon': 125.3, 'lat': 24.8}))
 
 
 if __name__ == '__main__':

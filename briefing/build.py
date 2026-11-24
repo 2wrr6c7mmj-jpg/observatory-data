@@ -1,6 +1,7 @@
 """報道のまとめを作る：記事 → 束 → 台本 → 音声 → json と mp3。
 
   python -m briefing --feed URL_or_FILE --out DIR [--server http://127.0.0.1:8080] [--vv-root DIR] [--no-audio]
+  python -m briefing --feed URL_or_FILE --out DIR --script script.json [--vv-root DIR]     # 人が書いた台本（briefing/EDITOR.md）
 
 出力（DIR）：latest.json（形は 司令部が固定した形、項目の追加のみ）、latest.mp3、credits.txt、timing.json。
 作れなかったとき（出来事が MIN_EVENTS 未満など）は hold: true の json だけを書き、音声は作らない。
@@ -137,6 +138,141 @@ def trim_to_length(events):
     return keep, cut
 
 
+KATAKANA = re.compile(r'[ァ-ヶー]+')
+CODE = re.compile(r'[A-Za-z]{2}')
+
+
+def extra_readings(doc):
+    """台本に付けたその日の読み（調声）：{"readings": [[表記, カタカナの読み, アクセント核の位置], …]}。
+    形の合うものだけ、最大 40 語。briefing/readings.json の後ろに足して辞書に入れる。"""
+    out = []
+    for w in (doc.get('readings') or []) if isinstance(doc, dict) else []:
+        if (isinstance(w, (list, tuple)) and len(w) == 3 and all(isinstance(x, str) for x in w[:2]) and isinstance(w[2], int)
+                and not isinstance(w[2], bool) and 1 <= len(w[0].strip()) <= 20 and not T.BAD_CHARS.search(w[0])
+                and KATAKANA.fullmatch(w[1]) and len(w[1]) <= 30 and 0 <= w[2] <= len(w[1])):
+            out.append((w[0].strip(), w[1], w[2]))
+    return out[:40]
+
+
+def map_hint(ev):
+    """台本に付けた地図の行き先（再生画面のアニメーション）。形の合う項目だけを返す。
+    {"map": {"countries": ["LY", "UA", "RU"], "name": "リビア", "place": {"name": "ベンガジ", "lon": 20.07, "lat": 32.12}}}
+    countries：輪郭を出す国（ISO の 2 文字、最大 3。先頭が地図の寄る先）／name：札に出す国・地域の名前／place：点を打つ地点。"""
+    m = ev.get('map') if isinstance(ev, dict) else None
+    if not isinstance(m, dict):
+        return {}
+    out = {}
+    cs = list(dict.fromkeys(c.upper() for c in (m.get('countries') or []) if isinstance(c, str) and CODE.fullmatch(c)))[:3] \
+        if isinstance(m.get('countries'), list) else []
+    if cs:
+        out['countries'] = cs
+    ok_name = lambda x, n: isinstance(x, str) and 1 <= len(x.strip()) <= n and T.JAPANESE.search(x) and not T.BAD_CHARS.search(x)
+    if ok_name(m.get('name'), 12):
+        out['name'] = m['name'].strip()
+    p = m.get('place')
+    num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
+    if isinstance(p, dict) and ok_name(p.get('name'), 16) and num(p.get('lon')) and num(p.get('lat')) and -180 <= p['lon'] <= 180 and -85 <= p['lat'] <= 85:
+        out['place'] = {'name': p['name'].strip(), 'lon': round(float(p['lon']), 3), 'lat': round(float(p['lat']), 3)}
+    return out
+
+
+def apply_map_hint(meta, hint):
+    """地図の行き先の指定を、記事から機械で決めた値に上書きする（札の国名も合わせる）。"""
+    if hint.get('countries'):
+        meta['countries'] = hint['countries']
+        meta['country'] = hint['countries'][0]
+    if hint.get('countries') or hint.get('name'):
+        name = hint.get('name') or S.COUNTRY_JA.get(meta['country'], meta['country'])
+        meta['label'] = CAT_JA.get(meta['category'], '報道') + (' · ' + name if name else '')
+    if 'place' in hint:
+        meta['place'] = hint['place']
+    return meta
+
+
+def pick_candidates(records, tok, threshold, limit):
+    """台本を書く前の候補：束ね → 2 源以上 → 順位 → 同じ出来事（分類・国・地点・見出しの語）を除く、上から limit 件。
+    ([{'rank', 'cand', 'reps', 'heads', 'meta'}], 落とした一覧, 統計)。モデルは使わない。"""
+    tc = time.time()
+    clusters = C.cluster(records, tok[0], threshold)
+    cands = C.select(clusters)
+    out, dropped = [], []
+    for rank, cand in enumerate(cands, 1):
+        if len(out) >= limit:
+            break
+        heads = [C.head(r) for r in cand['records']]
+        reps = C.representatives(cand['records'])
+        meta = event_meta(cand, reps)
+        twin = next((p for p in out if same_event({'meta': p['meta'], 'heads': p['heads']}, {'meta': meta, 'heads': heads}, tok[0])), None)
+        if twin:
+            dropped.append({'reason': f'候補 {twin["rank"]} と同じ出来事（分類・国・地点が同じで見出しの語が重なる）', 'headline': heads[0][:40]})
+            continue
+        out.append({'rank': rank, 'cand': cand, 'reps': reps, 'heads': heads, 'meta': meta})
+    stats = {'clusterSec': round(time.time() - tc, 2), 'clusters': len(clusters), 'candidates': len(cands),
+             'multiSource': sum(1 for c in clusters if len(C.describe(c)['families']) >= 2)}
+    return out, dropped, stats
+
+
+def scripts_from_file(records, doc, args, terms, tok, log):
+    """人（毎朝の Claude）が書いた台本を、モデルの台本と同じ確かめに通す。(events, dropped, 統計)。
+    台本の出来事は記事の id の頭（key、8 字以上）で引き、その記事を含む束から、出典の数・分類・国を取り直す
+    （台本に書かれた数は使わない）。確かめに使う記事は、束の代表の記事と、key の記事。"""
+    tc = time.time()
+    clusters = C.cluster(records, tok[0], args.threshold)
+    where = {id(r): ci for ci, recs in enumerate(clusters) for r in recs}
+    stats = {'clusterSec': round(time.time() - tc, 2), 'clusters': len(clusters), 'candidates': 0,
+             'multiSource': sum(1 for c in clusters if len(C.describe(c)['families']) >= 2)}
+    known = [w[0] for w in A.load_readings()]
+    places = place_terms()
+    events, dropped = [], []
+    listed = doc.get('events') if isinstance(doc, dict) else None
+    for rank, ev in enumerate((listed if isinstance(listed, list) else [])[:args.max_events + 6], 1):
+        if not isinstance(ev, dict):
+            continue
+        head = T.clean(ev.get('headline'), 60) or '（見出しなし）'
+        keys = [str(k).lower()[:64] for k in (ev.get('key') or []) if isinstance(k, str) and len(k) >= 8][:12]
+        named = [r for r in records if any(str(r.get('id', '')).lower().startswith(k) for k in keys)]
+        hit = collections.Counter(where[id(r)] for r in named if id(r) in where)
+        if not hit:
+            dropped.append({'reason': '台本の記事（key）が、いまの 24 時間ぶんの記事に無い', 'headline': head})
+            log(f'#{rank} hold: key の記事が無い（{head}）')
+            continue
+        recs = clusters[hit.most_common(1)[0][0]]
+        stat = C.describe(recs)
+        if len(stat['families']) < C.MIN_FAMILIES:
+            dropped.append({'reason': f'独立した出典が {C.MIN_FAMILIES} つに満たない', 'headline': head})
+            log(f'#{rank} hold: 出典が足りない（{head}）')
+            continue
+        reps = C.representatives(recs)
+        arts = reps + [r for r in named if all(r is not x for x in reps)]
+        meta = event_meta({'records': recs, 'stats': stat}, reps)
+        need_attribution = meta['category'] == 'conflict'   # 機械の分類で決める（下の指定では緩めない）
+        if ev.get('category') in CAT_JA:
+            meta['category'] = ev['category']
+            meta['label'] = CAT_JA[meta['category']] + (' · ' + S.COUNTRY_JA.get(meta['country'], meta['country']) if meta['country'] else '')
+        meta = apply_map_hint(meta, map_hint(ev))
+        need_attribution = need_attribution or meta['category'] == 'conflict'
+        conflicts = T.number_conflicts(arts)
+        use_terms = T.glossary_for(arts, terms + places)
+        lines = ev.get('lines')
+        script = None
+        if isinstance(ev.get('headline'), str) and isinstance(lines, list) and all(isinstance(t, str) for t in lines):
+            script = T.apply_fixed_terms({'headline': ev['headline'].strip(), 'lines': [{'text': t.strip(), 'sub': ''} for t in lines]}, use_terms)
+        why, notes = T.verify(script, arts, conflicts, use_terms, known + [w[0] for w in extra_readings(doc)], need_attribution=need_attribution)
+        dup = None if why else next((e for e in events if same_script(e, {'script': script, 'meta': meta}, tok[0])), None)
+        if dup:
+            why = ['選んだ出来事と同じ（台本の語が重なる：' + dup['script']['headline'] + '）']
+        if why:
+            dropped.append({'reason': '、'.join(why), 'headline': head})
+            log(f'#{rank} hold: {"、".join(why)}（{head}）')
+            continue
+        log(f'#{rank} ok: {script["headline"]}（系列 {meta["sources"]["count"]}・国 {meta["sources"]["countries"]}・{meta["label"]}）')
+        events.append({'rank': rank, 'script': script, 'meta': meta, 'heads': [C.head(r) for r in recs], 'notes': notes, 'tries': [],
+                       'conflicts': conflicts, 'families': stat['families']})
+        if len(events) >= args.max_events:
+            break
+    return events, dropped, stats
+
+
 def make_scripts(records, args, terms, tok, log, deadline):
     """選んだ束の台本。(events, dropped, 統計)。events は音声の前の形。"""
     tc = time.time()
@@ -182,7 +318,7 @@ def make_scripts(records, args, terms, tok, log, deadline):
     return events, dropped, stats
 
 
-def make_audio(events, now_ms, voice_root, no_audio):
+def make_audio(events, now_ms, voice_root, no_audio, extra=()):
     """音声と、各文・各出来事の開始秒。events を書き換えずに (out_events, intro, outro, mp3, pcm秒) を返す。"""
     d = datetime.datetime.fromtimestamp(now_ms / 1000, JST)
     intro = f'世界情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
@@ -197,7 +333,7 @@ def make_audio(events, now_ms, voice_root, no_audio):
     seq.append(('outro', outro, 0.5))
     if no_audio:
         return None, intro, outro, None, 0.0, []
-    voice = A.Voice(voice_root)
+    voice = A.Voice(voice_root, readings=A.load_readings() + list(extra)) if extra else A.Voice(voice_root)
     kana = {'intro': voice.kana(intro)}
     starts, pcm = A.assemble(seq, voice.wav)
     for key, text, _ in seq:
@@ -206,7 +342,7 @@ def make_audio(events, now_ms, voice_root, no_audio):
     return starts, intro, outro, A.to_mp3(pcm), pcm.seconds, kana
 
 
-def assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, now_ms, counts, build, voice, hold, hold_reason):
+def assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, now_ms, counts, build, voice, hold, hold_reason, model=MODEL_NAME):
     out_events = []
     for i, e in enumerate(events):
         lines = []
@@ -223,7 +359,7 @@ def assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, no
         out_events.append(ev)
     return {
         'version': 1, 'createdAt': now_ms, 'windowHours': 24, 'hold': hold, 'holdReason': hold_reason,
-        'generated': 'machine', 'model': MODEL_NAME,
+        'generated': 'machine', 'model': model,
         'voice': {'credit': voice['credit'], 'styleId': voice['style_id'], 'speaker': voice['speaker'], 'style': voice['style']},
         'audio': {'file': 'latest.mp3', 'seconds': round(seconds, 2), 'bytes': len(mp3 or b'')} if mp3 else None,
         'counts': counts, 'intro': {'start': 0, 'text': intro}, 'outro': {'start': (starts or {}).get('outro', 0.0), 'text': outro},
@@ -238,6 +374,7 @@ def main(argv=None):
     ap.add_argument('--server', default='http://127.0.0.1:8080')
     ap.add_argument('--vv-root', default=os.environ.get('VV_ROOT', ''))
     ap.add_argument('--no-audio', action='store_true')
+    ap.add_argument('--script', default='', help='人が書いた台本（briefing/EDITOR.md の形）。指定すると、モデルを使わずにこの台本を確かめて読む')
     ap.add_argument('--now-ms', type=int, default=0)
     ap.add_argument('--max-events', type=int, default=8)
     ap.add_argument('--candidates', type=int, default=14)
@@ -258,7 +395,14 @@ def main(argv=None):
     log(f'記事 {len(allrecs)}、24 時間以内 {len(recs)}、形態素解析 {tok[1]}')
     t1 = time.time()
     terms = load_terms()
-    events, dropped, stats = make_scripts(recs, a, terms, tok, log, t1 + a.minutes * 60)
+    writer, written = MODEL_NAME, None
+    if a.script:
+        with open(a.script, encoding='utf-8') as f:
+            written = json.load(f)
+        writer = 'Claude'
+        events, dropped, stats = scripts_from_file(recs, written, a, terms, tok, log)
+    else:
+        events, dropped, stats = make_scripts(recs, a, terms, tok, log, t1 + a.minutes * 60)
     events, cut = trim_to_length(events)
     for e in cut:
         dropped.append({'reason': f'長さの上限（{TARGET_SECONDS} 秒）で外した', 'headline': e['script']['headline']})
@@ -274,14 +418,14 @@ def main(argv=None):
     seconds, kana = 0.0, []
     intro = outro = ''
     if not hold:
-        starts, intro, outro, mp3, seconds, kana = make_audio(events, now_ms, a.vv_root, a.no_audio)
+        starts, intro, outro, mp3, seconds, kana = make_audio(events, now_ms, a.vv_root, a.no_audio, extra_readings(written) if a.script else ())
     t3 = time.time()
     counts = {'records': len(recs), 'sources': len({r.get('source') for r in recs}), 'clusters': stats['clusters'],
               'multiSource': stats['multiSource']}
     timing = {'clusterSec': stats['clusterSec'], 'scriptSec': round(t2 - t1 - stats['clusterSec'], 1), 'audioSec': round(t3 - t2, 1), 'totalSec': round(t3 - t0, 1)}
     build = {'schema': 'briefing-1', 'tokenizer': tok[1], 'threshold': a.threshold, 'timing': timing,
              'candidates': stats['candidates'], 'kana': kana}
-    doc = assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, now_ms, counts, build, voice, hold, reason)
+    doc = assemble_json(events, dropped, stats, starts, intro, outro, mp3, seconds, now_ms, counts, build, voice, hold, reason, model=writer)
     with open(os.path.join(a.out, 'latest.json'), 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, indent=1)
         f.write('\n')
@@ -289,7 +433,8 @@ def main(argv=None):
         with open(os.path.join(a.out, 'latest.mp3'), 'wb') as f:
             f.write(mp3)
     with open(os.path.join(a.out, 'credits.txt'), 'w', encoding='utf-8') as f:
-        f.write(voice['credit'] + '\n台本: Qwen3-8B（Apache-2.0）で機械作成。元記事の出典は latest.json の sources。\n')
+        who = 'Qwen3-8B（Apache-2.0）' if writer == MODEL_NAME else writer
+        f.write(voice['credit'] + f'\n台本: {who} で機械作成。元記事の出典は latest.json の sources。\n')
     with open(os.path.join(a.out, 'timing.json'), 'w', encoding='utf-8') as f:
         json.dump(timing, f)
     log(f'hold={hold} 出来事 {len(events)} 落ち {len(dropped)} 音声 {seconds:.1f} 秒 {timing}')

@@ -75,6 +75,11 @@ def to_mp3(pcm, bitrate=64):
     return bytes(enc.encode(bytes(pcm.buf))) + bytes(enc.flush())
 
 
+def spoken(text):
+    """読み上げに渡す形：かぎ括弧を外す（「神舟24号」の、が「、しんしゅう…、の」と間のあいた読みになる）。字幕の文はそのまま。"""
+    return text.replace('「', '').replace('」', '').replace('『', '').replace('』', '')
+
+
 class Voice:
     """VOICEVOX コアの合成器。root は tools/voicevox_setup.sh が作ったディレクトリ（onnxruntime/・dict/・vvm/）。"""
 
@@ -85,10 +90,14 @@ class Voice:
         ort = glob.glob(f'{root}/onnxruntime/*/lib/' + Onnxruntime.LIB_RECOMMENDED_VERSIONED_FILENAME)[0]
         self.synth = Synthesizer(Onnxruntime.load_once(filename=ort), OpenJtalk(glob.glob(f'{root}/dict/open_jtalk_dic_utf_8-*')[0]))
         words = readings if readings is not None else load_readings()
+        self.skipped = []   # 辞書に入れられなかった読み（アクセント核が拍の数を超える など）
         if words:
             d = UserDict()
             for surface, pron, accent in words:
-                d.add_word(UserDictWord(surface, pron, int(accent), priority=8))
+                try:
+                    d.add_word(UserDictWord(surface, pron, int(accent), priority=8))
+                except Exception as e:   # 1 語の誤りで全体を止めない（その日の調声の語が入る）
+                    self.skipped.append(f'{surface}（{type(e).__name__}）')
             self.synth.open_jtalk.use_user_dict(d)
         with VoiceModelFile.open(f"{root}/vvm/{self.voice['vvm']}") as m:
             ids = {st.id for ch in m.metas for st in ch.styles}
@@ -98,7 +107,7 @@ class Voice:
         self.style = self.voice['style_id']
 
     def kana(self, text):
-        return self.synth.create_audio_query(text, self.style).kana
+        return self.synth.create_audio_query(spoken(text), self.style).kana
 
     def wav(self, text):
-        return self.synth.tts(text, self.style)
+        return self.synth.tts(spoken(text), self.style)
