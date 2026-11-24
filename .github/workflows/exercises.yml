@@ -1,12 +1,13 @@
 name: Exercises
-# インド太平洋の軍事演習・訓練・実弾射撃・大規模展開を 3 時間ごとに集める。
+# インド太平洋の軍事演習・訓練・実弾射撃・大規模展開を 1 時間ごとに集める（2026-11-24 から。報道の保持が 24 時間のため）。
 # 世界情勢観測のニュース（/api/feeds、約 48 源）と、公式の発表（海幕・統幕）から候補を拾い、
 # 公開のモデル（Qwen3-8B、Apache-2.0）を llama.cpp で Actions の CPU 上で動かして 1 件ずつ読み、
 # 原文と照合して事象にまとめ、docs/data/exercises/ にだけ書く。キー・登録・利用上限なし。
 on:
   push:
     branches: ['probe/exercises*']
-  # The collection is due every 3 hours (the "Due?" step lets a run go when the last one is 150 minutes old or more;
+  # The collection is due every hour (2026-11-24: the site keeps 24 hours of reports; the "Due?" step lets a run go when the
+  # last one is 50 minutes old or more;
   # a run that is not due only checks out and stops). GitHub runs the schedules of this repository only a few times a
   # day (11-14: the hourly translation ran 3 times, this schedule not once), so a run is started in three ways:
   # - this schedule, every hour (more chances to be run at all),
@@ -57,7 +58,7 @@ jobs:
           fi
           last=$(python3 -c "import json;print(json.load(open('docs/data/exercises/status.json')).get('generatedAt',0)//1000)" 2>/dev/null || echo 0)
           age=$(( $(date +%s) - last ))
-          if [ "$age" -lt 9000 ]; then echo "go=false" >> "$GITHUB_OUTPUT"; echo "last collection $((age/60)) min ago: not due"; else echo "go=true" >> "$GITHUB_OUTPUT"; fi
+          if [ "$age" -lt 3000 ]; then echo "go=false" >> "$GITHUB_OUTPUT"; echo "last collection $((age/60)) min ago: not due"; else echo "go=true" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-python@v5
         if: steps.due.outputs.go == 'true'
         with:
@@ -97,7 +98,10 @@ jobs:
       - name: Forecast recurring exercises
         if: steps.due.outputs.go == 'true' && (github.event_name != 'push' && github.ref == 'refs/heads/main')
         # 見込み: recurring exercises due within a month, and the record of earlier calls (exercises/forecast.py)
-        run: python -m exercises.forecast --out "$RUNNER_TEMP/ex"
+        run: |
+          python -m exercises.forecast --out "$RUNNER_TEMP/ex"
+          # the screen's one list: events, China/Russia/North Korea notices and the forecast (exercises/board.py)
+          python -m exercises.board --out "$RUNNER_TEMP/ex"
       - name: Publish changed data
         if: steps.due.outputs.go == 'true' && (github.event_name != 'push' && github.ref == 'refs/heads/main')
         # The run's output is the whole of docs/data/exercises (it was built from the files at the start of the run).
