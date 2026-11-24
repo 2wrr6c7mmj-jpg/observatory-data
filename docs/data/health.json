@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-24T02:52:28Z",
+ "generated_utc": "2026-11-24T04:30:33Z",
  "state": "alert",
  "summary": {
   "ok": 11,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-23T16:15:34Z",
-   "heartbeat_age_h": 10.6,
+   "heartbeat_age_h": 12.2,
    "data_date": "2026-11-22",
    "data_date_tz": "UTC",
    "data_age_days": 2,
@@ -145,7 +145,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-23T13:39:56Z",
-   "heartbeat_age_h": 13.2,
+   "heartbeat_age_h": 14.8,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -174,7 +174,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-23T18:43:28Z",
-   "heartbeat_age_h": 8.2,
+   "heartbeat_age_h": 9.8,
    "data_date": "2026-11-23",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -218,7 +218,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-23T09:18:59Z",
-   "heartbeat_age_h": 17.6,
+   "heartbeat_age_h": 19.2,
    "data_date": "2026-11-19",
    "data_date_tz": "JST",
    "data_age_days": 5,
@@ -235,16 +235,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-24T01:40:23Z",
-   "heartbeat_age_h": 1.2,
+   "heartbeat_utc": "2026-11-24T04:15:15Z",
+   "heartbeat_age_h": 0.3,
    "data_date": "2026-11-24",
    "data_date_tz": "UTC",
    "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-24T01:40:23Z",
-    "notam_watch_last_seen_utc": "2026-11-24T01:40:23Z",
+    "notices_last_retrieved_utc": "2026-11-24T04:15:15Z",
+    "notam_watch_last_seen_utc": "2026-11-24T04:15:15Z",
     "ll2_last_retrieved_utc": "2026-11-23T09:18:56Z"
    }
   },
@@ -254,7 +254,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-23T13:40:07Z",
-   "heartbeat_age_h": 13.2,
+   "heartbeat_age_h": 14.8,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -263,13 +263,13 @@
     {
      "level": "warn",
      "code": "older_than_input",
-     "text": "最後の成功 2026-11-23T13:40:07Z が入力の更新 2026-11-24T01:40:23Z より前"
+     "text": "最後の成功 2026-11-23T13:40:07Z が入力の更新 2026-11-24T04:15:15Z より前"
     }
    ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-23T13:41:16Z",
-    "newest_input_utc": "2026-11-24T01:40:23Z"
+    "newest_input_utc": "2026-11-24T04:15:15Z"
    }
   },
   {
@@ -293,8 +293,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-24T00:53:20Z",
-   "heartbeat_age_h": 2.0,
+   "heartbeat_utc": "2026-11-24T03:52:50Z",
+   "heartbeat_age_h": 0.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -304,7 +304,7 @@
     "events": 31,
     "current": 14,
     "failed": 0,
-    "fetch_failed": 1
+    "fetch_failed": 0
    }
   }
  ],
@@ -934,15 +934,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-23T00:27:18Z",
+   "last_success_started_utc": "2026-11-24T04:24:57Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45088866117,
-    "started_utc": "2026-11-23T00:27:18Z",
+    "id": 45326231772,
+    "started_utc": "2026-11-24T04:24:57Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45088866117",
-    "delay_h": 4.8
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45326231772",
+    "delay_h": 8.7
    },
    "consecutive_failures": 0
   }
