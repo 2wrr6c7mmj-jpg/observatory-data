@@ -1,0 +1,414 @@
+{
+ "version": "ew-1",
+ "generated_utc": "2026-11-24T17:06:12Z",
+ "note": "各時点で、その日までのデータだけを使って採点した。名前つきの演習の一覧（analysis/exercises.json）は答えなので採点に使わない",
+ "rows": [
+  {
+   "id": "joint-sword-2023",
+   "name": "聯合利劍（2023）",
+   "start": "2023-04-08",
+   "end": "2023-04-10",
+   "points": [
+    {
+     "label": "7 日前",
+     "as_of": "2023-04-01",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": null,
+      "pla-crossings": null,
+      "pla-ships": null,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "前日",
+     "as_of": "2023-04-07",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 1
+     },
+     "scores": {
+      "pla-aircraft": null,
+      "pla-crossings": null,
+      "pla-ships": null,
+      "senkaku": 0,
+      "jso-transits": 1,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "期間中",
+     "as_of": "2023-04-11",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 1,
+      "action": 1
+     },
+     "scores": {
+      "pla-aircraft": null,
+      "pla-crossings": null,
+      "pla-ships": null,
+      "senkaku": 0,
+      "jso-transits": 1,
+      "exercises": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "joint-sword-2024a",
+   "name": "聯合利劍-2024A",
+   "start": "2024-05-23",
+   "end": "2024-05-24",
+   "points": [
+    {
+     "label": "7 日前",
+     "as_of": "2024-05-16",
+     "verdict": "exercise",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 2
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 2,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "前日",
+     "as_of": "2024-05-22",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "期間中",
+     "as_of": "2024-05-25",
+     "verdict": "exercise",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 1,
+      "action": 2
+     },
+     "scores": {
+      "pla-aircraft": 1,
+      "pla-crossings": 2,
+      "pla-ships": 2,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "joint-sword-2024b",
+   "name": "聯合利劍-2024B",
+   "start": "2024-10-14",
+   "end": "2024-10-14",
+   "points": [
+    {
+     "label": "7 日前",
+     "as_of": "2024-10-07",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "前日",
+     "as_of": "2024-10-13",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "期間中",
+     "as_of": "2024-10-15",
+     "verdict": "exercise",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 1,
+      "action": 3
+     },
+     "scores": {
+      "pla-aircraft": 3,
+      "pla-crossings": 2,
+      "pla-ships": 2,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "unnamed-2024-12",
+   "name": "名称なしの大規模展開（2024-12）",
+   "start": "2024-12-09",
+   "end": "2024-12-11",
+   "points": [
+    {
+     "label": "7 日前",
+     "as_of": "2024-12-02",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 1
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 1,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "前日",
+     "as_of": "2024-12-08",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 1
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 1,
+      "senkaku": 0,
+      "jso-transits": 1,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "期間中",
+     "as_of": "2024-12-12",
+     "verdict": "exercise",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 2
+     },
+     "scores": {
+      "pla-aircraft": 1,
+      "pla-crossings": 0,
+      "pla-ships": 2,
+      "senkaku": 0,
+      "jso-transits": 1,
+      "exercises": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "strait-thunder-2025a",
+   "name": "海峽雷霆-2025A（4/1 開始の合同演習を含む）",
+   "start": "2025-04-01",
+   "end": "2025-04-02",
+   "points": [
+    {
+     "label": "7 日前",
+     "as_of": "2025-03-25",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "前日",
+     "as_of": "2025-03-31",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "期間中",
+     "as_of": "2025-04-03",
+     "verdict": "exercise",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 1,
+      "action": 2
+     },
+     "scores": {
+      "pla-aircraft": 1,
+      "pla-crossings": 0,
+      "pla-ships": 2,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "justice-mission-2025",
+   "name": "正義使命-2025",
+   "start": "2025-12-29",
+   "end": "2025-12-31",
+   "points": [
+    {
+     "label": "7 日前",
+     "as_of": "2025-12-22",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "前日",
+     "as_of": "2025-12-28",
+     "verdict": "normal",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 0
+     },
+     "scores": {
+      "pla-aircraft": 0,
+      "pla-crossings": 0,
+      "pla-ships": 0,
+      "senkaku": 0,
+      "jso-transits": 0,
+      "exercises": 0
+     }
+    },
+    {
+     "label": "期間中",
+     "as_of": "2026-01-01",
+     "verdict": "exercise",
+     "layers": {
+      "strategic": null,
+      "mobilization": null,
+      "deployment": 0,
+      "action": 2
+     },
+     "scores": {
+      "pla-aircraft": 2,
+      "pla-crossings": 1,
+      "pla-ships": 2,
+      "senkaku": 0,
+      "jso-transits": 1,
+      "exercises": 0
+     }
+    }
+   ]
+  }
+ ],
+ "false_alarm": {
+  "days": 680,
+  "flagged": 42,
+  "rate": 0.062,
+  "by_month": {
+   "2025-02": 2,
+   "2025-03": 3,
+   "2025-09": 2,
+   "2025-12": 6,
+   "2026-06": 4,
+   "2026-07": 4,
+   "2026-09": 2,
+   "2026-10": 12,
+   "2026-11": 7
+  },
+  "note": "過去 730 日のうち、名前つきの大規模演習の前後 7 日を除いた日で「演習」以上と出た割合。名前の無い演習・示威行動も「演習」に入るので、すべてが誤報とは限らない"
+ }
+}
