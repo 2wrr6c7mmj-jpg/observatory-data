@@ -1,0 +1,664 @@
+{
+ "version": 1,
+ "createdAt": 1795524465830,
+ "windowHours": 24,
+ "hold": false,
+ "holdReason": "",
+ "generated": "machine",
+ "model": "Qwen3-8B",
+ "voice": {
+  "credit": "VOICEVOX:もち子(cv 明日葉よもぎ)",
+  "styleId": 20,
+  "speaker": "もち子さん",
+  "style": "ノーマル"
+ },
+ "audio": {
+  "file": "latest.mp3",
+  "seconds": 111.9,
+  "bytes": 895680
+ },
+ "counts": {
+  "records": 930,
+  "sources": 78,
+  "clusters": 784,
+  "multiSource": 47
+ },
+ "intro": {
+  "start": 0,
+  "text": "世界情勢観測、11月24日。過去24時間の主な出来事、7件です。"
+ },
+ "outro": {
+  "start": 106.02,
+  "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
+ },
+ "events": [
+  {
+   "start": 8.43,
+   "end": 18.88,
+   "category": "conflict",
+   "label": "紛争 · ウクライナ",
+   "country": "UA",
+   "countries": [
+    "UA",
+    "RU",
+    "LY"
+   ],
+   "place": null,
+   "headline": "ウクライナ、リビア沖でロシア軍艦撃沈",
+   "lines": [
+    {
+     "start": 8.43,
+     "sub": "",
+     "text": "ウクライナはリビア沖でロシアの軍艦を撃沈したと発表しました。"
+    },
+    {
+     "start": 13.12,
+     "sub": "",
+     "text": "ウクライナ保安庁はドローンを用いた攻撃で、軍艦を撃沈したと説明しました。"
+    }
+   ],
+   "sources": {
+    "count": 8,
+    "countries": 7,
+    "names": [
+     "キーウ・インディペンデント",
+     "ジャパンタイムズ",
+     "英国公共放送 国際"
+    ],
+    "items": [
+     {
+      "source": "kyivindependent",
+      "title": "Strikes on Russian ship in Libya are lawful self-defense, Ukraine says",
+      "url": "https://kyivindependent.com/strikes-on-russian-ship-in-libya-are-lawful-self-defense-ukraine-says/"
+     },
+     {
+      "source": "japantimes",
+      "title": "Ukraine strike on Russian warship off Libya highlights Kyiv’s broadened reach",
+      "url": "https://www.japantimes.co.jp/news/2026/11/24/world/ukraine-russian-warship-libyan-coast/"
+     },
+     {
+      "source": "bbc",
+      "title": "What strike on Russian ship in Libya says about spread of Ukraine war",
+      "url": "https://www.bbc.co.uk/news/articles/cm894p88jzxpo"
+     },
+     {
+      "source": "f24",
+      "title": "How far will Ukraine war spread? Kyiv targets Russian vessels in Libya",
+      "url": "https://www.france24.com/en/tv-shows/the-debate/20261123-how-far-will-ukraine-war-spread-kyiv-targets-russian-vessels-in-libya"
+     },
+     {
+      "source": "aj",
+      "title": "What Russian warship did Ukraine just sink?",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/23/what-russian-warship-did-ukraine-just-sink?traffic_source=rss"
+     },
+     {
+      "source": "thehindu",
+      "title": "Zelenskyy hails Ukraine's attack on a Russian warship in Libya",
+      "url": "https://www.thehindu.com/news/international/zelenskyy-hails-ukraines-attack-on-a-russian-warship-in-libya/article71735901.ece"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 1,
+    "families": [
+     "aj",
+     "bbc",
+     "france24",
+     "japantimes",
+     "kyivindependent",
+     "sightline",
+     "thehindu",
+     "ua-state"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 19.78,
+   "end": 34.99,
+   "category": "diplomacy",
+   "label": "外交 · 中国",
+   "country": "CN",
+   "countries": [
+    "CN",
+    "PK"
+   ],
+   "place": null,
+   "headline": "中国の宇宙ステーションにパキスタンの宇宙飛行士が初登場",
+   "lines": [
+    {
+     "start": 19.78,
+     "sub": "",
+     "text": "中国はパキスタンの宇宙飛行士が宇宙ステーション「天宮」に搭乗する宇宙ミッションを発表しました。"
+    },
+    {
+     "start": 27.77,
+     "sub": "",
+     "text": "パキスタンのゼーシャン・アリ宇宙飛行士は、中国の宇宙飛行士と共同で宇宙ミッションに参加します。"
+    }
+   ],
+   "sources": {
+    "count": 7,
+    "countries": 6,
+    "names": [
+     "毎日新聞 英語版",
+     "フランス24",
+     "香港フリープレス"
+    ],
+    "items": [
+     {
+      "source": "mainichi",
+      "title": "China unveils new space mission crew, with a Pakistani astronaut set to board its space station",
+      "url": "https://mainichi.jp/english/articles/20261124/p2g/00m/0in/035000c"
+     },
+     {
+      "source": "f24",
+      "title": "China to launch first space mission with a foreign astronaut",
+      "url": "https://www.france24.com/en/asia-pacific/20261124-china-to-launch-first-space-mission-with-a-foreign-astronaut"
+     },
+     {
+      "source": "hkfp",
+      "title": "China to launch space mission with first foreign astronaut",
+      "url": "https://hongkongfp.com/2026/11/24/china-to-launch-space-mission-with-first-foreign-astronaut/"
+     },
+     {
+      "source": "thehindu",
+      "title": "China's Shenzhou-24 spaceship to include first foreign astronaut from Pakistan",
+      "url": "https://www.thehindu.com/sci-tech/science/chinas-shenzhou-24-spaceship-to-include-first-foreign-astronaut-from-pakistan/article71737165.ece"
+     },
+     {
+      "source": "straitstimes",
+      "title": "China’s Tiangong space station opens to the world with Pakistani astronaut as first foreign guest",
+      "url": "https://www.straitstimes.com/asia/east-asia/china-to-launch-shenzhou-24-spaceship-with-first-foreign-astronaut"
+     },
+     {
+      "source": "scmp-china",
+      "title": "‘The hope of 250 million’: China’s space station to welcome Pakistani astronaut",
+      "url": "https://www.scmp.com/news/china/science/article/3375536/pakistani-astronaut-joins-shenzhou-24-crew-heading-chinas-tiangong-space-station"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 2,
+    "families": [
+     "cn-state",
+     "france24",
+     "hkfp",
+     "mainichi",
+     "scmp",
+     "straitstimes",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 35.89,
+   "end": 49.71,
+   "category": "military",
+   "label": "軍事 · ロシア",
+   "country": "RU",
+   "countries": [
+    "RU",
+    "KR",
+    "JP"
+   ],
+   "place": null,
+   "headline": "韓国、ロシア軍機接近で空襲警報発令",
+   "lines": [
+    {
+     "start": 35.89,
+     "sub": "",
+     "text": "韓国軍はロシアの軍用機が日本海の防空識別圏に進入したことに伴い空襲警報を発令しました。"
+    },
+    {
+     "start": 43.71,
+     "sub": "",
+     "text": "鬱陵島の住民に対し避難を呼びかけたほか、戦闘機を緊急出動させました。"
+    }
+   ],
+   "sources": {
+    "count": 6,
+    "countries": 6,
+    "names": [
+     "キーウ・インディペンデント",
+     "アルジャジーラ",
+     "メドゥーザ 英語版"
+    ],
+    "items": [
+     {
+      "source": "kyivindependent",
+      "title": "'Evacuation, air raid,' — Russian military aircraft approach South Korean island, trigger air raid alert",
+      "url": "https://kyivindependent.com/evacuation-air-raid-russian-aircraft-approach-south-korean-island-trigger-air-raid-alert-2/"
+     },
+     {
+      "source": "aj",
+      "title": "Why S Korea issued air raid alert after Russian jets flew near its airspace",
+      "url": "https://www.aljazeera.com/news/2026/11/24/why-s-korea-issued-air-raid-alert-after-russian-jets-flew-near-its-airspace?traffic_source=rss"
+     },
+     {
+      "source": "meduza",
+      "title": "South Korea scrambles fighter jets over Russian military aircraft, issues evacuation alert on island",
+      "url": "https://meduza.io/en/news/2026/11/24/south-korea-scrambles-fighter-jets-over-russian-military-aircraft-issues-evacuation-alert-on-island"
+     },
+     {
+      "source": "yonhap",
+      "title": "(4th LD) S. Korea briefly issues alert on eastern island after Russian warplanes near airspace",
+      "url": "https://en.yna.co.kr/view/AEN20261124002254315"
+     },
+     {
+      "source": "guardian-russia",
+      "title": "South Korea tells island residents to take shelter after Russian military aircraft approach",
+      "url": "https://www.theguardian.com/world/2026/nov/24/south-korea-tells-island-residents-to-take-shelter-after-russian-military-aircraft-approach"
+     },
+     {
+      "source": "japantimes",
+      "title": "South Korea scrambles jets as Russian warplanes enter air zone",
+      "url": "https://www.japantimes.co.jp/news/2026/11/24/asia-pacific/south-korea-jets-russia-warplanes/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 3,
+    "families": [
+     "aj",
+     "guardian",
+     "japantimes",
+     "kyivindependent",
+     "meduza",
+     "yonhap"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 50.61,
+   "end": 62.24,
+   "category": "conflict",
+   "label": "紛争 · ウクライナ",
+   "country": "UA",
+   "countries": [
+    "UA",
+    "RU"
+   ],
+   "place": {
+    "name": "ザポリージャ",
+    "lon": 35.14,
+    "lat": 47.84
+   },
+   "headline": "ロシアの攻撃でザポリージャで2人が死亡 22人が負傷",
+   "lines": [
+    {
+     "start": 50.61,
+     "sub": "",
+     "text": "ロシア軍はウクライナのザポリージャで夜間の攻撃を実施し、2人が死亡しました。"
+    },
+    {
+     "start": 56.55,
+     "sub": "",
+     "text": "地域の軍事行政長官セミキン氏は、数十人が負傷したと発表しました。"
+    }
+   ],
+   "sources": {
+    "count": 5,
+    "countries": 5,
+    "names": [
+     "メドゥーザ 英語版",
+     "中央広播電台",
+     "フランス24"
+    ],
+    "items": [
+     {
+      "source": "meduza",
+      "title": "Russian strikes kill two in Ukraine’s Zaporizhzhia, injure dozens",
+      "url": "https://meduza.io/en/news/2026/11/24/russian-strikes-kill-two-in-ukraine-s-zaporizhzhia-injure-dozens"
+     },
+     {
+      "source": "rti",
+      "title": "[國際] 烏克蘭札波羅熱遭俄軍襲擊 已造成2死22傷",
+      "url": "https://www.rti.org.tw/news?uid=3&pid=1053371"
+     },
+     {
+      "source": "f24",
+      "title": "Live: Russian strikes on Ukraine’s Zaporizhzhia kill two people and wound dozens more",
+      "url": "https://www.france24.com/en/europe/20261124-live-tripoli-demands-explanation-from-kyiv-for-striking-russian-ships-in-libyan-waters"
+     },
+     {
+      "source": "thehindu",
+      "title": "Russian attack kills two people, wounds 22 in Ukraine's Zaporizhzhia, official says",
+      "url": "https://www.thehindu.com/news/international/russian-attack-kills-two-people-wounds-22-in-ukraines-zaporizhzhia-official-says/article71737237.ece"
+     },
+     {
+      "source": "ukrinform",
+      "title": "Injury toll from Russian attack on Zaporizhzhia rises to 40; two killed",
+      "url": "https://www.ukrinform.net/rubric-ato/4187908-injury-toll-in-russian-attack-on-zaporizhzhia-rises-to-30-two-killed.html"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 5,
+    "families": [
+     "france24",
+     "meduza",
+     "rti",
+     "thehindu",
+     "ua-state"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": [
+       "文の合計が 110 字を超えている",
+       "食い違う数（people）の一部だけを書いている（22）"
+      ]
+     },
+     {
+      "attempt": 2,
+      "why": []
+     }
+    ],
+    "numberConflicts": [
+     {
+      "class": "people",
+      "values": {
+       "22": [
+        "rti"
+       ],
+       "24": [
+        "meduza"
+       ],
+       "40": [
+        "france24"
+       ]
+      }
+     }
+    ]
+   }
+  },
+  {
+   "start": 63.14,
+   "end": 78.2,
+   "category": "military",
+   "label": "軍事 · ロシア",
+   "country": "RU",
+   "countries": [
+    "RU"
+   ],
+   "place": null,
+   "headline": "ロシアが核兵器衛星を発射する計画 NATOが宇宙安全を守る",
+   "lines": [
+    {
+     "start": 63.14,
+     "sub": "",
+     "text": "ロシアが核兵器を搭載した衛星を発射する計画があるとされることが明らかになりました。"
+    },
+    {
+     "start": 69.42,
+     "sub": "",
+     "text": "北大西洋条約機構（NATO）の事務総長ルッテは、NATOが宇宙の安全を守るため行動を取ると述べました。"
+    }
+   ],
+   "sources": {
+    "count": 4,
+    "countries": 2,
+    "names": [
+     "新頭殼",
+     "中央広播電台",
+     "中央通訊社"
+    ],
+    "items": [
+     {
+      "source": "newtalk",
+      "title": "德媒揭露俄羅斯計劃在未來幾週內發射「核武衛星」 北約矢言捍衛太空安全",
+      "url": "https://newtalk.tw/news/view/2026-11-24/1073389"
+     },
+     {
+      "source": "rti",
+      "title": "[國際] 傳俄羅斯計劃發射核武衛星 北約矢言捍衛太空安全",
+      "url": "https://www.rti.org.tw/news?uid=3&pid=1053312"
+     },
+     {
+      "source": "cna-intl",
+      "title": "傳俄羅斯計劃發射核武衛星 北約矢言捍衛太空安全",
+      "url": "https://www.cna.com.tw/news/aopl/202611240031.aspx"
+     },
+     {
+      "source": "guardian-russia",
+      "title": "Germany taking seriously reports Russia may be planning to launch nuclear weapons into space",
+      "url": "https://www.theguardian.com/world/2026/nov/23/russia-nuclear-weapons-space-german-intelligence"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 6,
+    "families": [
+     "cna-tw",
+     "guardian",
+     "newtalk",
+     "rti"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": [
+       "見出しが 1〜30 字でない",
+       "文が です・ます調で終わっていない"
+      ]
+     },
+     {
+      "attempt": 2,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 79.1,
+   "end": 88.77,
+   "category": "diplomacy",
+   "label": "外交 · イラン",
+   "country": "IR",
+   "countries": [
+    "IR",
+    "US",
+    "IL"
+   ],
+   "place": null,
+   "headline": "ルビオ国務長官とハメネイ氏が会談",
+   "lines": [
+    {
+     "start": 79.1,
+     "sub": "",
+     "text": "ルビオ国務長官はイランのハメネイ氏と会談しました。"
+    },
+    {
+     "start": 82.91,
+     "sub": "",
+     "text": "イランとアメリカの対立が続く中、会談は緊張緩和のため行われました。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 3,
+    "names": [
+     "ザ・ヒンドゥー 国際",
+     "アルジャジーラ",
+     "ミドル・イースト・アイ"
+    ],
+    "items": [
+     {
+      "source": "thehindu",
+      "title": "Vance, Rubio meet with Qatari PM as uncertainty mounts over Trump's intentions with Iran",
+      "url": "https://www.thehindu.com/news/international/vance-rubio-meet-with-qatari-pmas-uncertainty-mounts-over-trumps-intentions-with-iran/article71737051.ece"
+     },
+     {
+      "source": "aj",
+      "title": "Qatar PM looks to revive US-Iran talks after meeting Rubio",
+      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/24/qatar-pm-looks-to-revive-us-iran-talks-after-meeting-rubio?traffic_source=rss"
+     },
+     {
+      "source": "mee",
+      "title": "Qatar needs US and Iran to resume talks to end war, PM says",
+      "url": "https://www.middleeasteye.net/news/qatar-needs-us-iran-resume-talks-end-war-pm-says"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 9,
+    "families": [
+     "aj",
+     "mee",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 89.67,
+   "end": 105.12,
+   "category": "conflict",
+   "label": "紛争 · イラン",
+   "country": "IR",
+   "countries": [
+    "IR",
+    "US",
+    "IL"
+   ],
+   "place": null,
+   "headline": "イラン、米国による封鎖に対抗するため「すべての手段」を用いる",
+   "lines": [
+    {
+     "start": 89.67,
+     "sub": "",
+     "text": "イラン外務省報道官バガイは米国による石油輸出の封鎖に対し、すべての手段を用いると発表しました。"
+    },
+    {
+     "start": 97.95,
+     "sub": "",
+     "text": "バガイは米国の「侵略」として非難し、テヘラーンがこれを容認しないと述べました。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 3,
+    "names": [
+     "ミドル・イースト・アイ",
+     "ザ・ヒンドゥー 国際",
+     "アルジャジーラ"
+    ],
+    "items": [
+     {
+      "source": "mee",
+      "title": "Iran vows to use 'all avaliable tools' to confront US naval blockade",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/iran-vows-use-all-avaliable-tools-confront-us-naval-blockade"
+     },
+     {
+      "source": "thehindu",
+      "title": "Will use 'all available means' to counter U.S. blockade: Iran",
+      "url": "https://www.thehindu.com/news/international/will-use-all-available-means-to-counter-us-blockade-iran/article71735993.ece"
+     },
+     {
+      "source": "aj",
+      "title": "Iran says it will use ‘all available means’ to counter US blockade",
+      "url": "https://www.aljazeera.com/news/2026/11/23/iran-says-it-will-use-all-available-means-to-counter-us-blockade?traffic_source=rss"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 10,
+    "families": [
+     "aj",
+     "mee",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [
+     {
+      "attempt": 1,
+      "why": []
+     }
+    ],
+    "numberConflicts": []
+   }
+  }
+ ],
+ "dropped": [
+  {
+   "reason": "選んだ出来事と同じ（台本の語が重なる：韓国、ロシア軍機接近で空襲警報発令）",
+   "headline": "ロシア軍機が韓国の防空識別圏に進入"
+  },
+  {
+   "reason": "誰の発表・報道かが書かれていない（「…と発表しました」「…によると」の形で書く）",
+   "headline": "イスラエルの空爆、ガザで少なくとも6人のパレスチナ人が死亡、医師が発表"
+  },
+  {
+   "reason": "文の合計が 110 字を超えている",
+   "headline": "ガザで国連職員と他2名を殺害、パレスチナ人への攻撃は続く"
+  },
+  {
+   "reason": "長さの上限（120 秒）で外した",
+   "headline": "米国がイラン関連の制裁を強化"
+  }
+ ],
+ "build": {
+  "schema": "briefing-1",
+  "tokenizer": "fugashi",
+  "threshold": 0.45,
+  "timing": {
+   "clusterSec": 0.07,
+   "scriptSec": 669.8,
+   "audioSec": 34.0,
+   "totalSec": 705.3
+  },
+  "candidates": 47,
+  "kana": {
+   "intro": "セカイジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ヨッカ'、カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
+   "0.0": "ウクラ'イナワ/リビア'オキデ/ロ'シアノ/グンカンオ'/ゲ_キチン'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "0.1": "ウクライナホア'ンチョオワ/ドロ'オンオ/モチイ'タ/コオゲキデ'、グンカンオ'/ゲ_キチン'/_シタ'ト/セツメエ'/シマ'_シタ",
+   "1.0": "チュ'ウゴクワ/パキ'_スタンノ/ウチュウ_ヒコオ'シガ/ウチュウ_ステ'エション、テング'ウ、ニ'/トオジョオ'/スル'/ウチュウミ'ッションオ/ハッピョオ'/シマ'_シタ",
+   "1.1": "パキ'_スタンノ/ゼエ'シャン、アリ'/ウチュウ_ヒコオ'シワ、チュ'ウゴクノ/ウチュウ_ヒコオ'_シト/キョオドオデ'/ウチュウミ'ッションニ/サンカ'/シマ'_ス",
+   "2.0": "カンコク'グンワ/ロ'シアノ/グンヨオ'キガ/ニホ'ンカイノ/ボオクウ_シキベツ'ケンニ/シンニュウ'/_シタ'/コト'ニ/トモナ'イ/クウシュウケ'エホオオ/ハツレエ'/シマ'_シタ",
+   "2.1": "ウツリョオトオノ'/ジュウミンニ'/タ'イ_シ/ヒ'ナンオ/ヨビカケ'タ/ホカ'、セントオ'キオ/キンキュウ'/_シュツドオ'/サセマ'_シタ",
+   "3.0": "ロシア'グンワ/ウクラ'イナノ/ザ'ポリイジャデ/ヤ'カンノ/コオゲキオ'/ジッ_シ'/シ'、_フタリ'ガ/シボオ'/シマ'_シタ",
+   "3.1": "チ'イキノ/グンジギョオセエチョオカンセミ'キンシワ、スウジュウ'ニンガ/_フショオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "4.0": "ロ'シアガ/カ_クヘ'エキオ/トオサイ'/_シタ'/エエセエオ'/ハッシャ'/スル'/ケエカクガ'/ア'ルト/サレル'/コト'ガ/アキ'ラカニ/ナリマ'_シタ",
+   "4.1": "_キタタイセエヨオジョオヤ_クキ'コオ、ナ'トオ、ノ'/ジムソオチョオルッテ'ワ、ナ'トオガ/ウ'チュウノ/アンゼンオ'/マモ'ル/タメコ'オドオオ/ト'ルト/ノベマ'_シタ",
+   "5.0": "ル'ビオ/コクムチョ'オカンワ/イ'ランノ/ハメ'ネイ_シト/カイダン'/シマ'_シタ",
+   "5.1": "イ'ラント/アメリカノ'/タイリツガ'/ツズク'/ナ'カ、カイダンワ'/キンチョオカ'ンワノ/タメ'/オコナワレマ'_シタ",
+   "6.0": "イランガイムショオホオドオ'カン/バ'ガイワ/ベエコクニ'/ヨル'/セキユユ'_シュツノ/フウサニ'/タ'イシ、ス'ベテノ/シュ'ダンオ/モチイ'ルト/ハッピョオ'/シマ'_シタ",
+   "6.1": "バ'ガイワ/ベエコクノ'、シンリャク'、ト'/_シテ'/ヒ'ナン/シ'、テ'エ/ラ'アンガ/コレオ'/ヨオニン'/シナイト'/ノベマ'_シタ",
+   "outro": "イ'ジョオデ_ス、ホオドオノ'/ミダ_シト'/ヨオヤクオ'、キ'カイデ/マトメテ'/ヨミアゲマ'_シタ"
+  }
+ }
+}
