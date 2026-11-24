@@ -94,6 +94,10 @@ jobs:
           mkdir -p "$RUNNER_TEMP/ex"
           cp -r docs/data/exercises/. "$RUNNER_TEMP/ex/" 2>/dev/null || true
           python -m exercises.run --model "$MODEL" --minutes 50 --out "$RUNNER_TEMP/ex"
+      - name: Forecast recurring exercises
+        if: steps.due.outputs.go == 'true' && (github.event_name != 'push' && github.ref == 'refs/heads/main')
+        # 見込み: recurring exercises due within a month, and the record of earlier calls (exercises/forecast.py)
+        run: python -m exercises.forecast --out "$RUNNER_TEMP/ex"
       - name: Publish changed data
         if: steps.due.outputs.go == 'true' && (github.event_name != 'push' && github.ref == 'refs/heads/main')
         # The run's output is the whole of docs/data/exercises (it was built from the files at the start of the run).
