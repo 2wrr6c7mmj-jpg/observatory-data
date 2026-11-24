@@ -1,5 +1,5 @@
 name: Briefing probe
-# 世界情勢観測「報道のまとめ」の裏方（briefing/）の動作確認。probe/briefing-* ブランチへの push でだけ動く。
+# 東アジア情勢観測「報道のまとめ」の裏方（briefing/）の動作確認。probe/briefing-* ブランチへの push でだけ動く。
 # 公開の feed（observatory-watch.pages.dev/api/feeds、translate.yml と同じ読み取り）から過去 24 時間の記事を取り、
 # 束ね → 台本（llama.cpp の Qwen3-8B）→ 音声（VOICEVOX コア）→ latest.json と latest.mp3 を作る。
 # 結果は check-run の注釈と、その probe ブランチへのコミット（probe-out/briefing/）で返す。main・docs/ には書かない。

@@ -348,6 +348,10 @@ def make_scripts(records, args, terms, tok, log, deadline):
     return events, dropped, stats
 
 
+# サイト名の読み：合成器は 1 句につなげて読む（ひがしあじあじょーせーか＼んそく）。「東アジア」「情勢観測」の 2 句にする
+NAME_KANA = ("ヒガシアジアジョオセエカ'ンソク", "ヒガシア'ジア/ジョオセエカ'ンソク")
+
+
 def spread(key, text, gap):
     """冒頭・結びの文言を 1 文ずつに分ける（文末の落ち着かせは 1 文ごとにかかる）。2 文目からのキーは key+1、key+2…"""
     parts = [s for s in re.findall(r'[^。]+。?', text) if s.strip()] or [text]
@@ -357,7 +361,7 @@ def spread(key, text, gap):
 def make_audio(events, now_ms, voice_root, no_audio, extra=(), tune=None):
     """音声と、各文・各出来事の開始秒。events を書き換えずに (out_events, intro, outro, mp3, pcm秒) を返す。"""
     d = datetime.datetime.fromtimestamp(now_ms / 1000, JST)
-    intro = f'世界情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
+    intro = f'東アジア情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
     outro = '以上です。報道の見出しと要約を、機械でまとめて読み上げました。'
     seq = spread('intro', intro, A.INTRO_GAP)
     for i, e in enumerate(events):
@@ -372,8 +376,9 @@ def make_audio(events, now_ms, voice_root, no_audio, extra=(), tune=None):
     voice = A.Voice(voice_root, readings=A.load_readings() + list(extra)) if extra else A.Voice(voice_root)
     voice.tune.update(tune or {})
     given = {ln['text']: ln['kana'] for e in events for ln in e['script']['lines'] if ln.get('kana')}   # 調声のカナ（文 → カナ）
+    given.setdefault(seq[0][1], voice.kana(seq[0][1]).replace(*NAME_KANA))   # 名乗りは 2 句で読む（読みは同じなので tuned を通る）
     voice.calibrate([(t, given.get(t)) for _, t, _ in seq])
-    kana = {'intro': voice.kana(seq[0][1])}
+    kana = {'intro': voice.tuned(seq[0][1], given.get(seq[0][1])) or voice.kana(seq[0][1])}
     starts, pcm = A.assemble(seq, lambda t: voice.wav(t, given.get(t)))
     for key, text, _ in seq:
         if key != 'intro':
