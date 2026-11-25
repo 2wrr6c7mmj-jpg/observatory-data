@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-25T00:09:06Z",
+ "generated_utc": "2026-11-25T10:32:29Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -806,8 +806,8 @@
     {
      "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
      "name": "Long March 2F/G | Shenzhou 24",
-     "status": "Go",
-     "net_utc": "2026-11-25T00:18:00Z",
+     "status": "Success",
+     "net_utc": "2026-11-25T00:18:52Z",
      "rocket": "Long March 2F/G",
      "orbit": "LEO",
      "pad": "Launch Area 91 (SLS-1 / 921)"
@@ -1280,8 +1280,8 @@
   {
    "ll2_id": "c9605b67-8a53-4239-a8ae-577fe3b79799",
    "name": "Long March 2F/G | Shenzhou 24",
-   "status": "Go",
-   "net_utc": "2026-11-25T00:18:00Z",
+   "status": "Success",
+   "net_utc": "2026-11-25T00:18:52Z",
    "rocket": "Long March 2F/G",
    "provider": "China Aerospace Science and Technology Corporation",
    "orbit": "LEO",
@@ -1551,13 +1551,13 @@
   },
   {
    "ll2_id": "7149bbf6-bf27-4115-bb19-8c7c7b93fad9",
-   "name": "KAIROS | Flight 4",
-   "status": "TBD",
-   "net_utc": "2027-01-22T00:00:00Z",
+   "name": "KAIROS | JSDF SDA Demonstration satellite",
+   "status": "Go",
+   "net_utc": "2027-01-22T06:00:00Z",
    "rocket": "Kii-based Advanced & Instant ROcket System",
    "provider": "Space One",
    "orbit": "SSO",
-   "mission_type": "Test Flight",
+   "mission_type": "Space Situational Awareness",
    "pad": "Space One Launch Pad",
    "location": "Spaceport Kii, Japan",
    "country": "JPN",
