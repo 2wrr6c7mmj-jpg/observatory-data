@@ -34,9 +34,10 @@
    "status": "ok"
   },
   "rmrb": {
-   "at": "2026-11-25T06:46:40Z",
-   "reason": "IncompleteRead: IncompleteRead(23040 bytes read)",
-   "status": "error"
+   "at": "2026-11-25T13:41:18Z",
+   "days": 725,
+   "new": 146,
+   "status": "ok"
   }
  }
 }
