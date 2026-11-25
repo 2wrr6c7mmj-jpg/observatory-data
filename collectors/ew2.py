@@ -286,7 +286,7 @@ def rmrb_day_retry(day: date, get=None, wait: float = 30) -> list[dict] | None:
 def run_rmrb(days: int) -> dict:
     doc = load('rmrb', {'days': {}})
     today = datetime.now(timezone(timedelta(hours=8))).date()
-    got, stopped, failed = 0, None, 0
+    got, stopped, failed, skipped = 0, None, 0, []
     deadline = time.monotonic() + RMRB_MINUTES * 60
     for i in range(min(days, MAX_DAYS), -1, -1):
         day = today - timedelta(days=i)
@@ -302,7 +302,9 @@ def run_rmrb(days: int) -> dict:
             if isinstance(e, urllib.error.HTTPError):
                 raise
             failed += 1
-            print(f'::warning::rmrb {k}: {type(e).__name__}: {e} (skipped; picked up by the next run)')
+            skipped.append(k)
+            # retaken by a later run only if it reaches back this far (the daily run looks back --days 10); listed in the result
+            print(f'::warning::rmrb {k}: {type(e).__name__}: {e} (skipped)')
             if failed >= RMRB_MAX_FAILS:
                 stopped = k
                 break
@@ -320,7 +322,7 @@ def run_rmrb(days: int) -> dict:
                 save('rmrb', doc)   # a long backfill keeps what it has fetched if the job is stopped
     doc.update(source='人民日報 電子版（1〜4 版の見出し。本文は取らない）', url='https://paper.people.com.cn/', retrieved_utc=now_utc())
     save('rmrb', doc)
-    return {'days': len(doc['days']), 'new': got, **({'stopped_before': stopped} if stopped else {})}
+    return {'days': len(doc['days']), 'new': got, **({'stopped_before': stopped} if stopped else {}), **({'skipped': skipped} if skipped else {})}
 
 
 # ---------------------------------------------------------------- site feed keywords
