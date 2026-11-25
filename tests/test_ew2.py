@@ -236,5 +236,70 @@ class ScoringTest(unittest.TestCase):
         self.assertIsNone(ew.judge(base + [mk('strategic', 'money', 0)])['ceiling'])
 
 
+class RmrbTransientTest(unittest.TestCase):
+    def run_with(self, fn, days):
+        from unittest import mock
+        saved = {}
+        with mock.patch.object(ew2, 'rmrb_day_retry', fn), \
+                mock.patch.object(ew2, 'load', lambda n, d: {'days': {}}), \
+                mock.patch.object(ew2, 'save', lambda n, d: saved.update(d)):
+            return ew2.run_rmrb(days), saved
+
+    def test_broken_connection_is_skipped_listed_and_run_goes_on(self):
+        import http.client
+        calls = []
+
+        def flaky(day, get=None, wait=0):
+            calls.append(day.isoformat())
+            if len(calls) in (2, 3):
+                raise http.client.IncompleteRead(b'x')
+            return [{'page': 1, 'title': 't', 'url': 'u'}]
+        out, saved = self.run_with(flaky, 6)
+        self.assertNotIn('stopped_before', out)
+        self.assertEqual(len(calls), 7)
+        self.assertEqual(out['skipped'], calls[1:3])
+        self.assertEqual(sorted(saved['days']), sorted(calls[:1] + calls[3:]))
+
+    def test_five_failures_in_a_row_stop_keep_what_was_fetched_and_report(self):
+        import http.client
+        calls = []
+
+        def broken_after_two(day, get=None, wait=0):
+            calls.append(day.isoformat())
+            if len(calls) > 2:
+                raise http.client.IncompleteRead(b'x')
+            return [{'page': 1, 'title': 't', 'url': 'u'}]
+        out, saved = self.run_with(broken_after_two, 20)
+        self.assertEqual(len(calls), 7)
+        self.assertEqual(out['stopped_before'], calls[-1])
+        self.assertEqual(out['skipped'], calls[2:])
+        self.assertEqual(sorted(saved['days']), sorted(calls[:2]))
+
+    def test_http_error_is_not_swallowed(self):
+        import urllib.error
+
+        def http_err(day, get=None, wait=0):
+            raise urllib.error.HTTPError('u', 500, 'x', {}, None)
+        with self.assertRaises(urllib.error.HTTPError):
+            self.run_with(http_err, 3)
+
+    def test_retry_once_then_success_or_raise(self):
+        import http.client
+        n = []
+
+        def get(url):
+            n.append(url)
+            if len(n) == 1:
+                raise http.client.IncompleteRead(b'x')
+            return ew2.polite.Response(url, 404, {}, b'')
+        self.assertIsNone(ew2.rmrb_day_retry(date(2024, 1, 27), get, wait=0))
+        self.assertEqual(len(n), 3)   # broken, then pc 404 + old 404
+
+        def always(url):
+            raise http.client.IncompleteRead(b'x')
+        with self.assertRaises(http.client.IncompleteRead):
+            ew2.rmrb_day_retry(date(2024, 1, 27), always, wait=0)
+
+
 if __name__ == '__main__':
     unittest.main()

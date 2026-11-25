@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import http.client
 import io
 import json
 import os
@@ -265,10 +266,27 @@ def rmrb_day(day: date, get) -> list[dict] | None:
     return out   # [] : an edition without headlines on pages 1–4 (recorded as such, never counted as 0 matches)
 
 
+# a broken connection on one day must not throw away the whole backfill (urllib.error.HTTPError is not here: it is a reply)
+TRANSIENT = (http.client.IncompleteRead, http.client.RemoteDisconnected, ConnectionError, TimeoutError, urllib.error.URLError)
+RMRB_MAX_FAILS = 5   # consecutive failed days: stop, keep what was fetched, and report stopped_before
+
+
+def rmrb_day_retry(day: date, get=None, wait: float = 30) -> list[dict] | None:
+    """rmrb_day, tried once more after a pause when the connection breaks."""
+    get = get or fetch
+    try:
+        return rmrb_day(day, get)
+    except TRANSIENT as e:
+        if isinstance(e, urllib.error.HTTPError):
+            raise
+        time.sleep(wait)
+        return rmrb_day(day, get)
+
+
 def run_rmrb(days: int) -> dict:
     doc = load('rmrb', {'days': {}})
     today = datetime.now(timezone(timedelta(hours=8))).date()
-    got, stopped = 0, None
+    got, stopped, failed, skipped = 0, None, 0, []
     deadline = time.monotonic() + RMRB_MINUTES * 60
     for i in range(min(days, MAX_DAYS), -1, -1):
         day = today - timedelta(days=i)
@@ -278,7 +296,20 @@ def run_rmrb(days: int) -> dict:
         if time.monotonic() > deadline:
             stopped = k
             break
-        heads = rmrb_day(day, fetch)
+        try:
+            heads = rmrb_day_retry(day)
+        except TRANSIENT as e:
+            if isinstance(e, urllib.error.HTTPError):
+                raise
+            failed += 1
+            skipped.append(k)
+            # retaken by a later run only if it reaches back this far (the daily run looks back --days 10); listed in the result
+            print(f'::warning::rmrb {k}: {type(e).__name__}: {e} (skipped)')
+            if failed >= RMRB_MAX_FAILS:
+                stopped = k
+                break
+            continue
+        failed = 0
         if heads == []:
             doc.setdefault('empty', [])
             if k not in doc['empty']:
@@ -291,7 +322,7 @@ def run_rmrb(days: int) -> dict:
                 save('rmrb', doc)   # a long backfill keeps what it has fetched if the job is stopped
     doc.update(source='人民日報 電子版（1〜4 版の見出し。本文は取らない）', url='https://paper.people.com.cn/', retrieved_utc=now_utc())
     save('rmrb', doc)
-    return {'days': len(doc['days']), 'new': got, **({'stopped_before': stopped} if stopped else {})}
+    return {'days': len(doc['days']), 'new': got, **({'stopped_before': stopped} if stopped else {}), **({'skipped': skipped} if skipped else {})}
 
 
 # ---------------------------------------------------------------- site feed keywords
