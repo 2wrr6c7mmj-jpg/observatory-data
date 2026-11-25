@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T01:29:37Z",
+ "generated_utc": "2026-11-25T02:02:45Z",
  "as_of": "2026-11-25",
  "verdict": "normal",
  "layers": [
@@ -846,17 +846,41 @@
   {
    "layer": "strategic",
    "id": "amphib-build",
-   "name": "馬尾造船所の 100 m 以上の船（撮影ごとの数の 30 日平均）",
+   "name": "造船所の 100 m 以上の船（撮影ごとの数の 30 日平均、いちばん高い造船所）",
    "category": "transport",
-   "source": "Sentinel-1/2（sat/ の ship_counts、MAW）",
+   "source": "Sentinel-1（sat/ の ship_counts と港のアーカイブ）",
    "kind": "samples",
    "status": "collected",
-   "value": 5.0,
-   "z": null,
+   "value": null,
    "score": null,
-   "reason": "平常値を作る期間が足りない（0、要 6）",
-   "as_of": "2026-11-12",
-   "note": "揚陸艦・特殊はしけの造船所（広州・龍穴島、上海・滬東中華、長興島）は sat/ の地点の準備（陸マスク・基準・岸壁線）がまだで、今は馬尾だけ。Contains modified Copernicus Sentinel data",
+   "reason": "平常値を作る期間が足りない（造船所 3 か所は 2026-12 から月 1 回）",
+   "parts": {
+    "MAW": {
+     "name": "福州・馬尾",
+     "value": 5.0,
+     "score": null,
+     "z": null
+    },
+    "LXD": {
+     "name": "広州・龍穴島",
+     "value": null,
+     "score": null,
+     "z": null
+    },
+    "HDZ": {
+     "name": "上海・滬東中華",
+     "value": null,
+     "score": null,
+     "z": null
+    },
+    "SJN": {
+     "name": "上海・長興島",
+     "value": null,
+     "score": null,
+     "z": null
+    }
+   },
+   "note": "福州・馬尾 5.0；広州・龍穴島 —；上海・滬東中華 —；上海・長興島 —。Contains modified Copernicus Sentinel data [2025–2026]",
    "judged": false
   },
   {
