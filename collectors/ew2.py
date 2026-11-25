@@ -72,8 +72,9 @@ def recent(doc: dict, days: int) -> bool:
 
 
 def links(html: str) -> list[tuple[str, str]]:
-    out = re.findall(r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', html, re.S | re.I)
-    return [(h, re.sub(r'<[^>]+>|&nbsp;|\s+', ' ', t).strip()) for h, t in out]
+    # the old rmrb layout (to 2024-11) writes href=nw.….htm without quotes
+    out = re.findall(r'<a\s[^>]*?href=(?:"([^"]+)"|\'([^\']+)\'|([^\s>"\']+))[^>]*>(.*?)</a>', html, re.S | re.I)
+    return [(a or b or c, re.sub(r'<[^>]+>|&nbsp;|\s+', ' ', t).strip()) for a, b, c, t in out]
 
 
 # ---------------------------------------------------------------- gold (SAFE)
@@ -317,6 +318,8 @@ def run_rmrb(days: int) -> dict:
             continue
         if heads is not None:
             doc['days'][k] = heads
+            if k in doc.get('empty', []):
+                doc['empty'].remove(k)
             got += 1
             if got % 20 == 0:
                 save('rmrb', doc)   # a long backfill keeps what it has fetched if the job is stopped
