@@ -86,6 +86,24 @@ class CollectorParseTest(unittest.TestCase):
                          [['2026-01-01', '2026-01-09'], ['2026-02-01', '2026-02-02']])
 
 
+class MainArgsTest(unittest.TestCase):
+    def test_no_sources_means_all_and_unknown_is_refused(self):
+        called = []
+        old = dict(ew2.RUNNERS)
+        old_save = ew2.save
+        try:
+            for k in ew2.RUNNERS:
+                ew2.RUNNERS[k] = (lambda k: lambda a: called.append(k) or {})(k)
+            ew2.save = lambda name, doc: None
+            self.assertEqual(ew2.main([]), 0)
+            self.assertEqual(called, list(old))
+            with self.assertRaises(SystemExit):
+                ew2.main(['nope'])
+        finally:
+            ew2.RUNNERS.update(old)
+            ew2.save = old_save
+
+
 class ScoringTest(unittest.TestCase):
     def test_monthly_waits_for_publication_and_diff(self):
         months = {f'2025-{m:02d}': 7000 + 3 * m for m in range(1, 13)}
