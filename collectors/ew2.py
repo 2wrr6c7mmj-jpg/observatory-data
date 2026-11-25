@@ -73,7 +73,7 @@ def recent(doc: dict, days: int) -> bool:
 
 def links(html: str) -> list[tuple[str, str]]:
     # the old rmrb layout (to 2024-11) writes href=nw.….htm without quotes
-    out = re.findall(r'<a\s[^>]*?href=(?:"([^"]+)"|\'([^\']+)\'|([^\s>"\']+))[^>]*>(.*?)</a>', html, re.S | re.I)
+    out = re.findall(r'<a\s[^>]*?(?<![\w-])href=(?:"([^"]+)"|\'([^\']+)\'|([^\s>"\']+))[^>]*>(.*?)</a>', html, re.S | re.I)
     return [(a or b or c, re.sub(r'<[^>]+>|&nbsp;|\s+', ' ', t).strip()) for a, b, c, t in out]
 
 
