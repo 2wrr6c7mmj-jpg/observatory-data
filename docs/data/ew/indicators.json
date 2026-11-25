@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T13:30:47Z",
+ "generated_utc": "2026-11-25T16:04:09Z",
  "as_of": "2026-11-25",
  "verdict": "normal",
  "layers": [
@@ -877,7 +877,7 @@
    "parts": {
     "MAW": {
      "name": "福州・馬尾",
-     "value": 5.0,
+     "value": 4.0,
      "score": null,
      "z": null
     },
@@ -900,7 +900,7 @@
      "z": 0.5
     }
    },
-   "note": "福州・馬尾 5.0；広州・龍穴島 5.0（0 点）；上海・滬東中華 5.7（0 点）；上海・長興島 5.7（0 点）。Contains modified Copernicus Sentinel data [2025–2026]",
+   "note": "福州・馬尾 4.0；広州・龍穴島 5.0（0 点）；上海・滬東中華 5.7（0 点）；上海・長興島 5.7（0 点）。Contains modified Copernicus Sentinel data [2025–2026]",
    "judged": false
   },
   {
