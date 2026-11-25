@@ -1,0 +1,78 @@
+name: EW shipyards
+# 早期警戒の「揚陸艦・特殊はしけの建造」：造船所 3 か所（広州・龍穴島 LXD、上海・滬東中華 HDZ、上海・長興島 SJN）を
+# 港のアーカイブ（sat/port_archive.py）で Sentinel-1 だけ数える。月 1 回、直近 35 日、合計 40 PU まで（司令部判断 2026-11-25）。
+# 予算の守り：その月の他の CDSE の使用（main の sat、各ブランチの ocean・ports）を集め、plan の上限（ports 300・全体 9000、余白 450）の内で配る。
+# 書き込むのは docs/data/sat/ports/{LXD,HDZ,SJN}/ とその陸マスクだけ。
+on:
+  schedule:
+    - cron: '17 3 2 * *'   # 2nd of every month, 12:17 JST
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: probe-ports-archive   # the same group as the archive probes: one CDSE job of this kind at a time
+  cancel-in-progress: false
+env:
+  YARDS: 'LXD HDZ SJN'
+  MAX_PU: '40'
+  OCEAN_CAP: '7000'
+jobs:
+  yards:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install numpy and Pillow
+        run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
+      - name: Tests
+        run: python -m unittest tests.test_sat_port_archive -v
+      - name: Budget month (this UTC month)
+        run: echo "BUDGET_MONTH=$(date -u +%Y-%m)" >> "$GITHUB_ENV"
+      - name: Other CDSE usage of this month
+        run: |
+          mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
+          git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
+          python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
+      - name: Land masks (missing only)
+        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port $YARDS || echo "::warning title=mask::陸マスクを作れなかった造船所がある"
+      - name: Plan (catalog only, no PU)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          set -o pipefail
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --budget-month "$BUDGET_MONTH" --cap 300 --global-cap 9000 --global-margin 450 \
+            --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
+            --ocean-cap "$OCEAN_CAP" --max-pu "$MAX_PU" --only $YARDS --proportional --days-from 35 --s1-only | tee "$RUNNER_TEMP/plan-summary.json"
+      - name: Archive (one yard at a time, inside each yard's cap)
+        env:
+          CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
+          CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
+        run: |
+          python -c "import json,sys; [print(m['port'], m['cap'], m['req']) for m in json.load(open(sys.argv[1]))['matrix']]" "$RUNNER_TEMP/plan.json" > "$RUNNER_TEMP/matrix.txt"
+          cat "$RUNNER_TEMP/matrix.txt"
+          rc=0
+          while read -r port cap req; do
+            python -m sat.port_archive run --port "$port" --cap "$cap" --req "$req" --budget-month "$BUDGET_MONTH" \
+              --out docs/data/sat/ports --raw-dir "$RUNNER_TEMP/raw-keep" --tmp "$RUNNER_TEMP/raw" --mask-dir docs/data/sat/ports/masks \
+              --pu-per-min 80 --req-per-min 80 --max-minutes 80 --summary "$RUNNER_TEMP/summary-$port.json" --days-from 35 --s1-only \
+              > /dev/null 2> "$RUNNER_TEMP/run-$port.log" || { rc=1; echo "::warning title=yards::$port が途中で止まった"; }
+            tail -n 15 "$RUNNER_TEMP/run-$port.log"
+            python -m sat.annotate text "summary-$port" "$RUNNER_TEMP/summary-$port.json" || true
+          done < "$RUNNER_TEMP/matrix.txt"
+          echo "rc=$rc"
+      - name: Publish (the three yards and their masks only)
+        if: always()
+        run: |
+          for p in $YARDS; do git add "docs/data/sat/ports/$p" "docs/data/sat/ports/masks/$p"* 2>/dev/null || true; done
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "早期警戒：造船所の S1 の数 ($(date -u +%Y-%m-%d))"
+          bash tools/push_retry.sh --tries 4 --title ew-yards

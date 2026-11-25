@@ -276,6 +276,7 @@ def exercise_indicator(as_of, named, events):
 
 # ---- ew-2：戦略層・動員層・展開層の追加の源（collectors/ew2.py、docs/data/ew/src/）----
 
+YARDS = {'LXD': '広州・龍穴島', 'HDZ': '上海・滬東中華', 'SJN': '上海・長興島'}   # .github/workflows/ew-yards.yml
 MONTHS_BASE = 24      # 月次の平常値に使う月数
 MIN_MONTHS = 12
 SAMPLE_DAYS = 30      # 衛星の数（まばらな標本）を平均する日数
@@ -375,6 +376,14 @@ def load_ew2():
             if a is not None and b is not None:
                 maw[d(r['acquired_utc'])] = a + b
     src['maw'] = maw
+    yards = {}
+    for y in YARDS:
+        rows = read_csv(f'sat/ports/{y}/s1_scenes.csv')
+        yards[y] = {d(r['acquired_utc']): int_or_none(r.get('len_100_200')) + int_or_none(r.get('len_ge200'))
+                    for r in rows if r.get('acquired_utc') and r.get('result') == 'counted'
+                    and float(r.get('coverage') or 0) >= 0.95
+                    and int_or_none(r.get('len_100_200')) is not None and int_or_none(r.get('len_ge200')) is not None}
+    src['yards'] = yards
     rm = {}
     for day, heads in ((src.get('rmrb') or {}).get('days') or {}).items():
         rm[d(day)] = sum(1 for h in heads if HOSTILE.search(h.get('title') or ''))
@@ -439,11 +448,18 @@ def ew2_indicators(src, as_of, with_series=True):
         {'value': None, 'score': None, 'reason': 'データが無い'}
     out.append(item('strategic', 'oil-imports', '原油の輸入（千バレル/日）', 'money', 'JODI-Oil World Database', 'monthly', a,
                     note='中国は原油の在庫を出していないため、備蓄の積み増しの代わりに輸入を見る。公表は約 3 か月後とみなす'))
-    last, at = lagged(src.get('maw', {}), as_of, 30)
-    a = assess_samples(src.get('maw', {}), at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
-    out.append(item('strategic', 'amphib-build', '馬尾造船所の 100 m 以上の船（撮影ごとの数の 30 日平均）', 'transport',
-                    'Sentinel-1/2（sat/ の ship_counts、MAW）', 'samples', a, as_of=at.isoformat(),
-                    note='揚陸艦・特殊はしけの造船所（広州・龍穴島、上海・滬東中華、長興島）は sat/ の地点の準備（陸マスク・基準・岸壁線）がまだで、今は馬尾だけ。Contains modified Copernicus Sentinel data'))
+    parts, notes, best = {}, [], None
+    for sid, name, samples in [('MAW', '福州・馬尾', src.get('maw', {}))] + [(k, v, (src.get('yards') or {}).get(k, {})) for k, v in YARDS.items()]:
+        last, at = lagged(samples, as_of, 35)
+        r = assess_samples(samples, at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
+        parts[sid] = {'name': name, 'value': r.get('value'), 'score': r.get('score'), 'z': r.get('z')}
+        notes.append(f"{name} {r.get('value') if r.get('value') is not None else '—'}" + (f"（{r['score']} 点）" if r.get('score') is not None else ''))
+        if r.get('score') is not None and (best is None or r['score'] > best['score']):
+            best = {**r, 'site': name}
+    a = best or {'value': None, 'score': None, 'reason': '平常値を作る期間が足りない（造船所 3 か所は 2026-12 から月 1 回）'}
+    out.append(item('strategic', 'amphib-build', '造船所の 100 m 以上の船（撮影ごとの数の 30 日平均、いちばん高い造船所）', 'transport',
+                    'Sentinel-1（sat/ の ship_counts と港のアーカイブ）', 'samples', a, parts=parts,
+                    note='；'.join(notes) + '。Contains modified Copernicus Sentinel data'))
     last, at = lagged(src.get('rmrb_daily', {}), as_of, 2)
     a = assess_count(src.get('rmrb_daily', {}), at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
     out.append(item('strategic', 'rhetoric', '人民日報の要聞の見出しの台湾・闘争の語（7 日合計）', 'messaging', '人民日報 電子版（1〜4 版）',
