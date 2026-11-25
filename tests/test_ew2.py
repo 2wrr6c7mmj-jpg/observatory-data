@@ -196,6 +196,16 @@ class ScoringTest(unittest.TestCase):
         self.assertIsNone(ew.assess_monthly(months, date(2026, 6, 1), 7)['score'])
         self.assertIsNotNone(ew.assess_monthly(months, date(2026, 1, 20), 7)['score'])
 
+    def test_amphib_takes_the_highest_yard(self):
+        base = {date(2026, 6, 30) - timedelta(days=6 * i): 4 for i in range(60)}
+        hot = dict(base)
+        hot.update({date(2026, 6, 30) - timedelta(days=i): 20 for i in range(0, 25, 6)})
+        src = {'maw': base, 'yards': {'LXD': hot, 'HDZ': {}, 'SJN': base}}
+        a = {i['id']: i for i in ew.ew2_indicators(src, date(2026, 6, 30))}['amphib-build']
+        self.assertEqual((a['score'], a['site']), (3, '広州・龍穴島'))
+        self.assertIsNone(a['parts']['HDZ']['score'])
+        self.assertFalse(a['judged'])
+
     def test_alert_from_logistics(self):
         mk = lambda layer, cat, sc: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected'}  # noqa: E731
         base = [mk('action', 'military', 0), mk('action', 'law_enforcement', 0)]
