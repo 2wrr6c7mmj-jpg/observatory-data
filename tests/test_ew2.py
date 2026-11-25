@@ -73,10 +73,12 @@ class CollectorParseTest(unittest.TestCase):
                 ('福建拉动消费', 'p2'),                                   # 拉动 in an economy story
                 ('Taiwan extends conscription to one year', 'p3'),       # Taiwan's own conscription
                 ('台湾国军征召后备军人', 'p4'),
-                ('福建退役军人事务厅', 'p5')]                              # 退役 alone
+                ('福建退役军人事务厅', 'p5'),                              # 退役 alone
+                ('Taiwan extends conscription amid PLA pressure', 'p6'),  # Taiwan with PLA
+                ('浙江召开征兵工作会议', 'p7')]                             # the routine twice-a-year call-up
         m = ew2.feed_matches({'records': [{'title': t, 'publishedAt': ms, 'url': u} for t, u in recs]})
         self.assertEqual(m['mobilization'] + m['conscription'], [])
-        m = ew2.feed_matches({'records': [{'title': '解放军福建民兵演练 near Taiwan', 'publishedAt': ms, 'url': 'q'}]})
+        m = ew2.feed_matches({'records': [{'title': '解放军福建民兵演练', 'publishedAt': ms, 'url': 'q'}]})
         self.assertEqual([i['url'] for i in m['mobilization']], ['q'])
 
     def test_merge_ranges(self):
@@ -120,6 +122,13 @@ class ScoringTest(unittest.TestCase):
         self.assertEqual(ew.feed_event(doc, 'mobilization', date(2026, 11, 27))['score'], 0)
         gap = {'covered': [['2026-10-01T00:00Z', '2026-11-10T00:00Z'], ['2026-11-11T06:00Z', '2026-11-30T23:59Z']], 'items': {}}
         self.assertIsNone(ew.feed_event(gap, 'cables', date(2026, 11, 27))['score'])
+
+    def test_feed_event_on_today_uses_the_last_complete_day(self):
+        now = datetime(2026, 11, 27, 6, 41, tzinfo=timezone.utc)
+        spans = [['2026-10-20T00:00Z', ew2.iso(now)]]
+        doc = {'covered': spans, 'items': {'cables': [{'date': '2026-11-26', 'title': 'x'}]}}
+        r = ew.feed_event(doc, 'cables', date(2026, 11, 27))
+        self.assertEqual((r['score'], r['as_of']), (1, '2026-11-26'))
 
     def test_covered_spans(self):
         sp = [['2026-11-01T00:00Z', '2026-11-03T00:00Z'], ['2026-11-03T00:00Z', '2026-11-05T12:00Z']]

@@ -277,6 +277,8 @@ FEED_WORDS = {
 }
 # 中国側の地名（国防動員・徴兵）。台湾側の動員・徴兵の記事は数えない
 CHINA_SIDE = re.compile(r'福建|浙江|广东|廣東|江苏|山东|厦门|廈門|福州|宁波|寧波|温州|東部戦区|东部战区|南部战区|解放军|解放軍|中国军|中共|Fujian|Zhejiang|Guangdong|Eastern Theater|\bPLA\b|Chinese military|China\'s military')
+# 年 2 回のいつもの徴兵・民兵の整組の報道は数えない
+ROUTINE = re.compile(r'征兵工作会议|征兵开始|征兵工作启动|征兵体检|民兵整组|征兵宣传')
 TAIWAN_SIDE = re.compile(r'台湾|台灣|臺灣|國軍|国軍|Taiwan', re.I)
 CABLE_PLACE = re.compile(r'台湾|台灣|臺灣|金门|金門|马祖|馬祖|澎湖|沖縄|中国|中國|Taiwan|Matsu|Kinmen|Penghu|Okinawa|China|Chinese')
 
@@ -291,7 +293,7 @@ def feed_matches(feed: dict) -> dict[str, list]:
             if k == 'cables':
                 place = CABLE_PLACE.search(text)
             else:
-                place = CHINA_SIDE.search(text) and not (TAIWAN_SIDE.search(text) and not re.search(r'解放军|解放軍|\bPLA\b|中共', text))
+                place = CHINA_SIDE.search(text) and not TAIWAN_SIDE.search(text) and not ROUTINE.search(text)
             if pat.search(text) and place and day:
                 out[k].append({'date': day, 'title': (r.get('title') or '')[:200], 'url': r.get('url'), 'source': r.get('source')})
     return out
@@ -299,7 +301,10 @@ def feed_matches(feed: dict) -> dict[str, list]:
 
 def run_feed() -> dict:
     doc = load('feed', {'items': {k: [] for k in FEED_WORDS}})
-    feed = json.loads(fetch(FEED, 30_000_000).body.decode('utf-8'))
+    # 自分のサイトの公開の API（exercises/sources.py と同じ読み方。robots.txt は無く、Pages は HTML を返すことがある）
+    req = urllib.request.Request(FEED, headers={'Accept': 'application/json', 'User-Agent': UA})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        feed = json.loads(r.read(30_000_000).decode('utf-8'))
     run = datetime.now(timezone.utc)
     for k, items in feed_matches(feed).items():
         have = {i['url'] for i in doc['items'].setdefault(k, [])}
@@ -467,7 +472,7 @@ def main(argv=None) -> int:
             failed += 1
         except polite.SourceBlocked as e:
             status['sources'][name] = {'status': 'blocked', 'at': now_utc(), 'reason': str(e)[:200]}
-            print(f'::warning title=ew2 {name}::challenge {e}')
+            print(f'::warning title=ew2 {name}::blocked {e}')
             failed += 1
         except Exception as e:  # noqa: BLE001 - one source must not stop the others
             status['sources'][name] = {'status': 'error', 'at': now_utc(), 'reason': f'{type(e).__name__}: {str(e)[:200]}'}

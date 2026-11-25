@@ -403,12 +403,24 @@ def lagged(daily, as_of, max_lag):
     return last, (last if (as_of - last).days <= max_lag else as_of)
 
 
+def last_covered_day(spans, as_of, back=2):
+    """The latest day (as_of or up to ``back`` days before) whose 24 hours are inside the spans; None when none is.
+    The run of the day has not reached midnight yet, so 'today' is usually not complete."""
+    for i in range(back + 1):
+        day = as_of - timedelta(days=i)
+        if covered(spans, day, day):
+            return day
+    return None
+
+
 def feed_event(doc, key, as_of, days=30):
     """報道の語の事象：窓（as_of までの days 日）の全体が収集の期間（covered）に入っていなければ null。1 件で 1 点、3 件で 2 点。"""
-    if not doc or not covered(doc.get('covered'), as_of - timedelta(days=days - 1), as_of):
-        return {'value': None, 'score': None, 'reason': '報道の語の収集の期間外（2026-11-25 から）'}
-    n = [i for i in (doc.get('items') or {}).get(key, []) if as_of - timedelta(days=days) < d(i['date']) <= as_of]
-    return {'value': len(n), 'score': 2 if len(n) >= 3 else 1 if n else 0, 'note': '；'.join(i['title'] for i in n[-3:]) or '該当なし'}
+    end = last_covered_day((doc or {}).get('covered'), as_of)
+    if not doc or end is None or not covered(doc.get('covered'), end - timedelta(days=days - 1), end):
+        return {'value': None, 'score': None, 'reason': f'報道の語の収集が {days} 日の窓を覆っていない（2026-11-25 から集め始めた。途中の穴も不明）'}
+    n = [i for i in (doc.get('items') or {}).get(key, []) if end - timedelta(days=days) < d(i['date']) <= end]
+    return {'value': len(n), 'score': 2 if len(n) >= 3 else 1 if n else 0, 'as_of': end.isoformat(),
+            'note': '；'.join(i['title'] for i in n[-3:]) or '該当なし'}
 
 
 def ew2_indicators(src, as_of, with_series=True):
@@ -463,10 +475,11 @@ def ew2_indicators(src, as_of, with_series=True):
                         'count-7d', a, as_of=at.isoformat(), note='GFW の在りかは約 4 日遅れ。格子の合計だけを使い、船の識別子は保存しない',
                         **({'series': weekly_series(series, at)} if with_series and last else {})))
     io_ = e2.get('ioda')
-    if not io_ or not io_.get('verified') or not covered(io_.get('covered'), as_of - timedelta(days=6), as_of):
-        a = {'value': None, 'score': None, 'reason': 'IODA の取得の期間外'}
+    end = last_covered_day((io_ or {}).get('covered'), as_of)
+    if not io_ or not io_.get('verified') or end is None or not covered(io_.get('covered'), end - timedelta(days=6), end):
+        a = {'value': None, 'score': None, 'reason': 'IODA の取得が 7 日の窓を覆っていない（または地域のコードが未確認）'}
     else:
-        t1 = int(datetime(as_of.year, as_of.month, as_of.day, tzinfo=timezone.utc).timestamp()) + 86400
+        t1 = int(datetime(end.year, end.month, end.day, tzinfo=timezone.utc).timestamp()) + 86400
         ev = [x for x in io_['events'] if t1 - 7 * 86400 <= x['start'] < t1]
         longest = max((x['duration'] for x in ev), default=0)
         a = {'value': len(ev), 'score': 3 if longest >= 6 * 3600 else 2 if longest >= 3600 else 1 if ev else 0,
