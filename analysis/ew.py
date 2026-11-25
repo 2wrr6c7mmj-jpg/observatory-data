@@ -560,8 +560,8 @@ def judge(indicators):
     hot_ops = [i['id'] for i in used if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
     logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in used)
     trial_hot = [i['id'] for i in indicators if not i.get('judged', True) and (i['score'] or 0) >= 2]
-    action_scored = sum(1 for i in indicators if i['layer'] == 'action' and i['score'] is not None)
-    taiwan = [i for i in indicators if i.get('group') == 'taiwan']
+    action_scored = sum(1 for i in used if i['layer'] == 'action' and i['score'] is not None)
+    taiwan = [i for i in used if i.get('group') == 'taiwan']
     if len(hot_logistics) >= 2:
         verdict = 'alert'
     elif action_scored < MIN_ACTION or (taiwan and all(i['score'] is None for i in taiwan)):
