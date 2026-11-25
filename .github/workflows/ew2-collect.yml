@@ -1,0 +1,59 @@
+name: Collect EW sources
+# 早期警戒 ew-2 の追加の源（collectors/ew2.py）を集める。書き込むのは docs/data/ew/src/ だけ。
+# 毎日 1 回（さかのぼり 10 日）と、報道の一覧だけ 6 時間ごと。手で動かすときは days・years・sources でさかのぼりを指定できる（初回の取り込み用）。
+on:
+  schedule:
+    - cron: '23 22 * * *'   # 07:23 JST, every source
+    - cron: '41 */6 * * *'  # every 6 hours, the site feed only (/api/feeds returns the last 24 hours)
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'さかのぼる日数（rmrb・ioda・ferries）'
+        default: '10'
+      years:
+        description: 'さかのぼる年数（gold・oil）'
+        default: '1'
+      sources:
+        description: '空白区切りの源（空ならすべて）'
+        default: ''
+      force:
+        description: '月次の源（gold・oil）も取り直す（さかのぼり用）'
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: ew2-collect
+  cancel-in-progress: false
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: pdftotext (JWC の PDF)
+        run: sudo apt-get install -y -q poppler-utils >/dev/null
+      - name: Tests
+        run: python -m unittest tests.test_ew2
+      - name: Collect
+        env:
+          GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
+          DAYS: ${{ inputs.days || '10' }}
+          YEARS: ${{ inputs.years || '1' }}
+          FORCE: ${{ inputs.force || '' }}
+          SOURCES: ${{ github.event.schedule == '41 */6 * * *' && 'feed' || inputs.sources || '' }}
+        run: |
+          read -r -a src <<< "$SOURCES"
+          python -m collectors.ew2 "${src[@]}" --days "$DAYS" --years "$YEARS" ${FORCE:+--force}
+      - name: Publish changed results
+        run: |
+          git add docs/data/ew/src
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          export GIT_AUTHOR_NAME="observatory-data bot" GIT_COMMITTER_NAME="observatory-data bot"
+          export GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "早期警戒の源を更新 ($(date -u +%Y-%m-%d))"
+          bash tools/push_retry.sh --tries 4 --title ew2

@@ -3,12 +3,12 @@ name: Build early warning
 # 書き込むのは docs/data/ew/ だけ（meta.json は手書きなので触らない）。標準ライブラリだけで動く。
 on:
   workflow_run:
-    workflows: ['Collect public data', 'Collect PLA Activity Tracker', 'Collect JCG Senkaku', 'Collect JSO transits', 'Exercises']
+    workflows: ['Collect EW sources', 'Collect public data', 'Collect PLA Activity Tracker', 'Collect JCG Senkaku', 'Collect JSO transits', 'Exercises']
     types: [completed]
     branches: [main]
   push:
     branches: [main]
-    paths: ['analysis/ew.py', 'analysis/exercises.json']
+    paths: ['analysis/ew.py', 'analysis/exercises.json', 'docs/data/ew/src/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Tests
-        run: python -m unittest tests.test_ew
+        run: python -m unittest tests.test_ew tests.test_ew2
       - name: Build
         run: python -m analysis.ew
       - name: Publish changed results

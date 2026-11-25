@@ -14,13 +14,14 @@
 import csv
 import json
 import os
+import re
 import sys
 from datetime import date, datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'docs', 'data')
 OUT = os.path.join(DATA, 'ew')
-VERSION = 'ew-1'
+VERSION = 'ew-2'
 
 WINDOW = 7            # 直近の合計をとる日数
 BASE_DAYS = 365       # 平常値に使う期間
@@ -36,26 +37,17 @@ LAYERS = [
     ('deployment', '展開層', '数日前'),
     ('action', '行動層', '数時間前'),
 ]
-LOGISTICS = {'money', 'medical', 'personnel', 'transport'}
+LOGISTICS = {'money', 'personnel', 'transport'}   # 医療（血液・病院）は自動で集められず、欄ごと外した（司令部判断 2026-11-25）
 CATEGORY_JA = {
-    'money': 'お金', 'medical': '医療', 'personnel': '人員', 'transport': '輸送',
+    'money': 'お金', 'personnel': '人員', 'transport': '輸送',
     'military': '軍の活動', 'law_enforcement': '海上法執行', 'messaging': '宣伝',
     'electronic': '電子', 'infrastructure': '通信基盤',
 }
 
-# 未収集の指標（予定）。値は常に null。画面で「未収集」と出す
-PLANNED = [
-    ('strategic', 'oil-stock', '石油備蓄（浮き屋根タンクの影）', 'money', 'Sentinel-2'),
-    ('strategic', 'gold', '金準備・金の輸入', 'money', '人民銀行・税関統計'),
-    ('strategic', 'amphib-build', '揚陸艦・特殊はしけの建造', 'transport', '造船所の衛星画像'),
-    ('strategic', 'rhetoric', '宣伝の論調', 'messaging', '人民日報・解放軍報'),
-    ('mobilization', 'mobilization-drills', '国防動員訓練の件数', 'personnel', '福建・浙江の地方政府サイト'),
-    ('mobilization', 'blood', '血液・病院の準備', 'medical', '血液センター・調達公告'),
-    ('mobilization', 'conscription', '退役延期・徴兵の変更', 'personnel', '徴兵公告'),
-    ('mobilization', 'war-risk', '戦争保険の料率', 'money', '海上保険市場'),
-    ('deployment', 'ferries', 'フェリーの定期航路からの離脱', 'transport', 'AIS'),
-    ('deployment', 'gnss', 'GPS 妨害', 'electronic', 'ADS-B の精度値'),
-    ('deployment', 'cables', '海底ケーブル障害', 'infrastructure', '通信事業者の発表'),
+# 集められない指標。値は常に null。画面で理由を出す
+BLOCKED = [
+    ('deployment', 'gnss', 'GPS 妨害', 'electronic', 'ADS-B の精度値（airplanes.live）',
+     'airplanes.live の API は事前の連絡（メール）が要り、規約の頁はボット対策で読めない（probe/ew2-robots、2026-11-25）。許可を得るまで集めない'),
 ]
 
 
@@ -92,7 +84,7 @@ def window_sum(daily, end, days=WINDOW):
     return total, n
 
 
-def assess_count(daily, as_of, since=None, zero_fill=False):
+def assess_count(daily, as_of, since=None, zero_fill=False, down=False):
     """件数の系列（{date: 数}）を as_of 時点で採点する。
 
     since：これより前の日は平常値に使わない（定義の変更）。
@@ -122,7 +114,7 @@ def assess_count(daily, as_of, since=None, zero_fill=False):
     mad = median([abs(b - med) for b in base])
     scale = max(1.4826 * mad, 0.15 * med, 1.0)
     v = value * WINDOW / n
-    z = (v - med) / scale
+    z = (med - v) / scale if down else (v - med) / scale
     q = sorted(base)
     return {'value': round(v, 1), 'baseline_median': round(med, 1),
             'band': [round(q[int(0.1 * (len(q) - 1))], 1), round(q[int(0.9 * (len(q) - 1))], 1)],
@@ -202,6 +194,8 @@ def load_inputs():
                        if r.get('nation') == 'CN' and r.get('date') and r.get('pub_date')]
     last = (load_json('jso/status.json', {}) or {}).get('last_release')
     src['jso_last_release'] = d(last) if last else None
+    src.update(load_ew2())
+    src['ew2'] = {k: src.pop(k) for k in ('gold', 'oil', 'jwc', 'rmrb', 'feed', 'ioda', 'ferries')}
     with open(os.path.join(ROOT, 'analysis', 'exercises.json'), encoding='utf-8') as f:
         named = json.load(f)['exercises']
     events = []
@@ -280,6 +274,223 @@ def exercise_indicator(as_of, named, events):
     return {'score': best, 'value': None, 'note': note}
 
 
+# ---- ew-2：戦略層・動員層・展開層の追加の源（collectors/ew2.py、docs/data/ew/src/）----
+
+MONTHS_BASE = 24      # 月次の平常値に使う月数
+MIN_MONTHS = 12
+SAMPLE_DAYS = 30      # 衛星の数（まばらな標本）を平均する日数
+MIN_SAMPLE_WINDOWS = 6
+HOSTILE = re.compile(r'台独|分裂|外部势力|惩戒|反制|亮剑|备战|打仗|斗争|统一|武力')
+RMRB_SINCE_NOTE = '人民日報 1〜4 版の見出しのうち、台湾・闘争・備戦の語（台独・分裂・外部势力・惩戒・反制・亮剑・备战・打仗・斗争・统一・武力）を含む数'
+
+
+def month_end(ym):
+    y, m = int(ym[:4]), int(ym[5:7])
+    return (date(y + (m == 12), m % 12 + 1, 1) - timedelta(days=1))
+
+
+def assess_monthly(months, as_of, lag_days, diff=False, max_age_days=45):
+    """月次の系列 {YYYY-MM: 値}。月末から lag_days たって公表されたとみなし、as_of で見えていた最新の月を、
+    その前の MONTHS_BASE か月の中央値と MAD でロバスト z にする。diff=True は前月からの増え。"""
+    seen = sorted(k for k in months if month_end(k) + timedelta(days=lag_days) <= as_of)
+    vals = {k: months[k] for k in seen}
+    if diff:
+        vals = {k: vals[k] - vals[p] for p, k in zip(seen, seen[1:]) if (month_end(k) - month_end(p)).days < 40}
+    keys = sorted(vals)
+    if not keys:
+        return {'value': None, 'z': None, 'score': None, 'reason': 'データが無い'}
+    last = keys[-1]
+    if (as_of - (month_end(last) + timedelta(days=lag_days))).days > max_age_days:
+        return {'value': vals[last], 'z': None, 'score': None, 'month': last, 'reason': f'最新の月（{last}）が古すぎる（収集が止まっている疑い）'}
+    base = [vals[k] for k in keys[:-1][-MONTHS_BASE:]]
+    if len(base) < MIN_MONTHS:
+        return {'value': vals[last], 'z': None, 'score': None, 'month': last,
+                'reason': f'平常値を作る月が足りない（{len(base)} か月、要 {MIN_MONTHS} か月）'}
+    med = median(base)
+    mad = median([abs(b - med) for b in base])
+    scale = max(1.4826 * mad, 0.15 * abs(med), 1.0)
+    z = (vals[last] - med) / scale
+    q = sorted(base)
+    return {'value': vals[last], 'month': last, 'baseline_median': round(med, 1),
+            'band': [round(q[int(0.1 * (len(q) - 1))], 1), round(q[int(0.9 * (len(q) - 1))], 1)],
+            'z': round(z, 2), 'score': score_from_z(z), 'months': len(base)}
+
+
+def assess_samples(samples, as_of):
+    """まばらな標本（衛星の撮影ごとの数）。直近 SAMPLE_DAYS 日の平均を、それより前の 1 年の SAMPLE_DAYS 日ごとの平均と比べる。"""
+    def mean_in(end):
+        xs = [v for k, v in samples.items() if end - timedelta(days=SAMPLE_DAYS) < k <= end]
+        return sum(xs) / len(xs) if xs else None
+    v = mean_in(as_of)
+    if v is None:
+        return {'value': None, 'z': None, 'score': None, 'reason': f'直近 {SAMPLE_DAYS} 日の撮影が無い'}
+    base = []
+    end = as_of - timedelta(days=SAMPLE_DAYS)
+    while end > as_of - timedelta(days=BASE_DAYS):
+        m = mean_in(end)
+        if m is not None:
+            base.append(m)
+        end -= timedelta(days=SAMPLE_DAYS)
+    if len(base) < MIN_SAMPLE_WINDOWS:
+        return {'value': round(v, 1), 'z': None, 'score': None, 'reason': f'平常値を作る期間が足りない（{len(base)}、要 {MIN_SAMPLE_WINDOWS}）'}
+    med = median(base)
+    mad = median([abs(b - med) for b in base])
+    scale = max(1.4826 * mad, 0.15 * med, 1.0)
+    z = (v - med) / scale
+    q = sorted(base)
+    return {'value': round(v, 1), 'baseline_median': round(med, 1),
+            'band': [round(q[int(0.1 * (len(q) - 1))], 1), round(q[int(0.9 * (len(q) - 1))], 1)],
+            'z': round(z, 2), 'score': score_from_z(z)}
+
+
+def covered(spans, first_day, last_day):
+    """Is every moment of the UTC days first_day..last_day inside the collected spans (ISO times)?
+    A span written with dates only counts as whole days."""
+    start = datetime(first_day.year, first_day.month, first_day.day, tzinfo=timezone.utc)
+    end = datetime(last_day.year, last_day.month, last_day.day, tzinfo=timezone.utc) + timedelta(days=1)
+    def t(x, upper):
+        if len(x) == 10:
+            v = datetime.fromisoformat(x).replace(tzinfo=timezone.utc)
+            return v + timedelta(days=1) if upper else v
+        return datetime.fromisoformat(x.replace('Z', '+00:00'))
+    for a, b in sorted(spans or []):
+        a, b = t(a, False), t(b, True)
+        if a <= start < b:
+            start = b
+        if start >= end:
+            return True
+    return start >= end
+
+
+def load_ew2():
+    """docs/data/ew/src/ の各源と、衛星の数（sat/ の ship_counts.csv の馬尾造船所）。"""
+    src = {}
+    for name in ('gold', 'oil', 'jwc', 'rmrb', 'feed', 'ioda', 'ferries'):
+        src[name] = load_json(os.path.join(OUT, 'src', name + '.json'), None)
+    maw = {}
+    for r in read_csv('sat/ship_counts.csv'):
+        if r.get('site_id') == 'MAW' and r.get('acquired_utc') and (r.get('platform') or '').startswith('sentinel-1') \
+                and (float(r.get('coverage') or 0) >= 0.95):
+            a, b = int_or_none(r.get('len_100_200')), int_or_none(r.get('len_ge200'))
+            if a is not None and b is not None:
+                maw[d(r['acquired_utc'])] = a + b
+    src['maw'] = maw
+    rm = {}
+    for day, heads in ((src.get('rmrb') or {}).get('days') or {}).items():
+        rm[d(day)] = sum(1 for h in heads if HOSTILE.search(h.get('title') or ''))
+    src['rmrb_daily'] = rm
+    for z in ('fujian', 'bohai'):
+        src['ferry_' + z] = {d(k): v for k, v in (((src.get('ferries') or {}).get('daily') or {}).get(z) or {}).items()}
+    return src
+
+
+# ew-2 の指標は、誤報の目安と過去事例で確かめるまで「表示だけ」（判定に入れない）。確かめたものから外す
+TRIAL = {'gold', 'oil-imports', 'amphib-build', 'rhetoric', 'mobilization-drills', 'conscription', 'war-risk',
+         'ferries-fujian', 'ferries-bohai', 'cables'}
+
+
+def item(layer, iid, name, cat, source, kind, a, **extra):
+    out = {'layer': layer, 'id': iid, 'name': name, 'category': cat, 'source': source, 'kind': kind, 'status': 'collected', **a, **extra}
+    if iid in TRIAL:
+        out['judged'] = False
+    return out
+
+
+def lagged(daily, as_of, max_lag):
+    last = max((k for k in daily if k <= as_of), default=None)
+    if last is None:
+        return None, as_of
+    return last, (last if (as_of - last).days <= max_lag else as_of)
+
+
+def last_covered_day(spans, as_of, back=2):
+    """The latest day (as_of or up to ``back`` days before) whose 24 hours are inside the spans; None when none is.
+    The run of the day has not reached midnight yet, so 'today' is usually not complete."""
+    for i in range(back + 1):
+        day = as_of - timedelta(days=i)
+        if covered(spans, day, day):
+            return day
+    return None
+
+
+def feed_event(doc, key, as_of, days=30):
+    """報道の語の事象：窓（as_of までの days 日）の全体が収集の期間（covered）に入っていなければ null。1 件で 1 点、3 件で 2 点。"""
+    end = last_covered_day((doc or {}).get('covered'), as_of)
+    if not doc or end is None or not covered(doc.get('covered'), end - timedelta(days=days - 1), end):
+        return {'value': None, 'score': None, 'reason': f'報道の語の収集が {days} 日の窓を覆っていない（2026-11-25 から集め始めた。途中の穴も不明）'}
+    n = [i for i in (doc.get('items') or {}).get(key, []) if end - timedelta(days=days) < d(i['date']) <= end]
+    return {'value': len(n), 'score': 2 if len(n) >= 3 else 1 if n else 0, 'as_of': end.isoformat(),
+            'note': '；'.join(i['title'] for i in n[-3:]) or '該当なし'}
+
+
+def ew2_indicators(src, as_of, with_series=True):
+    e2 = src.get('ew2') or {}
+    out = []
+    # 戦略層
+    g = e2.get('gold')
+    a = assess_monthly({k: v['value'] for k, v in (g or {}).get('months', {}).items()}, as_of, 7, diff=True) if g else \
+        {'value': None, 'score': None, 'reason': 'データが無い'}
+    if a.get('score') is not None:
+        a['score'] = min(a['score'], 1)   # 金だけでは 1 点まで（スイスからの金の輸出などで裏付けが取れるまで）
+    out.append(item('strategic', 'gold', '金準備の月の増え（万盎司）', 'money', '国家外汇管理局「官方储备资产」', 'monthly', a,
+                    note='公表は翌月 7 日ごろとみなす。前月からの増えを直近 24 か月と比べる。金だけでは 1 点まで'))
+    o = e2.get('oil')
+    a = assess_monthly({k: v['value'] for k, v in (o or {}).get('months', {}).items()}, as_of, 90) if o else \
+        {'value': None, 'score': None, 'reason': 'データが無い'}
+    out.append(item('strategic', 'oil-imports', '原油の輸入（千バレル/日）', 'money', 'JODI-Oil World Database', 'monthly', a,
+                    note='中国は原油の在庫を出していないため、備蓄の積み増しの代わりに輸入を見る。公表は約 3 か月後とみなす'))
+    last, at = lagged(src.get('maw', {}), as_of, 30)
+    a = assess_samples(src.get('maw', {}), at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
+    out.append(item('strategic', 'amphib-build', '馬尾造船所の 100 m 以上の船（撮影ごとの数の 30 日平均）', 'transport',
+                    'Sentinel-1/2（sat/ の ship_counts、MAW）', 'samples', a, as_of=at.isoformat(),
+                    note='揚陸艦・特殊はしけの造船所（広州・龍穴島、上海・滬東中華、長興島）は sat/ の地点の準備（陸マスク・基準・岸壁線）がまだで、今は馬尾だけ。Contains modified Copernicus Sentinel data'))
+    last, at = lagged(src.get('rmrb_daily', {}), as_of, 2)
+    a = assess_count(src.get('rmrb_daily', {}), at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
+    out.append(item('strategic', 'rhetoric', '人民日報の要聞の見出しの台湾・闘争の語（7 日合計）', 'messaging', '人民日報 電子版（1〜4 版）',
+                    'count-7d', a, as_of=at.isoformat(), note=RMRB_SINCE_NOTE,
+                    **({'series': weekly_series(src.get('rmrb_daily', {}), at)} if with_series and last else {})))
+    # 動員層
+    out.append(item('mobilization', 'mobilization-drills', '国防動員・民兵・人防の報道（30 日）', 'personnel',
+                    '東アジア情勢観測の報道の一覧（語の一致）', 'event', feed_event(e2.get('feed'), 'mobilization', as_of)))
+    out.append(item('mobilization', 'conscription', '徴兵・退役延期の報道（30 日）', 'personnel',
+                    '東アジア情勢観測の報道の一覧（語の一致）', 'event', feed_event(e2.get('feed'), 'conscription', as_of)))
+    j = e2.get('jwc')
+    known = sorted(((k, v) for k, v in ((j or {}).get('circulars') or {}).items() if d(v['first_seen']) <= as_of), key=lambda x: x[0])
+    if not known:
+        a = {'value': None, 'score': None, 'reason': 'JWC の指定海域の記録の期間外（2026-11-25 から）'}
+    else:
+        k, v = known[-1]
+        a = {'value': None, 'score': 3 if v.get('east_asia_terms') else 0,
+             'note': f"{k}：" + ('、'.join(v['east_asia_terms']) if v.get('east_asia_terms') else '東アジアの語なし')}
+    a['note'] = ((a.get('note') or '') + '（料率は公開されないため、指定海域の有無で見る）').strip()
+    out.append(item('mobilization', 'war-risk', '戦争保険の指定海域（JWC Listed Areas）に東アジア', 'money',
+                    "Lloyd's Market Association, Joint War Committee", 'event', a))
+    # 展開層
+    for z, name, down in (('fujian', '台湾海峡の西岸（福建沿岸）の旅客船の時間（7 日合計）', False),
+                          ('bohai', '渤海の定期航路の旅客船の時間の減り（7 日合計）', True)):
+        series = src.get('ferry_' + z, {})
+        last, at = lagged(series, as_of, 7)
+        a = assess_count(series, at, down=down) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
+        out.append(item('deployment', 'ferries-' + z, name, 'transport', 'Global Fishing Watch（Powered by Global Fishing Watch、CC BY-NC 4.0）',
+                        'count-7d', a, as_of=at.isoformat(), note='GFW の在りかは約 4 日遅れ。格子の合計だけを使い、船の識別子は保存しない',
+                        **({'series': weekly_series(series, at)} if with_series and last else {})))
+    io_ = e2.get('ioda')
+    end = last_covered_day((io_ or {}).get('covered'), as_of)
+    if not io_ or not io_.get('verified') or end is None or not covered(io_.get('covered'), end - timedelta(days=6), end):
+        a = {'value': None, 'score': None, 'reason': 'IODA の取得が 7 日の窓を覆っていない（または地域のコードが未確認）'}
+    else:
+        t1 = int(datetime(end.year, end.month, end.day, tzinfo=timezone.utc).timestamp()) + 86400
+        ev = [x for x in io_['events'] if t1 - 7 * 86400 <= x['start'] < t1]
+        longest = max((x['duration'] for x in ev), default=0)
+        a = {'value': len(ev), 'score': 3 if longest >= 6 * 3600 else 2 if longest >= 3600 else 1 if ev else 0,
+             'note': f'7 日の障害 {len(ev)} 件、最長 {round(longest / 3600, 1)} 時間（連江・金門・澎湖）'}
+    fc = feed_event(e2.get('feed'), 'cables', as_of, days=7)
+    if fc.get('score') and (a.get('score') is None or fc['score'] > a['score']):
+        a = {**a, 'score': fc['score'], 'note': (a.get('note') or '') + ' 報道：' + fc['note']}
+    out.append(item('deployment', 'cables', '海底ケーブル・離島の通信障害', 'infrastructure', 'IODA（Georgia Tech）と報道の語', 'event', a))
+    return out
+
+
 def build_indicators(src, named, events, as_of, with_series=True):
     out = []
     for layer, iid, name, cat, source, key in COUNT_INDICATORS:
@@ -307,9 +518,10 @@ def build_indicators(src, named, events, as_of, with_series=True):
     out.append({'layer': 'deployment', 'id': 'exercises', 'name': '中国の演習の告知・報道', 'category': 'military',
                 'source': 'exercises（統幕・中国国防部・報道の照合）と analysis/exercises.json', 'kind': 'event',
                 'status': 'collected', **ex})
-    for layer, iid, name, cat, source in PLANNED:
+    out += ew2_indicators(src, as_of, with_series)
+    for layer, iid, name, cat, source, reason in BLOCKED:
         out.append({'layer': layer, 'id': iid, 'name': name, 'category': cat, 'source': source,
-                    'kind': 'planned', 'status': 'planned', 'value': None, 'score': None, 'reason': '未収集'})
+                    'kind': 'blocked', 'status': 'blocked', 'value': None, 'score': None, 'reason': reason})
     return out
 
 
@@ -322,10 +534,11 @@ def judge(indicators):
                        'max': max(scores) if scores else None,
                        'collected': len(scores),
                        'total': sum(1 for i in indicators if i['layer'] == lid)})
-    hot_logistics = sorted({i['category'] for i in indicators
-                            if i['category'] in LOGISTICS and (i['score'] or 0) >= 2})
-    hot_ops = [i['id'] for i in indicators if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
-    logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in indicators)
+    used = [i for i in indicators if i.get('judged', True)]
+    hot_logistics = sorted({i['category'] for i in used if i['category'] in LOGISTICS and (i['score'] or 0) >= 2})
+    hot_ops = [i['id'] for i in used if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
+    logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in used)
+    trial_hot = [i['id'] for i in indicators if not i.get('judged', True) and (i['score'] or 0) >= 2]
     action_scored = sum(1 for i in indicators if i['layer'] == 'action' and i['score'] is not None)
     taiwan = [i for i in indicators if i.get('group') == 'taiwan']
     if len(hot_logistics) >= 2:
@@ -336,10 +549,10 @@ def judge(indicators):
         verdict = 'exercise'
     else:
         verdict = 'normal'
-    return {'verdict': verdict, 'layers': layers, 'hot_logistics': hot_logistics, 'hot_ops': hot_ops,
+    return {'verdict': verdict, 'layers': layers, 'hot_logistics': hot_logistics, 'hot_ops': hot_ops, 'trial_hot': trial_hot,
             'ceiling': None if logistics_collected else 'exercise',
             'ceiling_note': None if logistics_collected else
-            '兵站系（お金・医療・人員・輸送）の指標をまだ収集していないため、「警戒」は出せない（判定の上限は「演習」）'}
+            '兵站系（お金・人員・輸送）の指標は集め始めたが、確かめるまで判定に入れない（表示だけ）。「警戒」はまだ出ない（判定の上限は「演習」）'}
 
 
 def backtest(series, named, events):

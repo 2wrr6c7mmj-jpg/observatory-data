@@ -1,23 +1,30 @@
 {
  "dataset": "ew",
- "version": "ew-1",
+ "version": "ew-2",
  "status": "試行",
  "purpose": "中国が台湾・東シナ海で、演習ではなく本格的な作戦の準備に入ったかを、公開データの組み合わせで早く察知するための指標。単一の指標で結論を出さない",
  "files": {
   "indicators.json": "最新の判定・層ごとの点・指標ごとの値と平常値・直近 26 週の 7 日合計",
   "backtest.json": "名前つきの大規模演習（analysis/exercises.json）の 7 日前・前日・期間中の判定と、演習の前後を除いた日の「演習」以上の割合（誤報の目安）。どちらも名前つきの一覧は採点に使わない",
-  "meta.json": "このファイル（手書き）"
+  "meta.json": "このファイル（手書き）",
+  "src/": "追加の源の取得結果（collectors/ew2.py が毎日書く）：gold・oil・jwc・rmrb・feed・ioda・ferries と status.json"
  },
  "method": {
   "layers": "戦略層（数か月前）・動員層（数週間前）・展開層（数日前）・行動層（数時間前）。下の層ほど早く動き、隠しにくい",
   "count_score": "件数の指標は直近 7 日の合計（値のある日が 5 日以上。欠けた日は平均で補う）を、評価日の 365 日前から 14 日前までの 7 日合計（重ならない週、約 50 週、20 週以上必要）の中央値 m と尺度 s = max(1.4826×MAD, 0.15×m, 1) で z = (x − m)/s にし、z < 2 → 0 点、2〜3 → 1 点、3〜5 → 2 点、5 以上 → 3 点。下振れは点にしない",
   "event_score": "演習の告知・報道（展開層）：exercises の事象のうち中国が参加し台湾・東シナ海・フィリピン海・中国沿岸・南シナ海・沖縄の地域で、評価日が期間中（終わりの翌日まで）かつ初報（firstReported）が評価日までのもの。確度「高」→ 2 点、「中」→ 1 点。exercises の公開が始まった 2026-11-14 より前は null。最新の判定だけは、名前つきの大規模演習（analysis/exercises.json）の期間中なら 3 点（過去事例の検証と誤報の目安では一覧を使わない）",
-  "verdict": "警戒：兵站系のカテゴリー（お金・医療・人員・輸送）のうち 2 つ以上で 2 点以上。不明：台湾周辺（pla-*）の指標がすべて null、または行動層で点の付いた指標が 2 つ未満。演習：展開層・行動層のどれかが 2 点以上。平常：それ以外",
-  "ceiling": "兵站系の指標はまだ収集していないため、今の判定の上限は「演習」。「平常」「演習」は行動層・展開層だけで出している",
+  "verdict": "警戒：兵站系のカテゴリー（お金・人員・輸送）のうち 2 つ以上で 2 点以上。不明：台湾周辺（pla-*）の指標がすべて null、または行動層で点の付いた指標が 2 つ未満。演習：展開層・行動層のどれかが 2 点以上。平常：それ以外",
+  "ceiling": "兵站系の指標を集め始めたが、確かめるまで判定に入れないので、今の判定の上限は「演習」のまま",
   "null": "null は不明（未収集・データ不足・平常値を作る週が足りない）。0 点は平常値の範囲内と確かめたという意味",
-  "lag": "日報の遅れを見込み、最新の日が評価日から 3 日以内なら、その日を評価日にする（indicators の as_of）",
+  "lag": "日報の遅れを見込み、最新の日が評価日から決まった日数以内なら、その日を評価日にする（台湾周辺・海保・統幕 3 日、人民日報 2 日、GFW の旅客船 7 日、馬尾造船所 30 日）。月次は公表の遅れ（金 7 日、原油 90 日）をたってから見えたとみなし、それから 45 日を過ぎて新しい月が来なければ null（収集が止まっている疑い）",
   "precedence": "台湾周辺の機数・艦艇は国防部の日報（taiwan-mnd、around-taiwan 書式）を先に使い、値の無い日だけ PLA Tracker で補う。同じ量どうしだけをつなぐ：艦艇（海軍＋公務船）は国防部の plan_vessels＋official_ships（公務船が null の日は使わない）と PLA Tracker の 2026-03-23 以降の ships_total、海軍艦艇は国防部の plan_vessels とそれより前の ships_total。例外：中間線越えは国防部の median_line_or_adiz と別の量（より狭い）なので、PLA Tracker の median_line_cross だけでつなぎ、国防部の値と混ぜない（司令部判断 2026-11-25）",
-  "publication": "統幕は公表日（pub_date）が評価日までの目撃だけを、航過日ごとに数える。公表の無い日は 0 とし、0 で埋めるのは収集で確かめた最後の公表日（jso/status.json の last_release）までとする。last_release はロシアを含む最後の公表日で、確かめた日ではないため、公表が 4 日以上無いと統幕の指標は null になる（安全側）"
+  "publication": "統幕は公表日（pub_date）が評価日までの目撃だけを、航過日ごとに数える。公表の無い日は 0 とし、0 で埋めるのは収集で確かめた最後の公表日（jso/status.json の last_release）までとする。last_release はロシアを含む最後の公表日で、確かめた日ではないため、公表が 4 日以上無いと統幕の指標は null になる（安全側）",
+  "monthly": "月次の指標（金・原油の輸入）は、月末から公表までの遅れ（金 7 日、原油 90 日）をたってから見えたとみなし、評価日に見えていた最新の月を、その前の 24 か月（12 か月以上）の中央値と MAD でロバスト z にする（尺度 = max(1.4826×MAD, 0.15×|中央値|, 1)）。金は前月からの増え",
+  "samples": "衛星の数（馬尾造船所の 100 m 以上の船）は、直近 30 日の撮影ごとの数の平均を、それより前の 1 年の 30 日ごとの平均（6 期間以上）と比べる",
+  "events": "事象の指標：JWC の指定海域の最新の JWLA に東アジアの語があれば 3 点、無ければ 0 点。報道の語（国防動員・徴兵）は 30 日に 1 件で 1 点、3 件で 2 点。海底ケーブルは IODA の連江・金門・澎湖の障害が 7 日に 1 件で 1 点、1 時間以上で 2 点、6 時間以上で 3 点（報道の語と高い方）。収集の期間（covered）の外は null",
+  "direction": "渤海の定期航路の旅客船は減りに点を付ける（定期航路からの離脱）。他は増えに点を付ける",
+  "trial": "ew-2 で足した指標（金・原油の輸入・馬尾造船所・人民日報・国防動員・徴兵・JWC・旅客船・海底ケーブル）は、誤報の目安と過去事例で確かめるまで「表示だけ」で、総合判定に入れない（indicators の judged=false。2 点以上のものは trial_hot に出す）。金だけでは 1 点まで",
+  "covered": "報道の語と IODA は、採点の窓（30 日・7 日）の全体が収集した時間（covered、UTC の分まで）に入るときだけ採点し、穴があれば null。報道の一覧（/api/feeds）は直近 24 時間しか返さないので 6 時間ごとに取る。IODA の地域のコード（4210 連江・4209 金門・4208 澎湖）は名前で照らし合わせて確かめてから使う。窓の終わりは、24 時間が覆われた最後の日（評価日から 2 日まで戻る）。ferries の covered は取得した日の範囲の記録で、採点には使わない"
  },
  "indicators": {
   "pla-aircraft": "国防部の日報の aircraft（延べ機数）。値の無い日は PLA Tracker の aircraft_total（定義は同じ）",
@@ -26,17 +33,39 @@
   "senkaku": "海上保安庁 尖閣諸島周辺の接続水域に入った中国海警局の船舶等（日ごとの隻数）",
   "jso-transits": "統合幕僚監部の公表資料の中国艦艇の目撃（passages.csv の nation=CN）。評価日までに公表されたものを航過日（date）ごとに数える",
   "exercises": "exercises（3 時間ごと、報道と公式発表の照合）",
-  "pla-navy": "国防部の日報の plan_vessels（中国海軍艦艇）。2026-03-23 より前の値の無い日は PLA Tracker の ships_total。国防部の日報の取得を止めたため 2026-10-31 以降は値が無く、過去事例の検証に使う"
+  "pla-navy": "国防部の日報の plan_vessels（中国海軍艦艇）。2026-03-23 より前の値の無い日は PLA Tracker の ships_total。国防部の日報の取得を止めたため 2026-10-31 以降は値が無く、過去事例の検証に使う",
+  "gold": "国家外汇管理局「官方储备资产」の年ごとの xlsx の金の保有（万盎司）の前月からの増え",
+  "oil-imports": "JODI-Oil World Database の中国の原油の輸入（TOTIMPSB、千バレル/日）。中国は在庫（CLOSTLV）を出しておらず、生産＋輸入−輸出−精製投入もほぼ 0 に釣り合っているため、備蓄の積み増しの代わりに輸入を見る",
+  "amphib-build": "sat/ の ship_counts.csv の馬尾造船所（MAW）の 100 m 以上の候補の数（len_100_200＋len_ge200）。揚陸艦・特殊はしけの造船所（龍穴島・滬東中華・長興島）は地点の準備ができ次第足す",
+  "rhetoric": "人民日報 電子版の 1〜4 版の見出しのうち、台湾・闘争・備戦の語を含む数（日ごと、7 日合計）。見出しと URL を src/rmrb.json に保存して公開する。本文は取らない",
+  "mobilization-drills": "東アジア情勢観測の報道の一覧の見出し・要約のうち、国防動員・民兵・人防の語と、中国側の地名・解放軍の語があるもの。台湾の語がある記事と、民兵の整組などのいつもの報道は数えない",
+  "conscription": "同じく、徴兵・退役延期の語と中国側の地名があるもの。台湾の語がある記事と、年 2 回のいつもの徴兵（征兵工作会议など）の報道は数えない",
+  "war-risk": "Lloyd's Market Association の Joint War Committee の Listed Areas の最新の JWLA の PDF に、台湾・東シナ海・南シナ海などの語があるか。料率は公開されない",
+  "ferries-fujian": "Global Fishing Watch の public-global-presence（vessel_type=passenger）の、台湾海峡の西岸の箱の在りかの時間の日ごとの合計。行の無い日は不明（0 にしない）",
+  "ferries-bohai": "同じく渤海の定期航路の箱。減りに点を付ける。冬の欠航の季節性があるので、1 年目は表示だけ",
+  "cables": "IODA の地域の障害の事象（連江 4210・金門 4209・澎湖 4208）と、報道の語（海底ケーブル）",
+  "gnss": "集めない：airplanes.live の API は事前の連絡（メール）が要り、規約の頁はボット対策で読めない。許可を得たら足す"
  },
  "sources": [
   "Source: ROC Ministry of National Defense; compilation & charts: PLA Activity Tracker (https://pla-tracker.skyfaring.net), by Adam Pan (Skyfaring), CC BY 4.0",
   "海上保安庁ホームページ（PDL1.0）。加工したデータは海上保安庁が作成したものではない",
   "統合幕僚監部 報道発表資料",
   "exercises（observatory-data。出典は各事象の sources）",
-  "名前つきの大規模演習の一覧：ASPI, China Power Pressure Points「China's large-scale exercises since 2022」（analysis/exercises.json の sources）"
+  "名前つきの大規模演習の一覧：ASPI, China Power Pressure Points「China's large-scale exercises since 2022」（analysis/exercises.json の sources）",
+  "国家外汇管理局 官方储备资产（月）https://www.safe.gov.cn/safe/whcb/index.html",
+  "JODI-Oil World Database https://www.jodidata.org/oil/",
+  "Lloyd's Market Association, Joint War Committee, Listed Areas https://lmalloyds.com/specialist-areas/underwriting/listed-areas/",
+  "人民日報 電子版 https://paper.people.com.cn/（見出しと URL だけ。非商用）",
+  "IODA, Georgia Tech Research Corporation https://ioda.inetintel.cc.gatech.edu/（障害の事象の開始・長さ・データ源だけを保存）",
+  "Powered by Global Fishing Watch https://globalfishingwatch.org/（public-global-presence、CC BY-NC 4.0。格子の合計だけ）",
+  "Contains modified Copernicus Sentinel data [2025–2026]（馬尾造船所の数）"
  ],
  "limits": [
-  "兵站系（お金・医療・人員・輸送）、戦略層・動員層の指標は未収集。今は「演習を見分ける」ことしかできない",
+  "血液・病院の準備は自動で網羅して集められず、欄ごと外した（司令部判断 2026-11-25）",
+  "GPS 妨害は集めていない（airplanes.live の許可待ち）",
+  "国防動員・徴兵・JWC は 2026-11-25 から集め始めたので、過去事例の検証では null",
+  "解放軍報・中国国防報の電子版は日付で決まる URL が見つからず、使っていない（国防動員は報道の一覧の語で代える）",
+  "フェリーは箱の中の旅客船の時間で、定期航路の回廊の内外は分けていない",
   "展開層の演習の告知は期間中だけを数え、事前の告知（status=planned）は数えないので、名前どおり「数日前」には動かない（次の版の課題）。また 2026-11-14 より前は収集していないので、過去事例の検証では展開層が null",
   "名前の無い示威行動・演習でも「演習」と出る。backtest.json の false_alarm を誤報の目安として見ること",
   "平常値は直近 1 年の分布なので、活動が少しずつ増えると平常値も上がり、点が付きにくくなる",
@@ -45,5 +74,5 @@
   "艦艇（海軍＋公務船）は公務船の記載がある日しか使えないため、2026-03 より前は週の数が足りず null になることが多い",
   "analysis/exercises.json の演習の一覧は手で選んだ 2022-11 以降の大規模演習で、網羅していない。終わりの日は一覧の値を使う（exercises の事象と 1 日ずれることがある）"
  ],
- "planned": "戦略層：石油備蓄・金・揚陸艦の建造・宣伝の論調。動員層：国防動員訓練・血液と病院・退役延期と徴兵・戦争保険。展開層：フェリーの航路離脱・GPS 妨害・海底ケーブル障害。収集の前に robots.txt と利用規約を確かめる（collectors/polite.py）。個人を特定するデータは扱わない"
+ "planned": "揚陸艦・特殊はしけの造船所（広州・龍穴島、上海・滬東中華、長興島）を sat/ の地点として足す（Sentinel Hub の枠は月 40 PU まで、司令部判断 2026-11-25）。GPS 妨害は airplanes.live の許可を得たら足す"
 }
