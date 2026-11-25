@@ -38,3 +38,4 @@ run_utc,requests,processing_units,pu_source,scenes,s2_requests,s2_processing_uni
 2026-11-22T13:36:37Z,49,0.032,header,0,26,0.032
 2026-11-23T16:15:34Z,50,1.695,header,1,26,1.365
 2026-11-24T16:07:10Z,52,0.595,header,0,29,0.595
+2026-11-25T15:54:14Z,59,9.281,header,6,30,1.175
