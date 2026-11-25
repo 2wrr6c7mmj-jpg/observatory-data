@@ -1,0 +1,19 @@
+name: EW2 source probe
+# ew-2 の情報源の robots.txt と 1 回の取得の結果を注釈で返す。probe/ew2-* ブランチへの push でだけ動く。読み取り専用。
+on:
+  push:
+    branches: ['probe/ew2-*']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m tools.ew2_probe
