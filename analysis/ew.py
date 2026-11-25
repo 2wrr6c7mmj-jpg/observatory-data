@@ -379,8 +379,11 @@ def load_ew2():
     yards = {}
     for y in YARDS:
         rows = read_csv(f'sat/ports/{y}/s1_scenes.csv')
-        newest = max(((r.get('mask_version') or ''), (r.get('detector_version') or '')) for r in rows) if rows else None
-        rows = [r for r in rows if ((r.get('mask_version') or ''), (r.get('detector_version') or '')) == newest]   # one mask and detector version
+        def ver(r):   # (mask n, detector n): the numbers of '…-land-v<n>' and 'cfar-v<n>', compared as numbers
+            nums = [int(m.group(1)) if (m := re.search(r'v(\d+)$', r.get(k) or '')) else -1 for k in ('mask_version', 'detector_version')]
+            return tuple(nums)
+        newest = max(map(ver, rows)) if rows else None
+        rows = [r for r in rows if ver(r) == newest]   # one mask and detector version
         yards[y] = {d(r['acquired_utc']): int_or_none(r.get('len_100_200')) + int_or_none(r.get('len_ge200'))
                     for r in rows if r.get('acquired_utc') and r.get('result') == 'counted'
                     and float(r.get('coverage') or 0) >= 0.95

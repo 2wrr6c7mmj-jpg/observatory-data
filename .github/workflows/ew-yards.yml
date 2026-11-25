@@ -17,7 +17,7 @@ env:
   YARDS: 'LXD HDZ SJN'
   YARDS_MONTH_PU: '40'
   # The month's own caps, written by hand with ports-archive.yml, ocean-cfar-probe.yml and ocean-monitor.yml in one commit
-  # (tests/test_ocean_cfar_probe.py CapsAgreeTest). A run in another month stops until they are rewritten.
+  # (CapsAgreeTest in the ocean tests). A run in another month stops until they are rewritten.
   BUDGET_MONTH: '2026-11'
   OCEAN_CAP: '7000'
   GUARD_ARGS: '--budget-month 2026-11 --cap 300 --global-cap 9000 --global-margin 450'
@@ -71,7 +71,10 @@ jobs:
         run: |
           python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port $YARDS || echo "::warning title=mask::陸マスクを作れなかった造船所がある"
           ok=""
-          for p in $YARDS; do ls docs/data/sat/ports/masks/"$p"* >/dev/null 2>&1 && ok="$ok $p" || echo "::warning title=mask::$p は陸マスクが無いので取得しない"; done
+          for p in $YARDS; do
+            tag=$(python -c "import json,sys; from sat.port_archive import mask_tag; s=[x for x in json.load(open('sat/ports.json'))['sites'] if x['id']==sys.argv[1]][0]; print(mask_tag(s))" "$p")
+            ls docs/data/sat/ports/masks/"$tag".png >/dev/null 2>&1 && ok="$ok $p" || echo "::warning title=mask::$p は今の版の陸マスク（$tag）が無いので取得しない"
+          done
           echo "YARDS_OK=${ok# }" >> "$GITHUB_ENV"
       - name: Plan (catalog only, no PU)
         id: plan
