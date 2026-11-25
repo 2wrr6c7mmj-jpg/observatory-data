@@ -1,7 +1,8 @@
 name: EW shipyards
 # 早期警戒の「揚陸艦・特殊はしけの建造」：造船所 3 か所（広州・龍穴島 LXD、上海・滬東中華 HDZ、上海・長興島 SJN）を
 # 港のアーカイブ（sat/port_archive.py）で Sentinel-1 だけ数える。月 1 回、直近 35 日、合計 40 PU まで（司令部判断 2026-11-25）。
-# 予算の守り：その月の他の CDSE の使用（main の sat、各ブランチの ocean・ports）を集め、plan の上限（ports 300・全体 9000、余白 450）の内で配る。
+# 予算の守り：その月の他の CDSE の使用（main の sat、各ブランチの ocean・ports）を集め、plan の上限（GUARD_ARGS、ports-archive.yml と同じ値・同じ月）の内で、
+# さらにその月に造船所 3 か所で使った分を引いた残り（40 PU − 使用）だけを配る。月の上限を書き直すまで、次の月は取得しない。
 # 書き込むのは docs/data/sat/ports/{LXD,HDZ,SJN}/ とその陸マスクだけ。
 on:
   schedule:
@@ -14,8 +15,12 @@ concurrency:
   cancel-in-progress: false
 env:
   YARDS: 'LXD HDZ SJN'
-  MAX_PU: '40'
+  YARDS_MONTH_PU: '40'
+  # The month's own caps, written by hand with ports-archive.yml, ocean-cfar-probe.yml and ocean-monitor.yml in one commit
+  # (tests/test_ocean_cfar_probe.py CapsAgreeTest). A run in another month stops until they are rewritten.
+  BUDGET_MONTH: '2026-11'
   OCEAN_CAP: '7000'
+  GUARD_ARGS: '--budget-month 2026-11 --cap 300 --global-cap 9000 --global-margin 450'
 jobs:
   yards:
     runs-on: ubuntu-24.04
@@ -32,25 +37,55 @@ jobs:
         run: python -m pip install --disable-pip-version-check -q numpy==2.2.6 pillow==12.3.0
       - name: Tests
         run: python -m unittest tests.test_sat_port_archive -v
-      - name: Budget month (this UTC month)
-        run: echo "BUDGET_MONTH=$(date -u +%Y-%m)" >> "$GITHUB_ENV"
+      - name: Budget month
+        run: |
+          [ "$(date -u +%Y-%m)" = "$BUDGET_MONTH" ] || { echo "::error title=budget::上限は $BUDGET_MONTH の値。この月の自主上限を書き直すまで取得しない"; exit 1; }
+          case "$GUARD_ARGS" in *"--budget-month $BUDGET_MONTH "*) ;; *) echo "::error title=budget::GUARD_ARGS と BUDGET_MONTH の月が違う"; exit 1;; esac
       - name: Other CDSE usage of this month
         run: |
           mkdir -p "$RUNNER_TEMP/usage" "$RUNNER_TEMP/ports-usage"
           git show origin/main:docs/data/sat/usage.csv > "$RUNNER_TEMP/usage/sat.csv"
           python -m sat.port_archive gather --other "$RUNNER_TEMP/usage" --ports "$RUNNER_TEMP/ports-usage"
-      - name: Land masks (missing only)
-        run: python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port $YARDS || echo "::warning title=mask::陸マスクを作れなかった造船所がある"
+      - name: This month's PU of the three yards (every copy of their usage rows, each record once)
+        id: left
+        run: |
+          python - "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv <<'P' >> "$GITHUB_OUTPUT"
+          import os, sys
+          from pathlib import Path
+          from sat.port_archive import read_csv, row_key
+          yards, month = set(os.environ['YARDS'].split()), os.environ['BUDGET_MONTH']
+          seen, used = set(), 0.0
+          for p in sys.argv[1:]:
+              if not Path(p).exists():
+                  continue
+              for r in read_csv(Path(p)):
+                  k = row_key(r)
+                  if r.get('site_id') in yards and (r.get('run_utc') or '').startswith(month) and k not in seen:
+                      seen.add(k)
+                      used += float(r.get('processing_units') or 0)
+          left = round(float(os.environ['YARDS_MONTH_PU']) - used, 1)
+          print(f'::notice title=yards::{month} の造船所の使用 {used:.1f} PU、残り {left} PU', file=sys.stderr)
+          print(f'pu={left}')
+          P
+      - name: Land masks (missing only); yards without a mask are left out
+        run: |
+          python -m sat.port_archive mask --mask-dir docs/data/sat/ports/masks --port $YARDS || echo "::warning title=mask::陸マスクを作れなかった造船所がある"
+          ok=""
+          for p in $YARDS; do ls docs/data/sat/ports/masks/"$p"* >/dev/null 2>&1 && ok="$ok $p" || echo "::warning title=mask::$p は陸マスクが無いので取得しない"; done
+          echo "YARDS_OK=${ok# }" >> "$GITHUB_ENV"
       - name: Plan (catalog only, no PU)
+        id: plan
+        if: ${{ steps.left.outputs.pu > 0 && env.YARDS_OK != '' }}
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
         run: |
           set -o pipefail
-          python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" --budget-month "$BUDGET_MONTH" --cap 300 --global-cap 9000 --global-margin 450 \
+          python -m sat.port_archive plan --out "$RUNNER_TEMP/plan.json" $GUARD_ARGS \
             --usage "$RUNNER_TEMP"/usage/*.csv --ports-usage "$RUNNER_TEMP"/ports-usage/*.csv docs/data/sat/ports/*/usage.csv \
-            --ocean-cap "$OCEAN_CAP" --max-pu "$MAX_PU" --only $YARDS --proportional --days-from 35 --s1-only | tee "$RUNNER_TEMP/plan-summary.json"
+            --ocean-cap "$OCEAN_CAP" --max-pu "${{ steps.left.outputs.pu }}" --only $YARDS_OK --proportional --days-from 35 --s1-only | tee "$RUNNER_TEMP/plan-summary.json"
       - name: Archive (one yard at a time, inside each yard's cap)
+        if: ${{ steps.plan.outcome == 'success' }}
         env:
           CDSE_SH_CLIENT_ID: ${{ secrets.CDSE_SH_CLIENT_ID }}
           CDSE_SH_CLIENT_SECRET: ${{ secrets.CDSE_SH_CLIENT_SECRET }}
@@ -62,11 +97,11 @@ jobs:
             python -m sat.port_archive run --port "$port" --cap "$cap" --req "$req" --budget-month "$BUDGET_MONTH" \
               --out docs/data/sat/ports --raw-dir "$RUNNER_TEMP/raw-keep" --tmp "$RUNNER_TEMP/raw" --mask-dir docs/data/sat/ports/masks \
               --pu-per-min 80 --req-per-min 80 --max-minutes 80 --summary "$RUNNER_TEMP/summary-$port.json" --days-from 35 --s1-only \
-              > /dev/null 2> "$RUNNER_TEMP/run-$port.log" || { rc=1; echo "::warning title=yards::$port が途中で止まった"; }
+              < /dev/null > /dev/null 2> "$RUNNER_TEMP/run-$port.log" || { rc=1; echo "::warning title=yards::$port が途中で止まった"; }
             tail -n 15 "$RUNNER_TEMP/run-$port.log"
             python -m sat.annotate text "summary-$port" "$RUNNER_TEMP/summary-$port.json" || true
           done < "$RUNNER_TEMP/matrix.txt"
-          echo "rc=$rc"
+          exit $rc
       - name: Publish (the three yards and their masks only)
         if: always()
         run: |

@@ -562,6 +562,15 @@ class CapsAgreeTest(unittest.TestCase):
         self.assertEqual(float(oc["GLOBAL_CAP"]), float(guard["global-cap"]))
         self.assertEqual(float(oc["GLOBAL_MARGIN"]), float(guard["global-margin"]))
 
+    def test_yards_caps_are_the_same(self):
+        """ew-yards.yml (早期警戒の造船所) uses the archive's caps: the same month and caps as ports-archive.yml."""
+        import re
+        ya, po = self.env("ew-yards.yml"), self.env("ports-archive.yml")
+        self.assertEqual(ya["BUDGET_MONTH"], po["BUDGET_MONTH"])
+        self.assertEqual(ya["GUARD_ARGS"], po["GUARD_ARGS"])
+        self.assertEqual(float(ya["OCEAN_CAP"]), float(po["OCEAN_CAP"]))
+        self.assertLessEqual(float(ya["YARDS_MONTH_PU"]), 40.0)
+
     def test_monitor_caps_are_the_same(self):
         """ocean-monitor.yml uses the ocean cap with ocean-cfar-probe.yml and ports-archive.yml: the three files
         hold the same month and caps (changed in one commit)."""

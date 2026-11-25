@@ -379,6 +379,8 @@ def load_ew2():
     yards = {}
     for y in YARDS:
         rows = read_csv(f'sat/ports/{y}/s1_scenes.csv')
+        newest = max(((r.get('mask_version') or ''), (r.get('detector_version') or '')) for r in rows) if rows else None
+        rows = [r for r in rows if ((r.get('mask_version') or ''), (r.get('detector_version') or '')) == newest]   # one mask and detector version
         yards[y] = {d(r['acquired_utc']): int_or_none(r.get('len_100_200')) + int_or_none(r.get('len_ge200'))
                     for r in rows if r.get('acquired_utc') and r.get('result') == 'counted'
                     and float(r.get('coverage') or 0) >= 0.95
@@ -459,7 +461,7 @@ def ew2_indicators(src, as_of, with_series=True):
     a = best or {'value': None, 'score': None, 'reason': '平常値を作る期間が足りない（造船所 3 か所は 2026-12 から月 1 回）'}
     out.append(item('strategic', 'amphib-build', '造船所の 100 m 以上の船（撮影ごとの数の 30 日平均、いちばん高い造船所）', 'transport',
                     'Sentinel-1（sat/ の ship_counts と港のアーカイブ）', 'samples', a, parts=parts,
-                    note='；'.join(notes) + '。Contains modified Copernicus Sentinel data'))
+                    note='；'.join(notes) + f'。Contains modified Copernicus Sentinel data [{as_of.year - 1}–{as_of.year}]'))
     last, at = lagged(src.get('rmrb_daily', {}), as_of, 2)
     a = assess_count(src.get('rmrb_daily', {}), at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
     out.append(item('strategic', 'rhetoric', '人民日報の要聞の見出しの台湾・闘争の語（7 日合計）', 'messaging', '人民日報 電子版（1〜4 版）',
