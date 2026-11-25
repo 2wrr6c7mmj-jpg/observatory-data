@@ -1,5 +1,5 @@
 name: EW2 source probe
-# ew-2 の情報源の robots.txt と 1 回の取得の結果を注釈で返す。probe/ew2-* ブランチへの push でだけ動く。読み取り専用。
+# ew-2 の収集器（collectors/ew2.py）を少しの日数で試し、結果を注釈で返す。probe/ew2-* ブランチへの push でだけ動く。書き込まない。
 on:
   push:
     branches: ['probe/ew2-*']
@@ -8,7 +8,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -16,4 +16,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m tools.ew2_probe safe
+      - run: sudo apt-get install -y -q poppler-utils >/dev/null
+      - run: python -m collectors.ew2 gold oil jwc rmrb feed ioda ferries --days 3 --years 1
+        env:
+          GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
+      - run: |
+          python - <<'P'
+          import json, glob
+          for p in sorted(glob.glob('docs/data/ew/src/*.json')):
+              d = json.load(open(p)); s = json.dumps(d, ensure_ascii=False)
+              print(f"::notice title=ew2 out {p.split('/')[-1]}::{s[:1500]}")
+          P
