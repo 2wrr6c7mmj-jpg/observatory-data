@@ -289,7 +289,7 @@ def month_end(ym):
     return (date(y + (m == 12), m % 12 + 1, 1) - timedelta(days=1))
 
 
-def assess_monthly(months, as_of, lag_days, diff=False):
+def assess_monthly(months, as_of, lag_days, diff=False, max_age_days=45):
     """月次の系列 {YYYY-MM: 値}。月末から lag_days たって公表されたとみなし、as_of で見えていた最新の月を、
     その前の MONTHS_BASE か月の中央値と MAD でロバスト z にする。diff=True は前月からの増え。"""
     seen = sorted(k for k in months if month_end(k) + timedelta(days=lag_days) <= as_of)
@@ -300,6 +300,8 @@ def assess_monthly(months, as_of, lag_days, diff=False):
     if not keys:
         return {'value': None, 'z': None, 'score': None, 'reason': 'データが無い'}
     last = keys[-1]
+    if (as_of - (month_end(last) + timedelta(days=lag_days))).days > max_age_days:
+        return {'value': vals[last], 'z': None, 'score': None, 'month': last, 'reason': f'最新の月（{last}）が古すぎる（収集が止まっている疑い）'}
     base = [vals[k] for k in keys[:-1][-MONTHS_BASE:]]
     if len(base) < MIN_MONTHS:
         return {'value': vals[last], 'z': None, 'score': None, 'month': last,
@@ -341,8 +343,23 @@ def assess_samples(samples, as_of):
             'z': round(z, 2), 'score': score_from_z(z)}
 
 
-def covered(ranges, day):
-    return any(d(a) <= day <= d(b) for a, b in ranges or [])
+def covered(spans, first_day, last_day):
+    """Is every moment of the UTC days first_day..last_day inside the collected spans (ISO times)?
+    A span written with dates only counts as whole days."""
+    start = datetime(first_day.year, first_day.month, first_day.day, tzinfo=timezone.utc)
+    end = datetime(last_day.year, last_day.month, last_day.day, tzinfo=timezone.utc) + timedelta(days=1)
+    def t(x, upper):
+        if len(x) == 10:
+            v = datetime.fromisoformat(x).replace(tzinfo=timezone.utc)
+            return v + timedelta(days=1) if upper else v
+        return datetime.fromisoformat(x.replace('Z', '+00:00'))
+    for a, b in sorted(spans or []):
+        a, b = t(a, False), t(b, True)
+        if a <= start < b:
+            start = b
+        if start >= end:
+            return True
+    return start >= end
 
 
 def load_ew2():
@@ -352,7 +369,8 @@ def load_ew2():
         src[name] = load_json(os.path.join(OUT, 'src', name + '.json'), None)
     maw = {}
     for r in read_csv('sat/ship_counts.csv'):
-        if r.get('site_id') == 'MAW' and r.get('acquired_utc'):
+        if r.get('site_id') == 'MAW' and r.get('acquired_utc') and (r.get('platform') or '').startswith('sentinel-1') \
+                and (float(r.get('coverage') or 0) >= 0.95):
             a, b = int_or_none(r.get('len_100_200')), int_or_none(r.get('len_ge200'))
             if a is not None and b is not None:
                 maw[d(r['acquired_utc'])] = a + b
@@ -366,8 +384,16 @@ def load_ew2():
     return src
 
 
+# ew-2 の指標は、誤報の目安と過去事例で確かめるまで「表示だけ」（判定に入れない）。確かめたものから外す
+TRIAL = {'gold', 'oil-imports', 'amphib-build', 'rhetoric', 'mobilization-drills', 'conscription', 'war-risk',
+         'ferries-fujian', 'ferries-bohai', 'cables'}
+
+
 def item(layer, iid, name, cat, source, kind, a, **extra):
-    return {'layer': layer, 'id': iid, 'name': name, 'category': cat, 'source': source, 'kind': kind, 'status': 'collected', **a, **extra}
+    out = {'layer': layer, 'id': iid, 'name': name, 'category': cat, 'source': source, 'kind': kind, 'status': 'collected', **a, **extra}
+    if iid in TRIAL:
+        out['judged'] = False
+    return out
 
 
 def lagged(daily, as_of, max_lag):
@@ -378,8 +404,8 @@ def lagged(daily, as_of, max_lag):
 
 
 def feed_event(doc, key, as_of, days=30):
-    """報道の語の事象：as_of が収集の期間（covered）に入っていなければ null。30 日に 1 件で 1 点、3 件で 2 点。"""
-    if not doc or not covered(doc.get('covered'), as_of):
+    """報道の語の事象：窓（as_of までの days 日）の全体が収集の期間（covered）に入っていなければ null。1 件で 1 点、3 件で 2 点。"""
+    if not doc or not covered(doc.get('covered'), as_of - timedelta(days=days - 1), as_of):
         return {'value': None, 'score': None, 'reason': '報道の語の収集の期間外（2026-11-25 から）'}
     n = [i for i in (doc.get('items') or {}).get(key, []) if as_of - timedelta(days=days) < d(i['date']) <= as_of]
     return {'value': len(n), 'score': 2 if len(n) >= 3 else 1 if n else 0, 'note': '；'.join(i['title'] for i in n[-3:]) or '該当なし'}
@@ -392,13 +418,15 @@ def ew2_indicators(src, as_of, with_series=True):
     g = e2.get('gold')
     a = assess_monthly({k: v['value'] for k, v in (g or {}).get('months', {}).items()}, as_of, 7, diff=True) if g else \
         {'value': None, 'score': None, 'reason': 'データが無い'}
+    if a.get('score') is not None:
+        a['score'] = min(a['score'], 1)   # 金だけでは 1 点まで（スイスからの金の輸出などで裏付けが取れるまで）
     out.append(item('strategic', 'gold', '金準備の月の増え（万盎司）', 'money', '国家外汇管理局「官方储备资产」', 'monthly', a,
-                    note='公表は翌月 7 日ごろとみなす。前月からの増えを直近 24 か月と比べる'))
+                    note='公表は翌月 7 日ごろとみなす。前月からの増えを直近 24 か月と比べる。金だけでは 1 点まで'))
     o = e2.get('oil')
-    a = assess_monthly({k: v['value'] for k, v in (o or {}).get('months', {}).items()}, as_of, 60) if o else \
+    a = assess_monthly({k: v['value'] for k, v in (o or {}).get('months', {}).items()}, as_of, 90) if o else \
         {'value': None, 'score': None, 'reason': 'データが無い'}
     out.append(item('strategic', 'oil-imports', '原油の輸入（千バレル/日）', 'money', 'JODI-Oil World Database', 'monthly', a,
-                    note='中国は原油の在庫を出していないため、備蓄の積み増しの代わりに輸入を見る。公表は約 2 か月後とみなす'))
+                    note='中国は原油の在庫を出していないため、備蓄の積み増しの代わりに輸入を見る。公表は約 3 か月後とみなす'))
     last, at = lagged(src.get('maw', {}), as_of, 30)
     a = assess_samples(src.get('maw', {}), at) if last else {'value': None, 'score': None, 'reason': 'データが無い'}
     out.append(item('strategic', 'amphib-build', '馬尾造船所の 100 m 以上の船（撮影ごとの数の 30 日平均）', 'transport',
@@ -435,7 +463,7 @@ def ew2_indicators(src, as_of, with_series=True):
                         'count-7d', a, as_of=at.isoformat(), note='GFW の在りかは約 4 日遅れ。格子の合計だけを使い、船の識別子は保存しない',
                         **({'series': weekly_series(series, at)} if with_series and last else {})))
     io_ = e2.get('ioda')
-    if not io_ or not covered(io_.get('covered'), as_of):
+    if not io_ or not io_.get('verified') or not covered(io_.get('covered'), as_of - timedelta(days=6), as_of):
         a = {'value': None, 'score': None, 'reason': 'IODA の取得の期間外'}
     else:
         t1 = int(datetime(as_of.year, as_of.month, as_of.day, tzinfo=timezone.utc).timestamp()) + 86400
@@ -493,10 +521,11 @@ def judge(indicators):
                        'max': max(scores) if scores else None,
                        'collected': len(scores),
                        'total': sum(1 for i in indicators if i['layer'] == lid)})
-    hot_logistics = sorted({i['category'] for i in indicators
-                            if i['category'] in LOGISTICS and (i['score'] or 0) >= 2})
-    hot_ops = [i['id'] for i in indicators if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
-    logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in indicators)
+    used = [i for i in indicators if i.get('judged', True)]
+    hot_logistics = sorted({i['category'] for i in used if i['category'] in LOGISTICS and (i['score'] or 0) >= 2})
+    hot_ops = [i['id'] for i in used if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
+    logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in used)
+    trial_hot = [i['id'] for i in indicators if not i.get('judged', True) and (i['score'] or 0) >= 2]
     action_scored = sum(1 for i in indicators if i['layer'] == 'action' and i['score'] is not None)
     taiwan = [i for i in indicators if i.get('group') == 'taiwan']
     if len(hot_logistics) >= 2:
@@ -507,10 +536,10 @@ def judge(indicators):
         verdict = 'exercise'
     else:
         verdict = 'normal'
-    return {'verdict': verdict, 'layers': layers, 'hot_logistics': hot_logistics, 'hot_ops': hot_ops,
+    return {'verdict': verdict, 'layers': layers, 'hot_logistics': hot_logistics, 'hot_ops': hot_ops, 'trial_hot': trial_hot,
             'ceiling': None if logistics_collected else 'exercise',
             'ceiling_note': None if logistics_collected else
-            '兵站系（お金・人員・輸送）の指標をまだ収集していないため、「警戒」は出せない（判定の上限は「演習」）'}
+            '兵站系（お金・人員・輸送）の指標は集め始めたが、確かめるまで判定に入れない（表示だけ）。「警戒」はまだ出ない（判定の上限は「演習」）'}
 
 
 def backtest(series, named, events):

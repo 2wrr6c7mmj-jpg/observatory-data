@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Tests
-        run: python -m unittest tests.test_ew
+        run: python -m unittest tests.test_ew tests.test_ew2
       - name: Build
         run: python -m analysis.ew
       - name: Publish changed results

@@ -174,7 +174,7 @@ ul{margin:6px 0;padding-left:20px}
         var b = el('button', {'type': 'button', 'class': 'ind', 'aria-pressed': 'false'});
         if (i.status !== 'collected') b.disabled = true;
         var t = el('div', {'class': 't'}); t.appendChild(el('div', null, i.name));
-        t.appendChild(el('div', {'class': 's'}, i.source + ' ・ ' + ind.category_ja[i.category]));
+        t.appendChild(el('div', {'class': 's'}, i.source + ' ・ ' + ind.category_ja[i.category] + (i.judged === false ? ' ・ 試行（判定に入れない）' : '')));
         b.appendChild(t);
         b.appendChild(i.status === 'collected' ? dots(i.score) : el('span', {'class': 'tag'}, i.status === 'blocked' ? '集めない' : '未収集'));
         b.addEventListener('click', function () { pick(i.id); });

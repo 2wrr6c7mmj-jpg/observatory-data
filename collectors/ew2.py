@@ -58,7 +58,16 @@ def save(name: str, doc: dict) -> None:
 def fetch(url: str, max_bytes: int = 40_000_000) -> polite.Response:
     polite.require_allowed(url, UA)
     time.sleep(PAUSE)
-    return polite.check_challenge(polite.raw_get(url, UA, 90, None, max_bytes))
+    r = polite.check_challenge(polite.raw_get(url, UA, 90, None, max_bytes + 1))
+    if len(r.body) > max_bytes:
+        raise RuntimeError(f'{url}: larger than {max_bytes} bytes (not cut short silently)')
+    return r
+
+
+def recent(doc: dict, days: int) -> bool:
+    """Fetched within ``days`` (monthly sources are not fetched again every day)."""
+    t = doc.get('retrieved_utc')
+    return bool(t) and datetime.now(timezone.utc) - datetime.fromisoformat(t.replace('Z', '+00:00')) < timedelta(days=days)
 
 
 def links(html: str) -> list[tuple[str, str]]:
@@ -111,8 +120,10 @@ def parse_gold(rows: list[list[str]]) -> dict[str, int]:
     return out
 
 
-def run_gold(years: int) -> dict:
+def run_gold(years: int, force: bool = False) -> dict:
     doc = load('gold', {'unit': '万盎司', 'months': {}})
+    if not force and recent(doc, 3):
+        return {'months': len(doc['months']), 'skipped': 'fetched within 3 days'}
     idx = fetch(SAFE_INDEX).body.decode('utf-8', 'replace')
     pages = [(h, t) for h, t in links(idx) if re.search(r'官方储备资产（\d{4}年）', t)]
     this = date.today().year
@@ -125,9 +136,7 @@ def run_gold(years: int) -> dict:
         if not x:
             continue
         months = parse_gold(xlsx_rows(fetch(urllib.parse.urljoin(SAFE_INDEX, x[-1])).body))
-        for k, v in months.items():
-            old = doc['months'].get(k)
-            doc['months'][k] = {'value': v, 'first_seen': (old or {}).get('first_seen') or date.today().isoformat()}
+        keep(doc, months)
     doc.update(source='国家外汇管理局「官方储备资产」（月）', url=SAFE_INDEX, retrieved_utc=now_utc())
     save('gold', doc)
     return {'months': len(doc['months'])}
@@ -150,16 +159,20 @@ def parse_jodi(text: str) -> dict[str, float]:
     return out
 
 
-def run_oil(years: int) -> dict:
+def keep(doc: dict, months: dict) -> None:
+    """Store the months; the first value seen is kept beside the latest (the sources revise earlier months)."""
+    for k, v in months.items():
+        old = doc['months'].get(k) or {}
+        doc['months'][k] = {'value': v, 'first_seen': old.get('first_seen') or date.today().isoformat(),
+                            'first_value': old.get('first_value', old.get('value', v))}
+
+
+def run_oil(years: int, force: bool = False) -> dict:
     doc = load('oil', {'unit': '千バレル/日', 'months': {}})
+    if not force and recent(doc, 3):
+        return {'months': len(doc['months']), 'skipped': 'fetched within 3 days'}
     for y in range(date.today().year - years, date.today().year + 1):
-        try:
-            text = fetch(JODI.format(y=y)).body.decode('utf-8', 'replace')
-        except polite.SourceBlocked:
-            raise
-        for k, v in parse_jodi(text).items():
-            old = doc['months'].get(k)
-            doc['months'][k] = {'value': v, 'first_seen': (old or {}).get('first_seen') or date.today().isoformat()}
+        keep(doc, parse_jodi(fetch(JODI.format(y=y)).body.decode('utf-8', 'replace')))
     doc.update(source='JODI-Oil World Database（中国・原油の輸入）', url='https://www.jodidata.org/oil/', retrieved_utc=now_utc())
     save('oil', doc)
     return {'months': len(doc['months'])}
@@ -189,6 +202,8 @@ def run_jwc() -> dict:
         if key in doc['circulars']:
             continue
         text = pdf_text(fetch(url).body)
+        if not text.strip():
+            raise RuntimeError(f'{key}: pdftotext returned no text')
         hits = sorted({m.group(0) for m in EAST_ASIA.finditer(text)})
         doc['circulars'][key] = {'url': url, 'first_seen': date.today().isoformat(), 'east_asia_terms': hits, 'chars': len(text)}
     doc.update(source="Lloyd's Market Association, Joint War Committee — Listed Areas", url=JWC, retrieved_utc=now_utc())
@@ -198,18 +213,21 @@ def run_jwc() -> dict:
 
 # ---------------------------------------------------------------- People's Daily headlines
 RMRB_PC = 'https://paper.people.com.cn/rmrb/pc/layout/{ym}/{d}/node_{p:02d}.html'
-RMRB_OLD = 'http://paper.people.com.cn/rmrb/html/{y}-{m}/{d}/nbs.D110000renmrb_{p:02d}.htm'
+RMRB_OLD = 'https://paper.people.com.cn/rmrb/html/{y}-{m}/{d}/nbs.D110000renmrb_{p:02d}.htm'
 PAGES = (1, 2, 3, 4)
+MAX_DAYS = 400
 
 
 def rmrb_day(day: date, get) -> list[dict] | None:
     """Headlines (title, page, url) of pages 1–4 of one day; None when the day has no edition in either format."""
-    out = []
+    out, old = [], None
     for p in PAGES:
-        url = RMRB_PC.format(ym=day.strftime('%Y%m'), d=day.strftime('%d'), p=p)
-        r = get(url)
-        pat = r'content_\d+\.html?$'
-        if r.status == 404:
+        if not old:
+            url = RMRB_PC.format(ym=day.strftime('%Y%m'), d=day.strftime('%d'), p=p)
+            r = get(url)
+            pat = r'content_\d+\.html?$'
+        if old or (r.status == 404 and p == 1):
+            old = True   # the format is decided on page 1
             url = RMRB_OLD.format(y=day.year, m=day.strftime('%m'), d=day.strftime('%d'), p=p)
             r = get(url)
             pat = r'nw\.D110000renmrb_\d+_\d+-\d+\.htm$'
@@ -225,6 +243,8 @@ def rmrb_day(day: date, get) -> list[dict] | None:
             if re.search(pat, h) and t and not re.match(r'第\d+版', t) and u not in seen:
                 seen.add(u)
                 out.append({'page': p, 'title': t, 'url': u})
+    if not out:
+        raise RuntimeError(f'{day}: an edition without headlines (has the layout changed?)')
     return out
 
 
@@ -232,7 +252,7 @@ def run_rmrb(days: int) -> dict:
     doc = load('rmrb', {'days': {}})
     today = datetime.now(timezone(timedelta(hours=8))).date()
     got = 0
-    for i in range(days, -1, -1):
+    for i in range(min(days, MAX_DAYS), -1, -1):
         day = today - timedelta(days=i)
         k = day.isoformat()
         if k in doc['days'] and i > 1:
@@ -241,6 +261,8 @@ def run_rmrb(days: int) -> dict:
         if heads is not None:
             doc['days'][k] = heads
             got += 1
+            if got % 20 == 0:
+                save('rmrb', doc)   # a long backfill keeps what it has fetched if the job is stopped
     doc.update(source='人民日報 電子版（1〜4 版の見出し。本文は取らない）', url='https://paper.people.com.cn/', retrieved_utc=now_utc())
     save('rmrb', doc)
     return {'days': len(doc['days']), 'new': got}
@@ -249,45 +271,63 @@ def run_rmrb(days: int) -> dict:
 # ---------------------------------------------------------------- site feed keywords
 FEED = 'https://observatory-watch.pages.dev/api/feeds'
 FEED_WORDS = {
-    'mobilization': re.compile(r'国防动员|人防|民兵|拉动|征召|支前|戦時動員|国防動員|民兵|national defen[cs]e mobili[sz]ation|militia', re.I),
-    'conscription': re.compile(r'征兵|退役|延长服役|暂缓退役|徴兵|除隊|退役延期|conscription|demobili[sz]ation|discharge.{0,20}(delay|postpon|extend)', re.I),
+    'mobilization': re.compile(r'国防动员|國防動員|国防動員|人民防空|人防演练|民兵|支前|national defen[cs]e mobili[sz]ation|militia', re.I),
+    'conscription': re.compile(r'征兵|徵兵|徴兵|延长服役|暂缓退役|延期退役|退役延期|conscription|demobili[sz]ation (delay|postpon|halt)', re.I),
     'cables': re.compile(r'海缆|海纜|海底电缆|海底電纜|海底光缆|海底光纜|海底ケーブル|submarine cable|undersea cable|subsea cable', re.I),
 }
-FEED_PLACE = re.compile(r'中国|中國|台湾|台灣|臺灣|福建|浙江|广东|廈門|厦门|金门|金門|马祖|馬祖|澎湖|东部战区|東部戦区|China|Chinese|PLA|Taiwan|Matsu|Kinmen|Penghu|Fujian', re.I)
+# 中国側の地名（国防動員・徴兵）。台湾側の動員・徴兵の記事は数えない
+CHINA_SIDE = re.compile(r'福建|浙江|广东|廣東|江苏|山东|厦门|廈門|福州|宁波|寧波|温州|東部戦区|东部战区|南部战区|解放军|解放軍|中国军|中共|Fujian|Zhejiang|Guangdong|Eastern Theater|\bPLA\b|Chinese military|China\'s military')
+TAIWAN_SIDE = re.compile(r'台湾|台灣|臺灣|國軍|国軍|Taiwan', re.I)
+CABLE_PLACE = re.compile(r'台湾|台灣|臺灣|金门|金門|马祖|馬祖|澎湖|沖縄|中国|中國|Taiwan|Matsu|Kinmen|Penghu|Okinawa|China|Chinese')
 
 
 def feed_matches(feed: dict) -> dict[str, list]:
     out = {k: [] for k in FEED_WORDS}
     for r in feed.get('records', []):
         text = f"{r.get('title') or ''} {r.get('summary') or ''}"
-        if not FEED_PLACE.search(text):
-            continue
         ts = r.get('publishedAt')
         day = datetime.fromtimestamp(ts / 1000, tz=timezone.utc).date().isoformat() if isinstance(ts, (int, float)) else None
         for k, pat in FEED_WORDS.items():
-            if pat.search(text) and day:
+            if k == 'cables':
+                place = CABLE_PLACE.search(text)
+            else:
+                place = CHINA_SIDE.search(text) and not (TAIWAN_SIDE.search(text) and not re.search(r'解放军|解放軍|\bPLA\b|中共', text))
+            if pat.search(text) and place and day:
                 out[k].append({'date': day, 'title': (r.get('title') or '')[:200], 'url': r.get('url'), 'source': r.get('source')})
     return out
 
 
 def run_feed() -> dict:
     doc = load('feed', {'items': {k: [] for k in FEED_WORDS}})
-    req = urllib.request.Request(FEED, headers={'Accept': 'application/json', 'User-Agent': UA})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        feed = json.loads(r.read().decode('utf-8'))
-    first = min((datetime.fromtimestamp(x['publishedAt'] / 1000, tz=timezone.utc).date() for x in feed.get('records', [])
-                 if isinstance(x.get('publishedAt'), (int, float))), default=None)
+    feed = json.loads(fetch(FEED, 30_000_000).body.decode('utf-8'))
+    run = datetime.now(timezone.utc)
     for k, items in feed_matches(feed).items():
         have = {i['url'] for i in doc['items'].setdefault(k, [])}
         doc['items'][k] += [i for i in items if i['url'] not in have]
         doc['items'][k].sort(key=lambda i: i['date'])
-    doc.setdefault('covered', [])
-    if first:
-        doc['covered'].append([first.isoformat(), date.today().isoformat()])
-        doc['covered'] = merge_ranges(doc['covered'])
+    # /api/feeds returns the last 24 hours; this run has seen [run − 24 h, run] (UTC, to the minute)
+    doc['covered'] = merge_spans(doc.get('covered', []) + [[iso(run - timedelta(hours=FEED_WINDOW_H)), iso(run)]])
     doc.update(source='東アジア情勢観測の報道の一覧（/api/feeds、約 48 源）の見出しと要約の語', url=FEED, retrieved_utc=now_utc())
     save('feed', doc)
     return {k: len(v) for k, v in doc['items'].items()}
+
+
+FEED_WINDOW_H = 24
+
+
+def iso(t: datetime) -> str:
+    return t.strftime('%Y-%m-%dT%H:%MZ')
+
+
+def merge_spans(rs: list) -> list:
+    """Merge time spans (ISO, UTC) that overlap or touch; a gap stays a gap."""
+    out = []
+    for a, b in sorted(rs):
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return out
 
 
 def merge_ranges(rs: list) -> list:
@@ -305,10 +345,20 @@ IODA = 'https://api.ioda.inetintel.cc.gatech.edu/v2/outages/events'
 IODA_REGIONS = {'4210': '連江（馬祖）', '4209': '金門', '4208': '澎湖'}
 
 
+IODA_NAMES = {'4210': 'Lienchiang', '4209': 'Kinmen', '4208': 'Penghu'}
+
+
 def run_ioda(days: int) -> dict:
     doc = load('ioda', {'regions': IODA_REGIONS, 'events': [], 'covered': []})
+    if not doc.get('verified'):
+        for code, name in IODA_NAMES.items():
+            q = urllib.parse.urlencode({'entityType': 'region', 'search': name})
+            found = json.loads(fetch(f'https://api.ioda.inetintel.cc.gatech.edu/v2/entities/query?{q}').body.decode('utf-8')).get('data') or []
+            if not any(e.get('code') == code and e.get('name') == name and (e.get('attrs') or {}).get('country_code') == 'TW' for e in found):
+                raise RuntimeError(f'IODA region {code} is not {name} (TW)')
+        doc['verified'] = {'at': now_utc(), 'names': IODA_NAMES}
     until = int(time.time())
-    since = until - days * 86400
+    since = until - min(days, 1100) * 86400
     have = {(e['region'], e['start'], e['datasource']) for e in doc['events']}
     for code in IODA_REGIONS:
         start = since
@@ -324,8 +374,8 @@ def run_ioda(days: int) -> dict:
                                           'datasource': e.get('datasource'), 'score': round(float(e.get('score') or 0), 1)})
             start = end
     doc['events'].sort(key=lambda e: (e['start'], e['region']))
-    day = lambda t: datetime.fromtimestamp(t, tz=timezone.utc).date().isoformat()  # noqa: E731
-    doc['covered'] = merge_ranges(doc['covered'] + [[day(since), day(until)]])
+    ts = lambda t: iso(datetime.fromtimestamp(t, tz=timezone.utc))  # noqa: E731
+    doc['covered'] = merge_spans(doc['covered'] + [[ts(since), ts(until)]])
     doc.update(source='IODA（Internet Outage Detection and Analysis, Georgia Tech）地域の障害の事象', url='https://ioda.inetintel.cc.gatech.edu/', retrieved_utc=now_utc())
     save('ioda', doc)
     return {'events': len(doc['events'])}
@@ -365,16 +415,17 @@ def run_ferries(days: int) -> dict:
         raise RuntimeError('GFW_API_TOKEN が無い')
     doc = load('ferries', {'zones': ZONES, 'daily': {}, 'covered': []})
     end = date.today() - timedelta(days=5)   # GFW presence comes about 4 days late; the last days are not complete
-    start = end - timedelta(days=days)
+    start = end - timedelta(days=min(days, 400))
     for zid, z in ZONES.items():
         series = doc['daily'].setdefault(zid, {})
         s = start
         while s <= end:
             e = min(end, s + timedelta(days=180))
             got = gfw_hours(token, z['bbox'], s, e)
-            for i in range((e - s).days + 1):
-                k = (s + timedelta(days=i)).isoformat()
-                series[k] = round(got.get(k, 0.0), 1)   # a day in the range with no row: no passenger hours in the zone
+            if not got:
+                raise RuntimeError(f'GFW: no rows for {zid} {s}..{e}')
+            for k, v in got.items():
+                series[k] = round(v, 1)   # a day without a row is left out (unknown), never written as 0
             s = e + timedelta(days=1)
             time.sleep(PAUSE)
     doc['covered'] = merge_ranges(doc['covered'] + [[start.isoformat(), end.isoformat()]])
@@ -386,8 +437,8 @@ def run_ferries(days: int) -> dict:
 
 # ---------------------------------------------------------------- main
 RUNNERS = {
-    'gold': lambda a: run_gold(a.years),
-    'oil': lambda a: run_oil(a.years),
+    'gold': lambda a: run_gold(a.years, a.force),
+    'oil': lambda a: run_oil(a.years, a.force),
     'jwc': lambda a: run_jwc(),
     'rmrb': lambda a: run_rmrb(a.days),
     'feed': lambda a: run_feed(),
@@ -398,7 +449,8 @@ RUNNERS = {
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('sources', nargs='*', default=list(RUNNERS))
+    ap.add_argument('sources', nargs='*', default=list(RUNNERS), choices=list(RUNNERS))
+    ap.add_argument('--force', action='store_true', help='月次の源も取り直す（さかのぼり用）')
     ap.add_argument('--days', type=int, default=10, help='さかのぼる日数（rmrb・ioda・ferries）')
     ap.add_argument('--years', type=int, default=1, help='さかのぼる年数（gold・oil）')
     a = ap.parse_args(argv)
@@ -413,12 +465,16 @@ def main(argv=None) -> int:
             status['sources'][name] = {'status': 'challenge', 'at': now_utc(), 'reason': str(e)[:200]}
             print(f'::warning title=ew2 {name}::challenge {e}')
             failed += 1
+        except polite.SourceBlocked as e:
+            status['sources'][name] = {'status': 'blocked', 'at': now_utc(), 'reason': str(e)[:200]}
+            print(f'::warning title=ew2 {name}::challenge {e}')
+            failed += 1
         except Exception as e:  # noqa: BLE001 - one source must not stop the others
             status['sources'][name] = {'status': 'error', 'at': now_utc(), 'reason': f'{type(e).__name__}: {str(e)[:200]}'}
             print(f'::warning title=ew2 {name}::{type(e).__name__}: {str(e)[:200]}')
             failed += 1
     save('status', status)
-    return 0
+    return 1 if failed == len(a.sources) else 0   # every source failed: make the run red
 
 
 if __name__ == '__main__':

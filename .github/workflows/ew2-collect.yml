@@ -1,9 +1,10 @@
 name: Collect EW sources
 # 早期警戒 ew-2 の追加の源（collectors/ew2.py）を集める。書き込むのは docs/data/ew/src/ だけ。
-# 毎日 1 回（さかのぼり 10 日）。手で動かすときは days・years・sources でさかのぼりを指定できる（初回の取り込み用）。
+# 毎日 1 回（さかのぼり 10 日）と、報道の一覧だけ 6 時間ごと。手で動かすときは days・years・sources でさかのぼりを指定できる（初回の取り込み用）。
 on:
   schedule:
-    - cron: '23 22 * * *'   # 07:23 JST
+    - cron: '23 22 * * *'   # 07:23 JST, every source
+    - cron: '41 */6 * * *'  # every 6 hours, the site feed only (/api/feeds returns the last 24 hours)
   workflow_dispatch:
     inputs:
       days:
@@ -14,6 +15,9 @@ on:
         default: '1'
       sources:
         description: '空白区切りの源（空ならすべて）'
+        default: ''
+      force:
+        description: '月次の源（gold・oil）も取り直す（さかのぼり用）'
         default: ''
 permissions:
   contents: write
@@ -40,8 +44,11 @@ jobs:
           GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}
           DAYS: ${{ inputs.days || '10' }}
           YEARS: ${{ inputs.years || '1' }}
-          SOURCES: ${{ inputs.sources || '' }}
-        run: python -m collectors.ew2 $SOURCES --days "$DAYS" --years "$YEARS"
+          FORCE: ${{ inputs.force || '' }}
+          SOURCES: ${{ github.event.schedule == '41 */6 * * *' && 'feed' || inputs.sources || '' }}
+        run: |
+          read -r -a src <<< "$SOURCES"
+          python -m collectors.ew2 "${src[@]}" --days "$DAYS" --years "$YEARS" ${FORCE:+--force}
       - name: Publish changed results
         run: |
           git add docs/data/ew/src

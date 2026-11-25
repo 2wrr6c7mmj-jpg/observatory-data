@@ -67,6 +67,18 @@ class CollectorParseTest(unittest.TestCase):
         self.assertEqual([i['url'] for i in m['cables']], ['b'])
         self.assertEqual(m['conscription'], [])
 
+    def test_feed_false_positives_are_left_out(self):
+        ms = int(datetime(2026, 11, 25, tzinfo=timezone.utc).timestamp() * 1000)
+        recs = [('Places to visit explains militia history', 'p1'),     # "PLA" inside words
+                ('福建拉动消费', 'p2'),                                   # 拉动 in an economy story
+                ('Taiwan extends conscription to one year', 'p3'),       # Taiwan's own conscription
+                ('台湾国军征召后备军人', 'p4'),
+                ('福建退役军人事务厅', 'p5')]                              # 退役 alone
+        m = ew2.feed_matches({'records': [{'title': t, 'publishedAt': ms, 'url': u} for t, u in recs]})
+        self.assertEqual(m['mobilization'] + m['conscription'], [])
+        m = ew2.feed_matches({'records': [{'title': '解放军福建民兵演练 near Taiwan', 'publishedAt': ms, 'url': 'q'}]})
+        self.assertEqual([i['url'] for i in m['mobilization']], ['q'])
+
     def test_merge_ranges(self):
         self.assertEqual(ew2.merge_ranges([['2026-01-05', '2026-01-09'], ['2026-01-01', '2026-01-04'], ['2026-02-01', '2026-02-02']]),
                          [['2026-01-01', '2026-01-09'], ['2026-02-01', '2026-02-02']])
@@ -101,11 +113,22 @@ class ScoringTest(unittest.TestCase):
         self.assertEqual(ew.assess_count(s, date(2026, 6, 30), down=True)['score'], 3)
         self.assertEqual(ew.assess_count(s, date(2026, 6, 30))['score'], 0)
 
-    def test_feed_event_outside_coverage_is_null(self):
-        doc = {'covered': [['2026-11-25', '2026-11-30']], 'items': {'cables': [{'date': '2026-11-26', 'title': 'x'}]}}
-        self.assertIsNone(ew.feed_event(doc, 'cables', date(2026, 11, 1))['score'])
+    def test_feed_event_needs_the_whole_window_covered(self):
+        doc = {'covered': [['2026-10-01T00:00Z', '2026-11-30T23:59Z']], 'items': {'cables': [{'date': '2026-11-26', 'title': 'x'}]}}
+        self.assertIsNone(ew.feed_event(doc, 'cables', date(2026, 10, 15))['score'])   # window starts 09-16: not covered
         self.assertEqual(ew.feed_event(doc, 'cables', date(2026, 11, 27))['score'], 1)
         self.assertEqual(ew.feed_event(doc, 'mobilization', date(2026, 11, 27))['score'], 0)
+        gap = {'covered': [['2026-10-01T00:00Z', '2026-11-10T00:00Z'], ['2026-11-11T06:00Z', '2026-11-30T23:59Z']], 'items': {}}
+        self.assertIsNone(ew.feed_event(gap, 'cables', date(2026, 11, 27))['score'])
+
+    def test_covered_spans(self):
+        sp = [['2026-11-01T00:00Z', '2026-11-03T00:00Z'], ['2026-11-03T00:00Z', '2026-11-05T12:00Z']]
+        self.assertTrue(ew.covered(sp, date(2026, 11, 1), date(2026, 11, 4)))
+        self.assertFalse(ew.covered(sp, date(2026, 11, 1), date(2026, 11, 5)))
+        self.assertTrue(ew.covered([['2026-11-01', '2026-11-05']], date(2026, 11, 2), date(2026, 11, 5)))
+        self.assertEqual(ew2.merge_spans([['2026-11-01T00:00Z', '2026-11-02T00:00Z'], ['2026-11-02T00:00Z', '2026-11-03T00:00Z'],
+                                          ['2026-11-04T00:00Z', '2026-11-05T00:00Z']]),
+                         [['2026-11-01T00:00Z', '2026-11-03T00:00Z'], ['2026-11-04T00:00Z', '2026-11-05T00:00Z']])
 
     def test_ew2_indicators_without_data_are_null_not_zero(self):
         inds = ew.ew2_indicators({}, date(2026, 11, 25))
@@ -116,11 +139,35 @@ class ScoringTest(unittest.TestCase):
     def test_jwc_and_ioda(self):
         t = int(datetime(2026, 11, 24, 3, tzinfo=timezone.utc).timestamp())
         src = {'ew2': {'jwc': {'circulars': {'JWLA-036': {'first_seen': '2026-11-20', 'east_asia_terms': ['Taiwan']}}},
-                       'ioda': {'covered': [['2026-11-01', '2026-11-30']], 'events': [{'start': t, 'duration': 7200}]}}}
+                       'ioda': {'verified': {'at': 'x'}, 'covered': [['2026-11-01T00:00Z', '2026-11-30T00:00Z']],
+                                'events': [{'start': t, 'duration': 7200}]}}}
         inds = {i['id']: i for i in ew.ew2_indicators(src, date(2026, 11, 25))}
         self.assertEqual(inds['war-risk']['score'], 3)
         self.assertEqual(inds['cables']['score'], 2)
         self.assertIsNone({i['id']: i for i in ew.ew2_indicators(src, date(2026, 11, 10))}['war-risk']['score'])
+        src['ew2']['ioda'].pop('verified')
+        self.assertIsNone({i['id']: i for i in ew.ew2_indicators(src, date(2026, 11, 25))}['cables']['score'])
+
+    def test_gold_alone_is_one_point_and_trial_indicators_do_not_judge(self):
+        months = {f'2024-{m:02d}': 7000 + m for m in range(1, 13)}
+        months.update({f'2025-{m:02d}': 7020 + m for m in range(1, 12)})
+        months['2025-12'] = 7200
+        src = {'ew2': {'gold': {'months': {k: {'value': v} for k, v in months.items()}}}}
+        g = {i['id']: i for i in ew.ew2_indicators(src, date(2026, 1, 10))}['gold']
+        self.assertEqual(g['score'], 1)
+        self.assertFalse(g['judged'])
+        mk = lambda layer, cat, sc, **kw: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected', **kw}  # noqa: E731
+        base = [mk('action', 'military', 0), mk('action', 'law_enforcement', 0)]
+        j = ew.judge(base + [mk('strategic', 'money', 3, judged=False), mk('deployment', 'transport', 3, judged=False)])
+        self.assertEqual(j['verdict'], 'normal')
+        self.assertEqual(len(j['trial_hot']), 2)
+        self.assertEqual(j['ceiling'], 'exercise')
+
+    def test_monthly_stale_is_null(self):
+        months = {f'2024-{m:02d}': m for m in range(1, 13)}
+        months.update({f'2025-{m:02d}': m for m in range(1, 13)})
+        self.assertIsNone(ew.assess_monthly(months, date(2026, 6, 1), 7)['score'])
+        self.assertIsNotNone(ew.assess_monthly(months, date(2026, 1, 20), 7)['score'])
 
     def test_alert_from_logistics(self):
         mk = lambda layer, cat, sc: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected'}  # noqa: E731
