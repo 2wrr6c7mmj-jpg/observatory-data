@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: 'さかのぼる日数（rmrb・ioda・ferries）'
+        description: 'さかのぼる日数（rmrb・ioda・ferries、最大 1200）'
         default: '10'
       years:
         description: 'さかのぼる年数（gold・oil）'

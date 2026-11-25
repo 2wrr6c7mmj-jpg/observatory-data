@@ -231,7 +231,7 @@ def run_jwc() -> dict:
 RMRB_PC = 'https://paper.people.com.cn/rmrb/pc/layout/{ym}/{d}/node_{p:02d}.html'
 RMRB_OLD = 'https://paper.people.com.cn/rmrb/html/{y}-{m}/{d}/nbs.D110000renmrb_{p:02d}.htm'
 PAGES = (1, 2, 3, 4)
-MAX_DAYS = 400
+MAX_DAYS = 1200   # 2023 からの大規模演習を過去事例の検証に入れるため（初回の取り込みだけ。毎日は 10 日）
 
 
 def rmrb_day(day: date, get) -> list[dict] | None:
@@ -436,7 +436,7 @@ def run_ferries(days: int) -> dict:
         raise RuntimeError('GFW_API_TOKEN が無い')
     doc = load('ferries', {'zones': ZONES, 'daily': {}, 'covered': []})
     end = date.today() - timedelta(days=5)   # GFW presence comes about 4 days late; the last days are not complete
-    start = end - timedelta(days=min(days, 400))
+    start = end - timedelta(days=min(days, MAX_DAYS))
     for zid, z in ZONES.items():
         series = doc['daily'].setdefault(zid, {})
         s = start
