@@ -64,7 +64,7 @@ ul{margin:6px 0;padding-left:20px}
 </div></header>
 
 <main class="wrap">
-<div class="warn">試行中です。兵站系（お金・医療・人員・輸送）の指標はまだ収集していないため、判定の上限は「演習」です。「警戒」は出ません。</div>
+<div class="warn" id="warn">試行中です。</div>
 
 <div class="row">
 <section class="panel" style="flex:1 1 380px">
@@ -134,6 +134,7 @@ ul{margin:6px 0;padding-left:20px}
 
   function render(ind, bt) {
     data = ind;
+    document.getElementById('warn').textContent = '試行中です。' + (ind.ceiling_note || '多くの指標は集め始めたばかりで、平常値を作る期間が足りないものは「—」です。');
     document.getElementById('upd').textContent = '評価日 ' + ind.as_of + ' ／ 生成 ' + ind.generated_utc.replace('T', ' ').replace('Z', ' UTC');
     var v = document.getElementById('verdicts'); v.textContent = '';
     ['normal', 'exercise', 'alert'].forEach(function (k) {
@@ -148,7 +149,7 @@ ul{margin:6px 0;padding-left:20px}
       ? '台湾周辺の指標に点が無い、または行動層で点の付いた指標が 2 つ未満のため、判定できません。'
       : ind.verdict === 'normal'
       ? '収集済みの指標は、すべて平常値から大きく外れていません。'
-      : (ind.verdict === 'exercise' ? '2 点以上：' + hot.join('、') + '。兵站系は ' + (ind.ceiling ? '未収集' : '平常') + '。'
+      : (ind.verdict === 'exercise' ? '2 点以上：' + hot.join('、') + '。' + (ind.ceiling ? '兵站系は未収集。' : (ind.hot_logistics.length ? '' : '兵站系は 2 点以上なし。'))
          : '兵站系で 2 点以上：' + ind.hot_logistics.map(function (c) { return ind.category_ja[c]; }).join('、'));
 
     var L = document.getElementById('layers'); L.textContent = '';
@@ -175,7 +176,7 @@ ul{margin:6px 0;padding-left:20px}
         var t = el('div', {'class': 't'}); t.appendChild(el('div', null, i.name));
         t.appendChild(el('div', {'class': 's'}, i.source + ' ・ ' + ind.category_ja[i.category]));
         b.appendChild(t);
-        b.appendChild(i.status === 'collected' ? dots(i.score) : el('span', {'class': 'tag'}, '未収集'));
+        b.appendChild(i.status === 'collected' ? dots(i.score) : el('span', {'class': 'tag'}, i.status === 'blocked' ? '集めない' : '未収集'));
         b.addEventListener('click', function () { pick(i.id); });
         b.dataset.id = i.id;
         card.appendChild(b);

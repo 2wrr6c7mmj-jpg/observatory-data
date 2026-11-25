@@ -86,7 +86,7 @@ class JudgeTest(unittest.TestCase):
         self.assertEqual(j['verdict'], 'normal')
 
     def test_two_logistics_categories_alert(self):
-        j = ew.judge([self.ind('mobilization', 'medical', 2), self.ind('strategic', 'money', 3)])
+        j = ew.judge([self.ind('mobilization', 'personnel', 2), self.ind('strategic', 'money', 3)])
         self.assertEqual(j['verdict'], 'alert')
         self.assertIsNone(j['ceiling'])
 
