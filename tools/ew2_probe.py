@@ -66,7 +66,9 @@ def safe2():
         if x:
             url = x[-1] if x[-1].startswith('http') else 'https://www.safe.gov.cn' + x[-1]
             rows = xlsx_rows(fetch(url).body)
-            note('safe-xlsx', ' || '.join(' ; '.join(r[:15]) for r in rows[:14]))
+            hit = [r for r in rows if any(('盎司' in c) or ('ounce' in c.lower()) for c in r)]
+            note('safe-oz', f'{len(rows)} rows; ' + ' || '.join(' ; '.join(r[:9]) for r in hit[:4]))
+            note('safe-cols', ' ; '.join(rows[3][-6:]) + f' ncols={max(len(r) for r in rows)}')
 
 
 def jwc():
