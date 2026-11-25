@@ -16,5 +16,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m tools.ew2_probe 0
-      - run: python -m tools.ew2_probe 1
+      - run: python -m tools.ew2_probe
