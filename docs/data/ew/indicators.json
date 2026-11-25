@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T02:38:13Z",
+ "generated_utc": "2026-11-25T02:46:38Z",
  "as_of": "2026-11-25",
  "verdict": "normal",
  "layers": [
@@ -860,13 +860,13 @@
    "source": "Sentinel-1（sat/ の ship_counts と港のアーカイブ）",
    "kind": "samples",
    "status": "collected",
-   "value": 4.0,
-   "baseline_median": 4.5,
+   "value": 5.0,
+   "baseline_median": 4.2,
    "band": [
     4.0,
-    5.3
+    6.0
    ],
-   "z": -0.5,
+   "z": 0.83,
    "score": 0,
    "site": "広州・龍穴島",
    "parts": {
@@ -878,24 +878,24 @@
     },
     "LXD": {
      "name": "広州・龍穴島",
-     "value": 4.0,
+     "value": 5.0,
      "score": 0,
-     "z": -0.5
+     "z": 0.83
     },
     "HDZ": {
      "name": "上海・滬東中華",
-     "value": 5.3,
+     "value": 5.7,
      "score": 0,
-     "z": -0.45
+     "z": -0.05
     },
     "SJN": {
      "name": "上海・長興島",
-     "value": 5.3,
+     "value": 5.7,
      "score": 0,
-     "z": 0.33
+     "z": 0.5
     }
    },
-   "note": "福州・馬尾 5.0；広州・龍穴島 4.0（0 点）；上海・滬東中華 5.3（0 点）；上海・長興島 5.3（0 点）。Contains modified Copernicus Sentinel data [2025–2026]",
+   "note": "福州・馬尾 5.0；広州・龍穴島 5.0（0 点）；上海・滬東中華 5.7（0 点）；上海・長興島 5.7（0 点）。Contains modified Copernicus Sentinel data [2025–2026]",
    "judged": false
   },
   {
