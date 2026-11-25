@@ -124,7 +124,7 @@ def run_gold(years: int, force: bool = False) -> dict:
     doc = load('gold', {'unit': '万盎司', 'months': {}})
     if not force and recent(doc, 3):
         return {'months': len(doc['months']), 'skipped': 'fetched within 3 days'}
-    idx = fetch(SAFE_INDEX).body.decode('utf-8', 'replace')
+    idx = ok(fetch(SAFE_INDEX), SAFE_INDEX).body.decode('utf-8', 'replace')
     pages = [(h, t) for h, t in links(idx) if re.search(r'官方储备资产（\d{4}年）', t)]
     this = date.today().year
     for h, t in pages:
@@ -135,7 +135,8 @@ def run_gold(years: int, force: bool = False) -> dict:
         x = [u for u, _ in links(page) if u.lower().endswith('.xlsx')]
         if not x:
             continue
-        months = parse_gold(xlsx_rows(fetch(urllib.parse.urljoin(SAFE_INDEX, x[-1])).body))
+        u = urllib.parse.urljoin(SAFE_INDEX, x[-1])
+        months = parse_gold(xlsx_rows(ok(fetch(u), u).body))
         keep(doc, months)
     doc.update(source='国家外汇管理局「官方储备资产」（月）', url=SAFE_INDEX, retrieved_utc=now_utc())
     save('gold', doc)
@@ -143,7 +144,14 @@ def run_gold(years: int, force: bool = False) -> dict:
 
 
 # ---------------------------------------------------------------- oil (JODI)
-JODI = 'https://www.jodidata.org/_resources/files/downloads/oil-data/annual-csv/primary/primaryyear{y}.csv'
+JODI_DIR = 'https://www.jodidata.org/_resources/files/downloads/oil-data/annual-csv/primary/'
+JODI_NAMES = ('primaryyear{y}.csv', '{y}.csv')   # the current year, then earlier years (data-downloads.aspx, 2026-11-25)
+
+
+def ok(r: polite.Response, url: str) -> polite.Response:
+    if r.status != 200:
+        raise RuntimeError(f'{url}: HTTP {r.status}')
+    return r
 
 
 def parse_jodi(text: str) -> dict[str, float]:
@@ -172,7 +180,15 @@ def run_oil(years: int, force: bool = False) -> dict:
     if not force and recent(doc, 3):
         return {'months': len(doc['months']), 'skipped': 'fetched within 3 days'}
     for y in range(date.today().year - years, date.today().year + 1):
-        keep(doc, parse_jodi(fetch(JODI.format(y=y)).body.decode('utf-8', 'replace')))
+        for name in JODI_NAMES:
+            url = JODI_DIR + name.format(y=y)
+            r = fetch(url)
+            if r.status == 404:
+                continue
+            keep(doc, parse_jodi(ok(r, url).body.decode('utf-8', 'replace')))
+            break
+        else:
+            raise RuntimeError(f'JODI: no CSV for {y}')
     doc.update(source='JODI-Oil World Database（中国・原油の輸入）', url='https://www.jodidata.org/oil/', retrieved_utc=now_utc())
     save('oil', doc)
     return {'months': len(doc['months'])}
@@ -194,7 +210,7 @@ def pdf_text(data: bytes) -> str:
 
 def run_jwc() -> dict:
     doc = load('jwc', {'circulars': {}})
-    page = fetch(JWC).body.decode('utf-8', 'replace')
+    page = ok(fetch(JWC), JWC).body.decode('utf-8', 'replace')
     pdfs = sorted({(re.search(r'JWLA-?(\d+)', h, re.I).group(1), urllib.parse.urljoin(JWC, h))
                    for h, _ in links(page) if re.search(r'JWLA-?\d+.*\.pdf$', h, re.I)}, key=lambda x: int(x[0]))
     for num, url in pdfs[-2:]:
