@@ -100,10 +100,15 @@ exercises_kick() {
 # The schedule in jso-update.yml stays as the fallback when this chain is down.
 JSO_DAY_EVERY=${JSO_DAY_EVERY:-1800}       # 30 min
 JSO_NIGHT_EVERY=${JSO_NIGHT_EVERY:-7200}   # 2 h
+# Seconds to the next start: JSO_DAY_EVERY from 08:00 JST; at night JSO_NIGHT_EVERY, but never past 08:00 JST.
 jso_every() {
-  local h
-  h=$(TZ=Asia/Tokyo date +%H)
-  if [ "$((10#$h))" -ge 8 ]; then echo "$JSO_DAY_EVERY"; else echo "$JSO_NIGHT_EVERY"; fi
+  local h m s left
+  read -r h m s < <(TZ=Asia/Tokyo date '+%H %M %S')
+  h=$((10#$h)); m=$((10#$m)); s=$((10#$s))
+  if [ "$h" -ge 8 ]; then echo "$JSO_DAY_EVERY"; return; fi
+  left=$(( (8 - h) * 3600 - m * 60 - s ))
+  [ "$left" -lt 60 ] && left=60
+  if [ "$left" -lt "$JSO_NIGHT_EVERY" ]; then echo "$left"; else echo "$JSO_NIGHT_EVERY"; fi
 }
 jso_kick() {
   can_dispatch || return 0

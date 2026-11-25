@@ -92,6 +92,8 @@ def run(event, conclusion, started, status="completed"):
 def good_runs() -> dict:
     out = {f: [run("schedule", "success", ago(hours=10))] for f in CRONS}
     out["proto.yml"] = [run("workflow_run", "success", ago(hours=1))]
+    # jso-update.yml is started by the site clock (workflow_dispatch, every 30 min to 2 h); the schedule is the fallback
+    out["jso-update.yml"] = [run("workflow_dispatch", "success", ago(minutes=20)), run("schedule", "success", ago(hours=10))]
     return out
 
 
@@ -382,6 +384,24 @@ class WorkflowTest(Base):
         self.assertIn("never_scheduled", codes(wf(out, "pla-tracker.yml")))
         self.assertEqual(wf(out, "collect.yml")["state"], "warn")
         self.assertEqual(wf(out, "sat-ships.yml")["state"], "alert")
+
+    def test_jso_update_heartbeat_is_the_site_clock_dispatch(self):
+        runs = good_runs()
+        out = self.make(runs=runs).build()
+        self.assertEqual(wf(out, "jso-update.yml")["state"], "ok")
+        # only the fallback schedule in the window (the chain does not start it): warn, not ok
+        runs["jso-update.yml"] = [run("schedule", "success", ago(hours=2))]
+        self.assertIn("never_scheduled", codes(wf(self.make(runs=runs).build(), "jso-update.yml")))
+        # the chain stopped 5 h ago: warn (4 h); 31 h: alert
+        runs["jso-update.yml"] = [run("workflow_dispatch", "success", ago(hours=5))]
+        w = wf(self.make(runs=runs).build(), "jso-update.yml")
+        self.assertEqual(w["state"], "warn")
+        self.assertIn("not_started", codes(w))
+        runs["jso-update.yml"] = [run("workflow_dispatch", "success", ago(hours=31))]
+        self.assertEqual(wf(self.make(runs=runs).build(), "jso-update.yml")["state"], "alert")
+        # the other workflows keep the long default (30 h / 54 h)
+        runs["collect.yml"] = [run("schedule", "success", ago(hours=20))]
+        self.assertEqual(wf(self.make(runs=runs).build(), "collect.yml")["state"], "ok")
 
     def test_rest_error_and_no_token(self):
         runs = good_runs()

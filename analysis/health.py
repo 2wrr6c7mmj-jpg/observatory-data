@@ -88,7 +88,10 @@ WORKFLOWS = [
     {"file": "sat-ships.yml", "label": "Sentinel-1 艦船候補", "event": "schedule", "sources": ["sat"]},
     {"file": "pla-tracker.yml", "label": "PLA Activity Tracker", "event": "schedule", "sources": ["pla-tracker"]},
     # 統幕の新しい公表の自動取り込み（2026-11-14 から。それまでは手作業で追加し、collect.yml で再構築していた）
-    {"file": "jso-update.yml", "label": "統幕の公表の取り込み", "event": "schedule", "sources": ["jso"]},
+    # 2026-11-25 から主な起動は site clock の workflow_dispatch（日本時間 8〜24 時は 30 分ごと・夜は 2 時間ごと）。
+    # schedule（1 日 2 回）は予備で、直近 30 件の窓から出入りするので見ない。dispatch の連鎖の心拍を短い閾値で見る。
+    {"file": "jso-update.yml", "label": "統幕の公表の取り込み", "event": "workflow_dispatch", "sources": ["jso"],
+     "heartbeat_h": {"warn": 4, "alert": 30}},
     {"file": "proto.yml", "label": "分析の試作", "event": "workflow_run", "sources": ["proto"]},
     # 外洋の定期監視：実行の記録（schedule の起動と結論）だけで判定する（データの鮮度は撮影の有無で変わるので見ない）
     {"file": "ocean-monitor.yml", "label": "外洋の定期監視（Sentinel-1）", "event": "schedule", "sources": ["ocean"]},
@@ -796,7 +799,7 @@ def github_fetcher(token: str | None, repo_slug: str, api: str):
 
 
 def check_workflow(now: datetime, wf: dict, runs: list[dict], cron: str | None) -> dict:
-    th = THRESHOLDS["heartbeat_h"]
+    th = wf.get("heartbeat_h") or THRESHOLDS["heartbeat_h"]
     fth = THRESHOLDS["workflow_failures"]
     out = {"file": wf["file"], "label": wf["label"], "event": wf["event"], "cron_utc": cron,
            "sources": wf["sources"], "state": "ok", "reasons": []}
