@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T02:38:13Z",
+ "generated_utc": "2026-11-25T03:07:36Z",
  "note": "各時点で、その日までに公表・報道されていたものだけを使って採点した（統幕は公表日、演習の報道は初報の日で絞る）。名前つきの演習の一覧（analysis/exercises.json）は答えなので、ここと誤報の目安では採点に使わない。台湾周辺の数と海保は後から取得した版で、公表の時点は再現していない",
  "rows": [
   {
@@ -114,7 +114,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 1,
       "action": 2
      },
      "scores": {
@@ -126,15 +126,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 1,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     },
     {
@@ -144,7 +144,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 1,
       "action": 0
      },
      "scores": {
@@ -156,15 +156,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 1,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     },
     {
@@ -174,7 +174,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 1,
       "action": 2
      },
      "scores": {
@@ -186,15 +186,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 1,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     }
    ]
@@ -212,7 +212,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 3,
       "action": 0
      },
      "scores": {
@@ -224,15 +224,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 3
      }
     },
     {
@@ -242,7 +242,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 3,
       "action": 0
      },
      "scores": {
@@ -254,15 +254,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 3
      }
     },
     {
@@ -272,7 +272,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 3
      },
      "scores": {
@@ -284,15 +284,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     }
    ]
@@ -310,7 +310,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 1
      },
      "scores": {
@@ -322,15 +322,15 @@
       "jso-transits": 1,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     },
     {
@@ -340,7 +340,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 0
      },
      "scores": {
@@ -352,15 +352,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     },
     {
@@ -370,7 +370,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 2
      },
      "scores": {
@@ -382,15 +382,15 @@
       "jso-transits": 1,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 0
      }
     }
    ]
@@ -408,7 +408,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 2,
       "action": 0
      },
      "scores": {
@@ -420,15 +420,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 1,
+      "ferries-bohai": 0,
+      "cables": 2
      }
     },
     {
@@ -438,7 +438,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 2,
       "action": 0
      },
      "scores": {
@@ -450,15 +450,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 2
      }
     },
     {
@@ -468,7 +468,7 @@
      "layers": {
       "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 2,
       "action": 2
      },
      "scores": {
@@ -480,15 +480,15 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": null,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
-      "cables": null
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
+      "cables": 2
      }
     }
    ]
@@ -518,14 +518,14 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": 0,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
       "cables": 0
      }
     },
@@ -548,14 +548,14 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": 0,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
       "cables": 0
      }
     },
@@ -578,14 +578,14 @@
       "jso-transits": 0,
       "exercises": null,
       "gold": 0,
-      "oil-imports": null,
+      "oil-imports": 0,
       "amphib-build": 0,
       "rhetoric": null,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
-      "ferries-fujian": null,
-      "ferries-bohai": null,
+      "ferries-fujian": 0,
+      "ferries-bohai": 0,
       "cables": 0
      }
     }
