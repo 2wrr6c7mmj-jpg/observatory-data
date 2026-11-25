@@ -92,6 +92,10 @@ class CollectorParseTest(unittest.TestCase):
         R.status = 200
         self.assertIs(ew2.ok(R(), 'u').status, 200)
 
+    def test_old_layout_unquoted_href(self):
+        html = '<Area shape="polygon" href="nw.D110000renmrb_20241130_1-01.htm"><a href=nw.D110000renmrb_20241130_1-01.htm>扎根中国大地  </a><a href="x.htm">y</a>'
+        self.assertEqual(ew2.links(html), [('nw.D110000renmrb_20241130_1-01.htm', '扎根中国大地'), ('x.htm', 'y')])
+
     def test_rmrb_edition_without_headlines_is_empty_not_error(self):
         class R:
             def __init__(self, status, body=b''):
@@ -239,8 +243,9 @@ class ScoringTest(unittest.TestCase):
 class RmrbTransientTest(unittest.TestCase):
     def run_with(self, fn, days):
         from unittest import mock
+        import contextlib
         saved = {}
-        with mock.patch.object(ew2, 'rmrb_day_retry', fn), \
+        with contextlib.redirect_stdout(io.StringIO()), mock.patch.object(ew2, 'rmrb_day_retry', fn), \
                 mock.patch.object(ew2, 'load', lambda n, d: {'days': {}}), \
                 mock.patch.object(ew2, 'save', lambda n, d: saved.update(d)):
             return ew2.run_rmrb(days), saved
