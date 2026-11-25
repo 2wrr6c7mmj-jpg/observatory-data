@@ -34,10 +34,11 @@
    "status": "ok"
   },
   "rmrb": {
-   "at": "2026-11-25T02:35:39Z",
-   "days": 401,
-   "new": 401,
-   "status": "ok"
+   "at": "2026-11-25T06:28:17Z",
+   "days": 581,
+   "new": 180,
+   "status": "ok",
+   "stopped_before": "2025-05-30"
   }
  }
 }
