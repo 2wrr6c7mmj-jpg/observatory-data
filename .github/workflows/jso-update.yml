@@ -5,6 +5,8 @@ name: Collect JSO transits
 # 書き込むのは jso/source/updates.jsonl と docs/data/jso だけ（他の収集とは書き込み先が別）。テストが通ったときだけ公開する。
 # 公開のあと、Cloudflare D1「jso-naval-transits」に足りない資料を追加する（Secrets CLOUDFLARE_ACCOUNT_ID と
 # CLOUDFLARE_D1_TOKEN がなければ飛ばす。書き込みは新しい資料の行と transit_pairs・vessels の作り直しで、1回あたり数千行以内）。
+# 起動は主に site-clock.yml（tools/site_clock.sh）から：日本時間 8〜24 時は 30 分ごと、夜は 2 時間ごと（2026-11-25）。
+# GitHub の定期実行は数時間遅れる（11-24：12:17 の回が 22:48 に開始）ので、下の schedule はその連鎖が止まったときの予備。
 # probe/jso-update への push では取得と作り直しまでを行い、commit も D1 への書き込みもしない。
 on:
   push:

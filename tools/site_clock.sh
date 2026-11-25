@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One long run of the site clock: steps the Observatory site's upkeep (UPKEEP_STEPS requests at most) every
-# UPKEEP_EVERY seconds and translates headlines every TRANSLATE_EVERY seconds,
-# until RUN_SECONDS have passed. GitHub drops most short scheduled runs of this
+# UPKEEP_EVERY seconds, translates headlines every TRANSLATE_EVERY seconds and starts the Joint Staff's
+# intake (jso-update.yml) every JSO_DAY_EVERY / JSO_NIGHT_EVERY seconds, until RUN_SECONDS have passed. GitHub drops most short scheduled runs of this
 # repository (11-17: upkeep ran 4 times instead of 72), so the work runs in one
 # job that hands over to the next run when it ends (see site-clock.yml).
 #
@@ -37,7 +37,7 @@ TRANSLATE_MINUTES=${TRANSLATE_MINUTES:-15}
 MAX_STREAK=${MAX_STREAK:-3}
 MAX_FAILS=${MAX_FAILS:-10}
 here=$(cd "$(dirname "$0")" && pwd)
-start=$(date +%s); next_upkeep=$start; next_translate=$start
+start=$(date +%s); next_upkeep=$start; next_translate=$start; next_jso=$start; jso_starts=0
 upkeeps=0; translations=0; fails=0
 upkeep_fails=0; upkeep_denied=false; last_legacy=""; translate_streak=0; worst_translate=0
 
@@ -62,25 +62,55 @@ translate() {
   bash "$here/push_retry.sh" --tries 3 --reset-on-fail --title "site clock"
 }
 
+# Start a workflow of this repository on main (workflow_dispatch) with the push token: echo the HTTP code (204 = started).
+dispatch() {
+  local hfile code
+  hfile=$(mktemp)
+  { printf 'Authorization: Bearer '; cat -- "$PUSH_TOKEN_FILE"; printf '\n'; } > "$hfile"
+  code=$(curl -sS -m 20 -o /dev/null -w '%{http_code}' -X POST -H "@$hfile" -H 'Accept: application/vnd.github+json' \
+         "${GITHUB_API_URL:-https://api.github.com}/repos/$GITHUB_REPOSITORY/actions/workflows/$1/dispatches" \
+         -d "$2") || code=000
+  rm -f -- "$hfile"
+  echo "${code:-000}"
+}
+can_dispatch() {
+  [ -n "${PUSH_TOKEN_FILE:-}" ] && [ -s "$PUSH_TOKEN_FILE" ] && [ -n "${GITHUB_REPOSITORY:-}" ]
+}
+
 # Exercises (exercises.yml) are due every 3 hours, but GitHub drops most of its scheduled runs: start it
 # (force: false, so it still checks that it is due) when the newest main's collection is 150 min old or more.
 EXERCISES_DUE=${EXERCISES_DUE:-9000}
 exercises_kick() {
-  [ -n "${PUSH_TOKEN_FILE:-}" ] && [ -s "$PUSH_TOKEN_FILE" ] && [ -n "${GITHUB_REPOSITORY:-}" ] || return 0
+  can_dispatch || return 0
   git fetch -q origin main 2>/dev/null || return 0
-  local last age hfile code
+  local last age code
   last=$(git show origin/main:docs/data/exercises/status.json 2>/dev/null \
          | python3 -c 'import json,sys; print(int(json.load(sys.stdin).get("generatedAt", 0)) // 1000)' 2>/dev/null) || last=0
   age=$(( $(date +%s) - ${last:-0} ))
   [ "$age" -ge "$EXERCISES_DUE" ] || return 0
-  hfile=$(mktemp)
-  { printf 'Authorization: Bearer '; cat -- "$PUSH_TOKEN_FILE"; printf '\n'; } > "$hfile"
-  code=$(curl -sS -m 20 -o /dev/null -w '%{http_code}' -X POST -H "@$hfile" -H 'Accept: application/vnd.github+json' \
-         "${GITHUB_API_URL:-https://api.github.com}/repos/$GITHUB_REPOSITORY/actions/workflows/exercises.yml/dispatches" \
-         -d '{"ref":"main","inputs":{"force":"false"}}') || code=000
-  rm -f -- "$hfile"
+  code=$(dispatch exercises.yml '{"ref":"main","inputs":{"force":"false"}}')
   if [ "$code" = 204 ]; then echo "exercises: last collection $((age/60)) min ago, started exercises.yml"
   else echo "::warning title=site clock::exercises.yml を起動できなかった（HTTP $code）"; fi
+}
+
+# The Joint Staff's releases (jso-update.yml) come out in the JST day, at any hour, and its schedule (twice a day)
+# ran hours late (2026-11-24: the 12:17 JST run started at 22:48). Start it from here every JSO_DAY_EVERY seconds
+# from 08:00 to 23:59 JST and every JSO_NIGHT_EVERY seconds at night. One run reads the list page once (and the PDF
+# of a new release only); it keeps its own concurrency group with collect.yml, so a start while one is running waits.
+# The schedule in jso-update.yml stays as the fallback when this chain is down.
+JSO_DAY_EVERY=${JSO_DAY_EVERY:-1800}       # 30 min
+JSO_NIGHT_EVERY=${JSO_NIGHT_EVERY:-7200}   # 2 h
+jso_every() {
+  local h
+  h=$(TZ=Asia/Tokyo date +%H)
+  if [ "$((10#$h))" -ge 8 ]; then echo "$JSO_DAY_EVERY"; else echo "$JSO_NIGHT_EVERY"; fi
+}
+jso_kick() {
+  can_dispatch || return 0
+  local code
+  code=$(dispatch jso-update.yml '{"ref":"main"}')
+  if [ "$code" = 204 ]; then jso_starts=$((jso_starts+1))
+  else echo "::warning title=site clock::jso-update.yml を起動できなかった（HTTP $code）"; fi
 }
 
 while :; do
@@ -114,9 +144,14 @@ while :; do
     exercises_kick
     next_translate=$((now + TRANSLATE_EVERY))
   fi
+  now=$(date +%s)
+  if [ "$now" -ge "$next_jso" ]; then
+    jso_kick
+    next_jso=$((now + $(jso_every)))
+  fi
   sleep "${TICK:-30}"
 done
-echo "::notice title=site clock::upkeep $upkeeps ok / $upkeep_fails failed, translation $translations, failures $fails (longest run of translation failures: $worst_translate)"
+echo "::notice title=site clock::upkeep $upkeeps ok / $upkeep_fails failed, translation $translations, jso-update started $jso_starts, failures $fails (longest run of translation failures: $worst_translate)"
 ok=true
 [ "$upkeep_denied" = true ] && { echo "::error title=site clock::/api/maintenance がトークンを拒否した（Secret UPKEEP_TOKEN をサイト側の値と合わせる）"; ok=false; }
 [ $((upkeep_fails * 2)) -gt $((upkeeps + upkeep_fails)) ] && { echo "::error title=site clock::背景更新が $((upkeeps + upkeep_fails)) 回中 $upkeep_fails 回失敗"; ok=false; }

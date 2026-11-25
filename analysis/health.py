@@ -623,13 +623,13 @@ def check_jso(now: datetime, data: Path) -> dict:
     except Unreadable as e:
         unreadable(src, e)
         return src.done()
-    # 心拍は再構築（jso-update.yml 1 日 2 回・collect.yml 毎日）。データの新しさは公表日（jso-update.yml の自動取り込み）
+    # 心拍は再構築（jso-update.yml：site clock から 30 分〜2 時間ごと＋予備の schedule 1 日 2 回・collect.yml 毎日）。データの新しさは公表日（jso-update.yml の自動取り込み）
     src.heartbeat(now, parse_utc(st.get("built_utc")), "最後の再構築（built_utc）")
     today = now.astimezone(JST).date()
     last = day_of(st.get("last_release"))
     src.data_date(last, "JST", today)
     src.d["values"].update({"passages": st.get("passages"), "releases": st.get("releases"),
-                            "intake": "自動取り込み（jso-update.yml、1 日 2 回。一覧ページと新しい資料の PDF だけを取得）"})
+                            "intake": "自動取り込み（jso-update.yml、日本時間 8〜24 時は 30 分ごと・夜は 2 時間ごと。一覧ページと新しい資料の PDF だけを取得）"})
     if last is None:
         src.add("warn", "data_date_unknown", "last_release が読めない")
     else:
