@@ -17,10 +17,3 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m tools.ew2_probe safe
-      - run: python -m tools.ew2_probe jwc
-      - run: python -m tools.ew2_probe jodi
-      - run: python -m tools.ew2_probe rmrb
-      - run: python -m tools.ew2_probe ioda
-      - run: python -m tools.ew2_probe gfw
-        env:
-          GFW_API_TOKEN: ${{ secrets.GFW_API_TOKEN }}

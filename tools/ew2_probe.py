@@ -35,6 +35,40 @@ def safe():
     note('safe-cn-index', f'{st} ' + ' | '.join(f'{t}={h}' for h, t in ls[:30]))
 
 
+def xlsx_rows(data):
+    import zipfile
+    import xml.etree.ElementTree as ET
+    z = zipfile.ZipFile(io.BytesIO(data))
+    ns = {'m': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+    ss = []
+    if 'xl/sharedStrings.xml' in z.namelist():
+        for si in ET.fromstring(z.read('xl/sharedStrings.xml')).findall('m:si', ns):
+            ss.append(''.join(t.text or '' for t in si.iter('{%s}t' % ns['m'])))
+    sheet = sorted(n for n in z.namelist() if n.startswith('xl/worksheets/sheet'))[0]
+    rows = []
+    for row in ET.fromstring(z.read(sheet)).iter('{%s}row' % ns['m']):
+        vals = []
+        for c in row.findall('m:c', ns):
+            v = c.find('m:v', ns)
+            t = v.text if v is not None else ''
+            if c.get('t') == 's' and t:
+                t = ss[int(t)]
+            vals.append(t)
+        rows.append(vals)
+    return rows
+
+
+def safe2():
+    for page in ('https://www.safe.gov.cn/safe/2026/0205/27113.html', 'https://www.safe.gov.cn/safe/2020/0207/22234.html'):
+        st, ls = links(page, r'\.(xlsx?|pdf)')
+        note('safe-year', f'{st} {page} ' + ' | '.join(f'{t}={h}' for h, t in ls[:12]))
+        x = [h for h, t in ls if h.endswith('.xlsx')]
+        if x:
+            url = x[-1] if x[-1].startswith('http') else 'https://www.safe.gov.cn' + x[-1]
+            rows = xlsx_rows(fetch(url).body)
+            note('safe-xlsx', ' || '.join(' ; '.join(r[:15]) for r in rows[:14]))
+
+
 def jwc():
     st, ls = links('https://lmalloyds.com/committee/joint-war-committee/', r'jwla|listed|\.pdf|circular')
     note('jwc', f'{st} ' + ' | '.join(f'{t}={h}' for h, t in ls[:30]))
@@ -89,7 +123,7 @@ def gfw():
 
 
 def main():
-    fn = {'safe': safe, 'jwc': jwc, 'jodi': jodi, 'rmrb': rmrb, 'ioda': ioda, 'gfw': gfw}[sys.argv[1]]
+    fn = {'safe': safe2, 'jwc': jwc, 'jodi': jodi, 'rmrb': rmrb, 'ioda': ioda, 'gfw': gfw}[sys.argv[1]]
     try:
         fn()
     except Exception as e:  # noqa: BLE001
