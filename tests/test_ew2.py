@@ -190,6 +190,11 @@ class ScoringTest(unittest.TestCase):
         self.assertEqual(len(j['trial_hot']), 2)
         self.assertEqual(j['ceiling'], 'exercise')
 
+    def test_unknown_ignores_trial_indicators(self):
+        mk = lambda layer, cat, sc, **kw: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected', **kw}  # noqa: E731
+        j = ew.judge([mk('action', 'military', 0), mk('action', 'law_enforcement', 0, judged=False)])
+        self.assertEqual(j['verdict'], 'unknown')
+
     def test_monthly_stale_is_null(self):
         months = {f'2024-{m:02d}': m for m in range(1, 13)}
         months.update({f'2025-{m:02d}': m for m in range(1, 13)})
