@@ -8,9 +8,9 @@
    "status": "ok"
   },
   "ferries": {
-   "at": "2026-11-25T02:37:14Z",
-   "bohai": 398,
-   "fujian": 398,
+   "at": "2026-11-25T03:02:22Z",
+   "bohai": 1196,
+   "fujian": 1196,
    "status": "ok"
   },
   "gold": {
@@ -19,8 +19,8 @@
    "status": "ok"
   },
   "ioda": {
-   "at": "2026-11-25T02:36:42Z",
-   "events": 14,
+   "at": "2026-11-25T03:07:19Z",
+   "events": 117,
    "status": "ok"
   },
   "jwc": {
@@ -29,8 +29,8 @@
    "status": "ok"
   },
   "oil": {
-   "at": "2026-11-25T01:45:10Z",
-   "months": 8,
+   "at": "2026-11-25T03:00:23Z",
+   "months": 56,
    "status": "ok"
   },
   "rmrb": {

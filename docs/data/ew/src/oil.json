@@ -1,5 +1,245 @@
 {
  "months": {
+  "2022-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 10015.2,
+   "value": 10015.2
+  },
+  "2022-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 11169.8,
+   "value": 11169.8
+  },
+  "2022-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 10085.1,
+   "value": 10085.1
+  },
+  "2022-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 10499.3,
+   "value": 10499.3
+  },
+  "2022-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 10819.4,
+   "value": 10819.4
+  },
+  "2022-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 8739.8,
+   "value": 8739.8
+  },
+  "2022-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 8814.2,
+   "value": 8814.2
+  },
+  "2022-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 9528.8,
+   "value": 9528.8
+  },
+  "2022-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 9819.0,
+   "value": 9819.0
+  },
+  "2022-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 10186.6,
+   "value": 10186.6
+  },
+  "2022-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 11404.6,
+   "value": 11404.6
+  },
+  "2022-12": {
+   "first_seen": "2026-11-25",
+   "first_value": 11349.5,
+   "value": 11349.5
+  },
+  "2023-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 9928.0,
+   "value": 9928.0
+  },
+  "2023-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 10985.0,
+   "value": 10985.0
+  },
+  "2023-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 12351.4,
+   "value": 12351.4
+  },
+  "2023-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 10347.3,
+   "value": 10347.3
+  },
+  "2023-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 12147.4,
+   "value": 12147.4
+  },
+  "2023-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 12703.1,
+   "value": 12703.1
+  },
+  "2023-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 10315.5,
+   "value": 10315.5
+  },
+  "2023-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 12468.6,
+   "value": 12468.6
+  },
+  "2023-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 11160.6,
+   "value": 11160.6
+  },
+  "2023-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 11563.0,
+   "value": 11563.0
+  },
+  "2023-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 10356.6,
+   "value": 10356.6
+  },
+  "2023-12": {
+   "first_seen": "2026-11-25",
+   "first_value": 11419.4,
+   "value": 11419.4
+  },
+  "2024-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 11095.7,
+   "value": 11095.7
+  },
+  "2024-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 10429.2,
+   "value": 10429.2
+  },
+  "2024-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 11582.6,
+   "value": 11582.6
+  },
+  "2024-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 10911.4,
+   "value": 10911.4
+  },
+  "2024-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 11090.3,
+   "value": 11090.3
+  },
+  "2024-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 11334.5,
+   "value": 11334.5
+  },
+  "2024-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 9997.2,
+   "value": 9997.2
+  },
+  "2024-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 11594.6,
+   "value": 11594.6
+  },
+  "2024-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 11099.1,
+   "value": 11099.1
+  },
+  "2024-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 10554.0,
+   "value": 10554.0
+  },
+  "2024-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 11839.1,
+   "value": 11839.1
+  },
+  "2024-12": {
+   "first_seen": "2026-11-25",
+   "first_value": 11296.6,
+   "value": 11296.6
+  },
+  "2025-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 10380.9,
+   "value": 10380.9
+  },
+  "2025-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 10428.9,
+   "value": 10428.9
+  },
+  "2025-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 12074.0,
+   "value": 12074.0
+  },
+  "2025-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 11724.4,
+   "value": 11724.4
+  },
+  "2025-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 11003.6,
+   "value": 11003.6
+  },
+  "2025-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 12171.5,
+   "value": 12171.5
+  },
+  "2025-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 11145.5,
+   "value": 11145.5
+  },
+  "2025-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 11686.5,
+   "value": 11686.5
+  },
+  "2025-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 11447.0,
+   "value": 11447.0
+  },
+  "2025-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 11418.5,
+   "value": 11418.5
+  },
+  "2025-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 12417.4,
+   "value": 12417.4
+  },
+  "2025-12": {
+   "first_seen": "2026-11-25",
+   "first_value": 13214.5,
+   "value": 13214.5
+  },
   "2026-01": {
    "first_seen": "2026-11-25",
    "first_value": 12010.9,
@@ -41,7 +281,7 @@
    "value": 8955.9
   }
  },
- "retrieved_utc": "2026-11-25T01:45:10Z",
+ "retrieved_utc": "2026-11-25T03:00:23Z",
  "source": "JODI-Oil World Database（中国・原油の輸入）",
  "unit": "千バレル/日",
  "url": "https://www.jodidata.org/oil/"
