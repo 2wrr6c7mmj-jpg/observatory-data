@@ -1,6 +1,7 @@
 name: Collect EW sources
 # 早期警戒 ew-2 の追加の源（collectors/ew2.py）を集める。書き込むのは docs/data/ew/src/ だけ。
-# 毎日 1 回（さかのぼり 10 日）と、報道の一覧だけ 6 時間ごと。手で動かすときは days・years・sources でさかのぼりを指定できる（初回の取り込み用）。
+# 毎日 1 回（さかのぼり 10 日）と、報道の一覧だけ 6 時間ごと。
+# 長いさかのぼり（人民日報 1200 日）は sources=rmrb・pause=3 で、取り終わるまで何回か動かす（1 回 200 分まで、続きから取る）。手で動かすときは days・years・sources でさかのぼりを指定できる（初回の取り込み用）。
 on:
   schedule:
     - cron: '23 22 * * *'   # 07:23 JST, every source
@@ -8,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: 'さかのぼる日数（rmrb・ioda・ferries）'
+        description: 'さかのぼる日数（rmrb・ioda・ferries、最大 1200）'
         default: '10'
       years:
         description: 'さかのぼる年数（gold・oil）'
@@ -19,6 +20,9 @@ on:
       force:
         description: '月次の源（gold・oil）も取り直す（さかのぼり用）'
         default: ''
+      pause:
+        description: '取得の間隔（秒）。長いさかのぼりでは 3'
+        default: '1.5'
 permissions:
   contents: write
 concurrency:
@@ -45,11 +49,13 @@ jobs:
           DAYS: ${{ inputs.days || '10' }}
           YEARS: ${{ inputs.years || '1' }}
           FORCE: ${{ inputs.force || '' }}
+          PAUSE: ${{ inputs.pause || '1.5' }}
           SOURCES: ${{ github.event.schedule == '41 */6 * * *' && 'feed' || inputs.sources || '' }}
         run: |
           read -r -a src <<< "$SOURCES"
-          python -m collectors.ew2 "${src[@]}" --days "$DAYS" --years "$YEARS" ${FORCE:+--force}
-      - name: Publish changed results
+          python -m collectors.ew2 "${src[@]}" --days "$DAYS" --years "$YEARS" --pause "$PAUSE" ${FORCE:+--force}
+      - name: Publish changed results (also after a stop, so that a long backfill keeps what it fetched)
+        if: always()
         run: |
           git add docs/data/ew/src
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi

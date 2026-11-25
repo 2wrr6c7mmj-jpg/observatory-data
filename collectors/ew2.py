@@ -124,18 +124,20 @@ def run_gold(years: int, force: bool = False) -> dict:
     doc = load('gold', {'unit': '万盎司', 'months': {}})
     if not force and recent(doc, 3):
         return {'months': len(doc['months']), 'skipped': 'fetched within 3 days'}
-    idx = fetch(SAFE_INDEX).body.decode('utf-8', 'replace')
+    idx = ok(fetch(SAFE_INDEX), SAFE_INDEX).body.decode('utf-8', 'replace')
     pages = [(h, t) for h, t in links(idx) if re.search(r'官方储备资产（\d{4}年）', t)]
     this = date.today().year
     for h, t in pages:
         y = int(re.search(r'(\d{4})年', t).group(1))
         if y < this - years:
             continue
-        page = fetch(urllib.parse.urljoin(SAFE_INDEX, h)).body.decode('utf-8', 'replace')
+        u = urllib.parse.urljoin(SAFE_INDEX, h)
+        page = ok(fetch(u), u).body.decode('utf-8', 'replace')
         x = [u for u, _ in links(page) if u.lower().endswith('.xlsx')]
         if not x:
             continue
-        months = parse_gold(xlsx_rows(fetch(urllib.parse.urljoin(SAFE_INDEX, x[-1])).body))
+        u = urllib.parse.urljoin(SAFE_INDEX, x[-1])
+        months = parse_gold(xlsx_rows(ok(fetch(u), u).body))
         keep(doc, months)
     doc.update(source='国家外汇管理局「官方储备资产」（月）', url=SAFE_INDEX, retrieved_utc=now_utc())
     save('gold', doc)
@@ -143,7 +145,18 @@ def run_gold(years: int, force: bool = False) -> dict:
 
 
 # ---------------------------------------------------------------- oil (JODI)
-JODI = 'https://www.jodidata.org/_resources/files/downloads/oil-data/annual-csv/primary/primaryyear{y}.csv'
+JODI_DIR = 'https://www.jodidata.org/_resources/files/downloads/oil-data/annual-csv/primary/'
+
+
+def jodi_url(y: int, this_year: int) -> str:
+    """The current year is primaryyearYYYY.csv, earlier years YYYY.csv (data-downloads.aspx, 2026-11-25)."""
+    return JODI_DIR + (f'primaryyear{y}.csv' if y == this_year else f'{y}.csv')
+
+
+def ok(r: polite.Response, url: str) -> polite.Response:
+    if r.status != 200:
+        raise RuntimeError(f'{url}: HTTP {r.status}')
+    return r
 
 
 def parse_jodi(text: str) -> dict[str, float]:
@@ -172,7 +185,12 @@ def run_oil(years: int, force: bool = False) -> dict:
     if not force and recent(doc, 3):
         return {'months': len(doc['months']), 'skipped': 'fetched within 3 days'}
     for y in range(date.today().year - years, date.today().year + 1):
-        keep(doc, parse_jodi(fetch(JODI.format(y=y)).body.decode('utf-8', 'replace')))
+        url = jodi_url(y, date.today().year)
+        r = fetch(url)
+        if r.status == 404 and y == date.today().year:
+            doc.setdefault('notes', {})[str(y)] = 'この年のファイルはまだ無い（1 月ごと）'
+            continue
+        keep(doc, parse_jodi(ok(r, url).body.decode('utf-8', 'replace')))
     doc.update(source='JODI-Oil World Database（中国・原油の輸入）', url='https://www.jodidata.org/oil/', retrieved_utc=now_utc())
     save('oil', doc)
     return {'months': len(doc['months'])}
@@ -194,7 +212,7 @@ def pdf_text(data: bytes) -> str:
 
 def run_jwc() -> dict:
     doc = load('jwc', {'circulars': {}})
-    page = fetch(JWC).body.decode('utf-8', 'replace')
+    page = ok(fetch(JWC), JWC).body.decode('utf-8', 'replace')
     pdfs = sorted({(re.search(r'JWLA-?(\d+)', h, re.I).group(1), urllib.parse.urljoin(JWC, h))
                    for h, _ in links(page) if re.search(r'JWLA-?\d+.*\.pdf$', h, re.I)}, key=lambda x: int(x[0]))
     for num, url in pdfs[-2:]:
@@ -215,7 +233,8 @@ def run_jwc() -> dict:
 RMRB_PC = 'https://paper.people.com.cn/rmrb/pc/layout/{ym}/{d}/node_{p:02d}.html'
 RMRB_OLD = 'https://paper.people.com.cn/rmrb/html/{y}-{m}/{d}/nbs.D110000renmrb_{p:02d}.htm'
 PAGES = (1, 2, 3, 4)
-MAX_DAYS = 400
+MAX_DAYS = 1200   # 2023 からの大規模演習を過去事例の検証に入れるため（初回の取り込みだけ。毎日は 10 日）
+RMRB_MINUTES = 200   # 1 回の実行で人民日報に使う時間の上限。残りは次の実行が続きから取る（既にある日は飛ばす）
 
 
 def rmrb_day(day: date, get) -> list[dict] | None:
@@ -243,21 +262,28 @@ def rmrb_day(day: date, get) -> list[dict] | None:
             if re.search(pat, h) and t and not re.match(r'第\d+版', t) and u not in seen:
                 seen.add(u)
                 out.append({'page': p, 'title': t, 'url': u})
-    if not out:
-        raise RuntimeError(f'{day}: an edition without headlines (has the layout changed?)')
-    return out
+    return out   # [] : an edition without headlines on pages 1–4 (recorded as such, never counted as 0 matches)
 
 
 def run_rmrb(days: int) -> dict:
     doc = load('rmrb', {'days': {}})
     today = datetime.now(timezone(timedelta(hours=8))).date()
-    got = 0
+    got, stopped = 0, None
+    deadline = time.monotonic() + RMRB_MINUTES * 60
     for i in range(min(days, MAX_DAYS), -1, -1):
         day = today - timedelta(days=i)
         k = day.isoformat()
         if k in doc['days'] and i > 1:
             continue
+        if time.monotonic() > deadline:
+            stopped = k
+            break
         heads = rmrb_day(day, fetch)
+        if heads == []:
+            doc.setdefault('empty', [])
+            if k not in doc['empty']:
+                doc['empty'].append(k)
+            continue
         if heads is not None:
             doc['days'][k] = heads
             got += 1
@@ -265,7 +291,7 @@ def run_rmrb(days: int) -> dict:
                 save('rmrb', doc)   # a long backfill keeps what it has fetched if the job is stopped
     doc.update(source='人民日報 電子版（1〜4 版の見出し。本文は取らない）', url='https://paper.people.com.cn/', retrieved_utc=now_utc())
     save('rmrb', doc)
-    return {'days': len(doc['days']), 'new': got}
+    return {'days': len(doc['days']), 'new': got, **({'stopped_before': stopped} if stopped else {})}
 
 
 # ---------------------------------------------------------------- site feed keywords
@@ -358,19 +384,22 @@ def run_ioda(days: int) -> dict:
     if not doc.get('verified'):
         for code, name in IODA_NAMES.items():
             q = urllib.parse.urlencode({'entityType': 'region', 'search': name})
-            found = json.loads(fetch(f'https://api.ioda.inetintel.cc.gatech.edu/v2/entities/query?{q}').body.decode('utf-8')).get('data') or []
+            u = f'https://api.ioda.inetintel.cc.gatech.edu/v2/entities/query?{q}'
+            found = json.loads(ok(fetch(u), u).body.decode('utf-8')).get('data') or []
             if not any(e.get('code') == code and e.get('name') == name and (e.get('attrs') or {}).get('country_code') == 'TW' for e in found):
                 raise RuntimeError(f'IODA region {code} is not {name} (TW)')
         doc['verified'] = {'at': now_utc(), 'names': IODA_NAMES}
     until = int(time.time())
-    since = until - min(days, 1100) * 86400
+    since = until - min(days, MAX_DAYS) * 86400
     have = {(e['region'], e['start'], e['datasource']) for e in doc['events']}
     for code in IODA_REGIONS:
         start = since
         while start < until:
             end = min(until, start + 90 * 86400)
             q = urllib.parse.urlencode({'entityType': 'region', 'entityCode': code, 'from': start, 'until': end, 'limit': 500})
-            body = json.loads(fetch(f'{IODA}?{q}').body.decode('utf-8'))
+            body = json.loads(ok(fetch(f'{IODA}?{q}'), f'{IODA}?{q}').body.decode('utf-8'))
+            if body.get('error'):
+                raise RuntimeError(f"IODA error: {str(body['error'])[:120]}")
             for e in body.get('data') or []:
                 key = (code, int(e['start']), e.get('datasource'))
                 if key not in have:
@@ -420,7 +449,7 @@ def run_ferries(days: int) -> dict:
         raise RuntimeError('GFW_API_TOKEN が無い')
     doc = load('ferries', {'zones': ZONES, 'daily': {}, 'covered': []})
     end = date.today() - timedelta(days=5)   # GFW presence comes about 4 days late; the last days are not complete
-    start = end - timedelta(days=min(days, 400))
+    start = end - timedelta(days=min(days, MAX_DAYS))
     for zid, z in ZONES.items():
         series = doc['daily'].setdefault(zid, {})
         s = start
@@ -452,13 +481,20 @@ RUNNERS = {
 }
 
 
+def set_pause(seconds: float) -> None:
+    global PAUSE
+    PAUSE = seconds
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('sources', nargs='*', help='源（空ならすべて）: ' + ' '.join(RUNNERS))
     ap.add_argument('--force', action='store_true', help='月次の源も取り直す（さかのぼり用）')
+    ap.add_argument('--pause', type=float, default=PAUSE, help='取得の間隔（秒）。長いさかのぼりでは広げる')
     ap.add_argument('--days', type=int, default=10, help='さかのぼる日数（rmrb・ioda・ferries）')
     ap.add_argument('--years', type=int, default=1, help='さかのぼる年数（gold・oil）')
     a = ap.parse_args(argv)
+    set_pause(a.pause)
     a.sources = a.sources or list(RUNNERS)
     bad = [x for x in a.sources if x not in RUNNERS]
     if bad:

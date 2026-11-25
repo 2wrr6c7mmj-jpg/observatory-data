@@ -81,6 +81,23 @@ class CollectorParseTest(unittest.TestCase):
         m = ew2.feed_matches({'records': [{'title': '解放军福建民兵演练', 'publishedAt': ms, 'url': 'q'}]})
         self.assertEqual([i['url'] for i in m['mobilization']], ['q'])
 
+    def test_jodi_names_and_ok(self):
+        self.assertTrue(ew2.jodi_url(2026, 2026).endswith('/primaryyear2026.csv'))
+        self.assertTrue(ew2.jodi_url(2024, 2026).endswith('/2024.csv'))
+
+        class R:
+            status, body = 404, b''
+        with self.assertRaises(RuntimeError):
+            ew2.ok(R(), 'u')
+        R.status = 200
+        self.assertIs(ew2.ok(R(), 'u').status, 200)
+
+    def test_rmrb_edition_without_headlines_is_empty_not_error(self):
+        class R:
+            def __init__(self, status, body=b''):
+                self.status, self.body = status, body
+        self.assertEqual(ew2.rmrb_day(date(2026, 11, 24), lambda u: R(200, b'<a href="node_02.html">x</a>') if 'node_01' in u else R(404)), [])
+
     def test_merge_ranges(self):
         self.assertEqual(ew2.merge_ranges([['2026-01-05', '2026-01-09'], ['2026-01-01', '2026-01-04'], ['2026-02-01', '2026-02-02']]),
                          [['2026-01-01', '2026-01-09'], ['2026-02-01', '2026-02-02']])
