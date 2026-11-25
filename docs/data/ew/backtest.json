@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T01:29:37Z",
+ "generated_utc": "2026-11-25T02:37:33Z",
  "note": "各時点で、その日までに公表・報道されていたものだけを使って採点した（統幕は公表日、演習の報道は初報の日で絞る）。名前つきの演習の一覧（analysis/exercises.json）は答えなので、ここと誤報の目安では採点に使わない。台湾周辺の数と海保は後から取得した版で、公表の時点は再現していない",
  "rows": [
   {
@@ -112,7 +112,7 @@
      "as_of": "2024-05-16",
      "verdict": "exercise",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 2
@@ -125,7 +125,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -142,7 +142,7 @@
      "as_of": "2024-05-22",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 0
@@ -155,7 +155,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -172,7 +172,7 @@
      "as_of": "2024-05-25",
      "verdict": "exercise",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 2
@@ -185,7 +185,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -210,7 +210,7 @@
      "as_of": "2024-10-07",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 0
@@ -223,7 +223,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -240,7 +240,7 @@
      "as_of": "2024-10-13",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 0
@@ -253,7 +253,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -270,7 +270,7 @@
      "as_of": "2024-10-15",
      "verdict": "exercise",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 3
@@ -283,7 +283,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -308,7 +308,7 @@
      "as_of": "2024-12-02",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 1
@@ -321,7 +321,7 @@
       "senkaku": 0,
       "jso-transits": 1,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -338,7 +338,7 @@
      "as_of": "2024-12-08",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 0
@@ -351,7 +351,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -368,7 +368,7 @@
      "as_of": "2024-12-12",
      "verdict": "exercise",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 2
@@ -381,7 +381,7 @@
       "senkaku": 0,
       "jso-transits": 1,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -406,7 +406,7 @@
      "as_of": "2025-03-25",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 0
@@ -419,7 +419,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -436,7 +436,7 @@
      "as_of": "2025-03-31",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 0
@@ -449,7 +449,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -466,7 +466,7 @@
      "as_of": "2025-04-03",
      "verdict": "exercise",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
       "deployment": null,
       "action": 2
@@ -479,7 +479,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -504,9 +504,9 @@
      "as_of": "2025-12-22",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 0
      },
      "scores": {
@@ -517,7 +517,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -526,7 +526,7 @@
       "war-risk": null,
       "ferries-fujian": null,
       "ferries-bohai": null,
-      "cables": null
+      "cables": 0
      }
     },
     {
@@ -534,9 +534,9 @@
      "as_of": "2025-12-28",
      "verdict": "normal",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 0
      },
      "scores": {
@@ -547,7 +547,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -556,7 +556,7 @@
       "war-risk": null,
       "ferries-fujian": null,
       "ferries-bohai": null,
-      "cables": null
+      "cables": 0
      }
     },
     {
@@ -564,9 +564,9 @@
      "as_of": "2026-01-01",
      "verdict": "exercise",
      "layers": {
-      "strategic": null,
+      "strategic": 0,
       "mobilization": null,
-      "deployment": null,
+      "deployment": 0,
       "action": 2
      },
      "scores": {
@@ -577,7 +577,7 @@
       "senkaku": 0,
       "jso-transits": 0,
       "exercises": null,
-      "gold": null,
+      "gold": 0,
       "oil-imports": null,
       "amphib-build": null,
       "rhetoric": null,
@@ -586,7 +586,7 @@
       "war-risk": null,
       "ferries-fujian": null,
       "ferries-bohai": null,
-      "cables": null
+      "cables": 0
      }
     }
    ]
