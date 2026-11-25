@@ -1,0 +1,124 @@
+{
+ "covered": [
+  [
+   "2025-10-21T02:36Z",
+   "2026-11-25T02:36Z"
+  ]
+ ],
+ "events": [
+  {
+   "datasource": "ping-slash24",
+   "duration": 3000,
+   "region": "4208",
+   "score": 1119.4,
+   "start": 1761441000
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 4200,
+   "region": "4208",
+   "score": 1880.6,
+   "start": 1761444600
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 3000,
+   "region": "4208",
+   "score": 3421.1,
+   "start": 1777841400
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 3000,
+   "region": "4209",
+   "score": 3022.0,
+   "start": 1777841400
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 7800,
+   "region": "4208",
+   "score": 6372.5,
+   "start": 1781955600
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 7800,
+   "region": "4209",
+   "score": 5168.7,
+   "start": 1781955600
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 1800,
+   "region": "4209",
+   "score": 703.7,
+   "start": 1789877400
+  },
+  {
+   "datasource": "bgp",
+   "duration": 16800,
+   "region": "4208",
+   "score": 2413.8,
+   "start": 1791795000
+  },
+  {
+   "datasource": "bgp",
+   "duration": 16800,
+   "region": "4209",
+   "score": 1477.4,
+   "start": 1791795000
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 4800,
+   "region": "4208",
+   "score": 7698.1,
+   "start": 1792102800
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 4800,
+   "region": "4209",
+   "score": 7609.8,
+   "start": 1792102800
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 3000,
+   "region": "4208",
+   "score": 3490.6,
+   "start": 1792281600
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 3000,
+   "region": "4209",
+   "score": 3642.0,
+   "start": 1792281600
+  },
+  {
+   "datasource": "ping-slash24",
+   "duration": 1800,
+   "region": "4208",
+   "score": 750.0,
+   "start": 1792531800
+  }
+ ],
+ "regions": {
+  "4208": "澎湖",
+  "4209": "金門",
+  "4210": "連江（馬祖）"
+ },
+ "retrieved_utc": "2026-11-25T02:36:42Z",
+ "source": "IODA（Internet Outage Detection and Analysis, Georgia Tech）地域の障害の事象",
+ "url": "https://ioda.inetintel.cc.gatech.edu/",
+ "verified": {
+  "at": "2026-11-25T02:36:03Z",
+  "names": {
+   "4208": "Penghu",
+   "4209": "Kinmen",
+   "4210": "Lienchiang"
+  }
+ }
+}

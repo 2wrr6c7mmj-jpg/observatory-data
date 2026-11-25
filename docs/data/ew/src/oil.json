@@ -1,0 +1,48 @@
+{
+ "months": {
+  "2026-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 12010.9,
+   "value": 12010.9
+  },
+  "2026-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 12043.5,
+   "value": 12043.5
+  },
+  "2026-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 11802.2,
+   "value": 11802.2
+  },
+  "2026-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 9386.9,
+   "value": 9386.9
+  },
+  "2026-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 7811.4,
+   "value": 7811.4
+  },
+  "2026-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 7142.4,
+   "value": 7142.4
+  },
+  "2026-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 8435.9,
+   "value": 8435.9
+  },
+  "2026-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 8955.9,
+   "value": 8955.9
+  }
+ },
+ "retrieved_utc": "2026-11-25T01:45:10Z",
+ "source": "JODI-Oil World Database（中国・原油の輸入）",
+ "unit": "千バレル/日",
+ "url": "https://www.jodidata.org/oil/"
+}

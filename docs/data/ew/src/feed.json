@@ -1,0 +1,23 @@
+{
+ "covered": [
+  [
+   "2026-11-24T02:35Z",
+   "2026-11-25T02:35Z"
+  ]
+ ],
+ "items": {
+  "cables": [],
+  "conscription": [],
+  "mobilization": [
+   {
+    "date": "2026-11-25",
+    "source": "scmp-china",
+    "title": "China enlists builders of world’s highest bridge to repair runways in wartime",
+    "url": "https://www.scmp.com/news/china/military/article/3375619/china-enlists-builders-worlds-highest-bridge-repair-runways-wartime"
+   }
+  ]
+ },
+ "retrieved_utc": "2026-11-25T02:35:40Z",
+ "source": "東アジア情勢観測の報道の一覧（/api/feeds、約 48 源）の見出しと要約の語",
+ "url": "https://observatory-watch.pages.dev/api/feeds"
+}

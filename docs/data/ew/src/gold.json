@@ -1,0 +1,288 @@
+{
+ "months": {
+  "2022-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 6264,
+   "value": 6264
+  },
+  "2022-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 6367,
+   "value": 6367
+  },
+  "2023-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 6512,
+   "value": 6512
+  },
+  "2023-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 6592,
+   "value": 6592
+  },
+  "2023-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 6650,
+   "value": 6650
+  },
+  "2023-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 6676,
+   "value": 6676
+  },
+  "2023-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 6727,
+   "value": 6727
+  },
+  "2023-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 6795,
+   "value": 6795
+  },
+  "2023-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 6869,
+   "value": 6869
+  },
+  "2023-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 6962,
+   "value": 6962
+  },
+  "2023-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 7046,
+   "value": 7046
+  },
+  "2023-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 7120,
+   "value": 7120
+  },
+  "2023-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 7158,
+   "value": 7158
+  },
+  "2023-12": {
+   "first_seen": "2026-11-25",
+   "first_value": 7187,
+   "value": 7187
+  },
+  "2024-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 7219,
+   "value": 7219
+  },
+  "2024-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 7258,
+   "value": 7258
+  },
+  "2024-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 7274,
+   "value": 7274
+  },
+  "2024-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 7280,
+   "value": 7280
+  },
+  "2024-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 7296,
+   "value": 7296
+  },
+  "2025-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 7345,
+   "value": 7345
+  },
+  "2025-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 7361,
+   "value": 7361
+  },
+  "2025-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 7370,
+   "value": 7370
+  },
+  "2025-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 7377,
+   "value": 7377
+  },
+  "2025-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 7383,
+   "value": 7383
+  },
+  "2025-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 7390,
+   "value": 7390
+  },
+  "2025-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 7396,
+   "value": 7396
+  },
+  "2025-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 7402,
+   "value": 7402
+  },
+  "2025-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 7406,
+   "value": 7406
+  },
+  "2025-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 7409,
+   "value": 7409
+  },
+  "2025-11": {
+   "first_seen": "2026-11-25",
+   "first_value": 7412,
+   "value": 7412
+  },
+  "2025-12": {
+   "first_seen": "2026-11-25",
+   "first_value": 7415,
+   "value": 7415
+  },
+  "2026-01": {
+   "first_seen": "2026-11-25",
+   "first_value": 7419,
+   "value": 7419
+  },
+  "2026-02": {
+   "first_seen": "2026-11-25",
+   "first_value": 7422,
+   "value": 7422
+  },
+  "2026-03": {
+   "first_seen": "2026-11-25",
+   "first_value": 7438,
+   "value": 7438
+  },
+  "2026-04": {
+   "first_seen": "2026-11-25",
+   "first_value": 7464,
+   "value": 7464
+  },
+  "2026-05": {
+   "first_seen": "2026-11-25",
+   "first_value": 7496,
+   "value": 7496
+  },
+  "2026-06": {
+   "first_seen": "2026-11-25",
+   "first_value": 7544,
+   "value": 7544
+  },
+  "2026-07": {
+   "first_seen": "2026-11-25",
+   "first_value": 7608,
+   "value": 7608
+  },
+  "2026-08": {
+   "first_seen": "2026-11-25",
+   "first_value": 7673,
+   "value": 7673
+  },
+  "2026-09": {
+   "first_seen": "2026-11-25",
+   "first_value": 7747,
+   "value": 7747
+  },
+  "2026-10": {
+   "first_seen": "2026-11-25",
+   "first_value": 7830,
+   "value": 7830
+  }
+ },
+ "retrieved_utc": "2026-11-25T01:44:58Z",
+ "source": "国家外汇管理局「官方储备资产」（月）",
+ "unit": "万盎司",
+ "url": "https://www.safe.gov.cn/safe/whcb/index.html"
+}
