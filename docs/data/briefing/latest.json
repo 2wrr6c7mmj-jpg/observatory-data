@@ -1,6 +1,6 @@
 {
  "version": 1,
- "createdAt": 1795559653002,
+ "createdAt": 1795645931070,
  "windowHours": 24,
  "hold": false,
  "holdReason": "",
@@ -14,119 +14,27 @@
  },
  "audio": {
   "file": "latest.mp3",
-  "seconds": 106.79,
-  "bytes": 854784
+  "seconds": 110.91,
+  "bytes": 887808
  },
  "counts": {
-  "records": 964,
-  "sources": 80,
-  "clusters": 820,
-  "multiSource": 47
+  "records": 914,
+  "sources": 82,
+  "clusters": 762,
+  "multiSource": 45
  },
  "intro": {
   "start": 0,
-  "text": "東アジア情勢観測、11月25日。過去24時間の主な出来事、7件です。"
+  "text": "東アジア情勢観測、11月26日。過去24時間の主な出来事、7件です。"
  },
  "outro": {
-  "start": 101.33,
+  "start": 105.45,
   "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
  },
  "events": [
   {
-   "start": 8.37,
-   "end": 23.75,
-   "category": "military",
-   "label": "軍事 · 韓国",
-   "country": "KR",
-   "countries": [
-    "KR",
-    "RU"
-   ],
-   "place": {
-    "name": "鬱陵島",
-    "lon": 130.87,
-    "lat": 37.5
-   },
-   "anim": {
-    "kind": "aircraft",
-    "to": [
-     130.87,
-     37.5
-    ]
-   },
-   "headline": "ロシア軍機が韓国の防空識別圏に進入",
-   "lines": [
-    {
-     "start": 8.37,
-     "sub": "",
-     "text": "韓国の合同参謀本部は、複数のロシア軍機が日本海の上空で韓国の防空識別圏に一時進入したと発表しました。"
-    },
-    {
-     "start": 17.29,
-     "sub": "",
-     "text": "鬱陵島では住民に避難を呼びかける警報が一時出され、韓国はロシア側に抗議しました。"
-    }
-   ],
-   "sources": {
-    "count": 7,
-    "countries": 7,
-    "names": [
-     "ザ・ウォー・ゾーン",
-     "キーウ・インディペンデント",
-     "聯合ニュース 英語版"
-    ],
-    "items": [
-     {
-      "source": "twz",
-      "title": "Seoul Scrambles F-15Ks As Russian Warplanes Come Within Seconds Of Crossing Into South Korean Airspace",
-      "url": "https://www.twz.com/air/seoul-scrambles-f-15ks-as-russian-warplanes-come-within-seconds-of-crossing-into-south-korean-airspace"
-     },
-     {
-      "source": "kyivindependent",
-      "title": "Ukraine war latest: 'Evacuation, air raid,' — Russian military aircraft approach South Korean island, trigger alert",
-      "url": "https://kyivindependent.com/ukraine-war-latest-evacuation-air-raid-russian-military-aircraft-approach-south-korean-island-trigger-alert/"
-     },
-     {
-      "source": "yonhap",
-      "title": "(5th LD) S. Korea briefly issues alert on eastern island after Russian warplanes near airspace",
-      "url": "https://en.yna.co.kr/view/AEN20261124002255315"
-     },
-     {
-      "source": "aj",
-      "title": "Why S Korea issued air raid alert after Russian jets flew near its airspace",
-      "url": "https://www.aljazeera.com/news/2026/11/24/why-s-korea-issued-air-raid-alert-after-russian-jets-flew-near-its-airspace?traffic_source=rss"
-     },
-     {
-      "source": "meduza",
-      "title": "South Korea scrambles fighter jets over Russian military aircraft, issues evacuation alert on island",
-      "url": "https://meduza.io/en/news/2026/11/24/south-korea-scrambles-fighter-jets-over-russian-military-aircraft-issues-evacuation-alert-on-island"
-     },
-     {
-      "source": "guardian-russia",
-      "title": "South Korea tells island residents to take shelter after Russian military aircraft approach",
-      "url": "https://www.theguardian.com/world/2026/nov/24/south-korea-tells-island-residents-to-take-shelter-after-russian-military-aircraft-approach"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 1,
-    "families": [
-     "aj",
-     "guardian",
-     "japantimes",
-     "kyivindependent",
-     "meduza",
-     "twz",
-     "yonhap"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 24.65,
-   "end": 38.3,
+   "start": 8.5,
+   "end": 20.8,
    "category": "diplomacy",
    "label": "外交 · 中国",
    "country": "CN",
@@ -135,80 +43,83 @@
     "PK"
    ],
    "place": {
-    "name": "酒泉",
+    "name": "酒泉衛星発射センター",
     "lon": 100.29,
     "lat": 40.96
    },
    "anim": {
     "kind": "launch"
    },
-   "headline": "神舟24号に初の外国人宇宙飛行士",
+   "headline": "中国、神舟24号を打ち上げ",
    "lines": [
     {
-     "start": 24.65,
+     "start": 8.5,
      "sub": "",
-     "text": "中国は、有人宇宙船「神舟24号」の打ち上げを前に、乗組員を発表しました。"
+     "text": "中国は、パキスタン人の宇宙飛行士を含む3人を乗せた有人宇宙船「神舟24号」を打ち上げました。"
     },
     {
-     "start": 31.21,
+     "start": 15.82,
      "sub": "",
-     "text": "パキスタン空軍のパイロットが、宇宙ステーション「天宮」に乗り込む初めての外国人宇宙飛行士になる予定です。"
+     "text": "中国の宇宙ステーションに外国人の宇宙飛行士が参加するのは初めてです。"
     }
    ],
    "sources": {
-    "count": 10,
-    "countries": 8,
+    "count": 13,
+    "countries": 10,
     "names": [
-     "NASASpaceflight",
-     "毎日新聞 英語版",
-     "フランス24"
+     "フランス24",
+     "日本放送協会 国際",
+     "朝日新聞 速報"
     ],
     "items": [
      {
-      "source": "nsf",
-      "title": "Tiangong Space Station to welcome first international visitor",
-      "url": "https://www.nasaspaceflight.com/2026/11/shenzhou-24/"
-     },
-     {
-      "source": "mainichi",
-      "title": "China unveils new space mission crew, with a Pakistani astronaut set to board its space station",
-      "url": "https://mainichi.jp/english/articles/20261124/p2g/00m/0in/035000c"
-     },
-     {
       "source": "f24",
-      "title": "China to launch first space mission with a foreign astronaut",
-      "url": "https://www.france24.com/en/asia-pacific/20261124-china-to-launch-first-space-mission-with-a-foreign-astronaut"
+      "title": "'Historic' space mission: China launches Shenzhou 24 spacecraft carrying Pakistani astronaut",
+      "url": "https://www.france24.com/en/video/20261125-historic-space-mission-china-launches-shenzhou-24-spacecraft-carrying-pakistani-astronaut"
      },
      {
-      "source": "thediplomat",
-      "title": "First Pakistani Astronaut Is About to Head to Space, on a Chinese Spacecraft",
-      "url": "https://thediplomat.com/2026/11/first-pakistani-astronaut-is-about-to-head-to-space-on-a-chinese-spacecraft/"
+      "source": "nhk",
+      "title": "中国 独自の宇宙ステーションにパキスタン人宇宙飛行士初参加",
+      "url": "https://news.web.nhk/newsweb/na/nd-20261125de80985"
      },
      {
-      "source": "aj",
-      "title": "Pakistan’s Zeeshan Ali set for historic flight to China’s space station",
-      "url": "https://www.aljazeera.com/news/2026/11/24/pakistans-zeeshan-ali-set-for-historic-flight-to-chinas-space-station?traffic_source=rss"
+      "source": "asahi",
+      "title": "中国が有人宇宙船「神舟24号」を打ち上げ 初の外国籍乗組員が搭乗",
+      "url": "http://www.asahi.com/articles/ASVCT0D2ZVCTUHBI02YM.html?ref=rss"
      },
      {
-      "source": "hkfp",
-      "title": "China to launch space mission with first foreign astronaut",
-      "url": "https://hongkongfp.com/2026/11/24/china-to-launch-space-mission-with-first-foreign-astronaut/"
+      "source": "scmp-china",
+      "title": "China-Pakistan crewed space mission was a decade in the making: minister",
+      "url": "https://www.scmp.com/news/china/science/article/3375722/china-pakistan-crewed-space-mission-was-decade-making-minister"
+     },
+     {
+      "source": "rti",
+      "title": "[兩岸] 中國發射神舟24號 首次搭載外籍太空人一同出任務",
+      "url": "https://www.rti.org.tw/news?uid=3&pid=1053628"
+     },
+     {
+      "source": "thehindu",
+      "title": "China launches crewed spaceship carrying first Pakistani astronaut to its space station",
+      "url": "https://www.thehindu.com/sci-tech/science/chinas-shenzhou-24-space-flight-takes-off-with-pakistani-national-as-first-foreign-astronaut/article71740891.ece"
      }
     ]
    },
    "debug": {
-    "rank": 2,
+    "rank": 1,
     "families": [
-     "aj",
+     "asahi",
+     "bbc",
      "cn-state",
      "france24",
-     "hkfp",
-     "mainichi",
-     "nsf",
+     "japantimes",
+     "jiji",
+     "nhk",
+     "rti",
+     "ru-state",
      "scmp",
      "straitstimes",
-     "thediplomat",
-     "thehindu"
+     "thehindu",
+     "vnexpress"
     ],
     "notes": [],
     "tries": [],
@@ -216,8 +127,8 @@
    }
   },
   {
-   "start": 39.2,
-   "end": 53.71,
+   "start": 21.7,
+   "end": 34.72,
    "category": "diplomacy",
    "label": "外交 · 北朝鮮",
    "country": "KP",
@@ -233,56 +144,69 @@
    "anim": {
     "kind": "none"
    },
-   "headline": "北朝鮮、スイス外交事務所の閉鎖を警告",
+   "headline": "北朝鮮、スイス外交事務所の代表を追放",
    "lines": [
     {
-     "start": 39.2,
+     "start": 21.7,
      "sub": "",
-     "text": "北朝鮮のキム・ヨジョン氏は、スイスが平壌に開いた外交事務所の閉鎖を検討すると警告しました。"
+     "text": "北朝鮮は、平壌にあるスイスの外交事務所の代表を国外に追放すると発表しました。"
     },
     {
-     "start": 46.25,
+     "start": 28.21,
      "sub": "",
-     "text": "スイスが北朝鮮の青少年キャンプに制裁を科したことを受けたもので、スイス政府は制裁を維持するとしています。"
+     "text": "スイスが北朝鮮の子ども向けキャンプに制裁を科したことに反発し、事務所の閉鎖も求めています。"
     }
    ],
    "sources": {
-    "count": 4,
-    "countries": 3,
+    "count": 7,
+    "countries": 4,
     "names": [
-     "聯合ニュース 北朝鮮",
-     "サウスチャイナ・モーニング・ポスト アジア",
-     "中央通訊社"
+     "聯合ニュース 英語版",
+     "時事通信",
+     "ザ・ヒンドゥー 国際"
     ],
     "items": [
      {
-      "source": "yna-nk-ko",
-      "title": "스위스, 북한 외교사무소 철수 위협에도 제재 유지",
-      "url": "https://www.yna.co.kr/view/AKR20261125001000082"
+      "source": "yonhap",
+      "title": "N. Korea closes Swiss office in Pyongyang over sanctions on children's camp",
+      "url": "https://en.yna.co.kr/view/AEN20261125005600315"
      },
      {
-      "source": "scmp-asia",
-      "title": "North Korea threatens to shut Swiss office over Russian youth camp sanctions",
-      "url": "https://www.scmp.com/news/asia/east-asia/article/3375602/north-korea-threatens-shut-swiss-office-over-russian-youth-camp-sanctions"
+      "source": "jiji",
+      "title": "スイス外交事務所代表を追放 制裁に反発、再開１カ月で閉鎖―北朝鮮",
+      "url": "https://www.jiji.com/jc/article?k=2026112500735&g=int&m=rss"
      },
      {
-      "source": "cna-intl",
-      "title": "報復瑞士制裁兒童夏令營 北韓威脅關閉外交辦事處",
-      "url": "https://www.cna.com.tw/news/aopl/202611240074.aspx"
+      "source": "thehindu",
+      "title": "North Korea declares a Swiss diplomat persona non grata and orders him to leave",
+      "url": "https://www.thehindu.com/news/international/north-korea-declares-a-swiss-diplomat-persona-non-grata-and-orders-him-to-leave/article71741084.ece"
+     },
+     {
+      "source": "japantimes",
+      "title": "North Korea expels head of Swiss diplomatic office, state media reports",
+      "url": "https://www.japantimes.co.jp/news/2026/11/25/asia-pacific/north-korea-swiss-diplomatic-office/"
      },
      {
       "source": "nknews",
-      "title": "North Korea threatens to force closure of Swiss diplomatic office over sanctions",
-      "url": "https://www.nknews.org/2026/11/north-korea-threatens-to-expel-swiss-diplomatic-mission-following-sanctions/"
+      "title": "North Korea expels Swiss diplomat over sanctions on children’s camp",
+      "url": "https://www.nknews.org/2026/11/north-korea-expels-swiss-diplomat-over-sanctions-on-childrens-camp/"
+     },
+     {
+      "source": "straitstimes",
+      "title": "North Korea expels Swiss representative over sanctions related to children’s camp",
+      "url": "https://www.straitstimes.com/asia/east-asia/north-korea-expels-swiss-representative-over-sanctions-related-to-childrens-camp"
      }
     ]
    },
    "debug": {
-    "rank": 3,
+    "rank": 2,
     "families": [
-     "cna-tw",
+     "japantimes",
+     "jiji",
+     "mainichi",
      "nknews",
-     "scmp",
+     "straitstimes",
+     "thehindu",
      "yonhap"
     ],
     "notes": [],
@@ -291,146 +215,172 @@
    }
   },
   {
-   "start": 54.61,
-   "end": 66.99,
-   "category": "military",
-   "label": "軍事 · ロシア",
-   "country": "RU",
+   "start": 35.62,
+   "end": 48.47,
+   "category": "diplomacy",
+   "label": "外交 · ソロモン諸島",
+   "country": "SB",
    "countries": [
-    "RU",
-    "DE"
+    "SB",
+    "AU"
    ],
    "place": null,
    "anim": {
     "kind": "none"
    },
-   "headline": "ロシアの核搭載衛星の報道でNATOが表明",
+   "headline": "ソロモン諸島とオーストラリアが新条約",
    "lines": [
     {
-     "start": 54.61,
+     "start": 35.62,
      "sub": "",
-     "text": "ドイツのメディアは、ロシアが核兵器を搭載した衛星を数週間以内に打ち上げる可能性があると報じました。"
+     "text": "ソロモン諸島は、オーストラリアとの間で、安全保障分野を含む包括的な新しい条約に署名しました。"
     },
     {
-     "start": 61.93,
+     "start": 43.48,
      "sub": "",
-     "text": "NATOのルッテ事務総長は、宇宙での脅威に対しても防衛すると述べました。"
+     "text": "条約は、オーストラリアを主要な安全保障上のパートナーと位置づけています。"
     }
    ],
    "sources": {
-    "count": 4,
-    "countries": 2,
+    "count": 7,
+    "countries": 5,
     "names": [
-     "フランス24",
-     "新頭殼",
-     "中央広播電台"
+     "アジア・タイムズ",
+     "日本放送協会 国際",
+     "ジャパンタイムズ"
     ],
     "items": [
      {
-      "source": "f24",
-      "title": "Is Russia preparing to launch a nuclear-armed satellite?",
-      "url": "https://www.france24.com/en/video/20261124-is-russia-preparing-to-launch-a-nuclear-armed-satellite"
+      "source": "asiatimes",
+      "title": "Australia-Solomon Islands defense treaty is a blow to China",
+      "url": "https://asiatimes.com/2026/11/australia-solomon-islands-defense-treaty-is-a-blow-to-china/"
      },
      {
-      "source": "newtalk",
-      "title": "德媒揭露俄羅斯計劃在未來幾週內發射「核武衛星」 北約矢言捍衛太空安全",
-      "url": "https://newtalk.tw/news/view/2026-11-24/1073389"
+      "source": "nhk",
+      "title": "ソロモン諸島 オーストラリアと安全保障の新条約に署名",
+      "url": "https://news.web.nhk/newsweb/na/nd-20261125de81442"
      },
      {
-      "source": "rti",
-      "title": "[國際] 傳俄羅斯計劃發射核武衛星 北約矢言捍衛太空安全",
-      "url": "https://www.rti.org.tw/news?uid=3&pid=1053312"
+      "source": "japantimes",
+      "title": "Australia edges China out of Pacific foothold in Solomon Islands",
+      "url": "https://www.japantimes.co.jp/news/2026/11/25/asia-pacific/politics/australia-solomon-islands-pact-china/"
      },
      {
-      "source": "cna-intl",
-      "title": "傳俄羅斯計劃發射核武衛星 北約矢言捍衛太空安全",
-      "url": "https://www.cna.com.tw/news/aopl/202611240031.aspx"
+      "source": "thehindu",
+      "title": "Solomon Islands names Australia as its primary security partner in a new treaty that excludes China",
+      "url": "https://www.thehindu.com/news/international/solomon-islands-names-australia-as-its-primary-security-partner-in-a-new-treaty-that-excludes-china/article71741038.ece"
+     },
+     {
+      "source": "bbc",
+      "title": "Solomon Islands ends controversial security pact with China for Australian treaty",
+      "url": "https://www.bbc.co.uk/news/articles/ckdd1z2gvlgno"
+     },
+     {
+      "source": "guardian-china",
+      "title": "Australia’s security pact with Solomon Islands a blow to China’s influence in the Pacific",
+      "url": "https://www.theguardian.com/world/2026/nov/25/australia-solomon-islands-treaty-blow-to-china-pacific-influence"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 3,
+    "families": [
+     "asiatimes",
+     "bbc",
+     "guardian",
+     "japantimes",
+     "nhk",
+     "straitstimes",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 49.37,
+   "end": 61.97,
+   "category": "conflict",
+   "label": "紛争 · ロシア",
+   "country": "RU",
+   "countries": [
+    "RU",
+    "UA"
+   ],
+   "place": {
+    "name": "サマラ州",
+    "lon": 50.15,
+    "lat": 53.2
+   },
+   "anim": {
+    "kind": "strike"
+   },
+   "headline": "ウクライナ、ロシアの製油所2か所を攻撃",
+   "lines": [
+    {
+     "start": 49.37,
+     "sub": "",
+     "text": "ウクライナ軍の参謀本部は、ロシアのサマラ州にある製油所2か所を攻撃したと発表しました。"
+    },
+    {
+     "start": 55.99,
+     "sub": "",
+     "text": "サマラ州の知事は、1人が死亡し、ドローン145機を撃墜したと述べました。"
+    }
+   ],
+   "sources": {
+    "count": 8,
+    "countries": 6,
+    "names": [
+     "ザ・ヒンドゥー 国際",
+     "ミドル・イースト・アイ",
+     "UK ディフェンス・ジャーナル"
+    ],
+    "items": [
+     {
+      "source": "thehindu",
+      "title": "Ukraine says it struck two oil refineries in Russia's Samara region",
+      "url": "https://www.thehindu.com/news/international/ukraine-says-it-struck-two-oil-refineries-in-russias-samara-region/article71743934.ece"
+     },
+     {
+      "source": "mee",
+      "title": "Houthis say they attacked Saudi Arabia's largest oil refinery in retaliation for deadly strikes",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/houthis-say-they-attacked-saudi-arabias-largest-oil-refinery-retaliation"
+     },
+     {
+      "source": "ukdj",
+      "title": "Ukrainian drones set two Rosneft refineries ablaze in Samara",
+      "url": "https://ukdefencejournal.org.uk/ukrainian-drones-set-two-rosneft-refineries-ablaze-in-samara/"
+     },
+     {
+      "source": "moscowtimes",
+      "title": "One Killed in Samara Region as Ukraine Strikes Oil Refinery",
+      "url": "https://www.themoscowtimes.com/2026/11/25/one-killed-in-samara-region-as-ukraine-strikes-oil-refinery-a94368"
+     },
+     {
+      "source": "meduza",
+      "title": "Ukrainian drones strike Russia’s Samara region, killing one and setting two Rosneft oil refineries ablaze",
+      "url": "https://meduza.io/en/news/2026/11/25/ukrainian-drones-strike-russia-s-samara-region-killing-one-and-setting-two-rosneft-oil-refineries-ablaze"
+     },
+     {
+      "source": "kyivindependent",
+      "title": "Ukraine strikes 2 Russian oil refineries in massive attack on Samara Oblast, General Staff confirms",
+      "url": "https://kyivindependent.com/ukrainian-drones-reportedly-strike-russian-oil-refineries-in-massive-attack/"
      }
     ]
    },
    "debug": {
     "rank": 4,
     "families": [
-     "cna-tw",
-     "france24",
-     "newtalk",
-     "rti"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 67.89,
-   "end": 79.83,
-   "category": "conflict",
-   "label": "紛争 · フィンランド湾",
-   "country": "FI",
-   "countries": [
-    "FI",
-    "RU",
-    "UA"
-   ],
-   "place": {
-    "name": "フィンランド湾",
-    "lon": 26.0,
-    "lat": 59.9
-   },
-   "anim": {
-    "kind": "strike"
-   },
-   "headline": "ゼレンスキー氏、ロシア貨物船攻撃を認める",
-   "lines": [
-    {
-     "start": 67.89,
-     "sub": "",
-     "text": "ウクライナのゼレンスキー大統領は、フィンランド湾でロシアの貨物船をドローンで攻撃したと述べました。"
-    },
-    {
-     "start": 74.57,
-     "sub": "",
-     "text": "大統領は、ロシアの旗を掲げるすべての船が正当な標的だと述べました。"
-    }
-   ],
-   "sources": {
-    "count": 4,
-    "countries": 3,
-    "names": [
-     "モスクワ・タイムズ",
-     "キーウ・インディペンデント",
-     "gCaptain"
-    ],
-    "items": [
-     {
-      "source": "moscowtimes",
-      "title": "Zelensky Confirms Ukraine Was Behind Drone Attack on Russian Cargo Ship in Gulf of Finland",
-      "url": "https://www.themoscowtimes.com/2026/11/24/zelensky-confirms-ukraine-was-behind-drone-attack-on-russian-cargo-ship-in-gulf-of-finland-a94364"
-     },
-     {
-      "source": "kyivindependent",
-      "title": "Zelensky confirms Ukrainian attack on Russian ship in Gulf of Finland",
-      "url": "https://kyivindependent.com/zelensky-confirms-ukrainian-attack-on-russian-ship-in-gulf-of-finland/"
-     },
-     {
-      "source": "gcaptain",
-      "title": "Zelenskyy Confirms Ukraine Hit Russian Ship in Gulf of Finland",
-      "url": "https://gcaptain.com/zelenskyy-confirms-ukraine-hit-russian-ship-in-gulf-of-finland/"
-     },
-     {
-      "source": "ukrinform",
-      "title": "Zelensky confirms strike on Russian ship in Gulf of Finland",
-      "url": "https://www.ukrinform.net/rubric-ato/4188087-zelensky-confirms-strike-on-russian-ship-in-gulf-of-finland.html"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 5,
-    "families": [
-     "gcaptain",
      "kyivindependent",
+     "meduza",
+     "mee",
      "moscowtimes",
-     "ua-state"
+     "ru-state",
+     "thehindu",
+     "ua-state",
+     "ukdj"
     ],
     "notes": [],
     "tries": [],
@@ -438,8 +388,8 @@
    }
   },
   {
-   "start": 80.73,
-   "end": 92.3,
+   "start": 62.87,
+   "end": 75.77,
    "category": "conflict",
    "label": "紛争 · ガザ",
    "country": "PS",
@@ -448,76 +398,64 @@
     "IL"
    ],
    "place": {
-    "name": "ガザ",
-    "lon": 34.45,
+    "name": "ガザ市",
+    "lon": 34.46,
     "lat": 31.5
    },
    "anim": {
     "kind": "strike"
    },
-   "headline": "ガザ空爆でハマス治安責任者が死亡",
+   "headline": "イスラエル軍の空爆でハマス幹部ら死亡",
    "lines": [
     {
-     "start": 80.73,
+     "start": 62.87,
      "sub": "",
-     "text": "ガザの内務省は、イスラエルの空爆でハマスの内部治安機関の責任者が死亡したと発表しました。"
+     "text": "ガザの内務省と医療関係者は、イスラエル軍の空爆で、ハマスの治安部門の幹部と妻、子ども2人が死亡したと発表しました。"
     },
     {
-     "start": 87.46,
+     "start": 72.19,
      "sub": "",
-     "text": "イスラエル軍は、この責任者を狙った攻撃を行ったと発表しています。"
+     "text": "イスラエル軍は、この幹部を殺害したと認めました。"
     }
    ],
    "sources": {
-    "count": 6,
-    "countries": 5,
+    "count": 4,
+    "countries": 4,
     "names": [
-     "アルジャジーラ",
+     "ザ・ヒンドゥー 国際",
      "英国公共放送 国際",
-     "フランス24"
+     "アルジャジーラ"
     ],
     "items": [
      {
-      "source": "aj",
-      "title": "Senior Hamas security official killed in Israeli drone strikes",
-      "url": "https://www.aljazeera.com/video/newsfeed/2026/11/24/senior-hamas-security-official-killed-in-israeli-drone-strikes?traffic_source=rss"
+      "source": "thehindu",
+      "title": "Israeli strike kills Hamas official, his wife and children",
+      "url": "https://www.thehindu.com/news/international/israeli-strike-kills-hamas-official-his-wife-and-children/article71743893.ece"
      },
      {
       "source": "bbc",
-      "title": "Israeli air strike kills Hamas internal security chief in Gaza",
-      "url": "https://www.bbc.co.uk/news/articles/c6rrg7ggq190o"
+      "title": "Israeli strike kills senior Hamas security official and family in Gaza City",
+      "url": "https://www.bbc.co.uk/news/articles/cmd718zydz9qo"
      },
      {
-      "source": "f24",
-      "title": "Israeli strikes on Gaza kill senior Hamas security official and six other people, medics say",
-      "url": "https://www.france24.com/en/middle-east/20261124-israeli-strikes-on-gaza-kill-senior-hamas-security-official-and-six-other-people-medics-say"
-     },
-     {
-      "source": "mee",
-      "title": "Gaza confirms death of Hamas internal security chief after Israeli strike",
-      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/gaza-confirms-death-hamas-internal-security-chief-after-israeli-strike"
+      "source": "aj",
+      "title": "Israeli strike in Gaza kills senior Hamas official, his wife and children",
+      "url": "https://www.aljazeera.com/news/2026/11/25/israeli-strike-kills-hamas-official-his-wife-and-children?traffic_source=rss"
      },
      {
       "source": "almonitor",
-      "title": "Israel kills senior Hamas security official in airstrike on Gaza",
-      "url": "https://www.al-monitor.com/originals/2026/11/israel-kills-senior-hamas-security-official-airstrike-gaza"
-     },
-     {
-      "source": "cgtn-world",
-      "title": "Israeli airstrike kills 3 Palestinians in southern Gaza, medics say",
-      "url": "https://news.cgtn.com/news/2026-11-24/Israeli-airstrike-kills-3-Palestinians-in-southern-Gaza-medics-say-1SkgFcFbE1G/p.html?UTM_Source=cgtn&UTM_Medium=rss&UTM_Campaign=World"
+      "title": "Israeli strike kills Hamas official, his wife and children",
+      "url": "https://www.al-monitor.com/originals/2026/11/israeli-strike-kills-hamas-official-his-wife-and-children"
      }
     ]
    },
    "debug": {
-    "rank": 6,
+    "rank": 5,
     "families": [
      "aj",
      "almonitor",
      "bbc",
-     "cn-state",
-     "france24",
-     "mee"
+     "thehindu"
     ],
     "notes": [],
     "tries": [],
@@ -525,70 +463,154 @@
    }
   },
   {
-   "start": 93.2,
-   "end": 100.43,
-   "category": "conflict",
-   "label": "紛争 · トルコ",
-   "country": "TR",
+   "start": 76.67,
+   "end": 91.33,
+   "category": "diplomacy",
+   "label": "外交 · アメリカ",
+   "country": "US",
    "countries": [
-    "TR"
+    "US",
+    "CN"
    ],
    "place": {
-    "name": "エスキシェヒル県",
-    "lon": 30.52,
-    "lat": 39.78
+    "name": "ニューヨーク",
+    "lon": -74.0,
+    "lat": 40.71
    },
    "anim": {
     "kind": "none"
    },
-   "headline": "トルコ軍ヘリが訓練中に墜落、5人死亡",
+   "headline": "米陪審、ファーウェイに有罪の評決",
    "lines": [
     {
-     "start": 93.2,
+     "start": 76.67,
      "sub": "",
-     "text": "トルコ国防省は、軍のヘリコプターが訓練飛行中に墜落し、軍人5人が死亡したと発表しました。"
+     "text": "アメリカのニューヨークの陪審は、中国の通信機器メーカー、ファーウェイに有罪の評決を出しました。"
+    },
+    {
+     "start": 83.73,
+     "sub": "",
+     "text": "評決は、イランでの事業をめぐる銀行詐欺や制裁違反、企業秘密を盗む共謀などを有罪としました。"
     }
    ],
    "sources": {
     "count": 4,
     "countries": 4,
     "names": [
-     "アルジャジーラ",
-     "中央通訊社",
-     "アルモニター"
+     "BBC 中国",
+     "ジャパンタイムズ",
+     "ラップラー"
     ],
     "items": [
      {
-      "source": "aj",
-      "title": "Turkish military helicopter crash kills five in western Turkiye",
-      "url": "https://www.aljazeera.com/news/2026/11/24/turkish-military-helicopter-crash-kills-five-in-western-turkiye?traffic_source=rss"
+      "source": "bbc-china",
+      "title": "Huawei found guilty of stealing US trade secrets but acquitted of racketeering",
+      "url": "https://www.bbc.co.uk/news/articles/cmy49ngydqzpo"
      },
      {
-      "source": "cna-intl",
-      "title": "土耳其軍方直升機訓練時墜毀 導致5名官兵喪命",
-      "url": "https://www.cna.com.tw/news/aopl/202611250007.aspx"
+      "source": "japantimes",
+      "title": "China’s Huawei convicted in sprawling U.S. criminal trial over Iran business",
+      "url": "https://www.japantimes.co.jp/business/2026/11/25/tech/china-huawei-us-iran-business/"
+     },
+     {
+      "source": "rappler",
+      "title": "China’s Huawei convicted in sprawling US criminal trial over Iran business",
+      "url": "https://www.rappler.com/world/us-canada/china-huawei-convicted-us-criminal-trial-iran-business/"
      },
      {
       "source": "almonitor",
-      "title": "Turkish military helicopter crashes during training flight, killing 5",
-      "url": "https://www.al-monitor.com/originals/2026/11/turkish-military-helicopter-crashes-during-training-flight-killing-5"
+      "title": "China's Huawei convicted in sprawling US criminal trial over Iran business",
+      "url": "https://www.al-monitor.com/originals/2026/11/chinas-huawei-convicted-sprawling-us-criminal-trial-over-iran-business"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 6,
+    "families": [
+     "almonitor",
+     "bbc",
+     "japantimes",
+     "rappler"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 92.23,
+   "end": 104.55,
+   "category": "military",
+   "label": "軍事 · アメリカ",
+   "country": "US",
+   "countries": [
+    "US"
+   ],
+   "place": null,
+   "anim": {
+    "kind": "none"
+   },
+   "headline": "米空軍、KC-46給油機を15機追加発注",
+   "lines": [
+    {
+     "start": 92.23,
+     "sub": "",
+     "text": "アメリカ空軍は、ボーイングにKC-46空中給油機15機を追加で発注しました。"
+    },
+    {
+     "start": 98.47,
+     "sub": "",
+     "text": "契約額は28億2000万ドルで、当初の契約に基づく最後の生産分です。"
+    }
+   ],
+   "sources": {
+    "count": 5,
+    "countries": 2,
+    "names": [
+     "ザ・ウォー・ゾーン",
+     "エア・アンド・スペース・フォーシズ",
+     "ブレイキング・ディフェンス"
+    ],
+    "items": [
+     {
+      "source": "twz",
+      "title": "Final KC-46 Tankers Under Original Contract With Boeing Ordered By USAF",
+      "url": "https://www.twz.com/air/final-kc-46-tankers-under-original-contract-with-boeing-ordered-by-usaf"
      },
      {
-      "source": "tass",
-      "title": "Five servicemen killed in Turkish military helicopter crash",
-      "url": "https://tass.com/emergencies/2224271"
+      "source": "afmag",
+      "title": "Air Force Gives Boeing $2.8B Contract for More KC-46s, as Price Rises",
+      "url": "https://www.airandspaceforces.com/air-force-boeing-2-8b-contract-more-kc-46s/"
+     },
+     {
+      "source": "breakingdefense",
+      "title": "Air Force issues Boeing $2.8 billion for more KC-46s",
+      "url": "https://breakingdefense.com/2026/11/air-force-issues-boeing-2-8-billion-for-more-kc-46s/"
+     },
+     {
+      "source": "defensenews",
+      "title": "US Air Force buys final KC-46 lot under Boeing’s original tanker deal",
+      "url": "https://www.defensenews.com/industry/techwatch/2026/11/25/us-air-force-buys-final-kc-46-lot-under-boeings-original-tanker-deal/"
+     },
+     {
+      "source": "airforcetech",
+      "title": "Boeing wins $2.8bn US Air Force order for 15 KC-46A tankers",
+      "url": "https://www.airforce-technology.com/news/boeing-us-kc-461/"
      }
     ]
    },
    "debug": {
     "rank": 7,
     "families": [
-     "aj",
-     "almonitor",
-     "cna-tw",
-     "ru-state"
+     "afmag",
+     "breakingdefense",
+     "globaldata",
+     "sightline",
+     "twz"
     ],
-    "notes": [],
+    "notes": [
+     "読みの表に無い英字: KC-"
+    ],
     "tries": [],
     "numberConflicts": []
    }
@@ -602,26 +624,27 @@
   "timing": {
    "clusterSec": 0.07,
    "scriptSec": 0.1,
-   "audioSec": 33.0,
-   "totalSec": 34.1
+   "audioSec": 33.7,
+   "totalSec": 34.5
   },
   "candidates": 0,
   "kana": {
-   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ゴ'ニチ",
+   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ロク'ニチ",
    "intro+1": "カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
-   "0.0": "カ'ンコクノ/ゴオドオサンボオホ'ンブワ、_フクス'ウノ/ロシアグ'ンキガ/ニホ'ンカイノ/ジョオクウデ'/カ'ンコクノ/ボオクウ_シキベツ'ケンニ/イチ'ジ/シンニュウ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "0.1": "ウルル'ンドデワ/ジュウミンニ'/ヒ'ナンオ/ヨビカケ'ル/ケエホオガ'/イチ'ジ/ダサ'レ、カ'ンコクワ/ロシアガワニ'/コ'オギ/シマ'_シタ",
-   "1.0": "チュ'ウゴクワ、ユウジンウチュウセン'/シンシュウ'/ニ'ジュウ/ヨ'ンゴオノ/ウチアゲオ'/マ'エニ、ノリクミ'インオ/ハッピョオ'/シマ'_シタ",
-   "1.1": "パ_キスタンク'ウグンノ/パ'イロットガ、ウチュウ_ステ'エション/テンキュウニ'/ノリコ'ム/ハジ'メテノ/ガイコク'ジン/ウチュウ_ヒコ'オシニ/ナ'ル/ヨテエデ'_ス",
-   "2.0": "_キタチョオセ'ンノ/キ'ム/ヨジョ'ンシワ、ス'イスガ/ピョ'ンヤンニ/ヒラ'イタ/ガイコオジム'ショノ/ヘエサオ'/ケントオ'/スルト'/ケエコ_ク'/シマ'_シタ",
-   "2.1": "ス'イスガ/_キタチョオセ'ンノ/セエショオネンキャ'ンプニ/セエサイオ'/カ'_シタ/コト'オ/ウケ'タ/モノ'デ、スイスセ'エフワ/セエサイオ'/イ'ジ/スルト'/_シテ'/イマ'_ス",
-   "3.0": "ド'イツノ/メ'ディアワ、ロ'シアガ/カ_クヘ'エキオ/トオサイ'/_シタ'/エエセエオ'/スウシュ'ウカン/イ'ナイニ/ウチアゲ'ル/カノオセエガ'/ア'ルト/ホオジマ'_シタ",
-   "3.1": "ナ'トオノ/ル'ッテ/ジムソ'オチョオワ、ウ'チュウデノ/キョ'オイニ/タ'イ_シテモ/ボオエエ'/スルト'/ノベマ'_シタ",
-   "4.0": "ウクラ'イナノ/ゼレ'ン_スキイ/ダイト'オリョオワ、フィンランド'ワンデ/ロ'シアノ/カモツセンオ'/ドロ'オンデ/コオゲキ'/_シタ'ト/ノベマ'_シタ",
-   "4.1": "ダイト'オリョオワ、ロ'シアノ/ハタ'オ/カカゲル'/ス'ベテノ/フ'ネガ/セエトオナ'/ヒョオテキダト'/ノベマ'_シタ",
-   "5.0": "ガ'ザノ/ナイム'ショオワ、イスラ'エルノ/クウバクデ'/ハ'マスノ/ナイブチアンキ'カンノ/セキニ'ンシャガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "5.1": "イスラエル'グンワ、コノ'/セキニ'ンシャオ/ネラッタ'/コオゲキオ'/オコナッタ'ト/ハッピョオ'/_シテ'/イマ'_ス",
-   "6.0": "トルココクボ'オショオワ、グ'ンノ/ヘリコ'_プタアガ/クンレン_ヒコオチュウニ'/ツイラ_ク'/シ'、グンジン'/ゴニ'ンガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "0.0": "チュ'ウゴクワ、パ_キスタ'ンジンノ/ウチュウ_ヒコオ'シオ/_フク'ム/サンニ'ンオ/ノセタ'/ユウジンウチュウセン'/シンシュウ'/ニ'ジュウ/ヨ'ンゴオオ/ウチアゲマ'_シタ",
+   "0.1": "チュ'ウゴクノ/ウチュウ_ステ'エションニ/ガイコク'ジンノ/ウチュウ_ヒコオ'シガ/サンカスルノ'ワ/ハジ'メテデ_ス",
+   "1.0": "_キタチョオセ'ンワ、ピョ'ンヤンニ/ア'ル/ス'イスノ/ガイコオジム'ショノ/ダイヒョオオ'/コク'ガイニ/ツイホオスルト'/ハッピョオ'/シマ'_シタ",
+   "1.1": "ス'イスガ/_キタチョオセ'ンノ/コドモムケ'/キャ'ンプニ/セエサイオ'/カ'_シタ/コト'ニ/ハンパ_ツシ'、ジム'ショノ/ヘエサモ'/モトメ'テ/イマ'_ス",
+   "2.0": "ソロモンショ'トオワ、オオ_ストラ'リアトノ/アイダデ'、アンゼン'/ホショオブ'ンヤオ/_フク'ム/ホオカツテキナ'/アタラシ'イ/ジョオヤクニ'/ショメエ'/シマ'_シタ",
+   "2.1": "ジョオヤクワ'、オオ_ストラ'リアオ/シュヨオナ'/アンゼン'/ホショオジョオノ'/パ'アトナアト/イチズケ'テ/イマ'_ス",
+   "3.0": "ウクライナ'グンノ/サンボオホ'ンブワ、ロ'シアノ/サマラ'シュウニ/ア'ル/セエユショ'/ニカ'ショオ/コオゲキ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "3.1": "サマラ'シュウノ/チ'ジワ、_ヒト'リガ/シボオシ'、ドロ'オン/ヒャク'/ヨ'ンジュウ/ゴ'キオ/ゲ_キツイ'/_シタ'ト/ノベマ'_シタ",
+   "4.0": "ガ'ザノ/ナイム'ショオト/イリョオカンケ'エシャワ、イスラエル'グンノ/クウバクデ'、ハ'マスノ/チアンブ'モンノ/カ'ンブト/ツ'マ、コドモ'/_フタリ'ガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "4.1": "イスラエル'グンワ、コノ'/カ'ンブオ/サツガイ'/_シタ'ト/ミトメマ'_シタ",
+   "5.0": "アメリカノ'/ニュウヨ'オクノ/バイシンワ'、チュ'ウゴクノ/ツウシン_キキメ'エカア、ファアウェ'イニ/ユウザイノ'/ヒョオケツオ'/ダシマ'_シタ",
+   "5.1": "ヒョオケツワ'、イ'ランデノ/ジ'ギョオオ/メグル'/ギンコオサ'ギヤ/セエサイイ'ハン、キギョオヒ'ミツオ/ヌス'ム/キョオボオナ'ドオ/ユウザイト'/シマ'_シタ",
+   "6.0": "アメリカク'ウグンワ、ボ'オイングニ/ケエシ'イ/ヨンロ_ク'/クウチュウキュウユ'キ/ジュウゴ'キオ/ツイカデ'/ハッチュウ'/シマ'_シタ",
+   "6.1": "ケエヤクガ'クワ/ニ'ジュウ/ハチ'オク/ニセンマ'ンドルデ、ト'オショノ/ケエヤクニ'/モトズ'_ク/サ'イゴノ/セエサン'ブンデ_ス",
    "outro": "イ'ジョオデ_ス",
    "outro+1": "ホオドオノ'/ミダ_シト'/ヨオヤクオ'、キ'カイデ/マトメテ'/ヨミアゲマ'_シタ"
   }
