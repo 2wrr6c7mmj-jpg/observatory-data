@@ -454,11 +454,15 @@ RUNNERS = {
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('sources', nargs='*', default=list(RUNNERS), choices=list(RUNNERS))
+    ap.add_argument('sources', nargs='*', help='源（空ならすべて）: ' + ' '.join(RUNNERS))
     ap.add_argument('--force', action='store_true', help='月次の源も取り直す（さかのぼり用）')
     ap.add_argument('--days', type=int, default=10, help='さかのぼる日数（rmrb・ioda・ferries）')
     ap.add_argument('--years', type=int, default=1, help='さかのぼる年数（gold・oil）')
     a = ap.parse_args(argv)
+    a.sources = a.sources or list(RUNNERS)
+    bad = [x for x in a.sources if x not in RUNNERS]
+    if bad:
+        ap.error('unknown sources: ' + ' '.join(bad))
     status = load('status', {'sources': {}})
     failed = 0
     for name in a.sources:
