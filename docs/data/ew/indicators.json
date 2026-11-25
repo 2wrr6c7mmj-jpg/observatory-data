@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T02:37:33Z",
+ "generated_utc": "2026-11-25T02:38:13Z",
  "as_of": "2026-11-25",
  "verdict": "normal",
  "layers": [
@@ -8,9 +8,9 @@
    "id": "strategic",
    "name": "戦略層",
    "lead": "数か月前",
-   "mean": 0.5,
+   "mean": 0.33,
    "max": 1,
-   "collected": 2,
+   "collected": 3,
    "total": 4
   },
   {
@@ -860,9 +860,15 @@
    "source": "Sentinel-1（sat/ の ship_counts と港のアーカイブ）",
    "kind": "samples",
    "status": "collected",
-   "value": null,
-   "score": null,
-   "reason": "平常値を作る期間が足りない（造船所 3 か所は 2026-12 から月 1 回）",
+   "value": 4.0,
+   "baseline_median": 4.5,
+   "band": [
+    4.0,
+    5.3
+   ],
+   "z": -0.5,
+   "score": 0,
+   "site": "広州・龍穴島",
    "parts": {
     "MAW": {
      "name": "福州・馬尾",
@@ -872,24 +878,24 @@
     },
     "LXD": {
      "name": "広州・龍穴島",
-     "value": null,
-     "score": null,
-     "z": null
+     "value": 4.0,
+     "score": 0,
+     "z": -0.5
     },
     "HDZ": {
      "name": "上海・滬東中華",
-     "value": null,
-     "score": null,
-     "z": null
+     "value": 5.3,
+     "score": 0,
+     "z": -0.45
     },
     "SJN": {
      "name": "上海・長興島",
-     "value": null,
-     "score": null,
-     "z": null
+     "value": 5.3,
+     "score": 0,
+     "z": 0.33
     }
    },
-   "note": "福州・馬尾 5.0；広州・龍穴島 —；上海・滬東中華 —；上海・長興島 —。Contains modified Copernicus Sentinel data [2025–2026]",
+   "note": "福州・馬尾 5.0；広州・龍穴島 4.0（0 点）；上海・滬東中華 5.3（0 点）；上海・長興島 5.3（0 点）。Contains modified Copernicus Sentinel data [2025–2026]",
    "judged": false
   },
   {
