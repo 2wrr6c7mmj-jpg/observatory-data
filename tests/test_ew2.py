@@ -236,5 +236,50 @@ class ScoringTest(unittest.TestCase):
         self.assertIsNone(ew.judge(base + [mk('strategic', 'money', 0)])['ceiling'])
 
 
+class RmrbTransientTest(unittest.TestCase):
+    def test_broken_connection_is_retried_then_skipped_and_run_goes_on(self):
+        import http.client
+        from unittest import mock
+        calls = []
+
+        def flaky(day, get=None, wait=0):
+            calls.append(day)
+            if day.day % 2:
+                raise http.client.IncompleteRead(b'x')
+            return [{'page': 1, 'title': 't', 'url': 'u'}]
+        saved = {}
+        with mock.patch.object(ew2, 'rmrb_day_retry', flaky), \
+                mock.patch.object(ew2, 'load', lambda n, d: {'days': {}}), \
+                mock.patch.object(ew2, 'save', lambda n, d: saved.update(d)):
+            out = ew2.run_rmrb(6)
+        self.assertNotIn('stopped_before', out)
+        self.assertEqual(len(calls), 7)
+        self.assertTrue(all(date.fromisoformat(k).day % 2 == 0 for k in saved['days']))
+
+    def test_many_failures_in_a_row_stop_and_report(self):
+        import http.client
+        from unittest import mock
+
+        def broken(day, get=None, wait=0):
+            raise http.client.IncompleteRead(b'x')
+        with mock.patch.object(ew2, 'rmrb_day_retry', broken), \
+                mock.patch.object(ew2, 'load', lambda n, d: {'days': {}}), \
+                mock.patch.object(ew2, 'save', lambda n, d: None):
+            out = ew2.run_rmrb(20)
+        self.assertIn('stopped_before', out)
+
+    def test_retry_once_then_success(self):
+        import http.client
+        n = []
+
+        def get(url):
+            n.append(url)
+            if len(n) == 1:
+                raise http.client.IncompleteRead(b'x')
+            return ew2.polite.Response(url, 404, {}, b'')
+        self.assertIsNone(ew2.rmrb_day_retry(date(2024, 1, 27), get, wait=0))
+        self.assertEqual(len(n), 3)   # broken, then pc 404 + old 404
+
+
 if __name__ == '__main__':
     unittest.main()
