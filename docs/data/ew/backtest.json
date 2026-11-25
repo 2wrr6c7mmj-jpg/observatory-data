@@ -1,6 +1,6 @@
 {
  "version": "ew-2",
- "generated_utc": "2026-11-25T03:07:36Z",
+ "generated_utc": "2026-11-25T06:28:38Z",
  "note": "各時点で、その日までに公表・報道されていたものだけを使って採点した（統幕は公表日、演習の報道は初報の日で絞る）。名前つきの演習の一覧（analysis/exercises.json）は答えなので、ここと誤報の目安では採点に使わない。台湾周辺の数と海保は後から取得した版で、公表の時点は再現していない",
  "rows": [
   {
@@ -520,7 +520,7 @@
       "gold": 0,
       "oil-imports": 0,
       "amphib-build": 0,
-      "rhetoric": null,
+      "rhetoric": 0,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
@@ -534,7 +534,7 @@
      "as_of": "2025-12-28",
      "verdict": "normal",
      "layers": {
-      "strategic": 0,
+      "strategic": 1,
       "mobilization": null,
       "deployment": 0,
       "action": 0
@@ -550,7 +550,7 @@
       "gold": 0,
       "oil-imports": 0,
       "amphib-build": 0,
-      "rhetoric": null,
+      "rhetoric": 1,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
@@ -564,7 +564,7 @@
      "as_of": "2026-01-01",
      "verdict": "exercise",
      "layers": {
-      "strategic": 0,
+      "strategic": 1,
       "mobilization": null,
       "deployment": 0,
       "action": 2
@@ -580,7 +580,7 @@
       "gold": 0,
       "oil-imports": 0,
       "amphib-build": 0,
-      "rhetoric": null,
+      "rhetoric": 1,
       "mobilization-drills": null,
       "conscription": null,
       "war-risk": null,
