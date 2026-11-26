@@ -1,6 +1,6 @@
 {
  "version": 1,
- "createdAt": 1795645931070,
+ "createdAt": 1795732405360,
  "windowHours": 24,
  "hold": false,
  "holdReason": "",
@@ -14,373 +14,107 @@
  },
  "audio": {
   "file": "latest.mp3",
-  "seconds": 110.91,
-  "bytes": 887808
+  "seconds": 107.39,
+  "bytes": 859584
  },
  "counts": {
-  "records": 914,
-  "sources": 82,
-  "clusters": 762,
-  "multiSource": 45
+  "records": 703,
+  "sources": 74,
+  "clusters": 594,
+  "multiSource": 34
  },
  "intro": {
   "start": 0,
-  "text": "東アジア情勢観測、11月26日。過去24時間の主な出来事、7件です。"
+  "text": "東アジア情勢観測、11月27日。過去24時間の主な出来事、7件です。"
  },
  "outro": {
-  "start": 105.45,
+  "start": 101.93,
   "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
  },
  "events": [
   {
-   "start": 8.5,
-   "end": 20.8,
+   "start": 8.47,
+   "end": 20.88,
    "category": "diplomacy",
-   "label": "外交 · 中国",
-   "country": "CN",
+   "label": "外交 · ロシア",
+   "country": "RU",
    "countries": [
-    "CN",
-    "PK"
+    "RU",
+    "JP"
    ],
    "place": {
-    "name": "酒泉衛星発射センター",
-    "lon": 100.29,
-    "lat": 40.96
+    "name": "モスクワ",
+    "lon": 37.62,
+    "lat": 55.75
    },
    "anim": {
-    "kind": "launch"
+    "kind": "none"
    },
-   "headline": "中国、神舟24号を打ち上げ",
+   "headline": "拘束された記者の妻、解放求める手記",
    "lines": [
     {
-     "start": 8.5,
+     "start": 8.47,
      "sub": "",
-     "text": "中国は、パキスタン人の宇宙飛行士を含む3人を乗せた有人宇宙船「神舟24号」を打ち上げました。"
+     "text": "ロシアの連邦保安庁にスパイ容疑で拘束された北海道新聞の今井記者の妻が、手記を公開し、解放を求めました。"
     },
     {
-     "start": 15.82,
+     "start": 17.3,
      "sub": "",
-     "text": "中国の宇宙ステーションに外国人の宇宙飛行士が参加するのは初めてです。"
+     "text": "ロシアの複数のメディアも、手記の内容を報じました。"
     }
    ],
    "sources": {
-    "count": 13,
-    "countries": 10,
+    "count": 8,
+    "countries": 5,
     "names": [
-     "フランス24",
      "日本放送協会 国際",
-     "朝日新聞 速報"
+     "モスクワ・タイムズ",
+     "毎日新聞 英語版"
     ],
     "items": [
      {
-      "source": "f24",
-      "title": "'Historic' space mission: China launches Shenzhou 24 spacecraft carrying Pakistani astronaut",
-      "url": "https://www.france24.com/en/video/20261125-historic-space-mission-china-launches-shenzhou-24-spacecraft-carrying-pakistani-astronaut"
-     },
-     {
       "source": "nhk",
-      "title": "中国 独自の宇宙ステーションにパキスタン人宇宙飛行士初参加",
-      "url": "https://news.web.nhk/newsweb/na/nd-20261125de80985"
+      "title": "北海道新聞記者の妻の手記をロシアメディアも報じる",
+      "url": "https://news.web.nhk/newsweb/na/nd-20261127de82163"
      },
      {
-      "source": "asahi",
-      "title": "中国が有人宇宙船「神舟24号」を打ち上げ 初の外国籍乗組員が搭乗",
-      "url": "http://www.asahi.com/articles/ASVCT0D2ZVCTUHBI02YM.html?ref=rss"
+      "source": "moscowtimes",
+      "title": "‘Trapped in Grief’: Wife of Japanese Journalist Jailed by Russia Pleads for His Release",
+      "url": "https://www.themoscowtimes.com/2026/11/26/trapped-in-grief-wife-of-japanese-journalist-jailed-by-russia-pleads-for-his-a812376"
      },
      {
-      "source": "scmp-china",
-      "title": "China-Pakistan crewed space mission was a decade in the making: minister",
-      "url": "https://www.scmp.com/news/china/science/article/3375722/china-pakistan-crewed-space-mission-was-decade-making-minister"
+      "source": "mainichi",
+      "title": "Grief-stricken wife of Japanese reporter held by Russia pleads for his release (full text)",
+      "url": "https://mainichi.jp/english/articles/20261126/p2g/00m/0op/026000c"
      },
      {
-      "source": "rti",
-      "title": "[兩岸] 中國發射神舟24號 首次搭載外籍太空人一同出任務",
-      "url": "https://www.rti.org.tw/news?uid=3&pid=1053628"
+      "source": "scmp-asia",
+      "title": "Wife of detained Japanese reporter Yuki Imai pleads for his release from Russia",
+      "url": "https://www.scmp.com/news/asia/east-asia/article/3375882/wife-detained-japanese-reporter-yuki-imai-pleads-his-release-russia"
      },
      {
-      "source": "thehindu",
-      "title": "China launches crewed spaceship carrying first Pakistani astronaut to its space station",
-      "url": "https://www.thehindu.com/sci-tech/science/chinas-shenzhou-24-space-flight-takes-off-with-pakistani-national-as-first-foreign-astronaut/article71740891.ece"
+      "source": "guardian-russia",
+      "title": "‘Trapped in grief’: wife of Japanese journalist detained by Russia pleads for his release",
+      "url": "https://www.theguardian.com/world/2026/nov/26/japanese-journalist-yuki-imai-detained-in-russia-wife-pleads-his-release"
+     },
+     {
+      "source": "jiji",
+      "title": "ロシアに拘束された今井記者の妻の手記全文",
+      "url": "https://www.jiji.com/jc/article?k=2026112600697&g=soc&m=rss"
      }
     ]
    },
    "debug": {
     "rank": 1,
     "families": [
-     "asahi",
-     "bbc",
-     "cn-state",
-     "france24",
-     "japantimes",
-     "jiji",
-     "nhk",
-     "rti",
-     "ru-state",
-     "scmp",
-     "straitstimes",
-     "thehindu",
-     "vnexpress"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 21.7,
-   "end": 34.72,
-   "category": "diplomacy",
-   "label": "外交 · 北朝鮮",
-   "country": "KP",
-   "countries": [
-    "KP",
-    "CH"
-   ],
-   "place": {
-    "name": "平壌",
-    "lon": 125.75,
-    "lat": 39.02
-   },
-   "anim": {
-    "kind": "none"
-   },
-   "headline": "北朝鮮、スイス外交事務所の代表を追放",
-   "lines": [
-    {
-     "start": 21.7,
-     "sub": "",
-     "text": "北朝鮮は、平壌にあるスイスの外交事務所の代表を国外に追放すると発表しました。"
-    },
-    {
-     "start": 28.21,
-     "sub": "",
-     "text": "スイスが北朝鮮の子ども向けキャンプに制裁を科したことに反発し、事務所の閉鎖も求めています。"
-    }
-   ],
-   "sources": {
-    "count": 7,
-    "countries": 4,
-    "names": [
-     "聯合ニュース 英語版",
-     "時事通信",
-     "ザ・ヒンドゥー 国際"
-    ],
-    "items": [
-     {
-      "source": "yonhap",
-      "title": "N. Korea closes Swiss office in Pyongyang over sanctions on children's camp",
-      "url": "https://en.yna.co.kr/view/AEN20261125005600315"
-     },
-     {
-      "source": "jiji",
-      "title": "スイス外交事務所代表を追放 制裁に反発、再開１カ月で閉鎖―北朝鮮",
-      "url": "https://www.jiji.com/jc/article?k=2026112500735&g=int&m=rss"
-     },
-     {
-      "source": "thehindu",
-      "title": "North Korea declares a Swiss diplomat persona non grata and orders him to leave",
-      "url": "https://www.thehindu.com/news/international/north-korea-declares-a-swiss-diplomat-persona-non-grata-and-orders-him-to-leave/article71741084.ece"
-     },
-     {
-      "source": "japantimes",
-      "title": "North Korea expels head of Swiss diplomatic office, state media reports",
-      "url": "https://www.japantimes.co.jp/news/2026/11/25/asia-pacific/north-korea-swiss-diplomatic-office/"
-     },
-     {
-      "source": "nknews",
-      "title": "North Korea expels Swiss diplomat over sanctions on children’s camp",
-      "url": "https://www.nknews.org/2026/11/north-korea-expels-swiss-diplomat-over-sanctions-on-childrens-camp/"
-     },
-     {
-      "source": "straitstimes",
-      "title": "North Korea expels Swiss representative over sanctions related to children’s camp",
-      "url": "https://www.straitstimes.com/asia/east-asia/north-korea-expels-swiss-representative-over-sanctions-related-to-childrens-camp"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 2,
-    "families": [
+     "guardian",
      "japantimes",
      "jiji",
      "mainichi",
-     "nknews",
-     "straitstimes",
-     "thehindu",
-     "yonhap"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 35.62,
-   "end": 48.47,
-   "category": "diplomacy",
-   "label": "外交 · ソロモン諸島",
-   "country": "SB",
-   "countries": [
-    "SB",
-    "AU"
-   ],
-   "place": null,
-   "anim": {
-    "kind": "none"
-   },
-   "headline": "ソロモン諸島とオーストラリアが新条約",
-   "lines": [
-    {
-     "start": 35.62,
-     "sub": "",
-     "text": "ソロモン諸島は、オーストラリアとの間で、安全保障分野を含む包括的な新しい条約に署名しました。"
-    },
-    {
-     "start": 43.48,
-     "sub": "",
-     "text": "条約は、オーストラリアを主要な安全保障上のパートナーと位置づけています。"
-    }
-   ],
-   "sources": {
-    "count": 7,
-    "countries": 5,
-    "names": [
-     "アジア・タイムズ",
-     "日本放送協会 国際",
-     "ジャパンタイムズ"
-    ],
-    "items": [
-     {
-      "source": "asiatimes",
-      "title": "Australia-Solomon Islands defense treaty is a blow to China",
-      "url": "https://asiatimes.com/2026/11/australia-solomon-islands-defense-treaty-is-a-blow-to-china/"
-     },
-     {
-      "source": "nhk",
-      "title": "ソロモン諸島 オーストラリアと安全保障の新条約に署名",
-      "url": "https://news.web.nhk/newsweb/na/nd-20261125de81442"
-     },
-     {
-      "source": "japantimes",
-      "title": "Australia edges China out of Pacific foothold in Solomon Islands",
-      "url": "https://www.japantimes.co.jp/news/2026/11/25/asia-pacific/politics/australia-solomon-islands-pact-china/"
-     },
-     {
-      "source": "thehindu",
-      "title": "Solomon Islands names Australia as its primary security partner in a new treaty that excludes China",
-      "url": "https://www.thehindu.com/news/international/solomon-islands-names-australia-as-its-primary-security-partner-in-a-new-treaty-that-excludes-china/article71741038.ece"
-     },
-     {
-      "source": "bbc",
-      "title": "Solomon Islands ends controversial security pact with China for Australian treaty",
-      "url": "https://www.bbc.co.uk/news/articles/ckdd1z2gvlgno"
-     },
-     {
-      "source": "guardian-china",
-      "title": "Australia’s security pact with Solomon Islands a blow to China’s influence in the Pacific",
-      "url": "https://www.theguardian.com/world/2026/nov/25/australia-solomon-islands-treaty-blow-to-china-pacific-influence"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 3,
-    "families": [
-     "asiatimes",
-     "bbc",
-     "guardian",
-     "japantimes",
-     "nhk",
-     "straitstimes",
-     "thehindu"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 49.37,
-   "end": 61.97,
-   "category": "conflict",
-   "label": "紛争 · ロシア",
-   "country": "RU",
-   "countries": [
-    "RU",
-    "UA"
-   ],
-   "place": {
-    "name": "サマラ州",
-    "lon": 50.15,
-    "lat": 53.2
-   },
-   "anim": {
-    "kind": "strike"
-   },
-   "headline": "ウクライナ、ロシアの製油所2か所を攻撃",
-   "lines": [
-    {
-     "start": 49.37,
-     "sub": "",
-     "text": "ウクライナ軍の参謀本部は、ロシアのサマラ州にある製油所2か所を攻撃したと発表しました。"
-    },
-    {
-     "start": 55.99,
-     "sub": "",
-     "text": "サマラ州の知事は、1人が死亡し、ドローン145機を撃墜したと述べました。"
-    }
-   ],
-   "sources": {
-    "count": 8,
-    "countries": 6,
-    "names": [
-     "ザ・ヒンドゥー 国際",
-     "ミドル・イースト・アイ",
-     "UK ディフェンス・ジャーナル"
-    ],
-    "items": [
-     {
-      "source": "thehindu",
-      "title": "Ukraine says it struck two oil refineries in Russia's Samara region",
-      "url": "https://www.thehindu.com/news/international/ukraine-says-it-struck-two-oil-refineries-in-russias-samara-region/article71743934.ece"
-     },
-     {
-      "source": "mee",
-      "title": "Houthis say they attacked Saudi Arabia's largest oil refinery in retaliation for deadly strikes",
-      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/houthis-say-they-attacked-saudi-arabias-largest-oil-refinery-retaliation"
-     },
-     {
-      "source": "ukdj",
-      "title": "Ukrainian drones set two Rosneft refineries ablaze in Samara",
-      "url": "https://ukdefencejournal.org.uk/ukrainian-drones-set-two-rosneft-refineries-ablaze-in-samara/"
-     },
-     {
-      "source": "moscowtimes",
-      "title": "One Killed in Samara Region as Ukraine Strikes Oil Refinery",
-      "url": "https://www.themoscowtimes.com/2026/11/25/one-killed-in-samara-region-as-ukraine-strikes-oil-refinery-a94368"
-     },
-     {
-      "source": "meduza",
-      "title": "Ukrainian drones strike Russia’s Samara region, killing one and setting two Rosneft oil refineries ablaze",
-      "url": "https://meduza.io/en/news/2026/11/25/ukrainian-drones-strike-russia-s-samara-region-killing-one-and-setting-two-rosneft-oil-refineries-ablaze"
-     },
-     {
-      "source": "kyivindependent",
-      "title": "Ukraine strikes 2 Russian oil refineries in massive attack on Samara Oblast, General Staff confirms",
-      "url": "https://kyivindependent.com/ukrainian-drones-reportedly-strike-russian-oil-refineries-in-massive-attack/"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 4,
-    "families": [
-     "kyivindependent",
-     "meduza",
-     "mee",
      "moscowtimes",
-     "ru-state",
-     "thehindu",
-     "ua-state",
-     "ukdj"
+     "nhk",
+     "scmp",
+     "straitstimes"
     ],
     "notes": [],
     "tries": [],
@@ -388,8 +122,8 @@
    }
   },
   {
-   "start": 62.87,
-   "end": 75.77,
+   "start": 21.78,
+   "end": 35.51,
    "category": "conflict",
    "label": "紛争 · ガザ",
    "country": "PS",
@@ -398,63 +132,75 @@
     "IL"
    ],
    "place": {
-    "name": "ガザ市",
-    "lon": 34.46,
-    "lat": 31.5
+    "name": "デイルアルバラ",
+    "lon": 34.35,
+    "lat": 31.42
    },
    "anim": {
     "kind": "strike"
    },
-   "headline": "イスラエル軍の空爆でハマス幹部ら死亡",
+   "headline": "ガザで空爆、教育省の次官ら死亡",
    "lines": [
     {
-     "start": 62.87,
+     "start": 21.78,
      "sub": "",
-     "text": "ガザの内務省と医療関係者は、イスラエル軍の空爆で、ハマスの治安部門の幹部と妻、子ども2人が死亡したと発表しました。"
+     "text": "ガザ中部でイスラエルの空爆があり、ハマスが任命した教育省の次官と妻が死亡したと、医療関係者が述べました。"
     },
     {
-     "start": 72.19,
+     "start": 30.14,
      "sub": "",
-     "text": "イスラエル軍は、この幹部を殺害したと認めました。"
+     "text": "ハマスの指導者ハイヤ氏は、攻撃が続くことを耐え続ける用意はないと述べました。"
     }
    ],
    "sources": {
-    "count": 4,
-    "countries": 4,
+    "count": 6,
+    "countries": 5,
     "names": [
+     "フランス24",
      "ザ・ヒンドゥー 国際",
-     "英国公共放送 国際",
-     "アルジャジーラ"
+     "アルモニター"
     ],
     "items": [
      {
+      "source": "f24",
+      "title": "Hamas weighs response after Israel kills 10 people in Gaza",
+      "url": "https://www.france24.com/en/hamas-weighs-response-after-israel-kills-10-people-in-gaza"
+     },
+     {
       "source": "thehindu",
-      "title": "Israeli strike kills Hamas official, his wife and children",
-      "url": "https://www.thehindu.com/news/international/israeli-strike-kills-hamas-official-his-wife-and-children/article71743893.ece"
-     },
-     {
-      "source": "bbc",
-      "title": "Israeli strike kills senior Hamas security official and family in Gaza City",
-      "url": "https://www.bbc.co.uk/news/articles/cmd718zydz9qo"
-     },
-     {
-      "source": "aj",
-      "title": "Israeli strike in Gaza kills senior Hamas official, his wife and children",
-      "url": "https://www.aljazeera.com/news/2026/11/25/israeli-strike-kills-hamas-official-his-wife-and-children?traffic_source=rss"
+      "title": "Israel kills nine in Gaza, including Hamas-appointed deputy Education Minister, officials say",
+      "url": "https://www.thehindu.com/news/international/israel-kills-nine-in-gaza-including-hamas-appointed-deputy-education-minister-officials-say/article71747983.ece"
      },
      {
       "source": "almonitor",
-      "title": "Israeli strike kills Hamas official, his wife and children",
-      "url": "https://www.al-monitor.com/originals/2026/11/israeli-strike-kills-hamas-official-his-wife-and-children"
+      "title": "Hamas weighs response after Israel kills 10 people in Gaza",
+      "url": "https://www.al-monitor.com/originals/2026/11/hamas-weighs-response-after-israel-kills-10-people-gaza"
+     },
+     {
+      "source": "bbc",
+      "title": "Hamas political official and wife among eight Palestinians killed in Israeli strikes on Gaza",
+      "url": "https://www.bbc.co.uk/news/articles/cqvg2n4mzl1jo"
+     },
+     {
+      "source": "aj",
+      "title": "Israeli attacks on Gaza kill senior education official, seven other people",
+      "url": "https://www.aljazeera.com/news/2026/11/26/israeli-attacks-on-gaza-kill-senior-education-official-seven-other-people?traffic_source=rss"
+     },
+     {
+      "source": "mee",
+      "title": "Israel reportedly kills Education Ministry official in central Gaza",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/israel-reportedly-kills-education-ministry-official-central-gaza"
      }
     ]
    },
    "debug": {
-    "rank": 5,
+    "rank": 2,
     "families": [
      "aj",
      "almonitor",
      "bbc",
+     "france24",
+     "mee",
      "thehindu"
     ],
     "notes": [],
@@ -463,74 +209,71 @@
    }
   },
   {
-   "start": 76.67,
-   "end": 91.33,
-   "category": "diplomacy",
-   "label": "外交 · アメリカ",
-   "country": "US",
+   "start": 36.41,
+   "end": 49.73,
+   "category": "military",
+   "label": "軍事 · 北朝鮮",
+   "country": "KP",
    "countries": [
-    "US",
-    "CN"
+    "KP",
+    "RU",
+    "UA"
    ],
-   "place": {
-    "name": "ニューヨーク",
-    "lon": -74.0,
-    "lat": 40.71
-   },
+   "place": null,
    "anim": {
     "kind": "none"
    },
-   "headline": "米陪審、ファーウェイに有罪の評決",
+   "headline": "ウクライナ「北朝鮮が対ロ支援を停止」",
    "lines": [
     {
-     "start": 76.67,
+     "start": 36.41,
      "sub": "",
-     "text": "アメリカのニューヨークの陪審は、中国の通信機器メーカー、ファーウェイに有罪の評決を出しました。"
+     "text": "ウクライナ軍の情報機関は、北朝鮮がロシアへの軍事支援の一部を一時的に停止したと発表しました。"
     },
     {
-     "start": 83.73,
+     "start": 43.74,
      "sub": "",
-     "text": "評決は、イランでの事業をめぐる銀行詐欺や制裁違反、企業秘密を盗む共謀などを有罪としました。"
+     "text": "弾道ミサイルや砲弾の引き渡しが含まれ、両国の間の対立を受けたものだとしています。"
     }
    ],
    "sources": {
     "count": 4,
     "countries": 4,
     "names": [
-     "BBC 中国",
-     "ジャパンタイムズ",
-     "ラップラー"
+     "キーウ・インディペンデント",
+     "ストレーツ・タイムズ アジア",
+     "聯合ニュース 北朝鮮"
     ],
     "items": [
      {
-      "source": "bbc-china",
-      "title": "Huawei found guilty of stealing US trade secrets but acquitted of racketeering",
-      "url": "https://www.bbc.co.uk/news/articles/cmy49ngydqzpo"
+      "source": "kyivindependent",
+      "title": "Ukraine war latest: North Korea halts military aid to Russia, Ukrainian intelligence says",
+      "url": "https://kyivindependent.com/ukraine-war-latest-north-korea-halts-military-aid-to-russia-ukrainian-intelligence-says/"
      },
      {
-      "source": "japantimes",
-      "title": "China’s Huawei convicted in sprawling U.S. criminal trial over Iran business",
-      "url": "https://www.japantimes.co.jp/business/2026/11/25/tech/china-huawei-us-iran-business/"
+      "source": "straitstimes",
+      "title": "Ukraine says North Korea temporarily halted missile shipments to ally Russia",
+      "url": "https://www.straitstimes.com/asia/ukraine-says-north-korea-temporarily-halted-missile-shipments-to-ally-russia"
      },
      {
-      "source": "rappler",
-      "title": "China’s Huawei convicted in sprawling US criminal trial over Iran business",
-      "url": "https://www.rappler.com/world/us-canada/china-huawei-convicted-us-criminal-trial-iran-business/"
+      "source": "yna-nk-ko",
+      "title": "우크라 정보당국 \"북한, 러 군사지원 일시 중단\" 주장",
+      "url": "https://www.yna.co.kr/view/AKR20261126194000109"
      },
      {
-      "source": "almonitor",
-      "title": "China's Huawei convicted in sprawling US criminal trial over Iran business",
-      "url": "https://www.al-monitor.com/originals/2026/11/chinas-huawei-convicted-sprawling-us-criminal-trial-over-iran-business"
+      "source": "jiji",
+      "title": "北朝鮮「対ロ軍事支援停止」か ウクライナ当局発表",
+      "url": "https://www.jiji.com/jc/article?k=2026112601208&g=int&m=rss"
      }
     ]
    },
    "debug": {
-    "rank": 6,
+    "rank": 3,
     "families": [
-     "almonitor",
-     "bbc",
-     "japantimes",
-     "rappler"
+     "jiji",
+     "kyivindependent",
+     "straitstimes",
+     "yonhap"
     ],
     "notes": [],
     "tries": [],
@@ -538,79 +281,298 @@
    }
   },
   {
-   "start": 92.23,
-   "end": 104.55,
-   "category": "military",
-   "label": "軍事 · アメリカ",
-   "country": "US",
+   "start": 50.63,
+   "end": 63.79,
+   "category": "diplomacy",
+   "label": "外交 · ソロモン諸島",
+   "country": "SB",
    "countries": [
-    "US"
+    "SB",
+    "AU",
+    "CN"
    ],
    "place": null,
    "anim": {
     "kind": "none"
    },
-   "headline": "米空軍、KC-46給油機を15機追加発注",
+   "headline": "ソロモン諸島と豪州が新条約に署名",
    "lines": [
     {
-     "start": 92.23,
+     "start": 50.63,
      "sub": "",
-     "text": "アメリカ空軍は、ボーイングにKC-46空中給油機15機を追加で発注しました。"
+     "text": "オーストラリアとソロモン諸島の首相が、11月25日、新たな条約に署名しました。"
     },
     {
-     "start": 98.47,
+     "start": 57.53,
      "sub": "",
-     "text": "契約額は28億2000万ドルで、当初の契約に基づく最後の生産分です。"
+     "text": "ソロモン諸島が中国と結んだ安全保障協定に代わるものだと、香港の新聞が伝えました。"
     }
    ],
    "sources": {
     "count": 5,
-    "countries": 2,
+    "countries": 4,
     "names": [
-     "ザ・ウォー・ゾーン",
-     "エア・アンド・スペース・フォーシズ",
-     "ブレイキング・ディフェンス"
+     "サウスチャイナ・モーニング・ポスト 中国",
+     "マリタイム・エグゼクティブ",
+     "ローウィー研究所 インタープリター"
     ],
     "items": [
      {
-      "source": "twz",
-      "title": "Final KC-46 Tankers Under Original Contract With Boeing Ordered By USAF",
-      "url": "https://www.twz.com/air/final-kc-46-tankers-under-original-contract-with-boeing-ordered-by-usaf"
+      "source": "scmp-china",
+      "title": "Will Solomon Islands’ Australia treaty prompt China to rethink its Pacific strategy?",
+      "url": "https://www.scmp.com/news/china/diplomacy/article/3375923/will-solomon-islands-australia-treaty-prompt-china-rethink-its-pacific-strategy"
      },
      {
-      "source": "afmag",
-      "title": "Air Force Gives Boeing $2.8B Contract for More KC-46s, as Price Rises",
-      "url": "https://www.airandspaceforces.com/air-force-boeing-2-8b-contract-more-kc-46s/"
+      "source": "maritimeexec",
+      "title": "Solomon Islands Treaty Locks in a Shift to the West, Away From China",
+      "url": "https://maritime-executive.com/article/solomons-treaty-locks-in-strategic-shift-toward-australia-away-from-china"
      },
      {
-      "source": "breakingdefense",
-      "title": "Air Force issues Boeing $2.8 billion for more KC-46s",
-      "url": "https://breakingdefense.com/2026/11/air-force-issues-boeing-2-8-billion-for-more-kc-46s/"
+      "source": "lowy",
+      "title": "What will China learn from the Australia–Solomon Islands treaty?",
+      "url": "https://www.lowyinstitute.org/the-interpreter/what-will-china-learn-from-australia-solomon-islands-treaty"
      },
      {
-      "source": "defensenews",
-      "title": "US Air Force buys final KC-46 lot under Boeing’s original tanker deal",
-      "url": "https://www.defensenews.com/industry/techwatch/2026/11/25/us-air-force-buys-final-kc-46-lot-under-boeings-original-tanker-deal/"
+      "source": "aspi",
+      "title": "Solomons treaty locks in a strategic shift towards Australia, away from China",
+      "url": "https://www.aspistrategist.org.au/solomons-treaty-locks-in-a-strategic-shift-towards-australia-away-from-china/"
      },
      {
-      "source": "airforcetech",
-      "title": "Boeing wins $2.8bn US Air Force order for 15 KC-46A tankers",
-      "url": "https://www.airforce-technology.com/news/boeing-us-kc-461/"
+      "source": "mainichi",
+      "title": "Solomon Islands, Australia sign new treaty amid China ties review",
+      "url": "https://mainichi.jp/english/articles/20261126/p2g/00m/0in/008000c"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 4,
+    "families": [
+     "aspi",
+     "lowy",
+     "mainichi",
+     "maritimeexec",
+     "scmp"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 64.69,
+   "end": 78.25,
+   "category": "military",
+   "label": "軍事 · 北朝鮮",
+   "country": "KP",
+   "countries": [
+    "KP"
+   ],
+   "place": {
+    "name": "朝鮮半島",
+    "lon": 127.5,
+    "lat": 38.0
+   },
+   "anim": {
+    "kind": "none"
+   },
+   "headline": "金総書記、戦術核の配備拡大求める",
+   "lines": [
+    {
+     "start": 64.69,
+     "sub": "",
+     "text": "北朝鮮の国営メディアは、金正恩総書記が、戦術核兵器の配備を複数の領域で進めるよう求めたと伝えました。"
+    },
+    {
+     "start": 73.4,
+     "sub": "",
+     "text": "核物質の生産能力を計画的に拡充しているとも述べたということです。"
+    }
+   ],
+   "sources": {
+    "count": 4,
+    "countries": 4,
+    "names": [
+     "朝鮮日報 政治",
+     "毎日新聞 英語版",
+     "中央通訊社"
+    ],
+    "items": [
+     {
+      "source": "chosun",
+      "title": "김정은, 한국 향해 ‘3종 핵 협박’",
+      "url": "https://www.chosun.com/politics/diplomacy-defense/2026/11/27/SZQCD7IKDVEYBCO64H66R5FYQQ/"
+     },
+     {
+      "source": "mainichi",
+      "title": "North Korea's Kim says nuclear development to continue",
+      "url": "https://mainichi.jp/english/articles/20261126/p2g/00m/0in/009000c"
+     },
+     {
+      "source": "cna-intl",
+      "title": "金正恩促擴大戰術核武部署 稱核材料產能擴充中",
+      "url": "https://www.cna.com.tw/news/aopl/202611260051.aspx"
+     },
+     {
+      "source": "aj",
+      "title": "Kim Jong Un says North Korea should widen deployment of tactical nukes",
+      "url": "https://www.aljazeera.com/news/2026/11/26/kim-jong-un-says-north-korea-should-widen-deployment-of-tactical-nukes?traffic_source=rss"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 5,
+    "families": [
+     "aj",
+     "chosun",
+     "cna-tw",
+     "mainichi"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 79.15,
+   "end": 91.44,
+   "category": "conflict",
+   "label": "紛争 · クウェート",
+   "country": "KW",
+   "countries": [
+    "KW",
+    "IR",
+    "IT"
+   ],
+   "place": null,
+   "anim": {
+    "kind": "strike"
+   },
+   "headline": "クウェートで攻撃、イタリア人2人死亡",
+   "lines": [
+    {
+     "start": 79.15,
+     "sub": "",
+     "text": "イタリア外務省によると、クウェートで攻撃があり、イタリア人の技術者2人が死亡しました。"
+    },
+    {
+     "start": 85.81,
+     "sub": "",
+     "text": "イラン軍の報道官は、軍事作戦は実施していないと述べ、関与を否定しました。"
+    }
+   ],
+   "sources": {
+    "count": 5,
+    "countries": 4,
+    "names": [
+     "英国公共放送 国際",
+     "ミドル・イースト・アイ",
+     "アルジャジーラ"
+    ],
+    "items": [
+     {
+      "source": "bbc",
+      "title": "Two Italians killed in strike in Kuwait, as Iran denies responsibility",
+      "url": "https://www.bbc.co.uk/news/articles/c39w9y5dx4k5o"
+     },
+     {
+      "source": "mee",
+      "title": "Iran denies responsibility for attack on Kuwait that killed two Italians",
+      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/iran-denies-responsibility-attack-kuwait-killed-two-italians"
+     },
+     {
+      "source": "aj",
+      "title": "Two Italians killed by ‘drone strike debris’ in Kuwait",
+      "url": "https://www.aljazeera.com/news/2026/11/26/two-italians-killed-after-iranian-drones-strike-facility-says-kuwait?traffic_source=rss"
+     },
+     {
+      "source": "almonitor",
+      "title": "Iranian drone attack on Kuwait leaves two Italians dead",
+      "url": "https://www.al-monitor.com/originals/2026/11/iranian-drone-attack-kuwait-leaves-two-italians-dead"
+     },
+     {
+      "source": "rt",
+      "title": "Five killed in Ukrainian drone strike – Russian governor",
+      "url": "https://rt-english.com/news/649372-zaporozhye-drone-strike-ukraine/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 6,
+    "families": [
+     "aj",
+     "almonitor",
+     "bbc",
+     "mee",
+     "ru-state"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 92.34,
+   "end": 101.03,
+   "category": "conflict",
+   "label": "紛争 · アメリカ",
+   "country": "US",
+   "countries": [
+    "US",
+    "RU",
+    "UA"
+   ],
+   "place": null,
+   "anim": {
+    "kind": "none"
+   },
+   "headline": "米大統領とNATO事務総長が共同声明",
+   "lines": [
+    {
+     "start": 92.34,
+     "sub": "",
+     "text": "トランプ大統領とNATOのルッテ事務総長は、共同声明で、ロシアはウクライナでの戦争を広げる行動を避けるべきだと述べました。"
+    }
+   ],
+   "sources": {
+    "count": 4,
+    "countries": 4,
+    "names": [
+     "モスクワ・タイムズ",
+     "ジャパンタイムズ",
+     "アルモニター"
+    ],
+    "items": [
+     {
+      "source": "moscowtimes",
+      "title": "Trump and NATO Chief Urge Russia to Avoid Actions That Widen Ukraine War",
+      "url": "https://www.themoscowtimes.com/2026/11/26/trump-and-nato-chief-urge-russia-to-avoid-actions-that-widen-ukraine-war-a812374"
+     },
+     {
+      "source": "japantimes",
+      "title": "Trump and NATO chief urge Russia to avoid actions that widen Ukraine war",
+      "url": "https://www.japantimes.co.jp/news/2026/11/26/world/politics/trump-nato-chief-russia-ukraine-war/"
+     },
+     {
+      "source": "almonitor",
+      "title": "Trump and NATO chief urge Russia to avoid actions that widen Ukraine war",
+      "url": "https://www.al-monitor.com/originals/2026/11/trump-and-nato-chief-urge-russia-avoid-actions-widen-ukraine-war"
+     },
+     {
+      "source": "straitstimes",
+      "title": "Trump and NATO chief urge Russia to avoid actions that widen Ukraine war",
+      "url": "https://www.straitstimes.com/asia/trump-and-nato-chief-urge-russia-to-avoid-actions-that-widen-ukraine-war"
      }
     ]
    },
    "debug": {
     "rank": 7,
     "families": [
-     "afmag",
-     "breakingdefense",
-     "globaldata",
-     "sightline",
-     "twz"
+     "almonitor",
+     "japantimes",
+     "moscowtimes",
+     "straitstimes"
     ],
-    "notes": [
-     "読みの表に無い英字: KC-"
-    ],
+    "notes": [],
     "tries": [],
     "numberConflicts": []
    }
@@ -622,29 +584,28 @@
   "tokenizer": "fugashi",
   "threshold": 0.45,
   "timing": {
-   "clusterSec": 0.07,
+   "clusterSec": 0.05,
    "scriptSec": 0.1,
-   "audioSec": 33.7,
-   "totalSec": 34.5
+   "audioSec": 32.6,
+   "totalSec": 33.6
   },
   "candidates": 0,
   "kana": {
-   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ロク'ニチ",
+   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/_シチ'ニチ",
    "intro+1": "カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
-   "0.0": "チュ'ウゴクワ、パ_キスタ'ンジンノ/ウチュウ_ヒコオ'シオ/_フク'ム/サンニ'ンオ/ノセタ'/ユウジンウチュウセン'/シンシュウ'/ニ'ジュウ/ヨ'ンゴオオ/ウチアゲマ'_シタ",
-   "0.1": "チュ'ウゴクノ/ウチュウ_ステ'エションニ/ガイコク'ジンノ/ウチュウ_ヒコオ'シガ/サンカスルノ'ワ/ハジ'メテデ_ス",
-   "1.0": "_キタチョオセ'ンワ、ピョ'ンヤンニ/ア'ル/ス'イスノ/ガイコオジム'ショノ/ダイヒョオオ'/コク'ガイニ/ツイホオスルト'/ハッピョオ'/シマ'_シタ",
-   "1.1": "ス'イスガ/_キタチョオセ'ンノ/コドモムケ'/キャ'ンプニ/セエサイオ'/カ'_シタ/コト'ニ/ハンパ_ツシ'、ジム'ショノ/ヘエサモ'/モトメ'テ/イマ'_ス",
-   "2.0": "ソロモンショ'トオワ、オオ_ストラ'リアトノ/アイダデ'、アンゼン'/ホショオブ'ンヤオ/_フク'ム/ホオカツテキナ'/アタラシ'イ/ジョオヤクニ'/ショメエ'/シマ'_シタ",
-   "2.1": "ジョオヤクワ'、オオ_ストラ'リアオ/シュヨオナ'/アンゼン'/ホショオジョオノ'/パ'アトナアト/イチズケ'テ/イマ'_ス",
-   "3.0": "ウクライナ'グンノ/サンボオホ'ンブワ、ロ'シアノ/サマラ'シュウニ/ア'ル/セエユショ'/ニカ'ショオ/コオゲキ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "3.1": "サマラ'シュウノ/チ'ジワ、_ヒト'リガ/シボオシ'、ドロ'オン/ヒャク'/ヨ'ンジュウ/ゴ'キオ/ゲ_キツイ'/_シタ'ト/ノベマ'_シタ",
-   "4.0": "ガ'ザノ/ナイム'ショオト/イリョオカンケ'エシャワ、イスラエル'グンノ/クウバクデ'、ハ'マスノ/チアンブ'モンノ/カ'ンブト/ツ'マ、コドモ'/_フタリ'ガ/シボオ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "4.1": "イスラエル'グンワ、コノ'/カ'ンブオ/サツガイ'/_シタ'ト/ミトメマ'_シタ",
-   "5.0": "アメリカノ'/ニュウヨ'オクノ/バイシンワ'、チュ'ウゴクノ/ツウシン_キキメ'エカア、ファアウェ'イニ/ユウザイノ'/ヒョオケツオ'/ダシマ'_シタ",
-   "5.1": "ヒョオケツワ'、イ'ランデノ/ジ'ギョオオ/メグル'/ギンコオサ'ギヤ/セエサイイ'ハン、キギョオヒ'ミツオ/ヌス'ム/キョオボオナ'ドオ/ユウザイト'/シマ'_シタ",
-   "6.0": "アメリカク'ウグンワ、ボ'オイングニ/ケエシ'イ/ヨンロ_ク'/クウチュウキュウユ'キ/ジュウゴ'キオ/ツイカデ'/ハッチュウ'/シマ'_シタ",
-   "6.1": "ケエヤクガ'クワ/ニ'ジュウ/ハチ'オク/ニセンマ'ンドルデ、ト'オショノ/ケエヤクニ'/モトズ'_ク/サ'イゴノ/セエサン'ブンデ_ス",
+   "0.0": "ロ'シアノ/レンポオホア'ンチョオニ/_スパイヨ'オギデ/コオソ_ク'/サレタ'/ホッカイドオシ'ンブンノ/イマイ'/キ'シャノ/ツ'マガ、シュ'キオ/コオカイ'/シ'、カイホオオ'/モトメマ'_シタ",
+   "0.1": "ロ'シアノ/_フクス'ウノ/メ'ディアモ、シュ'キノ/ナイヨオオ'/ホオジマ'_シタ",
+   "1.0": "ガザチュ'ウブデ/イスラ'エルノ/クウバクガ'/ア'リ、ハ'マスガ/ニンメエ'/_シタ'/キョオイク'ショオノ/ジ'カント/ツ'マガ/シボオ'/_シタ'ト、イリョオカンケ'エシャガ/ノベマ'_シタ",
+   "1.1": "ハ'マスノ/シド'オシャ/ハ'イヤシワ、コオゲキガ'/ツズ_ク'/コト'オ/タエツズケ'ル/ヨ'オイワ/ナ'イト/ノベマ'_シタ",
+   "2.0": "ウクライナ'グンノ/ジョオホオキ'カンワ、_キタチョオセ'ンガ/ロ'シアエノ/グンジシ'エンノ/イチ'ブオ/イチジテキニ'/テエシ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "2.1": "ダンドオミサ'イルヤ/ホオダンノ'/_ヒキワタシガ'/_フク'マレ、リョ'オコクノ/アイダノ'/タイリツオ'/ウケ'タ/モノ'ダト/_シテ'/イマ'_ス",
+   "3.0": "オオ_ストラ'リアト/ソロモンショ'トオノ/_シュショオガ'、ジュウイチガツ'/ニ'ジュウゴニチ、ア'ラタナ/ジョオヤクニ'/ショメエ'/シマ'_シタ",
+   "3.1": "ソロモンショ'トオガ/チュ'ウゴ_クト/ムスンダ'/アンゼンホショオキョ'オテエニ/カワル'/モノ'ダト、ホ'ンコンノ/シンブンガ'/_ツタエマ'_シタ",
+   "4.0": "_キタチョオセ'ンノ/コクエエメ'ディアワ、キムジョ'ンウン/ソオショ'キガ、センジュ_ツカ_クヘ'エキノ/ハ'イビオ/_フクス'ウノ/リョオイキデ'/ススメル'/ヨ'オ/モトメ'タト/_ツタエマ'_シタ",
+   "4.1": "カクブ'ッ_シツノ/セエサンノ'オリョクオ/ケエカクテキニ'/カクジュウ'/_シテ'/イルトモ'/ノベ'タト/イウ'/コト'デ_ス",
+   "5.0": "イタリアガイム'ショオニ/ヨルト'、クウェ'エトデ/コオゲキガ'/ア'リ、イタリア'ジンノ/ギジュ_ツ'シャ/_フタリ'ガ/シボオ'/シマ'_シタ",
+   "5.1": "イラン'グンノ/ホオド'オカンワ、グンジサ'_クセンワ/ジッシ'/_シテ'/イナイト'/ノベ'、カ'ンヨオ/_ヒテエ'/シマ'_シタ",
+   "6.0": "トランプダイト'オリョオト/ナ'トオノ/ルッテジムソ'オチョオワ、キョオドオセ'エメエデ、ロ'シアワ/ウクラ'イナデノ/センソオオ'/ヒロゲル'/コオドオオ'/サケ'ルベキダト/ノベマ'_シタ",
    "outro": "イ'ジョオデ_ス",
    "outro+1": "ホオドオノ'/ミダ_シト'/ヨオヤクオ'、キ'カイデ/マトメテ'/ヨミアゲマ'_シタ"
   }
