@@ -1,10 +1,10 @@
 {
- "generated_utc": "2026-11-26T02:38:51Z",
+ "generated_utc": "2026-11-26T05:29:21Z",
  "today": "2026-11-26",
  "days": 31,
  "counts": {
   "event": 0,
-  "notice": 8,
+  "notice": 9,
   "forecast": 0
  },
  "rules": {
@@ -476,6 +476,33 @@
      ],
      "text": "粤航警861/26，南海，11月27日至28日，每天0800时至1800时，在以下四点连线海域内进行实弹射击： （1）20-53.0N，110-54.0E； （2）20-53.0N，110-59.0E； （3）20-48.0N，110-59.0E； （4）20-48.0N，110-54.0E。禁止驶入。",
      "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/85f3c11d15e34f77989aec23eb5a6695.html"
+    }
+   ]
+  },
+  {
+   "id": "notice:maritime:HN240/2026",
+   "kind": "notice",
+   "name": "射撃（洋浦海事局）",
+   "countries": [
+    "中国"
+   ],
+   "start": "2026-12-26",
+   "end": "2026-12-26",
+   "lat": 19.92,
+   "lon": 108.72,
+   "region": null,
+   "notices": [
+    {
+     "key": "maritime:HN240/2026",
+     "id": "HN240/2026",
+     "issuer": "洋浦海事局",
+     "country": "CN",
+     "category": "firing",
+     "start_utc": "2026-12-26T00:00:00Z",
+     "end_utc": "2026-12-26T05:00:00Z",
+     "polygons": [],
+     "text": "HN240/26 BEIBU BAY GUNFIRING IN AREA BOUNDED BY THE LINES JOINING 19-50N 108-54E、20-00N 108-54E、20-00N 108-33E AND 19-50N 108-33E FROM 240200 UTC TO 241000 UTC AND FROM 260000 UTC TO 260500 UTC DEC. ENTERING PROHIBITED.HAINAN MSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/5e04dad98e406941.html"
     }
    ]
   }
