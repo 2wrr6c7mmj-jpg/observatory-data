@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-26T13:14:29Z",
+ "generated_utc": "2026-11-26T22:38:15Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -1021,33 +1021,12 @@
    ]
   },
   {
-   "id": "2026-11-30T22:00Z:西昌",
+   "id": "2026-11-30T22:00Z:closure+fall+rocket",
    "window_start_utc": "2026-11-30T22:00Z",
    "window_end_utc": "2026-12-21T09:00Z",
-   "site": {
-    "name": "西昌",
-    "lat": 28.25,
-    "lon": 102.03,
-    "country": "CN",
-    "method": "aligned",
-    "azimuth_deg": 125.9,
-    "bearing_spread_deg": 3.8,
-    "inclination_deg": 44.5
-   },
-   "orbit": "低軌道",
-   "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "長征3B/3C号",
-      "orbit": "静止遷移・北斗"
-     },
-     {
-      "name": "長征2C/2D号",
-      "orbit": "低軌道"
-     }
-    ]
-   },
+   "site": null,
+   "orbit": null,
+   "vehicle": null,
    "notices": [
     {
      "key": "aviation:B6230/26",
@@ -1224,6 +1203,57 @@
       }
      ],
      "text": "B6230/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/050/0838N12457E005\r\nA) RPHI B) 2611302200 C) 2612210900\r\nD) 2200-0900\r\nE) SMALL ROCKET LAUNCH ACT WILL TAKE PLACE WI:\r\n5NM RADIUS CENTERED ON 083739.56N 1245637.76E\r\n(HIRAYA FARM ESCAPE, CLAVERIA, MISAMIS ORIENTAL).\r\n\r\nRMK: EDUCATIONAL ROCKETRY ONLY.\r\n     VFR FLT AVOID THE AREA.\r\nF) SFC G) 5000FT AMSL"
+    },
+    {
+     "key": "maritime:NAVAREA XI 26-0528",
+     "id": "NAVAREA XI 26-0528",
+     "dataset": "maritime",
+     "kind": "fall",
+     "issuer": "日本（海上保安庁）",
+     "country": "JP",
+     "start_utc": "2026-12-01T00:00:00Z",
+     "end_utc": "2026-12-01T06:00:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        6.9197,
+        108.6492
+       ],
+       [
+        6.81,
+        109.0883
+       ],
+       [
+        5.7635,
+        108.8232
+       ],
+       [
+        5.873,
+        108.3848
+       ]
+      ],
+      [
+       [
+        6.7803,
+        108.6143
+       ],
+       [
+        6.6707,
+        109.0533
+       ],
+       [
+        5.6242,
+        108.7883
+       ],
+       [
+        5.7337,
+        108.3502
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "NO.26-0528 　　　発表日時：2026年11月26日 21時\n\n\nSOUTH CHINA SEA, SOUTHERN PART.\nSPACE DEBRIS. 010000Z TO 010600Z DEC. \nAREAS BOUNDED BY\nA. 06-55.18N 108-38.95E\n   06-48.60N 109-05.30E\n   05-45.81N 108-49.39E\n   05-52.38N 108-23.09E.\nB. 06-46.82N 108-36.86E\n   06-40.24N 109-03.20E\n   05-37.45N 108-47.30E\n   05-44.02N 108-21.01E.\nCANCEL THIS MSG 010700Z DEC."
     },
     {
      "key": "aviation:A6142/26",
@@ -1976,408 +2006,6 @@
      ],
      "circles": [],
      "text": "P5642/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611130521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 13 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 14 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "id": "notice:2026-11-30T22:00Z:西昌",
-   "basis": "notices",
-   "name": null,
-   "rocket": null,
-   "rocket_ja": null,
-   "provider": null,
-   "status": null,
-   "net_utc": null,
-   "window_start_utc": "2026-11-30T22:00:00Z",
-   "window_end_utc": "2026-12-21T09:00:00Z",
-   "orbit": "低軌道",
-   "mission_type": null,
-   "url": null,
-   "site": {
-    "name": "西昌",
-    "lat": 28.25,
-    "lon": 102.03,
-    "country": "CN",
-    "inland": true,
-    "pad": null
-   },
-   "azimuth_deg": 125.9,
-   "inclination_deg": 44.5,
-   "vehicle_candidates": [
-    {
-     "name": "長征3B/3C号",
-     "orbit": "静止遷移・北斗"
-    },
-    {
-     "name": "長征2C/2D号",
-     "orbit": "低軌道"
-    }
-   ],
-   "estimated_window": {
-    "start_utc": "2026-12-01T01:38:00Z",
-    "end_utc": "2026-12-01T02:03:00Z"
-   },
-   "notice_state": "matched",
-   "notices": [
-    {
-     "key": "aviation:B6230/26",
-     "id": "B6230/26",
-     "dataset": "aviation",
-     "kind": "rocket",
-     "kind_ja": "ロケット打上げ",
-     "issuer": "フィリピン（航空当局 RPHI）",
-     "country": "PH",
-     "start_utc": "2026-11-30T22:00:00Z",
-     "end_utc": "2026-12-21T09:00:00Z",
-     "slot_start_utc": "2026-11-30T22:00:00Z",
-     "slot_end_utc": "2026-12-21T09:00:00Z",
-     "role": "long",
-     "reserve_slots": 0,
-     "polygons": [
-      [
-       [
-        8.7165,
-        124.95
-       ],
-       [
-        8.7153,
-        124.9646
-       ],
-       [
-        8.7115,
-        124.9788
-       ],
-       [
-        8.7054,
-        124.9921
-       ],
-       [
-        8.6971,
-        125.0041
-       ],
-       [
-        8.6868,
-        125.0145
-       ],
-       [
-        8.6749,
-        125.0229
-       ],
-       [
-        8.6618,
-        125.0291
-       ],
-       [
-        8.6478,
-        125.0329
-       ],
-       [
-        8.6333,
-        125.0341
-       ],
-       [
-        8.6189,
-        125.0329
-       ],
-       [
-        8.6049,
-        125.0291
-       ],
-       [
-        8.5917,
-        125.0229
-       ],
-       [
-        8.5799,
-        125.0144
-       ],
-       [
-        8.5696,
-        125.0041
-       ],
-       [
-        8.5613,
-        124.9921
-       ],
-       [
-        8.5552,
-        124.9788
-       ],
-       [
-        8.5514,
-        124.9646
-       ],
-       [
-        8.5501,
-        124.95
-       ],
-       [
-        8.5514,
-        124.9354
-       ],
-       [
-        8.5552,
-        124.9212
-       ],
-       [
-        8.5613,
-        124.9079
-       ],
-       [
-        8.5696,
-        124.8959
-       ],
-       [
-        8.5799,
-        124.8856
-       ],
-       [
-        8.5917,
-        124.8771
-       ],
-       [
-        8.6049,
-        124.8709
-       ],
-       [
-        8.6189,
-        124.8671
-       ],
-       [
-        8.6333,
-        124.8659
-       ],
-       [
-        8.6478,
-        124.8671
-       ],
-       [
-        8.6618,
-        124.8709
-       ],
-       [
-        8.6749,
-        124.8771
-       ],
-       [
-        8.6868,
-        124.8855
-       ],
-       [
-        8.6971,
-        124.8959
-       ],
-       [
-        8.7054,
-        124.9079
-       ],
-       [
-        8.7115,
-        124.9212
-       ],
-       [
-        8.7153,
-        124.9354
-       ],
-       [
-        8.7165,
-        124.95
-       ]
-      ]
-     ],
-     "circles": [
-      {
-       "kind": "circle",
-       "points": [
-        [
-         8.6277,
-         124.9438
-        ]
-       ],
-       "radius": 9260
-      }
-     ],
-     "text": "B6230/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/050/0838N12457E005\r\nA) RPHI B) 2611302200 C) 2612210900\r\nD) 2200-0900\r\nE) SMALL ROCKET LAUNCH ACT WILL TAKE PLACE WI:\r\n5NM RADIUS CENTERED ON 083739.56N 1245637.76E\r\n(HIRAYA FARM ESCAPE, CLAVERIA, MISAMIS ORIENTAL).\r\n\r\nRMK: EDUCATIONAL ROCKETRY ONLY.\r\n     VFR FLT AVOID THE AREA.\r\nF) SFC G) 5000FT AMSL"
-    },
-    {
-     "key": "aviation:A6142/26",
-     "id": "A6142/26",
-     "dataset": "aviation",
-     "kind": "closure",
-     "kind_ja": "飛行制限区域",
-     "issuer": "中国（航空当局 ZGZU）",
-     "country": "CN",
-     "start_utc": "2026-12-01T01:38:00Z",
-     "end_utc": "2026-12-01T02:03:00Z",
-     "slot_start_utc": "2026-12-01T01:38:00Z",
-     "slot_end_utc": "2026-12-01T02:03:00Z",
-     "role": "main",
-     "reserve_slots": 0,
-     "polygons": [
-      [
-       [
-        21.3163,
-        112.6667
-       ],
-       [
-        21.3136,
-        112.7008
-       ],
-       [
-        21.3053,
-        112.7338
-       ],
-       [
-        21.2918,
-        112.7649
-       ],
-       [
-        21.2735,
-        112.7929
-       ],
-       [
-        21.2509,
-        112.8171
-       ],
-       [
-        21.2248,
-        112.8367
-       ],
-       [
-        21.1958,
-        112.8511
-       ],
-       [
-        21.165,
-        112.8599
-       ],
-       [
-        21.1332,
-        112.8629
-       ],
-       [
-        21.1014,
-        112.8598
-       ],
-       [
-        21.0706,
-        112.851
-       ],
-       [
-        21.0417,
-        112.8365
-       ],
-       [
-        21.0156,
-        112.8168
-       ],
-       [
-        20.9931,
-        112.7927
-       ],
-       [
-        20.9748,
-        112.7647
-       ],
-       [
-        20.9614,
-        112.7337
-       ],
-       [
-        20.9531,
-        112.7007
-       ],
-       [
-        20.9503,
-        112.6667
-       ],
-       [
-        20.9531,
-        112.6326
-       ],
-       [
-        20.9614,
-        112.5996
-       ],
-       [
-        20.9748,
-        112.5687
-       ],
-       [
-        20.9931,
-        112.5407
-       ],
-       [
-        21.0156,
-        112.5165
-       ],
-       [
-        21.0417,
-        112.4969
-       ],
-       [
-        21.0706,
-        112.4824
-       ],
-       [
-        21.1014,
-        112.4735
-       ],
-       [
-        21.1332,
-        112.4705
-       ],
-       [
-        21.165,
-        112.4734
-       ],
-       [
-        21.1958,
-        112.4822
-       ],
-       [
-        21.2248,
-        112.4966
-       ],
-       [
-        21.2509,
-        112.5162
-       ],
-       [
-        21.2735,
-        112.5404
-       ],
-       [
-        21.2918,
-        112.5685
-       ],
-       [
-        21.3053,
-        112.5995
-       ],
-       [
-        21.3136,
-        112.6326
-       ],
-       [
-        21.3163,
-        112.6667
-       ]
-      ]
-     ],
-     "circles": [
-      {
-       "kind": "circle",
-       "points": [
-        [
-         21.1333,
-         112.6833
-        ]
-       ],
-       "radius": 20000
-      }
-     ],
-     "text": "A6142/26 NOTAMN\r\nQ)ZGZU/QRDCA/IV/BO/W/000/999/2108N11240E011\r\nA)ZGZU B)2612010138 C)2612010203 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED,THE AREA WITHIN A CIRCLE \r\nCENTERED AT N210800E1124100 WITH RADIUS OF 20KM.\r\nVERTICAL LIMITS:SFC-UNL.RELATED HONGKONG ATC OPERATION.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
     }
    ]
   },

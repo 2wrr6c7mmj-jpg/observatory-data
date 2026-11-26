@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-26T13:14:29Z",
+ "generated_utc": "2026-11-26T22:38:15Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -960,20 +960,20 @@
      124.95
     ],
     [
+     6.272,
+     108.719
+    ],
+    [
      21.138,
      112.667
     ]
    ],
    "notices": [
     "aviation:B6230/26",
+    "maritime:NAVAREA XI 26-0528",
     "aviation:A6142/26"
    ],
-   "method": "aligned",
-   "site": "西昌",
-   "country": "CN",
-   "azimuth_deg": 125.9,
-   "bearing_spread_deg": 3.8,
-   "inclination_deg": 44.5
+   "method": "unaligned"
   },
   {
    "window_start_utc": "2026-12-10T07:00Z",
