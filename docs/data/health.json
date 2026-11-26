@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-26T00:14:20Z",
+ "generated_utc": "2026-11-26T02:33:49Z",
  "state": "warn",
  "summary": {
   "ok": 12,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-25T15:54:14Z",
-   "heartbeat_age_h": 8.3,
+   "heartbeat_age_h": 10.7,
    "data_date": "2026-11-25",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -145,7 +145,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-25T13:30:20Z",
-   "heartbeat_age_h": 10.7,
+   "heartbeat_age_h": 13.1,
    "data_date": "2026-11-24",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -168,7 +168,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-25T17:36:23Z",
-   "heartbeat_age_h": 6.6,
+   "heartbeat_age_h": 9.0,
    "data_date": "2026-11-25",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -212,7 +212,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-25T13:02:06Z",
-   "heartbeat_age_h": 11.2,
+   "heartbeat_age_h": 13.5,
    "data_date": "2026-11-25",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -230,7 +230,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-25T20:41:25Z",
-   "heartbeat_age_h": 3.5,
+   "heartbeat_age_h": 5.9,
    "data_date": "2026-11-25",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -248,7 +248,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-25T13:30:28Z",
-   "heartbeat_age_h": 10.7,
+   "heartbeat_age_h": 13.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -287,8 +287,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-25T22:46:06Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_utc": "2026-11-26T00:17:47Z",
+   "heartbeat_age_h": 2.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -296,7 +296,7 @@
    "reasons": [],
    "values": {
     "events": 37,
-    "current": 20,
+    "current": 19,
     "failed": 0,
     "fetch_failed": 0
    }
@@ -886,14 +886,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-26T00:02:52Z",
+   "last_success_started_utc": "2026-11-26T02:12:21Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
-    "id": 45725865358,
-    "started_utc": "2026-11-26T00:02:52Z",
+    "id": 45740847482,
+    "started_utc": "2026-11-26T02:12:21Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45725865358"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45740847482"
    },
    "consecutive_failures": 0
   },
@@ -928,15 +928,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-25T03:08:15Z",
+   "last_success_started_utc": "2026-11-26T02:25:12Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45537847819,
-    "started_utc": "2026-11-25T03:08:15Z",
+    "id": 45742287692,
+    "started_utc": "2026-11-26T02:25:12Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45537847819",
-    "delay_h": 7.5
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45742287692",
+    "delay_h": 6.7
    },
    "consecutive_failures": 0
   }
