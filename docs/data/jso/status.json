@@ -1,11 +1,11 @@
 {
- "built_utc": "2026-11-26T09:43:57Z",
- "releases": 1588,
+ "built_utc": "2026-11-26T10:20:06Z",
+ "releases": 1589,
  "first_release": "2007-07-04",
- "last_release": "2026-11-25",
- "passages": 1038,
+ "last_release": "2026-11-26",
+ "passages": 1040,
  "by_nation": {
-  "CN": 554,
+  "CN": 556,
   "RU": 465,
   "CNRU": 19
  },
@@ -16,17 +16,17 @@
   "repeated_in_later_release": 27
  },
  "round_trips": {
-  "stated": 267,
+  "stated": 268,
   "hull-match": 128
  },
  "round_trips_by_direction": {
-  "進出→帰投": 337,
+  "進出→帰投": 338,
   "帰投→再進出": 46,
   "不明": 12
  },
  "round_trips_return_without_strait": 36,
  "stay_days": {
-  "stated": 214,
+  "stated": 215,
   "hull-match": 88
  },
  "context_window_days": 14,
