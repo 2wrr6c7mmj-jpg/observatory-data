@@ -88,3 +88,17 @@ MAW,2026-11-24T10:09:25Z,sentinel-1d,ascending,142,MAW-land-v2,naval-1,0,0,0,2,0
 NDS,2026-11-24T10:09:25Z,sentinel-1d,ascending,142,NDS-land-v1,naval-1,0,0,0,5,0,0,8,0,0,18,0,0
 ZJG,2026-11-25T10:49:00Z,sentinel-1d,ascending,157,ZJG-land-v2,naval-1,0,0,0,8,0,1,9,0,0,31,0,0
 BHI,2026-11-25T10:49:25Z,sentinel-1d,ascending,157,BHI-land-v1,naval-1,1,0,0,2,0,1,4,0,1,4,0,1
+LSN,2026-11-25T22:03:45Z,sentinel-1c,descending,76,LSN-land-v1,naval-1,0,0,0,9,0,0,,,,,,
+QDH,2026-11-25T22:04:35Z,sentinel-1c,descending,76,QDH-land-v2,naval-1,0,0,0,4,1,0,,,,,,
+QJG,2026-11-25T22:04:35Z,sentinel-1c,descending,76,QJG-land-v1,naval-1,1,0,0,5,0,0,,,,,,
+LYG,2026-11-25T22:05:00Z,sentinel-1c,descending,76,LYG-land-v1,naval-1,0,0,0,4,1,1,,,,,,
+QGZ,2026-11-25T22:05:00Z,sentinel-1c,descending,76,QGZ-land-v1,naval-1,0,0,0,21,0,0,,,,,,
+DXE,2026-11-26T09:54:01Z,sentinel-1d,ascending,171,DXE-land-v1,naval-1,0,0,0,1,5,0,0,8,0,0,9,0
+XSN,2026-11-26T09:54:01Z,sentinel-1d,ascending,171,XSN-land-v1,naval-1,0,1,0,6,0,0,3,0,0,3,0,0
+ZDH,2026-11-26T09:54:01Z,sentinel-1d,ascending,171,ZDH-land-v2,naval-1,0,1,0,26,8,1,21,10,1,54,12,1
+PDG,2026-11-26T09:54:26Z,sentinel-1d,ascending,171,PDG-land-v1,naval-1,0,0,0,15,1,0,8,0,0,29,0,0
+SWS,2026-11-26T09:54:26Z,sentinel-1d,ascending,171,SWS-land-v2,naval-1,0,0,0,7,2,0,9,0,0,11,0,0
+QDH,2026-11-26T09:55:41Z,sentinel-1d,ascending,171,QDH-land-v2,naval-1,0,0,0,5,0,0,2,2,2,3,2,2
+QGZ,2026-11-26T09:55:41Z,sentinel-1d,ascending,171,QGZ-land-v1,naval-1,0,0,0,23,0,0,21,0,0,33,0,0
+QJG,2026-11-26T09:55:41Z,sentinel-1d,ascending,171,QJG-land-v1,naval-1,0,0,0,4,0,0,1,0,0,1,0,0
+LSN,2026-11-26T09:56:31Z,sentinel-1d,ascending,171,LSN-land-v1,naval-1,0,0,0,5,0,0,6,0,0,20,0,0

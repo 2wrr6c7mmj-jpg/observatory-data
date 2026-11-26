@@ -1319,6 +1319,224 @@
      "change_flag": 0
     }
    ]
+  },
+  {
+   "acquired_utc": "2026-11-26T09:56:31Z",
+   "relative_orbit": 171,
+   "present_pres1": 4,
+   "present_current": 1,
+   "change_flags": 0,
+   "sections": [
+    {
+     "section_id": "1026281588:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1026281588:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1026281589:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1026281589:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1026281590:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1026281590:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "1026281591:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 0,
+     "prev_y": null,
+     "prev_date": null,
+     "prev_age_days": null,
+     "p_pres1": 0.288,
+     "change_flag": null
+    },
+    {
+     "section_id": "1026281591:L:01",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "229279250:L:10",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "696162852:L:09",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "696162852:L:16",
+     "p_current": 1.0,
+     "res_rate": 0.667,
+     "res_n": 7,
+     "prev_y": 1,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.907,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995110510:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.6,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.6,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995110510:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995110516:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.6,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.6,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995110516:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.6,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.6,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995110519:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995110519:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995530596:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.5,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.415,
+     "change_flag": 0
+    },
+    {
+     "section_id": "995530596:R:01",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-27",
+     "prev_age_days": 30,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    }
+   ]
   }
  ]
 }

@@ -40,21 +40,21 @@
  "error": null,
  "counts": {
   "LSN": {
-   "scenes": 5,
+   "scenes": 6,
    "scenes_filled": 0,
    "present_sum": 0,
    "present_owner_sum": 0,
    "present_p_sum": 0,
    "in_quay_blind": false,
    "latest": {
-    "acquired_utc": "2026-11-21T09:48:11Z",
+    "acquired_utc": "2026-11-26T09:56:31Z",
     "in_quay_blind": false,
-    "opt_fill_sections": 8,
-    "opt_fill_scored": 8,
+    "opt_fill_sections": 9,
+    "opt_fill_scored": 9,
     "opt_fill_present": 0,
     "opt_fill_present_owner": 0,
     "opt_fill_present_p": 0,
-    "opt_fill_basis": "1026281588:L:00|2026-11-23|+2|p|0.004;1026281588:R:01|2026-11-23|+2|p|0.005;1026281589:R:01|2026-11-23|+2|p|0.005;1026281590:L:00|2026-11-23|+2|p|0.004;1026281590:R:01|2026-11-23|+2|p|0.005;1026281591:L:00|2026-11-23|+2|p|0.024;1026281591:L:01|2026-11-23|+2|p|0.012;995110510:L:00|2026-11-23|+2|p|0.034"
+    "opt_fill_basis": "1026281588:L:00|2026-11-23|-3|p|0.004;1026281588:R:01|2026-11-23|-3|p|0.005;1026281589:L:00|2026-11-23|-3|p|0.005;1026281589:R:01|2026-11-23|-3|p|0.005;1026281590:L:00|2026-11-23|-3|p|0.004;1026281590:R:01|2026-11-23|-3|p|0.005;1026281591:L:00|2026-11-23|-3|p|0.024;1026281591:L:01|2026-11-23|-3|p|0.012;995110510:L:00|2026-11-23|-3|p|0.034"
    },
    "rows": [
     {
@@ -106,37 +106,37 @@
      "opt_fill_present_owner": 0,
      "opt_fill_present_p": 0,
      "opt_fill_basis": "1026281588:L:00|2026-11-23|+2|p|0.004;1026281588:R:01|2026-11-23|+2|p|0.005;1026281589:R:01|2026-11-23|+2|p|0.005;1026281590:L:00|2026-11-23|+2|p|0.004;1026281590:R:01|2026-11-23|+2|p|0.005;1026281591:L:00|2026-11-23|+2|p|0.024;1026281591:L:01|2026-11-23|+2|p|0.012;995110510:L:00|2026-11-23|+2|p|0.034"
+    },
+    {
+     "acquired_utc": "2026-11-26T09:56:31Z",
+     "in_quay_blind": false,
+     "opt_fill_sections": 9,
+     "opt_fill_scored": 9,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": "1026281588:L:00|2026-11-23|-3|p|0.004;1026281588:R:01|2026-11-23|-3|p|0.005;1026281589:L:00|2026-11-23|-3|p|0.005;1026281589:R:01|2026-11-23|-3|p|0.005;1026281590:L:00|2026-11-23|-3|p|0.004;1026281590:R:01|2026-11-23|-3|p|0.005;1026281591:L:00|2026-11-23|-3|p|0.024;1026281591:L:01|2026-11-23|-3|p|0.012;995110510:L:00|2026-11-23|-3|p|0.034"
     }
    ]
   },
   "QDH": {
    "scenes": 3,
-   "scenes_filled": 2,
-   "present_sum": 2,
-   "present_owner_sum": 2,
+   "scenes_filled": 1,
+   "present_sum": 1,
+   "present_owner_sum": 1,
    "present_p_sum": 0,
    "in_quay_blind": true,
    "latest": {
-    "acquired_utc": "2026-11-14T09:55:42Z",
+    "acquired_utc": "2026-11-26T09:55:41Z",
     "in_quay_blind": true,
     "opt_fill_sections": 8,
-    "opt_fill_scored": 8,
-    "opt_fill_present": 1,
-    "opt_fill_present_owner": 1,
+    "opt_fill_scored": 0,
+    "opt_fill_present": 0,
+    "opt_fill_present_owner": 0,
     "opt_fill_present_p": 0,
-    "opt_fill_basis": "-1:L:00|2026-11-11|-3|owner|1;-1:R:00|2026-11-11|-3|owner|0;-2:L:00|2026-11-11|-3|owner|0;-2:R:00|2026-11-11|-3|owner|0;-3:L:00|2026-11-10|-4|owner|0;-3:R:00|2026-11-11|-3|owner|0;-4:L:00|2026-11-10|-4|owner|0;-4:R:00|2026-11-10|-4|owner|0"
+    "opt_fill_basis": ""
    },
    "rows": [
-    {
-     "acquired_utc": "2026-10-21T09:55:42Z",
-     "in_quay_blind": true,
-     "opt_fill_sections": 8,
-     "opt_fill_scored": 6,
-     "opt_fill_present": 1,
-     "opt_fill_present_owner": 1,
-     "opt_fill_present_p": 0,
-     "opt_fill_basis": "-1:L:00|2026-10-21|+0|owner|1;-2:L:00|2026-10-21|+0|owner|0;-2:R:00|2026-10-21|+0|owner|0;-3:L:00|2026-10-21|+0|owner|0;-3:R:00|2026-10-21|+0|owner|0;-4:R:00|2026-10-21|+0|owner|0"
-    },
     {
      "acquired_utc": "2026-11-02T09:55:42Z",
      "in_quay_blind": true,
@@ -156,18 +156,28 @@
      "opt_fill_present_owner": 1,
      "opt_fill_present_p": 0,
      "opt_fill_basis": "-1:L:00|2026-11-11|-3|owner|1;-1:R:00|2026-11-11|-3|owner|0;-2:L:00|2026-11-11|-3|owner|0;-2:R:00|2026-11-11|-3|owner|0;-3:L:00|2026-11-10|-4|owner|0;-3:R:00|2026-11-11|-3|owner|0;-4:L:00|2026-11-10|-4|owner|0;-4:R:00|2026-11-10|-4|owner|0"
+    },
+    {
+     "acquired_utc": "2026-11-26T09:55:41Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 8,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
     }
    ]
   },
   "QGZ": {
-   "scenes": 6,
+   "scenes": 5,
    "scenes_filled": 0,
    "present_sum": 0,
    "present_owner_sum": 0,
    "present_p_sum": 0,
    "in_quay_blind": true,
    "latest": {
-    "acquired_utc": "2026-11-19T10:03:52Z",
+    "acquired_utc": "2026-11-26T09:55:41Z",
     "in_quay_blind": true,
     "opt_fill_sections": 0,
     "opt_fill_scored": 0,
@@ -177,26 +187,6 @@
     "opt_fill_basis": ""
    },
    "rows": [
-    {
-     "acquired_utc": "2026-10-21T09:55:42Z",
-     "in_quay_blind": true,
-     "opt_fill_sections": 0,
-     "opt_fill_scored": 0,
-     "opt_fill_present": 0,
-     "opt_fill_present_owner": 0,
-     "opt_fill_present_p": 0,
-     "opt_fill_basis": ""
-    },
-    {
-     "acquired_utc": "2026-10-26T10:03:53Z",
-     "in_quay_blind": true,
-     "opt_fill_sections": 0,
-     "opt_fill_scored": 0,
-     "opt_fill_present": 0,
-     "opt_fill_present_owner": 0,
-     "opt_fill_present_p": 0,
-     "opt_fill_basis": ""
-    },
     {
      "acquired_utc": "2026-11-02T09:55:42Z",
      "in_quay_blind": true,
@@ -236,6 +226,16 @@
      "opt_fill_present_owner": 0,
      "opt_fill_present_p": 0,
      "opt_fill_basis": ""
+    },
+    {
+     "acquired_utc": "2026-11-26T09:55:41Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 0,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
     }
    ]
   },
@@ -247,26 +247,16 @@
    "present_p_sum": 0,
    "in_quay_blind": true,
    "latest": {
-    "acquired_utc": "2026-11-14T09:55:42Z",
+    "acquired_utc": "2026-11-26T09:55:41Z",
     "in_quay_blind": true,
     "opt_fill_sections": 2,
-    "opt_fill_scored": 2,
+    "opt_fill_scored": 0,
     "opt_fill_present": 0,
     "opt_fill_present_owner": 0,
     "opt_fill_present_p": 0,
-    "opt_fill_basis": "-2:R:00|2026-11-11|-3|owner|0;43251729:L:17|2026-11-10|-4|owner|0"
+    "opt_fill_basis": ""
    },
    "rows": [
-    {
-     "acquired_utc": "2026-10-21T09:55:42Z",
-     "in_quay_blind": true,
-     "opt_fill_sections": 2,
-     "opt_fill_scored": 2,
-     "opt_fill_present": 0,
-     "opt_fill_present_owner": 0,
-     "opt_fill_present_p": 0,
-     "opt_fill_basis": "-2:R:00|2026-10-22|+1|owner|0;43251729:L:17|2026-10-22|+1|owner|0"
-    },
     {
      "acquired_utc": "2026-11-02T09:55:42Z",
      "in_quay_blind": true,
@@ -286,6 +276,16 @@
      "opt_fill_present_owner": 0,
      "opt_fill_present_p": 0,
      "opt_fill_basis": "-2:R:00|2026-11-11|-3|owner|0;43251729:L:17|2026-11-10|-4|owner|0"
+    },
+    {
+     "acquired_utc": "2026-11-26T09:55:41Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
     }
    ]
   },
@@ -397,26 +397,16 @@
    "present_p_sum": 0,
    "in_quay_blind": true,
    "latest": {
-    "acquired_utc": "2026-11-14T09:54:02Z",
+    "acquired_utc": "2026-11-26T09:54:01Z",
     "in_quay_blind": true,
     "opt_fill_sections": 2,
-    "opt_fill_scored": 1,
+    "opt_fill_scored": 0,
     "opt_fill_present": 0,
     "opt_fill_present_owner": 0,
     "opt_fill_present_p": 0,
-    "opt_fill_basis": "286601551:L:01|2026-11-15|+1|p|0.193"
+    "opt_fill_basis": ""
    },
    "rows": [
-    {
-     "acquired_utc": "2026-10-21T09:54:02Z",
-     "in_quay_blind": true,
-     "opt_fill_sections": 2,
-     "opt_fill_scored": 0,
-     "opt_fill_present": 0,
-     "opt_fill_present_owner": 0,
-     "opt_fill_present_p": 0,
-     "opt_fill_basis": ""
-    },
     {
      "acquired_utc": "2026-11-02T09:54:02Z",
      "in_quay_blind": true,
@@ -436,6 +426,16 @@
      "opt_fill_present_owner": 0,
      "opt_fill_present_p": 0,
      "opt_fill_basis": "286601551:L:01|2026-11-15|+1|p|0.193"
+    },
+    {
+     "acquired_utc": "2026-11-26T09:54:01Z",
+     "in_quay_blind": true,
+     "opt_fill_sections": 2,
+     "opt_fill_scored": 0,
+     "opt_fill_present": 0,
+     "opt_fill_present_owner": 0,
+     "opt_fill_present_p": 0,
+     "opt_fill_basis": ""
     }
    ]
   }

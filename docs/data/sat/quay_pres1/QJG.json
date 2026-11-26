@@ -269,6 +269,92 @@
      "change_flag": 1
     }
    ]
+  },
+  {
+   "acquired_utc": "2026-11-26T09:55:41Z",
+   "relative_orbit": 171,
+   "present_pres1": 2,
+   "present_current": 0,
+   "change_flags": 2,
+   "sections": [
+    {
+     "section_id": "-2:L:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "-2:R:00",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "43251729:L:17",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "43251729:L:18",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "43251729:L:20",
+     "p_current": 0.0,
+     "res_rate": 0.1,
+     "res_n": 8,
+     "prev_y": 0,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.034,
+     "change_flag": 0
+    },
+    {
+     "section_id": "43251729:L:23",
+     "p_current": 0.0,
+     "res_rate": 0.8,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.87,
+     "change_flag": 1
+    },
+    {
+     "section_id": "43251729:L:24",
+     "p_current": 0.0,
+     "res_rate": 0.9,
+     "res_n": 8,
+     "prev_y": 1,
+     "prev_date": "2026-10-22",
+     "prev_age_days": 35,
+     "p_pres1": 0.934,
+     "change_flag": 1
+    }
+   ]
   }
  ]
 }
