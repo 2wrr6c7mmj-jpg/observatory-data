@@ -2,7 +2,7 @@
  "covered": [
   [
    "2023-08-13T03:02Z",
-   "2026-11-25T03:02Z"
+   "2026-11-26T04:13Z"
   ]
  ],
  "events": [
@@ -831,7 +831,7 @@
   "4209": "金門",
   "4210": "連江（馬祖）"
  },
- "retrieved_utc": "2026-11-25T03:07:19Z",
+ "retrieved_utc": "2026-11-26T04:13:40Z",
  "source": "IODA（Internet Outage Detection and Analysis, Georgia Tech）地域の障害の事象",
  "url": "https://ioda.inetintel.cc.gatech.edu/",
  "verified": {

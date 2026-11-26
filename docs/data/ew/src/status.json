@@ -1,45 +1,44 @@
 {
  "sources": {
   "feed": {
-   "at": "2026-11-26T01:55:58Z",
+   "at": "2026-11-26T04:13:35Z",
    "cables": 0,
    "conscription": 0,
    "mobilization": 1,
    "status": "ok"
   },
   "ferries": {
-   "at": "2026-11-25T03:02:22Z",
-   "bohai": 1196,
-   "fujian": 1196,
+   "at": "2026-11-26T04:13:45Z",
+   "bohai": 1197,
+   "fujian": 1197,
    "status": "ok"
   },
   "gold": {
-   "at": "2026-11-25T01:44:58Z",
+   "at": "2026-11-26T04:13:16Z",
    "months": 56,
+   "skipped": "fetched within 3 days",
    "status": "ok"
   },
   "ioda": {
-   "at": "2026-11-25T03:07:19Z",
+   "at": "2026-11-26T04:13:40Z",
    "events": 117,
    "status": "ok"
   },
   "jwc": {
-   "at": "2026-11-25T01:45:16Z",
+   "at": "2026-11-26T04:13:19Z",
    "circulars": 1,
    "status": "ok"
   },
   "oil": {
-   "at": "2026-11-25T03:00:23Z",
+   "at": "2026-11-26T04:13:16Z",
    "months": 56,
+   "skipped": "fetched within 3 days",
    "status": "ok"
   },
   "rmrb": {
-   "at": "2026-11-25T17:05:41Z",
-   "days": 1200,
-   "new": 477,
-   "skipped": [
-    "2024-06-06"
-   ],
+   "at": "2026-11-26T04:13:34Z",
+   "days": 1201,
+   "new": 2,
    "status": "ok"
   }
  }
