@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-26T09:45:51Z",
+ "generated_utc": "2026-11-26T12:44:49Z",
  "state": "warn",
  "summary": {
   "ok": 13,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-25T15:54:14Z",
-   "heartbeat_age_h": 17.9,
+   "heartbeat_age_h": 20.8,
    "data_date": "2026-11-25",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -145,7 +145,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-25T13:30:20Z",
-   "heartbeat_age_h": 20.3,
+   "heartbeat_age_h": 23.2,
    "data_date": "2026-11-24",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -168,7 +168,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-25T17:36:23Z",
-   "heartbeat_age_h": 16.2,
+   "heartbeat_age_h": 19.1,
    "data_date": "2026-11-25",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -211,16 +211,16 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "daily",
    "workflow": "jso-update.yml",
-   "heartbeat_utc": "2026-11-26T09:43:57Z",
-   "heartbeat_age_h": 0.0,
-   "data_date": "2026-11-25",
+   "heartbeat_utc": "2026-11-26T10:20:06Z",
+   "heartbeat_age_h": 2.4,
+   "data_date": "2026-11-26",
    "data_date_tz": "JST",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "passages": 1038,
-    "releases": 1588,
+    "passages": 1040,
+    "releases": 1589,
     "intake": "自動取り込み（jso-update.yml、日本時間 8〜24 時は 30 分ごと・夜は 2 時間ごと。一覧ページと新しい資料の PDF だけを取得）"
    }
   },
@@ -230,7 +230,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-26T03:48:21Z",
-   "heartbeat_age_h": 6.0,
+   "heartbeat_age_h": 8.9,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -247,7 +247,7 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-26T09:44:06Z",
+   "heartbeat_utc": "2026-11-26T12:42:59Z",
    "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
@@ -256,8 +256,8 @@
    "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-26T09:45:32Z",
-    "newest_input_utc": "2026-11-26T09:43:57Z"
+    "computed_utc_max": "2026-11-26T12:44:32Z",
+    "newest_input_utc": "2026-11-26T10:20:06Z"
    }
   },
   {
@@ -281,16 +281,16 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-26T08:15:55Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_utc": "2026-11-26T09:47:18Z",
+   "heartbeat_age_h": 3.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
    "state": "ok",
    "reasons": [],
    "values": {
-    "events": 37,
-    "current": 19,
+    "events": 38,
+    "current": 20,
     "failed": 0,
     "fetch_failed": 0
    }
@@ -767,15 +767,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 13,
-   "open_now": 7,
+   "open_or_upcoming_windows": 12,
+   "open_now": 6,
    "next_start": {
     "site": "太原",
     "country": "CN",
     "window_start_utc": "2026-11-27T04:59Z",
     "window_end_utc": "2026-11-27T05:28Z"
    },
-   "active_notices": 41
+   "active_notices": 39
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -880,14 +880,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-26T09:15:45Z",
-   "last_success_event": "workflow_dispatch",
+   "last_success_started_utc": "2026-11-26T12:41:12Z",
+   "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45790333029,
-    "started_utc": "2026-11-26T09:15:45Z",
+    "id": 45817467401,
+    "started_utc": "2026-11-26T12:12:18Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45790333029"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45817467401"
    },
    "consecutive_failures": 0
   },
@@ -901,14 +901,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-26T09:44:06Z",
+   "last_success_started_utc": "2026-11-26T12:42:59Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 45794712522,
-    "started_utc": "2026-11-26T09:44:06Z",
+    "id": 45822244434,
+    "started_utc": "2026-11-26T12:42:59Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45794712522"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45822244434"
    },
    "consecutive_failures": 0
   },
