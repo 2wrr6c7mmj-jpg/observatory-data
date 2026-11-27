@@ -1,11 +1,11 @@
 {
- "built_utc": "2026-11-26T10:20:06Z",
- "releases": 1589,
+ "built_utc": "2026-11-27T12:14:30Z",
+ "releases": 1590,
  "first_release": "2007-07-04",
- "last_release": "2026-11-26",
- "passages": 1040,
+ "last_release": "2026-11-27",
+ "passages": 1041,
  "by_nation": {
-  "CN": 556,
+  "CN": 557,
   "RU": 465,
   "CNRU": 19
  },
