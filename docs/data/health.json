@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T09:51:28Z",
- "state": "alert",
+ "generated_utc": "2026-11-27T12:16:40Z",
+ "state": "warn",
  "summary": {
-  "ok": 8,
-  "warn": 5,
-  "alert": 1,
+  "ok": 11,
+  "warn": 3,
+  "alert": 0,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-26T15:37:22Z",
-   "heartbeat_age_h": 18.2,
+   "heartbeat_age_h": 20.7,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -115,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-26T13:09:16Z",
-   "heartbeat_age_h": 20.7,
+   "heartbeat_age_h": 23.1,
    "data_date": "2026-11-25",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 16.6,
+   "heartbeat_age_h": 19.0,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -181,16 +181,16 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "daily",
    "workflow": "jso-update.yml",
-   "heartbeat_utc": "2026-11-26T10:20:06Z",
-   "heartbeat_age_h": 23.5,
-   "data_date": "2026-11-26",
+   "heartbeat_utc": "2026-11-27T12:14:30Z",
+   "heartbeat_age_h": 0.0,
+   "data_date": "2026-11-27",
    "data_date_tz": "JST",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "passages": 1040,
-    "releases": 1589,
+    "passages": 1041,
+    "releases": 1590,
     "intake": "自動取り込み（jso-update.yml、日本時間 8〜24 時は 30 分ごと・夜は 2 時間ごと。一覧ページと新しい資料の PDF だけを取得）"
    }
   },
@@ -200,7 +200,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-27T05:24:36Z",
-   "heartbeat_age_h": 4.4,
+   "heartbeat_age_h": 6.9,
    "data_date": "2026-11-27",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -217,23 +217,17 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-26T13:09:25Z",
-   "heartbeat_age_h": 20.7,
+   "heartbeat_utc": "2026-11-27T12:14:40Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "older_than_input",
-     "text": "最後の成功 2026-11-26T13:09:25Z が入力の更新 2026-11-27T05:24:36Z より前"
-    }
-   ],
+   "state": "ok",
+   "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-26T13:10:51Z",
-    "newest_input_utc": "2026-11-27T05:24:36Z"
+    "computed_utc_max": "2026-11-27T12:16:14Z",
+    "newest_input_utc": "2026-11-27T12:14:30Z"
    }
   },
   {
@@ -258,7 +252,7 @@
    "kind": "derived",
    "workflow": "exercises.yml",
    "heartbeat_utc": "2026-11-26T17:20:16Z",
-   "heartbeat_age_h": 16.5,
+   "heartbeat_age_h": 18.9,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -267,7 +261,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の収集から 17 h（>9 h：遅延）"
+     "text": "最後の収集から 19 h（>9 h：遅延）"
     }
    ],
    "values": {
@@ -749,15 +743,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 11,
-   "open_now": 6,
+   "open_or_upcoming_windows": 10,
+   "open_now": 5,
    "next_start": {
     "site": "西海（東倉里）",
     "country": "KP",
     "window_start_utc": "2026-11-27T12:51Z",
     "window_end_utc": "2026-11-27T13:37Z"
    },
-   "active_notices": 40
+   "active_notices": 39
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -866,24 +860,18 @@
    "sources": [
     "jso"
    ],
-   "state": "alert",
-   "reasons": [
-    {
-     "level": "alert",
-     "code": "failed",
-     "text": "workflow_dispatch の実行 2026-11-27T09:32:10Z が failure（25 回続けて）"
-    }
-   ],
-   "last_success_started_utc": "2026-11-26T17:15:31Z",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-27T12:12:37Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
-    "id": 45974519798,
-    "started_utc": "2026-11-27T09:32:10Z",
+    "id": 45996727697,
+    "started_utc": "2026-11-27T12:12:37Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45974519798"
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45996727697"
    },
-   "consecutive_failures": 25
+   "consecutive_failures": 0
   },
   {
    "file": "proto.yml",
@@ -893,24 +881,18 @@
    "sources": [
     "proto"
    ],
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "failed",
-     "text": "workflow_run の実行 2026-11-27T09:49:47Z が failure"
-    }
-   ],
-   "last_success_started_utc": "2026-11-26T13:09:25Z",
+   "state": "ok",
+   "reasons": [],
+   "last_success_started_utc": "2026-11-27T12:14:40Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 45976957052,
-    "started_utc": "2026-11-27T09:49:47Z",
+    "id": 45997009578,
+    "started_utc": "2026-11-27T12:14:40Z",
     "status": "completed",
-    "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45976957052"
+    "conclusion": "success",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45997009578"
    },
-   "consecutive_failures": 1
+   "consecutive_failures": 0
   },
   {
    "file": "ocean-monitor.yml",
