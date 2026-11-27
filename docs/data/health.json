@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T13:09:29Z",
+ "generated_utc": "2026-11-27T13:45:21Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 2,
+  "ok": 11,
+  "warn": 3,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-26T15:37:22Z",
-   "heartbeat_age_h": 21.5,
+   "heartbeat_age_h": 22.1,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -115,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-27T13:07:26Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.6,
    "data_date": "2026-11-26",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 19.9,
+   "heartbeat_age_h": 20.5,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -181,8 +181,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "daily",
    "workflow": "jso-update.yml",
-   "heartbeat_utc": "2026-11-27T12:21:43Z",
-   "heartbeat_age_h": 0.8,
+   "heartbeat_utc": "2026-11-27T13:35:40Z",
+   "heartbeat_age_h": 0.2,
    "data_date": "2026-11-27",
    "data_date_tz": "JST",
    "data_age_days": 0,
@@ -190,7 +190,7 @@
    "reasons": [],
    "values": {
     "passages": 1041,
-    "releases": 1590,
+    "releases": 1591,
     "intake": "自動取り込み（jso-update.yml、日本時間 8〜24 時は 30 分ごと・夜は 2 時間ごと。一覧ページと新しい資料の PDF だけを取得）"
    }
   },
@@ -200,7 +200,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-27T05:24:36Z",
-   "heartbeat_age_h": 7.7,
+   "heartbeat_age_h": 8.3,
    "data_date": "2026-11-27",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -218,16 +218,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-27T13:07:35Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-27T13:07:35Z が入力の更新 2026-11-27T13:35:40Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-27T13:09:04Z",
-    "newest_input_utc": "2026-11-27T13:07:26Z"
+    "newest_input_utc": "2026-11-27T13:35:40Z"
    }
   },
   {
@@ -251,8 +257,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-27T12:15:09Z",
-   "heartbeat_age_h": 0.9,
+   "heartbeat_utc": "2026-11-27T13:10:45Z",
+   "heartbeat_age_h": 0.6,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -737,15 +743,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 10,
-   "open_now": 6,
+   "open_or_upcoming_windows": 9,
+   "open_now": 5,
    "next_start": {
     "site": "太原",
     "country": "CN",
     "window_start_utc": "2026-11-29T03:46Z",
     "window_end_utc": "2026-11-29T04:19Z"
    },
-   "active_notices": 39
+   "active_notices": 37
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -856,14 +862,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-27T13:03:06Z",
+   "last_success_started_utc": "2026-11-27T13:33:56Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
-    "id": 46003752989,
-    "started_utc": "2026-11-27T13:03:06Z",
+    "id": 46008201690,
+    "started_utc": "2026-11-27T13:33:56Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/46003752989"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/46008201690"
    },
    "consecutive_failures": 0
   },
