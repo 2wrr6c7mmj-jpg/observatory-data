@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T12:18:35Z",
+ "generated_utc": "2026-11-27T12:22:00Z",
  "state": "warn",
  "summary": {
-  "ok": 11,
-  "warn": 3,
+  "ok": 10,
+  "warn": 4,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 19.0,
+   "heartbeat_age_h": 19.1,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -181,8 +181,8 @@
    "name": "統合幕僚監部（統幕）",
    "kind": "daily",
    "workflow": "jso-update.yml",
-   "heartbeat_utc": "2026-11-27T12:14:30Z",
-   "heartbeat_age_h": 0.1,
+   "heartbeat_utc": "2026-11-27T12:21:43Z",
+   "heartbeat_age_h": 0.0,
    "data_date": "2026-11-27",
    "data_date_tz": "JST",
    "data_age_days": 0,
@@ -200,7 +200,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-27T05:24:36Z",
-   "heartbeat_age_h": 6.9,
+   "heartbeat_age_h": 7.0,
    "data_date": "2026-11-27",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -209,7 +209,7 @@
    "values": {
     "notices_last_retrieved_utc": "2026-11-27T05:24:36Z",
     "notam_watch_last_seen_utc": "2026-11-27T05:24:36Z",
-    "ll2_last_retrieved_utc": "2026-11-26T09:43:52Z"
+    "ll2_last_retrieved_utc": "2026-11-27T12:21:38Z"
    }
   },
   {
@@ -218,16 +218,22 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-27T12:16:52Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "older_than_input",
+     "text": "最後の成功 2026-11-27T12:16:52Z が入力の更新 2026-11-27T12:21:43Z より前"
+    }
+   ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-27T12:16:14Z",
-    "newest_input_utc": "2026-11-27T12:14:30Z"
+    "newest_input_utc": "2026-11-27T12:21:43Z"
    }
   },
   {
@@ -771,11 +777,11 @@
     {
      "level": "warn",
      "code": "failed",
-     "text": "schedule の実行 2026-11-27T09:48:18Z が failure"
+     "text": "schedule の実行 2026-11-27T09:48:18Z が failure（その後の手動等の実行で成功）"
     }
    ],
-   "last_success_started_utc": "2026-11-26T09:42:29Z",
-   "last_success_event": "schedule",
+   "last_success_started_utc": "2026-11-27T12:20:10Z",
+   "last_success_event": "workflow_dispatch",
    "last_scheduled": {
     "id": 45976753907,
     "started_utc": "2026-11-27T09:48:18Z",
@@ -886,11 +892,11 @@
    "last_success_started_utc": "2026-11-27T12:16:52Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 45997315351,
-    "started_utc": "2026-11-27T12:16:52Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45997315351"
+    "id": 45998006470,
+    "started_utc": "2026-11-27T12:21:50Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45998006470"
    },
    "consecutive_failures": 0
   },
