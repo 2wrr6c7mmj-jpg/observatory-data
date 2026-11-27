@@ -371,7 +371,7 @@
   },
   {
    "acquired_utc": "2026-11-26T09:54:01Z",
-   "relative_orbit": 171,
+   "relative_orbit": "171",
    "present_pres1": 7,
    "present_current": 0,
    "change_flags": 6,

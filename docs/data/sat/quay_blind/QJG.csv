@@ -1,4 +1,4 @@
 site_id,acquired_utc,blind_version,answers,resident_sections,resident_seen,warship_blind,radar_dark_sections,radar_dark_seen,radar_dark_reasons,opt_fill_version,opt_fill_sections,opt_fill_scored,opt_fill_present,opt_fill_basis
 QJG,2026-11-02T09:55:42Z,blind-2,s2,2,0,2,4,1,submarine_berth,opt-fill-1,1,0,0,
 QJG,2026-11-14T09:55:42Z,blind-2,s2,2,0,2,4,0,submarine_berth,opt-fill-1,2,2,0,-2:R:00|2026-11-11|-3|owner|0;43251729:L:17|2026-11-10|-4|owner|0
-QJG,2026-11-26T09:55:41Z,blind-2,s2,2,0,2,4,0,submarine_berth,opt-fill-1,2,0,0,
+QJG,2026-11-26T09:55:41Z,blind-2,s2,2,0,2,4,0,submarine_berth,opt-fill-1,2,2,0,-2:R:00|2026-11-26|+0|p|0.012;43251729:L:17|2026-11-26|+0|p|0.010
