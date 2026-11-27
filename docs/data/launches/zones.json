@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-27T05:24:36Z",
+ "generated_utc": "2026-11-27T15:38:36Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -24,14 +24,13 @@
    },
    "orbit": "低軌道",
    "vehicle": {
-    "basis": "ll2",
-    "name": "固体燃料の宇宙発射体（国防科学研究所）",
-    "rocket_ll2": "Mir",
-    "mission": "Mir | Demo Flight",
-    "orbit": "LEO",
-    "status": "TBD",
-    "net_utc": "2026-11-30T00:00:00Z",
-    "pad": "ADD Offshore launch platform"
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "固体燃料の宇宙発射体（国防科学研究所）",
+      "orbit": "低軌道・太陽同期"
+     }
+    ]
    },
    "notices": [
     {
@@ -485,383 +484,6 @@
      "polygons": [],
      "circles": [],
      "text": "P5748/26 NOTAMR P3999/26\r\nQ)RJJJ/QWMLW/IV/BO/W/000/999/3310N14118E999\r\nA)RJJJ B)2611160236 C)2702151500EST\r\nE)ALL ACFT INTENDING TO FLY WI FUKUOKA FIR ARE ADVISED TO PAY\r\nSPECIAL ATTENTION TO THE FOLLOWING INFORMATION.\r\nIN ACCORDANCE WITH ARTICLE 82-3 OF JAPAN SELF DEFENSE FORCE LAW,\r\nANTIBALLISTIC MISSILES MAY BE LAUNCHED FOR THE DESTRUCTION OF THE\r\nROCKET EXPECTED TO BE LAUNCHED FROM NORTH KOREA.\r\n\r\nTHE ANTIBALLISTIC MISSILES ARE DEPLOYED AT POSITIONS BLW,\r\n(1)NAHA-SHI     : 261219N1273929E\r\n(2)MIYAKOJIMA   : 244602N1251930E\r\n(3)ISHIGAKIJIMA : 242404N1241121E\r\n(4)YONAGUNIJIMA : 242638N1225716E\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "id": "2026-11-24T07:00Z:文昌",
-   "window_start_utc": "2026-11-24T07:00Z",
-   "window_end_utc": "2026-11-27T10:00Z",
-   "site": {
-    "name": "文昌",
-    "lat": 19.61,
-    "lon": 110.95,
-    "country": "CN",
-    "method": "nearest-only",
-    "distance_km": 1464
-   },
-   "orbit": null,
-   "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "長征5号",
-      "orbit": "低軌道・静止遷移・月惑星"
-     },
-     {
-      "name": "長征7号/7A号",
-      "orbit": "低軌道・静止遷移"
-     },
-     {
-      "name": "長征8号/8A号",
-      "orbit": "低軌道・太陽同期"
-     },
-     {
-      "name": "長征12号",
-      "orbit": "低軌道（千帆などの通信衛星群）"
-     }
-    ]
-   },
-   "notices": [
-    {
-     "key": "aviation:B5831/26",
-     "id": "B5831/26",
-     "dataset": "aviation",
-     "kind": "fall",
-     "issuer": "フィリピン（航空当局 RPHI）",
-     "country": "PH",
-     "start_utc": "2026-11-24T07:00:00Z",
-     "end_utc": "2026-11-27T10:00:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        9.2667,
-        118.95
-       ],
-       [
-        9.4667,
-        119.2167
-       ],
-       [
-        8.95,
-        119.6
-       ],
-       [
-        8.75,
-        119.3333
-       ],
-       [
-        9.2667,
-        118.95
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "B5831/26 NOTAMN\r\nQ) RPHI/QWMLW/IV/BO /W /000/999/0907N11917E023\r\nA) RPHI B) 2611240700 C) 2611271000\r\nD) 0700-1000\r\nE) SPECIAL OPS (AEROSPACE FLT ACT) WILL BE CONDUCTED BY CHINA.\r\nEST FALL AREA OF UNBURNED DEBRIS WI:\r\n091600N 1185700E - \r\n092800N 1191300E -\r\n085700N 1193600E -\r\n084500N 1192000E - \r\n091600N 1185700E\r\n(27NM SOUTHEAST OF PUERTO PRINCESA INTL AP).\r\nF) SFC G) UNL"
-    }
-   ]
-  },
-  {
-   "id": "2026-11-27T04:59Z:太原",
-   "window_start_utc": "2026-11-27T04:59Z",
-   "window_end_utc": "2026-11-27T05:28Z",
-   "site": {
-    "name": "太原",
-    "lat": 38.85,
-    "lon": 111.61,
-    "country": "CN",
-    "method": "nearest-only",
-    "distance_km": 158
-   },
-   "orbit": null,
-   "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "長征2C/2D号",
-      "orbit": "太陽同期"
-     },
-     {
-      "name": "長征4B/4C号",
-      "orbit": "太陽同期"
-     },
-     {
-      "name": "長征6号/6A号",
-      "orbit": "太陽同期・低軌道"
-     }
-    ]
-   },
-   "notices": [
-    {
-     "key": "aviation:A6149/26",
-     "id": "A6149/26",
-     "dataset": "aviation",
-     "kind": "closure",
-     "issuer": "中国（航空当局 ZBPE）",
-     "country": "CN",
-     "start_utc": "2026-11-27T04:59:00Z",
-     "end_utc": "2026-11-27T05:28:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        39.3162,
-        109.8
-       ],
-       [
-        39.3121,
-        109.8597
-       ],
-       [
-        39.3001,
-        109.9176
-       ],
-       [
-        39.2804,
-        109.9719
-       ],
-       [
-        39.2537,
-        110.021
-       ],
-       [
-        39.2208,
-        110.0632
-       ],
-       [
-        39.1827,
-        110.0974
-       ],
-       [
-        39.1406,
-        110.1225
-       ],
-       [
-        39.0957,
-        110.1378
-       ],
-       [
-        39.0495,
-        110.1428
-       ],
-       [
-        39.0033,
-        110.1373
-       ],
-       [
-        38.9585,
-        110.1217
-       ],
-       [
-        38.9165,
-        110.0963
-       ],
-       [
-        38.8786,
-        110.0619
-       ],
-       [
-        38.8459,
-        110.0197
-       ],
-       [
-        38.8193,
-        109.9708
-       ],
-       [
-        38.7998,
-        109.9168
-       ],
-       [
-        38.7878,
-        109.8593
-       ],
-       [
-        38.7838,
-        109.8
-       ],
-       [
-        38.7878,
-        109.7407
-       ],
-       [
-        38.7998,
-        109.6832
-       ],
-       [
-        38.8193,
-        109.6292
-       ],
-       [
-        38.8459,
-        109.5803
-       ],
-       [
-        38.8786,
-        109.5381
-       ],
-       [
-        38.9165,
-        109.5037
-       ],
-       [
-        38.9585,
-        109.4783
-       ],
-       [
-        39.0033,
-        109.4627
-       ],
-       [
-        39.0495,
-        109.4572
-       ],
-       [
-        39.0957,
-        109.4622
-       ],
-       [
-        39.1406,
-        109.4775
-       ],
-       [
-        39.1827,
-        109.5026
-       ],
-       [
-        39.2208,
-        109.5368
-       ],
-       [
-        39.2537,
-        109.579
-       ],
-       [
-        39.2804,
-        109.6281
-       ],
-       [
-        39.3001,
-        109.6824
-       ],
-       [
-        39.3121,
-        109.7403
-       ],
-       [
-        39.3162,
-        109.8
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "A6149/26 NOTAMN\r\nQ)ZBPE/QRDCA/IV/BO/W/000/999/3903N10948E016\r\nA)ZBPE B)2611270459 C)2611270528 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY: \r\nN391300E1093200-N390900E1100700-N385400E1100500-N385800E1092900,BAC\r\nK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "id": "2026-11-27T12:51Z:西海（東倉里）",
-   "window_start_utc": "2026-11-27T12:51Z",
-   "window_end_utc": "2026-11-27T13:37Z",
-   "site": {
-    "name": "西海（東倉里）",
-    "lat": 39.66,
-    "lon": 124.71,
-    "country": "KP",
-    "method": "aligned",
-    "azimuth_deg": 267.0,
-    "bearing_spread_deg": 2.7,
-    "inclination_deg": 140.2
-   },
-   "orbit": "太陽同期軌道",
-   "vehicle": {
-    "basis": "site",
-    "candidates": [
-     {
-      "name": "千里馬1型（衛星打上げ）",
-      "orbit": "太陽同期・極軌道"
-     },
-     {
-      "name": "弾道ミサイル",
-      "orbit": "—"
-     }
-    ]
-   },
-   "notices": [
-    {
-     "key": "aviation:A6229/26",
-     "id": "A6229/26",
-     "dataset": "aviation",
-     "kind": "closure",
-     "issuer": "中国（航空当局 ZLHW）",
-     "country": "CN",
-     "start_utc": "2026-11-27T12:51:00Z",
-     "end_utc": "2026-11-27T13:37:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        36.2308,
-        101.9236
-       ],
-       [
-        35.7197,
-        102.1872
-       ],
-       [
-        35.3953,
-        101.2483
-       ],
-       [
-        35.905,
-        100.9847
-       ],
-       [
-        36.2308,
-        101.9236
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "A6229/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/\r\nA)ZLHW B)2611271251 C)2611271337 \r\nE) ALL ACFT ARE FORBIDDEN TO FLY INTO THE AREA,BOUNDED BY:\r\nN361351E1015525-N354311E1021114-N352343E1011454-N355418E1005905 \r\nBACK TO START.\r\nF)SFC G)UNL"
-    },
-    {
-     "key": "aviation:A6107/26",
-     "id": "A6107/26",
-     "dataset": "aviation",
-     "kind": "closure",
-     "issuer": "中国（航空当局 ZLHW）",
-     "country": "CN",
-     "start_utc": "2026-11-27T12:53:00Z",
-     "end_utc": "2026-11-27T13:15:00Z",
-     "period_basis": "notam-watch",
-     "polygons": [
-      [
-       [
-        38.1333,
-        107.9333
-       ],
-       [
-        37.95,
-        108
-       ],
-       [
-        37.85,
-        107.55
-       ],
-       [
-        38.0333,
-        107.4833
-       ],
-       [
-        38.1333,
-        107.9333
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "A6107/26 NOTAMN\r\nQ)ZLHW/QRDCA/IV/BO/W/000/999/3800N10745E012\r\nA)ZLHW B)2611271253 C)2611271315 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN380800E1075600-N375700E1080000-N375100E1073300-N380200E1072900,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
     }
    ]
   },
@@ -1476,6 +1098,422 @@
    ]
   },
   {
+   "id": "2026-12-01T02:15Z:酒泉",
+   "window_start_utc": "2026-12-01T02:15Z",
+   "window_end_utc": "2026-12-01T03:30Z",
+   "site": {
+    "name": "酒泉",
+    "lat": 40.96,
+    "lon": 100.29,
+    "country": "CN",
+    "method": "nearest-only",
+    "distance_km": 544
+   },
+   "orbit": null,
+   "vehicle": {
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "長征2C/2D/4C号",
+      "orbit": "低軌道・太陽同期"
+     },
+     {
+      "name": "長征2F号（有人）",
+      "orbit": "宇宙ステーション（約41度）"
+     },
+     {
+      "name": "快舟1A/11号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "谷神星1号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "朱雀2E/3号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "力箭1号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "双曲線1号",
+      "orbit": "太陽同期"
+     }
+    ]
+   },
+   "notices": [
+    {
+     "key": "aviation:A6238/26",
+     "id": "A6238/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-12-01T02:15:00Z",
+     "end_utc": "2026-12-01T03:30:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        37.299,
+        97.1167
+       ],
+       [
+        37.29,
+        97.2438
+       ],
+       [
+        37.2636,
+        97.3669
+       ],
+       [
+        37.2204,
+        97.4823
+       ],
+       [
+        37.1618,
+        97.5863
+       ],
+       [
+        37.0896,
+        97.6759
+       ],
+       [
+        37.0061,
+        97.7481
+       ],
+       [
+        36.9139,
+        97.801
+       ],
+       [
+        36.8156,
+        97.833
+       ],
+       [
+        36.7145,
+        97.8431
+       ],
+       [
+        36.6134,
+        97.8311
+       ],
+       [
+        36.5156,
+        97.7975
+       ],
+       [
+        36.4239,
+        97.7434
+       ],
+       [
+        36.3411,
+        97.6704
+       ],
+       [
+        36.2697,
+        97.5809
+       ],
+       [
+        36.2118,
+        97.4775
+       ],
+       [
+        36.1692,
+        97.3634
+       ],
+       [
+        36.1432,
+        97.2419
+       ],
+       [
+        36.1344,
+        97.1167
+       ],
+       [
+        36.1432,
+        96.9915
+       ],
+       [
+        36.1692,
+        96.87
+       ],
+       [
+        36.2118,
+        96.7558
+       ],
+       [
+        36.2697,
+        96.6524
+       ],
+       [
+        36.3411,
+        96.5629
+       ],
+       [
+        36.4239,
+        96.49
+       ],
+       [
+        36.5156,
+        96.4358
+       ],
+       [
+        36.6134,
+        96.4022
+       ],
+       [
+        36.7145,
+        96.3903
+       ],
+       [
+        36.8156,
+        96.4004
+       ],
+       [
+        36.9139,
+        96.4323
+       ],
+       [
+        37.0061,
+        96.4852
+       ],
+       [
+        37.0896,
+        96.5575
+       ],
+       [
+        37.1618,
+        96.647
+       ],
+       [
+        37.2204,
+        96.7511
+       ],
+       [
+        37.2636,
+        96.8664
+       ],
+       [
+        37.29,
+        96.9896
+       ],
+       [
+        37.299,
+        97.1167
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6238/26 NOTAMN\r\nQ)ZLHW/QRDCA/IV/BO/W/000/999/3643N09707E035\r\nA)ZLHW B)2612010215 C)2612010330 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN363629E0974947-N364410E0962418-N365033E0962522-N363838E0975011, \r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "2026-12-02T11:48Z:海陽（海上発射）",
+   "window_start_utc": "2026-12-02T11:48Z",
+   "window_end_utc": "2026-12-02T12:33Z",
+   "site": {
+    "name": "海陽（海上発射）",
+    "lat": 35.0,
+    "lon": 122.0,
+    "country": "CN",
+    "method": "nearest-only",
+    "distance_km": 153
+   },
+   "orbit": null,
+   "vehicle": {
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "捷龍3号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "長征11号（海上）",
+      "orbit": "低軌道・太陽同期"
+     },
+     {
+      "name": "引力1号",
+      "orbit": "太陽同期"
+     },
+     {
+      "name": "谷神星1号（海上）",
+      "orbit": "太陽同期"
+     }
+    ]
+   },
+   "notices": [
+    {
+     "key": "aviation:A6234/26",
+     "id": "A6234/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZSHA）",
+     "country": "CN",
+     "start_utc": "2026-12-02T11:48:00Z",
+     "end_utc": "2026-12-02T12:33:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        36.9157,
+        122.25
+       ],
+       [
+        36.907,
+        122.3728
+       ],
+       [
+        36.8813,
+        122.4919
+       ],
+       [
+        36.8393,
+        122.6034
+       ],
+       [
+        36.7825,
+        122.704
+       ],
+       [
+        36.7124,
+        122.7905
+       ],
+       [
+        36.6313,
+        122.8604
+       ],
+       [
+        36.5416,
+        122.9116
+       ],
+       [
+        36.4462,
+        122.9425
+       ],
+       [
+        36.3479,
+        122.9523
+       ],
+       [
+        36.2498,
+        122.9408
+       ],
+       [
+        36.1547,
+        122.9083
+       ],
+       [
+        36.0656,
+        122.856
+       ],
+       [
+        35.9852,
+        122.7855
+       ],
+       [
+        35.9158,
+        122.6989
+       ],
+       [
+        35.8596,
+        122.599
+       ],
+       [
+        35.8182,
+        122.4886
+       ],
+       [
+        35.7929,
+        122.3711
+       ],
+       [
+        35.7843,
+        122.25
+       ],
+       [
+        35.7929,
+        122.1289
+       ],
+       [
+        35.8182,
+        122.0114
+       ],
+       [
+        35.8596,
+        121.901
+       ],
+       [
+        35.9158,
+        121.8011
+       ],
+       [
+        35.9852,
+        121.7145
+       ],
+       [
+        36.0656,
+        121.644
+       ],
+       [
+        36.1547,
+        121.5917
+       ],
+       [
+        36.2498,
+        121.5592
+       ],
+       [
+        36.3479,
+        121.5477
+       ],
+       [
+        36.4462,
+        121.5575
+       ],
+       [
+        36.5416,
+        121.5884
+       ],
+       [
+        36.6313,
+        121.6396
+       ],
+       [
+        36.7124,
+        121.7095
+       ],
+       [
+        36.7825,
+        121.796
+       ],
+       [
+        36.8393,
+        121.8966
+       ],
+       [
+        36.8813,
+        122.0081
+       ],
+       [
+        36.907,
+        122.1272
+       ],
+       [
+        36.9157,
+        122.25
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6234/26 NOTAMN\r\nQ)ZSHA/QRDCA/IV/BO/W/000/999/3621N12215E034\r\nA)ZSHA B)2612021148 C)2612021233 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN362200E1213400-N364400E1214400-N361800E1225700-N355900E1224600, \r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
    "id": "2026-12-10T07:00Z:文昌",
    "window_start_utc": "2026-12-10T07:00Z",
    "window_end_utc": "2026-12-13T10:00Z",
@@ -1542,7 +1580,7 @@
  "launch_horizon_days": 7,
  "launches": [
   {
-   "id": "notice:2026-11-27T12:51Z:西海（東倉里）",
+   "id": "notice:2026-11-10T00:00Z:済州沖（海上発射）",
    "basis": "notices",
    "name": null,
    "rocket": null,
@@ -1550,118 +1588,459 @@
    "provider": null,
    "status": null,
    "net_utc": null,
-   "window_start_utc": "2026-11-27T12:51:00Z",
-   "window_end_utc": "2026-11-27T13:37:00Z",
-   "orbit": "太陽同期軌道",
+   "window_start_utc": "2026-11-10T00:00:00Z",
+   "window_end_utc": "2026-11-30T09:34:00Z",
+   "orbit": null,
    "mission_type": null,
    "url": null,
    "site": {
-    "name": "西海（東倉里）",
-    "lat": 39.66,
-    "lon": 124.71,
-    "country": "KP",
+    "name": "済州沖（海上発射）",
+    "lat": 33.22,
+    "lon": 126.37,
+    "country": "KR",
     "inland": false,
     "pad": null
    },
-   "azimuth_deg": 267.0,
-   "inclination_deg": 140.2,
    "vehicle_candidates": [
     {
-     "name": "千里馬1型（衛星打上げ）",
-     "orbit": "太陽同期・極軌道"
-    },
-    {
-     "name": "弾道ミサイル",
-     "orbit": "—"
+     "name": "固体燃料の宇宙発射体（国防科学研究所）",
+     "orbit": "低軌道・太陽同期"
     }
    ],
    "estimated_window": {
-    "start_utc": "2026-11-27T12:53:00Z",
-    "end_utc": "2026-11-27T13:15:00Z"
+    "start_utc": "2026-11-10T06:00:00Z",
+    "end_utc": "2026-11-10T09:00:00Z"
    },
    "notice_state": "matched",
    "notices": [
     {
-     "key": "aviation:A6229/26",
-     "id": "A6229/26",
+     "key": "aviation:P5375/26",
+     "id": "P5375/26",
      "dataset": "aviation",
-     "kind": "closure",
-     "kind_ja": "飛行制限区域",
-     "issuer": "中国（航空当局 ZLHW）",
-     "country": "CN",
-     "start_utc": "2026-11-27T12:51:00Z",
-     "end_utc": "2026-11-27T13:37:00Z",
-     "slot_start_utc": "2026-11-27T12:51:00Z",
-     "slot_end_utc": "2026-11-27T13:37:00Z",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-10T00:00:00Z",
+     "end_utc": "2026-11-10T10:00:00Z",
+     "slot_start_utc": "2026-11-10T00:00:00Z",
+     "slot_end_utc": "2026-11-10T10:00:00Z",
      "role": "main",
      "reserve_slots": 0,
-     "polygons": [
-      [
-       [
-        36.2308,
-        101.9236
+     "polygons": [],
+     "circles": [
+      {
+       "kind": "circle",
+       "points": [
+        [
+         31.2509,
+         131.0824
+        ]
        ],
-       [
-        35.7197,
-        102.1872
-       ],
-       [
-        35.3953,
-        101.2483
-       ],
-       [
-        35.905,
-        100.9847
-       ],
-       [
-        36.2308,
-        101.9236
-       ]
-      ]
+       "radius": 1300
+      }
      ],
-     "circles": [],
-     "text": "A6229/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/\r\nA)ZLHW B)2611271251 C)2611271337 \r\nE) ALL ACFT ARE FORBIDDEN TO FLY INTO THE AREA,BOUNDED BY:\r\nN361351E1015525-N354311E1021114-N352343E1011454-N355418E1005905 \r\nBACK TO START.\r\nF)SFC G)UNL"
+     "text": "P5375/26 NOTAMN\r\nQ)RJJJ/QROXX/IV/NBO/W/000/050/3115N13105E002\r\nA)RJJJ B)2611100000 C)2611101000\r\nE)ALL VFR ACFT ARE REQUESTED TO AVOID FLYING IN FLW AIRSPACE AS FAR\r\nAS POSSIBLE DUE TO ROCKET LAUNCH REHEARSAL\r\nAIRSPACE: RADIUS 1.3KM CENTER 311503.34N1310456.76E \r\n(KIMOTSUKI-GUN IN KAGOSHIMA)\r\nF)SFC G)5000FT AMSL"
     },
     {
-     "key": "aviation:A6107/26",
-     "id": "A6107/26",
+     "key": "aviation:Z0834/26",
+     "id": "Z0834/26",
      "dataset": "aviation",
-     "kind": "closure",
-     "kind_ja": "飛行制限区域",
-     "issuer": "中国（航空当局 ZLHW）",
-     "country": "CN",
-     "start_utc": "2026-11-27T12:53:00Z",
-     "end_utc": "2026-11-27T13:15:00Z",
-     "slot_start_utc": "2026-11-27T12:53:00Z",
-     "slot_end_utc": "2026-11-27T13:15:00Z",
+     "kind": "fall",
+     "kind_ja": "落下区域",
+     "issuer": "韓国（航空当局 RKRR）",
+     "country": "KR",
+     "start_utc": "2026-11-10T06:00:00Z",
+     "end_utc": "2026-11-10T09:00:00Z",
+     "slot_start_utc": "2026-11-10T06:00:00Z",
+     "slot_end_utc": "2026-11-10T09:00:00Z",
      "role": "main",
      "reserve_slots": 0,
      "polygons": [
       [
        [
-        38.1333,
-        107.9333
+        33.085,
+        126.3089
        ],
        [
-        37.95,
-        108
+        33.2361,
+        126.3831
        ],
        [
-        37.85,
-        107.55
+        33.2361,
+        126.7919
        ],
        [
-        38.0333,
-        107.4833
+        32.8928,
+        127.12
        ],
        [
-        38.1333,
-        107.9333
+        32.5942,
+        126.5861
+       ],
+       [
+        33.085,
+        126.3089
        ]
       ]
      ],
      "circles": [],
-     "text": "A6107/26 NOTAMN\r\nQ)ZLHW/QRDCA/IV/BO/W/000/999/3800N10745E012\r\nA)ZLHW B)2611271253 C)2611271315 \r\nE) A TEMPORARY DANGER AREA ESTABLISHED BOUNDED BY:\r\nN380800E1075600-N375700E1080000-N375100E1073300-N380200E1072900,\r\nBACK TO START.VERTICAL LIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
+     "text": "Z0834/26 NOTAMN  \r\nQ)RKRR/QWMLW/IV/BO/W/000/999/3535N12700E999\r\nA)RKRR B)2611100600 C)2611100900\r\nE)SPACE LAUNCH VEHICLE WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE : 10 NOV 2026\r\n- PLANNED LAUNCH WINDOW TIME : 0600-0900 UTC\r\n- LAUNCH SITE : 330842N1262718E\r\n\r\nINITIAL LAUNCH STAGE AREA : \r\n1. AREA : \r\n330506N1261832E-331410N1262259E-331410N1264731E-325334N1270712E-\r\n323539N1263510E-330506N1261832E\r\n2. VERTICAL ALTITUDE : SFC-UNL\r\n\r\n1ST STAGE FALLING INFO \r\n1. FALLING TIME : 0621-0922 UTC\r\n2. FALLING AREA : FOR DETAILS IN FUKUOKA FIR(RJJJ), REF TO RJJJ NOTAM\r\n\r\nFAIRING STAGE FALLING INFO \r\n1. FALLING TIME : 0633-0934 UTC\r\n2. FALLING AREA : FOR DETAILS IN FUKUOKA FIR(RJJJ), REF TO RJJJ NOTAM\r\n\r\n2ND STAGE FALLING INFO \r\n1. FALLING TIME : 0630-0930 UTC\r\n2. FALLING AREA : FOR DETAILS IN OAKLAND OCEANIC FIR(KZAK), \r\n   REF TO KZAK NOTAM\r\n\r\n3RD STAGE FALLING INFO \r\n1. FALLING TIME : 0650-0950 UTC\r\n2. FALLING AREA : FOR DETAILS IN AUCKLAND OCEANIC FIR(NZZO), \r\n   REF TO NZZO NOTAM"
+    },
+    {
+     "key": "aviation:P5538/26",
+     "id": "P5538/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-10T06:21:00Z",
+     "end_utc": "2026-11-30T09:34:00Z",
+     "slot_start_utc": "2026-11-10T06:21:00Z",
+     "slot_end_utc": "2026-11-30T09:34:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        30.6225,
+        128.1481
+       ],
+       [
+        30.7964,
+        128.5142
+       ],
+       [
+        30.1636,
+        128.9142
+       ],
+       [
+        29.9906,
+        128.5503
+       ],
+       [
+        30.6225,
+        128.1481
+       ]
+      ],
+      [
+       [
+        24.4747,
+        132.7678
+       ],
+       [
+        25.0417,
+        133.7786
+       ],
+       [
+        22.1925,
+        135.6642
+       ],
+       [
+        21.6311,
+        134.6708
+       ],
+       [
+        24.4747,
+        132.7678
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5538/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611100621 C)2611300934\r\nD)0621/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 10 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0600-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 11 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0621-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0633-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "notice:2026-11-11T05:00Z:済州沖（海上発射）",
+   "basis": "notices",
+   "name": null,
+   "rocket": null,
+   "rocket_ja": null,
+   "provider": null,
+   "status": null,
+   "net_utc": null,
+   "window_start_utc": "2026-11-11T05:00:00Z",
+   "window_end_utc": "2026-11-30T09:34:00Z",
+   "orbit": "低軌道",
+   "mission_type": null,
+   "url": null,
+   "site": {
+    "name": "済州沖（海上発射）",
+    "lat": 33.22,
+    "lon": 126.37,
+    "country": "KR",
+    "inland": false,
+    "pad": null
+   },
+   "azimuth_deg": 144.4,
+   "inclination_deg": 60.9,
+   "vehicle_candidates": [
+    {
+     "name": "固体燃料の宇宙発射体（国防科学研究所）",
+     "orbit": "低軌道・太陽同期"
+    }
+   ],
+   "estimated_window": {
+    "start_utc": "2026-11-11T05:00:00Z",
+    "end_utc": "2026-11-11T09:00:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:Z0843/26",
+     "id": "Z0843/26",
+     "dataset": "aviation",
+     "kind": "fall",
+     "kind_ja": "落下区域",
+     "issuer": "韓国（航空当局 RKRR）",
+     "country": "KR",
+     "start_utc": "2026-11-11T05:00:00Z",
+     "end_utc": "2026-11-11T09:00:00Z",
+     "slot_start_utc": "2026-11-11T05:00:00Z",
+     "slot_end_utc": "2026-11-11T09:00:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        33.085,
+        126.3089
+       ],
+       [
+        33.2361,
+        126.3831
+       ],
+       [
+        33.2361,
+        126.7919
+       ],
+       [
+        32.8928,
+        127.12
+       ],
+       [
+        32.5942,
+        126.5861
+       ],
+       [
+        33.085,
+        126.3089
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "Z0843/26 NOTAMN  \r\nQ)RKRR/QWMLW/IV/BO/W/000/999/3535N12700E999\r\nA)RKRR B)2611110500 C)2611110900\r\nE)SPACE LAUNCH VEHICLE WILL BE LAUNCHED AS FLW\r\n - PLANNED LAUNCH DATE : 11 NOV 2026\r\n - PLANNED LAUNCH WINDOW TIME : 0500-0900 UTC\r\n - LAUNCH SITE : 330842N1262718E\r\n\r\nINITIAL LAUNCH STAGE AREA : \r\n 1. AREA : \r\n 330506N1261832E-331410N1262259E-331410N1264731E-325334N1270712E-\r\n 323539N1263510E-330506N1261832E\r\n\r\n 2. VERTICAL ALTITUDE : SFC-UNL\r\n\r\n 1ST STAGE FALLING INFO \r\n 1. FALLING TIME : 0521-0922 UTC\r\n 2. FALLING AREA : FOR DETAILS IN FUKUOKA FIR(RJJJ), REF TO RJJJ \r\n    NOTAM\r\n\r\n FAIRING STAGE FALLING INFO \r\n 1. FALLING TIME : 0533-0934 UTC\r\n 2. FALLING AREA : FOR DETAILS IN FUKUOKA FIR(RJJJ), REF TO RJJJ \r\n    NOTAM\r\n\r\n 2ND STAGE FALLING INFO \r\n 1. FALLING TIME : 0530-0930 UTC\r\n 2. FALLING AREA : FOR DETAILS IN OAKLAND OCEANIC FIR(KZAK), \r\n    REF TO KZAK NOTAM\r\n\r\n 3RD STAGE FALLING INFO \r\n 1. FALLING TIME : 0550-0950 UTC\r\n 2. FALLING AREA : FOR DETAILS IN AUCKLAND OCEANIC FIR(NZZO), \r\n    REF TO NZZO NOTAM"
+    },
+    {
+     "key": "aviation:P5590/26",
+     "id": "P5590/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-11T05:21:00Z",
+     "end_utc": "2026-11-30T09:34:00Z",
+     "slot_start_utc": "2026-11-11T05:21:00Z",
+     "slot_end_utc": "2026-11-30T09:34:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        30.6225,
+        128.1481
+       ],
+       [
+        30.7964,
+        128.5142
+       ],
+       [
+        30.1636,
+        128.9142
+       ],
+       [
+        29.9906,
+        128.5503
+       ],
+       [
+        30.6225,
+        128.1481
+       ]
+      ],
+      [
+       [
+        24.4747,
+        132.7678
+       ],
+       [
+        25.0417,
+        133.7786
+       ],
+       [
+        22.1925,
+        135.6642
+       ],
+       [
+        21.6311,
+        134.6708
+       ],
+       [
+        24.4747,
+        132.7678
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5590/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611110521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 11 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 12 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
+    }
+   ]
+  },
+  {
+   "id": "notice:2026-11-13T05:00Z:済州沖（海上発射）",
+   "basis": "notices",
+   "name": null,
+   "rocket": null,
+   "rocket_ja": null,
+   "provider": null,
+   "status": null,
+   "net_utc": null,
+   "window_start_utc": "2026-11-13T05:00:00Z",
+   "window_end_utc": "2026-11-30T09:34:00Z",
+   "orbit": "低軌道",
+   "mission_type": null,
+   "url": null,
+   "site": {
+    "name": "済州沖（海上発射）",
+    "lat": 33.22,
+    "lon": 126.37,
+    "country": "KR",
+    "inland": false,
+    "pad": null
+   },
+   "azimuth_deg": 144.4,
+   "inclination_deg": 60.9,
+   "vehicle_candidates": [
+    {
+     "name": "固体燃料の宇宙発射体（国防科学研究所）",
+     "orbit": "低軌道・太陽同期"
+    }
+   ],
+   "estimated_window": {
+    "start_utc": "2026-11-13T05:00:00Z",
+    "end_utc": "2026-11-13T09:00:00Z"
+   },
+   "notice_state": "matched",
+   "notices": [
+    {
+     "key": "aviation:Z0856/26",
+     "id": "Z0856/26",
+     "dataset": "aviation",
+     "kind": "fall",
+     "kind_ja": "落下区域",
+     "issuer": "韓国（航空当局 RKRR）",
+     "country": "KR",
+     "start_utc": "2026-11-13T05:00:00Z",
+     "end_utc": "2026-11-13T09:00:00Z",
+     "slot_start_utc": "2026-11-13T05:00:00Z",
+     "slot_end_utc": "2026-11-13T09:00:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        33.085,
+        126.3089
+       ],
+       [
+        33.2361,
+        126.3831
+       ],
+       [
+        33.2361,
+        126.7919
+       ],
+       [
+        32.8928,
+        127.12
+       ],
+       [
+        32.5942,
+        126.5861
+       ],
+       [
+        33.085,
+        126.3089
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "Z0856/26 NOTAMN  \r\nQ)RKRR/QWMLW/IV/BO/W/000/999/3535N12700E999\r\nA)RKRR B)2611130500 C)2611130900\r\nE)SPACE LAUNCH VEHICLE WILL BE LAUNCHED AS FLW\r\n - PLANNED LAUNCH DATE : 13 NOV 2026\r\n - PLANNED LAUNCH WINDOW TIME : 0500-0900 UTC\r\n - LAUNCH SITE : 330842N1262718E\r\n\r\nINITIAL LAUNCH STAGE AREA : \r\n 1. AREA : \r\n 330506N1261832E-331410N1262259E-331410N1264731E-325334N1270712E-\r\n 323539N1263510E-330506N1261832E\r\n\r\n 2. VERTICAL ALTITUDE : SFC-UNL\r\n\r\n 1ST STAGE FALLING INFO \r\n 1. FALLING TIME : 0521-0922 UTC\r\n 2. FALLING AREA : FOR DETAILS IN FUKUOKA FIR(RJJJ), REF TO RJJJ \r\n    NOTAM\r\n\r\n FAIRING STAGE FALLING INFO \r\n 1. FALLING TIME : 0533-0934 UTC\r\n 2. FALLING AREA : FOR DETAILS IN FUKUOKA FIR(RJJJ), REF TO RJJJ \r\n    NOTAM\r\n\r\n 2ND STAGE FALLING INFO \r\n 1. FALLING TIME : 0530-0930 UTC\r\n 2. FALLING AREA : FOR DETAILS IN OAKLAND OCEANIC FIR(KZAK), \r\n    REF TO KZAK NOTAM\r\n\r\n 3RD STAGE FALLING INFO \r\n 1. FALLING TIME : 0550-0950 UTC\r\n 2. FALLING AREA : FOR DETAILS IN AUCKLAND OCEANIC FIR(NZZO), \r\n    REF TO NZZO NOTAM"
+    },
+    {
+     "key": "aviation:P5642/26",
+     "id": "P5642/26",
+     "dataset": "aviation",
+     "kind": "rocket",
+     "kind_ja": "ロケット打上げ",
+     "issuer": "日本（航空当局 RJJJ）",
+     "country": "JP",
+     "start_utc": "2026-11-13T05:21:00Z",
+     "end_utc": "2026-11-30T09:34:00Z",
+     "slot_start_utc": "2026-11-13T05:21:00Z",
+     "slot_end_utc": "2026-11-30T09:34:00Z",
+     "role": "long",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        30.6225,
+        128.1481
+       ],
+       [
+        30.7964,
+        128.5142
+       ],
+       [
+        30.1636,
+        128.9142
+       ],
+       [
+        29.9906,
+        128.5503
+       ],
+       [
+        30.6225,
+        128.1481
+       ]
+      ],
+      [
+       [
+        24.4747,
+        132.7678
+       ],
+       [
+        25.0417,
+        133.7786
+       ],
+       [
+        22.1925,
+        135.6642
+       ],
+       [
+        21.6311,
+        134.6708
+       ],
+       [
+        24.4747,
+        132.7678
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "P5642/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611130521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 13 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 14 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
     }
    ]
   },
@@ -1885,222 +2264,6 @@
      ],
      "circles": [],
      "text": "A6096/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/4115N10034E055\r\nA)ZLHW B)2611292106 C)2611292136 \r\nE) A TEMPORARY RESTRICTED AREA ESTABLISHED BOUNDED BY:\r\nN412111E0993947-N415038E0993947-N414959E1013000-N404001E1013000-N40\r\n4001E1002422-N410000E1002422, BACK TO START.VERTICAL \r\nLIMITS:SFC-UNL.\r\nAIRCRAFT ARE FORBIDDEN TO FLY INTO THE AREA.\r\nF)SFC G)UNL"
-    }
-   ]
-  },
-  {
-   "id": "ll2:9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-   "basis": "ll2",
-   "name": "Mir | Demo Flight",
-   "rocket": "Mir",
-   "rocket_ja": "固体燃料の宇宙発射体（国防科学研究所）",
-   "provider": "Agency for Defense Development",
-   "status": "TBD",
-   "net_utc": "2026-11-30T00:00:00Z",
-   "window_start_utc": "2026-11-30T00:00:00Z",
-   "window_end_utc": "2026-11-30T00:00:00Z",
-   "orbit": "LEO",
-   "mission_type": "Test Flight",
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
-   "site": {
-    "name": "済州沖（海上発射）",
-    "lat": 33.216667,
-    "lon": 126.366667,
-    "country": "KR",
-    "inland": false,
-    "pad": "ADD Offshore launch platform"
-   },
-   "estimated_window": null,
-   "notice_state": "matched",
-   "notices": [
-    {
-     "key": "aviation:P5538/26",
-     "id": "P5538/26",
-     "dataset": "aviation",
-     "kind": "rocket",
-     "kind_ja": "ロケット打上げ",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-10T06:21:00Z",
-     "end_utc": "2026-11-30T09:34:00Z",
-     "slot_start_utc": "2026-11-10T06:21:00Z",
-     "slot_end_utc": "2026-11-30T09:34:00Z",
-     "role": "long",
-     "reserve_slots": 0,
-     "polygons": [
-      [
-       [
-        30.6225,
-        128.1481
-       ],
-       [
-        30.7964,
-        128.5142
-       ],
-       [
-        30.1636,
-        128.9142
-       ],
-       [
-        29.9906,
-        128.5503
-       ],
-       [
-        30.6225,
-        128.1481
-       ]
-      ],
-      [
-       [
-        24.4747,
-        132.7678
-       ],
-       [
-        25.0417,
-        133.7786
-       ],
-       [
-        22.1925,
-        135.6642
-       ],
-       [
-        21.6311,
-        134.6708
-       ],
-       [
-        24.4747,
-        132.7678
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "P5538/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611100621 C)2611300934\r\nD)0621/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 10 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0600-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 11 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0621-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0633-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
-    },
-    {
-     "key": "aviation:P5590/26",
-     "id": "P5590/26",
-     "dataset": "aviation",
-     "kind": "rocket",
-     "kind_ja": "ロケット打上げ",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-11T05:21:00Z",
-     "end_utc": "2026-11-30T09:34:00Z",
-     "slot_start_utc": "2026-11-11T05:21:00Z",
-     "slot_end_utc": "2026-11-30T09:34:00Z",
-     "role": "long",
-     "reserve_slots": 0,
-     "polygons": [
-      [
-       [
-        30.6225,
-        128.1481
-       ],
-       [
-        30.7964,
-        128.5142
-       ],
-       [
-        30.1636,
-        128.9142
-       ],
-       [
-        29.9906,
-        128.5503
-       ],
-       [
-        30.6225,
-        128.1481
-       ]
-      ],
-      [
-       [
-        24.4747,
-        132.7678
-       ],
-       [
-        25.0417,
-        133.7786
-       ],
-       [
-        22.1925,
-        135.6642
-       ],
-       [
-        21.6311,
-        134.6708
-       ],
-       [
-        24.4747,
-        132.7678
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "P5590/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611110521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 11 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 12 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
-    },
-    {
-     "key": "aviation:P5642/26",
-     "id": "P5642/26",
-     "dataset": "aviation",
-     "kind": "rocket",
-     "kind_ja": "ロケット打上げ",
-     "issuer": "日本（航空当局 RJJJ）",
-     "country": "JP",
-     "start_utc": "2026-11-13T05:21:00Z",
-     "end_utc": "2026-11-30T09:34:00Z",
-     "slot_start_utc": "2026-11-13T05:21:00Z",
-     "slot_end_utc": "2026-11-30T09:34:00Z",
-     "role": "long",
-     "reserve_slots": 0,
-     "polygons": [
-      [
-       [
-        30.6225,
-        128.1481
-       ],
-       [
-        30.7964,
-        128.5142
-       ],
-       [
-        30.1636,
-        128.9142
-       ],
-       [
-        29.9906,
-        128.5503
-       ],
-       [
-        30.6225,
-        128.1481
-       ]
-      ],
-      [
-       [
-        24.4747,
-        132.7678
-       ],
-       [
-        25.0417,
-        133.7786
-       ],
-       [
-        22.1925,
-        135.6642
-       ],
-       [
-        21.6311,
-        134.6708
-       ],
-       [
-        24.4747,
-        132.7678
-       ]
-      ]
-     ],
-     "circles": [],
-     "text": "P5642/26 NOTAMN\r\nQ)RJJJ/QXXXX/IV/NBO/E/000/999/2627N13202E324\r\nA)RJJJ B)2611130521 C)2611300934\r\nD)0521/0934\r\nE)KSLV(KOREA SPACE LAUNCH VEHICLE) WILL BE LAUNCHED AS FLW\r\n- PLANNED LAUNCH DATE       : NOV 13 2026\r\n- PLANNED LAUNCH WINDOW TIME: 0500-0900 UTC\r\n- RESERVED LAUNCH DATE      : NOV 14 2026 - NOV 30 2026\r\n\r\nTHE FLIGHT SAFETY OF THE AIRCRAFT IN FOLLOWING AREAS MAY BE AFFECTED.\r\nAREA:\r\n 1ST STAGE      : 0521-0922 UTC\r\n                  303721N1280853E - 304747N1283051E -\r\n                  300949N1285451E - 295926N1283301E -\r\n                  303721N1280853E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\n PAYLOAD FAIRING: 0533-0934 UTC\r\n                  242829N1324604E - 250230N1334643E -\r\n                  221133N1353951E - 213752N1344015E -\r\n                  242829N1324604E\r\n                  VERTICAL ALTITUDE: SFC-UNL.\r\n\r\nRMK: ATC WILL NOT CLEAR IFR FLT THRU THIS AREA FOR THE FLIGHT SAFETY\r\nF)SFC G)UNL"
     }
    ]
   },

@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-27T05:24:36Z",
+ "generated_utc": "2026-11-27T15:38:36Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -585,18 +585,7 @@
     126.455
    ],
    "site": "済州沖（海上発射）",
-   "country": "KR",
-   "recorded_launches": [
-    {
-     "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-     "name": "Mir | Demo Flight",
-     "status": "TBD",
-     "net_utc": "2026-11-30T00:00:00Z",
-     "rocket": "Mir",
-     "orbit": "LEO",
-     "pad": "ADD Offshore launch platform"
-    }
-   ]
+   "country": "KR"
   },
   {
    "window_start_utc": "2026-11-11T05:00Z",
@@ -840,11 +829,11 @@
    "recorded_launches": [
     {
      "ll2_id": "b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4",
-     "name": "Long March 2D | Unknown Payload",
-     "status": "Go",
-     "net_utc": "2026-11-26T09:35:00Z",
+     "name": "Long March 2D | Yaogan 49 Group 01",
+     "status": "Success",
+     "net_utc": "2026-11-26T09:38:00Z",
      "rocket": "Long March 2D",
-     "orbit": "N/A",
+     "orbit": "LEO",
      "pad": "Launch Complex 3 (LC-3/LA-1)"
     }
    ]
@@ -970,6 +959,40 @@
     "aviation:A6142/26"
    ],
    "method": "unaligned"
+  },
+  {
+   "window_start_utc": "2026-12-01T02:15Z",
+   "window_end_utc": "2026-12-01T03:30Z",
+   "areas": [
+    [
+     36.727,
+     97.134
+    ]
+   ],
+   "notices": [
+    "aviation:A6238/26"
+   ],
+   "method": "nearest-only",
+   "site": "酒泉",
+   "country": "CN",
+   "distance_km": 544
+  },
+  {
+   "window_start_utc": "2026-12-02T11:48Z",
+   "window_end_utc": "2026-12-02T12:33Z",
+   "areas": [
+    [
+     36.364,
+     122.234
+    ]
+   ],
+   "notices": [
+    "aviation:A6234/26"
+   ],
+   "method": "nearest-only",
+   "site": "海陽（海上発射）",
+   "country": "CN",
+   "distance_km": 153
   },
   {
    "window_start_utc": "2026-12-10T07:00Z",
@@ -1292,13 +1315,13 @@
   },
   {
    "ll2_id": "b00f0e9a-48d6-4f26-9cb5-7d19169ff7c4",
-   "name": "Long March 2D | Unknown Payload",
-   "status": "Go",
-   "net_utc": "2026-11-26T09:35:00Z",
+   "name": "Long March 2D | Yaogan 49 Group 01",
+   "status": "Success",
+   "net_utc": "2026-11-26T09:38:00Z",
    "rocket": "Long March 2D",
    "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
+   "orbit": "LEO",
+   "mission_type": "Government/Top Secret",
    "pad": "Launch Complex 3 (LC-3/LA-1)",
    "location": "Xichang Satellite Launch Center, People's Republic of China",
    "country": "CHN",
@@ -1342,23 +1365,6 @@
    "event_index": 38
   },
   {
-   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
-   "name": "Mir | Demo Flight",
-   "status": "TBD",
-   "net_utc": "2026-11-30T00:00:00Z",
-   "rocket": "Mir",
-   "provider": "Agency for Defense Development",
-   "orbit": "LEO",
-   "mission_type": "Test Flight",
-   "pad": "ADD Offshore launch platform",
-   "location": "Sea Launch",
-   "country": "???",
-   "lat": 33.216667,
-   "lon": 126.366667,
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
-   "event_index": 25
-  },
-  {
    "ll2_id": "8b46d360-6b3b-423f-9036-d5568e485624",
    "name": "Kinetica 1 | Unknown Payload",
    "status": "Go",
@@ -1378,8 +1384,8 @@
   {
    "ll2_id": "e2523821-9760-4cb4-ad1f-7ce2e30419bd",
    "name": "Kuaizhou 11 | Unknown Payload",
-   "status": "TBC",
-   "net_utc": "2026-12-01T08:00:00Z",
+   "status": "Go",
+   "net_utc": "2026-12-02T11:55:00Z",
    "rocket": "Kuaizhou 11",
    "provider": "ExPace",
    "orbit": "N/A",
@@ -1407,7 +1413,7 @@
    "lat": 19.59755,
    "lon": 110.936481,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/5ce59e3a-c343-430f-ae4e-e608ba536754/",
-   "event_index": 41
+   "event_index": 43
   },
   {
    "ll2_id": "4ca86de3-2ff8-4fd3-a22c-35b7fc618610",
@@ -1458,6 +1464,23 @@
    "lat": 19.610019,
    "lon": 110.944443,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/8d2a11e2-51e3-4841-a616-d41589373025/",
+   "event_index": null
+  },
+  {
+   "ll2_id": "9e27a1ed-e81a-4918-b32b-0380cf3a9f8f",
+   "name": "Mir | Demo Flight",
+   "status": "TBD",
+   "net_utc": "2026-12-31T00:00:00Z",
+   "rocket": "Mir",
+   "provider": "Agency for Defense Development",
+   "orbit": "LEO",
+   "mission_type": "Test Flight",
+   "pad": "ADD Offshore launch platform",
+   "location": "Sea Launch",
+   "country": "???",
+   "lat": 33.216667,
+   "lon": 126.366667,
+   "url": "https://ll.thespacedevs.com/2.2.0/launch/9e27a1ed-e81a-4918-b32b-0380cf3a9f8f/",
    "event_index": null
   },
   {
