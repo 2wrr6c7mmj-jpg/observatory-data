@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T02:28:25Z",
+ "generated_utc": "2026-11-27T09:50:00Z",
  "state": "alert",
  "summary": {
-  "ok": 10,
-  "warn": 3,
+  "ok": 9,
+  "warn": 4,
   "alert": 1,
   "halt": 1,
   "info": 1,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-26T15:37:22Z",
-   "heartbeat_age_h": 10.9,
+   "heartbeat_age_h": 18.2,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -115,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-26T13:09:16Z",
-   "heartbeat_age_h": 13.3,
+   "heartbeat_age_h": 20.7,
    "data_date": "2026-11-25",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 9.2,
+   "heartbeat_age_h": 16.5,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -182,7 +182,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-26T10:20:06Z",
-   "heartbeat_age_h": 16.1,
+   "heartbeat_age_h": 23.5,
    "data_date": "2026-11-26",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -199,16 +199,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-26T22:38:15Z",
-   "heartbeat_age_h": 3.8,
-   "data_date": "2026-11-26",
+   "heartbeat_utc": "2026-11-27T05:24:36Z",
+   "heartbeat_age_h": 4.4,
+   "data_date": "2026-11-27",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-26T22:38:15Z",
-    "notam_watch_last_seen_utc": "2026-11-26T22:38:15Z",
+    "notices_last_retrieved_utc": "2026-11-27T05:24:36Z",
+    "notam_watch_last_seen_utc": "2026-11-27T05:24:36Z",
     "ll2_last_retrieved_utc": "2026-11-26T09:43:52Z"
    }
   },
@@ -218,7 +218,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-26T13:09:25Z",
-   "heartbeat_age_h": 13.3,
+   "heartbeat_age_h": 20.7,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -227,13 +227,13 @@
     {
      "level": "warn",
      "code": "older_than_input",
-     "text": "最後の成功 2026-11-26T13:09:25Z が入力の更新 2026-11-26T22:38:15Z より前"
+     "text": "最後の成功 2026-11-26T13:09:25Z が入力の更新 2026-11-27T05:24:36Z より前"
     }
    ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-26T13:10:51Z",
-    "newest_input_utc": "2026-11-26T22:38:15Z"
+    "newest_input_utc": "2026-11-27T05:24:36Z"
    }
   },
   {
@@ -258,7 +258,7 @@
    "kind": "derived",
    "workflow": "exercises.yml",
    "heartbeat_utc": "2026-11-26T17:20:16Z",
-   "heartbeat_age_h": 9.1,
+   "heartbeat_age_h": 16.5,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -267,7 +267,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の収集から 9 h（>9 h：遅延）"
+     "text": "最後の収集から 16 h（>9 h：遅延）"
     }
    ],
    "values": {
@@ -749,15 +749,15 @@
    "source": "PLA Activity Tracker（元：台湾国防部）"
   },
   "launches": {
-   "open_or_upcoming_windows": 12,
+   "open_or_upcoming_windows": 11,
    "open_now": 6,
    "next_start": {
-    "site": "太原",
-    "country": "CN",
-    "window_start_utc": "2026-11-27T04:59Z",
-    "window_end_utc": "2026-11-27T05:28Z"
+    "site": "西海（東倉里）",
+    "country": "KP",
+    "window_start_utc": "2026-11-27T12:51Z",
+    "window_end_utc": "2026-11-27T13:37Z"
    },
-   "active_notices": 41
+   "active_notices": 40
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -772,19 +772,25 @@
     "launches",
     "jso"
    ],
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "failed",
+     "text": "schedule の実行 2026-11-27T09:48:18Z が failure"
+    }
+   ],
    "last_success_started_utc": "2026-11-26T09:42:29Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45794462459,
-    "started_utc": "2026-11-26T09:42:29Z",
+    "id": 45976753907,
+    "started_utc": "2026-11-27T09:48:18Z",
     "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45794462459",
-    "delay_h": 8.3
+    "conclusion": "failure",
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45976753907",
+    "delay_h": 8.4
    },
-   "consecutive_failures": 0
+   "consecutive_failures": 1
   },
   {
    "file": "jcg-senkaku.yml",
@@ -865,19 +871,19 @@
     {
      "level": "alert",
      "code": "failed",
-     "text": "workflow_dispatch の実行 2026-11-27T02:02:00Z が failure（10 回続けて）"
+     "text": "workflow_dispatch の実行 2026-11-27T09:32:10Z が failure（25 回続けて）"
     }
    ],
    "last_success_started_utc": "2026-11-26T17:15:31Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
-    "id": 45925933990,
-    "started_utc": "2026-11-27T02:02:00Z",
+    "id": 45974519798,
+    "started_utc": "2026-11-27T09:32:10Z",
     "status": "completed",
     "conclusion": "failure",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45925933990"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45974519798"
    },
-   "consecutive_failures": 10
+   "consecutive_failures": 25
   },
   {
    "file": "proto.yml",
@@ -892,11 +898,11 @@
    "last_success_started_utc": "2026-11-26T13:09:25Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 45826399628,
-    "started_utc": "2026-11-26T13:09:25Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45826399628"
+    "id": 45976957052,
+    "started_utc": "2026-11-27T09:49:47Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45976957052"
    },
    "consecutive_failures": 0
   },
