@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T09:50:00Z",
+ "generated_utc": "2026-11-27T09:51:28Z",
  "state": "alert",
  "summary": {
-  "ok": 9,
-  "warn": 4,
+  "ok": 8,
+  "warn": 5,
   "alert": 1,
   "halt": 1,
   "info": 1,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 16.5,
+   "heartbeat_age_h": 16.6,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -267,7 +267,7 @@
     {
      "level": "warn",
      "code": "heartbeat_late",
-     "text": "最後の収集から 16 h（>9 h：遅延）"
+     "text": "最後の収集から 17 h（>9 h：遅延）"
     }
    ],
    "values": {
@@ -893,18 +893,24 @@
    "sources": [
     "proto"
    ],
-   "state": "ok",
-   "reasons": [],
+   "state": "warn",
+   "reasons": [
+    {
+     "level": "warn",
+     "code": "failed",
+     "text": "workflow_run の実行 2026-11-27T09:49:47Z が failure"
+    }
+   ],
    "last_success_started_utc": "2026-11-26T13:09:25Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
     "id": 45976957052,
     "started_utc": "2026-11-27T09:49:47Z",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "failure",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45976957052"
    },
-   "consecutive_failures": 0
+   "consecutive_failures": 1
   },
   {
    "file": "ocean-monitor.yml",
