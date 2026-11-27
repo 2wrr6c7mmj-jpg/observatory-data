@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-26T22:38:15Z",
+ "generated_utc": "2026-11-27T05:24:36Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -867,32 +867,28 @@
    "distance_km": 158
   },
   {
-   "window_start_utc": "2026-11-27T12:53Z",
-   "window_end_utc": "2026-11-27T13:15Z",
+   "window_start_utc": "2026-11-27T12:51Z",
+   "window_end_utc": "2026-11-27T13:37Z",
    "areas": [
+    [
+     35.897,
+     101.653
+    ],
     [
      38.02,
      107.78
     ]
    ],
    "notices": [
+    "aviation:A6229/26",
     "aviation:A6107/26"
    ],
-   "method": "nearest-only",
-   "site": "太原",
-   "country": "CN",
-   "distance_km": 346,
-   "recorded_launches": [
-    {
-     "ll2_id": "a6421db3-7c8a-4cf7-a659-cec195140f7f",
-     "name": "Long March 6A | Unknown Payload",
-     "status": "Go",
-     "net_utc": "2026-11-27T13:00:00Z",
-     "rocket": "Long March 6A",
-     "orbit": "N/A",
-     "pad": "Launch Complex 9A"
-    }
-   ]
+   "method": "aligned",
+   "site": "西海（東倉里）",
+   "country": "KP",
+   "azimuth_deg": 267.0,
+   "bearing_spread_deg": 2.7,
+   "inclination_deg": 140.2
   },
   {
    "window_start_utc": "2026-11-29T03:46Z",
@@ -1326,7 +1322,7 @@
    "lat": 38.8583,
    "lon": 111.5802,
    "url": "https://ll.thespacedevs.com/2.2.0/launch/a6421db3-7c8a-4cf7-a659-cec195140f7f/",
-   "event_index": 37
+   "event_index": null
   },
   {
    "ll2_id": "13270554-4bdb-42ae-916f-1bb54492204f",

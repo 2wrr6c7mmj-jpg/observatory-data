@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-26T22:38:15Z",
+ "generated_utc": "2026-11-27T05:24:36Z",
  "horizon_days": 30,
  "kinds": {
   "rocket": "ロケット打上げ",
@@ -761,29 +761,71 @@
    ]
   },
   {
-   "id": "2026-11-27T12:53Z:太原",
-   "window_start_utc": "2026-11-27T12:53Z",
-   "window_end_utc": "2026-11-27T13:15Z",
+   "id": "2026-11-27T12:51Z:西海（東倉里）",
+   "window_start_utc": "2026-11-27T12:51Z",
+   "window_end_utc": "2026-11-27T13:37Z",
    "site": {
-    "name": "太原",
-    "lat": 38.85,
-    "lon": 111.61,
-    "country": "CN",
-    "method": "nearest-only",
-    "distance_km": 346
+    "name": "西海（東倉里）",
+    "lat": 39.66,
+    "lon": 124.71,
+    "country": "KP",
+    "method": "aligned",
+    "azimuth_deg": 267.0,
+    "bearing_spread_deg": 2.7,
+    "inclination_deg": 140.2
    },
-   "orbit": null,
+   "orbit": "太陽同期軌道",
    "vehicle": {
-    "basis": "ll2",
-    "name": "長征6A号",
-    "rocket_ll2": "Long March 6A",
-    "mission": "Long March 6A | Unknown Payload",
-    "orbit": "N/A",
-    "status": "Go",
-    "net_utc": "2026-11-27T13:00:00Z",
-    "pad": "Launch Complex 9A"
+    "basis": "site",
+    "candidates": [
+     {
+      "name": "千里馬1型（衛星打上げ）",
+      "orbit": "太陽同期・極軌道"
+     },
+     {
+      "name": "弾道ミサイル",
+      "orbit": "—"
+     }
+    ]
    },
    "notices": [
+    {
+     "key": "aviation:A6229/26",
+     "id": "A6229/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-11-27T12:51:00Z",
+     "end_utc": "2026-11-27T13:37:00Z",
+     "period_basis": "notam-watch",
+     "polygons": [
+      [
+       [
+        36.2308,
+        101.9236
+       ],
+       [
+        35.7197,
+        102.1872
+       ],
+       [
+        35.3953,
+        101.2483
+       ],
+       [
+        35.905,
+        100.9847
+       ],
+       [
+        36.2308,
+        101.9236
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6229/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/\r\nA)ZLHW B)2611271251 C)2611271337 \r\nE) ALL ACFT ARE FORBIDDEN TO FLY INTO THE AREA,BOUNDED BY:\r\nN361351E1015525-N354311E1021114-N352343E1011454-N355418E1005905 \r\nBACK TO START.\r\nF)SFC G)UNL"
+    },
     {
      "key": "aviation:A6107/26",
      "id": "A6107/26",
@@ -1500,33 +1542,86 @@
  "launch_horizon_days": 7,
  "launches": [
   {
-   "id": "ll2:a6421db3-7c8a-4cf7-a659-cec195140f7f",
-   "basis": "ll2",
-   "name": "Long March 6A | Unknown Payload",
-   "rocket": "Long March 6A",
-   "rocket_ja": "長征6A号",
-   "provider": "China Aerospace Science and Technology Corporation",
-   "status": "Go",
-   "net_utc": "2026-11-27T13:00:00Z",
-   "window_start_utc": "2026-11-27T12:53:00Z",
-   "window_end_utc": "2026-11-27T13:15:00Z",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
-   "url": "https://ll.thespacedevs.com/2.2.0/launch/a6421db3-7c8a-4cf7-a659-cec195140f7f/",
+   "id": "notice:2026-11-27T12:51Z:西海（東倉里）",
+   "basis": "notices",
+   "name": null,
+   "rocket": null,
+   "rocket_ja": null,
+   "provider": null,
+   "status": null,
+   "net_utc": null,
+   "window_start_utc": "2026-11-27T12:51:00Z",
+   "window_end_utc": "2026-11-27T13:37:00Z",
+   "orbit": "太陽同期軌道",
+   "mission_type": null,
+   "url": null,
    "site": {
-    "name": "太原",
-    "lat": 38.8583,
-    "lon": 111.5802,
-    "country": "CN",
-    "inland": true,
-    "pad": "Launch Complex 9A"
+    "name": "西海（東倉里）",
+    "lat": 39.66,
+    "lon": 124.71,
+    "country": "KP",
+    "inland": false,
+    "pad": null
    },
+   "azimuth_deg": 267.0,
+   "inclination_deg": 140.2,
+   "vehicle_candidates": [
+    {
+     "name": "千里馬1型（衛星打上げ）",
+     "orbit": "太陽同期・極軌道"
+    },
+    {
+     "name": "弾道ミサイル",
+     "orbit": "—"
+    }
+   ],
    "estimated_window": {
     "start_utc": "2026-11-27T12:53:00Z",
     "end_utc": "2026-11-27T13:15:00Z"
    },
    "notice_state": "matched",
    "notices": [
+    {
+     "key": "aviation:A6229/26",
+     "id": "A6229/26",
+     "dataset": "aviation",
+     "kind": "closure",
+     "kind_ja": "飛行制限区域",
+     "issuer": "中国（航空当局 ZLHW）",
+     "country": "CN",
+     "start_utc": "2026-11-27T12:51:00Z",
+     "end_utc": "2026-11-27T13:37:00Z",
+     "slot_start_utc": "2026-11-27T12:51:00Z",
+     "slot_end_utc": "2026-11-27T13:37:00Z",
+     "role": "main",
+     "reserve_slots": 0,
+     "polygons": [
+      [
+       [
+        36.2308,
+        101.9236
+       ],
+       [
+        35.7197,
+        102.1872
+       ],
+       [
+        35.3953,
+        101.2483
+       ],
+       [
+        35.905,
+        100.9847
+       ],
+       [
+        36.2308,
+        101.9236
+       ]
+      ]
+     ],
+     "circles": [],
+     "text": "A6229/26 NOTAMN\r\nQ)ZLHW/QRTCA/IV/BO/W/000/999/\r\nA)ZLHW B)2611271251 C)2611271337 \r\nE) ALL ACFT ARE FORBIDDEN TO FLY INTO THE AREA,BOUNDED BY:\r\nN361351E1015525-N354311E1021114-N352343E1011454-N355418E1005905 \r\nBACK TO START.\r\nF)SFC G)UNL"
+    },
     {
      "key": "aviation:A6107/26",
      "id": "A6107/26",
