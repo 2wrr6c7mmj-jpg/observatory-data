@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T12:16:40Z",
+ "generated_utc": "2026-11-27T12:17:00Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -886,11 +886,11 @@
    "last_success_started_utc": "2026-11-27T12:14:40Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 45997009578,
-    "started_utc": "2026-11-27T12:14:40Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45997009578"
+    "id": 45997315351,
+    "started_utc": "2026-11-27T12:16:52Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45997315351"
    },
    "consecutive_failures": 0
   },
