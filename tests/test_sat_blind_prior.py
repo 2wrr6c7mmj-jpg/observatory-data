@@ -6,6 +6,7 @@ from pathlib import Path
 
 from sat import blind_prior as bp
 from sat import eval_presence as ep
+from sat import opt_fill
 
 HEAD = "site_id,section_id,s1_acquired_utc,relative_orbit,s2_date,dt_h,verified,verified_occupied,verified_by,verified_note\n"
 
@@ -85,6 +86,22 @@ class BlindPrior(unittest.TestCase):
         self.assertEqual(bp.answers_source(_answers([("a", 1, 1, 1)]), "TST"), "s1")
         self.assertIsNone(bp.answers_source(Path(tempfile.mkdtemp()), "TST"))
 
+    def _opt_fill_lags_the_confirm_run(self, pub: dict, mine: dict, where: str):
+        """The one difference allowed between a published row and this code's row: the confirm run (sat-confirm.yml, after
+        the daily refresh of sat-ships) scored S2 days of the scene's window after quay_blind was written. Then only the
+        opt-fill columns differ, the published cells are a part of today's, and every cell added is a pres-3o score p (an
+        owner's answer goes through sat.confirm_merge, which writes quay_blind again). The next daily run rewrites the row."""
+        core = [k for k in ep.BLIND_COLUMNS if k not in opt_fill.COLUMNS]
+        self.assertEqual({k: pub[k] for k in core}, {k: mine[k] for k in core}, where)
+        for k in ("opt_fill_version", "opt_fill_sections"):
+            self.assertEqual(pub[k], mine[k], f"{where} {k}")
+        cells = lambda r: set(filter(None, r["opt_fill_basis"].split(";")))
+        self.assertLessEqual(cells(pub), cells(mine), where)
+        for c in cells(mine) - cells(pub):
+            self.assertEqual(c.split("|")[3], "p", f"{where} {c}")
+        for k in ("opt_fill_scored", "opt_fill_present"):
+            self.assertLessEqual(int(pub[k] or 0), int(mine[k] or 0), f"{where} {k}")
+
     def test_scene_counts_for_the_map(self):
         res = ep.blind_counts(ep.OUT)
         self.assertNotIn("ZJG", res)                      # Zhanjiang has no resident table: nothing is written for it
@@ -104,7 +121,11 @@ class BlindPrior(unittest.TestCase):
             pub = ep.read_csv(p)
             self.assertTrue(pub, p.name)
             for r in pub:
-                self.assertEqual(r, mine.get(r["acquired_utc"]), f"{p.name} {r['acquired_utc']}")
+                m = mine.get(r["acquired_utc"])
+                if m is not None and r != m:
+                    self._opt_fill_lags_the_confirm_run(r, m, f"{p.name} {r['acquired_utc']}")
+                else:
+                    self.assertEqual(r, m, f"{p.name} {r['acquired_utc']}")
         for site in ep.load_sites():                      # and no file is left for a site without a row (the map would add it)
             if site["id"] not in res:
                 self.assertFalse((ep.OUT / ep.BLIND_DIR / f"{site['id']}.csv").exists(), site["id"])
