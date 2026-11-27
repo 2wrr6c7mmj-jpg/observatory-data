@@ -1,43 +1,43 @@
 {
  "sources": {
   "feed": {
-   "at": "2026-11-27T01:54:19Z",
+   "at": "2026-11-27T04:20:25Z",
    "cables": 0,
    "conscription": 0,
    "mobilization": 1,
    "status": "ok"
   },
   "ferries": {
-   "at": "2026-11-26T04:13:45Z",
-   "bohai": 1197,
-   "fujian": 1197,
+   "at": "2026-11-27T04:21:00Z",
+   "bohai": 1198,
+   "fujian": 1198,
    "status": "ok"
   },
   "gold": {
-   "at": "2026-11-26T04:13:16Z",
+   "at": "2026-11-27T04:20:07Z",
    "months": 56,
    "skipped": "fetched within 3 days",
    "status": "ok"
   },
   "ioda": {
-   "at": "2026-11-26T04:13:40Z",
-   "events": 117,
-   "status": "ok"
+   "at": "2026-11-27T04:20:55Z",
+   "reason": "https://api.ioda.inetintel.cc.gatech.edu/robots.txt: could not be read (The read operation timed out)",
+   "status": "blocked"
   },
   "jwc": {
-   "at": "2026-11-26T04:13:19Z",
+   "at": "2026-11-27T04:20:09Z",
    "circulars": 1,
    "status": "ok"
   },
   "oil": {
-   "at": "2026-11-26T04:13:16Z",
+   "at": "2026-11-27T04:20:07Z",
    "months": 56,
    "skipped": "fetched within 3 days",
    "status": "ok"
   },
   "rmrb": {
-   "at": "2026-11-26T04:13:34Z",
-   "days": 1201,
+   "at": "2026-11-27T04:20:24Z",
+   "days": 1202,
    "new": 2,
    "status": "ok"
   }
