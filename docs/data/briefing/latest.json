@@ -1,6 +1,6 @@
 {
  "version": 1,
- "createdAt": 1795732405360,
+ "createdAt": 1795811503204,
  "windowHours": 24,
  "hold": false,
  "holdReason": "",
@@ -14,193 +14,103 @@
  },
  "audio": {
   "file": "latest.mp3",
-  "seconds": 107.39,
-  "bytes": 859584
+  "seconds": 103.62,
+  "bytes": 829440
  },
  "counts": {
-  "records": 703,
-  "sources": 74,
-  "clusters": 594,
-  "multiSource": 34
+  "records": 690,
+  "sources": 68,
+  "clusters": 590,
+  "multiSource": 42
  },
  "intro": {
   "start": 0,
-  "text": "東アジア情勢観測、11月27日。過去24時間の主な出来事、7件です。"
+  "text": "東アジア情勢観測、11月28日。過去24時間の主な出来事、8件です。"
  },
  "outro": {
-  "start": 101.93,
+  "start": 98.16,
   "text": "以上です。報道の見出しと要約を、機械でまとめて読み上げました。"
  },
  "events": [
   {
-   "start": 8.47,
-   "end": 20.88,
-   "category": "diplomacy",
-   "label": "外交 · ロシア",
-   "country": "RU",
+   "start": 8.39,
+   "end": 20.14,
+   "category": "conflict",
+   "label": "紛争 · クウェート",
+   "country": "KW",
    "countries": [
-    "RU",
-    "JP"
+    "KW",
+    "IR"
    ],
-   "place": {
-    "name": "モスクワ",
-    "lon": 37.62,
-    "lat": 55.75
-   },
+   "place": null,
    "anim": {
-    "kind": "none"
+    "kind": "strike"
    },
-   "headline": "拘束された記者の妻、解放求める手記",
+   "headline": "クウェートで攻撃 イタリア人2人死亡",
    "lines": [
     {
-     "start": 8.47,
+     "start": 8.39,
      "sub": "",
-     "text": "ロシアの連邦保安庁にスパイ容疑で拘束された北海道新聞の今井記者の妻が、手記を公開し、解放を求めました。"
+     "text": "クウェートの防空関連施設がドローンで攻撃され、イタリア人の技術者2人が死亡しました。"
     },
     {
-     "start": 17.3,
+     "start": 14.57,
      "sub": "",
-     "text": "ロシアの複数のメディアも、手記の内容を報じました。"
+     "text": "クウェート政府はイランによる攻撃だとし、イランの外相は関与していないと述べました。"
     }
    ],
    "sources": {
-    "count": 8,
-    "countries": 5,
+    "count": 9,
+    "countries": 7,
     "names": [
-     "日本放送協会 国際",
-     "モスクワ・タイムズ",
-     "毎日新聞 英語版"
+     "アフリカニュース",
+     "アルジャジーラ",
+     "フランス24"
     ],
     "items": [
      {
+      "source": "africanews",
+      "title": "Iran denies involvement in Kuwait strike that killed two Italians",
+      "url": "http://www.africanews.com/2026/11/27/iran-denies-involvement-in-kuwait-strike-that-killed-two-italians/"
+     },
+     {
+      "source": "aj",
+      "title": "Italians killed in Kuwait: Why is Iran denying responsibility?",
+      "url": "https://www.aljazeera.com/news/2026/11/27/italians-killed-in-kuwait-why-is-iran-denying-responsibility?traffic_source=rss"
+     },
+     {
+      "source": "f24",
+      "title": "Kuwait: Two Italians killed in drone attack",
+      "url": "https://www.france24.com/en/video/20261127-kuwait-two-italians-killed-in-drone-attack"
+     },
+     {
+      "source": "thehindu",
+      "title": "Two Italians killed in drone attack in Kuwait",
+      "url": "https://www.thehindu.com/news/international/drone-attack-kuwait-us-iran-war-death-november-27-2026/article71748337.ece"
+     },
+     {
       "source": "nhk",
-      "title": "北海道新聞記者の妻の手記をロシアメディアも報じる",
-      "url": "https://news.web.nhk/newsweb/na/nd-20261127de82163"
-     },
-     {
-      "source": "moscowtimes",
-      "title": "‘Trapped in Grief’: Wife of Japanese Journalist Jailed by Russia Pleads for His Release",
-      "url": "https://www.themoscowtimes.com/2026/11/26/trapped-in-grief-wife-of-japanese-journalist-jailed-by-russia-pleads-for-his-a812376"
-     },
-     {
-      "source": "mainichi",
-      "title": "Grief-stricken wife of Japanese reporter held by Russia pleads for his release (full text)",
-      "url": "https://mainichi.jp/english/articles/20261126/p2g/00m/0op/026000c"
-     },
-     {
-      "source": "scmp-asia",
-      "title": "Wife of detained Japanese reporter Yuki Imai pleads for his release from Russia",
-      "url": "https://www.scmp.com/news/asia/east-asia/article/3375882/wife-detained-japanese-reporter-yuki-imai-pleads-his-release-russia"
-     },
-     {
-      "source": "guardian-russia",
-      "title": "‘Trapped in grief’: wife of Japanese journalist detained by Russia pleads for his release",
-      "url": "https://www.theguardian.com/world/2026/nov/26/japanese-journalist-yuki-imai-detained-in-russia-wife-pleads-his-release"
+      "title": "クウェートが攻撃を受け外国人2人死亡 イランは関与否定",
+      "url": "https://news.web.nhk/newsweb/na/nd-20261127de82197"
      },
      {
       "source": "jiji",
-      "title": "ロシアに拘束された今井記者の妻の手記全文",
-      "url": "https://www.jiji.com/jc/article?k=2026112600697&g=soc&m=rss"
+      "title": "クウェートに無人機攻撃 イタリア人２人死亡、イランは関与否定",
+      "url": "https://www.jiji.com/jc/article?k=2026112700154&g=int&m=rss"
      }
     ]
    },
    "debug": {
     "rank": 1,
     "families": [
-     "guardian",
-     "japantimes",
-     "jiji",
-     "mainichi",
-     "moscowtimes",
-     "nhk",
-     "scmp",
-     "straitstimes"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 21.78,
-   "end": 35.51,
-   "category": "conflict",
-   "label": "紛争 · ガザ",
-   "country": "PS",
-   "countries": [
-    "PS",
-    "IL"
-   ],
-   "place": {
-    "name": "デイルアルバラ",
-    "lon": 34.35,
-    "lat": 31.42
-   },
-   "anim": {
-    "kind": "strike"
-   },
-   "headline": "ガザで空爆、教育省の次官ら死亡",
-   "lines": [
-    {
-     "start": 21.78,
-     "sub": "",
-     "text": "ガザ中部でイスラエルの空爆があり、ハマスが任命した教育省の次官と妻が死亡したと、医療関係者が述べました。"
-    },
-    {
-     "start": 30.14,
-     "sub": "",
-     "text": "ハマスの指導者ハイヤ氏は、攻撃が続くことを耐え続ける用意はないと述べました。"
-    }
-   ],
-   "sources": {
-    "count": 6,
-    "countries": 5,
-    "names": [
-     "フランス24",
-     "ザ・ヒンドゥー 国際",
-     "アルモニター"
-    ],
-    "items": [
-     {
-      "source": "f24",
-      "title": "Hamas weighs response after Israel kills 10 people in Gaza",
-      "url": "https://www.france24.com/en/hamas-weighs-response-after-israel-kills-10-people-in-gaza"
-     },
-     {
-      "source": "thehindu",
-      "title": "Israel kills nine in Gaza, including Hamas-appointed deputy Education Minister, officials say",
-      "url": "https://www.thehindu.com/news/international/israel-kills-nine-in-gaza-including-hamas-appointed-deputy-education-minister-officials-say/article71747983.ece"
-     },
-     {
-      "source": "almonitor",
-      "title": "Hamas weighs response after Israel kills 10 people in Gaza",
-      "url": "https://www.al-monitor.com/originals/2026/11/hamas-weighs-response-after-israel-kills-10-people-gaza"
-     },
-     {
-      "source": "bbc",
-      "title": "Hamas political official and wife among eight Palestinians killed in Israeli strikes on Gaza",
-      "url": "https://www.bbc.co.uk/news/articles/cqvg2n4mzl1jo"
-     },
-     {
-      "source": "aj",
-      "title": "Israeli attacks on Gaza kill senior education official, seven other people",
-      "url": "https://www.aljazeera.com/news/2026/11/26/israeli-attacks-on-gaza-kill-senior-education-official-seven-other-people?traffic_source=rss"
-     },
-     {
-      "source": "mee",
-      "title": "Israel reportedly kills Education Ministry official in central Gaza",
-      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/israel-reportedly-kills-education-ministry-official-central-gaza"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 2,
-    "families": [
+     "africanews",
      "aj",
-     "almonitor",
      "bbc",
      "france24",
-     "mee",
+     "jiji",
+     "nhk",
+     "rti",
+     "ru-state",
      "thehindu"
     ],
     "notes": [],
@@ -209,8 +119,176 @@
    }
   },
   {
-   "start": 36.41,
-   "end": 49.73,
+   "start": 21.04,
+   "end": 35.04,
+   "category": "military",
+   "label": "軍事 · 中国",
+   "country": "CN",
+   "countries": [
+    "CN",
+    "TW"
+   ],
+   "place": {
+    "name": "ダーチェン湾",
+    "lon": 117.15,
+    "lat": 23.6
+   },
+   "anim": {
+    "kind": "alert"
+   },
+   "headline": "中国軍 福建省で新たな上陸演習",
+   "lines": [
+    {
+     "start": 21.04,
+     "sub": "",
+     "text": "中国軍が福建省のダーチェン湾で、数週間にわたる上陸演習を実施しているとロイター通信が伝えました。"
+    },
+    {
+     "start": 28.67,
+     "sub": "",
+     "text": "民間の船をつないで浮き橋にし、部隊を上陸させる新しい方法を試しているということです。"
+    }
+   ],
+   "sources": {
+    "count": 6,
+    "countries": 5,
+    "names": [
+     "ザ・ヒンドゥー 国際",
+     "gCaptain",
+     "中央通訊社"
+    ],
+    "items": [
+     {
+      "source": "thehindu",
+      "title": "Chinese Military tests new Taiwan landing tactics in coastal drills",
+      "url": "https://www.thehindu.com/news/international/chinese-military-tests-new-taiwan-landing-tactics-in-coastal-drills/article71752063.ece"
+     },
+     {
+      "source": "gcaptain",
+      "title": "Chinese Military Tests New Taiwan Landing Tactics in Coastal Drills",
+      "url": "https://gcaptain.com/chinese-military-tests-new-taiwan-landing-tactics-in-coastal-drills/"
+     },
+     {
+      "source": "cna",
+      "title": "路透：解放軍福建大埕灣演習 測試利用民船支援對台登陸",
+      "url": "https://www.cna.com.tw/news/aipl/202611270135.aspx"
+     },
+     {
+      "source": "rti",
+      "title": "[國際] 路透：中國福建大埕灣執行兩棲演習 測試對台登陸新戰術",
+      "url": "https://www.rti.org.tw/news?uid=3&pid=1054058"
+     },
+     {
+      "source": "japantimes",
+      "title": "Chinese military tests new Taiwan landing tactics in coastal drills",
+      "url": "https://www.japantimes.co.jp/news/2026/11/27/asia-pacific/china-taiwan-landing-tactics/"
+     },
+     {
+      "source": "straitstimes",
+      "title": "Chinese military tests new Taiwan landing tactics in coastal drills",
+      "url": "https://www.straitstimes.com/asia/east-asia/chinese-military-tests-new-taiwan-landing-tactics-in-coastal-drills"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 2,
+    "families": [
+     "cna-tw",
+     "gcaptain",
+     "japantimes",
+     "rti",
+     "straitstimes",
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 35.94,
+   "end": 47.22,
+   "category": "diplomacy",
+   "label": "外交 · 韓国",
+   "country": "KR",
+   "countries": [
+    "KR",
+    "KP"
+   ],
+   "place": {
+    "name": "鬱陵島",
+    "lon": 130.87,
+    "lat": 37.5
+   },
+   "anim": {
+    "kind": "ship"
+   },
+   "headline": "韓国 漂流の北朝鮮の6人を送還",
+   "lines": [
+    {
+     "start": 35.94,
+     "sub": "",
+     "text": "韓国は、日本海で漂流していた漁船から救助した北朝鮮の7人のうち、6人を海路で送還しました。"
+    },
+    {
+     "start": 44.15,
+     "sub": "",
+     "text": "残る1人は韓国にとどまることを選びました。"
+    }
+   ],
+   "sources": {
+    "count": 5,
+    "countries": 4,
+    "names": [
+     "ザ・ヒンドゥー 国際",
+     "ジャパンタイムズ",
+     "聯合ニュース 北朝鮮"
+    ],
+    "items": [
+     {
+      "source": "thehindu",
+      "title": "South Korea repatriates six North Koreans rescued from drifting boat",
+      "url": "https://www.thehindu.com/news/international/south-korea-repatriates-six-north-koreans-rescued-from-drifting-boat/article71749495.ece"
+     },
+     {
+      "source": "japantimes",
+      "title": "Seoul repatriates six North Koreans found on drifting fishing boat",
+      "url": "https://www.japantimes.co.jp/news/2026/11/27/asia-pacific/south-korea-north-fishing-boat/"
+     },
+     {
+      "source": "yonhap-nk",
+      "title": "(2nd LD) N. Korean fishing boat repatriated, with 1 crewman opting to stay in S. Korea",
+      "url": "https://en.yna.co.kr/view/AEN20261127003652315"
+     },
+     {
+      "source": "straitstimes",
+      "title": "South Korea repatriates six North Koreans rescued from drifting boat",
+      "url": "https://www.straitstimes.com/asia/east-asia/south-korea-repatriates-six-north-koreans-rescued-from-drifting-boat"
+     },
+     {
+      "source": "nknews",
+      "title": "6 rescued North Koreans repatriated by sea, 1 chooses to stay in South",
+      "url": "https://www.nknews.org/2026/11/6-rescued-north-koreans-repatriated-by-sea-1-chooses-to-stay-in-south/"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 3,
+    "families": [
+     "japantimes",
+     "nknews",
+     "straitstimes",
+     "thehindu",
+     "yonhap"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 48.12,
+   "end": 59.76,
    "category": "military",
    "label": "軍事 · 北朝鮮",
    "country": "KP",
@@ -223,135 +301,57 @@
    "anim": {
     "kind": "none"
    },
-   "headline": "ウクライナ「北朝鮮が対ロ支援を停止」",
+   "headline": "北朝鮮がロシア支援を停止 ウクライナ発表",
    "lines": [
     {
-     "start": 36.41,
+     "start": 48.12,
      "sub": "",
-     "text": "ウクライナ軍の情報機関は、北朝鮮がロシアへの軍事支援の一部を一時的に停止したと発表しました。"
+     "text": "ウクライナの情報総局は、北朝鮮がロシアへの弾道ミサイルの供給などを一時停止したと発表しました。"
     },
     {
-     "start": 43.74,
+     "start": 55.59,
      "sub": "",
-     "text": "弾道ミサイルや砲弾の引き渡しが含まれ、両国の間の対立を受けたものだとしています。"
+     "text": "ロシアが求める北朝鮮部隊の増員も保留しているとしています。"
     }
    ],
    "sources": {
     "count": 4,
-    "countries": 4,
+    "countries": 2,
     "names": [
-     "キーウ・インディペンデント",
-     "ストレーツ・タイムズ アジア",
-     "聯合ニュース 北朝鮮"
+     "新頭殼",
+     "ジャパンタイムズ",
+     "日本放送協会 国際"
     ],
     "items": [
      {
-      "source": "kyivindependent",
-      "title": "Ukraine war latest: North Korea halts military aid to Russia, Ukrainian intelligence says",
-      "url": "https://kyivindependent.com/ukraine-war-latest-north-korea-halts-military-aid-to-russia-ukrainian-intelligence-says/"
+      "source": "newtalk",
+      "title": "「一句話」惹毛金正恩 傳北韓暫停對俄軍援",
+      "url": "https://newtalk.tw/news/view/2026-11-27/1074094"
      },
      {
-      "source": "straitstimes",
+      "source": "japantimes",
       "title": "Ukraine says North Korea temporarily halted missile shipments to ally Russia",
-      "url": "https://www.straitstimes.com/asia/ukraine-says-north-korea-temporarily-halted-missile-shipments-to-ally-russia"
+      "url": "https://www.japantimes.co.jp/news/2026/11/27/asia-pacific/ukraine-north-korea-missiles/"
      },
      {
-      "source": "yna-nk-ko",
-      "title": "우크라 정보당국 \"북한, 러 군사지원 일시 중단\" 주장",
-      "url": "https://www.yna.co.kr/view/AKR20261126194000109"
+      "source": "nhk",
+      "title": "北朝鮮がロシアへの軍事支援を一時停止か ウクライナが分析",
+      "url": "https://news.web.nhk/newsweb/na/nd-20261127de82198"
      },
      {
-      "source": "jiji",
-      "title": "北朝鮮「対ロ軍事支援停止」か ウクライナ当局発表",
-      "url": "https://www.jiji.com/jc/article?k=2026112601208&g=int&m=rss"
-     }
-    ]
-   },
-   "debug": {
-    "rank": 3,
-    "families": [
-     "jiji",
-     "kyivindependent",
-     "straitstimes",
-     "yonhap"
-    ],
-    "notes": [],
-    "tries": [],
-    "numberConflicts": []
-   }
-  },
-  {
-   "start": 50.63,
-   "end": 63.79,
-   "category": "diplomacy",
-   "label": "外交 · ソロモン諸島",
-   "country": "SB",
-   "countries": [
-    "SB",
-    "AU",
-    "CN"
-   ],
-   "place": null,
-   "anim": {
-    "kind": "none"
-   },
-   "headline": "ソロモン諸島と豪州が新条約に署名",
-   "lines": [
-    {
-     "start": 50.63,
-     "sub": "",
-     "text": "オーストラリアとソロモン諸島の首相が、11月25日、新たな条約に署名しました。"
-    },
-    {
-     "start": 57.53,
-     "sub": "",
-     "text": "ソロモン諸島が中国と結んだ安全保障協定に代わるものだと、香港の新聞が伝えました。"
-    }
-   ],
-   "sources": {
-    "count": 5,
-    "countries": 4,
-    "names": [
-     "サウスチャイナ・モーニング・ポスト 中国",
-     "マリタイム・エグゼクティブ",
-     "ローウィー研究所 インタープリター"
-    ],
-    "items": [
-     {
-      "source": "scmp-china",
-      "title": "Will Solomon Islands’ Australia treaty prompt China to rethink its Pacific strategy?",
-      "url": "https://www.scmp.com/news/china/diplomacy/article/3375923/will-solomon-islands-australia-treaty-prompt-china-rethink-its-pacific-strategy"
-     },
-     {
-      "source": "maritimeexec",
-      "title": "Solomon Islands Treaty Locks in a Shift to the West, Away From China",
-      "url": "https://maritime-executive.com/article/solomons-treaty-locks-in-strategic-shift-toward-australia-away-from-china"
-     },
-     {
-      "source": "lowy",
-      "title": "What will China learn from the Australia–Solomon Islands treaty?",
-      "url": "https://www.lowyinstitute.org/the-interpreter/what-will-china-learn-from-australia-solomon-islands-treaty"
-     },
-     {
-      "source": "aspi",
-      "title": "Solomons treaty locks in a strategic shift towards Australia, away from China",
-      "url": "https://www.aspistrategist.org.au/solomons-treaty-locks-in-a-strategic-shift-towards-australia-away-from-china/"
-     },
-     {
-      "source": "mainichi",
-      "title": "Solomon Islands, Australia sign new treaty amid China ties review",
-      "url": "https://mainichi.jp/english/articles/20261126/p2g/00m/0in/008000c"
+      "source": "rti",
+      "title": "[國際] 烏情報機構：俄朝外交現裂痕 北韓暫停向俄運送飛彈",
+      "url": "https://www.rti.org.tw/news?uid=3&pid=1053968"
      }
     ]
    },
    "debug": {
     "rank": 4,
     "families": [
-     "aspi",
-     "lowy",
-     "mainichi",
-     "maritimeexec",
-     "scmp"
+     "japantimes",
+     "newtalk",
+     "nhk",
+     "rti"
     ],
     "notes": [],
     "tries": [],
@@ -359,73 +359,59 @@
    }
   },
   {
-   "start": 64.69,
-   "end": 78.25,
+   "start": 60.66,
+   "end": 69.43,
    "category": "military",
-   "label": "軍事 · 北朝鮮",
-   "country": "KP",
+   "label": "軍事 · ラトビア",
+   "country": "LV",
    "countries": [
-    "KP"
+    "LV",
+    "RU"
    ],
-   "place": {
-    "name": "朝鮮半島",
-    "lon": 127.5,
-    "lat": 38.0
-   },
+   "place": null,
    "anim": {
-    "kind": "none"
+    "kind": "alert"
    },
-   "headline": "金総書記、戦術核の配備拡大求める",
+   "headline": "ラトビア領空にドローン NATO機が発進",
    "lines": [
     {
-     "start": 64.69,
+     "start": 60.66,
      "sub": "",
-     "text": "北朝鮮の国営メディアは、金正恩総書記が、戦術核兵器の配備を複数の領域で進めるよう求めたと伝えました。"
-    },
-    {
-     "start": 73.4,
-     "sub": "",
-     "text": "核物質の生産能力を計画的に拡充しているとも述べたということです。"
+     "text": "ラトビア軍は、ドローン1機がロシアとの国境に近い領空を短時間飛行し、NATOの戦闘機が緊急発進したと発表しました。"
     }
    ],
    "sources": {
-    "count": 4,
-    "countries": 4,
+    "count": 3,
+    "countries": 2,
     "names": [
-     "朝鮮日報 政治",
-     "毎日新聞 英語版",
+     "ザ・ヒンドゥー 国際",
+     "中央広播電台",
      "中央通訊社"
     ],
     "items": [
      {
-      "source": "chosun",
-      "title": "김정은, 한국 향해 ‘3종 핵 협박’",
-      "url": "https://www.chosun.com/politics/diplomacy-defense/2026/11/27/SZQCD7IKDVEYBCO64H66R5FYQQ/"
+      "source": "thehindu",
+      "title": "NATO jets scrambled after drone enters Latvian airspace",
+      "url": "https://www.thehindu.com/news/international/nato-jets-scrambled-after-drone-enters-latvian-airspace/article71752112.ece"
      },
      {
-      "source": "mainichi",
-      "title": "North Korea's Kim says nuclear development to continue",
-      "url": "https://mainichi.jp/english/articles/20261126/p2g/00m/0in/009000c"
+      "source": "rti",
+      "title": "[國際] 無人機闖拉脫維亞領空 北約戰機緊急出動",
+      "url": "https://www.rti.org.tw/news?uid=3&pid=1054153"
      },
      {
       "source": "cna-intl",
-      "title": "金正恩促擴大戰術核武部署 稱核材料產能擴充中",
-      "url": "https://www.cna.com.tw/news/aopl/202611260051.aspx"
-     },
-     {
-      "source": "aj",
-      "title": "Kim Jong Un says North Korea should widen deployment of tactical nukes",
-      "url": "https://www.aljazeera.com/news/2026/11/26/kim-jong-un-says-north-korea-should-widen-deployment-of-tactical-nukes?traffic_source=rss"
+      "title": "拉脫維亞領空再遭無人機侵犯 北約戰機緊急升空",
+      "url": "https://www.cna.com.tw/news/aopl/202611270215.aspx"
      }
     ]
    },
    "debug": {
     "rank": 5,
     "families": [
-     "aj",
-     "chosun",
      "cna-tw",
-     "mainichi"
+     "rti",
+     "thehindu"
     ],
     "notes": [],
     "tries": [],
@@ -433,77 +419,60 @@
    }
   },
   {
-   "start": 79.15,
-   "end": 91.44,
+   "start": 70.33,
+   "end": 79.7,
    "category": "conflict",
-   "label": "紛争 · クウェート",
-   "country": "KW",
+   "label": "紛争 · アメリカ",
+   "country": "US",
    "countries": [
-    "KW",
-    "IR",
-    "IT"
+    "US",
+    "UA",
+    "RU"
    ],
    "place": null,
    "anim": {
-    "kind": "strike"
+    "kind": "none"
    },
-   "headline": "クウェートで攻撃、イタリア人2人死亡",
+   "headline": "トランプ氏 NATOとの共同声明を変更",
    "lines": [
     {
-     "start": 79.15,
+     "start": 70.33,
      "sub": "",
-     "text": "イタリア外務省によると、クウェートで攻撃があり、イタリア人の技術者2人が死亡しました。"
-    },
-    {
-     "start": 85.81,
-     "sub": "",
-     "text": "イラン軍の報道官は、軍事作戦は実施していないと述べ、関与を否定しました。"
+     "text": "ポリティコによると、トランプ大統領は、NATOの事務総長との共同声明を一方的に書き換え、ウクライナにも自制を求めました。"
     }
    ],
    "sources": {
-    "count": 5,
-    "countries": 4,
+    "count": 3,
+    "countries": 3,
     "names": [
-     "英国公共放送 国際",
-     "ミドル・イースト・アイ",
-     "アルジャジーラ"
+     "メドゥーザ 英語版",
+     "RT",
+     "ウクルインフォルム"
     ],
     "items": [
      {
-      "source": "bbc",
-      "title": "Two Italians killed in strike in Kuwait, as Iran denies responsibility",
-      "url": "https://www.bbc.co.uk/news/articles/c39w9y5dx4k5o"
-     },
-     {
-      "source": "mee",
-      "title": "Iran denies responsibility for attack on Kuwait that killed two Italians",
-      "url": "https://www.middleeasteye.net/live-blog/live-blog-update/iran-denies-responsibility-attack-kuwait-killed-two-italians"
-     },
-     {
-      "source": "aj",
-      "title": "Two Italians killed by ‘drone strike debris’ in Kuwait",
-      "url": "https://www.aljazeera.com/news/2026/11/26/two-italians-killed-after-iranian-drones-strike-facility-says-kuwait?traffic_source=rss"
-     },
-     {
-      "source": "almonitor",
-      "title": "Iranian drone attack on Kuwait leaves two Italians dead",
-      "url": "https://www.al-monitor.com/originals/2026/11/iranian-drone-attack-kuwait-leaves-two-italians-dead"
+      "source": "meduza",
+      "title": "Trump unilaterally changes joint statement with NATO chief, adding warning for Ukraine not to escalate war, Politico reports",
+      "url": "https://meduza.io/en/news/2026/11/27/trump-unilaterally-changes-joint-statement-with-nato-chief-adding-warning-for-ukraine-not-to-escalate-war-politico-reports"
      },
      {
       "source": "rt",
-      "title": "Five killed in Ukrainian drone strike – Russian governor",
-      "url": "https://rt-english.com/news/649372-zaporozhye-drone-strike-ukraine/"
+      "title": "NATO chief ‘surprised’ by Trump adding Ukraine to joint statement",
+      "url": "https://rt-english.com/news/649422-trump-ukraine-responsiblity-escalation/"
+     },
+     {
+      "source": "ukrinform",
+      "title": "Trump adds Ukraine to joint statement with NATO chief urging restraint in war escalation",
+      "url": "https://www.ukrinform.net/rubric-polytics/4189083-trump-adds-ukraine-to-joint-statement-with-nato-chief-urging-restraint-in-war-escalation.html"
      }
     ]
    },
    "debug": {
     "rank": 6,
     "families": [
-     "aj",
-     "almonitor",
-     "bbc",
-     "mee",
-     "ru-state"
+     "meduza",
+     "ru-state",
+     "ua-state"
     ],
     "notes": [],
     "tries": [],
@@ -511,66 +480,123 @@
    }
   },
   {
-   "start": 92.34,
-   "end": 101.03,
-   "category": "conflict",
-   "label": "紛争 · アメリカ",
+   "start": 80.6,
+   "end": 88.39,
+   "category": "military",
+   "label": "軍事 · アメリカ",
    "country": "US",
    "countries": [
     "US",
-    "RU",
-    "UA"
+    "RU"
    ],
    "place": null,
    "anim": {
     "kind": "none"
    },
-   "headline": "米大統領とNATO事務総長が共同声明",
+   "headline": "トランプ氏 「軍事侵略」の停止求める",
    "lines": [
     {
-     "start": 92.34,
+     "start": 80.6,
      "sub": "",
-     "text": "トランプ大統領とNATOのルッテ事務総長は、共同声明で、ロシアはウクライナでの戦争を広げる行動を避けるべきだと述べました。"
+     "text": "トランプ大統領は、プーチン大統領と会談した際、ヨーロッパへの「軍事侵略」をすべてやめるよう求めたと述べました。"
     }
    ],
    "sources": {
-    "count": 4,
-    "countries": 4,
+    "count": 3,
+    "countries": 3,
     "names": [
-     "モスクワ・タイムズ",
-     "ジャパンタイムズ",
-     "アルモニター"
+     "フランス24",
+     "ザ・ヒンドゥー 国際",
+     "ジャパンタイムズ"
     ],
     "items": [
      {
-      "source": "moscowtimes",
-      "title": "Trump and NATO Chief Urge Russia to Avoid Actions That Widen Ukraine War",
-      "url": "https://www.themoscowtimes.com/2026/11/26/trump-and-nato-chief-urge-russia-to-avoid-actions-that-widen-ukraine-war-a812374"
+      "source": "f24",
+      "title": "Live: Trump calls on Putin to end all 'military aggression' against Europe",
+      "url": "https://www.france24.com/en/europe/20261127-live-trump-calls-on-putin-to-end-all-military-aggression-against-europe"
+     },
+     {
+      "source": "thehindu",
+      "title": "Donald Trump urges Vladimir Putin to end ‘military aggression’ in Europe",
+      "url": "https://www.thehindu.com/news/international/donald-trump-urges-vladimir-putin-to-end-military-aggression-in-europe/article71749343.ece"
      },
      {
       "source": "japantimes",
-      "title": "Trump and NATO chief urge Russia to avoid actions that widen Ukraine war",
-      "url": "https://www.japantimes.co.jp/news/2026/11/26/world/politics/trump-nato-chief-russia-ukraine-war/"
-     },
-     {
-      "source": "almonitor",
-      "title": "Trump and NATO chief urge Russia to avoid actions that widen Ukraine war",
-      "url": "https://www.al-monitor.com/originals/2026/11/trump-and-nato-chief-urge-russia-avoid-actions-widen-ukraine-war"
-     },
-     {
-      "source": "straitstimes",
-      "title": "Trump and NATO chief urge Russia to avoid actions that widen Ukraine war",
-      "url": "https://www.straitstimes.com/asia/trump-and-nato-chief-urge-russia-to-avoid-actions-that-widen-ukraine-war"
+      "title": "Trump urges Putin to end ‘military aggression’ in Europe",
+      "url": "https://www.japantimes.co.jp/news/2026/11/27/world/trump-putin-military-aggression/"
      }
     ]
    },
    "debug": {
     "rank": 7,
     "families": [
-     "almonitor",
+     "france24",
      "japantimes",
-     "moscowtimes",
-     "straitstimes"
+     "thehindu"
+    ],
+    "notes": [],
+    "tries": [],
+    "numberConflicts": []
+   }
+  },
+  {
+   "start": 89.29,
+   "end": 97.26,
+   "category": "military",
+   "label": "軍事 · コンゴ民主共和国",
+   "country": "CD",
+   "countries": [
+    "CD",
+    "UG"
+   ],
+   "place": {
+    "name": "ルベロ",
+    "lon": 29.24,
+    "lat": -0.16
+   },
+   "anim": {
+    "kind": "none"
+   },
+   "headline": "ウガンダ軍 コンゴ東部の町から撤退へ",
+   "lines": [
+    {
+     "start": 89.29,
+     "sub": "",
+     "text": "ウガンダ軍は、コンゴ民主共和国東部の北キブ州の町、ルベロから部隊を撤退させる計画だと発表しました。"
+    }
+   ],
+   "sources": {
+    "count": 3,
+    "countries": 2,
+    "names": [
+     "フランス24",
+     "アフリカニュース",
+     "英国公共放送 国際"
+    ],
+    "items": [
+     {
+      "source": "f24",
+      "title": "Uganda to withdraw troops from DR Congo town after army chief's threat sparks row",
+      "url": "https://www.france24.com/en/africa/20261127-uganda-withdraw-troops-dr-congo-town-after-army-chief-threat-row"
+     },
+     {
+      "source": "africanews",
+      "title": "Uganda to withdraw troops from eastern DR Congo town amid diplomatic spat",
+      "url": "http://www.africanews.com/2026/11/27/uganda-to-withdraw-troops-from-eastern-dr-congo-town-amid-diplomatic-spat/"
+     },
+     {
+      "source": "bbc",
+      "title": "Uganda to withdraw troops from DR Congo town amid diplomatic row",
+      "url": "https://www.bbc.co.uk/news/articles/cq4gnj2ldkyzo"
+     }
+    ]
+   },
+   "debug": {
+    "rank": 8,
+    "families": [
+     "africanews",
+     "bbc",
+     "france24"
     ],
     "notes": [],
     "tries": [],
@@ -584,28 +610,27 @@
   "tokenizer": "fugashi",
   "threshold": 0.45,
   "timing": {
-   "clusterSec": 0.05,
+   "clusterSec": 0.06,
    "scriptSec": 0.1,
-   "audioSec": 32.6,
-   "totalSec": 33.6
+   "audioSec": 36.6,
+   "totalSec": 37.9
   },
   "candidates": 0,
   "kana": {
-   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/_シチ'ニチ",
-   "intro+1": "カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ナナ'ケンデ_ス",
-   "0.0": "ロ'シアノ/レンポオホア'ンチョオニ/_スパイヨ'オギデ/コオソ_ク'/サレタ'/ホッカイドオシ'ンブンノ/イマイ'/キ'シャノ/ツ'マガ、シュ'キオ/コオカイ'/シ'、カイホオオ'/モトメマ'_シタ",
-   "0.1": "ロ'シアノ/_フクス'ウノ/メ'ディアモ、シュ'キノ/ナイヨオオ'/ホオジマ'_シタ",
-   "1.0": "ガザチュ'ウブデ/イスラ'エルノ/クウバクガ'/ア'リ、ハ'マスガ/ニンメエ'/_シタ'/キョオイク'ショオノ/ジ'カント/ツ'マガ/シボオ'/_シタ'ト、イリョオカンケ'エシャガ/ノベマ'_シタ",
-   "1.1": "ハ'マスノ/シド'オシャ/ハ'イヤシワ、コオゲキガ'/ツズ_ク'/コト'オ/タエツズケ'ル/ヨ'オイワ/ナ'イト/ノベマ'_シタ",
-   "2.0": "ウクライナ'グンノ/ジョオホオキ'カンワ、_キタチョオセ'ンガ/ロ'シアエノ/グンジシ'エンノ/イチ'ブオ/イチジテキニ'/テエシ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
-   "2.1": "ダンドオミサ'イルヤ/ホオダンノ'/_ヒキワタシガ'/_フク'マレ、リョ'オコクノ/アイダノ'/タイリツオ'/ウケ'タ/モノ'ダト/_シテ'/イマ'_ス",
-   "3.0": "オオ_ストラ'リアト/ソロモンショ'トオノ/_シュショオガ'、ジュウイチガツ'/ニ'ジュウゴニチ、ア'ラタナ/ジョオヤクニ'/ショメエ'/シマ'_シタ",
-   "3.1": "ソロモンショ'トオガ/チュ'ウゴ_クト/ムスンダ'/アンゼンホショオキョ'オテエニ/カワル'/モノ'ダト、ホ'ンコンノ/シンブンガ'/_ツタエマ'_シタ",
-   "4.0": "_キタチョオセ'ンノ/コクエエメ'ディアワ、キムジョ'ンウン/ソオショ'キガ、センジュ_ツカ_クヘ'エキノ/ハ'イビオ/_フクス'ウノ/リョオイキデ'/ススメル'/ヨ'オ/モトメ'タト/_ツタエマ'_シタ",
-   "4.1": "カクブ'ッ_シツノ/セエサンノ'オリョクオ/ケエカクテキニ'/カクジュウ'/_シテ'/イルトモ'/ノベ'タト/イウ'/コト'デ_ス",
-   "5.0": "イタリアガイム'ショオニ/ヨルト'、クウェ'エトデ/コオゲキガ'/ア'リ、イタリア'ジンノ/ギジュ_ツ'シャ/_フタリ'ガ/シボオ'/シマ'_シタ",
-   "5.1": "イラン'グンノ/ホオド'オカンワ、グンジサ'_クセンワ/ジッシ'/_シテ'/イナイト'/ノベ'、カ'ンヨオ/_ヒテエ'/シマ'_シタ",
-   "6.0": "トランプダイト'オリョオト/ナ'トオノ/ルッテジムソ'オチョオワ、キョオドオセ'エメエデ、ロ'シアワ/ウクラ'イナデノ/センソオオ'/ヒロゲル'/コオドオオ'/サケ'ルベキダト/ノベマ'_シタ",
+   "intro": "ヒガシア'ジア/ジョオセエカ'ンソク、ジュウイチガツ'/ニ'ジュウ/ハチ'ニチ",
+   "intro+1": "カ'コ/ニ'ジュウ/ヨジ'カンノ/オ'モナ/デキ'ゴト、ハッ'ケンデ_ス",
+   "0.0": "クウェ'エトノ/ボオクウカンレンシ'セツガ/ドロ'オンデ/コオゲ_キ'/サレ'、イタリア'ジンノ/ギジュ_ツ'シャ/_フタリ'ガ/シボオ'/シマ'_シタ",
+   "0.1": "クウェエトセ'エフワ/イ'ランニ/ヨル'/コオゲキダト'/シ'、イ'ランノ/ガイショオワ'/カ'ンヨ/_シテ'/イナイト'/ノベマ'_シタ",
+   "1.0": "チュウゴク'グンガ/フッケ'ンショオノ/ダアチェ'ンワンデ、スウシュ'ウカンニ/ワタル'/ジョオリクエ'ンシュウオ/ジッシ'/_シテ'/イルト'/ロイタアツ'ウシンガ/_ツタエマ'_シタ",
+   "1.1": "ミンカンノ'/フ'ネオ/ツナイデ'/ウ_キハシニ'/シ'、ブ'タイオ/ジョオリ_ク'/サセル'/アタラシ'イ/ホオホオオ'/タメ'シテ/イルト'/イウ'/コト'デ_ス",
+   "2.0": "カ'ンコクワ、ニホ'ンカイデ/ヒョオリュウ'/_シテ'/イタ'/ギョセンカラ'/キュ'ウジョ/_シタ'/_キタチョオセ'ンノ/_シチ'ニンノ/ウチ'、ロク'ニンオ/カ'イロデ/ソオカン'/シマ'_シタ",
+   "2.1": "ノコ'ル/_ヒト'リワ/カ'ンコクニ/トドマ'ル/コト'オ/エラビマ'_シタ",
+   "3.0": "ウクラ'イナノ/ジョオホオソ'オキョクワ、_キタチョオセ'ンガ/ロ'シアエノ/ダンドオミサ'イルノ/キョオキュウナ'ドオ/イチ'ジ/テエシ'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "3.1": "ロ'シアガ/モトメ'ル/_キタチョオセンブ'タイノ/ゾオインモ'/ホリュウ'/_シテ'/イルト'/_シテ'/イマ'_ス",
+   "4.0": "ラトビア'グンワ、ドロ'オン/イッ'キガ/ロ'シアトノ/コッキョオニ'/_チカ'イ/リョオクウオ'/タンジ'カン/_ヒコオ'/シ'、ナ'トオノ/セントオ'キガ/キンキュウ'/ハッシン'/_シタ'ト/ハッピョオ'/シマ'_シタ",
+   "5.0": "ポ'リ_ティコニ/ヨルト'、トランプダイト'オリョオワ、ナ'トオノ/ジムソ'オチョオトノ/キョオドオセ'エメエオ/イッポオテキニ'/カ_キカエ'、ウクラ'イナニモ/ジセエオ'/モトメマ'_シタ",
+   "6.0": "トランプダイト'オリョオワ、プ'ウチン/ダイト'オリョオト/カイダン'/_シタ'/サ'イ、ヨオロ'ッパエノ/グンジシ'ンリャクオ/ス'ベテ/ヤメル'/ヨ'オ/モトメ'タト/ノベマ'_シタ",
+   "7.0": "ウガンダ'グンワ、コンゴミン_シュキョオワ'コ_ク/ト'オブノ/_キタキブ'シュウノ/マチ'、ルベ'ロカラ/ブ'タイオ/テッタイ'/サセル'/ケエカクダト'/ハッピョオ'/シマ'_シタ",
    "outro": "イ'ジョオデ_ス",
    "outro+1": "ホオドオノ'/ミダ_シト'/ヨオヤクオ'、キ'カイデ/マトメテ'/ヨミアゲマ'_シタ"
   }
