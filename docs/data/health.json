@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T12:23:39Z",
+ "generated_utc": "2026-11-27T12:33:02Z",
  "state": "warn",
  "summary": {
-  "ok": 11,
-  "warn": 3,
+  "ok": 12,
+  "warn": 2,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -75,7 +75,7 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-26T15:37:22Z",
-   "heartbeat_age_h": 20.8,
+   "heartbeat_age_h": 20.9,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
    "data_age_days": 1,
@@ -115,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-26T13:09:16Z",
-   "heartbeat_age_h": 23.2,
+   "heartbeat_age_h": 23.4,
    "data_date": "2026-11-25",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -138,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 19.1,
+   "heartbeat_age_h": 19.3,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -182,7 +182,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-27T12:21:43Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 0.2,
    "data_date": "2026-11-27",
    "data_date_tz": "JST",
    "data_age_days": 0,
@@ -200,7 +200,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-27T05:24:36Z",
-   "heartbeat_age_h": 7.0,
+   "heartbeat_age_h": 7.1,
    "data_date": "2026-11-27",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -217,7 +217,7 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-27T12:21:50Z",
+   "heartbeat_utc": "2026-11-27T12:31:02Z",
    "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
@@ -251,22 +251,16 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-26T17:20:16Z",
-   "heartbeat_age_h": 19.1,
+   "heartbeat_utc": "2026-11-27T12:15:09Z",
+   "heartbeat_age_h": 0.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "heartbeat_late",
-     "text": "最後の収集から 19 h（>9 h：遅延）"
-    }
-   ],
+   "state": "ok",
+   "reasons": [],
    "values": {
-    "events": 39,
-    "current": 21,
+    "events": 44,
+    "current": 26,
     "failed": 0,
     "fetch_failed": 0
    }
@@ -862,14 +856,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-27T12:12:37Z",
-   "last_success_event": "workflow_dispatch",
+   "last_success_started_utc": "2026-11-27T12:29:00Z",
+   "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45996727697,
-    "started_utc": "2026-11-27T12:12:37Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45996727697"
+    "id": 45999371450,
+    "started_utc": "2026-11-27T12:31:35Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45999371450"
    },
    "consecutive_failures": 0
   },
@@ -883,14 +877,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-27T12:21:50Z",
+   "last_success_started_utc": "2026-11-27T12:31:02Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
-    "id": 45998006470,
-    "started_utc": "2026-11-27T12:21:50Z",
+    "id": 45999295226,
+    "started_utc": "2026-11-27T12:31:02Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45998006470"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45999295226"
    },
    "consecutive_failures": 0
   },
