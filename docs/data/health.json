@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-27T13:45:21Z",
+ "generated_utc": "2026-11-27T15:28:10Z",
  "state": "warn",
  "summary": {
   "ok": 11,
@@ -74,11 +74,11 @@
    "name": "Sentinel-1 艦船候補",
    "kind": "daily",
    "workflow": "sat-ships.yml",
-   "heartbeat_utc": "2026-11-26T15:37:22Z",
-   "heartbeat_age_h": 22.1,
-   "data_date": "2026-11-26",
+   "heartbeat_utc": "2026-11-27T15:24:18Z",
+   "heartbeat_age_h": 0.1,
+   "data_date": "2026-11-27",
    "data_date_tz": "UTC",
-   "data_age_days": 1,
+   "data_age_days": 0,
    "state": "warn",
    "reasons": [
     {
@@ -90,23 +90,13 @@
      "level": "warn",
      "code": "scene_old",
      "text": "STU：最新の撮影 2026-11-17 から 10 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "JMN：最新の撮影 2026-11-15 から 12 日（撮影の抜け）"
-    },
-    {
-     "level": "warn",
-     "code": "scene_old",
-     "text": "HPU：最新の撮影 2026-11-15 から 12 日（撮影の抜け）"
     }
    ],
    "values": {
-    "latest_acquired_utc": "2026-11-26T09:56:31Z",
-    "last_run_utc": "2026-11-26T15:37:22Z",
+    "latest_acquired_utc": "2026-11-27T10:33:15Z",
+    "last_run_utc": "2026-11-27T15:24:18Z",
     "last_run_errors": 0,
-    "last_run_scenes": 14
+    "last_run_scenes": 4
    }
   },
   {
@@ -115,10 +105,10 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-27T13:07:26Z",
-   "heartbeat_age_h": 0.6,
+   "heartbeat_age_h": 2.3,
    "data_date": "2026-11-26",
    "data_date_tz": "JST",
-   "data_age_days": 1,
+   "data_age_days": 2,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -138,7 +128,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 20.5,
+   "heartbeat_age_h": 22.2,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -182,10 +172,10 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-27T13:35:40Z",
-   "heartbeat_age_h": 0.2,
+   "heartbeat_age_h": 1.9,
    "data_date": "2026-11-27",
    "data_date_tz": "JST",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
@@ -200,7 +190,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-27T05:24:36Z",
-   "heartbeat_age_h": 8.3,
+   "heartbeat_age_h": 10.1,
    "data_date": "2026-11-27",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -218,7 +208,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-27T13:07:35Z",
-   "heartbeat_age_h": 0.6,
+   "heartbeat_age_h": 2.3,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -257,8 +247,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-27T13:10:45Z",
-   "heartbeat_age_h": 0.6,
+   "heartbeat_utc": "2026-11-27T15:22:35Z",
+   "heartbeat_age_h": 0.1,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -615,14 +605,14 @@
     "trial": true,
     "mask_version": "XCD-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-20T10:41:00Z",
+     "acquired_utc": "2026-11-27T10:32:46Z",
      "version": "est-1",
-     "mode": 5,
-     "p10": 4,
-     "p90": 9,
-     "warship_mode": 2,
-     "warship_p10": 1,
-     "warship_p90": 4,
+     "mode": 1,
+     "p10": 1,
+     "p90": 2,
+     "warship_mode": 0,
+     "warship_p10": 0,
+     "warship_p90": 1,
      "credibility": 4,
      "in_sample": ""
     }
@@ -653,14 +643,14 @@
     "trial": true,
     "mask_version": "JMN-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-15T10:32:46Z",
+     "acquired_utc": "2026-11-27T10:32:46Z",
      "version": "est-1",
-     "mode": 2,
-     "p10": 1,
-     "p90": 2,
-     "warship_mode": 0,
-     "warship_p10": 0,
-     "warship_p90": 1,
+     "mode": 7,
+     "p10": 5,
+     "p90": 9,
+     "warship_mode": 2,
+     "warship_p10": 1,
+     "warship_p90": 4,
      "credibility": 3,
      "in_sample": ""
     }
@@ -672,10 +662,10 @@
     "trial": true,
     "mask_version": "HPU-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-15T10:33:16Z",
+     "acquired_utc": "2026-11-27T10:33:15Z",
      "version": "est-1",
-     "mode": 7,
-     "p10": 5,
+     "mode": 6,
+     "p10": 4,
      "p90": 8,
      "warship_mode": 2,
      "warship_p10": 1,
@@ -691,14 +681,14 @@
     "trial": true,
     "mask_version": "HKG-land-v1",
     "est1": {
-     "acquired_utc": "2026-11-22T10:24:50Z",
+     "acquired_utc": "2026-11-27T10:32:46Z",
      "version": "est-1",
-     "mode": 6,
-     "p10": 4,
-     "p90": 9,
-     "warship_mode": 3,
-     "warship_p10": 1,
-     "warship_p90": 5,
+     "mode": 2,
+     "p10": 2,
+     "p90": 3,
+     "warship_mode": 1,
+     "warship_p10": 0,
+     "warship_p90": 2,
      "credibility": 3,
      "in_sample": ""
     }
@@ -818,15 +808,15 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-26T15:26:54Z",
+   "last_success_started_utc": "2026-11-27T15:15:09Z",
    "last_success_event": "schedule",
    "last_scheduled": {
-    "id": 45849187873,
-    "started_utc": "2026-11-26T15:26:54Z",
+    "id": 46023220207,
+    "started_utc": "2026-11-27T15:15:09Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45849187873",
-    "delay_h": 10.2
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/46023220207",
+    "delay_h": 10.0
    },
    "consecutive_failures": 0
   },
@@ -862,14 +852,14 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-27T13:33:56Z",
+   "last_success_started_utc": "2026-11-27T15:24:37Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
-    "id": 46008201690,
-    "started_utc": "2026-11-27T13:33:56Z",
+    "id": 46024655148,
+    "started_utc": "2026-11-27T15:24:37Z",
     "status": "completed",
     "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/46008201690"
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/46024655148"
    },
    "consecutive_failures": 0
   },
@@ -921,12 +911,12 @@
   "pu": {
    "month": "2026-11",
    "code_cap_pu": 1000.0,
-   "usage_csv_pu": 249.487,
-   "usage_csv_requests": 1536,
-   "usage_csv_runs": 35,
-   "status_month_pu_before": 229.329,
-   "status_last_run_utc": "2026-11-26T15:37:22Z",
-   "usage_csv_pu_before_last_run": 229.329,
+   "usage_csv_pu": 250.919,
+   "usage_csv_requests": 1586,
+   "usage_csv_runs": 36,
+   "status_month_pu_before": 249.487,
+   "status_last_run_utc": "2026-11-27T15:24:18Z",
+   "usage_csv_pu_before_last_run": 249.487,
    "difference_pu": 0.0,
    "account_note": "CDSE アカウント全体の残り（10,000 PU/月）は公開データからは分からない（probe ブランチの使用は usage.csv に入らない）"
   },
@@ -1101,10 +1091,10 @@
     "mask_version": "BHI-land-v1"
    },
    "XCD": {
-    "acquired_utc": "2026-11-20T10:41:00Z",
+    "acquired_utc": "2026-11-27T10:32:46Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 84,
-    "coverage": 0.999,
+    "relative_orbit": 11,
+    "coverage": 0.816,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "XCD-land-v1"
@@ -1119,16 +1109,16 @@
     "mask_version": "LYG-land-v1"
    },
    "JMN": {
-    "acquired_utc": "2026-11-15T10:32:46Z",
+    "acquired_utc": "2026-11-27T10:32:46Z",
     "platform": "sentinel-1d",
     "relative_orbit": 11,
-    "coverage": 0.995,
+    "coverage": 0.992,
     "result": "counted",
     "quay_result": "counted",
     "mask_version": "JMN-land-v1"
    },
    "HPU": {
-    "acquired_utc": "2026-11-15T10:33:16Z",
+    "acquired_utc": "2026-11-27T10:33:15Z",
     "platform": "sentinel-1d",
     "relative_orbit": 11,
     "coverage": 1.0,
@@ -1137,9 +1127,9 @@
     "mask_version": "HPU-land-v1"
    },
    "HKG": {
-    "acquired_utc": "2026-11-22T10:24:50Z",
+    "acquired_utc": "2026-11-27T10:32:46Z",
     "platform": "sentinel-1d",
-    "relative_orbit": 113,
+    "relative_orbit": 11,
     "coverage": 1.0,
     "result": "counted",
     "quay_result": "counted",
