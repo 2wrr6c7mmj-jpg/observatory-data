@@ -1,11 +1,11 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-26T17:17:43Z",
- "state": "warn",
+ "generated_utc": "2026-11-27T00:31:51Z",
+ "state": "alert",
  "summary": {
-  "ok": 12,
+  "ok": 11,
   "warn": 2,
-  "alert": 0,
+  "alert": 1,
   "halt": 1,
   "info": 1,
   "unknown": 0
@@ -75,26 +75,31 @@
    "kind": "daily",
    "workflow": "sat-ships.yml",
    "heartbeat_utc": "2026-11-26T15:37:22Z",
-   "heartbeat_age_h": 1.7,
+   "heartbeat_age_h": 8.9,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "warn",
    "reasons": [
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "STU：最新の撮影 2026-11-17 から 9 日（撮影の抜け）"
+     "text": "SLP：最新の撮影 2026-11-19 から 8 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "JMN：最新の撮影 2026-11-15 から 11 日（撮影の抜け）"
+     "text": "STU：最新の撮影 2026-11-17 から 10 日（撮影の抜け）"
     },
     {
      "level": "warn",
      "code": "scene_old",
-     "text": "HPU：最新の撮影 2026-11-15 から 11 日（撮影の抜け）"
+     "text": "JMN：最新の撮影 2026-11-15 から 12 日（撮影の抜け）"
+    },
+    {
+     "level": "warn",
+     "code": "scene_old",
+     "text": "HPU：最新の撮影 2026-11-15 から 12 日（撮影の抜け）"
     }
    ],
    "values": {
@@ -110,7 +115,7 @@
    "kind": "daily",
    "workflow": "jcg-senkaku.yml",
    "heartbeat_utc": "2026-11-26T13:09:16Z",
-   "heartbeat_age_h": 4.1,
+   "heartbeat_age_h": 11.4,
    "data_date": "2026-11-25",
    "data_date_tz": "JST",
    "data_age_days": 2,
@@ -133,7 +138,7 @@
    "kind": "daily",
    "workflow": "pla-tracker.yml",
    "heartbeat_utc": "2026-11-26T17:17:26Z",
-   "heartbeat_age_h": 0.0,
+   "heartbeat_age_h": 7.2,
    "data_date": "2026-11-26",
    "data_date_tz": "TWT",
    "data_age_days": 1,
@@ -177,7 +182,7 @@
    "kind": "daily",
    "workflow": "jso-update.yml",
    "heartbeat_utc": "2026-11-26T10:20:06Z",
-   "heartbeat_age_h": 7.0,
+   "heartbeat_age_h": 14.2,
    "data_date": "2026-11-26",
    "data_date_tz": "JST",
    "data_age_days": 1,
@@ -194,16 +199,16 @@
    "name": "発射の予告（NOTAM Watch・LL2）",
    "kind": "daily",
    "workflow": "collect.yml",
-   "heartbeat_utc": "2026-11-26T13:14:29Z",
-   "heartbeat_age_h": 4.1,
+   "heartbeat_utc": "2026-11-26T22:38:15Z",
+   "heartbeat_age_h": 1.9,
    "data_date": "2026-11-26",
    "data_date_tz": "UTC",
-   "data_age_days": 0,
+   "data_age_days": 1,
    "state": "ok",
    "reasons": [],
    "values": {
-    "notices_last_retrieved_utc": "2026-11-26T13:14:29Z",
-    "notam_watch_last_seen_utc": "2026-11-26T13:14:29Z",
+    "notices_last_retrieved_utc": "2026-11-26T22:38:15Z",
+    "notam_watch_last_seen_utc": "2026-11-26T22:38:15Z",
     "ll2_last_retrieved_utc": "2026-11-26T09:43:52Z"
    }
   },
@@ -213,7 +218,7 @@
    "kind": "derived",
    "workflow": "proto.yml",
    "heartbeat_utc": "2026-11-26T13:09:25Z",
-   "heartbeat_age_h": 4.1,
+   "heartbeat_age_h": 11.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -222,13 +227,13 @@
     {
      "level": "warn",
      "code": "older_than_input",
-     "text": "最後の成功 2026-11-26T13:09:25Z が入力の更新 2026-11-26T13:14:29Z より前"
+     "text": "最後の成功 2026-11-26T13:09:25Z が入力の更新 2026-11-26T22:38:15Z より前"
     }
    ],
    "values": {
     "files": 10,
     "computed_utc_max": "2026-11-26T13:10:51Z",
-    "newest_input_utc": "2026-11-26T13:14:29Z"
+    "newest_input_utc": "2026-11-26T22:38:15Z"
    }
   },
   {
@@ -252,8 +257,8 @@
    "name": "演習・訓練（ニュースと公式発表）",
    "kind": "derived",
    "workflow": "exercises.yml",
-   "heartbeat_utc": "2026-11-26T15:46:30Z",
-   "heartbeat_age_h": 1.5,
+   "heartbeat_utc": "2026-11-26T17:20:16Z",
+   "heartbeat_age_h": 7.2,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -746,7 +751,7 @@
     "window_start_utc": "2026-11-27T04:59Z",
     "window_end_utc": "2026-11-27T05:28Z"
    },
-   "active_notices": 39
+   "active_notices": 41
   }
  },
  "latest_note": "latest.sat[] の trial＝true は試行（publish: trial）。公開画面で数を出すかは表示側で決める",
@@ -849,18 +854,24 @@
    "sources": [
     "jso"
    ],
-   "state": "ok",
-   "reasons": [],
+   "state": "alert",
+   "reasons": [
+    {
+     "level": "alert",
+     "code": "failed",
+     "text": "workflow_dispatch の実行 2026-11-27T00:00:39Z が failure（6 回続けて）"
+    }
+   ],
    "last_success_started_utc": "2026-11-26T17:15:31Z",
    "last_success_event": "workflow_dispatch",
    "last_scheduled": {
-    "id": 45866182785,
-    "started_utc": "2026-11-26T17:15:31Z",
-    "status": "completed",
-    "conclusion": "success",
-    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45866182785"
+    "id": 45917164744,
+    "started_utc": "2026-11-27T00:31:00Z",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/45917164744"
    },
-   "consecutive_failures": 0
+   "consecutive_failures": 6
   },
   {
    "file": "proto.yml",
