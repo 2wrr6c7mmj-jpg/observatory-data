@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-27T15:23:32Z",
+ "generated_utc": "2026-11-27T17:03:28Z",
  "today": "2026-11-28",
  "days": 31,
  "counts": {
@@ -151,7 +151,7 @@
     "中国"
    ],
    "start": "2026-11-15",
-   "end": "2026-11-29",
+   "end": "2026-12-13",
    "lat": 38.7,
    "lon": 121.41,
    "region": null,
@@ -198,6 +198,49 @@
      ],
      "text": "辽航警477/26，渤海海峡黄海北部，自11月15日1600时至29日1600时在38-51.7N121-38.2E、38-34.2N121-38.2E、38-33.9N121-07.9E、38-48.2N121-14.1E诸点连线范围内执行军事任务。禁止驶入。",
      "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/541e5ebb4d9a41da9b48f9fbd4d0dc76.html"
+    },
+    {
+     "key": "maritime:LN425/2026",
+     "id": "LN425/2026",
+     "issuer": "大连海事局",
+     "country": "CN",
+     "category": "military",
+     "start_utc": "2026-11-29T08:00:00Z",
+     "end_utc": "2026-12-13T08:00:00Z",
+     "polygons": [],
+     "text": "LN425/26 BOHAI STRAIT AND NORTH YELLOW SEA MILITARY MISSION IN AREA BOUNDED BY THE LINES JOINING 38-51.7N121-38.2E,38-34.2N121-38.2E,38-33.9N121-07.9E,38-48.2N121-14.1E FROM 290800UTC NOV TO 130800UTC DEC.ENTERING PROHIBITED. LIAONING MSA CHINA.",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/64a1c878a9d0d5f4.html"
+    },
+    {
+     "key": "maritime:辽航警493/2026",
+     "id": "辽航警493/2026",
+     "issuer": "大连海事局",
+     "country": "CN",
+     "category": "military",
+     "start_utc": "2026-11-29T08:00:00Z",
+     "end_utc": "2026-12-13T08:00:00Z",
+     "polygons": [
+      [
+       [
+        38.8617,
+        121.6367
+       ],
+       [
+        38.57,
+        121.6367
+       ],
+       [
+        38.565,
+        121.1317
+       ],
+       [
+        38.8033,
+        121.235
+       ]
+      ]
+     ],
+     "text": "辽航警493/26，渤海海峡黄海北部，自11月29日1600时至12月13日1600时在38-51.7N121-38.2E、38-34.2N121-38.2E、38-33.9N121-07.9E、38-48.2N121-14.1E诸点连线范围内执行军事任务。禁止驶入。",
+     "url": "https://www.msa.gov.cn/html/cnmsa/hxaq/article/2026/a375c5bfbe724ae0ad70a51dafcd08d5.html"
     }
    ]
   },
