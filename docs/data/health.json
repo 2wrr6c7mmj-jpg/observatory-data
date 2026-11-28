@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-11-28T09:01:51Z",
+ "generated_utc": "2026-11-28T09:03:10Z",
  "state": "warn",
  "summary": {
-  "ok": 12,
-  "warn": 2,
+  "ok": 13,
+  "warn": 1,
   "alert": 0,
   "halt": 1,
   "info": 1,
@@ -190,7 +190,7 @@
    "kind": "daily",
    "workflow": "collect.yml",
    "heartbeat_utc": "2026-11-28T04:59:58Z",
-   "heartbeat_age_h": 4.0,
+   "heartbeat_age_h": 4.1,
    "data_date": "2026-11-28",
    "data_date_tz": "UTC",
    "data_age_days": 0,
@@ -207,22 +207,16 @@
    "name": "分析の試作（proto）",
    "kind": "derived",
    "workflow": "proto.yml",
-   "heartbeat_utc": "2026-11-27T13:07:35Z",
-   "heartbeat_age_h": 19.9,
+   "heartbeat_utc": "2026-11-28T09:01:38Z",
+   "heartbeat_age_h": 0.0,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
-   "state": "warn",
-   "reasons": [
-    {
-     "level": "warn",
-     "code": "older_than_input",
-     "text": "最後の成功 2026-11-27T13:07:35Z が入力の更新 2026-11-28T09:01:30Z より前"
-    }
-   ],
+   "state": "ok",
+   "reasons": [],
    "values": {
     "files": 10,
-    "computed_utc_max": "2026-11-27T13:09:04Z",
+    "computed_utc_max": "2026-11-28T09:02:54Z",
     "newest_input_utc": "2026-11-28T09:01:30Z"
    }
   },
@@ -248,7 +242,7 @@
    "kind": "derived",
    "workflow": "exercises.yml",
    "heartbeat_utc": "2026-11-28T07:41:05Z",
-   "heartbeat_age_h": 1.3,
+   "heartbeat_age_h": 1.4,
    "data_date": null,
    "data_date_tz": null,
    "data_age_days": null,
@@ -867,13 +861,13 @@
    ],
    "state": "ok",
    "reasons": [],
-   "last_success_started_utc": "2026-11-27T13:07:35Z",
+   "last_success_started_utc": "2026-11-28T09:01:38Z",
    "last_success_event": "workflow_run",
    "last_scheduled": {
     "id": 46128514205,
     "started_utc": "2026-11-28T09:01:38Z",
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "html_url": "https://github.com/2wrr6c7mmj-jpg/observatory-data/actions/runs/46128514205"
    },
    "consecutive_failures": 0
