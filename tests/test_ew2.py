@@ -203,13 +203,24 @@ class ScoringTest(unittest.TestCase):
         src = {'ew2': {'gold': {'months': {k: {'value': v} for k, v in months.items()}}}}
         g = {i['id']: i for i in ew.ew2_indicators(src, date(2026, 1, 10))}['gold']
         self.assertEqual(g['score'], 1)
-        self.assertFalse(g['judged'])
+        self.assertNotIn('judged', g, 'ew-3: gold enters the verdict')
         mk = lambda layer, cat, sc, **kw: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected', **kw}  # noqa: E731
         base = [mk('action', 'military', 0), mk('action', 'law_enforcement', 0)]
         j = ew.judge(base + [mk('strategic', 'money', 3, judged=False), mk('deployment', 'transport', 3, judged=False)])
         self.assertEqual(j['verdict'], 'normal')
         self.assertEqual(len(j['trial_hot']), 2)
         self.assertEqual(j['ceiling'], 'exercise')
+
+    def test_ew3_only_cables_stay_out_of_the_verdict(self):
+        self.assertEqual(ew.TRIAL, {'cables'})
+
+    def test_logistics_in_the_deployment_layer_do_not_make_an_exercise(self):
+        mk = lambda layer, cat, sc: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected'}  # noqa: E731
+        base = [mk('action', 'military', 0), mk('action', 'law_enforcement', 0)]
+        j = ew.judge(base + [mk('deployment', 'transport', 3)])
+        self.assertEqual((j['verdict'], j['hot_ops'], j['hot_logistics']), ('normal', [], ['transport']))
+        self.assertIsNone(j['ceiling'])
+        self.assertEqual(ew.judge(base + [mk('deployment', 'infrastructure', 2)])['verdict'], 'exercise')
 
     def test_unknown_ignores_trial_indicators(self):
         mk = lambda layer, cat, sc, **kw: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected', **kw}  # noqa: E731
@@ -230,7 +241,7 @@ class ScoringTest(unittest.TestCase):
         a = {i['id']: i for i in ew.ew2_indicators(src, date(2026, 6, 30))}['amphib-build']
         self.assertEqual((a['score'], a['site']), (3, '広州・龍穴島'))
         self.assertIsNone(a['parts']['HDZ']['score'])
-        self.assertFalse(a['judged'])
+        self.assertNotIn('judged', a)
 
     def test_alert_from_logistics(self):
         mk = lambda layer, cat, sc: {'layer': layer, 'id': f'{layer}{cat}{sc}', 'category': cat, 'score': sc, 'status': 'collected'}  # noqa: E731

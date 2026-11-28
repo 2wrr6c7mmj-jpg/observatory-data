@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>早期警戒（試行）</title>
+<title>早期警戒</title>
 <style>
 :root{--bg:#0a0e13;--panel:#101820;--line:#1e2a36;--ink:#d7e0ea;--dim:#8a99a8;--acc:#7fdcec;--s0:#243041;--s1:#5b8db8;--s2:#f2a33a;--s3:#ff7a45}
 *{box-sizing:border-box}
@@ -64,7 +64,7 @@ ul{margin:6px 0;padding-left:20px}
 </div></header>
 
 <main class="wrap">
-<div class="warn" id="warn">試行中です。</div>
+<div class="warn" id="warn"></div>
 
 <div class="row">
 <section class="panel" style="flex:1 1 380px">
@@ -134,7 +134,7 @@ ul{margin:6px 0;padding-left:20px}
 
   function render(ind, bt) {
     data = ind;
-    document.getElementById('warn').textContent = '試行中です。' + (ind.ceiling_note || '多くの指標は集め始めたばかりで、平常値を作る期間が足りないものは「—」です。');
+    document.getElementById('warn').textContent = ind.ceiling_note || '平常値を作る期間が足りない指標は「—」です。';
     document.getElementById('upd').textContent = '評価日 ' + ind.as_of + ' ／ 生成 ' + ind.generated_utc.replace('T', ' ').replace('Z', ' UTC');
     var v = document.getElementById('verdicts'); v.textContent = '';
     ['normal', 'exercise', 'alert'].forEach(function (k) {
@@ -174,7 +174,7 @@ ul{margin:6px 0;padding-left:20px}
         var b = el('button', {'type': 'button', 'class': 'ind', 'aria-pressed': 'false'});
         if (i.status !== 'collected') b.disabled = true;
         var t = el('div', {'class': 't'}); t.appendChild(el('div', null, i.name));
-        t.appendChild(el('div', {'class': 's'}, i.source + ' ・ ' + ind.category_ja[i.category] + (i.judged === false ? ' ・ 試行（判定に入れない）' : '')));
+        t.appendChild(el('div', {'class': 's'}, i.source + ' ・ ' + ind.category_ja[i.category] + (i.judged === false ? ' ・ 参考（判定に入れない）' : '')));
         b.appendChild(t);
         b.appendChild(i.status === 'collected' ? dots(i.score) : el('span', {'class': 'tag'}, i.status === 'blocked' ? '集めない' : '未収集'));
         b.addEventListener('click', function () { pick(i.id); });
