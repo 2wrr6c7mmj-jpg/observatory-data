@@ -224,6 +224,7 @@ class Editor(unittest.TestCase):
         self.assertTrue(c['key'] and all(len(k) == E.KEY_LEN for k in c['key']))
         self.assertEqual(len(c['articles']), 3)
         self.assertIn('bodyChars', d['limits'])
+        self.assertIs(c['focus'], B.focus_of({'country': None, 'countries': c['countries']}))
 
     def test_check_passes_and_fails(self):
         run = lambda path: E.main(['check', '--feed', self.feed, '--script', path, '--now-ms', str(NOW)])
@@ -243,6 +244,7 @@ class Editor(unittest.TestCase):
         self.assertEqual((e['sources']['count'], e['place']['name'], e['category']), (3, '宮古海峡', 'military'))   # 記事から取り直した値
         self.assertEqual([ln['text'] for ln in e['lines']], self.LINES)
         self.assertEqual([ln['sub'] for ln in e['lines']], ['', ''])
+        self.assertEqual(doc['intro']['text'], '本日の主要トピックを紹介します。')   # 冒頭は短く（2026-11-28）
         with open(os.path.join(out, 'credits.txt'), encoding='utf-8') as f:
             self.assertIn('Claude', f.read())
 
@@ -399,6 +401,30 @@ class Ending(unittest.TestCase):
         self.assertEqual(B.spread('outro', '以上です。機械で読み上げました。', 0.5),
                          [('outro', '以上です。', A.SAMPLE_PAUSE['line']), ('outro+1', '機械で読み上げました。', 0.5)])
         self.assertEqual(B.spread('intro', '一文だけ', 0.8), [('intro', '一文だけ', 0.8)])
+
+
+class Focus(unittest.TestCase):
+    """中国・北朝鮮・ロシアの候補をやや優先する（2026-11-28）。ほかの国の候補は上位から出る。"""
+    def test_focus_of(self):
+        self.assertTrue(B.focus_of({'country': 'CN', 'countries': ['CN']}))
+        self.assertTrue(B.focus_of({'country': 'JP', 'countries': ['JP', 'KP']}))
+        self.assertTrue(B.focus_of({'country': None, 'countries': ['RU']}))
+        self.assertFalse(B.focus_of({'country': 'US', 'countries': ['US', 'IR']}))
+
+    def test_focus_candidates_are_added_after_the_top(self):
+        codes = ['US', 'IL', 'CN', 'UA', 'IR', 'KP', 'FR', 'RU', 'CN']
+        cands = [{'records': [{'id': str(i), 'title': f'h{i}'}], 'stats': {'families': ['a', 'b']}} for i in range(len(codes))]
+        meta = lambda cand, reps: {'country': codes[int(cand['records'][0]['id'])], 'countries': [codes[int(cand['records'][0]['id'])]]}  # noqa: E731
+        with mock.patch.object(B.C, 'cluster', lambda *a: []), mock.patch.object(B.C, 'select', lambda c: cands), \
+                mock.patch.object(B.C, 'head', lambda r: r['title']), mock.patch.object(B.C, 'representatives', lambda recs: recs), \
+                mock.patch.object(B, 'event_meta', meta), mock.patch.object(B, 'same_event', lambda a, b, tok: False):
+            out, _, _ = B.pick_candidates([], (None,), 0.5, 3, focus_extra=2)
+        self.assertEqual([o['meta']['country'] for o in out], ['US', 'IL', 'CN', 'KP', 'RU'])   # 上位 3 件はそのまま、後ろに 2 件
+        with mock.patch.object(B.C, 'cluster', lambda *a: []), mock.patch.object(B.C, 'select', lambda c: cands), \
+                mock.patch.object(B.C, 'head', lambda r: r['title']), mock.patch.object(B.C, 'representatives', lambda recs: recs), \
+                mock.patch.object(B, 'event_meta', meta), mock.patch.object(B, 'same_event', lambda a, b, tok: False):
+            out, _, _ = B.pick_candidates([], (None,), 0.5, 3, focus_extra=0)
+        self.assertEqual(len(out), 3)
 
 
 if __name__ == '__main__':

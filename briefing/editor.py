@@ -42,6 +42,7 @@ def cmd_candidates(a):
             'label': meta['label'], 'place': (meta['place'] or {}).get('name'), 'countries': meta['countries'],
             'sources': {'count': meta['sources']['count'], 'countries': meta['sources']['countries']},
             'needAttribution': meta['category'] == 'conflict',
+            'focus': B.focus_of(meta),
             'articles': [dict(T.article_payload(r), hoursAgo=round((now - (r.get('publishedAt') or now)) / 3600e3, 1)) for r in reps],
             'terms': [dict({'原文': t['src'][:3], '訳': t['ja']}, **({'書かない': t['bad']} if t.get('bad') else {}))
                       for t in T.glossary_for(reps, terms)],
@@ -60,7 +61,7 @@ def cmd_candidates(a):
         f.write('\n')
     print(f'記事 {len(recs)}、2 源以上の束 {stats["multiSource"]}、候補 {len(cands)}（同じ出来事として除いた束 {len(dropped)}）、形態素解析 {tok[1]}')
     for c in cands:
-        print(f'#{c["rank"]} [{c["label"]}] 出典 {c["sources"]["count"]}・{c["sources"]["countries"]} か国 | {c["articles"][0]["title"][:60]}')
+        print(f'#{c["rank"]}{" ★" if c["focus"] else ""} [{c["label"]}] 出典 {c["sources"]["count"]}・{c["sources"]["countries"]} か国 | {c["articles"][0]["title"][:60]}')
     return 0
 
 

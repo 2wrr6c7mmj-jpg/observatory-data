@@ -25,7 +25,7 @@ from . import sources as S
 MIN_EVENTS = 3
 TARGET_SECONDS = 120      # 音声の長さの上限の目安。超えるぶんは順位の低い出来事から外す
 CHARS_PER_SEC = 6.0       # もち子さん（ノーマル）の実測：1 秒に約 6 字（2026-11-24 の試作）
-INTRO_OUTRO_SEC = 14.0    # 冒頭と結びの定型文（実測：冒頭 約 7.5 秒、結び 約 6 秒）
+INTRO_OUTRO_SEC = 10.0    # 冒頭と結びの定型文（冒頭 約 3 秒〈2026-11-28 に短縮〉、結び 約 6 秒）
 CAT_JA = {'military': '軍事', 'conflict': '紛争', 'diplomacy': '外交', 'alert': '警報'}
 # 分類：配信元の既定の分類（多くは外交）に寄るので、代表の記事の半数以上に出る語で上書きする。先に当たった方。
 CAT_HINT = (
@@ -230,19 +230,37 @@ def apply_map_hint(meta, hint):
     return meta
 
 
-def pick_candidates(records, tok, threshold, limit):
+INTRO = '本日の主要トピックを紹介します。'
+# 発表の順で少し先にする国（所有者の指示 2026-11-28「中国、北朝鮮、ロシアのものをやや優先」。ほかの国の出来事も出す）
+FOCUS = ('CN', 'KP', 'RU')
+FOCUS_EXTRA = 4           # 上位 limit 件に入らなかった FOCUS の国の候補を、後ろにこの数まで足す
+
+
+def focus_of(meta):
+    """候補が FOCUS の国にかかわるか（主体の国・関係する国のどれか）。"""
+    codes = [meta.get('country')] + list(meta.get('countries') or [])
+    return any(c in FOCUS for c in codes if c)
+
+
+def pick_candidates(records, tok, threshold, limit, focus_extra=FOCUS_EXTRA):
     """台本を書く前の候補：束ね → 2 源以上 → 順位 → 同じ出来事（分類・国・地点・見出しの語）を除く、上から limit 件。
     ([{'rank', 'cand', 'reps', 'heads', 'meta'}], 落とした一覧, 統計)。モデルは使わない。"""
     tc = time.time()
     clusters = C.cluster(records, tok[0], threshold)
     cands = C.select(clusters)
     out, dropped = [], []
+    extra = 0
     for rank, cand in enumerate(cands, 1):
-        if len(out) >= limit:
+        if len(out) >= limit + focus_extra:
             break
         heads = [C.head(r) for r in cand['records']]
         reps = C.representatives(cand['records'])
         meta = event_meta(cand, reps)
+        if len(out) >= limit:
+            # 上位 limit 件の後ろは、中国・北朝鮮・ロシアの候補だけを focus_extra 件まで足す
+            if not focus_of(meta) or extra >= focus_extra:
+                continue
+            extra += 1
         twin = next((p for p in out if same_event({'meta': p['meta'], 'heads': p['heads']}, {'meta': meta, 'heads': heads}, tok[0])), None)
         if twin:
             dropped.append({'reason': f'候補 {twin["rank"]} と同じ出来事（分類・国・地点が同じで見出しの語が重なる）', 'headline': heads[0][:40]})
@@ -375,8 +393,8 @@ def spread(key, text, gap):
 
 def make_audio(events, now_ms, voice_root, no_audio, extra=(), tune=None):
     """音声と、各文・各出来事の開始秒。events を書き換えずに (out_events, intro, outro, mp3, pcm秒) を返す。"""
-    d = datetime.datetime.fromtimestamp(now_ms / 1000, JST)
-    intro = f'東アジア情勢観測、{d.month}月{d.day}日。過去24時間の主な出来事、{len(events)}件です。'
+    # 冒頭は短く（所有者の指示 2026-11-28「冒頭が長いので省略。『本日の主要トピックを紹介します』程度でいい」）
+    intro = INTRO
     outro = '以上です。報道の見出しと要約を、機械でまとめて読み上げました。'
     seq = spread('intro', intro, A.INTRO_GAP)
     for i, e in enumerate(events):
