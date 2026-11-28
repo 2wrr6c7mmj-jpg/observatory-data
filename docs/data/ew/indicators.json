@@ -1,6 +1,6 @@
 {
- "version": "ew-2",
- "generated_utc": "2026-11-28T04:00:54Z",
+ "version": "ew-3",
+ "generated_utc": "2026-11-28T10:30:48Z",
  "as_of": "2026-11-28",
  "verdict": "normal",
  "layers": [
@@ -44,8 +44,8 @@
  "hot_logistics": [],
  "hot_ops": [],
  "trial_hot": [],
- "ceiling": "exercise",
- "ceiling_note": "兵站系（お金・人員・輸送）の指標は集め始めたが、確かめるまで判定に入れない（表示だけ）。「警戒」はまだ出ない（判定の上限は「演習」）",
+ "ceiling": null,
+ "ceiling_note": null,
  "indicators": [
   {
    "layer": "action",
@@ -833,8 +833,7 @@
    "z": 10.32,
    "score": 1,
    "months": 24,
-   "note": "公表は翌月 7 日ごろとみなす。前月からの増えを直近 24 か月と比べる。金だけでは 1 点まで",
-   "judged": false
+   "note": "公表は翌月 7 日ごろとみなす。前月からの増えを直近 24 か月と比べる。金だけでは 1 点まで"
   },
   {
    "layer": "strategic",
@@ -854,8 +853,7 @@
    "z": -1.75,
    "score": 0,
    "months": 24,
-   "note": "中国は原油の在庫を出していないため、備蓄の積み増しの代わりに輸入を見る。公表は約 3 か月後とみなす",
-   "judged": false
+   "note": "中国は原油の在庫を出していないため、備蓄の積み増しの代わりに輸入を見る。公表は約 3 か月後とみなす"
   },
   {
    "layer": "strategic",
@@ -900,8 +898,7 @@
      "z": 0.5
     }
    },
-   "note": "福州・馬尾 4.0；広州・龍穴島 5.0（0 点）；上海・滬東中華 5.7（0 点）；上海・長興島 5.7（0 点）。Contains modified Copernicus Sentinel data [2025–2026]",
-   "judged": false
+   "note": "福州・馬尾 4.0；広州・龍穴島 5.0（0 点）；上海・滬東中華 5.7（0 点）；上海・長興島 5.7（0 点）。Contains modified Copernicus Sentinel data [2025–2026]"
   },
   {
    "layer": "strategic",
@@ -1028,8 +1025,7 @@
      "2026-11-28",
      1.0
     ]
-   ],
-   "judged": false
+   ]
   },
   {
    "layer": "mobilization",
@@ -1041,8 +1037,7 @@
    "status": "collected",
    "value": null,
    "score": null,
-   "reason": "報道の語の収集が 30 日の窓を覆っていない（2026-11-25 から集め始めた。途中の穴も不明）",
-   "judged": false
+   "reason": "報道の語の収集が 30 日の窓を覆っていない（2026-11-25 から集め始めた。途中の穴も不明）"
   },
   {
    "layer": "mobilization",
@@ -1054,8 +1049,7 @@
    "status": "collected",
    "value": null,
    "score": null,
-   "reason": "報道の語の収集が 30 日の窓を覆っていない（2026-11-25 から集め始めた。途中の穴も不明）",
-   "judged": false
+   "reason": "報道の語の収集が 30 日の窓を覆っていない（2026-11-25 から集め始めた。途中の穴も不明）"
   },
   {
    "layer": "mobilization",
@@ -1067,8 +1061,7 @@
    "status": "collected",
    "value": null,
    "score": 0,
-   "note": "JWLA-035：東アジアの語なし（料率は公開されないため、指定海域の有無で見る）",
-   "judged": false
+   "note": "JWLA-035：東アジアの語なし（料率は公開されないため、指定海域の有無で見る）"
   },
   {
    "layer": "deployment",
@@ -1195,8 +1188,7 @@
      "2026-11-22",
      6559.0
     ]
-   ],
-   "judged": false
+   ]
   },
   {
    "layer": "deployment",
@@ -1323,8 +1315,7 @@
      "2026-11-22",
      8621.0
     ]
-   ],
-   "judged": false
+   ]
   },
   {
    "layer": "deployment",
