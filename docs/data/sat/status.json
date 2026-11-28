@@ -8729,7 +8729,7 @@
   }
  ],
  "last_run": {
-  "run_utc": "2026-11-27T15:24:18Z",
+  "run_utc": "2026-11-28T14:26:44Z",
   "sites": [
    {
     "site_id": "ZJG",
@@ -8740,7 +8740,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "SYL",
@@ -8751,7 +8751,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "SLP",
@@ -8762,7 +8762,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "QGZ",
@@ -8773,7 +8773,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "ZDH",
@@ -8784,7 +8784,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "QDH",
@@ -8795,7 +8795,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "XSN",
@@ -8806,7 +8806,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "SWS",
@@ -8817,7 +8817,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "QJG",
@@ -8828,7 +8828,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "LSN",
@@ -8839,7 +8839,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "XMN",
@@ -8850,7 +8850,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "STU",
@@ -8861,7 +8861,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "MAW",
@@ -8872,7 +8872,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "PDG",
@@ -8883,7 +8883,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "NDS",
@@ -8894,7 +8894,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "DXE",
@@ -8905,7 +8905,7 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "BHI",
@@ -8916,18 +8916,18 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.51
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "XCD",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.18
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "LYG",
@@ -8938,40 +8938,40 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 750.18
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "JMN",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 749.8
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "HPU",
     "lookback_days": 6,
     "catalog_items": 1,
     "acquisitions": 1,
-    "new": 1,
-    "counted": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 749.44
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "HKG",
     "lookback_days": 6,
-    "catalog_items": 2,
-    "acquisitions": 2,
-    "new": 1,
-    "counted": 1,
+    "catalog_items": 1,
+    "acquisitions": 1,
+    "new": 0,
+    "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 749.11
+    "budget_left_pu": 749.08
    },
    {
     "site_id": "WHI",
@@ -8982,16 +8982,16 @@
     "counted": 0,
     "skipped": 0,
     "errors": 0,
-    "budget_left_pu": 749.11
+    "budget_left_pu": 749.08
    }
   ],
   "s2": [
    {
     "site_id": "ZJG",
-    "days": 1,
+    "days": 0,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 1,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -8999,25 +8999,25 @@
    },
    {
     "site_id": "SYL",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.015,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "SLP",
-    "days": 1,
+    "days": 0,
     "clear": 0,
-    "cloudy": 1,
+    "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.012,
-    "requests": 2
+    "processing_units": 0.0,
+    "requests": 1
    },
    {
     "site_id": "QGZ",
@@ -9029,14 +9029,14 @@
    },
    {
     "site_id": "QDH",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 1.292,
+    "requests": 3
    },
    {
     "site_id": "XSN",
@@ -9051,47 +9051,47 @@
    },
    {
     "site_id": "SWS",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.005,
+    "requests": 2
    },
    {
     "site_id": "QJG",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.005,
+    "requests": 2
    },
    {
     "site_id": "LSN",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.008,
+    "requests": 2
    },
    {
     "site_id": "XMN",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 1.131,
+    "requests": 3
    },
    {
     "site_id": "STU",
@@ -9106,36 +9106,36 @@
    },
    {
     "site_id": "MAW",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.851,
+    "requests": 3
    },
    {
     "site_id": "PDG",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.005,
+    "requests": 2
    },
    {
     "site_id": "NDS",
-    "days": 0,
-    "clear": 0,
+    "days": 1,
+    "clear": 1,
     "cloudy": 0,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.299,
+    "requests": 3
    },
    {
     "site_id": "DXE",
@@ -9150,10 +9150,10 @@
    },
    {
     "site_id": "BHI",
-    "days": 1,
+    "days": 0,
     "clear": 0,
     "cloudy": 0,
-    "skipped": 1,
+    "skipped": 0,
     "deferred": 0,
     "errors": 0,
     "processing_units": 0.0,
@@ -9216,26 +9216,26 @@
    },
    {
     "site_id": "WHI",
-    "days": 0,
+    "days": 1,
     "clear": 0,
-    "cloudy": 0,
+    "cloudy": 1,
     "skipped": 0,
     "deferred": 0,
     "errors": 0,
-    "processing_units": 0.0,
-    "requests": 1
+    "processing_units": 0.005,
+    "requests": 2
    }
   ],
-  "s2_requests": 23,
-  "s2_processing_units": 0.027,
-  "requests": 50,
-  "processing_units": 1.432,
+  "s2_requests": 34,
+  "s2_processing_units": 3.601,
+  "requests": 57,
+  "processing_units": 3.601,
   "pu_source": "header",
-  "scenes": 4,
-  "month_pu_before": 249.487,
+  "scenes": 0,
+  "month_pu_before": 250.919,
   "month_pu_cap": 1000.0
  },
- "updated_utc": "2026-11-27T15:24:18Z",
+ "updated_utc": "2026-11-28T14:26:44Z",
  "series_breaks": [
   {
    "site_id": "ZJG",
