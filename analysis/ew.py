@@ -8,7 +8,8 @@
   中央値と MAD から作るロバストな z で比べ、0〜3 点にする。
 - 総合判定：兵站系のカテゴリー（お金・医療・人員・輸送）が 2 つ以上 2 点以上なら「警戒」、
   展開層・行動層のどれかが 2 点以上なら「演習」、それ以外は「平常」。
-  兵站系の指標はまだ収集していないため、今の判定の上限は「演習」（meta.json と画面に明記）。
+  兵站系の指標は「警戒」の判定だけに使い、「演習」の判定（展開層・行動層）には入れない。
+- ew-3（2026-11-28 運用開始）：ew-2 の指標を誤報の目安で確かめ、海底ケーブル以外を判定に入れた。
 - null は不明（データ不足・未収集）。0 点は「平常値の範囲内と確かめた」という意味。
 """
 import csv
@@ -21,7 +22,7 @@ from datetime import date, datetime, timedelta, timezone
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'docs', 'data')
 OUT = os.path.join(DATA, 'ew')
-VERSION = 'ew-2'
+VERSION = 'ew-3'
 
 WINDOW = 7            # 直近の合計をとる日数
 BASE_DAYS = 365       # 平常値に使う期間
@@ -398,9 +399,13 @@ def load_ew2():
     return src
 
 
-# ew-2 の指標は、誤報の目安と過去事例で確かめるまで「表示だけ」（判定に入れない）。確かめたものから外す
-TRIAL = {'gold', 'oil-imports', 'amphib-build', 'rhetoric', 'mobilization-drills', 'conscription', 'war-risk',
-         'ferries-fujian', 'ferries-bohai', 'cables'}
+# 判定に入れない（表示だけの）指標。ew-2 の指標は 2026-11-28 に誤報の目安で確かめた：
+# 過去 730 日を 3 日おきに採点し、名前つきの演習の前後 7 日を除いた日で 2 点以上になった割合は
+# 金・原油・馬尾造船所・渤海の旅客船 0%、人民日報 0.9%、福建の旅客船 3.5%、海底ケーブル 10.1%。
+# 兵站系（お金・人員・輸送）のカテゴリーが 2 つ同時に 2 点以上になった日は 0。
+# 海底ケーブルは展開層で「演習」を 1 割の日に出すので表示だけに残す。
+# 国防動員・徴兵・JWC は過去の記録が無く確かめられないが、収集の窓が埋まるまで null（不明）なので判定に入れても誤報にならない
+TRIAL = {'cables'}
 
 
 def item(layer, iid, name, cat, source, kind, a, **extra):
@@ -557,7 +562,8 @@ def judge(indicators):
                        'total': sum(1 for i in indicators if i['layer'] == lid)})
     used = [i for i in indicators if i.get('judged', True)]
     hot_logistics = sorted({i['category'] for i in used if i['category'] in LOGISTICS and (i['score'] or 0) >= 2})
-    hot_ops = [i['id'] for i in used if i['layer'] in ('deployment', 'action') and (i['score'] or 0) >= 2]
+    # 兵站系は「警戒」だけに使う（福建の旅客船など展開層の兵站の指標で「演習」を出さない）
+    hot_ops = [i['id'] for i in used if i['layer'] in ('deployment', 'action') and i['category'] not in LOGISTICS and (i['score'] or 0) >= 2]
     logistics_collected = any(i['category'] in LOGISTICS and i['status'] == 'collected' for i in used)
     trial_hot = [i['id'] for i in indicators if not i.get('judged', True) and (i['score'] or 0) >= 2]
     action_scored = sum(1 for i in used if i['layer'] == 'action' and i['score'] is not None)
@@ -573,7 +579,7 @@ def judge(indicators):
     return {'verdict': verdict, 'layers': layers, 'hot_logistics': hot_logistics, 'hot_ops': hot_ops, 'trial_hot': trial_hot,
             'ceiling': None if logistics_collected else 'exercise',
             'ceiling_note': None if logistics_collected else
-            '兵站系（お金・人員・輸送）の指標は集め始めたが、確かめるまで判定に入れない（表示だけ）。「警戒」はまだ出ない（判定の上限は「演習」）'}
+            '兵站系（お金・人員・輸送）の指標が集まっていないため、「警戒」は出ない（判定の上限は「演習」）'}
 
 
 def backtest(series, named, events):
