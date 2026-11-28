@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-11-28T04:59:58Z",
+ "generated_utc": "2026-11-28T14:34:04Z",
  "sites": {
   "酒泉": [
    40.96,
@@ -1332,13 +1332,13 @@
   },
   {
    "ll2_id": "a6421db3-7c8a-4cf7-a659-cec195140f7f",
-   "name": "Long March 6A | Unknown Payload",
-   "status": "Go",
-   "net_utc": "2026-11-27T13:00:00Z",
+   "name": "Long March 6A | Yaogan 50-04",
+   "status": "Success",
+   "net_utc": "2026-11-27T13:05:00Z",
    "rocket": "Long March 6A",
    "provider": "China Aerospace Science and Technology Corporation",
-   "orbit": "N/A",
-   "mission_type": "Unknown",
+   "orbit": "LEO",
+   "mission_type": "Government/Top Secret",
    "pad": "Launch Complex 9A",
    "location": "Taiyuan Satellite Launch Center, People's Republic of China",
    "country": "CHN",
